@@ -25,15 +25,15 @@ Here is the basic syntax for class definition:
 ```sh
 @class ClassName {
 
-   @property [public|private|protected] propertyName
+	@property [public|private|protected] propertyName
 
-   @constructor [parameters] {
-	  	constructor body
-   }
+	@constructor [parameters] {
+		constructor body
+	}
 
-   @method [public|private|protected] methodName {
-	  	method body
-   }
+	@method [public|private|protected] methodName {
+		method body
+	}
 }
 ```
 
@@ -84,8 +84,8 @@ With all of this, we can write Bash scripts like the following:
 
 ```sh
 if [[ @objectName.methodName parameter1 parameter2 parameter3 -eq 0 ]]; then
-	   echo "The method returned 0"
+		echo "The method returned 0"
 elif [[ @objectName.propertyName == "value" ]]; then
-	   echo "The property value is: @objectName.propertyName"
+		echo "The property value is: @objectName.propertyName"
 fi
 ```

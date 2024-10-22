@@ -50,46 +50,46 @@ Here is the basic syntax for object creation:
 Here is the basic syntax for method invocation:
 
 ```sh
-objectName.methodName
+@objectName.methodName
 ```
 
 Here is the basic syntax for property access:
 
 ```sh
-objectName.propertyName
+@objectName.propertyName
 ```
 
 Here is the basic syntax for method invocation with parameters:
 
 ```sh
-objectName.methodName parameter1 parameter2 parameter3
+@objectName.methodName parameter1 parameter2 parameter3
 ```
 
 Here is the basic syntax for property assignment:
 
 ```sh
-objectName.propertyName = value
+@objectName.propertyName = value
 ```
 
 
 Here is the basic syntax for property access with assignment:
 
 ```sh
-value = objectName.propertyName
+value = @objectName.propertyName
 ```
 
 Here is the basic syntax for method invocation with parameters and assignment:
 
 ```sh
-value = objectName.methodName parameter1 parameter2 parameter3
+value = @objectName.methodName parameter1 parameter2 parameter3
 ```
 
 With all of this, we can write Bash scripts like the following:
 
 ```sh
-if [[ objectName.methodName parameter1 parameter2 parameter3 -eq 0 ]]; then
+if [[ @objectName.methodName parameter1 parameter2 parameter3 -eq 0 ]]; then
 	   echo "The method returned 0"
-elif [[ objectName.propertyName == "value" ]]; then
-	   echo "The property is set to value"
+elif [[ @objectName.propertyName == "value" ]]; then
+	   echo "The property value is: @objectName.propertyName"
 fi
 ```

@@ -1,0 +1,14 @@
+#!/usr/bin/env bpp
+
+@class Object {
+	@property public property1
+	@method initialize value {
+		property1 = value
+	}
+}
+
+@object instantiation = new Object
+
+@instantiation.initialize "abc"
+
+echo @instantiation.property1

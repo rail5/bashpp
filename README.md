@@ -21,7 +21,7 @@ The syntax will be designed to be easily written by the programmer
 
 Here is the basic syntax for class definition:
 
-```
+```sh
 @class ClassName {
 
    @property [public|private|protected] propertyName
@@ -38,44 +38,44 @@ Here is the basic syntax for class definition:
 
 Here is the basic syntax for object creation:
 
-```
+```sh
 @object objectName = new ClassName
 ```
 
 Here is the basic syntax for method invocation:
 
-```
+```sh
 objectName.methodName
 ```
 
 Here is the basic syntax for property access:
 
-```
+```sh
 objectName.propertyName
 ```
 
 Here is the basic syntax for method invocation with parameters:
 
-```
+```sh
 objectName.methodName parameter1 parameter2 parameter3
 ```
 
 Here is the basic syntax for property assignment:
 
-```
+```sh
 objectName.propertyName = value
 ```
 
 
 Here is the basic syntax for property access with assignment:
 
-```
+```sh
 value = objectName.propertyName
 ```
 
 Here is the basic syntax for method invocation with parameters and assignment:
 
-```
+```sh
 value = objectName.methodName parameter1 parameter2 parameter3
 ```
 

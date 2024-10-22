@@ -9,6 +9,6 @@
 
 @object instantiation = new Object
 
-@instantiation.initialize "abc"
+@instantiation.initialize "abc def ghi quote doesn't end here\" but now it does"
 
 echo @instantiation.property1

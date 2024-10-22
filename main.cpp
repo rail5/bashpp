@@ -83,7 +83,45 @@ int main(int argc, char* argv[]) {
 	
 	std::string line;
 	while (std::getline(file, line)) {
-		std::cout << line << std::endl;
+		std::string token;
+		std::vector<std::string> tokens;
+
+		bool escaped = false;
+		bool inString = false;
+
+		for (char c : line) {
+			if (isspace(c) && !inString && !escaped) {
+				if (!token.empty()) {
+					tokens.push_back(token);
+					token.clear();
+				}
+			} else if (c == '#') {
+				break;
+			} else {
+				if (c == '"' && !escaped) {
+					inString = !inString;
+				} else if (c == '\\' && !escaped) {
+					escaped = true;
+				} else {
+					escaped = false;
+				}
+				token += c;
+			}
+		}
+
+		if (!token.empty()) {
+			tokens.push_back(token);
+		}
+
+		if (tokens.empty()) {
+			continue;
+		}
+		std::cout << "Tokens identified:" << std::endl;
+		for (std::string t : tokens) {
+			std::cout << t << std::endl;
+		}
+		std::cout << std::endl;
+
 	}
 	
 	file.close();

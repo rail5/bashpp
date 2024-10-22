@@ -69,6 +69,8 @@
 #include <vector>
 #include <fstream>
 
+#include "tokenizer.cpp"
+
 int main(int argc, char* argv[]) {
 	if (argc < 2) {
 		std::cerr << "Usage: " << argv[0] << " <filename>" << std::endl;
@@ -83,45 +85,16 @@ int main(int argc, char* argv[]) {
 	
 	std::string line;
 	while (std::getline(file, line)) {
-		std::string token;
-		std::vector<std::string> tokens;
-
-		bool escaped = false;
-		bool inString = false;
-
-		for (char c : line) {
-			if (isspace(c) && !inString && !escaped) {
-				if (!token.empty()) {
-					tokens.push_back(token);
-					token.clear();
-				}
-			} else if (c == '#') {
-				break;
-			} else {
-				if (c == '"' && !escaped) {
-					inString = !inString;
-				} else if (c == '\\' && !escaped) {
-					escaped = true;
-				} else {
-					escaped = false;
-				}
-				token += c;
-			}
+		bashpp::Tokenizer tokenizer(line);
+		std::vector<std::string> tokens = tokenizer.getTokens();
+		if (!tokens.empty()) {
+			std::cout << std::endl;
+			std::cout << "Original line: " << line << std::endl;
+			std::cout << "Tokens:" << std::endl;
 		}
-
-		if (!token.empty()) {
-			tokens.push_back(token);
+		for (const std::string& token : tokens) {
+			std::cout << token << std::endl;
 		}
-
-		if (tokens.empty()) {
-			continue;
-		}
-		std::cout << "Tokens identified:" << std::endl;
-		for (std::string t : tokens) {
-			std::cout << t << std::endl;
-		}
-		std::cout << std::endl;
-
 	}
 	
 	file.close();

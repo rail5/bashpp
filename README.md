@@ -18,13 +18,7 @@ This is intended to be a source-to-source compiler.
 
  - The syntax will be a superset of the Bash syntax
 
- - The syntax will be designed to be easily parsed by the Bash++ interpreter
-
  - The syntax will be designed to be easily converted to ordinary Bash script
-
- - The syntax will be designed to be easily understood by the programmer
-
- - The syntax will be designed to be easily written by the programmer
 
 Here is the basic syntax for class definition:
 

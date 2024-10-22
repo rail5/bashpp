@@ -12,12 +12,17 @@ At the end, the interpreter will generate an ordinary procedural Bash script, an
 
 ## Syntax
 
-The Bash++ script will be written in a special syntax
-The syntax will be a superset of the Bash syntax
-The syntax will be designed to be easily parsed by the Bash++ interpreter
-The syntax will be designed to be easily converted to ordinary Bash script
-The syntax will be designed to be easily understood by the programmer
-The syntax will be designed to be easily written by the programmer
+ - The Bash++ script will be written in a special syntax
+
+ - The syntax will be a superset of the Bash syntax
+
+ - The syntax will be designed to be easily parsed by the Bash++ interpreter
+
+ - The syntax will be designed to be easily converted to ordinary Bash script
+
+ - The syntax will be designed to be easily understood by the programmer
+
+ - The syntax will be designed to be easily written by the programmer
 
 Here is the basic syntax for class definition:
 

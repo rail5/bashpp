@@ -35,3 +35,56 @@ Here is the basic syntax for class definition:
    }
 }
 ```
+
+Here is the basic syntax for object creation:
+
+```
+@object objectName = new ClassName
+```
+
+Here is the basic syntax for method invocation:
+
+```
+objectName.methodName
+```
+
+Here is the basic syntax for property access:
+
+```
+objectName.propertyName
+```
+
+Here is the basic syntax for method invocation with parameters:
+
+```
+objectName.methodName parameter1 parameter2 parameter3
+```
+
+Here is the basic syntax for property assignment:
+
+```
+objectName.propertyName = value
+```
+
+
+Here is the basic syntax for property access with assignment:
+
+```
+value = objectName.propertyName
+```
+
+Here is the basic syntax for method invocation with parameters and assignment:
+
+```
+value = objectName.methodName parameter1 parameter2 parameter3
+```
+
+With all of this, we can write Bash scripts like the following:
+
+```sh
+if [[ objectName.methodName parameter1 parameter2 parameter3 -eq 0 ]]; then
+	   echo "The method returned 0"
+elif [[ objectName.propertyName == "value" ]]; then
+	   echo "The property is set to value"
+fi
+```

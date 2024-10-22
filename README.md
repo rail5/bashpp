@@ -2,8 +2,6 @@
 
 Bash with classes
 
-Copright (C) 2024 rail5
-
 ## The Basic Idea
 
 A Bash++ script will be read first by the Bash++ interpreter.

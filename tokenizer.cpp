@@ -5,19 +5,21 @@
  * Copyright (C) 2024 rail5
  */
 
+#include "token.h"
 #include "tokenizer.h"
 
 namespace bashpp {
 
 Tokenizer::Tokenizer() {}
 
-const std::vector<std::string>& Tokenizer::getTokens() {
+const std::vector<bashpp::Token>& Tokenizer::getTokens() {
 	return tokens;
 }
 
 void Tokenizer::parse(const std::string& script) {
 	tokens.clear();
-	std::string token = "";
+	std::string tokenString = "";
+	bashpp::Token token;
 
 	bool escaped = false;
 	bool inString = false;
@@ -36,20 +38,21 @@ void Tokenizer::parse(const std::string& script) {
 			case '\r':
 			case '\v':
 				if (!inString && !inComment && !escaped) {
-					if (!token.empty()) {
-						tokens.push_back(token);
-						token.clear();
+					if (!tokenString.empty()) {
+						tokens.push_back(bashpp::Token(tokenString));
+						tokenString.clear();
 					}
 				} else {
 					if (!inComment)
-						token += c;
+						tokenString += c;
+						escaped = false;
 				}
 				break;
 			case '\\':
 				if (!escaped && !inComment) {
 					escaped = true;
 				} else if (!inComment) {
-					token += c;
+					tokenString += c;
 					escaped = false;
 				}
 				break;
@@ -57,7 +60,7 @@ void Tokenizer::parse(const std::string& script) {
 				if (!escaped && !inComment) {
 					inString = !inString;
 				} else if (!inComment) {
-					token += c;
+					tokenString += c;
 					escaped = false;
 				}
 				break;
@@ -65,20 +68,34 @@ void Tokenizer::parse(const std::string& script) {
 				if (!escaped && !inString) {
 					inComment = true;
 				} else if (!inComment) {
-					token += c;
+					tokenString += c;
 					escaped = false;
+				}
+				break;
+			case '@':
+				if (escaped) {
+					tokenString += c;
+					escaped = false;
+				} else {
+					// Push the @ symbol as its own token
+					// What follows should be a directive to Bash++ (a keyword, object name, etc)
+					if (!tokenString.empty()) {
+						tokens.push_back(bashpp::Token(tokenString));
+						tokenString.clear();
+					}
+					tokens.push_back(bashpp::Token("@", bashpp::TokenType::SPECIAL));
 				}
 				break;
 			default:
 				if (!inComment) {
-					token += c;
+					tokenString += c;
 					escaped = false;
 				}
 				break;
 		}
 	}
-	if (!token.empty()) {
-		tokens.push_back(token);
+	if (!tokenString.empty()) {
+		tokens.push_back(bashpp::Token(tokenString));
 	}
 }
 

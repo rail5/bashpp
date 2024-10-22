@@ -69,6 +69,7 @@
 #include <vector>
 #include <fstream>
 
+#include "token.cpp"
 #include "tokenizer.cpp"
 
 int main(int argc, char* argv[]) {
@@ -90,7 +91,7 @@ int main(int argc, char* argv[]) {
 	
 	tokenizer.parse(content);
 
-	std::cout << std::endl << "Tokens:" << std::endl;
+	std::cout << "Tokens:" << std::endl;
 	for (auto& token : tokenizer.getTokens()) {
 		std::cout << token << std::endl;
 	}

@@ -9,15 +9,17 @@
 #include <string>
 #include <vector>
 
+#include "token.h"
+
 namespace bashpp {
 class Tokenizer {
 	private:
-		std::vector<std::string> tokens = {};
+		std::vector<bashpp::Token> tokens = {};
 	public:
 		Tokenizer();
 		explicit Tokenizer(const std::string& script);
 		void parse(const std::string& script);
-		const std::vector<std::string>& getTokens();
+		const std::vector<bashpp::Token>& getTokens();
 };
 } // namespace bashpp
 

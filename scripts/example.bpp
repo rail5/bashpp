@@ -14,3 +14,8 @@
 @instantiation.initialize "abc def ghi quote doesn't end here\" but now it does"
 
 echo @instantiation.property1
+echo "example \@ escape"
+echo "another \
+example \
+\@\
+string"

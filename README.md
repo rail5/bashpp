@@ -8,15 +8,13 @@ A Bash++ script will be read first by the Bash++ interpreter.
 
 The interpreter parses the script, identifies the objects and their methods
 
-At the end, the interpreter will generate an ordinary procedural Bash script, and the generated script will be passed to Bash proper for execution
+At the end, the interpreter will generate an ordinary Bash script, and the generated script will be passed to Bash proper for execution
 
 This is intended to be a source-to-source compiler.
 
 ## Syntax
 
- - The Bash++ script will be written in a special syntax
-
- - The syntax will be a superset of the Bash syntax
+ - The Bash++ syntax will be a superset of the Bash syntax
 
  - The syntax will be designed to be easily converted to ordinary Bash script
 

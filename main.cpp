@@ -82,22 +82,18 @@ int main(int argc, char* argv[]) {
 		std::cerr << "Error: Could not open file " << argv[1] << std::endl;
 		return 1;
 	}
+
+	bashpp::Tokenizer tokenizer;
 	
-	std::string line;
-	while (std::getline(file, line)) {
-		bashpp::Tokenizer tokenizer(line);
-		std::vector<std::string> tokens = tokenizer.getTokens();
-		if (!tokens.empty()) {
-			std::cout << std::endl;
-			std::cout << "Original line: " << line << std::endl;
-			std::cout << "Tokens:" << std::endl;
-		}
-		for (const std::string& token : tokens) {
-			std::cout << token << std::endl;
-		}
-	}
-	
+	std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 	file.close();
+	
+	tokenizer.parse(content);
+
+	std::cout << std::endl << "Tokens:" << std::endl;
+	for (auto& token : tokenizer.getTokens()) {
+		std::cout << token << std::endl;
+	}
 	
 	return 0;
 }

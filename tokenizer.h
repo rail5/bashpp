@@ -15,10 +15,10 @@ class Tokenizer {
 		std::vector<std::string> tokens = {};
 	public:
 		Tokenizer();
-		explicit Tokenizer(const std::string& single_line);
-		void parse(const std::string& single_line);
+		explicit Tokenizer(const std::string& script);
+		void parse(const std::string& script);
 		const std::vector<std::string>& getTokens();
 };
-}
+} // namespace bashpp
 
 #endif // TOKENIZER_H_

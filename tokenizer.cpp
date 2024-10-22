@@ -15,59 +15,65 @@ const std::vector<std::string>& Tokenizer::getTokens() {
 	return tokens;
 }
 
-void Tokenizer::parse(const std::string& single_line) {
+void Tokenizer::parse(const std::string& script) {
 	tokens.clear();
 	std::string token = "";
 
 	bool escaped = false;
 	bool inString = false;
+	bool inComment = false;
 
-	for (char c : single_line) {
+	for (char c : script) {
 		switch (c) {
+			case '\n':
+				if (inComment) {
+					inComment = false;
+				}
+				// Fall through to general whitespace handling below
 			case ' ':
 			case '\t':
 			case '\f':
 			case '\r':
 			case '\v':
-			case '\n':
-				if (!token.empty() && !inString && !escaped) {
-					tokens.push_back(token);
-					token = "";
-				} else if (inString || escaped) {
-					token += c;
-					escaped = false;
-				}
-				break;
-			case '#':
-				if (!inString && !escaped) {
+				if (!inString && !inComment && !escaped) {
 					if (!token.empty()) {
 						tokens.push_back(token);
+						token.clear();
 					}
-					return;
 				} else {
+					if (!inComment)
+						token += c;
+				}
+				break;
+			case '\\':
+				if (!escaped && !inComment) {
+					escaped = true;
+				} else if (!inComment) {
 					token += c;
 					escaped = false;
 				}
 				break;
 			case '"':
-				if (!escaped) {
+				if (!escaped && !inComment) {
 					inString = !inString;
-				} else {
+				} else if (!inComment) {
 					token += c;
 					escaped = false;
 				}
 				break;
-			case '\\':
-				if (!escaped) {
-					escaped = true;
-				} else {
+			case '#':
+				if (!escaped && !inString) {
+					inComment = true;
+				} else if (!inComment) {
 					token += c;
 					escaped = false;
 				}
 				break;
 			default:
-				token += c;
-				escaped = false;
+				if (!inComment) {
+					token += c;
+					escaped = false;
+				}
 				break;
 		}
 	}
@@ -76,8 +82,8 @@ void Tokenizer::parse(const std::string& single_line) {
 	}
 }
 
-Tokenizer::Tokenizer(const std::string& single_line) {
-	parse(single_line);
+Tokenizer::Tokenizer(const std::string& script) {
+	parse(script);
 }
 
 } // namespace bashpp

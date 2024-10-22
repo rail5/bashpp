@@ -1,7 +1,9 @@
 #!/usr/bin/env bpp
 
+# This is a comment and should be ignored
+
 @class ExampleClass {
-	@property public property1
+	@property public property1 # This is a comment and should be ignored
 	@method initialize value {
 		property1 = value
 	}

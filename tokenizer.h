@@ -17,7 +17,7 @@ class Tokenizer {
 		Tokenizer();
 		explicit Tokenizer(const std::string& single_line);
 		void parse(const std::string& single_line);
-		std::vector<std::string> getTokens();
+		const std::vector<std::string>& getTokens();
 };
 }
 

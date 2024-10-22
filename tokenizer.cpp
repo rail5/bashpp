@@ -11,7 +11,7 @@ namespace bashpp {
 
 Tokenizer::Tokenizer() {}
 
-std::vector<std::string> Tokenizer::getTokens() {
+const std::vector<std::string>& Tokenizer::getTokens() {
 	return tokens;
 }
 

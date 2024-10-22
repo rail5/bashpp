@@ -1,13 +1,13 @@
 #!/usr/bin/env bpp
 
-@class Object {
+@class ExampleClass {
 	@property public property1
 	@method initialize value {
 		property1 = value
 	}
 }
 
-@object instantiation = new Object
+@object instantiation = new ExampleClass
 
 @instantiation.initialize "abc def ghi quote doesn't end here\" but now it does"
 

@@ -48,7 +48,7 @@ Here is some (rather silly/useless) example Bash++ code:
 
 	@constructor input_file_path {
 		@file_path="$input_file_path"
-		@file_exists.set $([[ -f "@file_path ]] && echo "true" || echo "false")
+		@file_exists.set $([[ -f "@file_path" ]] && echo "true" || echo "false")
 	}
 
 	@public @method read {

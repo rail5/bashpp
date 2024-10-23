@@ -4,13 +4,9 @@ Bash with classes
 
 ## The Basic Idea
 
-A Bash++ script will be read first by the Bash++ interpreter.
-
-The interpreter parses the script, identifies the objects and their methods
-
-At the end, the interpreter will generate an ordinary Bash script, and the generated script will be passed to Bash proper for execution
-
 This is intended to be a source-to-source compiler.
+
+A Bash++ script will be converted into ordinary Bash for execution
 
 ## Syntax
 
@@ -18,72 +14,62 @@ This is intended to be a source-to-source compiler.
 
  - The syntax will be designed to be easily converted to ordinary Bash script
 
-Here is the basic syntax for class definition:
+Here is some (rather silly/useless) example Bash++ code:
 
 ```sh
-@class ClassName {
+@class Bool {
+	@private value="false"
 
-	@property [public|private|protected] propertyName
-
-	@constructor [parameters] {
-		constructor body
+	@public @method get {
+		echo "@value"
 	}
 
-	@method [public|private|protected] methodName {
-		method body
+	@public @method set input_value {
+		if [[ @input_value == "true" ]] || [[ @input_value -eq 1 ]]; then
+			@value="true"
+		else
+			@value="false"
+		fi
+	}
+	
+	@constructor input_value {
+		@this.set "$input_value"
 	}
 }
-```
 
-Here is the basic syntax for object creation:
+@class File {
+	@private file_path
+	@private @Bool file_exists
 
-```sh
-@object objectName = new ClassName
-```
+	@constructor {
+		@file_path=""
+		@file_exists.set false
+	}
 
-Here is the basic syntax for method invocation:
+	@constructor input_file_path {
+		@file_path="$input_file_path"
+		@file_exists.set $([[ -f "@file_path ]] && echo "true" || echo "false")
+	}
 
-```sh
-@objectName.methodName
-```
+	@public @method read {
+		if [[ @file_exists.get == "true" ]]; then
+			cat "@file_path"
+		fi
+	}
 
-Here is the basic syntax for property access:
+	@public @method append input_string {
+		echo "$input_string" >> "@file_path"
+	}
+}
 
-```sh
-@objectName.propertyName
-```
+@File new_file "./new-file"
+@new_file.read
 
-Here is the basic syntax for method invocation with parameters:
+@new_file.append "Hello from Bash++!"
+@new_file.read
 
-```sh
-@objectName.methodName parameter1 parameter2 parameter3
-```
-
-Here is the basic syntax for property assignment:
-
-```sh
-@objectName.propertyName = value
-```
-
-
-Here is the basic syntax for property access with assignment:
-
-```sh
-value = @objectName.propertyName
-```
-
-Here is the basic syntax for method invocation with parameters and assignment:
-
-```sh
-value = @objectName.methodName parameter1 parameter2 parameter3
-```
-
-With all of this, we can write Bash scripts like the following:
-
-```sh
-if [[ @objectName.methodName parameter1 parameter2 parameter3 -eq 0 ]]; then
-	echo "The method returned 0"
-elif [[ @objectName.propertyName == "value" ]]; then
-	echo "The property value is: @objectName.propertyName"
-fi
+@File old_file "./old-file"
+for word in @old_file.read; do
+	echo "Word: $word"
+done
 ```

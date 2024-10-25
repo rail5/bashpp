@@ -27,11 +27,12 @@ void Tokenizer::parse(const std::string& script) {
 
 	for (char c : script) {
 		switch (c) {
+			// Separator handling
 			case '\n':
 				if (inComment) {
-					inComment = false;
+					inComment = false; // Newlines terminate comments, semicolons do not
 				}
-				// Fall through to general separator handling
+				// Fall through
 			case ';':
 				if (!inString && !inComment && !escaped) {
 					if (!tokenString.empty()) {
@@ -46,7 +47,7 @@ void Tokenizer::parse(const std::string& script) {
 						escaped = false;
 				}
 				break;
-			// General whitespace handling below
+			// General whitespace handling
 			case ' ':
 			case '\t':
 			case '\f':
@@ -63,6 +64,7 @@ void Tokenizer::parse(const std::string& script) {
 						escaped = false;
 				}
 				break;
+			// Escape sequences
 			case '\\':
 				if (!escaped && !inComment) {
 					escaped = true;
@@ -71,6 +73,7 @@ void Tokenizer::parse(const std::string& script) {
 					escaped = false;
 				}
 				break;
+			// Quotes
 			case '"':
 				if (!escaped && !inComment) {
 					inString = !inString;
@@ -79,6 +82,7 @@ void Tokenizer::parse(const std::string& script) {
 					escaped = false;
 				}
 				break;
+			// Comments
 			case '#':
 				if (!escaped && !inString) {
 					inComment = true;
@@ -87,6 +91,7 @@ void Tokenizer::parse(const std::string& script) {
 					escaped = false;
 				}
 				break;
+			// Directives to Bash++
 			case '@':
 				if (escaped) {
 					tokenString += c;

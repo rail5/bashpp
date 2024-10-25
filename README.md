@@ -25,7 +25,7 @@ Here is some (rather silly/useless) example Bash++ code:
 	}
 
 	@public @method set input_value {
-		if [[ @input_value == "true" ]] || [[ @input_value -eq 1 ]]; then
+		if [[ $input_value == "true" ]] || [[ $input_value -eq 1 ]]; then
 			@value="true"
 		else
 			@value="false"

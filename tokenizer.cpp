@@ -31,7 +31,22 @@ void Tokenizer::parse(const std::string& script) {
 				if (inComment) {
 					inComment = false;
 				}
-				// Fall through to general whitespace handling below
+				// Fall through to general separator handling
+			case ';':
+				if (!inString && !inComment && !escaped) {
+					if (!tokenString.empty()) {
+						tokens.push_back(bashpp::Token(tokenString));
+						tokenString.clear();
+						// Push back a special token clarifying that this line has ended
+						tokens.push_back(bashpp::Token(";", bashpp::TokenType::SPECIAL));
+					}
+				} else {
+					if (!inComment)
+						tokenString += c;
+						escaped = false;
+				}
+				break;
+			// General whitespace handling below
 			case ' ':
 			case '\t':
 			case '\f':

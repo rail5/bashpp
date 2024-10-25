@@ -3,13 +3,13 @@
 # This is a comment and should be ignored
 
 @class ExampleClass {
-	@property public property1 # This is a comment and should be ignored
-	@method initialize value {
+	@public property1 # This is a comment and should be ignored
+	@public @method initialize value {
 		property1 = value
 	}
 }
 
-@object instantiation = new ExampleClass
+@ExampleClass instantiation
 
 @instantiation.initialize "abc def ghi quote doesn't end here\" but now it does"
 

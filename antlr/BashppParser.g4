@@ -36,7 +36,10 @@ object_instantiation: BASHPP_VARIABLE IDENTIFIER;
 object_assignment: object_reference ASSIGN (STRING | INTEGER | FLOAT | BOOLEAN | BASHPP_VARIABLE | PRIMITIVE_VARIABLE);
 
 // Object reference
-object_reference: BASHPP_VARIABLE (DOT IDENTIFIER)*;
+object_reference: BASHPP_VARIABLE (DOT IDENTIFIER)* argument_list?;
+
+// Argument list
+argument_list: (STRING | INTEGER | FLOAT | BOOLEAN | BASHPP_VARIABLE | PRIMITIVE_VARIABLE)+;
 
 // Open brace
 open_brace: LBRACE;

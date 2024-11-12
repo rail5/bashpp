@@ -8,6 +8,8 @@
 #include "out/BashppLexer.h"
 #include "out/BashppParser.h"
 
+#include "explode.cpp"
+
 #include "bpp_class.cpp"
 #include "syntax_error.cpp"
 
@@ -210,11 +212,11 @@ std::string build_program(tree::ParseTree* tree,
 
 								classes[class_name].variables[variable_name] = bpp_class_variable();
 								classes[class_name].variables[variable_name].variable_type = variable_type;
-								classes[class_name].variables[variable_name].variable_name = variable_name;
+								classes[class_name].variables[variable_name].object_name = variable_name;
 								classes[class_name].variables[variable_name].variable_scope = variable_scope;
 								std::cout << "Declared type: " << classes[class_name].variables[variable_name].variable_type << std::endl;
 								std::cout << "Declared scope: " << classes[class_name].variables[variable_name].variable_scope << std::endl;
-								std::cout << "Declared name: " << classes[class_name].variables[variable_name].variable_name << std::endl;
+								std::cout << "Declared name: " << classes[class_name].variables[variable_name].object_name << std::endl;
 								break; }
 							case BashppParser::RuleMethod_definition: {
 								std::cout << "Method definition: " << innerRuleContext->children[0]->getText() << std::endl;
@@ -297,28 +299,28 @@ std::string build_program(tree::ParseTree* tree,
 									std::cout << "IDENTIFIER: " << terminalNode->getText() << std::endl;
 									if (classes[class_name].methods[method_signature].method_parameters.size() > 0) {
 										// Does the last-pushed variable have a name?
-										if (classes[class_name].methods[method_signature].method_parameters.back().variable_name.empty()) {
+										if (classes[class_name].methods[method_signature].method_parameters.back().object_name.empty()) {
 											// No name -- that means we pushed a type, and this is the name
-											classes[class_name].methods[method_signature].method_parameters.back().variable_name = terminalNode->getText();
+											classes[class_name].methods[method_signature].method_parameters.back().object_name = terminalNode->getText();
 											classes[class_name].methods[method_signature].method_parameters.back().variable_scope = SCOPE_UNDEFINED;
 										} else {
 											// There was a name. That means this is a new variable, and it's a primitive type
 											classes[class_name].methods[method_signature].method_parameters.push_back(bpp_class_variable());
 											classes[class_name].methods[method_signature].method_parameters.back().variable_type = "";
-											classes[class_name].methods[method_signature].method_parameters.back().variable_name = terminalNode->getText();
+											classes[class_name].methods[method_signature].method_parameters.back().object_name = terminalNode->getText();
 											classes[class_name].methods[method_signature].method_parameters.back().variable_scope = SCOPE_UNDEFINED;
 										}
 									} else {
 										// No parameters yet, so this is a primitive type
 										classes[class_name].methods[method_signature].method_parameters.push_back(bpp_class_variable());
 										classes[class_name].methods[method_signature].method_parameters.back().variable_type = "";
-										classes[class_name].methods[method_signature].method_parameters.back().variable_name = terminalNode->getText();
+										classes[class_name].methods[method_signature].method_parameters.back().object_name = terminalNode->getText();
 										classes[class_name].methods[method_signature].method_parameters.back().variable_scope = SCOPE_UNDEFINED;
 									}
 
 									std::cout << "Declared type: " << classes[class_name].methods[method_signature].method_parameters.back().variable_type << std::endl;
 									std::cout << "Declared scope: " << classes[class_name].methods[method_signature].method_parameters.back().variable_scope << std::endl;
-									std::cout << "Declared name: " << classes[class_name].methods[method_signature].method_parameters.back().variable_name << std::endl;
+									std::cout << "Declared name: " << classes[class_name].methods[method_signature].method_parameters.back().object_name << std::endl;
 
 									break;
 								default:
@@ -349,6 +351,63 @@ std::string build_program(tree::ParseTree* tree,
 					break;
 				case BashppParser::RuleObject_assignment:
 					std::cout << "Object assignment: " << ruleContext->getText() << std::endl;
+
+					// Are we inside a method or constructor?
+					if (in_method || in_constructor) {
+						// Verify that the object exists and is accessible in this context
+						std::string object_name = ruleContext->children[0]->getText().substr(1, ruleContext->children[0]->getText().size() - 1);
+						// Explode by dots
+						auto exploded = explode(object_name, '.');
+						// Replace dots with underscores
+						std::replace(object_name.begin(), object_name.end(), '.', '_');
+						// Generate the symbol
+						std::string object_symbol = generate_symbol(in_class, class_name, in_method, method_signature, in_constructor, {}, true, object_name);
+						std::cout << "Generated object symbol: " << object_symbol << std::endl;
+						std::cout << "Object name: " << object_name << std::endl;
+
+						bpp_object* object = nullptr;
+						
+						if (classes[class_name].variables.find(exploded[0]) != classes[class_name].variables.end()) {
+							// Is it a class variable?
+							// Suppose the object reference is of the form "object1.object2.object3" etc ad infinitum
+							// 'object1' would be a complex (non-primitive) typed variable of this class
+							// 'object2' would be a variable *within* 'object1', and so on
+							// We need to traverse the object tree to find the final object
+
+							// Start with the first object
+							object = &classes[class_name].variables[exploded[0]];
+
+							// Traverse the object tree
+							for (size_t i = 1; i < exploded.size(); i++) {
+								bpp_class_variable* variable = static_cast<bpp_class_variable*>(object);
+								std::string variable_type = variable->variable_type.substr(1, variable->variable_type.size() - 1);
+								if (classes.find(variable_type) == classes.end()) {
+									throw syntax_error("Class '" + variable->variable_type + "' not defined or not accessible in this context", source_file, line_numbers[source_file]);
+								}
+								if (classes[variable_type].variables.find(exploded[i]) != classes[variable_type].variables.end()) {
+									std::cout << "Found variable '" << exploded[i] << "' in object type '" << variable_type << "'" << std::endl;
+									object = &classes[variable_type].variables[exploded[i]];
+								} else {
+									throw syntax_error("Object '" + exploded[i] + "' not defined or not accessible in this context", source_file, line_numbers[source_file]);
+								}
+							}
+						} else if (classes[class_name].methods[method_signature].method_parameters.size() > 0) {
+							// Is it a method parameter?
+							for (auto& parameter : classes[class_name].methods[method_signature].method_parameters) {
+								if (parameter.object_name == object_name) {
+									object = &parameter;
+									break;
+								}
+							}
+						} else if (objects.find(object_symbol) != objects.end()) {
+							// Is it a global object?
+							object = &objects[object_symbol];
+						}
+
+						if (object == nullptr) {
+							throw syntax_error("Object '" + object_name + "' not defined or not accessible in this context", source_file, line_numbers[source_file]);
+						}
+					}
 					break;
 				case BashppParser::RuleObject_instantiation: {
 					std::cout << "Object instantiation: " << ruleContext->getText() << std::endl;

@@ -99,8 +99,22 @@ class BPP_SCOPE {
 		}
 };
 
-struct bpp_class_variable {
-	std::string variable_name;
+struct bpp_object;
+struct bpp_class_variable;
+struct bpp_class_method;
+struct bpp_class_constructor;
+struct bpp_class;
+
+struct bpp_object {
+	std::string object_name;
+	bpp_class* object_type;
+	bool in_method;
+	std::string containing_class;
+	std::string method_signature;
+	std::string object_symbol;
+};
+
+struct bpp_class_variable : public bpp_object {
 	std::string variable_type;
 	BPP_SCOPE variable_scope;
 };
@@ -117,17 +131,8 @@ struct bpp_class_constructor {
 };
 
 struct bpp_class {
-	std::string class_name;
-	std::map<std::string, bpp_class_variable> variables;
-	std::map<std::string, bpp_class_method> methods;
-	std::vector<bpp_class_constructor> constructors;
-};
-
-struct bpp_object {
-	std::string object_name;
-	bpp_class* object_type;
-	bool in_method;
-	std::string containing_class;
-	std::string method_signature;
-	std::string object_symbol;
+	std::string class_name = "";
+	std::map<std::string, bpp_class_variable> variables = {};
+	std::map<std::string, bpp_class_method> methods = {};
+	std::vector<bpp_class_constructor> constructors = {};
 };

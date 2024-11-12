@@ -122,3 +122,12 @@ struct bpp_class {
 	std::map<std::string, bpp_class_method> methods;
 	std::vector<bpp_class_constructor> constructors;
 };
+
+struct bpp_object {
+	std::string object_name;
+	bpp_class* object_type;
+	bool in_method;
+	std::string containing_class;
+	std::string method_signature;
+	std::string object_symbol;
+};

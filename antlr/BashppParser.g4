@@ -12,7 +12,7 @@ program: statement*;
 statement: class_definition | class_body_statement | object_instantiation | object_assignment | object_reference | open_brace | close_brace | other_statement;
 
 // Class definition
-class_definition: KEYWORD_CLASS IDENTIFIER;
+class_definition: KEYWORD_CLASS IDENTIFIER open_brace statement*? close_brace;
 
 // Class body statement
 class_body_statement: (KEYWORD_PUBLIC | KEYWORD_PRIVATE) (variable_definition | method_definition | constructor_definition);
@@ -21,10 +21,10 @@ class_body_statement: (KEYWORD_PUBLIC | KEYWORD_PRIVATE) (variable_definition | 
 variable_definition: BASHPP_VARIABLE? IDENTIFIER ((ASSIGN) (STRING | INTEGER | FLOAT | BOOLEAN | BASHPP_VARIABLE | PRIMITIVE_VARIABLE))?;
 
 // Method definition
-method_definition: KEYWORD_METHOD IDENTIFIER parameter_list?;
+method_definition: KEYWORD_METHOD IDENTIFIER parameter_list? open_brace statement*? close_brace;
 
 // Constructor definition
-constructor_definition: KEYWORD_CONSTRUCTOR parameter_list?;
+constructor_definition: KEYWORD_CONSTRUCTOR parameter_list? open_brace statement*? close_brace;
 
 // Parameter list
 parameter_list: (BASHPP_VARIABLE IDENTIFIER | IDENTIFIER)+;

@@ -22,11 +22,10 @@ class bpp_compiled_code;
 class bpp_class;
 class bpp_class_variable;
 class bpp_class_method;
-class bpp_class_constructor;
 class bpp_object;
 
 typedef
-	std::variant<std::shared_ptr<bpp_class_variable>, std::shared_ptr<bpp_class_method>, std::shared_ptr<bpp_class_constructor>, std::shared_ptr<bpp_object>>
+	std::variant<std::shared_ptr<bpp_class_variable>, std::shared_ptr<bpp_class_method>, std::shared_ptr<bpp_object>>
 	bpp_reference;
 
 class bpp_compiled_code {
@@ -103,7 +102,7 @@ class bpp_class {
 		std::shared_ptr<bpp_object_scope> class_scope;
 		std::unordered_map<std::string, std::shared_ptr<bpp_class_variable>> variables;
 		std::unordered_map<std::string, std::shared_ptr<bpp_class_method>> methods;
-		std::shared_ptr<bpp_class_constructor> constructor;
+		std::shared_ptr<bpp_class_method> constructor;
 
 	public:
 		// Constructor
@@ -138,12 +137,12 @@ class bpp_class {
 		}
 
 		// Get the constructor
-		std::shared_ptr<bpp_class_constructor> get_constructor() {
+		std::shared_ptr<bpp_class_method> get_constructor() {
 			return constructor;
 		}
 
 		// Set the constructor
-		void set_constructor(std::shared_ptr<bpp_class_constructor> constructor) {
+		void set_constructor(std::shared_ptr<bpp_class_method> constructor) {
 			this->constructor = constructor;
 		}
 

@@ -15,10 +15,12 @@
 #include <memory>
 #include <variant>
 
+#include "explode.cpp"
+
 std::set<std::string> protected_keywords = {  "public", "private", "class", "method", "constructor", "primitive" };
 
 
-class bpp_compiled_code;
+class bpp_code;
 class bpp_class;
 class bpp_class_variable;
 class bpp_class_method;
@@ -26,9 +28,84 @@ class bpp_object;
 
 typedef
 	std::variant<std::shared_ptr<bpp_class_variable>, std::shared_ptr<bpp_class_method>, std::shared_ptr<bpp_object>>
-	bpp_reference;
+	variant_ref;
 
-class bpp_compiled_code {
+class bpp_reference;
+
+namespace std {
+template <>
+struct hash<bpp_reference> {
+	std::size_t operator()(const bpp_reference& ref) const noexcept {
+		return std::hash<std::string>{}(ref.get_reference_name());
+	}
+};
+}
+
+class bpp_reference {
+	private:
+		variant_ref reference;
+		std::string reference_name;
+		bool resolved;
+	public:
+		explicit bpp_reference(std::string name) {
+			reference_name = name;
+			resolved = false;
+			reference = variant_ref{};
+		}
+
+		std::string get_reference_name() const {
+			return reference_name;
+		}
+
+		bool is_resolved() {
+			return resolved;
+		}
+
+		void resolve(std::shared_ptr<bpp_class_variable> variable) {
+			reference = variable;
+			resolved = true;
+		}
+
+		void resolve(std::shared_ptr<bpp_class_method> method) {
+			reference = method;
+			resolved = true;
+		}
+
+		void resolve(std::shared_ptr<bpp_object> object) {
+			reference = object;
+			resolved = true;
+		}
+
+		void resolve(std::shared_ptr<bpp_object_scope> scope) {
+			// Traverse the scope tree to find the object we're referencing
+
+			// First, split the reference name into its parts
+			std::vector<std::string> parts = explode(reference_name, '.');
+
+			// Try to find the root object in the current scope
+			std::shared_ptr<bpp_object> object = scope->find_object(parts[0]);
+
+			// If we found the object, traverse the object tree to find the final object
+			if (object) {
+				for (size_t i = 1; i < parts.size(); i++) {
+					object = object->find_data_member(parts[i]);
+					if (!object) {
+						throw std::runtime_error("Object '" + parts[i] + "' not found in object '" + parts[i - 1] + "'");
+					}
+				}
+				reference = object;
+				resolved = true;
+			} else {
+				throw std::runtime_error("Object '" + parts[0] + "' not found in scope");
+			}
+		}
+
+		variant_ref get_variable() {
+			return reference;
+		}
+};
+
+class bpp_code {
 	// This class represents the compiled code of a Bash++ program
 	// It contains a sequential list of alternating std::strings and unresolved references
 	// The std::strings are Bash code, and the unresolved references are references to objects or methods
@@ -51,6 +128,54 @@ class bpp_compiled_code {
 		std::unordered_map<bpp_reference, std::string> resolved_references;
 
 	public:
+		// Constructor
+		bpp_code() {}
+		
+		// Add a string to the code
+		void add_string(std::string str) {
+			// Find references in the string
+			// If a reference is found, split it from the string and add it to the code as an unresolved reference
+
+			// Find all un-escaped @ symbols
+			size_t pos = 0;
+			while ((pos = str.find('@', pos)) != std::string::npos) {
+				// Check if the @ is escaped
+				size_t backslash_count = 0;
+				for (size_t i = pos; i > 0 && str[i - 1] == '\\'; --i) {
+					++backslash_count;
+				}
+				if (backslash_count % 2 == 0) {
+					// Found an un-escaped @ symbol
+					// Split the string at this position
+					std::string before = str.substr(0, pos);
+					std::string after = str.substr(pos + 1);
+					code.push_back(before);
+					code.push_back(bpp_reference(after));
+					str = after;
+					pos = 0;
+				} else {
+					// Escaped @ symbol
+					// Skip it
+					pos += 1;
+				}
+			}
+		}
+
+		// Operators
+		bpp_code& operator+=(const std::string& str) {
+			add_string(str);
+			return *this;
+		}
+
+		bpp_code& operator+=(const bpp_reference& ref) {
+			code.push_back(ref);
+			return *this;
+		}
+
+		bpp_code& operator+=(const bpp_code& other) {
+			code.insert(code.end(), other.code.begin(), other.code.end());
+			return *this;
+		}
 };
 
 class bpp_class_variable {
@@ -89,6 +214,49 @@ class bpp_class_variable {
 		// Get the variable scope
 		std::shared_ptr<bpp_object_scope> get_variable_scope() {
 			return variable_scope;
+		}
+};
+
+class bpp_class_method {
+	// A class method is a method declared within a class
+	// It has a name, a scope, and a body
+	// The scope determines where the method is accessible from
+	// The name is the method's identifier
+	// The body is the Bash++ code that the method executes
+	private:
+		std::string method_name;
+		std::shared_ptr<bpp_object_scope> method_scope;
+		bpp_code method_body;
+		std::vector<std::shared_ptr<bpp_class_variable>> method_parameters;
+
+	public:
+		// Constructor
+		bpp_class_method(const std::string& name, std::shared_ptr<bpp_object_scope> scope, bpp_code body) 
+			: method_name(name), method_scope(scope), method_body(body) {}
+
+		// Get the method name
+		std::string get_method_name() {
+			return method_name;
+		}
+
+		// Get the method scope
+		std::shared_ptr<bpp_object_scope> get_method_scope() {
+			return method_scope;
+		}
+
+		// Get the method body
+		bpp_code get_method_body() {
+			return method_body;
+		}
+
+		// Get the method parameters
+		std::vector<std::shared_ptr<bpp_class_variable>> get_method_parameters() {
+			return method_parameters;
+		}
+
+		// Add a parameter to the method
+		void add_parameter(std::shared_ptr<bpp_class_variable> parameter) {
+			method_parameters.push_back(parameter);
 		}
 };
 
@@ -263,14 +431,14 @@ class bpp_object : public std::enable_shared_from_this<bpp_object> {
 
 		// Instantiation of this object in a Bash++ program
 		// We need to call its constructor (if present), as well as any constructors of its data members
-		// The return value should be a std::string containing the Bash code to instantiate the object
+		// The return value should be the Bash code to instantiate the object
 		// Since Bash++ is a source-to-source compiler
-		std::string instantiate() {
-			std::string code;
+		bpp_code instantiate() {
+			bpp_code code;
 			
 			// Call the constructor
 			if (object_type->get_constructor()) {
-				code += object_type->get_constructor()->constructor_body;
+				code += object_type->get_constructor()->get_method_body();
 			}
 
 			for (auto& data_member : data_members) {

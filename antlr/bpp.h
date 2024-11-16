@@ -143,6 +143,11 @@ class bpp_class {
 
 		// Set the constructor
 		void set_constructor(std::shared_ptr<bpp_class_method> constructor) {
+			// Make sure the method given can actually be a constructor
+			// Ie, it doesn't take any parameters
+			if (constructor->get_method_parameters().size() > 0) {
+				throw std::runtime_error("Constructor cannot take parameters");
+			}
 			this->constructor = constructor;
 		}
 

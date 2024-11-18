@@ -53,6 +53,13 @@ class bpp_reference {
 			reference = variant_ref{};
 		}
 
+		bpp_reference(std::string name, std::shared_ptr<bpp_object_scope> scope) {
+			reference_name = name;
+			resolved = false;
+			reference = variant_ref{};
+			resolve(scope);
+		}
+
 		std::string get_reference_name() const {
 			return reference_name;
 		}
@@ -130,6 +137,15 @@ class bpp_code {
 	public:
 		// Constructor
 		bpp_code() {}
+
+		explicit bpp_code(std::string code) {
+			add_string(code);
+		}
+
+		bpp_code(std::string code, std::shared_ptr<bpp_object_scope> scope) {
+			add_string(code);
+			resolve_references(scope);
+		}
 		
 		// Add a string to the code
 		void add_string(std::string str) {
@@ -175,6 +191,18 @@ class bpp_code {
 		bpp_code& operator+=(const bpp_code& other) {
 			code.insert(code.end(), other.code.begin(), other.code.end());
 			return *this;
+		}
+
+		void resolve_references(std::shared_ptr<bpp_object_scope> scope) {
+			// Resolve all references in the code
+			for (auto& item : code) {
+				if (std::holds_alternative<bpp_reference>(item)) {
+					auto ref = std::get<bpp_reference>(item);
+					if (!ref.is_resolved()) {
+						ref.resolve(scope);
+					}
+				}
+			}
 		}
 };
 
@@ -257,6 +285,15 @@ class bpp_class_method {
 		// Add a parameter to the method
 		void add_parameter(std::shared_ptr<bpp_class_variable> parameter) {
 			method_parameters.push_back(parameter);
+		}
+
+		void set_method_body(bpp_code body) {
+			method_body = body;
+		}
+
+		void set_method_body(std::string body_string) {
+			bpp_code body(body_string, method_scope);
+			method_body = body;
 		}
 };
 

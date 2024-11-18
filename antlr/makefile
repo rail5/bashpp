@@ -5,3 +5,4 @@ all:
 clean:
 	rm -rf out
 	rm -f BashppParser
+	rm -rf .antlr

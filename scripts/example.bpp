@@ -5,7 +5,7 @@
 @class ExampleClass {
 	@public property1 # This is a comment and should be ignored
 	@public @method initialize value {
-		property1 = value
+		property1=value
 	}
 }
 

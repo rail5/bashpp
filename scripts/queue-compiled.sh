@@ -1,106 +1,91 @@
 #!/usr/bin/env bash
 
 function bpp_Node_new() {
-    local objectName="$1"
-    eval "bpp_Node_${objectName}_data=''"
-    eval "bpp_Node_${objectName}_prev='nullptr'"
-    eval "bpp_Node_${objectName}_next='nullptr'"
+	local objectName="$1"
+	eval "bpp_Node_${objectName}_data=''"
+	eval "bpp_Node_${objectName}_next='nullptr'"
 }
 
 function bpp_Queue_new() {
-    local objectName="$1"
-    eval "bpp_Queue_${objectName}_queueHead='nullptr'"
-    eval "bpp_Queue_${objectName}_queueTail='nullptr'"
-    eval "bpp_Queue_${objectName}_size=0"
+	local objectName="$1"
+	eval "bpp_Queue_${objectName}_queueHead='nullptr'"
+	eval "bpp_Queue_${objectName}_queueTail='nullptr'"
+	eval "bpp_Queue_${objectName}_size=0"
 }
 
 function bpp_Queue_enqueue() {
-    if [[ $# -ne 2 ]]; then
-        echo "Bash++: Invalid number of arguments passed to @Queue.enqueue"
-        echo "(Expected 1, got $(($# - 1)))"
-        exit 1
-    fi
-    local objectName="$1" data="$2"
-    local queueHeadVar="bpp_Queue_${objectName}_queueHead"
-    local queueTailVar="bpp_Queue_${objectName}_queueTail"
-    local sizeVar="bpp_Queue_${objectName}_size"
-    local queueHead="${!queueHeadVar}"
-    local queueTail="${!queueTailVar}"
-    local size="${!sizeVar}"
+	if [[ $# -ne 2 ]]; then
+		echo "Bash++: Invalid number of arguments passed to @Queue.enqueue"
+		echo "(Expected 1, got $(($# - 1)))"
+		exit 1
+	fi
+	local objectName="$1" data="$2"
+	local queueHeadVar="bpp_Queue_${objectName}_queueHead"
+	local queueTailVar="bpp_Queue_${objectName}_queueTail"
+	local sizeVar="bpp_Queue_${objectName}_size"
+	local queueHead="${!queueHeadVar}"
+	local queueTail="${!queueTailVar}"
+	local size="${!sizeVar}"
 
-    if [[ "$queueHead" == "nullptr" ]]; then
-        local newNode="node${size}"
-        bpp_Node_new "$newNode"
-        eval "${queueHeadVar}='$newNode'"
-        eval "${queueTailVar}='$newNode'"
-        eval "bpp_Node_${newNode}_data='$data'"
-    else
-        local newNode="node${size}"
-        bpp_Node_new "$newNode"
-        eval "bpp_Node_${queueTail}_next='$newNode'"
-        eval "bpp_Node_${newNode}_prev='$queueTail'"
-        eval "bpp_Node_${newNode}_data='$data'"
-        eval "${queueTailVar}='$newNode'"
-    fi
-    eval "${sizeVar}=$((size + 1))"
+	if [[ "$size" -eq 0 ]]; then
+		local newNode="node${size}"
+		bpp_Node_new "$newNode"
+		eval "${queueHeadVar}='$newNode'"
+		eval "${queueTailVar}='$newNode'"
+		eval "bpp_Node_${newNode}_data='$data'"
+	else
+		local newNode="node${size}"
+		bpp_Node_new "$newNode"
+		eval "bpp_Node_${queueTail}_next='$newNode'"
+		eval "bpp_Node_${newNode}_data='$data'"
+		eval "${queueTailVar}='$newNode'"
+	fi
+	eval "${sizeVar}=$((size + 1))"
 }
 
 function bpp_Queue_dequeue() {
-    if [[ $# -ne 1 ]]; then
-        echo "Bash++: Invalid number of arguments passed to @Queue.dequeue"
-        echo "(Expected 0, got $(($# - 1)))"
-        exit 1
-    fi
-    local objectName="$1"
-    local queueHeadVar="bpp_Queue_${objectName}_queueHead"
-    local sizeVar="bpp_Queue_${objectName}_size"
-    local queueHead="${!queueHeadVar}"
-    local size="${!sizeVar}"
+	if [[ $# -ne 1 ]]; then
+		echo "Bash++: Invalid number of arguments passed to @Queue.dequeue"
+		echo "(Expected 0, got $(($# - 1)))"
+		exit 1
+	fi
+	local objectName="$1"
+	local queueHeadVar="bpp_Queue_${objectName}_queueHead"
+	local sizeVar="bpp_Queue_${objectName}_size"
+	local queueHead="${!queueHeadVar}"
+	local size="${!sizeVar}"
 
-    if [[ "$size" -eq 0 ]]; then
-        return
-    fi
+	if [[ "$size" -eq 0 ]]; then
+		return
+	fi
 
-    local nextNodeVar="bpp_Node_${queueHead}_next"
-    local nextNode="${!nextNodeVar}"
-    local dataVar="bpp_Node_${queueHead}_data"
-    local data="${!dataVar}"
+	local nextNodeVar="bpp_Node_${queueHead}_next"
+	local nextNode="${!nextNodeVar}"
+	local dataVar="bpp_Node_${queueHead}_data"
+	local data="${!dataVar}"
 
-    eval "unset bpp_Node_${queueHead}_data"
-    eval "unset bpp_Node_${queueHead}_prev"
-    eval "unset bpp_Node_${queueHead}_next"
-    eval "${queueHeadVar}='$nextNode'"
-    eval "${sizeVar}=$((size - 1))"
-    echo "$data"
+	eval "unset bpp_Node_${queueHead}_data"
+	eval "unset bpp_Node_${queueHead}_next"
+	eval "${queueHeadVar}='$nextNode'"
+	eval "${sizeVar}=$((size - 1))"
+	echo "$data"
 }
 
 function bpp_Queue_isEmpty() {
-    if [[ $# -ne 1 ]]; then
-        echo "Bash++: Invalid number of arguments passed to @Queue.isEmpty"
-        echo "(Expected 0, got $(($# - 1)))"
-        exit 1
-    fi
-    local objectName="$1"
-    local sizeVar="bpp_Queue_${objectName}_size"
-    local size="${!sizeVar}"
+	if [[ $# -ne 1 ]]; then
+		echo "Bash++: Invalid number of arguments passed to @Queue.isEmpty"
+		echo "(Expected 0, got $(($# - 1)))"
+		exit 1
+	fi
+	local objectName="$1"
+	local sizeVar="bpp_Queue_${objectName}_size"
+	local size="${!sizeVar}"
 
-    if [[ "$size" -eq 0 ]]; then
-        echo "true"
-    else
-        echo "false"
-    fi
-}
-
-function bpp_Queue_getSize() {
-    if [[ $# -ne 1 ]]; then
-        echo "Bash++: Invalid number of arguments passed to @Queue.getSize"
-        echo "(Expected 0, got $(($# - 1)))"
-        exit 1
-    fi
-    local objectName="$1"
-    local sizeVar="bpp_Queue_${objectName}_size"
-    local size="${!sizeVar}"
-    echo "$size"
+	if [[ "$size" -eq 0 ]]; then
+		echo "true"
+	else
+		echo "false"
+	fi
 }
 
 bpp_Queue_new "testQueue"

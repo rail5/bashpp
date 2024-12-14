@@ -1,6 +1,5 @@
 @class Node {
 	@public data
-	@public @Node* prev=@nullptr
 	@public @Node* next=@nullptr
 }
 
@@ -10,7 +9,7 @@
 	@private size=0
 	
 	@public @method enqueue data {
-		if [[ @queueHead == @nullptr ]]; then
+		if [[ $size -eq 0 ]]; then
 			@queueHead=@new Node
 			@queueHead.data="$data"
 			@queueTail=@queueHead
@@ -28,7 +27,7 @@
 		fi
 		@Node* upNext=@queueHead.next
 		data="@queueHead.data"
-		@free @queueHead
+		@delete @queueHead
 		@queueHead=@upNext
 		size=$((size - 1))
 		echo "$data"

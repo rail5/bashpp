@@ -1,0 +1,58 @@
+@class Node {
+	@public data
+	@public @Node* prev=@nullptr
+	@public @Node* next=@nullptr
+}
+
+@class Queue {
+	@private @Node* queueHead=@nullptr
+	@private @Node* queueTail=@nullptr
+	@private size=0
+	
+	@public @method enqueue data {
+		if [[ @queueHead == @nullptr ]]; then
+			@queueHead=@new Node
+			@queueHead.data="$data"
+			@queueTail=@queueHead
+		else
+			@Node* anotherNode=@new Node
+			@queueTail.next=@anotherNode
+			@queueTail=@queueTail.next
+		fi
+		size=$((size + 1))
+	}
+	
+	@public @method dequeue {
+		if [[ $size -eq 0 ]]; then
+			return
+		fi
+		@Node* upNext=@queueHead.next
+		data="@queueHead.data"
+		@free @queueHead
+		@queueHead=@upNext
+		size=$((size - 1))
+		echo "$data"
+	}
+	
+	@public @method isEmpty {
+		if [[ $size -eq 0 ]]; then
+			echo "true"
+		else
+			echo "false"
+		fi
+	}
+	
+	@public @method getSize {
+		echo "$size"
+	}
+}
+
+@Queue testQueue
+@testQueue.enqueue "a"
+@testQueue.enqueue "b"
+@testQueue.enqueue "c"
+
+while [[ @testQueue.isEmpty != "true" ]]; do
+	@testQueue.dequeue
+done
+

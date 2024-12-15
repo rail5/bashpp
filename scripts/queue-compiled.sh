@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-function bpp_Node_new() {
+function bpp_Node__new() {
 	local objectName="$1"
 	eval "bpp_Node_${objectName}_data=''"
 	eval "bpp_Node_${objectName}_next='nullptr'"
 }
 
-function bpp_Queue_new() {
+function bpp_Queue__new() {
 	local objectName="$1"
 	eval "bpp_Queue_${objectName}_queueHead='nullptr'"
 	eval "bpp_Queue_${objectName}_queueTail='nullptr'"
@@ -29,13 +29,13 @@ function bpp_Queue_enqueue() {
 
 	if [[ "$size" -eq 0 ]]; then
 		local newNode="node${size}"
-		bpp_Node_new "$newNode"
+		bpp_Node__new "$newNode"
 		eval "${queueHeadVar}='$newNode'"
 		eval "${queueTailVar}='$newNode'"
 		eval "bpp_Node_${newNode}_data='$data'"
 	else
 		local newNode="node${size}"
-		bpp_Node_new "$newNode"
+		bpp_Node__new "$newNode"
 		eval "bpp_Node_${queueTail}_next='$newNode'"
 		eval "bpp_Node_${newNode}_data='$data'"
 		eval "${queueTailVar}='$newNode'"
@@ -88,7 +88,7 @@ function bpp_Queue_isEmpty() {
 	fi
 }
 
-bpp_Queue_new "testQueue"
+bpp_Queue__new "testQueue"
 bpp_Queue_enqueue "testQueue" "a"
 bpp_Queue_enqueue "testQueue" "b"
 bpp_Queue_enqueue "testQueue" "c"

@@ -6,11 +6,11 @@ function bpp_Object__new() {
 }
 
 function bpp_Object__copy() {
-	local originalObjectName="$1" newObjectName="$2"
-	local originalObject_dataVar="bpp_Object_${originalObjectName}_data"
-	local newObject_dataVar="bpp_Object_${newObjectName}_data"
-	local originalObject_data="${!originalObject_dataVar}"
-	eval "$newObject_dataVar='$originalObject_data'"
+	local copyFrom="$1" copyTo="$2"
+	local copyFrom_dataVar="bpp_Object_${copyFrom}_data"
+	local copyTo_dataVar="bpp_Object_${copyTo}_data"
+	local copyTo_data="${!copyFrom_dataVar}"
+	eval "$copyTo_dataVar='$copyTo_data'"
 }
 
 function bpp_Object__delete() {

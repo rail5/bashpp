@@ -9,32 +9,32 @@
 	@private size=0
 	
 	@public @method enqueue data {
-		if [[ $size -eq 0 ]]; then
-			@queueHead=@new Node
-			@queueHead.data="$data"
-			@queueTail=@queueHead
+		if [[ @this.size -eq 0 ]]; then
+			@this.queueHead=@new Node
+			@this.queueHead.data="$data"
+			@this.queueTail=@this.queueHead
 		else
 			@Node* anotherNode=@new Node
-			@queueTail.next=@anotherNode
-			@queueTail=@queueTail.next
+			@this.queueTail.next=@anotherNode
+			@this.queueTail=@this.queueTail.next
 		fi
-		size=$((size + 1))
+		@this.size=$((@this.size + 1))
 	}
 	
 	@public @method dequeue {
-		if [[ $size -eq 0 ]]; then
+		if [[ @this.size -eq 0 ]]; then
 			return
 		fi
-		@Node* upNext=@queueHead.next
-		data="@queueHead.data"
-		@delete @queueHead
-		@queueHead=@upNext
-		size=$((size - 1))
+		@Node* upNext=@this.queueHead.next
+		data="@this.queueHead.data"
+		@delete @this.queueHead
+		@this.queueHead=@upNext
+		@this.size=$((@this.size - 1))
 		echo "$data"
 	}
 	
 	@public @method isEmpty {
-		if [[ $size -eq 0 ]]; then
+		if [[ @this.size -eq 0 ]]; then
 			echo "true"
 		else
 			echo "false"
@@ -42,7 +42,7 @@
 	}
 	
 	@public @method getSize {
-		echo "$size"
+		echo "@this.size"
 	}
 }
 

@@ -1,0 +1,50 @@
+#!/usr/bin/env bpp
+
+# Bash++ knows of two types:
+## Primitives
+## Objects
+# "Primitives" are plain-old Bash variables.
+# Objects are instances of classes
+# What if we wanted to handle an object as if it was a primitive?
+
+@class Object {
+	@private innerDataMember="default value" # This data member is a primitive
+	
+	@public @method display {
+		echo "@this.innerDataMember"
+	}
+	
+	@public @method update newValue {
+		# This method takes "newValue" as an argument, which is expected to be a primitive
+		@this.innerDataMember="$newValue"
+	}
+	# No "toPrimitive" method is defined in this class.
+	# Therefore, the default "toPrimitive" method will be used
+}
+
+@class ObjectWithCasting {
+	@private @Object outerDataMember=@new Object # This data member is non-primitive
+	
+	@public @method update newValue {
+		@this.outerDataMember.update "$newValue"
+	}
+	
+	@public @method update @Object newValue {
+		# This (overloaded) method takes a non-primitive object as an argument
+		@delete @this.outerDataMember
+		@this.outerDataMember=@newValue
+	}
+	
+	@public @method toPrimitive {
+		# This overrides the default "toPrimitive" method
+		@this.outerDataMember.display
+	}
+}
+
+@Object testObject1
+@testObject1.update "Test Object #1"
+echo "@testObject1" # Echoes "Object Instance" (default toPrimitive method)
+
+@ObjectWithCasting testObject2
+@testObject2.update "Test Object #2"
+echo "@testObject2" # Echoes "Test Object #2" (using the overridden toPrimitive method)

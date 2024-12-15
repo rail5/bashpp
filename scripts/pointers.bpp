@@ -1,0 +1,37 @@
+#!/usr/bin/env bpp
+
+# Demonstration of pointers in Bash++
+
+@class Object {
+	@public data="default value for primitive data member"
+}
+
+# Declarations
+@Object testObject1 # Direct instantiation (no usage of pointers)
+@Object* testObject2 # Declaration of a pointer (object not instantiated)
+@Object* testObject3=@new Object # Declaration + instantiation
+@Object* testObject3Copy=@testObject3 # Copy of a pointer to another place
+	# Now we have two pointers to the same object
+@Object testObject4=*@testObject3 # Dereferencing testObject3 pointer, copy to testObject4
+@Object* testObject5=&@testObject4 # Pointer to the address of testObject4
+
+# Usages
+echo "@testObject1.data" # Outputs default value
+echo "@testObject2.data" # Error! Pointer doesn't point to anything
+
+@testObject3.data="new value for object number 3"
+echo "@testObject3.data" # Outputs the new value we just gave it
+echo "@testObject3Copy.data" # Outputs the same as above -- both testObject3 and testObject3Copy point to the same Object
+
+echo "@testObject4.data" # Outputs default value -- we copied #3 to this one *before* we changed #3's value, and this is a separate object
+echo "@testObject5.data" # This is a pointer to testObject4 -- same as above
+
+# Freeing memory
+@delete @testObject1 # No problem, even though testObject1 is not a pointer
+@delete @testObject2 # Nothing to delete -- the pointer doesn't point anywhere
+@delete @testObject3 # No problem -- clearing the memory pointed to by this pointer
+@delete @testObject3Copy # Nothing to delete -- this points to the same thing we just cleared!
+@delete @testObject4
+@delete @testObject5 # Same here.
+
+echo "@testObject1.data" # Error! We've cleared that memory, man!

@@ -1,51 +1,84 @@
 #!/usr/bin/env bash
 
-function bpp_Object__new() {
+function bpp__Object____new() {
+	local objectName="$1" setPtr="$2"
+	if [[ "$objectName" == "" ]]; then
+		while : ; do
+			objectName="$RANDOM$RANDOM$RANDOM$RANDOM"
+			local exemplaryDataMember="bpp__Object__${objectName}__data"
+			[[ -z ${!exemplaryDataMember+x} ]] && break
+		done
+	fi
+	eval "bpp__Object__${objectName}__data=\"default value for primitive data member\""
+	if [[ ! -z "$setPtr" ]]; then
+		eval "$setPtr=\"bpp__Object__${objectName}\""
+	fi
+}
+
+function bpp__Object____delete() {
+	local objectName="$1" isPtr="$2"
+	local objectAddress="bpp__Object__${objectName}"
+	if [[ "$isPtr" -eq 1 ]]; then
+		objectAddress="${objectName}"
+	fi
+	eval "unset ${objectAddress}__data"
+}
+
+function bpp__Object____getAddress() {
 	local objectName="$1"
-	eval "bpp_Object_${objectName}_data='default value for primitive data member'"
+	echo "bpp__Object__${objectName}"
 }
 
-function bpp_Object__copy() {
-	local copyFrom="$1" copyTo="$2"
-	local copyFrom_dataVar="bpp_Object_${copyFrom}_data"
-	local copyTo_dataVar="bpp_Object_${copyTo}_data"
-	local copyTo_data="${!copyFrom_dataVar}"
-	eval "$copyTo_dataVar='$copyTo_data'"
+function bpp__Object____copy() {
+	local copyFrom="$1" copyTo="$2" copyFromIsPtr="$3" copyToIsPtr="$4"
+	local copyFrom__data="bpp__Object__${copyFrom}__data" copyTo__data="bpp__Object__${copyTo}__data"
+	if [[ "$copyFromIsPtr" -eq 1 ]]; then
+		copyFrom__data="${copyFrom}__data"
+	fi
+	if [[ "$copyToIsPtr" -eq 1 ]]; then
+		copyTo__data="${copyTo}__data"
+	fi
+	eval "$copyTo__data=\"${!copyFrom__data}\""
 }
 
-function bpp_Object__delete() {
+function bpp__Object__toPrimitive() {
 	local objectName="$1"
-	eval "unset bpp_Object_${objectName}_data"
+	echo "Object Instance"
 }
 
-bpp_Object__new "testObject1"
-bpp__ptr_Object_testObject2="nullptr"
-bpp_Object__new "testObject3"
-bpp__ptr_Object_testObject3="testObject3"
-bpp__ptr_Object_testObject3Copy="testObject3"
-bpp_Object__copy "$bpp__ptr_Object_testObject3" "testObject4"
-bpp__ptr_Object_testObject5="testObject4"
+bpp__Object____new "testObject1"
+bpp__ptr__Object__testObject2="nullptr"
+bpp__Object____new "" "bpp__ptr__Object__testObject3"
+bpp__ptr__Object__testObject3Copy="$bpp__ptr__Object__testObject3"
+bpp__Object____copy "$bpp__ptr__Object__testObject3" "testObject4" 1 0
+bpp__ptr__Object__testObject5="$(bpp__Object____getAddress "testObject4")"
 
-echo "$bpp_Object_testObject1_data"
-bpp__ptr_Object_testObject2_data="bpp_Object_${bpp__ptr_Object_testObject2}_data"
-echo "${!bpp__ptr_Object_testObject2_data}"
+echo "$bpp__Object__testObject1__data"
+# Implicit pointer dereference
+bpp__ptr__Object__testObject2__data="${bpp__ptr__Object__testObject2}__data"
+echo "${!bpp__ptr__Object__testObject2__data}"
+unset bpp__ptr__Object__testObject2__data
 
-bpp__ptr_Object_testObject3_data="bpp_Object_${bpp__ptr_Object_testObject3}_data"
-eval "$bpp__ptr_Object_testObject3_data='new value for object number 3'"
-echo "${!bpp__ptr_Object_testObject3_data}"
-bpp__ptr_Object_testObject3Copy_data="bpp_Object_${bpp__ptr_Object_testObject3Copy}_data"
-echo "${!bpp__ptr_Object_testObject3Copy_data}"
+# Implicit pointer dereference
+eval "${bpp__ptr__Object__testObject3}__data=\"new value for object number 3\""
+# Implicit pointer dereference
+bpp__ptr__Object__testObject3__data="${bpp__ptr__Object__testObject3}__data"
+echo "${!bpp__ptr__Object__testObject3__data}"
+unset bpp__ptr__Object__testObject3__data
+# Implicit pointer dereference
+bpp__ptr__Object__testObject3Copy__data="${bpp__ptr__Object__testObject3Copy}__data"
+echo "${!bpp__ptr__Object__testObject3Copy__data}"
+unset bpp__ptr__Object__testObject3__data
 
-echo "$bpp_Object_testObject4_data"
-bpp__ptr_Object_testObject5_data="bpp_Object_${bpp__ptr_Object_testObject5}_data"
-echo "${!bpp__ptr_Object_testObject5_data}"
+echo "$bpp__Object__testObject4__data"
+# Implicit pointer dereference
+bpp__ptr__Object__testObject5__data="${bpp__ptr__Object__testObject5}__data"
+echo "${!bpp__ptr__Object__testObject5__data}"
+unset bpp__ptr__Object__testObject5__data
 
-bpp_Object__delete "testObject1"
-bpp_Object__delete "$bpp__ptr_Object_testObject2"
-bpp_Object__delete "$bpp__ptr_Object_testObject3"
-bpp_Object__delete "$bpp__ptr_Object_testObject3Copy"
-bpp_Object__delete "testObject4"
-bpp_Object__delete "$bpp__ptr_Object_testObject5"
-
-echo "$bpp_Object_testObject1_data"
-
+bpp__Object____delete "testObject1" 0
+bpp__Object____delete "$bpp__ptr__Object__testObject2" 1
+bpp__Object____delete "$bpp__ptr__Object__testObject3" 1
+bpp__Object____delete "$bpp__ptr__Object__testObject3Copy" 1
+bpp__Object____delete "testObject4" 0
+bpp__Object____delete "$bpp__ptr__Object__testObject5" 1

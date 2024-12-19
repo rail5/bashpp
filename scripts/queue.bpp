@@ -15,6 +15,7 @@
 			@this.queueTail=@this.queueHead
 		else
 			@Node* anotherNode=@new Node
+			@anotherNode.data="$data"
 			@this.queueTail.next=@anotherNode
 			@this.queueTail=@this.queueTail.next
 		fi

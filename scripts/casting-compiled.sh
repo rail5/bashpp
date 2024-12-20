@@ -83,7 +83,7 @@ function bpp__ObjectWithCasting____new() {
 	# Means that when this object goes out of scope or is @delete'd,
 	# It will also delete the "object" it contains
 	# Whereas, if the data member was declared as a pointer,
-	# That memory would necessarily automatically be freed.
+	# That memory would not necessarily automatically be freed.
 	# Syntactically, this makes little difference,
 	# As pointers are IMPLICITLY dereferenced automatically. So a programmer using Bash++
 	# Can access the member functions and data members of a pointer using exactly

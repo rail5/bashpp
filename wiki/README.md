@@ -4,16 +4,16 @@
 
 ```bash
 @class Bashpp {
-	@public author="Andrew S. Rightenburg"
-	@public source="https://github.com/rail5/bashpp"
-	@public license="GNU GPL v3"
+    @public author="Andrew S. Rightenburg"
+    @public source="https://github.com/rail5/bashpp"
+    @public license="GNU GPL v3"
 
-	@public @method printInfo {
-		echo "Bash++ is a superset of Bash that adds support for classes and objects."
-		echo "It's designed to be a simple way to add object-oriented programming to Bash scripts."
-		echo "Author: @this.author"
-		echo "Source: @this.source"
-		echo "License: @this.license"
+    @public @method printInfo {
+        echo "Bash++ is a superset of Bash that adds support for classes and objects."
+        echo "It's designed to be a simple way to add object-oriented programming to Bash scripts."
+        echo "Author: @this.author"
+        echo "Source: @this.source"
+        echo "License: @this.license"
 	}
 }
 
@@ -21,12 +21,12 @@
 @myBashpp.printInfo
 ```
 
-Documentation:
+## Documentation
 
  - [Programming in Bash++](language.md)
  - [Using the Bash++ compiler](compiler.md)
 
-# License
+## License
 
 ![CC-BY-SA](https://licensebuttons.net/l/by-sa/3.0/88x31.png)
 

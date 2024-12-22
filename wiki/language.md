@@ -54,7 +54,7 @@ Classes are declared in Bash++ using the `@class` keyword. The class definition 
 }
 ```
 
-### But what if I want to use the `@` symbol for something else?
+## But what if I want to use the `@` symbol for something else?
 
 You can simply *escape* the `@` symbol using a backslash:
 
@@ -62,7 +62,7 @@ You can simply *escape* the `@` symbol using a backslash:
 echo "email\@address.com"
 ```
 
-## Data Members
+# Data Members
 
 Data members can be declared using the `@private` or `@public` keywords. If a data member is declared as `@public`, it can be accessed from outside the class. If it is declared as `@private`, it can only be accessed from within the class.
 
@@ -95,7 +95,7 @@ echo "@myObject.primitiveDataMember"
 echo "@myObject.nonPrimitiveDataMember.dataMember"
 ```
 
-## Methods
+# Methods
 
 Methods are the functions associated with the class; they're declared using the `@method` keyword. Methods can access both public and private data members of the class. A method can be declared as `@public` or `@private`, just like data members.
 
@@ -134,7 +134,7 @@ Further, methods can take *objects* as arguments:
 }
 ```
 
-## Constructors and Destructors
+# Constructors and Destructors
 
 Classes can have constructors and destructors, which are special methods that are called when an object is created and destroyed, respectively. Constructors are declared using the `@constructor` keyword, and destructors are declared using the `@destructor` keyword.
 
@@ -198,7 +198,7 @@ An object's destructor will be called if:
 @delete myObject
 ```
 
-## "toPrimitive" Object Casting
+# "toPrimitive" Object Casting
 
 In Bash++, every class has a method called `toPrimitive` that returns a string representation of the object. This method is called automatically when an object is used in a context where a primitive is expected.
 
@@ -234,7 +234,7 @@ echo "Object: @myObject" # Calls myObject.toPrimitive
 
 In this case, the script will output: `Object: MyClass instance with data member: Hello, world!`.
 
-## Inheritance
+# Inheritance
 
 Bash++ supports single inheritance. A class can inherit from another class using the following syntax:
 
@@ -258,7 +258,7 @@ Bash++ supports single inheritance. A class can inherit from another class using
 
 In this example, `DerivedClass` inherits from `BaseClass`. The derived class has access to the data members and methods of the base class. If a method is overridden in the derived class, the derived class's implementation will be used.
 
-## Pointers
+# Pointers
 
 Bash++ supports pointers to objects. A pointer is a reference to an object, rather than the object itself. Pointers are declared using the familiar C-style `*` syntax:
 
@@ -287,7 +287,7 @@ We don't have to explicitly dereference `myPointer` -- Bash++ does it for us. No
 
 Pointers themselves are considered primitives. Unfortunately, we're going to spend a moment discussing some of the *internals* of Bash++ to explain why this is the case. This is not ideal for a document describing how to *use* the language.
 
-### How objects are stored in Bash++
+## How objects are stored in Bash++
 
 Since Bash++ compiles to Bash, we don't have direct, unadulterated access to memory. We can't just allocate a block of memory and store our objects there. Instead, we have to use Bash's built-in data structures to store our objects.
 
@@ -313,7 +313,7 @@ When we create a pointer to an object, or ask about this object's "address," we'
 
 This is why pointers are considered primitives -- they're just strings that represent the "address" of an object.
 
-### `@new` and `@delete`
+## `@new` and `@delete`
 
 The `@new` keyword is used to create a new object and return a pointer to it. The `@delete` keyword is used to destroy an object and set the pointer to `@nullptr`.
 

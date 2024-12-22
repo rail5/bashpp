@@ -1,0 +1,50 @@
+#!/usr/bin/env bpp
+
+# Constructors and Destructors in Bash++
+
+@class Person {
+	@public name
+	
+	@constructor {
+		# Default constructor
+		@this.name="John Q. Public"
+		echo "First constructor called: @this.name" >> constructors-and-destructors.log
+	}
+	
+	@constructor name {
+		# Constructor taking 1 primitive argument
+		@this.name="$name"
+		echo "Second constructor called: @this.name" >> constructors-and-destructors.log
+	}
+	
+	@constructor @Person otherPerson {
+		# Constructor taking 1 argument of type Person
+		@this.name=@otherPerson.name
+		echo "Third constructor called: @this.name" >> constructors-and-destructors.log
+	}
+	
+	@destructor {
+		echo "Destructing @this.name" >> constructors-and-destructors.log
+	}
+}
+
+# A constructor (usually the default constructor) will automatically be called when an object of type Person is instantiated
+# The destructor will automatically be called if the object goes out of scope before the termination of the program
+# Destructors can be called prematurely using @object.destructor
+
+@Person john # Constructor called
+	# This object 'john' will not go out of scope before the program terminates
+	# Therefore the destructor will not be called automatically
+
+@Person mike "Michael J. Fox" # Second constructor called
+
+@class ScopeDemonstration {
+	@public @method call {
+		@Person mike2 @mike # Third constructor called within a method
+		# The moment this method finishes, 'mike2' goes out of scope, and the destructor is called automatically
+	}
+}
+
+@ScopeDemonstration demo
+@demo.call
+

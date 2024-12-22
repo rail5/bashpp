@@ -1,0 +1,54 @@
+#!/usr/bin/env bpp
+
+# Any decent object-oriented language should offer inheritance and polymorphism
+# How do we do it in Bash++?
+
+@class Animal {
+	@private height="60cm"
+	@private weight="30kg"
+	
+	@public @method updateHeight height {
+		@this.height="$height"
+	}
+	
+	@public @method updateWeight weight {
+		@this.weight="$weight"
+	}
+	
+	@virtual @public @method pet {
+		echo "You extend your hand to pet it, but the @this.height, @this.weight beast bares its teeth"
+	}
+}
+
+@class Dog : Animal {
+	@public @method pet {
+		echo "You pet the dog"
+	}
+}
+
+@class Lion : Animal {
+	@constructor {
+		@this.updateHeight "120cm"
+		@this.updateWeight "200kg"
+	}
+	
+	@public @method pet {
+		echo "You are devoured by the lion"
+		echo "...Why did you try to pet a @this.weight lion?"
+	}
+}
+
+@Animal animal
+@animal.pet # "You extend your hand to pet it, but the..."
+
+@Dog dog
+@dog.pet # "You pet the dog"
+
+@Lion lion1
+@lion1.pet # "You are devoured by the lion"
+
+@Lion* lion2=&@animal
+@lion2.pet # "You are devoured by the lion ...Why did you try to pet a 30kg lion?"
+	# Since the Lion constructor was never called
+	#   (we're just reinterpreting the address of an 'Animal' as a pointer to a 'Lion')
+	# The weight was never updated from 30kg

@@ -1,6 +1,7 @@
 ---
 layout: custom
 title: Programming in Bash++
+toc: true
 ---
 
 # Programming in Bash++

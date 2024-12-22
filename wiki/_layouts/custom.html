@@ -1,19 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ page.title }}</title>
-  <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}">
-</head>
-<body>
-  <div class="content">
-    <aside class="toc">
-      {{ content | toc }}
-    </aside>
-    <main>
-      {{ content }}
-    </main>
+---
+layout: base
+---
+<aside class="toc">
+  {{ content | toc }}
+</aside>
+<article class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">{{ page.title | escape }}</h1>
+  </header>
+
+  <div class="post-content">
+    {{ content }}
   </div>
-</body>
-</html>
+
+</article>

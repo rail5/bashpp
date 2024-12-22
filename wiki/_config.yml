@@ -10,3 +10,6 @@ titles_from_headings:
   enabled:     true
   strip_title: true
   collections: false
+header_pages:
+  - README.md
+  - download.md

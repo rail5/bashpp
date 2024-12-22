@@ -2,9 +2,9 @@ name: bashpp.rail5.org
 title: bashpp.rail5.org
 remote_theme: jekyll/minima
 plugins:
-- jekyll-remote-theme
-- jekyll-titles-from-headings
-- jekyll-toc
+  - jekyll-remote-theme
+  - jekyll-titles-from-headings
+  - jekyll-toc
 minima:
   skin: dark
 titles_from_headings:

@@ -337,4 +337,12 @@ We can also declare pointers as data members of a class:
 }
 ```
 
-If a pointer is a data member of a class, it will be set to `@nullptr` by default. A class's destructor will not automatically delete its pointer data members. If you want to delete a pointer data member, you must do so explicitly. If, however, a class contains non-primitive data members (which are not pointers), they will be automatically deleted when the object is destroyed.
+A class's destructor will not automatically delete its pointer data members. If you want to delete a pointer data member, you must do so explicitly. If, however, a class contains non-primitive data members (which are not pointers), they will be automatically deleted when the object is destroyed.
+
+All pointers are set to `@nullptr` by default until otherwise specified. For example:
+
+```bash
+@MyClass* myPointer1
+@MyClass* myPointer2=@nullptr # Same result as above
+@MyClass* myPointer3=@new @MyClass # Not @nullptr
+```

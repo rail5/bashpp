@@ -4,5 +4,6 @@ source "https://rubygems.org"
 gem "github-pages", group: :jekyll_plugins
 
 # Additional plugins
+gem "jekyll"
 gem "jekyll-titles-from-headings"
 gem "jekyll-toc"

@@ -19,34 +19,31 @@ permissions:
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+    cancel-in-progress: false
 
-jobs:
-  # Build job
-    build:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v3
-          with:
-            lfs: true
-        - name: Setup Ruby
-          uses: ruby/setup-ruby@v1
-          with:
-            ruby-version: '3.0'
-        - name: Install Bundler
-          run: gem install bundler
-        - name: Install dependencies from Gemfile
-          run: bundle install
-        - name: Setup Pages
-          uses: actions/configure-pages@v3
-        - name: Build with Jekyll
-          uses: actions/jekyll-build-pages@v1
-          with:
-            source: ./wiki
-            destination: ./_site
-        - name: Upload artifact
-          uses: actions/upload-pages-artifact@v2
+  jobs:
+    # Build job
+      build:
+        runs-on: ubuntu-latest
+        steps:
+          - name: Checkout
+            uses: actions/checkout@v3
+            with:
+              lfs: true
+          - name: Setup Ruby
+            uses: ruby/setup-ruby@v1
+            with:
+              ruby-version: '3.0'
+          - name: Install Bundler
+            run: gem install bundler
+          - name: Install dependencies from Gemfile
+            run: bundle install
+          - name: Setup Pages
+            uses: actions/configure-pages@v3
+          - name: Build with Jekyll
+            run: bundle exec jekyll build --source ./wiki --destination ./_site
+          - name: Upload artifact
+            uses: actions/upload-pages-artifact@v2
 
     # Deployment job
     deploy:

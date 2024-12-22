@@ -214,7 +214,7 @@ You can define a custom `toPrimitive` method for your class to return a more mea
 	@public dataMember="Hello, world!"
 
 	@public @method toPrimitive {
-		echo "MyClass instance with data member: @dataMember"
+		echo "MyClass instance with data member: @this.dataMember"
 	}
 }
 

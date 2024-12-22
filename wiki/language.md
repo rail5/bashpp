@@ -1,3 +1,8 @@
+---
+layout: custom
+title: Programming in Bash++
+---
+
 # Programming in Bash++
 
 Bash++ is a superset of Bash that adds support for object-oriented programming. Almost all Bash code is valid Bash++ code.

@@ -4,6 +4,7 @@ remote_theme: jekyll/minima
 plugins:
 - jekyll-remote-theme
 - jekyll-titles-from-headings
+- jekyll-toc
 minima:
   skin: dark
 titles_from_headings:
@@ -12,3 +13,17 @@ titles_from_headings:
   collections: false
 header_pages:
   - download.md
+toc:
+  min_level: 2
+  max_level: 5
+  list_number: false
+  no_toc_section_class: "no_toc"
+  list_class: "toc-list"
+  item_class: "toc-item"
+  sublist_class: "toc-sublist"
+  item_prefix: "toc-item-"
+  max_depth: 6
+  omit_leading_numbers: false
+  title: "Table of Contents"
+  heading: "On this page"
+  anchor_class: "anchor"

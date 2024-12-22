@@ -11,5 +11,4 @@ titles_from_headings:
   strip_title: true
   collections: false
 header_pages:
-  - README.md
   - download.md

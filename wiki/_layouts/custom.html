@@ -9,10 +9,10 @@
 
     <main class="page-content" aria-label="Content">
 	  <aside class="toc" style="float: left; width: 20%; margin-left: 5%; padding: 10px; border-right: 1px solid #ddd;">
-	    {{ content | toc }}
+	    {{ content | toc_only }}
 	  </aside>
       <div class="wrapper">
-        {{ content }}
+        {{ content | inject_anchors }}
       </div>
     </main>
 

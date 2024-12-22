@@ -1,3 +1,0 @@
-# Bash++: Overview
-
-TBD

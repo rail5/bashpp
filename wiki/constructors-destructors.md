@@ -1,1 +1,0 @@
-# Bash++: Constructors and Destructors

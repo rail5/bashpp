@@ -1,1 +1,0 @@
-# Bash++: Polymorphism and Inheritance

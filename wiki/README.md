@@ -10,7 +10,7 @@
 
   @public @method printInfo {
     echo "Bash++ is a superset of Bash that adds support for classes and objects."
-    echo "It's designed to be a simple way to add object-oriented programming to Bash scripts."
+    echo "It's designed to be a simple way to add object-orientation to Bash scripts."
     echo "Author: @this.author"
     echo "Source: @this.source"
     echo "License: @this.license"

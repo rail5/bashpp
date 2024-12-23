@@ -150,33 +150,7 @@ Classes can have constructors and destructors, which are special methods that ar
 }
 ```
 
-You can also define constructors that take arguments:
-
-```bash
-@class MyClass {
-	@constructor {
-		echo "Constructor called"
-	}
-
-	@constructor arg1 {
-		echo "Constructor called with arguments"
-		echo "Argument 1: $arg1"
-	}
-
-	@constructor arg1 arg2 {
-		echo "Constructor called with arguments"
-		echo "Argument 1: $arg1"
-		echo "Argument 2: $arg2"
-	}
-
-	@constructor @Object obj {
-		echo "Constructor called with object"
-		echo "Object data member: @obj.dataMember"
-	}
-}
-```
-
-Constructors can be overloaded, meaning that you can define multiple constructors with different numbers or types of arguments.
+An object's constructor will be called as soon as it is initialized.
 
 An object's destructor will be called if:
 

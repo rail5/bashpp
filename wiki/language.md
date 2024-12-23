@@ -327,6 +327,26 @@ When we create a pointer to an object, or ask about this object's "address," we'
 
 This is why pointers are considered primitives -- they're just strings that represent the "address" of an object.
 
+Because pointers are primitives, using a pointer in a context where a primitive would be expected will not call the `toPrimitive` method automatically, but will simply return the pointer. However, we can still call the `toPrimitive` method explicitly:
+
+```bash
+@class MyClass {
+	@public dataMember="Hello, world!"
+
+	@public @method toPrimitive {
+		echo "@this.dataMember"
+	}
+}
+
+@MyClass* myPointer=@new @MyClass # Declare a pointer
+echo "@myPointer" # Echoes the pointer
+echo "@myPointer.toPrimitive" # Calls the toPrimitive method
+
+@MyClass myObject # Declare an object (not a pointer)
+echo "@myObject" # Calls the toPrimitive method
+echo "@myObject.toPrimitive" # Also calls the toPrimitive method
+```
+
 ## `@new` and `@delete`
 
 The `@new` keyword is used to create a new object and return a pointer to it. The `@delete` keyword is used to destroy an object and set the pointer to `@nullptr`.

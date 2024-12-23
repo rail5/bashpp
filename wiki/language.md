@@ -154,9 +154,7 @@ An object's constructor will be called as soon as it is initialized.
 
 An object's destructor will be called if:
 
- - The object goes out of scope
-
- - We reach the end of the script (not if the script is terminated with `exit`)
+ - The object goes out of scope before the script ends (e.g., the object is local to a method or `{...}` block)
 
  - The object is explicitly destroyed using the `@delete` keyword
 

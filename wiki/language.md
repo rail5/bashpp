@@ -156,7 +156,7 @@ An object's destructor will be called if:
 
  - The object goes out of scope
 
- - The script exits
+ - We reach the end of the script (not if the script is terminated with `exit`)
 
  - The object is explicitly destroyed using the `@delete` keyword
 

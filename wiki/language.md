@@ -364,3 +364,22 @@ When writing `@new {some class}`, or `@delete {some object/pointer}`, the identi
 If a pointer is set to `@nullptr`, attempting to access a data member or method of the object it points to will result in an error.
 
 If a pointer is declared without being assigned a value, it is automatically set to `@nullptr`.
+
+# `@include` Directive
+
+The `@include` directive is used to include the contents of another Bash++ script in the current file. This is useful for splitting code into multiple files for better organization and reusability.
+
+```bash
+@include "file1.bpp" # Same working directory
+@include "/path/to/file.bpp" # Absolute path
+```
+
+The `@include` directive is processed at compile time, and the contents of the included file are inserted into the current file before compilation.
+
+Note that you can still include regular Bash scripts in a Bash++ script using the `source` command (or `.`):
+
+```bash
+source "script.sh"
+```
+
+However, scripts included with `source` or `.` will not be processed by the Bash++ compiler and will not have access to Bash++ features.

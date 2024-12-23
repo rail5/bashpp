@@ -64,7 +64,7 @@ echo "email\@address.com"
 
 # Data Members
 
-Data members can be declared using the `@private` or `@public` keywords. If a data member is declared as `@public`, it can be accessed from outside the class. If it is declared as `@private`, it can only be accessed from within the class.
+Data members can be declared using the `@private`, `@public` or `@protected` keywords. If a data member is declared as `@public`, it can be accessed from outside the class. If it is declared as `@private`, it can only be accessed from within the class. If it is declared as `@protected`, it can be accessed from within the class and from derived classes.
 
 Data members may be given default values, as shown in the example above. If no default value is provided, the data member will be initialized to an empty string.
 
@@ -97,7 +97,7 @@ echo "@myObject.nonPrimitiveDataMember.dataMember"
 
 # Methods
 
-Methods are the functions associated with the class; they're declared using the `@method` keyword. Methods can access both public and private data members of the class. A method can be declared as `@public` or `@private`, just like data members.
+Methods are the functions associated with the class; they're declared using the `@method` keyword. Methods can access both public and private data members of the class. A method can be declared as `@public`, `@private` or `@protected`, just like data members.
 
 Methods can also take arguments:
 
@@ -234,6 +234,20 @@ echo "Object: @myObject" # Calls myObject.toPrimitive
 
 In this case, the script will output: `Object: MyClass instance with data member: Hello, world!`.
 
+# `@this` Keyword
+
+The `@this` keyword is used to refer to the current object within a method. It is similar to the `this` keyword in other object-oriented languages.
+
+```bash
+@class MyClass {
+	@public dataMember="Hello, world!"
+
+	@public @method myMethod {
+		echo "Data member: @this.dataMember"
+	}
+}
+```
+
 # Inheritance
 
 Bash++ supports single inheritance. A class can inherit from another class using the following syntax:
@@ -346,3 +360,13 @@ All pointers are set to `@nullptr` by default until otherwise specified. For exa
 @MyClass* myPointer2=@nullptr # Same result as above
 @MyClass* myPointer3=@new @MyClass # Not @nullptr
 ```
+
+When writing `@new {some class}`, or `@delete {some object/pointer}`, the identifier which follows the `@new` or `@delete` keyword must be a class name or an object/pointer, respectively. It can be optionally preceded by an `@` symbol, but this is not required. `@new @MyClass` and `@new MyClass` are equivalent. `@delete @myObject` and `@delete myObject` are equivalent.
+
+## `@nullptr`
+
+`@nullptr` is a special value that represents a null pointer. It is used to indicate that a pointer does not point to any object.
+
+If a pointer is set to `@nullptr`, attempting to access a data member or method of the object it points to will result in an error.
+
+If a pointer is declared without being assigned a value, it is automatically set to `@nullptr`.

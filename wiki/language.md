@@ -206,6 +206,42 @@ echo "Object: @myObject" # Calls myObject.toPrimitive
 
 In this case, the script will output: `Object: MyClass instance with data member: Hello, world!`.
 
+# Object References
+
+When referencing an object, you use the `@` symbol followed by the object's name. This is similar to how you would reference a variable in Bash.
+
+To reference an object's data member or method, you use the `@` symbol followed by the object's name, a dot (`.`), and the data member or method name.
+
+```bash
+@MyClass myObject
+@myObject.dataMember="Hello, world!"
+echo "@myObject.dataMember"
+```
+
+There may be ambiguity when using the `@` symbol in a string. To avoid this, you can use the `@{}` syntax to explicitly reference an object. This is similar to the `${}` syntax used in Bash to reference variables in situations where there may be ambiguity. For example, suppose we want to echo the data member of an object:
+
+```bash
+@class MyClass {
+	@public dataMember="Data Member"
+	@public @method toPrimitive {
+		echo "object"
+	}
+}
+
+@MyClass myObject
+echo "@myObject.dataMember" # Prints "Data Member"
+```
+
+This will unambiguously reference `dataMember` belonging to `myObject`. However, suppose what we *really* wanted to do was print the result of `myObject.toPrimitive` followed by the **string** `.dataMember`. We can use the `@{}` syntax to do this:
+
+```bash
+echo "@{myObject}.dataMember" # Prints "object.dataMember"
+```
+
+Here, we used the `@{}` syntax to explicitly reference `myObject` as an object, without interpreting the characters that followed it as part of the object reference.
+
+This is identical to the `${}` syntax used in Bash to reference variables in situations where there may otherwise be ambiguity.
+
 # `@this` Keyword
 
 The `@this` keyword is used to refer to the current object within a method. It is similar to the `this` keyword in other object-oriented languages.

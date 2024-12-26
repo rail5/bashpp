@@ -452,13 +452,14 @@ The above will run `@myObject.myMethod` in a *supershell*, allowing it to make c
 
 ```bash
 command_output="@myObject.myMethod"
-command_output=@(@myObject.myMethod) # These two are exactly equivalent, both run in supershells and can therefore make changes to the environment
+command_output=@(@myObject.myMethod) # These two are exactly equivalent,
+                                     # both run in supershells and can
+									 # therefore make changes to the environment
 ```
 
 If, by contrast, we were to run the method in an ordinary *subshell*:
 
 ```bash
-
 command_output=$(@myObject.myMethod)
 ```
 

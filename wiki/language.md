@@ -475,6 +475,13 @@ function regular_bash_function() {
 	echo "Hello from an ordinary Bash function"
 }
 
+# Using a Bash subshell:
+echo "Initial value of regular_bash_variable: $regular_bash_variable" # "abc"
+command_output=$(regular_bash_function)
+echo "New value of regular_bash_variable: $regular_bash_variable" # Still "abc", unchanged
+echo "Command output: $command_output" # "Hello from an ordinary Bash function"
+
+# Using a Bash++ supershell:
 echo "Initial value of regular_bash_variable: $regular_bash_variable" # "abc"
 command_output=@(regular_bash_function)
 echo "New value of regular_bash_variable: $regular_bash_variable" # "123"

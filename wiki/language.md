@@ -13,7 +13,7 @@ The rules for identifiers in Bash++ are almost identical to those in Bash.
 
 In Bash, an identifier is a sequence of letters, digits, or underscores that begins with a letter or underscore. Identifiers are case-sensitive.
 
-In Bash++, the same rules apply, with the small and somewhat inconvenient exception that identifiers cannot contain two consecutive underscores. This is because of how Bash++ works internally (see the section on pointers for more information). The takeaway is that `my_object`, `_myObject`, and `myObject_` are all valid identifiers, but `my__object`, `my______object`, and `_________` are not.
+In Bash++, the same rules apply, with the small and somewhat inconvenient exception that identifiers cannot contain two consecutive underscores. This is because of how Bash++ works internally (see the section on pointers for more information). The takeaway is that `my_object`, `_myObject`, and `_my_Object_` are all valid identifiers, but `my__object`, `my______object`, and `_________` are not.
 
 # Classes
 
@@ -143,7 +143,6 @@ Classes can have constructors and destructors, which are special methods that ar
 	@constructor {
 		echo "Constructor called"
 	}
-
 	@destructor {
 		echo "Destructor called"
 	}
@@ -154,7 +153,7 @@ An object's constructor will be called as soon as it is initialized.
 
 An object's destructor will be called if:
 
- - The object goes out of scope before the script ends (e.g., the object is local to a method or `{...}` block)
+ - The object goes out of scope before the script ends (e.g., the object is local to a method)
 
  - The object is explicitly destroyed using the `@delete` keyword
 
@@ -164,9 +163,7 @@ An object's destructor will be called if:
 		echo "Destructor called"
 	}
 }
-
 @MyClass myObject
-
 @delete myObject
 ```
 
@@ -177,7 +174,6 @@ In Bash++, every class has a method called `toPrimitive` that returns a string r
 ```bash
 @class MyClass {
 	@public dataMember="Hello, world!"
-
 	# No custom toPrimitive method is defined here
 }
 
@@ -423,8 +419,6 @@ var=$(command)
 ```
 
 This is perfectly reasonable. However, with Bash++ methods, we may like to store the output of a method in a variable, while also *allowing* the method to make changes to the environment. This is where the "supershell" comes in.
-
-Bash++ introduces the concept of a "supershell," which is used similarly to a subshell but retains changes to the environment made within it.
 
 ```bash
 var=@(command)

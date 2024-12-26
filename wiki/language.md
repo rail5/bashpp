@@ -411,3 +411,71 @@ source "script.sh"
 ```
 
 However, scripts included with `source` or `.` will not be processed by the Bash++ compiler and will not have access to Bash++ features.
+
+# Supershells
+
+Ordinary Bash supports a construct called a "subshell," which is created by enclosing a command in parentheses. A subshell is a separate instance of the shell that runs the commands within it. When the subshell exits, any changes to the environment made within it are lost.
+
+Subshells are generally useful when you want to run a command in a separate environment or when you want to isolate changes to the environment. But, another common use for subshells is simply to store the output of a command in a variable:
+
+```bash
+var=$(command)
+```
+
+This is perfectly reasonable. However, with Bash++ methods, we may like to store the output of a method in a variable, while also *allowing* the method to make changes to the environment. This is where the "supershell" comes in.
+
+Bash++ introduces the concept of a "supershell," which is used similarly to a subshell but retains changes to the environment made within it.
+
+```bash
+var=@(command)
+```
+
+As you can see from the above, the syntax is very similar. The only difference is the use of the `@` symbol instead of the `$`. This allows us to store the output of a command, function, or method into a variable, while also preserving changes that that command, function, or method makes to the environment.
+
+By default, calling an object's method in a context where a primitive is expected will run the method inside of a supershell. For example:
+
+```bash
+@class MyClass {
+	@public dataMember="Default value"
+	@public @method myMethod {
+		@this.dataMember="New value"
+		echo "Hello from myMethod"
+	}
+}
+
+@MyClass myObject
+command_output="@myObject.myMethod"
+echo "$command_output"
+```
+
+The above will run `@myObject.myMethod` in a *supershell*, allowing it to make changes to the environment. The output of the method will be stored in `command_output`, and the value of `dataMember` will be changed to "New value."
+
+```bash
+command_output="@myObject.myMethod"
+command_output=@(@myObject.myMethod) # These two are exactly equivalent, both run in supershells and can therefore make changes to the environment
+```
+
+If, by contrast, we were to run the method in an ordinary *subshell*:
+
+```bash
+
+command_output=$(@myObject.myMethod)
+```
+
+The output of the command would be stored, but `@myObject.dataMember` would not be changed.
+
+You can also run ordinary commands and Bash functions in supershells, allowing them to make changes to the environment as well. For example:
+
+```bash
+regular_bash_variable="abc"
+
+function regular_bash_function() {
+	regular_bash_variable="123"
+	echo "Hello from an ordinary Bash function"
+}
+
+echo "Initial value of regular_bash_variable: $regular_bash_variable" # "abc"
+command_output=@(regular_bash_function)
+echo "New value of regular_bash_variable: $regular_bash_variable" # "123"
+echo "Command output: $command_output" # "Hello from an ordinary Bash function"
+```

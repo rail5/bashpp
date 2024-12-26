@@ -487,3 +487,9 @@ command_output=@(regular_bash_function)
 echo "New value of regular_bash_variable: $regular_bash_variable" # "123"
 echo "Command output: $command_output" # "Hello from an ordinary Bash function"
 ```
+
+If you would like to isolate an object's method from the surrounding environment, you can still call it within a subshell:
+
+```bash
+command_output=$(@myObject.myMethod) # Ordinary subshell, won't change the environment
+```

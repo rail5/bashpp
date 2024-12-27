@@ -1,0 +1,20 @@
+@class MyClass {
+	@public dataMember="a"
+	
+	@public @method set arg {
+		if [[ "@this.dataMember" == "$arg" ]]; then
+			echo "dataMember is already set to $arg"
+		else
+			@this.dataMember="$arg"
+			echo "dataMember was not already set to $arg"
+		fi
+	}
+}
+
+@MyClass myObject
+@myObject.set "b"
+echo "@myObject.dataMember"
+
+var=@(@myObject.set "c")
+echo "$var"
+echo "@myObject.dataMember"

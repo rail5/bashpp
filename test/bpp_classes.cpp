@@ -105,6 +105,16 @@ struct bpp_method {
 					 * If all these conditions are met, then we can safely assume that the reference is an lvalue
 					 */
 
+					//TODO(@rail5): What if the reference is inside a multi-line subshell or supershell?
+					/**
+					 * E.g:
+					 * var=$(somecommand
+					 * @this.member=5)
+					 */
+					// Kind of a moot point since this whole code generator should be rewritten to deal with input from the parser anyway
+					// At that point, we'll be using an AST and looking things up in the symbol table
+					// Rather than this string-replacement nonsense
+
 					// Check if the reference is an lvalue
 					// Are all the characters before the reference whitespace?
 					bool all_whitespace = true;

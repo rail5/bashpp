@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 
+function bpp____initsupershell() {
+	local bpp____supershelltempfile="$(mktemp -p /dev/shm/ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX)"
+	exec {bpp____supershellFD}<>"$bpp____supershelltempfile"
+	rm "$bpp____supershelltempfile"
+}
+
 function bpp____supershell() {
 	local __outputVar="$1" __command="$2"
-	local __tempFile=$(mktemp -u -p /dev/shm/ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX)
-	exec {bpp____supershellFD}<>"$__tempFile"
-	rm "$__tempFile"
-	$__command 1>&${bpp____supershellFD} 2>/dev/null
-	eval "$__outputVar=\$(cat "/proc/self/fd/${bpp____supershellFD}")"
-	exec {bpp____supershellFD}>&-
+	if [[ -z "$bpp____supershellFD" ]]; then
+		bpp____initsupershell
+	fi
+	$__command 1>"/proc/self/fd/${bpp____supershellFD}" 2>/dev/null
+	eval "$__outputVar=\$(< "/proc/self/fd/${bpp____supershellFD}")"
 }
 
 function bpp__MyClass____new() {

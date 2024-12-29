@@ -2,17 +2,17 @@
 
 function bpp____initsupershell() {
 	local bpp____supershelltempfile="$(mktemp -p /dev/shm/ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX)"
-	exec {bpp____supershellFD}<>"$bpp____supershelltempfile"
+	eval "exec {bpp____supershellFD__$BASHPID}<>\"$bpp____supershelltempfile\""
 	rm "$bpp____supershelltempfile"
 }
 
 function bpp____supershell() {
-	local __outputVar="$1" __command="$2"
-	if [[ -z "$bpp____supershellFD" ]]; then
+	local __outputVar="$1" __command="$2" __supershellFD="bpp____supershellFD__$BASHPID"
+	if [[ -z "${!__supershellFD}" ]]; then
 		bpp____initsupershell
 	fi
-	$__command 1>"/proc/self/fd/${bpp____supershellFD}" 2>/dev/null
-	eval "$__outputVar=\$(< "/proc/self/fd/${bpp____supershellFD}")"
+	$__command 1>"/proc/self/fd/${!__supershellFD}" 2>/dev/null
+	eval "$__outputVar=\$(< "/proc/self/fd/${!__supershellFD}")"
 }
 
 function bpp__MyClass____new() {

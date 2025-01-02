@@ -501,7 +501,8 @@ for i in @(seq 1 10); do
 	echo "Iteration $i"
 done
 
-while [[ "@(true)" == "true" ]]; do
+while [[ "@(echo true)" == "true" ]]; do
 	echo "This loop will run forever"
+	echo "And the supershell will be re-evaluated each time"
 done
 ```

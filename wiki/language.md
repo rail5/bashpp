@@ -505,4 +505,6 @@ while [[ @(echo true) == "true" ]]; do
 	echo "This loop will run forever"
 	echo "And the supershell will be re-evaluated each time"
 done
+
+@(echo "echo hi") # Expands to "echo hi" and runs it
 ```

@@ -487,3 +487,21 @@ If you would like to isolate an object's method from the surrounding environment
 ```bash
 command_output=$(@myObject.myMethod) # Ordinary subshell, won't change the environment
 ```
+
+Supershells *do not* run in an isolated environment or separate shell. They run in the same shell as the surrounding code -- their output is simply captured and stored rather than printed.
+
+You can also run a command in a supershell without storing its output in a variable:
+
+```bash
+if [[ "@(command)" == "expected output" ]]; then
+	echo "Command output matches expected output"
+fi
+
+for i in @(seq 1 10); do
+	echo "Iteration $i"
+done
+
+while [[ "@(true)" == "true" ]]; do
+	echo "This loop will run forever"
+done
+```

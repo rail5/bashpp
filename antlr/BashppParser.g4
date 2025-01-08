@@ -24,6 +24,7 @@ class_body_statement: member_declaration
 
 general_statement: include_statement
 				| object_instantiation
+				| pointer_declaration
 				| object_assignment
 				| object_reference
 				| self_reference
@@ -56,8 +57,10 @@ destructor_definition: AT KEYWORD_DESTRUCTOR WS* LBRACE general_statement* RBRAC
 value_assignment: ASSIGN acceptable_rvalue?;
 
 // Object instantiation
-object_instantiation: AT IDENTIFIER WS* IDENTIFIER (value_assignment)?
-				| AT IDENTIFIER ASTERISK WS* IDENTIFIER (value_assignment)?;
+object_instantiation: AT IDENTIFIER WS* IDENTIFIER (value_assignment)?;
+
+// Pointer declaration
+pointer_declaration: AT IDENTIFIER ASTERISK WS* IDENTIFIER (value_assignment)?;
 
 // Object assignment
 object_assignment: (object_reference | self_reference) value_assignment;

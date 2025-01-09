@@ -84,3 +84,5 @@ CARET: '^';
 PERCENT: '%';
 LESSTHAN: '<';
 GREATERTHAN: '>';
+
+CATCHALL: .;

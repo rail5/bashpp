@@ -69,7 +69,7 @@ BASH_VAR: '$' IDENTIFIER
 
 // Bash subshells
 BASH_SUBSHELL: '$' '(' .+? ')'
-			| '`' .+? '`';
+			| '`' (ESCAPE . | ~[`\\])* '`';
 
 // Bash arithmetic
 BASH_ARITH: '$' '(' '(' .+? ')' ')';
@@ -167,7 +167,7 @@ SS_BASH_VAR: '$' SS_IDENTIFIER
 
 // Bash subshells
 SS_BASH_SUBSHELL: '$' '(' .+? ')'
-			| '`' .+? '`' { emit(std::make_unique<CommonToken>(new CommonToken(BASH_SUBSHELL, getText()))); };
+			| '`' '`' (ESCAPE . | ~[`\\])* '`' '`' { emit(std::make_unique<CommonToken>(new CommonToken(BASH_SUBSHELL, getText()))); };
 
 // Bash arithmetic
 SS_BASH_ARITH: '$' '(' '(' .+? ')' ')' { emit(std::make_unique<CommonToken>(new CommonToken(BASH_ARITH, getText()))); };
@@ -186,9 +186,9 @@ SS_RPAREN: ')' {
 		emit(std::make_unique<CommonToken>(new CommonToken(SUPERSHELL_END, ")")));
 	} else if (parenDepth == nestedSupershellStack.top()) {
 		nestedSupershellStack.pop();
-		emit(std::make_unique<CommonToken>(new CommonToken(SUPERSHELL_END, getText())));
+		emit(std::make_unique<CommonToken>(new CommonToken(SUPERSHELL_END, ")")));
 	} else {
-		emit(std::make_unique<CommonToken>(new CommonToken(RPAREN, getText())));
+		emit(std::make_unique<CommonToken>(new CommonToken(RPAREN, ")")));
 	}
 };
 SS_LBRACKET: '[' { emit(std::make_unique<CommonToken>(new CommonToken(LBRACKET, getText()))); };

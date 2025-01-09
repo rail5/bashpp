@@ -1,13 +1,21 @@
 lexer grammar BashppLexer;
 
 @header {
-	#include <memory>
-	#include <stack>
+#include <memory>
+#include <stack>
 }
 
 @lexer::members {
 int parenDepth = 0;
 std::stack<int> nestedSupershellStack;
+bool inSupershell = false;
+
+enum lexer_special_mode_type {
+	mode_supershell,
+	mode_quote
+};
+
+std::stack<lexer_special_mode_type> modeStack;
 }
 
 ESCAPE: '\\' .;
@@ -15,11 +23,13 @@ ESCAPE: '\\' .;
 // Supershells
 SUPERSHELL_START: '@(' {
 	parenDepth = 1;
-	pushMode(SUPERSHELL_MODE);
+	inSupershell = true;
+	pushMode(EXTRA_MODE);
+	modeStack.push(mode_supershell);
 };
 
 SUPERSHELL_END: '@('; // This is a dummy token to make the lexer happy
-					// "SUPERSHELL_END" will be emitted when we exit the SUPERSHELL_MODE
+					// "SUPERSHELL_END" will be emitted when we exit the EXTRA_MODE
 
 AT: '@';
 DOLLAR: '$';
@@ -37,10 +47,18 @@ SEMICOLON: ';';
 COMMENT: '#' ~[\n]* -> skip;
 
 // Strings
-STRING: DOUBLEQUOTE_STRING | SINGLEQUOTE_STRING;
+//STRING: DOUBLEQUOTE_STRING | SINGLEQUOTE_STRING;
 
 // Double-quoted strings
-DOUBLEQUOTE_STRING: '"' (ESCAPE . | ~["\\])* '"';
+//DOUBLEQUOTE_STRING: '"' (ESCAPE . | ~["\\])* '"';
+
+QUOTE: '"' {
+	pushMode(EXTRA_MODE);
+	modeStack.push(mode_quote);
+};
+
+QUOTE_END: '"'; // This is a dummy token to make the lexer happy
+				// "QUOTE_END" will be emitted when we exit the EXTRA_MODE
 
 // Single-quoted strings
 SINGLEQUOTE_STRING: '\'' ~[']* '\'';
@@ -108,111 +126,139 @@ GREATERTHAN: '>';
 
 CATCHALL: .;
 
-mode SUPERSHELL_MODE;
-SS_ESCAPE: '\\' . { emit(std::make_unique<CommonToken>(new CommonToken(ESCAPE, getText()))); };
+mode EXTRA_MODE;
+EM_ESCAPE: '\\' . { emit(std::make_unique<CommonToken>(new CommonToken(ESCAPE, getText()))); };
 
 // Supershells
-SS_SUPERSHELL_START: '@(' {
-	// Add the current parenDepth to the nested supershell stack
-	nestedSupershellStack.push(parenDepth);
-	parenDepth++;
-	emit(std::make_unique<CommonToken>(new CommonToken(SUPERSHELL_START, getText())));
+EM_SUPERSHELL_START: '@(' {
+	if (inSupershell) {
+		// Add the current parenDepth to the nested supershell stack
+		nestedSupershellStack.push(parenDepth);
+		parenDepth++;
+		modeStack.push(mode_supershell);
+		emit(std::make_unique<CommonToken>(new CommonToken(SUPERSHELL_START, getText())));
+	} else {
+		parenDepth = 1;
+		inSupershell = true;
+		pushMode(EXTRA_MODE);
+		modeStack.push(mode_supershell);
+		emit(std::make_unique<CommonToken>(new CommonToken(SUPERSHELL_START, getText())));
+	}
 };
 
-SS_AT: '@' { emit(std::make_unique<CommonToken>(new CommonToken(AT, getText()))); };
-SS_DOLLAR: '$' { emit(std::make_unique<CommonToken>(new CommonToken(DOLLAR, getText()))); };
+EM_AT: '@' { emit(std::make_unique<CommonToken>(new CommonToken(AT, getText()))); };
+EM_DOLLAR: '$' { emit(std::make_unique<CommonToken>(new CommonToken(DOLLAR, getText()))); };
 
 // Whitespace
-SS_WS: [ \t\r]+ { emit(std::make_unique<CommonToken>(new CommonToken(WS, getText()))); };
+EM_WS: [ \t\r]+ { emit(std::make_unique<CommonToken>(new CommonToken(WS, getText()))); };
 
 // Delimiters (newlines and semicolons, as in Bash)
-SS_DELIM: SS_NEWLINE | SS_SEMICOLON { emit(std::make_unique<CommonToken>(new CommonToken(DELIM, getText()))); };
+EM_DELIM: EM_NEWLINE | EM_SEMICOLON { emit(std::make_unique<CommonToken>(new CommonToken(DELIM, getText()))); };
 
-SS_NEWLINE: '\n';
-SS_SEMICOLON: ';';
+EM_NEWLINE: '\n';
+EM_SEMICOLON: ';';
 
 // Comments
-SS_COMMENT: '#' ~[\n]* -> skip;
+EM_COMMENT: '#' ~[\n]* -> skip;
 
 // Strings
-SS_STRING: SS_DOUBLEQUOTE_STRING | SS_SINGLEQUOTE_STRING { emit(std::make_unique<CommonToken>(new CommonToken(STRING, getText()))); };
+//EM_STRING: EM_DOUBLEQUOTE_STRING | EM_SINGLEQUOTE_STRING { emit(std::make_unique<CommonToken>(new CommonToken(STRING, getText()))); };
 
 // Double-quoted strings
-SS_DOUBLEQUOTE_STRING: '"' (ESCAPE . | ~["\\])* '"';
+//EM_DOUBLEQUOTE_STRING: '"' (ESCAPE . | ~["\\])* '"';
+
+EM_QUOTE: '"' {
+	if (modeStack.top() == mode_quote) {
+		emit(std::make_unique<CommonToken>(new CommonToken(QUOTE_END, "\"")));
+		popMode();
+		modeStack.pop();
+	} else {
+		pushMode(EXTRA_MODE);
+		modeStack.push(mode_quote);
+		emit(std::make_unique<CommonToken>(new CommonToken(QUOTE, "\"")));
+	}
+};
 
 // Single-quoted strings
-SS_SINGLEQUOTE_STRING: '\'' ~[']* '\'';
+EM_SINGLEQUOTE_STRING: '\'' ~[']* '\'';
 
 // Keywords
-SS_KEYWORD_CLASS: 'class' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_CLASS, getText()))); };
-SS_KEYWORD_PUBLIC: 'public' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_PUBLIC, getText()))); };
-SS_KEYWORD_PRIVATE: 'private' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_PRIVATE, getText()))); };
-SS_KEYWORD_PROTECTED: 'protected' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_PROTECTED, getText()))); };
-SS_KEYWORD_VIRTUAL: 'virtual' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_VIRTUAL, getText()))); };
-SS_KEYWORD_METHOD: 'method' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_METHOD, getText()))); };
-SS_KEYWORD_CONSTRUCTOR: 'constructor' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_CONSTRUCTOR, getText()))); };
-SS_KEYWORD_DESTRUCTOR: 'destructor' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_DESTRUCTOR, getText()))); };
-SS_KEYWORD_NEW: 'new' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_NEW, getText()))); };
-SS_KEYWORD_DELETE: 'delete' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_DELETE, getText()))); };
-SS_KEYWORD_NULLPTR: 'nullptr' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_NULLPTR, getText()))); };
-SS_KEYWORD_THIS: 'this' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_THIS, getText()))); };
-SS_KEYWORD_INCLUDE: 'include' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_INCLUDE, getText()))); };
+EM_KEYWORD_CLASS: 'class' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_CLASS, getText()))); };
+EM_KEYWORD_PUBLIC: 'public' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_PUBLIC, getText()))); };
+EM_KEYWORD_PRIVATE: 'private' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_PRIVATE, getText()))); };
+EM_KEYWORD_PROTECTED: 'protected' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_PROTECTED, getText()))); };
+EM_KEYWORD_VIRTUAL: 'virtual' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_VIRTUAL, getText()))); };
+EM_KEYWORD_METHOD: 'method' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_METHOD, getText()))); };
+EM_KEYWORD_CONSTRUCTOR: 'constructor' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_CONSTRUCTOR, getText()))); };
+EM_KEYWORD_DESTRUCTOR: 'destructor' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_DESTRUCTOR, getText()))); };
+EM_KEYWORD_NEW: 'new' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_NEW, getText()))); };
+EM_KEYWORD_DELETE: 'delete' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_DELETE, getText()))); };
+EM_KEYWORD_NULLPTR: 'nullptr' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_NULLPTR, getText()))); };
+EM_KEYWORD_THIS: 'this' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_THIS, getText()))); };
+EM_KEYWORD_INCLUDE: 'include' { emit(std::make_unique<CommonToken>(new CommonToken(KEYWORD_INCLUDE, getText()))); };
 
 // Identifiers
-SS_IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]* { emit(std::make_unique<CommonToken>(new CommonToken(IDENTIFIER, getText()))); };
+EM_IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]* { emit(std::make_unique<CommonToken>(new CommonToken(IDENTIFIER, getText()))); };
 
 // Bash variables
-SS_BASH_VAR: '$' SS_IDENTIFIER
-		| '$' '{' SS_IDENTIFIER '}' { emit(std::make_unique<CommonToken>(new CommonToken(BASH_VAR, getText()))); };
+EM_BASH_VAR: '$' EM_IDENTIFIER
+		| '$' '{' EM_IDENTIFIER '}' { emit(std::make_unique<CommonToken>(new CommonToken(BASH_VAR, getText()))); };
 
 // Bash subshells
-SS_BASH_SUBSHELL: '$' '(' .+? ')'
+EM_BASH_SUBSHELL: '$' '(' .+? ')'
 			| '`' '`' (ESCAPE . | ~[`\\])* '`' '`' { emit(std::make_unique<CommonToken>(new CommonToken(BASH_SUBSHELL, getText()))); };
 
 // Bash arithmetic
-SS_BASH_ARITH: '$' '(' '(' .+? ')' ')' { emit(std::make_unique<CommonToken>(new CommonToken(BASH_ARITH, getText()))); };
+EM_BASH_ARITH: '$' '(' '(' .+? ')' ')' { emit(std::make_unique<CommonToken>(new CommonToken(BASH_ARITH, getText()))); };
 
 // Operators
-SS_ASSIGN: '=' { emit(std::make_unique<CommonToken>(new CommonToken(ASSIGN, getText()))); };
-SS_DOT: '.' { emit(std::make_unique<CommonToken>(new CommonToken(DOT, getText()))); };
+EM_ASSIGN: '=' { emit(std::make_unique<CommonToken>(new CommonToken(ASSIGN, getText()))); };
+EM_DOT: '.' { emit(std::make_unique<CommonToken>(new CommonToken(DOT, getText()))); };
 
-SS_LBRACE: '{' { emit(std::make_unique<CommonToken>(new CommonToken(LBRACE, getText()))); };
-SS_RBRACE: '}' { emit(std::make_unique<CommonToken>(new CommonToken(RBRACE, getText()))); };
-SS_LPAREN: '(' { parenDepth++; emit(std::make_unique<CommonToken>(new CommonToken(LPAREN, getText()))); };
-SS_RPAREN: ')' {
-	parenDepth--;
-	if (parenDepth == 0) {
-		popMode();
-		emit(std::make_unique<CommonToken>(new CommonToken(SUPERSHELL_END, ")")));
-	} else if (parenDepth == nestedSupershellStack.top()) {
-		nestedSupershellStack.pop();
-		emit(std::make_unique<CommonToken>(new CommonToken(SUPERSHELL_END, ")")));
+EM_LBRACE: '{' { emit(std::make_unique<CommonToken>(new CommonToken(LBRACE, getText()))); };
+EM_RBRACE: '}' { emit(std::make_unique<CommonToken>(new CommonToken(RBRACE, getText()))); };
+EM_LPAREN: '(' { parenDepth++; emit(std::make_unique<CommonToken>(new CommonToken(LPAREN, getText()))); };
+EM_RPAREN: ')' {
+	if (inSupershell && modeStack.top() == mode_supershell) {
+		parenDepth--;
+		if (parenDepth == 0) {
+			inSupershell = false;
+			popMode();
+			modeStack.pop();
+			emit(std::make_unique<CommonToken>(new CommonToken(SUPERSHELL_END, ")")));
+		} else if (parenDepth == nestedSupershellStack.top()) {
+			nestedSupershellStack.pop();
+			modeStack.pop();
+			emit(std::make_unique<CommonToken>(new CommonToken(SUPERSHELL_END, ")")));
+		} else {
+			emit(std::make_unique<CommonToken>(new CommonToken(RPAREN, ")")));
+		}
 	} else {
 		emit(std::make_unique<CommonToken>(new CommonToken(RPAREN, ")")));
 	}
 };
-SS_LBRACKET: '[' { emit(std::make_unique<CommonToken>(new CommonToken(LBRACKET, getText()))); };
-SS_RBRACKET: ']' { emit(std::make_unique<CommonToken>(new CommonToken(RBRACKET, getText()))); };
+EM_LBRACKET: '[' { emit(std::make_unique<CommonToken>(new CommonToken(LBRACKET, getText()))); };
+EM_RBRACKET: ']' { emit(std::make_unique<CommonToken>(new CommonToken(RBRACKET, getText()))); };
 
-SS_ASTERISK: '*' { emit(std::make_unique<CommonToken>(new CommonToken(ASTERISK, getText()))); };
-SS_AMPERSAND: '&' { emit(std::make_unique<CommonToken>(new CommonToken(AMPERSAND, getText()))); };
+EM_ASTERISK: '*' { emit(std::make_unique<CommonToken>(new CommonToken(ASTERISK, getText()))); };
+EM_AMPERSAND: '&' { emit(std::make_unique<CommonToken>(new CommonToken(AMPERSAND, getText()))); };
 
-SS_NUMBER: SS_INTEGER | SS_FLOAT { emit(std::make_unique<CommonToken>(new CommonToken(NUMBER, getText()))); };
+EM_NUMBER: EM_INTEGER | EM_FLOAT { emit(std::make_unique<CommonToken>(new CommonToken(NUMBER, getText()))); };
 
-SS_INTEGER: [0-9]+;
-SS_FLOAT: [0-9]+ '.' [0-9]+;
+EM_INTEGER: [0-9]+;
+EM_FLOAT: [0-9]+ '.' [0-9]+;
 
-SS_MINUS: '-' { emit(std::make_unique<CommonToken>(new CommonToken(MINUS, getText()))); };
-SS_PLUS: '+' { emit(std::make_unique<CommonToken>(new CommonToken(PLUS, getText()))); };
-SS_SLASH: '/' { emit(std::make_unique<CommonToken>(new CommonToken(SLASH, getText()))); };
-SS_EXCLAM: '!' { emit(std::make_unique<CommonToken>(new CommonToken(EXCLAM, getText()))); };
-SS_COLON: ':' { emit(std::make_unique<CommonToken>(new CommonToken(COLON, getText()))); };
-SS_COMMA: ',' { emit(std::make_unique<CommonToken>(new CommonToken(COMMA, getText()))); };
-SS_QUESTION: '?' { emit(std::make_unique<CommonToken>(new CommonToken(QUESTION, getText()))); };
-SS_TILDE: '~' { emit(std::make_unique<CommonToken>(new CommonToken(TILDE, getText()))); };
-SS_CARET: '^' { emit(std::make_unique<CommonToken>(new CommonToken(CARET, getText()))); };
-SS_PERCENT: '%' { emit(std::make_unique<CommonToken>(new CommonToken(PERCENT, getText()))); };
-SS_LESSTHAN: '<' { emit(std::make_unique<CommonToken>(new CommonToken(LESSTHAN, getText()))); };
-SS_GREATERTHAN: '>' { emit(std::make_unique<CommonToken>(new CommonToken(GREATERTHAN, getText()))); };
+EM_MINUS: '-' { emit(std::make_unique<CommonToken>(new CommonToken(MINUS, getText()))); };
+EM_PLUS: '+' { emit(std::make_unique<CommonToken>(new CommonToken(PLUS, getText()))); };
+EM_SLASH: '/' { emit(std::make_unique<CommonToken>(new CommonToken(SLASH, getText()))); };
+EM_EXCLAM: '!' { emit(std::make_unique<CommonToken>(new CommonToken(EXCLAM, getText()))); };
+EM_COLON: ':' { emit(std::make_unique<CommonToken>(new CommonToken(COLON, getText()))); };
+EM_COMMA: ',' { emit(std::make_unique<CommonToken>(new CommonToken(COMMA, getText()))); };
+EM_QUESTION: '?' { emit(std::make_unique<CommonToken>(new CommonToken(QUESTION, getText()))); };
+EM_TILDE: '~' { emit(std::make_unique<CommonToken>(new CommonToken(TILDE, getText()))); };
+EM_CARET: '^' { emit(std::make_unique<CommonToken>(new CommonToken(CARET, getText()))); };
+EM_PERCENT: '%' { emit(std::make_unique<CommonToken>(new CommonToken(PERCENT, getText()))); };
+EM_LESSTHAN: '<' { emit(std::make_unique<CommonToken>(new CommonToken(LESSTHAN, getText()))); };
+EM_GREATERTHAN: '>' { emit(std::make_unique<CommonToken>(new CommonToken(GREATERTHAN, getText()))); };
 
-SS_CATCHALL: . { emit(std::make_unique<CommonToken>(new CommonToken(CATCHALL, getText()))); };
+EM_CATCHALL: . { emit(std::make_unique<CommonToken>(new CommonToken(CATCHALL, getText()))); };

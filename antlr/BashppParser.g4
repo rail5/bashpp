@@ -29,12 +29,13 @@ general_statement: include_statement
 				| self_reference
 				| delete_statement
 				| supershell
+				| string
 				| other_statement
 				| DELIM
 				| WS;
 
 // Include statement
-include_statement: AT KEYWORD_INCLUDE WS* STRING;
+include_statement: AT KEYWORD_INCLUDE WS* string;
 
 // Class definition
 class_definition: AT KEYWORD_CLASS WS* IDENTIFIER WS* (COLON WS* IDENTIFIER WS*)? LBRACE (class_body_statement | general_statement)* RBRACE;
@@ -82,10 +83,14 @@ delete_statement: AT KEYWORD_DELETE WS* (object_reference | self_reference);
 // Supershells
 supershell: SUPERSHELL_START statement* SUPERSHELL_END;
 
+// Strings
+string: QUOTE statement* QUOTE_END;
+
 parameter: IDENTIFIER | AT IDENTIFIER WS* IDENTIFIER;
 
 acceptable_rvalue: IDENTIFIER
-				| STRING
+				| string
+				| SINGLEQUOTE_STRING
 				| NUMBER
 				| BASH_VAR
 				| BASH_SUBSHELL
@@ -95,11 +100,12 @@ acceptable_rvalue: IDENTIFIER
 				| nullptr_ref
 				| new_statement
 				| pointer_dereference
-				| object_address;
+				| object_address
+				| supershell;
 
 nullptr_ref: AT KEYWORD_NULLPTR;
 
 new_statement: AT KEYWORD_NEW WS* IDENTIFIER;
 
 // Other statement
-other_statement: ~(RBRACE | SUPERSHELL_END)+?;
+other_statement: ~(RBRACE | SUPERSHELL_END | QUOTE_END)+?;

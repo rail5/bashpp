@@ -11,7 +11,8 @@ statement: (class_definition
 		| general_statement) DELIM?
 		| DELIM
 		| WS
-		| RBRACE;
+		| RBRACE
+		| RPAREN;
 
 class_body_statement: member_declaration
 					| method_definition
@@ -79,7 +80,7 @@ self_reference: AT KEYWORD_THIS (DOT IDENTIFIER)*;
 delete_statement: AT KEYWORD_DELETE WS* (object_reference | self_reference);
 
 // Supershells
-supershell: AT LPAREN statement* RPAREN;
+supershell: SUPERSHELL_START statement* SUPERSHELL_END;
 
 parameter: IDENTIFIER | AT IDENTIFIER WS* IDENTIFIER;
 
@@ -101,4 +102,4 @@ nullptr_ref: AT KEYWORD_NULLPTR;
 new_statement: AT KEYWORD_NEW WS* IDENTIFIER;
 
 // Other statement
-other_statement: ~'}'+?;
+other_statement: ~(RBRACE | SUPERSHELL_END)+?;

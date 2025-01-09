@@ -1,7 +1,8 @@
 lexer grammar BashppLexer;
 
+ESCAPE: '\\' .;
+
 AT: '@';
-ESCAPE: '\\';
 DOLLAR: '$';
 
 // Whitespace

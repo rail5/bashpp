@@ -48,7 +48,8 @@ BASH_VAR: '$' IDENTIFIER
 		| '$' '{' IDENTIFIER '}';
 
 // Bash subshells
-BASH_SUBSHELL: '$' '(' .+? ')';
+BASH_SUBSHELL: '$' '(' .+? ')'
+			| '`' .+? '`';
 
 // Bash arithmetic
 BASH_ARITH: '$' '(' '(' .+? ')' ')';

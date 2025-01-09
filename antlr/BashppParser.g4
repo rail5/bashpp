@@ -2,9 +2,6 @@ parser grammar BashppParser;
 
 options {tokenVocab=BashppLexer;}
 
-// Here, we will define the grammar for Bash++
-// We will assume that any statement which is not valid Bash++ is valid Bash
-
 // Program
 program: statement*;
 
@@ -13,7 +10,8 @@ statement: (class_definition
 		| class_body_statement
 		| general_statement) DELIM?
 		| DELIM
-		| WS;
+		| WS
+		| RBRACE;
 
 class_body_statement: member_declaration
 					| method_definition

@@ -49,19 +49,22 @@ ESCAPE_LITERAL: '\\' .; // Dummy token
 SUPERSHELL_START: '@(' {
 	// Per Bash conventions, no expansion takes place within a single-quoted string
 	// So don't start a supershell if we're in a single-quoted string
-	if (modeStack_top != mode_singlequote) {
-		if (inSupershell) {
-			// Add the current parenDepth to the nested supershell stack
-			nestedSupershellStack.push(parenDepth);
-			parenDepth++;
-			modeStack.push(mode_supershell);
-		} else {
-			parenDepth = 1;
-			inSupershell = true;
-			modeStack.push(mode_supershell);
-		}
-	} else {
-		emit(AT_LITERAL, "@(");
+	switch (modeStack_top) {
+		case mode_singlequote:
+			emit(AT_LITERAL, "@(");
+			break;
+		default:
+			if (inSupershell) {
+				// Add the current parenDepth to the nested supershell stack
+				nestedSupershellStack.push(parenDepth);
+				parenDepth++;
+				modeStack.push(mode_supershell);
+			} else {
+				parenDepth = 1;
+				inSupershell = true;
+				modeStack.push(mode_supershell);
+			}
+			break;
 	}
 };
 
@@ -78,10 +81,13 @@ WS: [ \t\r]+;
 
 // Delimiters (newlines and semicolons, as in Bash)
 NEWLINE: '\n' {
-	if (modeStack_top == mode_comment) {
-		modeStack.pop();
-	} else {
-		emit(DELIM, "\n");
+	switch (modeStack_top) {
+		case mode_comment:
+			modeStack.pop();
+			break;
+		default:
+			emit(DELIM, "\n");
+			break;
 	}
 };
 
@@ -93,10 +99,15 @@ DELIM: '\n'; // Another dummy token
 
 // Comments
 COMMENT: '#' {
-	if (modeStack_top == mode_quote || modeStack_top == mode_singlequote || modeStack_top == mode_comment) {
-		emit(POUNDKEY, "#");
-	} else {
-		modeStack.push(mode_comment);
+	switch (modeStack_top) {
+		case mode_quote:
+		case mode_singlequote:
+		case mode_comment:
+			emit(POUNDKEY, "#");
+			break;
+		default:
+			modeStack.push(mode_comment);
+			break;
 	}
 };
 
@@ -104,13 +115,18 @@ POUNDKEY: '#'; // Yet another dummy token
 
 // Strings
 QUOTE: '"' {
-	if (modeStack_top == mode_quote) {
-		emit(QUOTE_END, "\"");
-		modeStack.pop();
-	} else if (modeStack_top != mode_singlequote) {
-		modeStack.push(mode_quote);
-	} else {
-		emit(QUOTE_LITERAL, "\"");
+	switch (modeStack_top) {
+		case mode_quote:
+			emit(QUOTE_END, "\"");
+			modeStack.pop();
+			break;
+		case mode_comment:
+		case mode_singlequote:
+			emit(QUOTE_LITERAL, "\"");
+			break;
+		default:
+			modeStack.push(mode_quote);
+			break;
 	}
 };
 

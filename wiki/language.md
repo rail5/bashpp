@@ -62,6 +62,12 @@ You can simply *escape* the `@` symbol using a backslash:
 echo "email\@address.com"
 ```
 
+Or you can enclose it in *single-quotes*. As in Bash, single-quotes prevent the shell from interpreting the enclosed text, and we'll pass it through verbatim:
+
+```bash
+echo 'email@address.com'
+```
+
 # Data Members
 
 Data members can be declared using the `@private`, `@public` or `@protected` keywords. If a data member is declared as `@public`, it can be accessed from outside the class. If it is declared as `@private`, it can only be accessed from within the class. If it is declared as `@protected`, it can be accessed from within the class and from derived classes.

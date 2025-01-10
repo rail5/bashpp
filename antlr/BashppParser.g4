@@ -30,6 +30,7 @@ general_statement: include_statement
 				| delete_statement
 				| supershell
 				| string
+				| singlequote_string
 				| comment
 				| other_statement
 				| DELIM
@@ -87,14 +88,16 @@ supershell: SUPERSHELL_START statement* SUPERSHELL_END;
 // Strings
 string: QUOTE statement* QUOTE_END;
 
+singlequote_string: SINGLEQUOTE statement* SINGLEQUOTE_END;
+
 // Comments (skipped)
-comment: COMMENT .*? NEWLINE;
+comment: COMMENT statement* NEWLINE;
 
 parameter: IDENTIFIER | AT IDENTIFIER WS* IDENTIFIER;
 
 acceptable_rvalue: IDENTIFIER
 				| string
-				| SINGLEQUOTE_STRING
+				| singlequote_string
 				| NUMBER
 				| BASH_VAR
 				| BASH_SUBSHELL
@@ -112,4 +115,4 @@ nullptr_ref: AT KEYWORD_NULLPTR;
 new_statement: AT KEYWORD_NEW WS* IDENTIFIER;
 
 // Other statement
-other_statement: ~(RBRACE | SUPERSHELL_END | QUOTE_END)+?;
+other_statement: ~(RBRACE | SUPERSHELL_END | QUOTE_END | SINGLEQUOTE_END)+?;

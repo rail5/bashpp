@@ -13,6 +13,7 @@ bool inSupershell = false;
 enum lexer_special_mode_type {
 	mode_supershell,
 	mode_quote,
+	mode_singlequote,
 	mode_comment,
 	no_mode
 };
@@ -27,15 +28,21 @@ ESCAPE: '\\' .;
 
 // Supershells
 SUPERSHELL_START: '@(' {
-	if (inSupershell) {
-		// Add the current parenDepth to the nested supershell stack
-		nestedSupershellStack.push(parenDepth);
-		parenDepth++;
-		modeStack.push(mode_supershell);
+	// Per Bash conventions, no expansion takes place within a single-quoted string
+	// So don't start a supershell if we're in a single-quoted string
+	if (modeStack_top != mode_singlequote) {
+		if (inSupershell) {
+			// Add the current parenDepth to the nested supershell stack
+			nestedSupershellStack.push(parenDepth);
+			parenDepth++;
+			modeStack.push(mode_supershell);
+		} else {
+			parenDepth = 1;
+			inSupershell = true;
+			modeStack.push(mode_supershell);
+		}
 	} else {
-		parenDepth = 1;
-		inSupershell = true;
-		modeStack.push(mode_supershell);
+		emit(std::make_unique<CommonToken>(new CommonToken(AT_LITERAL, "@(")));
 	}
 };
 
@@ -44,6 +51,8 @@ SUPERSHELL_END: '@('; // This is a dummy token to make the lexer happy
 
 AT: '@';
 DOLLAR: '$';
+
+AT_LITERAL: '@'; // Another dummy token
 
 // Whitespace
 WS: [ \t\r]+;
@@ -65,7 +74,7 @@ DELIM: '\n'; // Another dummy token
 
 // Comments
 COMMENT: '#' {
-	if (modeStack_top == mode_quote) {
+	if (modeStack_top == mode_quote || modeStack_top == mode_singlequote || modeStack_top == mode_comment) {
 		emit(std::make_unique<CommonToken>(new CommonToken(POUNDKEY, "#")));
 	} else {
 		modeStack.push(mode_comment);
@@ -76,20 +85,38 @@ POUNDKEY: '#'; // Yet another dummy token
 
 // Strings
 QUOTE: '"' {
-	std::cout << "Encountered quote" << std::endl;
 	if (modeStack_top == mode_quote) {
 		emit(std::make_unique<CommonToken>(new CommonToken(QUOTE_END, "\"")));
 		modeStack.pop();
-	} else {
+	} else if (modeStack_top != mode_singlequote) {
 		modeStack.push(mode_quote);
+	} else {
+		emit(std::make_unique<CommonToken>(new CommonToken(QUOTE_LITERAL, "\"")));
 	}
 };
 
 QUOTE_END: '"'; // This is a dummy token to make the lexer happy
 				// The actual end of a quote is detected by the QUOTE rule
 
+QUOTE_LITERAL: '"'; // Another dummy token
+
 // Single-quoted strings
-SINGLEQUOTE_STRING: '\'' ~[']* '\'';
+//SINGLEQUOTE_STRING: '\'' ~[']* '\'';
+SINGLEQUOTE: '\'' {
+	if (modeStack_top == mode_singlequote) {
+		emit(std::make_unique<CommonToken>(new CommonToken(SINGLEQUOTE_END, "'")));
+		modeStack.pop();
+	} else if (modeStack_top != mode_quote) {
+		modeStack.push(mode_singlequote);
+	} else {
+		emit(std::make_unique<CommonToken>(new CommonToken(SINGLEQUOTE_LITERAL, "'")));
+	}
+};
+
+SINGLEQUOTE_END: '\''; // This is a dummy token to make the lexer happy
+						// The actual end of a singlequote is detected by the SINGLEQUOTE rule
+
+SINGLEQUOTE_LITERAL: '\''; // Another dummy token
 
 // Keywords
 KEYWORD_CLASS: 'class';
@@ -128,7 +155,6 @@ LBRACE: '{';
 RBRACE: '}';
 LPAREN: '(';
 RPAREN: ')' {
-	std::cout << "Encountered RPAREN" << std::endl;
 	if (inSupershell && modeStack_top == mode_supershell) {
 		parenDepth--;
 		if (parenDepth == 0) {

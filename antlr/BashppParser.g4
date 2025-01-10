@@ -74,10 +74,12 @@ pointer_dereference: ASTERISK (object_reference | self_reference);
 object_address: AMPERSAND (object_reference | self_reference);
 
 // Object reference
-object_reference: AT IDENTIFIER (DOT IDENTIFIER)*;
+object_reference: AT IDENTIFIER (DOT IDENTIFIER)*
+				| AT LBRACE IDENTIFIER (DOT IDENTIFIER)* RBRACE;
 
 // Self-reference from within a class
-self_reference: AT KEYWORD_THIS (DOT IDENTIFIER)*;
+self_reference: AT KEYWORD_THIS (DOT IDENTIFIER)*
+				| AT LBRACE KEYWORD_THIS (DOT IDENTIFIER)* RBRACE;
 
 // Delete statement
 delete_statement: AT KEYWORD_DELETE WS* (object_reference | self_reference);

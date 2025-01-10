@@ -3,6 +3,7 @@ lexer grammar BashppLexer;
 @header {
 #include <memory>
 #include <stack>
+#include <string>
 }
 
 @lexer::members {
@@ -24,6 +25,10 @@ std::stack<lexer_special_mode_type> modeStack;
 #define nestedSupershellStack_top (nestedSupershellStack.empty() ? 0 : nestedSupershellStack.top())
 
 #define emit(tokenType, text) emit(std::make_unique<CommonToken>(new CommonToken(tokenType, text)))
+
+inline bool contains_double_underscore(const std::string& s) {
+	return s.find("__") != std::string::npos;
+}
 }
 
 ESCAPE: '\\' . {
@@ -146,7 +151,13 @@ KEYWORD_THIS: 'this';
 KEYWORD_INCLUDE: 'include';
 
 // Identifiers
-IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
+IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]* {
+	if (contains_double_underscore(getText())) {
+		emit(INVALID_IDENTIFIER, getText());
+	}
+};
+
+INVALID_IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*; // Another dummy token
 
 // Bash variables
 BASH_VAR: '$' IDENTIFIER

@@ -36,6 +36,7 @@ ESCAPE: '\\' . {
 	if (modeStack_top == mode_singlequote) {
 		if (getText() == "\\'") {
 			emit(SINGLEQUOTE_END, "\\'");
+			modeStack.pop();
 		} else {
 			emit(ESCAPE_LITERAL, getText());
 		}
@@ -120,13 +121,17 @@ QUOTE_LITERAL: '"'; // Another dummy token
 
 // Single-quoted strings
 SINGLEQUOTE: '\'' {
-	if (modeStack_top == mode_singlequote) {
-		emit(SINGLEQUOTE_END, "'");
-		modeStack.pop();
-	} else if (modeStack_top != mode_quote) {
-		modeStack.push(mode_singlequote);
-	} else {
-		emit(SINGLEQUOTE_LITERAL, "'");
+	switch (modeStack_top) {
+		case mode_singlequote:
+			emit(SINGLEQUOTE_END, "'");
+			modeStack.pop();
+			break;
+		case mode_quote:
+			emit(SINGLEQUOTE_LITERAL, "'");
+			break;
+		default:
+			modeStack.push(mode_singlequote);
+			break;
 	}
 };
 

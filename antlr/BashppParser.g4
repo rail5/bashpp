@@ -117,4 +117,4 @@ nullptr_ref: AT KEYWORD_NULLPTR;
 new_statement: AT KEYWORD_NEW WS* IDENTIFIER;
 
 // Other statement
-other_statement: ~(RBRACE | SUPERSHELL_END | QUOTE_END | SINGLEQUOTE_END)+?;
+other_statement: ~(RBRACE | SUPERSHELL_END | QUOTE_END | SINGLEQUOTE_END | NEWLINE)+?;

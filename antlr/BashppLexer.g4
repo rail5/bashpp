@@ -24,7 +24,18 @@ std::stack<lexer_special_mode_type> modeStack;
 #define nestedSupershellStack_top (nestedSupershellStack.empty() ? 0 : nestedSupershellStack.top())
 }
 
-ESCAPE: '\\' .;
+ESCAPE: '\\' . {
+	// Don't escape if we're in a single-quoted string
+	if (modeStack_top == mode_singlequote) {
+		if (getText() == "\\'") {
+			emit(std::make_unique<CommonToken>(new CommonToken(SINGLEQUOTE_END, "\\'")));
+		} else {
+			emit(std::make_unique<CommonToken>(new CommonToken(ESCAPE_LITERAL, getText())));
+		}
+	}
+};
+
+ESCAPE_LITERAL: '\\' .; // Dummy token
 
 // Supershells
 SUPERSHELL_START: '@(' {

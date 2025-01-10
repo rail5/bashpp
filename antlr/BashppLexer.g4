@@ -40,7 +40,7 @@ SUPERSHELL_START: '@(' {
 };
 
 SUPERSHELL_END: '@('; // This is a dummy token to make the lexer happy
-					// "SUPERSHELL_END" will be emitted when we exit the EXTRA_MODE
+					// The actual end of a supershell is detected by the RPAREN rule (below)
 
 AT: '@';
 DOLLAR: '$';
@@ -75,11 +75,6 @@ COMMENT: '#' {
 POUNDKEY: '#'; // Yet another dummy token
 
 // Strings
-//STRING: DOUBLEQUOTE_STRING | SINGLEQUOTE_STRING;
-
-// Double-quoted strings
-//DOUBLEQUOTE_STRING: '"' (ESCAPE . | ~["\\])* '"';
-
 QUOTE: '"' {
 	std::cout << "Encountered quote" << std::endl;
 	if (modeStack_top == mode_quote) {
@@ -91,7 +86,7 @@ QUOTE: '"' {
 };
 
 QUOTE_END: '"'; // This is a dummy token to make the lexer happy
-				// "QUOTE_END" will be emitted when we exit the EXTRA_MODE
+				// The actual end of a quote is detected by the QUOTE rule
 
 // Single-quoted strings
 SINGLEQUOTE_STRING: '\'' ~[']* '\'';

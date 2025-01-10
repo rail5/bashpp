@@ -22,15 +22,17 @@ std::stack<lexer_special_mode_type> modeStack;
 
 #define modeStack_top (modeStack.empty() ? no_mode : modeStack.top())
 #define nestedSupershellStack_top (nestedSupershellStack.empty() ? 0 : nestedSupershellStack.top())
+
+#define emit(tokenType, text) emit(std::make_unique<CommonToken>(new CommonToken(tokenType, text)))
 }
 
 ESCAPE: '\\' . {
 	// Don't escape if we're in a single-quoted string
 	if (modeStack_top == mode_singlequote) {
 		if (getText() == "\\'") {
-			emit(std::make_unique<CommonToken>(new CommonToken(SINGLEQUOTE_END, "\\'")));
+			emit(SINGLEQUOTE_END, "\\'");
 		} else {
-			emit(std::make_unique<CommonToken>(new CommonToken(ESCAPE_LITERAL, getText())));
+			emit(ESCAPE_LITERAL, getText());
 		}
 	}
 };
@@ -53,7 +55,7 @@ SUPERSHELL_START: '@(' {
 			modeStack.push(mode_supershell);
 		}
 	} else {
-		emit(std::make_unique<CommonToken>(new CommonToken(AT_LITERAL, "@(")));
+		emit(AT_LITERAL, "@(");
 	}
 };
 
@@ -73,12 +75,12 @@ NEWLINE: '\n' {
 	if (modeStack_top == mode_comment) {
 		modeStack.pop();
 	} else {
-		emit(std::make_unique<CommonToken>(new CommonToken(DELIM, "\n")));
+		emit(DELIM, "\n");
 	}
 };
 
 SEMICOLON: ';' {
-	emit(std::make_unique<CommonToken>(new CommonToken(DELIM, ";")));
+	emit(DELIM, ";");
 };
 
 DELIM: '\n'; // Another dummy token
@@ -86,7 +88,7 @@ DELIM: '\n'; // Another dummy token
 // Comments
 COMMENT: '#' {
 	if (modeStack_top == mode_quote || modeStack_top == mode_singlequote || modeStack_top == mode_comment) {
-		emit(std::make_unique<CommonToken>(new CommonToken(POUNDKEY, "#")));
+		emit(POUNDKEY, "#");
 	} else {
 		modeStack.push(mode_comment);
 	}
@@ -97,12 +99,12 @@ POUNDKEY: '#'; // Yet another dummy token
 // Strings
 QUOTE: '"' {
 	if (modeStack_top == mode_quote) {
-		emit(std::make_unique<CommonToken>(new CommonToken(QUOTE_END, "\"")));
+		emit(QUOTE_END, "\"");
 		modeStack.pop();
 	} else if (modeStack_top != mode_singlequote) {
 		modeStack.push(mode_quote);
 	} else {
-		emit(std::make_unique<CommonToken>(new CommonToken(QUOTE_LITERAL, "\"")));
+		emit(QUOTE_LITERAL, "\"");
 	}
 };
 
@@ -112,15 +114,14 @@ QUOTE_END: '"'; // This is a dummy token to make the lexer happy
 QUOTE_LITERAL: '"'; // Another dummy token
 
 // Single-quoted strings
-//SINGLEQUOTE_STRING: '\'' ~[']* '\'';
 SINGLEQUOTE: '\'' {
 	if (modeStack_top == mode_singlequote) {
-		emit(std::make_unique<CommonToken>(new CommonToken(SINGLEQUOTE_END, "'")));
+		emit(SINGLEQUOTE_END, "'");
 		modeStack.pop();
 	} else if (modeStack_top != mode_quote) {
 		modeStack.push(mode_singlequote);
 	} else {
-		emit(std::make_unique<CommonToken>(new CommonToken(SINGLEQUOTE_LITERAL, "'")));
+		emit(SINGLEQUOTE_LITERAL, "'");
 	}
 };
 
@@ -171,11 +172,11 @@ RPAREN: ')' {
 		if (parenDepth == 0) {
 			inSupershell = false;
 			modeStack.pop();
-			emit(std::make_unique<CommonToken>(new CommonToken(SUPERSHELL_END, ")")));
+			emit(SUPERSHELL_END, ")");
 		} else if (parenDepth == nestedSupershellStack_top) {
 			nestedSupershellStack.pop();
 			modeStack.pop();
-			emit(std::make_unique<CommonToken>(new CommonToken(SUPERSHELL_END, ")")));
+			emit(SUPERSHELL_END, ")");
 		}
 	}
 };

@@ -13,6 +13,7 @@ bool inSupershell = false;
 enum lexer_special_mode_type {
 	mode_supershell,
 	mode_quote,
+	mode_comment,
 	no_mode
 };
 
@@ -48,13 +49,30 @@ DOLLAR: '$';
 WS: [ \t\r]+;
 
 // Delimiters (newlines and semicolons, as in Bash)
-DELIM: NEWLINE | SEMICOLON;
+NEWLINE: '\n' {
+	if (modeStack_top == mode_comment) {
+		modeStack.pop();
+	} else {
+		emit(std::make_unique<CommonToken>(new CommonToken(DELIM, "\n")));
+	}
+};
 
-NEWLINE: '\n';
-SEMICOLON: ';';
+SEMICOLON: ';' {
+	emit(std::make_unique<CommonToken>(new CommonToken(DELIM, ";")));
+};
+
+DELIM: '\n'; // Another dummy token
 
 // Comments
-COMMENT: '#' ~[\n]* -> skip;
+COMMENT: '#' {
+	if (modeStack_top == mode_quote) {
+		emit(std::make_unique<CommonToken>(new CommonToken(POUNDKEY, "#")));
+	} else {
+		modeStack.push(mode_comment);
+	}
+};
+
+POUNDKEY: '#'; // Yet another dummy token
 
 // Strings
 //STRING: DOUBLEQUOTE_STRING | SINGLEQUOTE_STRING;

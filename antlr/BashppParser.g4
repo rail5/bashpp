@@ -30,6 +30,7 @@ general_statement: include_statement
 				| delete_statement
 				| supershell
 				| string
+				| comment
 				| other_statement
 				| DELIM
 				| WS;
@@ -85,6 +86,9 @@ supershell: SUPERSHELL_START statement* SUPERSHELL_END;
 
 // Strings
 string: QUOTE statement* QUOTE_END;
+
+// Comments (skipped)
+comment: COMMENT .*? NEWLINE;
 
 parameter: IDENTIFIER | AT IDENTIFIER WS* IDENTIFIER;
 

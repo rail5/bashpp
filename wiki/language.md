@@ -260,7 +260,7 @@ Bash++ supports single inheritance. A class can inherit from another class using
 @class BaseClass {
 	@public baseDataMember="Hello, world!"
 
-	@public @method someMethod {
+	@virtual @public @method someMethod {
 		echo "Hello from the base class!"
 	}
 }
@@ -274,7 +274,7 @@ Bash++ supports single inheritance. A class can inherit from another class using
 }
 ```
 
-In this example, `DerivedClass` inherits from `BaseClass`. The derived class has access to the data members and methods of the base class. If a method is overridden in the derived class, the derived class's implementation will be used.
+In this example, `DerivedClass` inherits from `BaseClass`. The derived class has access to the data members and methods of the base class. If a method is declared `@virtual`, it can be overridden in the derived class. If a method is not declared `@virtual`, it cannot be overridden.
 
 # Pointers
 

@@ -7,38 +7,38 @@ program: statement*;
 
 // Statements
 statement: (class_definition
-		| class_body_statement
-		| general_statement) DELIM?
-		| DELIM
-		| WS
-		| RBRACE
-		| RPAREN;
+	| class_body_statement
+	| general_statement) DELIM?
+	| DELIM
+	| WS
+	| RBRACE
+	| RPAREN;
 
 class_body_statement: member_declaration
-					| method_definition
-					| constructor_definition
-					| destructor_definition
-					| DELIM
-					| WS;
+	| method_definition
+	| constructor_definition
+	| destructor_definition
+	| DELIM
+	| WS;
 
 general_statement: include_statement
-				| object_instantiation
-				| pointer_declaration
-				| object_assignment
-				| object_reference
-				| object_reference_as_lvalue
-				| self_reference
-				| self_reference_as_lvalue
-				| delete_statement
-				| supershell
-				| subshell
-				| deprecated_subshell
-				| string
-				| singlequote_string
-				| comment
-				| other_statement
-				| DELIM
-				| WS;
+	| object_instantiation
+	| pointer_declaration
+	| object_assignment
+	| object_reference
+	| object_reference_as_lvalue
+	| self_reference
+	| self_reference_as_lvalue
+	| delete_statement
+	| supershell
+	| subshell
+	| deprecated_subshell
+	| string
+	| singlequote_string
+	| comment
+	| other_statement
+	| DELIM
+	| WS;
 
 // Include statement
 include_statement: AT KEYWORD_INCLUDE WS* string;
@@ -48,7 +48,7 @@ class_definition: AT KEYWORD_CLASS WS* IDENTIFIER WS* (COLON WS* IDENTIFIER WS*)
 
 // Member declarations
 member_declaration: AT (KEYWORD_PUBLIC | KEYWORD_PRIVATE | KEYWORD_PROTECTED) WS* IDENTIFIER value_assignment?
-				| AT (KEYWORD_PUBLIC | KEYWORD_PRIVATE | KEYWORD_PROTECTED) WS* (object_instantiation | pointer_declaration);
+	| AT (KEYWORD_PUBLIC | KEYWORD_PRIVATE | KEYWORD_PROTECTED) WS* (object_instantiation | pointer_declaration);
 
 // Method definitions
 method_definition: (AT KEYWORD_VIRTUAL WS*)? AT (KEYWORD_PUBLIC | KEYWORD_PRIVATE | KEYWORD_PROTECTED) WS* AT KEYWORD_METHOD WS* IDENTIFIER WS* parameter* WS* LBRACE (general_statement | class_body_statement)* RBRACE;
@@ -64,11 +64,11 @@ value_assignment: ASSIGN acceptable_rvalue?;
 
 // Object instantiation
 object_instantiation: AT IDENTIFIER_LVALUE WS* IDENTIFIER (value_assignment)?
-					| AT IDENTIFIER WS* IDENTIFIER (value_assignment)?;
+	| AT IDENTIFIER WS* IDENTIFIER (value_assignment)?;
 
 // Pointer declaration
 pointer_declaration: AT IDENTIFIER_LVALUE ASTERISK WS* IDENTIFIER (value_assignment)?
-					| AT IDENTIFIER ASTERISK WS* IDENTIFIER (value_assignment)?;
+	| AT IDENTIFIER ASTERISK WS* IDENTIFIER (value_assignment)?;
 
 // Object assignment
 object_assignment: (object_reference_as_lvalue | self_reference_as_lvalue) value_assignment;
@@ -81,17 +81,17 @@ object_address: AMPERSAND (object_reference | self_reference);
 
 // Object reference
 object_reference: AT IDENTIFIER (DOT IDENTIFIER)*
-				| AT LBRACE IDENTIFIER (DOT IDENTIFIER)* RBRACE;
+	| AT LBRACE IDENTIFIER (DOT IDENTIFIER)* RBRACE;
 
 object_reference_as_lvalue: AT IDENTIFIER_LVALUE (DOT IDENTIFIER)*
-							| AT LBRACE IDENTIFIER_LVALUE (DOT IDENTIFIER)* RBRACE;
+	| AT LBRACE IDENTIFIER_LVALUE (DOT IDENTIFIER)* RBRACE;
 
 // Self-reference from within a class
 self_reference: AT KEYWORD_THIS (DOT IDENTIFIER)*
-				| AT LBRACE KEYWORD_THIS (DOT IDENTIFIER)* RBRACE;
+	| AT LBRACE KEYWORD_THIS (DOT IDENTIFIER)* RBRACE;
 
 self_reference_as_lvalue: AT KEYWORD_THIS_LVALUE (DOT IDENTIFIER)*
-						| AT LBRACE KEYWORD_THIS_LVALUE (DOT IDENTIFIER)* RBRACE;
+	| AT LBRACE KEYWORD_THIS_LVALUE (DOT IDENTIFIER)* RBRACE;
 
 // Delete statement
 delete_statement: AT KEYWORD_DELETE WS* (object_reference | self_reference);
@@ -115,19 +115,19 @@ comment: COMMENT statement* NEWLINE;
 parameter: IDENTIFIER | AT IDENTIFIER WS* IDENTIFIER;
 
 acceptable_rvalue: IDENTIFIER
-				| string
-				| singlequote_string
-				| NUMBER
-				| BASH_VAR
-				| subshell
-				| deprecated_subshell
-				| object_reference
-				| self_reference
-				| nullptr_ref
-				| new_statement
-				| pointer_dereference
-				| object_address
-				| supershell;
+	| string
+	| singlequote_string
+	| NUMBER
+	| BASH_VAR
+	| subshell
+	| deprecated_subshell
+	| object_reference
+	| self_reference
+	| nullptr_ref
+	| new_statement
+	| pointer_dereference
+	| object_address
+	| supershell;
 
 nullptr_ref: AT KEYWORD_NULLPTR;
 

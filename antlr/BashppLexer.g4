@@ -194,9 +194,6 @@ INVALID_IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*; // Another dummy token
 BASH_VAR: '$' IDENTIFIER
 		| '$' '{' IDENTIFIER '}';
 
-// Bash arithmetic
-BASH_ARITH: '$' '(' '(' .+? ')' ')';
-
 // Operators
 ASSIGN: '=';
 DOT: '.';

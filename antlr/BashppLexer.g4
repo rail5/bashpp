@@ -8,11 +8,17 @@ lexer grammar BashppLexer;
 
 @lexer::members {
 int parenDepth = 0;
+int initialSupershellDepth = 0;
+int initialSubshellDepth = 0;
 std::stack<int> nestedSupershellStack;
+std::stack<int> nestedSubshellStack;
 bool inSupershell = false;
+bool inSubshell = false;
+bool inDeprecatedSubshell = false;
 
 enum lexer_special_mode_type {
 	mode_supershell,
+	mode_subshell,
 	mode_quote,
 	mode_singlequote,
 	mode_comment,
@@ -23,12 +29,14 @@ std::stack<lexer_special_mode_type> modeStack;
 
 #define modeStack_top (modeStack.empty() ? no_mode : modeStack.top())
 #define nestedSupershellStack_top (nestedSupershellStack.empty() ? 0 : nestedSupershellStack.top())
-
-#define emit(tokenType, text) emit(std::make_unique<CommonToken>(new CommonToken(tokenType, text)))
+#define nestedSubshellStack_top (nestedSubshellStack.empty() ? 0 : nestedSubshellStack.top())
 
 inline bool contains_double_underscore(const std::string& s) {
 	return s.find("__") != std::string::npos;
 }
+
+#define emit(tokenType, text) emit(std::make_unique<CommonToken>(new CommonToken(tokenType, text)))
+
 }
 
 ESCAPE: '\\' . {
@@ -54,16 +62,14 @@ SUPERSHELL_START: '@(' {
 			emit(AT_LITERAL, "@(");
 			break;
 		default:
-			if (inSupershell) {
-				// Add the current parenDepth to the nested supershell stack
-				nestedSupershellStack.push(parenDepth);
-				parenDepth++;
-				modeStack.push(mode_supershell);
-			} else {
-				parenDepth = 1;
-				inSupershell = true;
-				modeStack.push(mode_supershell);
+			modeStack.push(mode_supershell);
+			nestedSupershellStack.push(parenDepth);
+			if (!inSupershell) {
+				initialSupershellDepth = parenDepth;
 			}
+			inSupershell = true;
+			parenDepth++;
+			emit(SUPERSHELL_START, "@(");
 			break;
 	}
 };
@@ -94,6 +100,10 @@ NEWLINE: '\n' {
 SEMICOLON: ';' {
 	emit(DELIM, ";");
 };
+
+CONNECTIVE: DOUBLEAMPERSAND | DOUBLEPIPE; 
+DOUBLEAMPERSAND: '&&';
+DOUBLEPIPE: '||';
 
 DELIM: '\n'; // Another dummy token
 
@@ -184,10 +194,6 @@ INVALID_IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*; // Another dummy token
 BASH_VAR: '$' IDENTIFIER
 		| '$' '{' IDENTIFIER '}';
 
-// Bash subshells
-BASH_SUBSHELL: '$' '(' .+? ')'
-			| '`' (ESCAPE . | ~[`\\])* '`';
-
 // Bash arithmetic
 BASH_ARITH: '$' '(' '(' .+? ')' ')';
 
@@ -197,21 +203,85 @@ DOT: '.';
 
 LBRACE: '{';
 RBRACE: '}';
-LPAREN: '(';
-RPAREN: ')' {
-	if (inSupershell && modeStack_top == mode_supershell) {
-		parenDepth--;
-		if (parenDepth == 0) {
-			inSupershell = false;
-			modeStack.pop();
-			emit(SUPERSHELL_END, ")");
-		} else if (parenDepth == nestedSupershellStack_top) {
-			nestedSupershellStack.pop();
-			modeStack.pop();
-			emit(SUPERSHELL_END, ")");
-		}
+
+BACKTICK: '`' {
+	switch (modeStack_top) {
+		case mode_singlequote:
+		case mode_comment:
+			// Just emit the BACKTICK token
+			break;
+		default:
+			if (!inDeprecatedSubshell) {
+				emit(DEPRECATED_SUBSHELL_START, "`");
+				inDeprecatedSubshell = false;
+			} else {
+				emit(DEPRECATED_SUBSHELL_END, "`");
+				inDeprecatedSubshell = true;
+			}
+			break;
 	}
 };
+
+DEPRECATED_SUBSHELL_START: '`'; // Another dummy token
+DEPRECATED_SUBSHELL_END: '`'; // Yet another dummy token
+
+LPAREN: '(' {
+	switch (modeStack_top) {
+		case mode_quote:
+		case mode_singlequote:
+		case mode_comment:
+			// Just emit the LPAREN token
+			break;
+		default:
+			nestedSubshellStack.push(parenDepth);
+			modeStack.push(mode_subshell);
+			if (!inSubshell) {
+				initialSubshellDepth = parenDepth;
+			}
+			inSubshell = true;
+			emit(SUBSHELL_START, "(");
+			break;
+	}
+	parenDepth++;
+};
+
+SUBSHELL_START: '('; // This is a dummy token to make the lexer happy
+					// The actual start of a subshell is detected by the LPAREN rule (above)
+
+RPAREN: ')' {
+	parenDepth--;
+	switch (modeStack_top) {
+		case mode_quote:
+		case mode_singlequote:
+		case mode_comment:
+			// Just emit the RPAREN token
+			break;
+		case mode_subshell:
+			if (parenDepth == nestedSubshellStack_top) {
+				if (parenDepth == initialSubshellDepth) {
+					inSubshell = false;
+				}
+				nestedSubshellStack.pop();
+				modeStack.pop();
+				emit(SUBSHELL_END, ")");
+			}
+			break;
+		case mode_supershell:
+			if (parenDepth == nestedSupershellStack_top) {
+				if (parenDepth == initialSupershellDepth) {
+					inSupershell = false;
+				}
+				nestedSupershellStack.pop();
+				modeStack.pop();
+				emit(SUPERSHELL_END, ")");
+			}
+			break;
+	}
+};
+
+SUBSHELL_END: ')'; // This is a dummy token to make the lexer happy
+					// The actual end of a subshell is detected by the RPAREN rule (above)
+
 LBRACKET: '[';
 RBRACKET: ']';
 

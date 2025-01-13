@@ -29,6 +29,8 @@ general_statement: include_statement
 				| self_reference
 				| delete_statement
 				| supershell
+				| subshell
+				| deprecated_subshell
 				| string
 				| singlequote_string
 				| comment
@@ -87,6 +89,11 @@ delete_statement: AT KEYWORD_DELETE WS* (object_reference | self_reference);
 // Supershells
 supershell: SUPERSHELL_START statement* SUPERSHELL_END;
 
+// Subshells
+subshell: SUBSHELL_START statement* SUBSHELL_END;
+
+deprecated_subshell: DEPRECATED_SUBSHELL_START statement* DEPRECATED_SUBSHELL_END;
+
 // Strings
 string: QUOTE statement* QUOTE_END;
 
@@ -102,7 +109,8 @@ acceptable_rvalue: IDENTIFIER
 				| singlequote_string
 				| NUMBER
 				| BASH_VAR
-				| BASH_SUBSHELL
+				| subshell
+				| deprecated_subshell
 				| BASH_ARITH
 				| object_reference
 				| self_reference
@@ -117,4 +125,4 @@ nullptr_ref: AT KEYWORD_NULLPTR;
 new_statement: AT KEYWORD_NEW WS* IDENTIFIER;
 
 // Other statement
-other_statement: ~(RBRACE | SUPERSHELL_END | QUOTE_END | SINGLEQUOTE_END | NEWLINE)+?;
+other_statement: ~(RBRACE | SUPERSHELL_END | QUOTE_END | SINGLEQUOTE_END | NEWLINE | SUBSHELL_END | DEPRECATED_SUBSHELL_END)+?;

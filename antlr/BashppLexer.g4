@@ -16,6 +16,10 @@ bool inSupershell = false;
 bool inSubshell = false;
 bool inDeprecatedSubshell = false;
 
+bool incoming_token_can_be_lvalue = true;
+bool hit_at_in_current_command = false;
+bool hit_lbrace_in_current_command = false;
+
 enum lexer_special_mode_type {
 	mode_supershell,
 	mode_subshell,
@@ -33,6 +37,38 @@ std::stack<lexer_special_mode_type> modeStack;
 
 inline bool contains_double_underscore(const std::string& s) {
 	return s.find("__") != std::string::npos;
+}
+
+void emit(std::unique_ptr<antlr4::Token> t) {
+	switch (t->getType()) {
+		case WS:
+			break;
+		case DELIM:
+		case NEWLINE:
+		case CONNECTIVE:
+		case DOUBLEAMPERSAND:
+		case DOUBLEPIPE:
+			incoming_token_can_be_lvalue = true;
+			hit_at_in_current_command = false;
+			hit_lbrace_in_current_command = false;
+			break;
+		case AT:
+			if (hit_at_in_current_command) {
+				incoming_token_can_be_lvalue = false;
+			}
+			hit_at_in_current_command = true;
+			break;
+		case LBRACE:
+			if (hit_lbrace_in_current_command) {
+				incoming_token_can_be_lvalue = false;
+			}
+			hit_lbrace_in_current_command = true;
+			break;
+		default:
+			incoming_token_can_be_lvalue = false;
+			break;
+	}
+	antlr4::Lexer::emit(std::move(t));
 }
 
 #define emit(tokenType, text) emit(std::make_unique<CommonToken>(new CommonToken(tokenType, text)))
@@ -153,6 +189,7 @@ SINGLEQUOTE: '\'' {
 			modeStack.pop();
 			break;
 		case mode_quote:
+		case mode_comment:
 			emit(SINGLEQUOTE_LITERAL, "'");
 			break;
 		default:
@@ -178,17 +215,29 @@ KEYWORD_DESTRUCTOR: 'destructor';
 KEYWORD_NEW: 'new';
 KEYWORD_DELETE: 'delete';
 KEYWORD_NULLPTR: 'nullptr';
-KEYWORD_THIS: 'this';
 KEYWORD_INCLUDE: 'include';
+KEYWORD_THIS: 'this' {
+	if (incoming_token_can_be_lvalue) {
+		emit(KEYWORD_THIS_LVALUE, getText());
+	}
+};
+
+KEYWORD_THIS_LVALUE: 'this'; // Another dummy token
 
 // Identifiers
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]* {
 	if (contains_double_underscore(getText())) {
 		emit(INVALID_IDENTIFIER, getText());
 	}
+
+	if (incoming_token_can_be_lvalue) {
+		emit(IDENTIFIER_LVALUE, getText());
+	}
 };
 
 INVALID_IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*; // Another dummy token
+
+IDENTIFIER_LVALUE: [a-zA-Z_][a-zA-Z0-9_]*; // Yet another dummy token
 
 // Bash variables
 BASH_VAR: '$' IDENTIFIER

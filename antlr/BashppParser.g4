@@ -26,7 +26,9 @@ general_statement: include_statement
 				| pointer_declaration
 				| object_assignment
 				| object_reference
+				| object_reference_as_lvalue
 				| self_reference
+				| self_reference_as_lvalue
 				| delete_statement
 				| supershell
 				| subshell
@@ -61,13 +63,15 @@ destructor_definition: AT KEYWORD_DESTRUCTOR WS* LBRACE general_statement* RBRAC
 value_assignment: ASSIGN acceptable_rvalue?;
 
 // Object instantiation
-object_instantiation: AT IDENTIFIER WS* IDENTIFIER (value_assignment)?;
+object_instantiation: AT IDENTIFIER_LVALUE WS* IDENTIFIER (value_assignment)?
+					| AT IDENTIFIER WS* IDENTIFIER (value_assignment)?;
 
 // Pointer declaration
-pointer_declaration: AT IDENTIFIER ASTERISK WS* IDENTIFIER (value_assignment)?;
+pointer_declaration: AT IDENTIFIER_LVALUE ASTERISK WS* IDENTIFIER (value_assignment)?
+					| AT IDENTIFIER ASTERISK WS* IDENTIFIER (value_assignment)?;
 
 // Object assignment
-object_assignment: (object_reference | self_reference) value_assignment;
+object_assignment: (object_reference_as_lvalue | self_reference_as_lvalue) value_assignment;
 
 // Pointer dereference
 pointer_dereference: ASTERISK (object_reference | self_reference);
@@ -79,9 +83,15 @@ object_address: AMPERSAND (object_reference | self_reference);
 object_reference: AT IDENTIFIER (DOT IDENTIFIER)*
 				| AT LBRACE IDENTIFIER (DOT IDENTIFIER)* RBRACE;
 
+object_reference_as_lvalue: AT IDENTIFIER_LVALUE (DOT IDENTIFIER)*
+							| AT LBRACE IDENTIFIER_LVALUE (DOT IDENTIFIER)* RBRACE;
+
 // Self-reference from within a class
 self_reference: AT KEYWORD_THIS (DOT IDENTIFIER)*
 				| AT LBRACE KEYWORD_THIS (DOT IDENTIFIER)* RBRACE;
+
+self_reference_as_lvalue: AT KEYWORD_THIS_LVALUE (DOT IDENTIFIER)*
+						| AT LBRACE KEYWORD_THIS_LVALUE (DOT IDENTIFIER)* RBRACE;
 
 // Delete statement
 delete_statement: AT KEYWORD_DELETE WS* (object_reference | self_reference);
@@ -111,7 +121,6 @@ acceptable_rvalue: IDENTIFIER
 				| BASH_VAR
 				| subshell
 				| deprecated_subshell
-				| BASH_ARITH
 				| object_reference
 				| self_reference
 				| nullptr_ref

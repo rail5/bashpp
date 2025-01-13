@@ -114,7 +114,7 @@ comment: COMMENT statement* NEWLINE;
 
 parameter: IDENTIFIER | AT IDENTIFIER WS* IDENTIFIER;
 
-acceptable_rvalue: IDENTIFIER
+acceptable_rvalue: (IDENTIFIER
 	| string
 	| singlequote_string
 	| NUMBER
@@ -124,10 +124,10 @@ acceptable_rvalue: IDENTIFIER
 	| object_reference
 	| self_reference
 	| nullptr_ref
-	| new_statement
 	| pointer_dereference
 	| object_address
-	| supershell;
+	| supershell)+
+	| new_statement;
 
 nullptr_ref: AT KEYWORD_NULLPTR;
 

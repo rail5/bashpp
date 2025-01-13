@@ -6,7 +6,6 @@
 	@public name
 	
 	@constructor {
-		# Default constructor
 		@this.name="John Q. Public"
 		echo "Constructor called: @this.name" >> constructors-and-destructors.log
 	}

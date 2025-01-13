@@ -257,10 +257,10 @@ BACKTICK: '`' {
 		default:
 			if (!inDeprecatedSubshell) {
 				emit(DEPRECATED_SUBSHELL_START, "`");
-				inDeprecatedSubshell = false;
+				inDeprecatedSubshell = true;
 			} else {
 				emit(DEPRECATED_SUBSHELL_END, "`");
-				inDeprecatedSubshell = true;
+				inDeprecatedSubshell = false;
 			}
 			break;
 	}

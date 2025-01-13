@@ -228,9 +228,7 @@ KEYWORD_THIS_LVALUE: 'this'; // Another dummy token
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]* {
 	if (contains_double_underscore(getText())) {
 		emit(INVALID_IDENTIFIER, getText());
-	}
-
-	if (incoming_token_can_be_lvalue) {
+	} else if (incoming_token_can_be_lvalue) {
 		emit(IDENTIFIER_LVALUE, getText());
 	}
 };

@@ -17,15 +17,15 @@ enum bpp_scope {
 	SCOPE_PUBLIC,
 	SCOPE_PROTECTED,
 	SCOPE_PRIVATE
-}
+};
 
 class bpp_program;
 class bpp_class;
 class bpp_method;
 class bpp_method_parameter;
 class bpp_datamember;
-class bpp_constructor : bpp_method;
-class bpp_destructor : bpp_method;
+class bpp_constructor;
+class bpp_destructor;
 class bpp_object;
 
 class bpp_datamember {
@@ -69,6 +69,20 @@ class bpp_method {
 		bool is_virtual() const;
 
 		virtual std::string get_signature() const;
+};
+
+class bpp_constructor : bpp_method {
+	public:
+		explicit bpp_constructor(std::string name);
+
+		bool add_parameter(bpp_method_parameter parameter) override;
+};
+
+class bpp_destructor : bpp_method {
+	public:
+		explicit bpp_destructor(std::string name);
+
+		bool add_parameter(bpp_method_parameter parameter) override;
 };
 
 class bpp_method_parameter {
@@ -130,7 +144,7 @@ class bpp_object {
 		std::string get_address() const;
 		std::shared_ptr<bpp_class> get_class() const;
 		bool is_pointer() const;
-}
+};
 
 class bpp_program {
 	private:

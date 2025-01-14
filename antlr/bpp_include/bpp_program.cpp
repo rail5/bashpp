@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_BPP_BPP_PROGRAM_CPP_
-#define ANTLR_BPP_BPP_PROGRAM_CPP_
+#ifndef ANTLR_BPP_INCLUDE_BPP_PROGRAM_CPP_
+#define ANTLR_BPP_INCLUDE_BPP_PROGRAM_CPP_
 
 #include "bpp.h"
 #include "templates.h"
@@ -169,4 +169,4 @@ std::string bpp_program::get_code() const {
 
 } // namespace bpp
 
-#endif // ANTLR_BPP_BPP_PROGRAM_CPP_
+#endif // ANTLR_BPP_INCLUDE_BPP_PROGRAM_CPP

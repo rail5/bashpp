@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_BPP_BPP_DATAMEMBER_CPP_
-#define ANTLR_BPP_BPP_DATAMEMBER_CPP_
+#ifndef ANTLR_BPP_INCLUDE_BPP_DATAMEMBER_CPP_
+#define ANTLR_BPP_INCLUDE_BPP_DATAMEMBER_CPP_
 
 #include "bpp.h"
 
@@ -42,4 +42,4 @@ bpp_scope bpp_datamember::get_scope() const {
 
 } // namespace bpp
 
-#endif // ANTLR_BPP_BPP_DATAMEMBER_CPP_
+#endif // ANTLR_BPP_INCLUDE_BPP_DATAMEMBER_CPP

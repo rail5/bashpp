@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_BPP_BPP_CONSTRUCTOR_CPP
-#define ANTLR_BPP_BPP_CONSTRUCTOR_CPP
+#ifndef ANTLR_BPP_INCLUDE_BPP_CONSTRUCTOR_CPP
+#define ANTLR_BPP_INCLUDE_BPP_CONSTRUCTOR_CPP
 
 #include "bpp.h"
 
@@ -18,4 +18,4 @@ bool bpp_constructor::add_parameter(bpp_method_parameter parameter) {
 
 } // namespace bpp
 
-#endif // ANTLR_BPP_BPP_CONSTRUCTOR_CPP
+#endif // ANTLR_BPP_INCLUDE_BPP_CONSTRUCTOR_CP

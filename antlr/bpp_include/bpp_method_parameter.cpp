@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_BPP_BPP_METHOD_PARAMETER_CPP_
-#define ANTLR_BPP_BPP_METHOD_PARAMETER_CPP_
+#ifndef ANTLR_BPP_INCLUDE_BPP_METHOD_PARAMETER_CPP_
+#define ANTLR_BPP_INCLUDE_BPP_METHOD_PARAMETER_CPP_
 
 #include "bpp.h"
 
@@ -26,4 +26,4 @@ std::string bpp_method_parameter::get_type() const {
 
 }
 
-#endif // ANTLR_BPP_BPP_METHOD_PARAMETER_CPP_
+#endif // ANTLR_BPP_INCLUDE_BPP_METHOD_PARAMETER_CPP

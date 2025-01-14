@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_BPP_BPP_OBJECT_CPP_
-#define ANTLR_BPP_BPP_OBJECT_CPP_
+#ifndef ANTLR_BPP_INCLUDE_BPP_OBJECT_CPP_
+#define ANTLR_BPP_INCLUDE_BPP_OBJECT_CPP_
 
 #include "bpp.h"
 
@@ -58,4 +58,4 @@ bool bpp_object::is_pointer() const {
 
 } // namespace bpp
 
-#endif // ANTLR_BPP_BPP_OBJECT_CPP_
+#endif // ANTLR_BPP_INCLUDE_BPP_OBJECT_CPP

@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_BPP_BPP_METHOD_CPP_
-#define ANTLR_BPP_BPP_METHOD_CPP_
+#ifndef ANTLR_BPP_INCLUDE_BPP_METHOD_CPP_
+#define ANTLR_BPP_INCLUDE_BPP_METHOD_CPP_
 
 #include "bpp.h"
 
@@ -71,4 +71,4 @@ std::string bpp_method::get_signature() const {
 
 } // namespace bpp
 
-#endif // ANTLR_BPP_BPP_METHOD_CPP_
+#endif // ANTLR_BPP_INCLUDE_BPP_METHOD_CPP

@@ -10,6 +10,8 @@
 
 namespace bpp {
 
+bpp_object::bpp_object() {}
+
 bpp_object::bpp_object(std::string name) : name(name) {}
 
 bpp_object::bpp_object(std::string name, bool is_pointer) : name(name) {

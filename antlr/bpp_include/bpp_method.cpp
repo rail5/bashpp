@@ -23,6 +23,10 @@ bool bpp_method::add_parameter(bpp_method_parameter parameter) {
 	return true;
 }
 
+void bpp_method::set_name(std::string name) {
+	this->name = name;
+}
+
 void bpp_method::set_method_body(std::string method_body) {
 	this->method_body = method_body;
 }

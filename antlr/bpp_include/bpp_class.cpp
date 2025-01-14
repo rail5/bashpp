@@ -10,6 +10,8 @@
 
 namespace bpp {
 
+bpp_class::bpp_class() {}
+
 bpp_class::bpp_class(std::string name) : name(name) {}
 
 bpp_class::bpp_class(const bpp_class& other, std::string name) : name(name) {
@@ -20,6 +22,10 @@ bpp_class::bpp_class(const bpp_class& other, std::string name) : name(name) {
 	datamembers = other.get_datamembers();
 	constructor = other.get_constructor();
 	destructor = other.get_destructor();
+}
+
+void bpp_class::set_name(std::string name) {
+	this->name = name;
 }
 
 bool bpp_class::add_method(bpp_method method) {

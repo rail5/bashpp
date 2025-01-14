@@ -11,6 +11,8 @@
 #include <map>
 #include <memory>
 
+#include "replace_all.cpp"
+
 namespace bpp {
 
 enum bpp_scope {
@@ -58,6 +60,7 @@ class bpp_method {
 		explicit bpp_method(std::string name);
 
 		virtual bool add_parameter(bpp_method_parameter parameter);
+		void set_name(std::string name);
 		void set_method_body(std::string method_body);
 		void set_scope(bpp_scope scope);
 		void set_virtual(bool is_virtual);
@@ -71,15 +74,17 @@ class bpp_method {
 		virtual std::string get_signature() const;
 };
 
-class bpp_constructor : bpp_method {
+class bpp_constructor : public bpp_method {
 	public:
+		bpp_constructor();
 		explicit bpp_constructor(std::string name);
 
 		bool add_parameter(bpp_method_parameter parameter) override;
 };
 
-class bpp_destructor : bpp_method {
+class bpp_destructor : public bpp_method {
 	public:
+		bpp_destructor();
 		explicit bpp_destructor(std::string name);
 
 		bool add_parameter(bpp_method_parameter parameter) override;
@@ -108,9 +113,11 @@ class bpp_class {
 		bool constructor_set = false;
 		bool destructor_set = false;
 	public:
+		bpp_class();
 		explicit bpp_class(std::string name);
 		bpp_class(const bpp_class& parent, std::string name);
 
+		void set_name(std::string name);
 		bool add_method(bpp_method method);
 		bool add_datamember(bpp_datamember datamember);
 		bool set_constructor(bpp_constructor constructor);
@@ -132,6 +139,7 @@ class bpp_object {
 		std::shared_ptr<bpp_class> object_class;
 		bool m_is_pointer = false;
 	public:
+		bpp_object();
 		explicit bpp_object(std::string name);
 		bpp_object(std::string name, bool is_pointer);
 

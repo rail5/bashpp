@@ -38,10 +38,10 @@ bool bpp_program::add_class(bpp_class class_) {
 	 * */
 
 	// Replace all instances of %ASSIGNMENTS% with the assignments for the __new function
-	std::string assignments = "	eval \"${__objectAddress}____inUse=1\"\n";
+	std::string assignments = "";
 	for (auto& dm : class_.get_datamembers()) {
 		if (dm.get_type() == "primitive") {
-			assignments += "	eval \"${__objectAddress}__" + dm.get_name() + "=\\\"" + dm.get_default_value() + "\\\"\"\n";
+			assignments += "	eval \"${__objectAddress}__" + dm.get_name() + "=" + dm.get_default_value() + "\"\n";
 		} else {
 			assignments += "	bpp__" + dm.get_type() + "____new \"\" ${__objectAddress}__" + dm.get_name() + "\n";
 		}
@@ -58,7 +58,6 @@ bool bpp_program::add_class(bpp_class class_) {
 			deletions += "	unset ${__objectAddress}__" + dm.get_name() + "\n";
 		}
 	}
-	deletions += "	unset ${__objectAddress}____inUse\n";
 	class_code = replace_all(class_code, "%DELETIONS%", deletions);
 
 	// Replace all instances of %COPIES% with the copies for the __copy function
@@ -71,7 +70,6 @@ bool bpp_program::add_class(bpp_class class_) {
 			copies += "	bpp__" + dm.get_type() + "____copy ${__copyFromAddress}__" + dm.get_name() + " ${__copyToAddress}__" + dm.get_name() + " 1 1\n";
 		}
 	}
-	copies += "	eval \"${__copyToAddress}____inUse=1\"\n";
 	class_code = replace_all(class_code, "%COPIES%", copies);
 
 	// Replace %CONSTRUCTORBODY% with the constructor body
@@ -88,9 +86,13 @@ bool bpp_program::add_class(bpp_class class_) {
 	class_code = replace_all(class_code, "%CLASS%", class_.get_name());
 
 	// Add the methods
+	bool found_toPrimitive = false;
 	for (auto& method : class_.get_methods()) {
 		std::string method_code = template_method;
 		std::string signature = method.get_signature();
+		if (signature == "toPrimitive") {
+			found_toPrimitive = true;
+		}
 		std::string params = "";
 		for (size_t i = 0; i < method.get_parameters().size(); i++) {
 			params += method.get_parameters()[i].get_name() + "=\"$" + std::to_string(i + 3) + "\"";
@@ -103,6 +105,11 @@ bool bpp_program::add_class(bpp_class class_) {
 		method_code = replace_all(method_code, "%PARAMS%", params);
 		method_code = replace_all(method_code, "%METHODBODY%", method.get_method_body());
 		class_code += method_code;
+	}
+
+	// Is there a user-defined toPrimitive method?
+	if (!found_toPrimitive) {
+		class_code += replace_all(template_toPrimitive, "%CLASS%", class_.get_name());
 	}
 
 	code += class_code;
@@ -165,6 +172,20 @@ std::vector<bpp_object> bpp_program::get_objects() const {
 
 std::string bpp_program::get_code() const {
 	return code;
+}
+
+bpp::bpp_class* bpp_program::get_class(std::string name) {
+	if (classes.find(name) == classes.end()) {
+		return nullptr;
+	}
+	return &classes[name];
+}
+
+bpp::bpp_object* bpp_program::get_object(std::string name) {
+	if (objects.find(name) == objects.end()) {
+		return nullptr;
+	}
+	return &objects[name];
 }
 
 } // namespace bpp

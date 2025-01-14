@@ -33,11 +33,22 @@ std::string bpp_datamember::get_type() const {
 }
 
 std::string bpp_datamember::get_default_value() const {
-	return default_value;
+	// Sanitize default value before returning
+	std::string sanitized = default_value;
+	sanitized = replace_all(sanitized, "\\", "\\\\");
+	sanitized = replace_all(sanitized, "\"", "\\\"");
+	return sanitized;
 }
 
 bpp_scope bpp_datamember::get_scope() const {
 	return scope;
+}
+
+void bpp_datamember::destroy() {
+	name.clear();
+	default_value.clear();
+	scope = SCOPE_PRIVATE;
+	type = "primitive";
 }
 
 } // namespace bpp

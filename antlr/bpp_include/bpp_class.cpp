@@ -94,6 +94,47 @@ bool bpp_class::has_destructor() const {
 	return destructor_set;
 }
 
+void bpp_class::inherit(const bpp_class& parent) {
+	// Inherit methods
+	for (auto& m : parent.get_methods()) {
+		methods.push_back(m);
+	}
+
+	// Inherit datamembers
+	for (auto& d : parent.get_datamembers()) {
+		datamembers.push_back(d);
+	}
+
+	// Inherit constructor
+	if (parent.has_constructor()) {
+		constructor = parent.get_constructor();
+		constructor_set = true;
+	}
+
+	// Inherit destructor
+	if (parent.has_destructor()) {
+		destructor = parent.get_destructor();
+		destructor_set = true;
+	}
+}
+
+void bpp_class::destroy() {
+	for (auto& m : methods) {
+		m.destroy();
+	}
+	for (auto& d : datamembers) {
+		d.destroy();
+	}
+	constructor.destroy();
+	destructor.destroy();
+
+	name.clear();
+	methods.clear();
+	datamembers.clear();
+	constructor_set = false;
+	destructor_set = false;
+}
+
 } // namespace bpp
 
 #endif // ANTLR_BPP_INCLUDE_BPP_CLASS_CPP

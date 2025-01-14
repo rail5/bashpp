@@ -47,6 +47,8 @@ class bpp_datamember {
 		std::string get_type() const;
 		std::string get_default_value() const;
 		bpp_scope get_scope() const;
+
+		void destroy();
 };
 
 class bpp_method {
@@ -57,6 +59,7 @@ class bpp_method {
 		bpp_scope scope = SCOPE_PRIVATE;
 		bool m_is_virtual = false;
 	public:
+		bpp_method();
 		explicit bpp_method(std::string name);
 
 		virtual bool add_parameter(bpp_method_parameter parameter);
@@ -72,6 +75,8 @@ class bpp_method {
 		bool is_virtual() const;
 
 		virtual std::string get_signature() const;
+
+		void destroy();
 };
 
 class bpp_constructor : public bpp_method {
@@ -130,6 +135,10 @@ class bpp_class {
 		bpp_destructor get_destructor() const;
 		bool has_constructor() const;
 		bool has_destructor() const;
+
+		void inherit(const bpp_class& parent);
+
+		void destroy();
 };
 
 class bpp_object {
@@ -169,6 +178,9 @@ class bpp_program {
 		std::vector<bpp_class> get_classes() const;
 		std::vector<bpp_object> get_objects() const;
 		std::string get_code() const;
+
+		bpp_class* get_class(std::string name);
+		bpp_object* get_object(std::string name);
 };
 
 } // namespace bpp

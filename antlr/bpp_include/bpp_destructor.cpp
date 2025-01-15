@@ -14,7 +14,7 @@ bpp_destructor::bpp_destructor() : bpp_method("destructor") {}
 
 bpp_destructor::bpp_destructor(std::string name) : bpp_method(name) {}
 
-bool bpp_destructor::add_parameter(bpp_method_parameter parameter) {
+bool bpp_destructor::add_parameter(std::shared_ptr<bpp_method_parameter> parameter) {
 	return false;
 }
 

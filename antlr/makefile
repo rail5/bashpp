@@ -3,6 +3,9 @@ all:
 	#g++ -std=c++17 -O2 -I/usr/include/antlr4-runtime -o BashppParser main.cpp out/BashppLexer.cpp out/BashppParser.cpp -L/usr/lib -lantlr4-runtime
 	g++ -std=c++17 -O2 -I/usr/include/antlr4-runtime -o bpp bpp.cpp out/BashppLexer.cpp out/BashppParser.cpp -L/usr/lib -lantlr4-runtime
 
+debug: all
+	g++ -std=c++17 -O2 -I/usr/include/antlr4-runtime -o BashppParser main.cpp out/BashppLexer.cpp out/BashppParser.cpp -L/usr/lib -lantlr4-runtime
+
 clean:
 	rm -rf out
 	rm -f BashppParser

@@ -10,7 +10,13 @@
 
 namespace bpp {
 
+bpp_datamember::bpp_datamember() {}
+
 bpp_datamember::bpp_datamember(std::string name) : name(name) {}
+
+void bpp_datamember::set_name(std::string name) {
+	this->name = name;
+}
 
 void bpp_datamember::set_type(std::string type) {
 	this->type = type;

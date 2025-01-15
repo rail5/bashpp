@@ -14,10 +14,10 @@ bpp_method::bpp_method() {}
 
 bpp_method::bpp_method(std::string name) : name(name) {}
 
-bool bpp_method::add_parameter(bpp_method_parameter parameter) {
-	std::string name = parameter.get_name();
+bool bpp_method::add_parameter(std::shared_ptr<bpp_method_parameter> parameter) {
+	std::string name = parameter->get_name();
 	for (auto& p : parameters) {
-		if (p.get_name() == name) {
+		if (p->get_name() == name) {
 			return false;
 		}
 	}
@@ -45,7 +45,7 @@ std::string bpp_method::get_name() const {
 	return name;
 }
 
-std::vector<bpp_method_parameter> bpp_method::get_parameters() const {
+std::vector<std::shared_ptr<bpp_method_parameter>> bpp_method::get_parameters() const {
 	return parameters;
 }
 
@@ -75,7 +75,7 @@ std::string bpp_method::get_signature() const {
 	signature += "__";
 	for (auto& p : parameters) {
 		signature += "__";
-		signature += p.get_type();
+		signature += p->get_type();
 	}
 	return signature;
 }

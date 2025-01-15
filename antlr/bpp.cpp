@@ -16,6 +16,7 @@
 #include "BashppListener.cpp"
 
 #include "syntax_error.cpp"
+#include "internal_error.cpp"
 
 using namespace antlr4;
 
@@ -52,7 +53,9 @@ int main(int argc, const char* argv[]) {
 		tree = parser.program();
 		// Walk the tree
 		antlr4::tree::ParseTreeWalker walker;
-		walker.walk(new BashppListener(), tree);
+		BashppListener* listener = new BashppListener();
+		listener->set_source_file(argv[1]);
+		walker.walk(listener, tree);
 
 	} catch (const antlr4::EmptyStackException& e) {
 		std::cerr << "EmptyStackException: " << e.what() << std::endl;
@@ -60,6 +63,8 @@ int main(int argc, const char* argv[]) {
 		std::cerr << "Recognition exception: " << e.what() << std::endl;
 	} catch (const syntax_error& e) {
 		std::cerr << "Syntax error: " << e.what() << std::endl;
+	} catch (const internal_error& e) {
+		std::cerr << "Internal error: " << e.what() << std::endl;
 	} catch (const std::exception& e) {
 		std::cerr << "Standard exception: " << e.what() << std::endl;
 	} catch (...) {

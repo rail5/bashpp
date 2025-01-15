@@ -57,6 +57,8 @@ class BashppListener : public BashppParserBaseListener {
 		std::string value_assignment = "";
 		std::string pre_valueassignment_code = "";
 		std::string post_valueassignment_code = "";
+
+		std::shared_ptr<bpp::bpp_class> primitive;
 		
 	public:
 
@@ -69,6 +71,8 @@ class BashppListener : public BashppParserBaseListener {
 		program.add_code(bpp_supershell_function);
 
 		entity_stack.push(std::make_shared<bpp::bpp_program>());
+
+		primitive = program.get_primitive_class();		
 	}
 	void exitProgram(BashppParser::ProgramContext *ctx) override {
 		std::cout << program.get_code() << std::endl;
@@ -171,7 +175,7 @@ class BashppListener : public BashppParserBaseListener {
 			// It's a primitive
 			std::string member_name = ctx->IDENTIFIER()->getText();
 			new_datamember->set_name(member_name);
-			new_datamember->set_type("primitive");
+			new_datamember->set_type(primitive);
 		}
 	}
 	void exitMember_declaration(BashppParser::Member_declarationContext *ctx) override {
@@ -260,7 +264,7 @@ class BashppListener : public BashppParserBaseListener {
 		if (current_datamember != nullptr) {
 			// We're midway through a class member declaration
 			// The data for this object should be moved to the datamember
-			current_datamember->set_type(new_object->get_class()->get_name());
+			current_datamember->set_type(new_object->get_class());
 			current_datamember->set_name(new_object->get_name());
 			return;
 		}
@@ -474,7 +478,7 @@ class BashppListener : public BashppParserBaseListener {
 			}
 
 			// Primitive or nonprimitive?
-			if (referenced_datamember->get_type() == "primitive") {
+			if (referenced_datamember->get_type() == primitive) {
 				can_descend = false;
 			}
 		}
@@ -485,9 +489,9 @@ class BashppListener : public BashppParserBaseListener {
 			}
 			std::string member_name = ctx->IDENTIFIER(i)->getText();
 			prior_reference += "." + member_name;
-			std::shared_ptr<bpp::bpp_class> referenced_datamember_class = program.get_class(referenced_datamember->get_type());
+			std::shared_ptr<bpp::bpp_class> referenced_datamember_class = referenced_datamember->get_type();
 			if (referenced_datamember_class == nullptr) {
-				throw internal_error("Data member class not found: " + referenced_datamember->get_type());
+				throw internal_error("Data member class not found: " + referenced_datamember->get_type()->get_name());
 			}
 			referenced_datamember = referenced_datamember_class->get_datamember(member_name);
 			if (referenced_datamember == nullptr) {

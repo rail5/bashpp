@@ -18,7 +18,7 @@ void bpp_datamember::set_name(std::string name) {
 	this->name = name;
 }
 
-void bpp_datamember::set_type(std::string type) {
+void bpp_datamember::set_type(std::shared_ptr<bpp_class> type) {
 	this->type = type;
 }
 
@@ -42,7 +42,7 @@ std::string bpp_datamember::get_name() const {
 	return name;
 }
 
-std::string bpp_datamember::get_type() const {
+std::shared_ptr<bpp_class> bpp_datamember::get_type() const {
 	return type;
 }
 
@@ -70,7 +70,7 @@ void bpp_datamember::destroy() {
 	name.clear();
 	default_value.clear();
 	scope = SCOPE_PRIVATE;
-	type = "primitive";
+	type = nullptr;
 }
 
 } // namespace bpp

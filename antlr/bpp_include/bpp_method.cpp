@@ -75,7 +75,7 @@ std::string bpp_method::get_signature() const {
 	signature += "__";
 	for (auto& p : parameters) {
 		signature += "__";
-		signature += p->get_type();
+		signature += p->get_type()->get_name();
 	}
 	return signature;
 }

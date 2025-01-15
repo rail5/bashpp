@@ -12,7 +12,7 @@ namespace bpp {
 
 bpp_method_parameter::bpp_method_parameter(std::string name) : name(name) {}
 
-void bpp_method_parameter::set_type(std::string type) {
+void bpp_method_parameter::set_type(std::shared_ptr<bpp_class> type) {
 	this->type = type;
 }
 
@@ -20,7 +20,7 @@ std::string bpp_method_parameter::get_name() const {
 	return name;
 }
 
-std::string bpp_method_parameter::get_type() const {
+std::shared_ptr<bpp_class> bpp_method_parameter::get_type() const {
 	return type;
 }
 

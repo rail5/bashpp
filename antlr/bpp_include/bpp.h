@@ -37,7 +37,7 @@ class bpp_object;
 
 class bpp_datamember : public bpp_entity {
 	private:
-		std::string type = "primitive";
+		std::shared_ptr<bpp_class> type;
 		std::string name;
 		std::string default_value = "";
 		std::string pre_access_code = "";
@@ -48,14 +48,14 @@ class bpp_datamember : public bpp_entity {
 		explicit bpp_datamember(std::string name);
 
 		void set_name(std::string name);
-		void set_type(std::string type);
+		void set_type(std::shared_ptr<bpp_class> type);
 		void set_default_value(std::string default_value);
 		void set_pre_access_code(std::string pre_access_code);
 		void set_post_access_code(std::string post_access_code);
 		void set_scope(bpp_scope scope);
 
 		std::string get_name() const;
-		std::string get_type() const;
+		std::shared_ptr<bpp_class> get_type() const;
 		std::string get_default_value() const;
 		std::string get_pre_access_code() const;
 		std::string get_post_access_code() const;
@@ -110,15 +110,15 @@ class bpp_destructor : public bpp_method {
 
 class bpp_method_parameter : public bpp_entity {
 	private:
-		std::string type = "primitive";
+		std::shared_ptr<bpp_class> type;
 		std::string name;
 	public:
 		explicit bpp_method_parameter(std::string name);
 
-		void set_type(std::string type);
+		void set_type(std::shared_ptr<bpp_class>);
 
 		std::string get_name() const;
-		std::string get_type() const;
+		std::shared_ptr<bpp_class> get_type() const;
 };
 
 class bpp_class : public bpp_entity {
@@ -182,6 +182,7 @@ class bpp_object : public bpp_entity {
 class bpp_program : public bpp_entity {
 	private:
 		std::map<std::string, std::shared_ptr<bpp_class>> classes;
+		std::shared_ptr<bpp_class> primitive_class;
 		std::map<std::string, std::shared_ptr<bpp_object>> objects;
 		std::string code = "";
 	public:
@@ -197,6 +198,8 @@ class bpp_program : public bpp_entity {
 
 		std::shared_ptr<bpp_class> get_class(std::string name);
 		std::shared_ptr<bpp_object> get_object(std::string name);
+
+		std::shared_ptr<bpp_class> get_primitive_class() const;
 };
 
 } // namespace bpp

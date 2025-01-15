@@ -27,7 +27,7 @@
 #include "syntax_error.cpp"
 #include "internal_error.cpp"
 
-#define skip_comment_singlequotestring if (in_comment || in_singlequote_string) return;
+#define skip_comment if (in_comment) return;
 
 #define throw_syntax_error(token, msg) antlr4::Token* symbol = token->getSymbol(); \
 			int line = symbol->getLine(); \
@@ -74,14 +74,14 @@ class BashppListener : public BashppParserBaseListener {
 	}
 
 	void enterInclude_statement(BashppParser::Include_statementContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 	void exitInclude_statement(BashppParser::Include_statementContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterClass_definition(BashppParser::Class_definitionContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 
 		std::shared_ptr<bpp::bpp_class> new_class = std::make_shared<bpp::bpp_class>();
 		entity_stack.push(new_class);
@@ -115,7 +115,7 @@ class BashppListener : public BashppParserBaseListener {
 		}
 	}
 	void exitClass_definition(BashppParser::Class_definitionContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 
 		std::shared_ptr<bpp::bpp_class> new_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 
@@ -130,7 +130,7 @@ class BashppListener : public BashppParserBaseListener {
 	}
 
 	void enterMember_declaration(BashppParser::Member_declarationContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 
 		std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 
@@ -169,7 +169,7 @@ class BashppListener : public BashppParserBaseListener {
 		}
 	}
 	void exitMember_declaration(BashppParser::Member_declarationContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 
 		std::shared_ptr<bpp::bpp_datamember> new_datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(entity_stack.top());
 		if (new_datamember == nullptr) {
@@ -184,7 +184,7 @@ class BashppListener : public BashppParserBaseListener {
 	}
 
 	void enterObject_instantiation(BashppParser::Object_instantiationContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 
 		/**
 		 * The object type will be stored in one of either IDENTIFIER_LVALUE or IDENTIFIER(0)
@@ -236,7 +236,7 @@ class BashppListener : public BashppParserBaseListener {
 		}
 	}
 	void exitObject_instantiation(BashppParser::Object_instantiationContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 
 		std::shared_ptr<bpp::bpp_object> new_object = std::dynamic_pointer_cast<bpp::bpp_object>(entity_stack.top());
 		if (new_object == nullptr) {
@@ -263,21 +263,21 @@ class BashppListener : public BashppParserBaseListener {
 	}
 
 	void enterPointer_declaration(BashppParser::Pointer_declarationContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 	}
 	void exitPointer_declaration(BashppParser::Pointer_declarationContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterValue_assignment(BashppParser::Value_assignmentContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 		in_value_assignment = true;
 		pre_valueassignment_code.clear();
 		post_valueassignment_code.clear();
 		value_assignment.clear();
 	}
 	void exitValue_assignment(BashppParser::Value_assignmentContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 		in_value_assignment = false;
 
 		/**
@@ -312,152 +312,152 @@ class BashppListener : public BashppParserBaseListener {
 	}
 
 	void enterMethod_definition(BashppParser::Method_definitionContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 	}
 	void exitMethod_definition(BashppParser::Method_definitionContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterConstructor_definition(BashppParser::Constructor_definitionContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 	void exitConstructor_definition(BashppParser::Constructor_definitionContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterDestructor_definition(BashppParser::Destructor_definitionContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 	void exitDestructor_definition(BashppParser::Destructor_definitionContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterSelf_reference(BashppParser::Self_referenceContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 	void exitSelf_reference(BashppParser::Self_referenceContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterSelf_reference_as_lvalue(BashppParser::Self_reference_as_lvalueContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 	void exitSelf_reference_as_lvalue(BashppParser::Self_reference_as_lvalueContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterStatement(BashppParser::StatementContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 	void exitStatement(BashppParser::StatementContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterClass_body_statement(BashppParser::Class_body_statementContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 	void exitClass_body_statement(BashppParser::Class_body_statementContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterGeneral_statement(BashppParser::General_statementContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 	void exitGeneral_statement(BashppParser::General_statementContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterObject_assignment(BashppParser::Object_assignmentContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void exitObject_assignment(BashppParser::Object_assignmentContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterPointer_dereference(BashppParser::Pointer_dereferenceContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 	void exitPointer_dereference(BashppParser::Pointer_dereferenceContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterObject_address(BashppParser::Object_addressContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 	void exitObject_address(BashppParser::Object_addressContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterObject_reference(BashppParser::Object_referenceContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 	void exitObject_reference(BashppParser::Object_referenceContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterObject_reference_as_lvalue(BashppParser::Object_reference_as_lvalueContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 	void exitObject_reference_as_lvalue(BashppParser::Object_reference_as_lvalueContext *ctx) override { 
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterNullptr_ref(BashppParser::Nullptr_refContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 	}
 	void exitNullptr_ref(BashppParser::Nullptr_refContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterNew_statement(BashppParser::New_statementContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 	}
 	void exitNew_statement(BashppParser::New_statementContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterDelete_statement(BashppParser::Delete_statementContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 	}
 	void exitDelete_statement(BashppParser::Delete_statementContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterSupershell(BashppParser::SupershellContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 	}
 	void exitSupershell(BashppParser::SupershellContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterSubshell(BashppParser::SubshellContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 	}
 	void exitSubshell(BashppParser::SubshellContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterDeprecated_subshell(BashppParser::Deprecated_subshellContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 	}
 	void exitDeprecated_subshell(BashppParser::Deprecated_subshellContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterString(BashppParser::StringContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 	}
 	void exitString(BashppParser::StringContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterSinglequote_string(BashppParser::Singlequote_stringContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 		in_singlequote_string = true;
 	}
 	void exitSinglequote_string(BashppParser::Singlequote_stringContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 		in_singlequote_string = false;
 	}
 
@@ -469,21 +469,21 @@ class BashppListener : public BashppParserBaseListener {
 	}
 
 	void enterParameter(BashppParser::ParameterContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 	}
 	void exitParameter(BashppParser::ParameterContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterOther_statement(BashppParser::Other_statementContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 	}
 	void exitOther_statement(BashppParser::Other_statementContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 	void enterRaw_rvalue(BashppParser::Raw_rvalueContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 		if (!in_value_assignment) {
 			return;
 		}
@@ -498,7 +498,7 @@ class BashppListener : public BashppParserBaseListener {
 		}
 	}
 	void exitRaw_rvalue(BashppParser::Raw_rvalueContext *ctx) override {
-		skip_comment_singlequotestring
+		skip_comment
 	}
 
 };

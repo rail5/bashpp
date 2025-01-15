@@ -26,6 +26,14 @@ void bpp_datamember::set_default_value(std::string default_value) {
 	this->default_value = default_value;
 }
 
+void bpp_datamember::set_pre_access_code(std::string pre_access_code) {
+	this->pre_access_code = pre_access_code;
+}
+
+void bpp_datamember::set_post_access_code(std::string post_access_code) {
+	this->post_access_code = post_access_code;
+}
+
 void bpp_datamember::set_scope(bpp_scope scope) {
 	this->scope = scope;
 }
@@ -44,6 +52,14 @@ std::string bpp_datamember::get_default_value() const {
 	sanitized = replace_all(sanitized, "\\", "\\\\");
 	sanitized = replace_all(sanitized, "\"", "\\\"");
 	return sanitized;
+}
+
+std::string bpp_datamember::get_pre_access_code() const {
+	return pre_access_code;
+}
+
+std::string bpp_datamember::get_post_access_code() const {
+	return post_access_code;
 }
 
 bpp_scope bpp_datamember::get_scope() const {

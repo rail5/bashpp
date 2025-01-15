@@ -51,6 +51,11 @@ class BashppListener : public BashppParserBaseListener {
 			"primitive", "private", "protected", "public",
 			"this", "virtual"
 		};
+
+		bool in_value_assignment = false;
+		std::string value_assignment = "";
+		std::string pre_valueassignment_code = "";
+		std::string post_valueassignment_code = "";
 		
 	public:
 
@@ -187,6 +192,12 @@ class BashppListener : public BashppParserBaseListener {
 		 * If IDENTIFIER(0), then the object name will be in IDENTIFIER(1)
 		 */
 
+		// Verify that we're in a place where an object *can* be instantiated
+		std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
+		if (current_class != nullptr) {
+			throw_syntax_error(ctx->AT(), "Stray object instantiation inside class body.\nDid you mean to declare a data member?\nIf so, start by declaring the data member with a visibility keyword (@public, @private, @protected)");
+		}
+
 		std::shared_ptr<bpp::bpp_object> new_object = std::make_shared<bpp::bpp_object>();
 		entity_stack.push(new_object);
 
@@ -260,9 +271,44 @@ class BashppListener : public BashppParserBaseListener {
 
 	void enterValue_assignment(BashppParser::Value_assignmentContext *ctx) override { 
 		skip_comment_singlequotestring
+		in_value_assignment = true;
+		pre_valueassignment_code.clear();
+		post_valueassignment_code.clear();
+		value_assignment.clear();
 	}
 	void exitValue_assignment(BashppParser::Value_assignmentContext *ctx) override { 
 		skip_comment_singlequotestring
+		in_value_assignment = false;
+
+		/**
+		 * Value assignments will appear in the following contexts:
+		 * 	1. Member declarations
+		 * 	2. Object instantiations
+		 * 	3. Pointer declarations
+		 * 	4. Object assignments
+		 */
+
+		// Check if we're in a member declaration
+		std::shared_ptr<bpp::bpp_datamember> current_datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(entity_stack.top());
+		if (current_datamember != nullptr) {
+			current_datamember->set_default_value(value_assignment);
+			current_datamember->set_pre_access_code(pre_valueassignment_code);
+			current_datamember->set_post_access_code(post_valueassignment_code);
+			return;
+		}
+
+		// Check if we're in an object instantiation or pointer declaration
+		std::shared_ptr<bpp::bpp_object> current_object = std::dynamic_pointer_cast<bpp::bpp_object>(entity_stack.top());
+		if (current_object != nullptr) {
+			// Is it a pointer?
+			if (current_object->is_pointer()) {
+				current_object->set_address(value_assignment);
+			}
+			// Else
+		}
+
+		// Check if we're in an object assignment
+	
 	}
 
 	void enterMethod_definition(BashppParser::Method_definitionContext *ctx) override {
@@ -433,6 +479,25 @@ class BashppListener : public BashppParserBaseListener {
 		skip_comment_singlequotestring
 	}
 	void exitOther_statement(BashppParser::Other_statementContext *ctx) override {
+		skip_comment_singlequotestring
+	}
+
+	void enterRaw_rvalue(BashppParser::Raw_rvalueContext *ctx) override {
+		skip_comment_singlequotestring
+		if (!in_value_assignment) {
+			return;
+		}
+
+		// One of either IDENTIFIER, NUMBER, or BASH_VAR will be set
+		if (ctx->IDENTIFIER() != nullptr) {
+			value_assignment += ctx->IDENTIFIER()->getText();
+		} else if (ctx->NUMBER() != nullptr) {
+			value_assignment += ctx->NUMBER()->getText();
+		} else if (ctx->BASH_VAR() != nullptr) {
+			value_assignment += ctx->BASH_VAR()->getText();
+		}
+	}
+	void exitRaw_rvalue(BashppParser::Raw_rvalueContext *ctx) override {
 		skip_comment_singlequotestring
 	}
 

@@ -60,11 +60,9 @@ constructor_definition: AT KEYWORD_CONSTRUCTOR WS* LBRACE general_statement* RBR
 destructor_definition: AT KEYWORD_DESTRUCTOR WS* LBRACE general_statement* RBRACE;
 
 // Value assignment
-value_assignment: ASSIGN ((IDENTIFIER
+value_assignment: ASSIGN ((raw_rvalue
 	| string
 	| singlequote_string
-	| NUMBER
-	| BASH_VAR
 	| subshell
 	| deprecated_subshell
 	| object_reference
@@ -133,3 +131,6 @@ new_statement: AT KEYWORD_NEW WS* IDENTIFIER;
 
 // Other statement
 other_statement: ~(RBRACE | SUPERSHELL_END | QUOTE_END | SINGLEQUOTE_END | NEWLINE | SUBSHELL_END | DEPRECATED_SUBSHELL_END)+?;
+
+// This rule will *only* ever be matched as part a value_assignment
+raw_rvalue: IDENTIFIER | NUMBER | BASH_VAR;

@@ -40,6 +40,8 @@ class bpp_datamember : public bpp_entity {
 		std::string type = "primitive";
 		std::string name;
 		std::string default_value = "";
+		std::string pre_access_code = "";
+		std::string post_access_code = "";
 		bpp_scope scope = SCOPE_PRIVATE;
 	public:
 		bpp_datamember();
@@ -48,11 +50,15 @@ class bpp_datamember : public bpp_entity {
 		void set_name(std::string name);
 		void set_type(std::string type);
 		void set_default_value(std::string default_value);
+		void set_pre_access_code(std::string pre_access_code);
+		void set_post_access_code(std::string post_access_code);
 		void set_scope(bpp_scope scope);
 
 		std::string get_name() const;
 		std::string get_type() const;
 		std::string get_default_value() const;
+		std::string get_pre_access_code() const;
+		std::string get_post_access_code() const;
 		bpp_scope get_scope() const;
 
 		void destroy();

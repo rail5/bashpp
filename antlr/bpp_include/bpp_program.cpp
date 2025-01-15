@@ -42,7 +42,9 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	for (auto& dm : class_->get_datamembers()) {
 		assignments += dm->get_pre_access_code() + "\n";
 		if (dm->get_type() == "primitive") {
-			assignments += "	eval \"${__objectAddress}__" + dm->get_name() + "=" + dm->get_default_value() + "\"\n";
+			assignments += "	local __objAssignment=" + dm->get_default_value() + "\n";
+			assignments += "	eval \"${__objectAddress}__" + dm->get_name() + "=\\$__objAssignment\"\n";
+			assignments += "	unset __objAssignment\n";
 		} else {
 			assignments += "	bpp__" + dm->get_type() + "____new \"\" ${__objectAddress}__" + dm->get_name() + "\n";
 		}

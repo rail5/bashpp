@@ -159,8 +159,8 @@ class bpp_class : public bpp_entity {
 
 class bpp_object : public bpp_entity {
 	private:
-		std::string name;
-		std::string address;
+		std::string name = "";
+		std::string address = "";
 		std::shared_ptr<bpp_class> object_class;
 		bool m_is_pointer = false;
 	public:

@@ -60,7 +60,20 @@ constructor_definition: AT KEYWORD_CONSTRUCTOR WS* LBRACE general_statement* RBR
 destructor_definition: AT KEYWORD_DESTRUCTOR WS* LBRACE general_statement* RBRACE;
 
 // Value assignment
-value_assignment: ASSIGN acceptable_rvalue?;
+value_assignment: ASSIGN ((IDENTIFIER
+	| string
+	| singlequote_string
+	| NUMBER
+	| BASH_VAR
+	| subshell
+	| deprecated_subshell
+	| object_reference
+	| self_reference
+	| nullptr_ref
+	| pointer_dereference
+	| object_address
+	| supershell)+
+	| new_statement)?;
 
 // Object instantiation
 object_instantiation: AT IDENTIFIER_LVALUE WS* IDENTIFIER (value_assignment)?
@@ -113,21 +126,6 @@ singlequote_string: SINGLEQUOTE statement* SINGLEQUOTE_END;
 comment: COMMENT statement* NEWLINE;
 
 parameter: IDENTIFIER | AT IDENTIFIER WS* IDENTIFIER;
-
-acceptable_rvalue: (IDENTIFIER
-	| string
-	| singlequote_string
-	| NUMBER
-	| BASH_VAR
-	| subshell
-	| deprecated_subshell
-	| object_reference
-	| self_reference
-	| nullptr_ref
-	| pointer_dereference
-	| object_address
-	| supershell)+
-	| new_statement;
 
 nullptr_ref: AT KEYWORD_NULLPTR;
 

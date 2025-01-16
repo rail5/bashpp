@@ -395,6 +395,15 @@ class BashppListener : public BashppParserBaseListener {
 	void exitStatement(BashppParser::StatementContext *ctx) override { 
 		skip_comment
 		skip_singlequote_string
+
+		std::shared_ptr<bpp::bpp_program> current_program = std::dynamic_pointer_cast<bpp::bpp_program>(entity_stack.top());
+		if (current_program != nullptr) {
+			// Make sure we add terminal tokens to the program
+			if (ctx->DELIM() != nullptr) {
+				program->add_code(ctx->DELIM()->getText());
+				return;
+			}
+		}
 	}
 
 	void enterClass_body_statement(BashppParser::Class_body_statementContext *ctx) override { 
@@ -427,6 +436,14 @@ class BashppListener : public BashppParserBaseListener {
 	void enterGeneral_statement(BashppParser::General_statementContext *ctx) override { 
 		skip_comment
 		skip_singlequote_string
+		
+		std::shared_ptr<bpp::bpp_program> current_program = std::dynamic_pointer_cast<bpp::bpp_program>(entity_stack.top());
+		if (current_program != nullptr) {
+			if (ctx->DELIM() != nullptr || ctx->WS() != nullptr) {
+				program->add_code(ctx->getText());
+				return;
+			}
+		}
 	}
 	void exitGeneral_statement(BashppParser::General_statementContext *ctx) override { 
 		skip_comment
@@ -632,10 +649,24 @@ class BashppListener : public BashppParserBaseListener {
 	void enterString(BashppParser::StringContext *ctx) override {
 		skip_comment
 		skip_singlequote_string
+
+		// If we're not in a broader context, simply add an open quote to the program
+		std::shared_ptr<bpp::bpp_program> current_program = std::dynamic_pointer_cast<bpp::bpp_program>(entity_stack.top());
+		if (current_program != nullptr) {
+			program->add_code("\"");
+			return;
+		}
 	}
 	void exitString(BashppParser::StringContext *ctx) override {
 		skip_comment
 		skip_singlequote_string
+
+		// If we're not in a broader context, simply add a close quote to the program
+		std::shared_ptr<bpp::bpp_program> current_program = std::dynamic_pointer_cast<bpp::bpp_program>(entity_stack.top());
+		if (current_program != nullptr) {
+			program->add_code("\"");
+			return;
+		}
 	}
 
 	void enterSinglequote_string(BashppParser::Singlequote_stringContext *ctx) override {

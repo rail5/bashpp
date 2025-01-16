@@ -512,8 +512,6 @@ class BashppListener : public BashppParserBaseListener {
 		std::shared_ptr<bpp::bpp_datamember> referenced_datamember = nullptr;
 
 		if (ctx->IDENTIFIER().size() == 1) {
-			std::cout << "Calling toPrimitive on object of type " << referenced_object->get_class()->get_name() << std::endl;
-
 			// Call toPrimitive in a supershell
 			object_preaccess_code += "function ____supershellRunFunc() {\n";
 
@@ -570,9 +568,6 @@ class BashppListener : public BashppParserBaseListener {
 				can_descend = false;
 			}
 		}
-
-		std::cout << "Handling reference to " << prior_reference << std::endl;
-
 		// If we're not in any broader context, simply add the object reference to the program
 		program->add_code_to_previous_line(object_preaccess_code);
 		program->add_code_to_next_line(object_postaccess_code);
@@ -710,7 +705,6 @@ class BashppListener : public BashppParserBaseListener {
 		// If we're not in any broader context, simply add the statement to the program
 		std::shared_ptr<bpp::bpp_program> current_program = std::dynamic_pointer_cast<bpp::bpp_program>(entity_stack.top());
 		if (current_program != nullptr) {
-			std::cout << "Adding code to program: " << ctx->getText() << std::endl;
 			program->add_code(ctx->getText());
 			return;
 		}

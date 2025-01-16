@@ -672,6 +672,13 @@ class BashppListener : public BashppParserBaseListener {
 		if (in_value_assignment) {
 			value_assignment += ctx->getText();
 		}
+
+		// If we're not in a broader context, simply add the entire string to the program
+		std::shared_ptr<bpp::bpp_program> current_program = std::dynamic_pointer_cast<bpp::bpp_program>(entity_stack.top());
+		if (current_program != nullptr) {
+			program->add_code(ctx->getText());
+			return;
+		}
 	}
 	void exitSinglequote_string(BashppParser::Singlequote_stringContext *ctx) override {
 		skip_comment

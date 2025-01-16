@@ -185,12 +185,21 @@ class bpp_program : public bpp_entity {
 		std::shared_ptr<bpp_class> primitive_class;
 		std::map<std::string, std::shared_ptr<bpp_object>> objects;
 		std::string code = "";
+		std::string nextline_buffer = "";
+		std::string postline_buffer = "";
 	public:
 		bpp_program();
 
 		bool add_class(std::shared_ptr<bpp_class> class_);
 		bool add_object(std::shared_ptr<bpp_object> object);
 		void add_code(std::string code);
+
+		void add_code_to_previous_line(std::string code);
+		void add_code_to_next_line(std::string code);
+
+		void flush_nextline_buffer();
+		void flush_postline_buffer();
+		void flush_code_buffers();
 
 		std::vector<std::shared_ptr<bpp_class>> get_classes() const;
 		std::vector<std::shared_ptr<bpp_object>> get_objects() const;

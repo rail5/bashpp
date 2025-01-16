@@ -167,7 +167,54 @@ bool bpp_program::add_object(std::shared_ptr<bpp_object> object) {
 }
 
 void bpp_program::add_code(std::string code) {
+	// If the code has a newline char, flush the nextline_buffer and the postline_buffer
+	if (code.find("\n") != std::string::npos) {
+		flush_nextline_buffer();
+
+		this->code += code;
+		if (code.back() != '\n') {
+			this->code += "\n";
+		}
+		
+		flush_postline_buffer();
+		return;
+	}
+
+	// Otherwise, add the code to the nextline_buffer
+	nextline_buffer += code;
+}
+
+void bpp_program::add_code_to_previous_line(std::string code) {
 	this->code += code;
+}
+
+void bpp_program::add_code_to_next_line(std::string code) {
+	postline_buffer += code;
+}
+
+void bpp_program::flush_nextline_buffer() {
+	if (!nextline_buffer.empty()) {
+		code += nextline_buffer;
+		if (nextline_buffer.back() != '\n') {
+			code += "\n";
+		}
+	}
+	nextline_buffer = "";
+}
+
+void bpp_program::flush_postline_buffer() {
+	if (!postline_buffer.empty()) {
+		code += postline_buffer;
+		if (postline_buffer.back() != '\n') {
+			code += "\n";
+		}
+	}
+	postline_buffer = "";
+}
+
+void bpp_program::flush_code_buffers() {
+	flush_nextline_buffer();
+	flush_postline_buffer();
 }
 
 std::vector<std::shared_ptr<bpp_class>> bpp_program::get_classes() const {

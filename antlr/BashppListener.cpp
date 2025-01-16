@@ -38,7 +38,7 @@
 class BashppListener : public BashppParserBaseListener {
 	private:
 		std::string source_file;
-		bpp::bpp_program program;
+		std::shared_ptr<bpp::bpp_program> program = std::make_shared<bpp::bpp_program>();
 
 		bool in_comment = false;
 		bool in_singlequote_string = false;
@@ -58,6 +58,10 @@ class BashppListener : public BashppParserBaseListener {
 		std::string pre_valueassignment_code = "";
 		std::string post_valueassignment_code = "";
 
+		std::string object_access_code = "";
+		std::string object_preaccess_code = "";
+		std::string object_postaccess_code = "";
+
 		std::shared_ptr<bpp::bpp_class> primitive;
 		
 	public:
@@ -67,15 +71,21 @@ class BashppListener : public BashppParserBaseListener {
 	}
 
 	void enterProgram(BashppParser::ProgramContext *ctx) override {
-		program.add_code("#!/usr/bin/env bash\n");
-		program.add_code(bpp_supershell_function);
+		program->add_code("#!/usr/bin/env bash\n");
+		program->add_code(bpp_supershell_function);
 
-		entity_stack.push(std::make_shared<bpp::bpp_program>());
+		entity_stack.push(program);
 
-		primitive = program.get_primitive_class();		
+		primitive = program->get_primitive_class();		
 	}
 	void exitProgram(BashppParser::ProgramContext *ctx) override {
-		std::cout << program.get_code() << std::endl;
+		program->flush_code_buffers();
+
+		entity_stack.pop();
+		if (!entity_stack.empty()) {
+			throw internal_error("entity_stack is not empty after exiting program");
+		}
+		std::cout << program->get_code() << std::endl;
 	}
 
 	void enterInclude_statement(BashppParser::Include_statementContext *ctx) override { 
@@ -102,11 +112,11 @@ class BashppListener : public BashppParserBaseListener {
 			throw_syntax_error(ctx->IDENTIFIER(0), "Invalid class name: " + class_name);
 		}
 
-		if (program.get_class(class_name) != nullptr) {
+		if (program->get_class(class_name) != nullptr) {
 			throw_syntax_error(ctx->IDENTIFIER(0), "Class already exists: " + class_name);
 		}
 
-		if (program.get_object(class_name) != nullptr) {
+		if (program->get_object(class_name) != nullptr) {
 			throw_syntax_error(ctx->IDENTIFIER(0), "Object already exists: " + class_name);
 		}
 
@@ -115,7 +125,7 @@ class BashppListener : public BashppParserBaseListener {
 		// Inherit from a parent class if specified
 		if (ctx->IDENTIFIER().size() > 1) {
 			std::string parent_class_name = ctx->IDENTIFIER(1)->getText();
-			std::shared_ptr<bpp::bpp_class> parent_class = program.get_class(parent_class_name);
+			std::shared_ptr<bpp::bpp_class> parent_class = program->get_class(parent_class_name);
 			if (parent_class == nullptr) {
 				throw_syntax_error(ctx->IDENTIFIER(1), "Parent class not found: " + parent_class_name);
 			}
@@ -135,7 +145,7 @@ class BashppListener : public BashppParserBaseListener {
 		entity_stack.pop();
 
 		// Add the class to the program
-		program.add_class(new_class);
+		program->add_class(new_class);
 	}
 
 	void enterMember_declaration(BashppParser::Member_declarationContext *ctx) override {
@@ -229,7 +239,7 @@ class BashppListener : public BashppParserBaseListener {
 		std::shared_ptr<bpp::bpp_object> new_object = std::make_shared<bpp::bpp_object>(object_name_text);
 		entity_stack.push(new_object);
 
-		new_object->set_class(program.get_class(object_type_text));
+		new_object->set_class(program->get_class(object_type_text));
 
 		// Verify that the object's class exists
 		if (new_object->get_class() == nullptr) {
@@ -241,11 +251,11 @@ class BashppListener : public BashppParserBaseListener {
 			throw_syntax_error(object_name, "Invalid object name: " + new_object->get_name());
 		}
 
-		if (program.get_class(new_object->get_name()) != nullptr) {
+		if (program->get_class(new_object->get_name()) != nullptr) {
 			throw_syntax_error(object_name, "Class already exists: " + new_object->get_name());
 		}
 
-		if (program.get_object(new_object->get_name()) != nullptr) {
+		if (program->get_object(new_object->get_name()) != nullptr) {
 			throw_syntax_error(object_name, "Object already exists: " + new_object->get_name());
 		}
 	}
@@ -277,7 +287,7 @@ class BashppListener : public BashppParserBaseListener {
 		}
 
 		// Add the object to the program
-		program.add_object(new_object);
+		program->add_object(new_object);
 	}
 
 	void enterPointer_declaration(BashppParser::Pointer_declarationContext *ctx) override {
@@ -390,6 +400,24 @@ class BashppListener : public BashppParserBaseListener {
 	void enterClass_body_statement(BashppParser::Class_body_statementContext *ctx) override { 
 		skip_comment
 		skip_singlequote_string
+
+		// If we're not in any broader context,
+		// And if this is merely a DELIM or WS token,
+		// Simply add the code to the program
+		std::shared_ptr<bpp::bpp_program> current_program = std::dynamic_pointer_cast<bpp::bpp_program>(entity_stack.top());
+		if (current_program != nullptr) {
+			// Either DELIM or WS should be set
+			if (ctx->DELIM() != nullptr || ctx->WS() != nullptr) {
+				program->add_code(ctx->getText());
+				return;
+			}
+		} else {
+			// If we're in a class body statement, we should be in a class
+			std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
+			if (current_class == nullptr) {
+				throw syntax_error("Stray class body statement outside of class body", source_file, ctx->start->getLine(), ctx->start->getCharPositionInLine());
+			}
+		}
 	}
 	void exitClass_body_statement(BashppParser::Class_body_statementContext *ctx) override { 
 		skip_comment
@@ -452,7 +480,11 @@ class BashppListener : public BashppParserBaseListener {
 		 * 			This has to be done by looking at the types of arguments following the reference
 		 */
 
-		std::shared_ptr<bpp::bpp_object> referenced_object = program.get_object(ctx->IDENTIFIER(0)->getText());
+		object_preaccess_code.clear();
+		object_postaccess_code.clear();
+		object_access_code.clear();
+
+		std::shared_ptr<bpp::bpp_object> referenced_object = program->get_object(ctx->IDENTIFIER(0)->getText());
 		if (referenced_object == nullptr) {
 			throw_syntax_error(ctx->IDENTIFIER(0), "Object not found: " + ctx->IDENTIFIER(0)->getText());
 		}
@@ -463,10 +495,26 @@ class BashppListener : public BashppParserBaseListener {
 		std::shared_ptr<bpp::bpp_datamember> referenced_datamember = nullptr;
 
 		if (ctx->IDENTIFIER().size() == 1) {
-			// Call to object.toPrimitive
 			std::cout << "Calling toPrimitive on object of type " << referenced_object->get_class()->get_name() << std::endl;
-			return;
-		}
+
+			// Call toPrimitive in a supershell
+			object_preaccess_code += "function ____supershellRunFunc() {\n";
+
+			std::string object_name = ctx->IDENTIFIER(0)->getText();
+			if (referenced_object->is_pointer()) {
+				object_preaccess_code += "	bpp__" + referenced_object->get_class()->get_name() + "__toPrimitive \"${!" + object_name + "}\" 1\n";
+			} else {
+				object_preaccess_code += "	bpp__" + referenced_object->get_class()->get_name() + "__toPrimitive \"" + object_name + "\" 0\n";
+			}
+
+			object_preaccess_code += "}\n";
+			object_preaccess_code += "bpp____supershell ____supershellOutput ____supershellRunFunc\n";
+
+			object_access_code = "${____supershellOutput}";
+
+			object_postaccess_code += "unset ____supershellOutput\n";
+			object_postaccess_code += "unset -f ____supershellRunFunc\n";
+			}
 
 		if (ctx->IDENTIFIER().size() > 1) {
 			std::string member_name = ctx->IDENTIFIER(1)->getText();
@@ -490,18 +538,28 @@ class BashppListener : public BashppParserBaseListener {
 			std::string member_name = ctx->IDENTIFIER(i)->getText();
 			prior_reference += "." + member_name;
 			std::shared_ptr<bpp::bpp_class> referenced_datamember_class = referenced_datamember->get_type();
+
 			if (referenced_datamember_class == nullptr) {
 				throw internal_error("Data member class not found: " + referenced_datamember->get_type()->get_name());
 			}
+
 			referenced_datamember = referenced_datamember_class->get_datamember(member_name);
 			if (referenced_datamember == nullptr) {
 				throw_syntax_error(ctx->IDENTIFIER(i), "Data member not found: " + member_name);
 				//TODO(@rail5): Implement method resolution
 			}
+
+			if (referenced_datamember->get_type() == primitive) {
+				can_descend = false;
+			}
 		}
 
 		std::cout << "Handling reference to " << prior_reference << std::endl;
-		std::cout << "Referenced object: " << referenced_datamember->get_name() << std::endl;
+
+		// If we're not in any broader context, simply add the object reference to the program
+		program->add_code_to_previous_line(object_preaccess_code);
+		program->add_code_to_next_line(object_postaccess_code);
+		program->add_code(object_access_code);
 	}
 	void exitObject_reference(BashppParser::Object_referenceContext *ctx) override { 
 		skip_comment
@@ -617,6 +675,14 @@ class BashppListener : public BashppParserBaseListener {
 	void exitOther_statement(BashppParser::Other_statementContext *ctx) override {
 		skip_comment
 		skip_singlequote_string
+
+		// If we're not in any broader context, simply add the statement to the program
+		std::shared_ptr<bpp::bpp_program> current_program = std::dynamic_pointer_cast<bpp::bpp_program>(entity_stack.top());
+		if (current_program != nullptr) {
+			std::cout << "Adding code to program: " << ctx->getText() << std::endl;
+			program->add_code(ctx->getText());
+			return;
+		}
 	}
 
 	void enterRaw_rvalue(BashppParser::Raw_rvalueContext *ctx) override {

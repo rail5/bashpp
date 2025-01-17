@@ -57,6 +57,8 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 			is_method = true;
 			can_descend = false;
 			object_chain.push_back(referenced_method);
+		} else {
+			throw_syntax_error(ctx->IDENTIFIER(i), "Member not found: " + ctx->IDENTIFIER(i)->getText());
 		}
 	}
 

@@ -48,11 +48,40 @@ class bpp_entity {
 		}
 };
 
-class bpp_method : public bpp_entity {
+class bpp_code_entity : public bpp_entity {
+	protected:
+		std::map<std::string, std::shared_ptr<bpp_class>> classes;
+		std::map<std::string, std::shared_ptr<bpp_object>> objects;
+		std::string code = "";
+		std::string nextline_buffer = "";
+		std::string postline_buffer = "";
+	public:
+		bpp_code_entity();
+		virtual ~bpp_code_entity() = default;
+		virtual bool add_class(std::shared_ptr<bpp_class> class_);
+		virtual bool add_object(std::shared_ptr<bpp_object> object);
+
+		virtual void add_code(std::string code);
+		virtual void add_code_to_previous_line(std::string code);
+		virtual void add_code_to_next_line(std::string code);
+
+		virtual void flush_nextline_buffer();
+		virtual void flush_postline_buffer();
+		virtual void flush_code_buffers();
+
+		virtual std::vector<std::shared_ptr<bpp_class>> get_classes() const;
+		virtual std::vector<std::shared_ptr<bpp_object>> get_objects() const;
+		virtual std::string get_code() const;
+		virtual std::shared_ptr<bpp_class> get_class(std::string name);
+		virtual std::shared_ptr<bpp_object> get_object(std::string name);
+
+		virtual void inherit(std::shared_ptr<bpp_code_entity> parent);
+};
+
+class bpp_method : public bpp_code_entity {
 	private:
 		std::string name;
 		std::vector<std::shared_ptr<bpp_method_parameter>> parameters;
-		std::string method_body;
 		bpp_scope scope = SCOPE_PRIVATE;
 		bool m_is_virtual = false;
 	public:
@@ -61,13 +90,11 @@ class bpp_method : public bpp_entity {
 
 		virtual bool add_parameter(std::shared_ptr<bpp_method_parameter> parameter);
 		void set_name(std::string name);
-		void set_method_body(std::string method_body);
 		void set_scope(bpp_scope scope);
 		void set_virtual(bool is_virtual);
 
 		std::string get_name() const;
 		std::vector<std::shared_ptr<bpp_method_parameter>> get_parameters() const;
-		std::string get_method_body() const;
 		bpp_scope get_scope() const;
 		bool is_virtual() const;
 
@@ -131,7 +158,7 @@ class bpp_class : public bpp_entity {
 				std::shared_ptr<bpp_method> toPrimitive = std::make_shared<bpp_method>();
 				toPrimitive->set_name("toPrimitive");
 				std::string default_toPrimitive_body = "	echo " + name + " Instance\n";
-				toPrimitive->set_method_body(default_toPrimitive_body);
+				toPrimitive->add_code(default_toPrimitive_body);
 				remove_default_toPrimitive();
 				methods.push_back(toPrimitive);
 			}
@@ -216,34 +243,14 @@ class bpp_datamember : public bpp_object {
 		void destroy();
 };
 
-class bpp_program : public bpp_entity {
+class bpp_program : public bpp_code_entity {
 	private:
-		std::map<std::string, std::shared_ptr<bpp_class>> classes;
 		std::shared_ptr<bpp_class> primitive_class;
-		std::map<std::string, std::shared_ptr<bpp_object>> objects;
-		std::string code = "";
-		std::string nextline_buffer = "";
-		std::string postline_buffer = "";
 	public:
 		bpp_program();
 
 		bool add_class(std::shared_ptr<bpp_class> class_);
 		bool add_object(std::shared_ptr<bpp_object> object);
-		void add_code(std::string code);
-
-		void add_code_to_previous_line(std::string code);
-		void add_code_to_next_line(std::string code);
-
-		void flush_nextline_buffer();
-		void flush_postline_buffer();
-		void flush_code_buffers();
-
-		std::vector<std::shared_ptr<bpp_class>> get_classes() const;
-		std::vector<std::shared_ptr<bpp_object>> get_objects() const;
-		std::string get_code() const;
-
-		std::shared_ptr<bpp_class> get_class(std::string name);
-		std::shared_ptr<bpp_object> get_object(std::string name);
 
 		std::shared_ptr<bpp_class> get_primitive_class() const;
 };

@@ -16,6 +16,7 @@
 
 #include "../out/BashppParserBaseListener.h"
 
+#include "../bpp_include/bpp_code_entity.cpp"
 #include "../bpp_include/bpp_program.cpp"
 #include "../bpp_include/bpp_class.cpp"
 #include "../bpp_include/bpp_constructor.cpp"

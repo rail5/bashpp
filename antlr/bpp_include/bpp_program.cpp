@@ -90,12 +90,12 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 
 	// Replace %CONSTRUCTORBODY% with the constructor body
 	if (class_->has_constructor()) {
-		class_code = replace_all(class_code, "%CONSTRUCTORBODY%", class_->get_constructor()->get_method_body());
+		class_code = replace_all(class_code, "%CONSTRUCTORBODY%", class_->get_constructor()->get_code());
 	}
 
 	// Replace %DESTRUCTORBODY% with the destructor body
 	if (class_->has_destructor()) {
-		class_code = replace_all(class_code, "%DESTRUCTORBODY%", class_->get_destructor()->get_method_body());
+		class_code = replace_all(class_code, "%DESTRUCTORBODY%", class_->get_destructor()->get_code());
 	}
 
 	// Replace all instances of %CLASS% with the class name
@@ -116,7 +116,7 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 		method_code = replace_all(method_code, "%CLASS%", class_->get_name());
 		method_code = replace_all(method_code, "%SIGNATURE%", method_name);
 		method_code = replace_all(method_code, "%PARAMS%", params);
-		method_code = replace_all(method_code, "%METHODBODY%", method->get_method_body());
+		method_code = replace_all(method_code, "%METHODBODY%", method->get_code());
 		class_code += method_code;
 	}
 
@@ -156,91 +156,6 @@ bool bpp_program::add_object(std::shared_ptr<bpp_object> object) {
 
 	code += object_code;
 	return true;
-}
-
-void bpp_program::add_code(std::string code) {
-	// If the code has a newline char, flush the nextline_buffer and the postline_buffer
-	if (code.find("\n") != std::string::npos) {
-		flush_nextline_buffer();
-
-		this->code += code;
-		if (code.back() != '\n') {
-			this->code += "\n";
-		}
-		
-		flush_postline_buffer();
-		return;
-	}
-
-	// Otherwise, add the code to the nextline_buffer
-	nextline_buffer += code;
-}
-
-void bpp_program::add_code_to_previous_line(std::string code) {
-	this->code += code;
-}
-
-void bpp_program::add_code_to_next_line(std::string code) {
-	postline_buffer += code;
-}
-
-void bpp_program::flush_nextline_buffer() {
-	if (!nextline_buffer.empty()) {
-		code += nextline_buffer;
-		if (nextline_buffer.back() != '\n') {
-			code += "\n";
-		}
-	}
-	nextline_buffer = "";
-}
-
-void bpp_program::flush_postline_buffer() {
-	if (!postline_buffer.empty()) {
-		code += postline_buffer;
-		if (postline_buffer.back() != '\n') {
-			code += "\n";
-		}
-	}
-	postline_buffer = "";
-}
-
-void bpp_program::flush_code_buffers() {
-	flush_nextline_buffer();
-	flush_postline_buffer();
-}
-
-std::vector<std::shared_ptr<bpp_class>> bpp_program::get_classes() const {
-	std::vector<std::shared_ptr<bpp_class>> result;
-	for (auto& c : classes) {
-		result.push_back(c.second);
-	}
-	return result;
-}
-
-std::vector<std::shared_ptr<bpp_object>> bpp_program::get_objects() const {
-	std::vector<std::shared_ptr<bpp_object>> result;
-	for (auto& o : objects) {
-		result.push_back(o.second);
-	}
-	return result;
-}
-
-std::string bpp_program::get_code() const {
-	return code;
-}
-
-std::shared_ptr<bpp::bpp_class> bpp_program::get_class(std::string name) {
-	if (classes.find(name) == classes.end()) {
-		return nullptr;
-	}
-	return classes[name];
-}
-
-std::shared_ptr<bpp::bpp_object> bpp_program::get_object(std::string name) {
-	if (objects.find(name) == objects.end()) {
-		return nullptr;
-	}
-	return objects[name];
 }
 
 } // namespace bpp

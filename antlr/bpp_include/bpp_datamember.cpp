@@ -18,7 +18,7 @@ void bpp_datamember::set_name(std::string name) {
 	this->name = name;
 }
 
-void bpp_datamember::set_type(std::shared_ptr<bpp_class> type) {
+void bpp_datamember::set_class(std::shared_ptr<bpp_class> type) {
 	this->type = type;
 }
 

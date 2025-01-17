@@ -48,37 +48,6 @@ class bpp_entity {
 		}
 };
 
-class bpp_datamember : public bpp_entity {
-	private:
-		std::shared_ptr<bpp_class> type;
-		std::string name;
-		std::string default_value = "";
-		std::string pre_access_code = "";
-		std::string post_access_code = "";
-		bpp_scope scope = SCOPE_PRIVATE;
-		bool is_pointer = false;
-	public:
-		bpp_datamember();
-		explicit bpp_datamember(std::string name);
-
-		void set_name(std::string name);
-		void set_type(std::shared_ptr<bpp_class> type);
-		void set_default_value(std::string default_value);
-		void set_pre_access_code(std::string pre_access_code);
-		void set_post_access_code(std::string post_access_code);
-		void set_scope(bpp_scope scope);
-
-		std::string get_name() const;
-		std::string get_address() const;
-		std::shared_ptr<bpp_class> get_class() const;
-		std::string get_default_value() const;
-		std::string get_pre_access_code() const;
-		std::string get_post_access_code() const;
-		bpp_scope get_scope() const;
-
-		void destroy();
-};
-
 class bpp_method : public bpp_entity {
 	private:
 		std::string name;
@@ -214,6 +183,37 @@ class bpp_object : public bpp_entity {
 		std::string get_address() const;
 		std::shared_ptr<bpp_class> get_class() const;
 		bool is_pointer() const;
+};
+
+class bpp_datamember : public bpp_object {
+	private:
+		std::shared_ptr<bpp_class> type;
+		std::string name;
+		std::string default_value = "";
+		std::string pre_access_code = "";
+		std::string post_access_code = "";
+		bpp_scope scope = SCOPE_PRIVATE;
+		bool m_is_pointer = false;
+	public:
+		bpp_datamember();
+		explicit bpp_datamember(std::string name);
+
+		void set_name(std::string name);
+		void set_class(std::shared_ptr<bpp_class> type);
+		void set_default_value(std::string default_value);
+		void set_pre_access_code(std::string pre_access_code);
+		void set_post_access_code(std::string post_access_code);
+		void set_scope(bpp_scope scope);
+
+		std::string get_name() const;
+		std::string get_address() const;
+		std::shared_ptr<bpp_class> get_class() const;
+		std::string get_default_value() const;
+		std::string get_pre_access_code() const;
+		std::string get_post_access_code() const;
+		bpp_scope get_scope() const;
+
+		void destroy();
 };
 
 class bpp_program : public bpp_entity {

@@ -29,8 +29,8 @@
 		@this.outerDataMember.update "$newValue"
 	}
 	
-	@public @method update @Object newValue {
-		# This (overloaded) method takes a non-primitive object as an argument
+	@public @method updateWithObject @Object newValue {
+		# This method takes a non-primitive object as an argument
 		@delete @this.outerDataMember
 		@this.outerDataMember=@newValue
 	}

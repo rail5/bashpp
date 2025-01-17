@@ -74,7 +74,6 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 		final_object = nullptr;
 	}
 
-	bool must_declare_temporary_variables = false;
 	bool declared_first_temporary_variable = false;
 
 	for (size_t i = 2; i < object_chain.size() - 1; i++) {

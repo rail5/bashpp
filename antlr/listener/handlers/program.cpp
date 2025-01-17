@@ -6,6 +6,8 @@
 #ifndef ANTLR_LISTENER_HANDLERS_PROGRAM_CPP_
 #define ANTLR_LISTENER_HANDLERS_PROGRAM_CPP_
 
+#include <filesystem>
+#include <string.h>
 #include "../BashppListener.h"
 
 void BashppListener::enterProgram(BashppParser::ProgramContext *ctx) {
@@ -33,7 +35,10 @@ void BashppListener::exitProgram(BashppParser::ProgramContext *ctx) {
 	if (!run_on_exit) {
 		*output_stream << program->get_code();
 	} else {
-		char temp_file[] = "/tmp/bashpp_temp_XXXXXX";
+		std::string temp_dir = std::filesystem::temp_directory_path();
+		char temp_file[4097];
+		strncpy(temp_file, temp_dir.c_str(), 4096);
+		strncat(temp_file, "/bashpp_temp_XXXXXX", 4096 - strlen(temp_file));
 		int fd = mkstemp(temp_file);
 		if (fd == -1) {
 			throw std::runtime_error("Failed to create temporary file");

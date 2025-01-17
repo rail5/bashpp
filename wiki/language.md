@@ -140,6 +140,8 @@ Further, methods can take *objects* as arguments:
 }
 ```
 
+Bash++ does not support method overloading. Each method must have a unique name.
+
 # Constructors and Destructors
 
 Classes can have constructors and destructors, which are special methods that are called when an object is created and destroyed, respectively. Constructors are declared using the `@constructor` keyword, and destructors are declared using the `@destructor` keyword.

@@ -8,11 +8,7 @@ program: statement*;
 // Statements
 statement: (class_definition
 	| class_body_statement
-	| general_statement) DELIM?
-	| DELIM
-	| WS
-	| RBRACE
-	| RPAREN;
+	| general_statement) DELIM?;
 
 class_body_statement: member_declaration
 	| method_definition

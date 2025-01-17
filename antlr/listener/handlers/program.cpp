@@ -29,7 +29,22 @@ void BashppListener::exitProgram(BashppParser::ProgramContext *ctx) {
 		throw internal_error("entity_stack is not empty after exiting program");
 	}
 
-	std::cout << program->get_code() << std::endl;
+	//std::cout << program->get_code() << std::endl;
+	if (!run_on_exit) {
+		*output_stream << program->get_code();
+	} else {
+		char temp_file[] = "/tmp/bashpp_temp_XXXXXX";
+		int fd = mkstemp(temp_file);
+		if (fd == -1) {
+			throw std::runtime_error("Failed to create temporary file");
+		}
+		close(fd);
+		std::ofstream temp_stream(temp_file);
+		temp_stream << program->get_code();
+		temp_stream.close();
+		system(("bash " + std::string(temp_file)).c_str());
+		system(("rm " + std::string(temp_file)).c_str());
+	}
 }
 
 #endif // ANTLR_LISTENER_HANDLERS_PROGRAM_CPP_

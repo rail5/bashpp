@@ -9,6 +9,7 @@
 #include <set>
 #include <map>
 #include <antlr4-runtime.h>
+#include <getopt.h>
 
 #include "syntax_error.cpp"
 
@@ -54,15 +55,89 @@
 
 using namespace antlr4;
 
-int main(int argc, const char* argv[]) {
-	if (argc < 2) {
-		std::cerr << "Usage: " << argv[0] << " <input file>" << std::endl;
-		return 1;
+int main(int argc, char* argv[]) {
+	const char* program_name = "Bash++";
+	const char* copyright = "Copyright (C) 2025 Andrew S. Rightenburg\n"
+		"GNU GPL v3.0 or later\n";
+	std::string help_string = "Usage: " + std::string(argv[0]) + " [options] [file]\n"
+		"Options:\n"
+		"  -o, --output <file>   Specify output file\n"
+		"                         If not specified, program will be run on exit\n"
+		"                         If specified as '-', output will be written to stdout\n"
+		"  -v, --version         Print version information\n"
+		"  -h, --help            Print this help message\n";
+	int c;
+	opterr = 0;
+	int option_index = 0;
+	
+	static struct option long_options[] = {
+		{"output", required_argument, 0, 'o'},
+		{"version", no_argument, 0, 'v'},
+		{"help", no_argument, 0, 'h'}
+	};
+
+	bool received_filename = false;
+	bool received_output_filename = false;
+	bool run_on_exit = true;
+	std::string file_to_read;
+	std::string output_file;
+
+	std::ostream* output_stream = &std::cout;
+	std::shared_ptr<std::ofstream> outfilestream;
+	
+	while ((c = getopt_long(argc, argv, "o:vh", long_options, &option_index)) != -1) {
+		switch(c) {
+			case 'o':
+				if (received_output_filename) {
+					std::cerr << program_name << ": Error: Multiple output files specified" << std::endl;
+					return 1;
+				}
+				run_on_exit = false;
+				received_output_filename = true;
+
+				output_file = std::string(optarg);
+
+				if (output_file == "-") {
+					output_stream = &std::cout;
+					break;
+				}
+
+				outfilestream = std::make_shared<std::ofstream>(output_file);
+				if (!*outfilestream) {
+					std::cerr << program_name << ": Error: Could not open file " << output_file << " for output" << std::endl;
+					return 1;
+				}
+				output_stream = outfilestream.get();
+				break;
+			case 'v':
+				std::cout << program_name << " 0.1" << std::endl << copyright;
+				return 0;
+				break;
+			case 'h':
+				std::cout << program_name << " 0.1" << std::endl << copyright << help_string;
+				return 0;
+				break;
+			case '?':
+				if (optopt == 'o') {
+					std::cerr << program_name << ": Option -" << static_cast<char>(optopt) << " requires an argument" << std::endl << "Use -h for help" << std::endl;
+					return 1;
+				}
+				break;
+		}
+	}
+	
+	for (option_index = optind; option_index < argc; option_index++) {
+		if (received_filename) {
+			std::cerr << program_name << ": Error: Multiple files specified" << std::endl;
+			return 1;
+		}
+		file_to_read = argv[option_index];
+		received_filename = true;
 	}
 
-	std::ifstream stream(argv[1]);
+	std::ifstream stream(file_to_read);
 	if (!stream) {
-		std::cerr << "Error: Could not open file " << argv[1] << std::endl;
+		std::cerr << "Error: Could not open source file " << file_to_read << std::endl;
 		return 1;
 	}
 
@@ -89,11 +164,13 @@ int main(int argc, const char* argv[]) {
 		antlr4::tree::ParseTreeWalker walker;
 		BashppListener* listener = new BashppListener();
 		char full_path[PATH_MAX];
-		if (realpath(argv[1], full_path) == nullptr) {
-			std::cerr << "Error: Could not resolve full path for file " << argv[1] << std::endl;
+		if (realpath(file_to_read.c_str(), full_path) == nullptr) {
+			std::cerr << "Error: Could not resolve full path for file " << file_to_read << std::endl;
 			return 1;
 		}
 		listener->set_source_file(full_path);
+		listener->set_output_stream(output_stream);
+		listener->set_run_on_exit(run_on_exit);
 		walker.walk(listener, tree);
 
 	} catch (const antlr4::EmptyStackException& e) {

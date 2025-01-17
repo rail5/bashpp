@@ -37,7 +37,7 @@ general_statement: include_statement
 	| WS;
 
 // Include statement
-include_statement: AT KEYWORD_INCLUDE WS* string;
+include_statement: AT (KEYWORD_INCLUDE | KEYWORD_INCLUDE_ONCE) WS* string;
 
 // Class definition
 class_definition: AT KEYWORD_CLASS WS* IDENTIFIER WS* (COLON WS* IDENTIFIER WS*)? LBRACE (class_body_statement | general_statement)* RBRACE;

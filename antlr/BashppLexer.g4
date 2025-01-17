@@ -215,6 +215,7 @@ KEYWORD_DESTRUCTOR: 'destructor';
 KEYWORD_NEW: 'new';
 KEYWORD_DELETE: 'delete';
 KEYWORD_NULLPTR: 'nullptr';
+KEYWORD_INCLUDE_ONCE: 'include_once';
 KEYWORD_INCLUDE: 'include';
 KEYWORD_THIS: 'this' {
 	if (incoming_token_can_be_lvalue) {

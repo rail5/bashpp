@@ -106,9 +106,6 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	for (auto& method : class_->get_methods()) {
 		std::string method_code = template_method;
 		std::string method_name = method->get_name();
-		if (method_name == "toPrimitive") {
-			found_toPrimitive = true;
-		}
 		std::string params = "";
 		for (size_t i = 0; i < method->get_parameters().size(); i++) {
 			params += method->get_parameters()[i]->get_name() + "=\"$" + std::to_string(i + 3) + "\"";
@@ -121,11 +118,6 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 		method_code = replace_all(method_code, "%PARAMS%", params);
 		method_code = replace_all(method_code, "%METHODBODY%", method->get_method_body());
 		class_code += method_code;
-	}
-
-	// Is there a user-defined toPrimitive method?
-	if (!found_toPrimitive) {
-		class_code += replace_all(template_toPrimitive, "%CLASS%", class_->get_name());
 	}
 
 	code += class_code;

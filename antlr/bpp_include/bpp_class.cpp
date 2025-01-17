@@ -12,7 +12,9 @@ namespace bpp {
 
 bpp_class::bpp_class() {}
 
-bpp_class::bpp_class(std::string name) : name(name) {}
+bpp_class::bpp_class(std::string name) : name(name) {
+	add_default_toPrimitive();
+}
 
 bpp_class::bpp_class(const bpp_class& other, std::string name) : name(name) {
 	// Handling inheritance
@@ -22,14 +24,24 @@ bpp_class::bpp_class(const bpp_class& other, std::string name) : name(name) {
 	datamembers = other.get_datamembers();
 	constructor = other.get_constructor();
 	destructor = other.get_destructor();
+
+	add_default_toPrimitive();
 }
 
 void bpp_class::set_name(std::string name) {
 	this->name = name;
+
+	add_default_toPrimitive();
 }
 
 bool bpp_class::add_method(std::shared_ptr<bpp_method> method) {
 	std::string name = method->get_name();
+
+	if (name == "toPrimitive" && !has_custom_toPrimitive) {
+		remove_default_toPrimitive();
+		has_custom_toPrimitive = true;
+	}
+
 	for (auto& m : methods) {
 		if (m->get_name() == name) {
 			return false;

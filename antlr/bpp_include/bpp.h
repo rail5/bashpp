@@ -143,6 +143,30 @@ class bpp_class : public bpp_entity {
 		std::shared_ptr<bpp_destructor> destructor;
 		bool constructor_set = false;
 		bool destructor_set = false;
+		bool has_custom_toPrimitive = false;
+
+		void remove_default_toPrimitive() {
+			if (!has_custom_toPrimitive) {
+				// Remove the toPrimitive method from the methods vector
+				for (auto it = methods.begin(); it != methods.end(); it++) {
+					if ((*it)->get_name() == "toPrimitive") {
+						methods.erase(it);
+						break;
+					}
+				}
+			}
+		}
+
+		void add_default_toPrimitive() {
+			if (!has_custom_toPrimitive) {
+				std::shared_ptr<bpp_method> toPrimitive = std::make_shared<bpp_method>();
+				toPrimitive->set_name("toPrimitive");
+				std::string default_toPrimitive_body = "	echo " + name + " Instance\n";
+				toPrimitive->set_method_body(default_toPrimitive_body);
+				remove_default_toPrimitive();
+				methods.push_back(toPrimitive);
+			}
+		}
 	public:
 		bpp_class();
 		explicit bpp_class(std::string name);

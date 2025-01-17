@@ -95,9 +95,4 @@ const char* template_destructor = R"EOF(function bpp__%CLASS%____destructor() {
 }
 )EOF";
 
-const char* template_toPrimitive = R"EOF(function bpp__%CLASS%__toPrimitive() {
-	echo "%CLASS% Instance"
-}
-)EOF";
-
 #endif // ANTLR_BPP_TEMPLATES_H_

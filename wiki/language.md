@@ -416,6 +416,16 @@ source "script.sh"
 
 However, scripts included with `source` or `.` will not be processed by the Bash++ compiler and will not have access to Bash++ features.
 
+You can also use the `@include_once` directive to ensure that a file is included only once. This can be useful if you have multiple files that include the same file.
+
+```bash
+@include "class_definition.bpp"
+@include "class_definition.bpp" # Error! Re-definition of the same class
+
+@include_once "class_definition.bpp"
+@include_once "class_definition.bpp" # OK! The compiler will only include the file the first time around
+```
+
 # Supershells
 
 Ordinary Bash supports a construct called a "subshell," which is created by enclosing a command in parentheses. A subshell is a separate instance of the shell that runs the commands within it. When the subshell exits, any changes to the environment made within it are lost.

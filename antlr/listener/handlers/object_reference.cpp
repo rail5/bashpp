@@ -27,7 +27,13 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 	object_postaccess_code.clear();
 	object_access_code.clear();
 
-	std::shared_ptr<bpp::bpp_object> referenced_object = program->get_object(ctx->IDENTIFIER(0)->getText());
+	// Get the current code entity
+	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
+	if (current_code_entity == nullptr) {
+		throw_syntax_error(ctx->IDENTIFIER(0), "Object reference outside of code entity");
+	}
+
+	std::shared_ptr<bpp::bpp_object> referenced_object = current_code_entity->get_object(ctx->IDENTIFIER(0)->getText());
 	if (referenced_object == nullptr) {
 		throw_syntax_error(ctx->IDENTIFIER(0), "Object not found: " + ctx->IDENTIFIER(0)->getText());
 	}
@@ -166,10 +172,14 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 	skip_comment
 	skip_singlequote_string
 
-	// If we're not in any broader context, simply add the object reference to the program
-	program->add_code_to_previous_line(object_preaccess_code);
-	program->add_code_to_next_line(object_postaccess_code);
-	program->add_code(object_access_code);
+	// If we're not in any broader context, simply add the object reference to the current code entity
+	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
+	if (current_code_entity != nullptr) {
+		current_code_entity->add_code_to_previous_line(object_preaccess_code);
+		current_code_entity->add_code_to_next_line(object_postaccess_code);
+		current_code_entity->add_code(object_access_code);
+		return;
+	}
 }
 
 #endif // ANTLR_LISTENER_HANDLERS_OBJECT_REFERENCE_CPP_

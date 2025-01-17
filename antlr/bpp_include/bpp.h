@@ -82,21 +82,28 @@ class bpp_method : public bpp_code_entity {
 	private:
 		std::string name;
 		std::vector<std::shared_ptr<bpp_method_parameter>> parameters;
+		std::map<std::string, std::shared_ptr<bpp_object>> local_objects;
 		bpp_scope scope = SCOPE_PRIVATE;
 		bool m_is_virtual = false;
 	public:
 		bpp_method();
 		explicit bpp_method(std::string name);
 
+		bool add_object(std::shared_ptr<bpp_object> object) override;
+
 		virtual bool add_parameter(std::shared_ptr<bpp_method_parameter> parameter);
 		void set_name(std::string name);
 		void set_scope(bpp_scope scope);
 		void set_virtual(bool is_virtual);
 
+		std::shared_ptr<bpp_object> get_object(std::string name) override;
+
 		std::string get_name() const;
 		std::vector<std::shared_ptr<bpp_method_parameter>> get_parameters() const;
 		bpp_scope get_scope() const;
 		bool is_virtual() const;
+
+		void destruct_local_objects();
 
 		void destroy();
 };
@@ -249,8 +256,8 @@ class bpp_program : public bpp_code_entity {
 	public:
 		bpp_program();
 
-		bool add_class(std::shared_ptr<bpp_class> class_);
-		bool add_object(std::shared_ptr<bpp_object> object);
+		bool add_class(std::shared_ptr<bpp_class> class_) override;
+		bool add_object(std::shared_ptr<bpp_object> object) override;
 
 		std::shared_ptr<bpp_class> get_primitive_class() const;
 };

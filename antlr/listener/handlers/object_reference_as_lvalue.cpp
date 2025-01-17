@@ -28,7 +28,13 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 	object_postaccess_code.clear();
 	object_access_code.clear();
 
-	std::shared_ptr<bpp::bpp_object> referenced_object = program->get_object(ctx->IDENTIFIER_LVALUE()->getText());
+	// Get the current code entity
+	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
+	if (current_code_entity == nullptr) {
+		current_code_entity = program;
+	}
+
+	std::shared_ptr<bpp::bpp_object> referenced_object = current_code_entity->get_object(ctx->IDENTIFIER_LVALUE()->getText());
 	if (referenced_object == nullptr) {
 		throw_syntax_error(ctx->IDENTIFIER(0), "Object not found: " + ctx->IDENTIFIER_LVALUE()->getText());
 	}
@@ -186,12 +192,12 @@ void BashppListener::exitObject_reference_as_lvalue(BashppParser::Object_referen
 	}
 
 
-	// If we're not in a broader context, simply add the current object access code to the program
-	std::shared_ptr<bpp::bpp_program> current_program = std::dynamic_pointer_cast<bpp::bpp_program>(entity_stack.top());
-	if (current_program != nullptr) {
-		current_program->add_code_to_previous_line(object_preaccess_code);
-		current_program->add_code_to_next_line(object_postaccess_code);
-		current_program->add_code(object_access_code);
+	// If we're not in a broader context, simply add the current object access code to the current code entity
+	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
+	if (current_code_entity != nullptr) {
+		current_code_entity->add_code_to_previous_line(object_preaccess_code);
+		current_code_entity->add_code_to_next_line(object_postaccess_code);
+		current_code_entity->add_code(object_access_code);
 		return;
 	}
 }

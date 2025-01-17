@@ -17,10 +17,10 @@ void BashppListener::enterSinglequote_string(BashppParser::Singlequote_stringCon
 		value_assignment += ctx->getText();
 	}
 
-	// If we're not in a broader context, simply add the entire string to the program
-	std::shared_ptr<bpp::bpp_program> current_program = std::dynamic_pointer_cast<bpp::bpp_program>(entity_stack.top());
-	if (current_program != nullptr) {
-		program->add_code(ctx->getText());
+	// If we're not in a broader context, simply add the entire string to the current code entity
+	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
+	if (current_code_entity != nullptr) {
+		current_code_entity->add_code(ctx->getText());
 		return;
 	}
 }

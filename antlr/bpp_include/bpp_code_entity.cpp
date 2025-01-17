@@ -124,10 +124,10 @@ std::shared_ptr<bpp::bpp_object> bpp_code_entity::get_object(std::string name) {
 
 void bpp_code_entity::inherit(std::shared_ptr<bpp_code_entity> parent) {
 	for (auto& c : parent->get_classes()) {
-		add_class(c);
+		classes[c->get_name()] = c;
 	}
 	for (auto& o : parent->get_objects()) {
-		add_object(o);
+		objects[o->get_name()] = o;
 	}
 }
 

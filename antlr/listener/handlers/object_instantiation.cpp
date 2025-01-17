@@ -40,10 +40,16 @@ void BashppListener::enterObject_instantiation(BashppParser::Object_instantiatio
 	std::string object_type_text = object_type->getText();
 	std::string object_name_text = object_name->getText();
 
+	// Get the current code entity
+	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
+	if (current_code_entity == nullptr) {
+		current_code_entity = program;
+	}
+
 	std::shared_ptr<bpp::bpp_object> new_object = std::make_shared<bpp::bpp_object>(object_name_text);
 	entity_stack.push(new_object);
 
-	new_object->set_class(program->get_class(object_type_text));
+	new_object->set_class(current_code_entity->get_class(object_type_text));
 
 	// Verify that the object's class exists
 	if (new_object->get_class() == nullptr) {
@@ -55,11 +61,11 @@ void BashppListener::enterObject_instantiation(BashppParser::Object_instantiatio
 		throw_syntax_error(object_name, "Invalid object name: " + new_object->get_name());
 	}
 
-	if (program->get_class(new_object->get_name()) != nullptr) {
+	if (current_code_entity->get_class(new_object->get_name()) != nullptr) {
 		throw_syntax_error(object_name, "Class already exists: " + new_object->get_name());
 	}
 
-	if (program->get_object(new_object->get_name()) != nullptr) {
+	if (current_code_entity->get_object(new_object->get_name()) != nullptr) {
 		throw_syntax_error(object_name, "Object already exists: " + new_object->get_name());
 	}
 }
@@ -84,15 +90,12 @@ void BashppListener::exitObject_instantiation(BashppParser::Object_instantiation
 		return;
 	}
 
-	std::shared_ptr<bpp::bpp_method> current_method = std::dynamic_pointer_cast<bpp::bpp_method>(entity_stack.top());
-	if (current_method != nullptr) {
-		// We're midway through a method definition
-		// The data for this object should be moved to the method body
+	// Add the object to the current code entity
+	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
+	if (current_code_entity != nullptr) {
+		current_code_entity->add_object(new_object);
 		return;
 	}
-
-	// Add the object to the program
-	program->add_object(new_object);
 }
 
 #endif // ANTLR_LISTENER_HANDLERS_OBJECT_INSTANTIATION_CPP_

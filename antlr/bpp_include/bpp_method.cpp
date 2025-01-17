@@ -14,6 +14,51 @@ bpp_method::bpp_method() {}
 
 bpp_method::bpp_method(std::string name) : name(name) {}
 
+bool bpp_method::add_object(std::shared_ptr<bpp_object> object) {
+	std::string name = object->get_name();
+	if (objects.find(name) != objects.end() || local_objects.find(name) != local_objects.end()) {
+		return false;
+	}
+
+	// Verify that the type of the object is a valid class
+	std::string type = object->get_class()->get_name();
+	if (classes.find(type) == classes.end()) {
+		return false;
+	}
+
+	local_objects[name] = object;
+
+	// Add the code for the object
+	std::string object_code = "";
+
+	// Is it a pointer?
+	if (object->is_pointer()) {
+		object_code += "bpp__" + type + "____new \"\" " + name + "\n";
+	} else {
+		object_code += "bpp__" + type + "____new " + name + "\n";
+	}
+
+	// Call the constructor if it exists
+	if (object->get_class()->has_constructor()) {
+		object_code += "bpp__" + type + "____constructor " + name + " " + (object->is_pointer() ? "1" : "0") + "\n";
+	}
+
+	code += object_code;
+	return true;
+}
+
+std::shared_ptr<bpp_object> bpp_method::get_object(std::string name) {
+	if (local_objects.find(name) != local_objects.end()) {
+		return local_objects[name];
+	}
+	
+	if (objects.find(name) != objects.end()) {
+		return objects[name];
+	}
+
+	return nullptr;
+}
+
 bool bpp_method::add_parameter(std::shared_ptr<bpp_method_parameter> parameter) {
 	std::string name = parameter->get_name();
 	for (auto& p : parameters) {
@@ -51,6 +96,18 @@ bpp_scope bpp_method::get_scope() const {
 
 bool bpp_method::is_virtual() const {
 	return m_is_virtual;
+}
+
+void bpp_method::destruct_local_objects() {
+	for (auto& o : local_objects) {
+		// If it has a destructor, call it
+		if (o.second->get_class()->has_destructor()) {
+			code += "bpp__" + o.second->get_class()->get_name() + "____destructor " + o.first + " 0\n";
+		}
+		// Call delete
+		code += "bpp__" + o.second->get_class()->get_name() + "____delete " + o.first + " 0\n";
+	}
+	local_objects.clear();
 }
 
 void bpp_method::destroy() {

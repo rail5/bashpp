@@ -26,7 +26,10 @@ void BashppListener::exitObject_assignment(BashppParser::Object_assignmentContex
 
 	in_object_assignment = false;
 
-	std::string object_assignment_code = "eval " + object_assignment_lvalue + "=" + object_assignment_rvalue;
+	pre_objectassignment_code += "____assignmentRVal=" + object_assignment_rvalue + "\n";
+	post_objectassignment_code += "unset ____assignmentRVal\n";
+
+	std::string object_assignment_code = "eval " + object_assignment_lvalue + "=\\$____assignmentRVal\n";
 
 	// If we're not in a broader context, simply add the object assignment code to the program
 	std::shared_ptr<bpp::bpp_program> current_program = std::dynamic_pointer_cast<bpp::bpp_program>(entity_stack.top());

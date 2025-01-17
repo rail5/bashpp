@@ -42,7 +42,11 @@ std::string bpp_datamember::get_name() const {
 	return name;
 }
 
-std::shared_ptr<bpp_class> bpp_datamember::get_type() const {
+std::string bpp_datamember::get_address() const {
+	return "bpp__" + type->get_name() + "__${__objectName}__" + name;
+}
+
+std::shared_ptr<bpp_class> bpp_datamember::get_class() const {
 	return type;
 }
 

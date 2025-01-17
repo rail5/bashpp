@@ -21,11 +21,6 @@ enum bpp_scope {
 	SCOPE_PRIVATE
 };
 
-class bpp_entity {
-	public:
-		virtual ~bpp_entity() = default;
-};
-
 class bpp_program;
 class bpp_class;
 class bpp_method;
@@ -35,6 +30,24 @@ class bpp_constructor;
 class bpp_destructor;
 class bpp_object;
 
+class bpp_entity {
+	protected:
+		std::shared_ptr<bpp_class> type = nullptr;
+	public:
+		virtual ~bpp_entity() = default;
+		virtual std::shared_ptr<bpp_class> get_class() const {
+			return type;
+		}
+
+		virtual std::string get_address() const {
+			return "";
+		}
+
+		virtual std::string get_name() const {
+			return "";
+		}
+};
+
 class bpp_datamember : public bpp_entity {
 	private:
 		std::shared_ptr<bpp_class> type;
@@ -43,6 +56,7 @@ class bpp_datamember : public bpp_entity {
 		std::string pre_access_code = "";
 		std::string post_access_code = "";
 		bpp_scope scope = SCOPE_PRIVATE;
+		bool is_pointer = false;
 	public:
 		bpp_datamember();
 		explicit bpp_datamember(std::string name);
@@ -55,7 +69,8 @@ class bpp_datamember : public bpp_entity {
 		void set_scope(bpp_scope scope);
 
 		std::string get_name() const;
-		std::shared_ptr<bpp_class> get_type() const;
+		std::string get_address() const;
+		std::shared_ptr<bpp_class> get_class() const;
 		std::string get_default_value() const;
 		std::string get_pre_access_code() const;
 		std::string get_post_access_code() const;
@@ -161,7 +176,7 @@ class bpp_object : public bpp_entity {
 	private:
 		std::string name = "";
 		std::string address = "";
-		std::shared_ptr<bpp_class> object_class;
+		std::shared_ptr<bpp_class> type;
 		bool m_is_pointer = false;
 	public:
 		bpp_object();

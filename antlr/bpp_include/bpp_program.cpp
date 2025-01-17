@@ -49,12 +49,12 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	std::string assignments = "";
 	for (auto& dm : class_->get_datamembers()) {
 		assignments += dm->get_pre_access_code() + "\n";
-		if (dm->get_type()->get_name() == "primitive") {
+		if (dm->get_class()->get_name() == "primitive") {
 			assignments += "	local __objAssignment=" + dm->get_default_value() + "\n";
 			assignments += "	eval \"${__objectAddress}__" + dm->get_name() + "=\\$__objAssignment\"\n";
 			assignments += "	unset __objAssignment\n";
 		} else {
-			assignments += "	bpp__" + dm->get_type()->get_name() + "____new \"\" ${__objectAddress}__" + dm->get_name() + "\n";
+			assignments += "	bpp__" + dm->get_class()->get_name() + "____new \"\" ${__objectAddress}__" + dm->get_name() + "\n";
 		}
 		assignments += dm->get_post_access_code() + "\n";
 	}
@@ -64,10 +64,10 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	std::string deletions = "";
 	for (auto& dm : class_->get_datamembers()) {
 		deletions += dm->get_pre_access_code() + "\n";
-		if (dm->get_type()->get_name() == "primitive") {
+		if (dm->get_class()->get_name() == "primitive") {
 			deletions += "	unset ${__objectAddress}__" + dm->get_name() + "\n";
 		} else {
-			deletions += "	bpp__" + dm->get_type()->get_name() + "____delete ${__objectAddress}__" + dm->get_name() + " 1\n";
+			deletions += "	bpp__" + dm->get_class()->get_name() + "____delete ${__objectAddress}__" + dm->get_name() + " 1\n";
 			deletions += "	unset ${__objectAddress}__" + dm->get_name() + "\n";
 		}
 		deletions += dm->get_post_access_code() + "\n";
@@ -78,11 +78,11 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	std::string copies = "";
 	for (auto& dm : class_->get_datamembers()) {
 		copies += dm->get_pre_access_code() + "\n";
-		if (dm->get_type()->get_name() == "primitive") {
+		if (dm->get_class()->get_name() == "primitive") {
 			copies += "	local __copyFrom__" + dm->get_name() + "=\"${__copyFromAddress}__" + dm->get_name() + "\"\n";
 			copies += "	eval \"${__copyToAddress}__" + dm->get_name() + "=\\${!__copyFrom__" + dm->get_name() + "}\"\n";
 		} else {
-			copies += "	bpp__" + dm->get_type()->get_name() + "____copy ${__copyFromAddress}__" + dm->get_name() + " ${__copyToAddress}__" + dm->get_name() + " 1 1\n";
+			copies += "	bpp__" + dm->get_class()->get_name() + "____copy ${__copyFromAddress}__" + dm->get_name() + " ${__copyToAddress}__" + dm->get_name() + " 1 1\n";
 		}
 		copies += dm->get_post_access_code() + "\n";
 	}

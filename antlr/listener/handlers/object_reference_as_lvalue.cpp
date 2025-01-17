@@ -10,6 +10,7 @@
 
 void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_reference_as_lvalueContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 
 	/**
@@ -36,7 +37,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 
 	std::shared_ptr<bpp::bpp_object> referenced_object = current_code_entity->get_object(ctx->IDENTIFIER_LVALUE()->getText());
 	if (referenced_object == nullptr) {
-		throw_syntax_error(ctx->IDENTIFIER(0), "Object not found: " + ctx->IDENTIFIER_LVALUE()->getText());
+		throw_syntax_error(ctx->AT(), "Object not found: " + ctx->IDENTIFIER_LVALUE()->getText());
 	}
 
 	std::vector<std::shared_ptr<bpp::bpp_entity>> object_chain;
@@ -180,6 +181,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 
 void BashppListener::exitObject_reference_as_lvalue(BashppParser::Object_reference_as_lvalueContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 
 	// If we're in the middle of an object assignment, add the preaccess code and the postaccess code to the program

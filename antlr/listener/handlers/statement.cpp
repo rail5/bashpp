@@ -10,11 +10,13 @@
 
 void BashppListener::enterStatement(BashppParser::StatementContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 }
 
 void BashppListener::exitStatement(BashppParser::StatementContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 
 	std::shared_ptr<bpp::bpp_program> current_program = std::dynamic_pointer_cast<bpp::bpp_program>(entity_stack.top());

@@ -10,6 +10,7 @@
 
 void BashppListener::enterObject_reference(BashppParser::Object_referenceContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 
 	/**
@@ -170,6 +171,7 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 
 void BashppListener::exitObject_reference(BashppParser::Object_referenceContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 
 	// If we're not in any broader context, simply add the object reference to the current code entity

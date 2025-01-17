@@ -10,6 +10,7 @@
 
 void BashppListener::enterObject_instantiation(BashppParser::Object_instantiationContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 
 	/**
@@ -53,25 +54,30 @@ void BashppListener::enterObject_instantiation(BashppParser::Object_instantiatio
 
 	// Verify that the object's class exists
 	if (new_object->get_class() == nullptr) {
-		throw_syntax_error(object_type, "Class not found: " + object_type->getText());
+		entity_stack.pop();
+		throw_syntax_error(ctx->AT(), "Class not found: " + object_type->getText());
 	}
 
 	// Verify that the object's name is not already in use (or a protected keyword)
 	if (protected_keywords.find(new_object->get_name()) != protected_keywords.end()) {
+		entity_stack.pop();
 		throw_syntax_error(object_name, "Invalid object name: " + new_object->get_name());
 	}
 
 	if (current_code_entity->get_class(new_object->get_name()) != nullptr) {
+		entity_stack.pop();
 		throw_syntax_error(object_name, "Class already exists: " + new_object->get_name());
 	}
 
 	if (current_code_entity->get_object(new_object->get_name()) != nullptr) {
+		entity_stack.pop();
 		throw_syntax_error(object_name, "Object already exists: " + new_object->get_name());
 	}
 }
 
 void BashppListener::exitObject_instantiation(BashppParser::Object_instantiationContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 
 	std::shared_ptr<bpp::bpp_object> new_object = std::dynamic_pointer_cast<bpp::bpp_object>(entity_stack.top());

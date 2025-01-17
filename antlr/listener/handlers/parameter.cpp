@@ -10,6 +10,7 @@
 
 void BashppListener::enterParameter(BashppParser::ParameterContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 
 	// Verify we're in a method
@@ -43,6 +44,7 @@ void BashppListener::enterParameter(BashppParser::ParameterContext *ctx) {
 
 void BashppListener::exitParameter(BashppParser::ParameterContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 }
 

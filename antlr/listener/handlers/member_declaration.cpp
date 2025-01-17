@@ -10,6 +10,7 @@
 
 void BashppListener::enterMember_declaration(BashppParser::Member_declarationContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
@@ -41,16 +42,18 @@ void BashppListener::enterMember_declaration(BashppParser::Member_declarationCon
 	 * If it's a pointer, then pointer_declaration will be set, and we'll handle that in the pointer_declaration rule
 	 */
 
+	new_datamember->set_class(primitive); // Set the class to primitive by default (until changed by another parser rule)
+
 	if (ctx->IDENTIFIER() != nullptr) {
 		// It's a primitive
 		std::string member_name = ctx->IDENTIFIER()->getText();
 		new_datamember->set_name(member_name);
-		new_datamember->set_class(primitive);
 	}
 }
 
 void BashppListener::exitMember_declaration(BashppParser::Member_declarationContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 
 	std::shared_ptr<bpp::bpp_datamember> new_datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(entity_stack.top());

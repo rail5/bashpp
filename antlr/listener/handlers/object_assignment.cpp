@@ -10,6 +10,7 @@
 
 void BashppListener::enterObject_assignment(BashppParser::Object_assignmentContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 
 	in_object_assignment = true;
@@ -22,6 +23,7 @@ void BashppListener::enterObject_assignment(BashppParser::Object_assignmentConte
 
 void BashppListener::exitObject_assignment(BashppParser::Object_assignmentContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 
 	in_object_assignment = false;

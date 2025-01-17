@@ -10,6 +10,7 @@
 
 void BashppListener::enterValue_assignment(BashppParser::Value_assignmentContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 	in_value_assignment = true;
 	pre_valueassignment_code.clear();
@@ -19,6 +20,7 @@ void BashppListener::enterValue_assignment(BashppParser::Value_assignmentContext
 
 void BashppListener::exitValue_assignment(BashppParser::Value_assignmentContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 	in_value_assignment = false;
 

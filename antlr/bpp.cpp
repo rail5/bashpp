@@ -10,6 +10,8 @@
 #include <map>
 #include <antlr4-runtime.h>
 
+#include "syntax_error.cpp"
+
 #include "out/BashppLexer.h"
 #include "out/BashppParser.h"
 
@@ -48,7 +50,6 @@
 #include "listener/handlers/supershell.cpp"
 #include "listener/handlers/value_assignment.cpp"
 
-#include "syntax_error.cpp"
 #include "internal_error.cpp"
 
 using namespace antlr4;
@@ -87,15 +88,18 @@ int main(int argc, const char* argv[]) {
 		// Walk the tree
 		antlr4::tree::ParseTreeWalker walker;
 		BashppListener* listener = new BashppListener();
-		listener->set_source_file(argv[1]);
+		char full_path[PATH_MAX];
+		if (realpath(argv[1], full_path) == nullptr) {
+			std::cerr << "Error: Could not resolve full path for file " << argv[1] << std::endl;
+			return 1;
+		}
+		listener->set_source_file(full_path);
 		walker.walk(listener, tree);
 
 	} catch (const antlr4::EmptyStackException& e) {
 		std::cerr << "EmptyStackException: " << e.what() << std::endl;
 	} catch (const RecognitionException& e) {
 		std::cerr << "Recognition exception: " << e.what() << std::endl;
-	} catch (const syntax_error& e) {
-		std::cerr << "Syntax error: " << e.what() << std::endl;
 	} catch (const internal_error& e) {
 		std::cerr << "Internal error: " << e.what() << std::endl;
 	} catch (const std::exception& e) {

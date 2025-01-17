@@ -10,6 +10,7 @@
 
 void BashppListener::enterClass_body_statement(BashppParser::Class_body_statementContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 
 	// If this is merely a DELIM or WS token,
@@ -32,17 +33,24 @@ void BashppListener::enterClass_body_statement(BashppParser::Class_body_statemen
 	if (current_code_entity != nullptr && just_delim_or_whitespace) {
 		current_code_entity->add_code(delim_or_whitespace);
 		return;
-	} else {
+	}
+
+	if (just_delim_or_whitespace) {
+		return;
+	}
+	
+	if (current_code_entity == nullptr) {
 		// If we're in a class body statement, we should be in a class
 		std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 		if (current_class == nullptr) {
-			throw syntax_error("Stray class body statement outside of class body", source_file, ctx->start->getLine(), ctx->start->getCharPositionInLine());
+			throw_syntax_error_sym(ctx->start, "Stray class body statement outside of class body");
 		}
 	}
 }
 
 void BashppListener::exitClass_body_statement(BashppParser::Class_body_statementContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 }
 

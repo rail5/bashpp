@@ -102,7 +102,6 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	class_code = replace_all(class_code, "%CLASS%", class_->get_name());
 
 	// Add the methods
-	bool found_toPrimitive = false;
 	for (auto& method : class_->get_methods()) {
 		std::string method_code = template_method;
 		std::string method_name = method->get_name();

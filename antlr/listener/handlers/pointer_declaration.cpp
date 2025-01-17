@@ -10,11 +10,13 @@
 
 void BashppListener::enterPointer_declaration(BashppParser::Pointer_declarationContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 }
 
 void BashppListener::exitPointer_declaration(BashppParser::Pointer_declarationContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 }
 

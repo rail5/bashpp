@@ -10,6 +10,7 @@
 
 void BashppListener::enterGeneral_statement(BashppParser::General_statementContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 	
 	std::shared_ptr<bpp::bpp_program> current_program = std::dynamic_pointer_cast<bpp::bpp_program>(entity_stack.top());
@@ -23,6 +24,7 @@ void BashppListener::enterGeneral_statement(BashppParser::General_statementConte
 
 void BashppListener::exitGeneral_statement(BashppParser::General_statementContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 }
 

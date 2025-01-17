@@ -10,11 +10,13 @@
 
 void BashppListener::enterObject_address(BashppParser::Object_addressContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 }
 
 void BashppListener::exitObject_address(BashppParser::Object_addressContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 }
 

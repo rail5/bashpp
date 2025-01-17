@@ -10,6 +10,7 @@
 
 void BashppListener::enterMethod_definition(BashppParser::Method_definitionContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 
 	// Verify we're in a class
@@ -28,6 +29,7 @@ void BashppListener::enterMethod_definition(BashppParser::Method_definitionConte
 
 void BashppListener::exitMethod_definition(BashppParser::Method_definitionContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 
 	// Get the method from the entity stack
@@ -40,7 +42,7 @@ void BashppListener::exitMethod_definition(BashppParser::Method_definitionContex
 	// Add the method to the class
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 	if (!current_class->add_method(method)) {
-		throw_syntax_error(ctx->IDENTIFIER(), "Method redefinition: " + method->get_name());
+		throw_syntax_error_from_exitRule(ctx->IDENTIFIER(), "Method redefinition: " + method->get_name());
 	}
 }
 

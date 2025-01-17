@@ -10,11 +10,13 @@
 
 void BashppListener::enterConstructor_definition(BashppParser::Constructor_definitionContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 }
 
 void BashppListener::exitConstructor_definition(BashppParser::Constructor_definitionContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 }
 

@@ -9,10 +9,12 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterComment(BashppParser::CommentContext *ctx) {
+	skip_syntax_errors
 	in_comment = true;
 }
 
 void BashppListener::exitComment(BashppParser::CommentContext *ctx) {
+	skip_syntax_errors
 	in_comment = false;
 }
 

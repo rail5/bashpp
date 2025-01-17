@@ -10,11 +10,13 @@
 
 void BashppListener::enterDeprecated_subshell(BashppParser::Deprecated_subshellContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 }
 
 void BashppListener::exitDeprecated_subshell(BashppParser::Deprecated_subshellContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 }
 

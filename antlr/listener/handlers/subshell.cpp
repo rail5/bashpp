@@ -10,11 +10,13 @@
 
 void BashppListener::enterSubshell(BashppParser::SubshellContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 }
 
 void BashppListener::exitSubshell(BashppParser::SubshellContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 }
 

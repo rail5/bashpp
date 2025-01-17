@@ -29,13 +29,15 @@
 #include "../syntax_error.cpp"
 #include "../internal_error.cpp"
 
-#define skip_comment if (in_comment) return;
+#define skip_comment
 #define skip_singlequote_string if (in_singlequote_string) return;
-
-#define throw_syntax_error(token, msg) antlr4::Token* symbol = token->getSymbol(); \
-			int line = symbol->getLine(); \
-			int column = symbol->getCharPositionInLine(); \
-			throw syntax_error(msg, source_file, line, column);
+#define skip_syntax_errors if (error_thrown) { \
+		if (error_context == ctx) { \
+			error_thrown = false; \
+			error_context = nullptr; \
+		} \
+		return; \
+		}
 
 class BashppListener : public BashppParserBaseListener {
 	private:
@@ -74,6 +76,33 @@ class BashppListener : public BashppParserBaseListener {
 		std::string current_string_contents = "";
 
 		std::shared_ptr<bpp::bpp_class> primitive;
+
+		bool error_thrown = false;
+		antlr4::ParserRuleContext* error_context = nullptr;
+
+		bool program_has_errors = false;
+
+		#define set_error_context error_thrown = true; error_context = ctx;
+
+		#define output_syntax_error(symbol, msg) \
+			int line = symbol->getLine(); \
+			int column = symbol->getCharPositionInLine(); \
+			print_syntax_error(source_file, line, column, msg); \
+			program_has_errors = true;
+
+		#define throw_syntax_error_sym(symbol, msg) \
+			output_syntax_error(symbol, msg) \
+			set_error_context \
+			return;
+
+		#define throw_syntax_error(token, msg) antlr4::Token* symbol = token->getSymbol(); \
+			throw_syntax_error_sym(symbol, msg) \
+			set_error_context \
+			return;
+		
+		#define throw_syntax_error_from_exitRule(token, msg) antlr4::Token* symbol = token->getSymbol(); \
+			output_syntax_error(symbol, msg) \
+			return;
 		
 	public:
 

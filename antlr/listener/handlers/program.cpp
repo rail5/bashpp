@@ -18,12 +18,17 @@ void BashppListener::enterProgram(BashppParser::ProgramContext *ctx) {
 }
 
 void BashppListener::exitProgram(BashppParser::ProgramContext *ctx) {
+	if (program_has_errors) {
+		return;
+	}
+
 	program->flush_code_buffers();
 
 	entity_stack.pop();
 	if (!entity_stack.empty()) {
 		throw internal_error("entity_stack is not empty after exiting program");
 	}
+
 	std::cout << program->get_code() << std::endl;
 }
 

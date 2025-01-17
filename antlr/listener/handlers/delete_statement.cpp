@@ -10,11 +10,13 @@
 
 void BashppListener::enterDelete_statement(BashppParser::Delete_statementContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 }
 
 void BashppListener::exitDelete_statement(BashppParser::Delete_statementContext *ctx) {
 	skip_comment
+	skip_syntax_errors
 	skip_singlequote_string
 }
 

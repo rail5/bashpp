@@ -8,6 +8,7 @@
 
 #include <filesystem>
 #include <string.h>
+#include <sys/stat.h>
 #include "../BashppListener.h"
 
 void BashppListener::enterProgram(BashppParser::ProgramContext *ctx) {
@@ -31,9 +32,12 @@ void BashppListener::exitProgram(BashppParser::ProgramContext *ctx) {
 		throw internal_error("entity_stack is not empty after exiting program");
 	}
 
-	//std::cout << program->get_code() << std::endl;
 	if (!run_on_exit) {
 		*output_stream << program->get_code();
+		// If the output is a file, mark it as executable
+		if (output_file != "") {
+			chmod(output_file.c_str(), 0755);
+		}
 	} else {
 		std::string temp_dir = std::filesystem::temp_directory_path();
 		char temp_file[4097];
@@ -48,7 +52,7 @@ void BashppListener::exitProgram(BashppParser::ProgramContext *ctx) {
 		temp_stream << program->get_code();
 		temp_stream.close();
 		system(("bash " + std::string(temp_file)).c_str());
-		system(("rm " + std::string(temp_file)).c_str());
+		unlink(temp_file);
 	}
 }
 

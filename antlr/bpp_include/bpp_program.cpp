@@ -105,8 +105,8 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	bool found_toPrimitive = false;
 	for (auto& method : class_->get_methods()) {
 		std::string method_code = template_method;
-		std::string signature = method->get_signature();
-		if (signature == "toPrimitive") {
+		std::string method_name = method->get_name();
+		if (method_name == "toPrimitive") {
 			found_toPrimitive = true;
 		}
 		std::string params = "";
@@ -117,7 +117,7 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 			}
 		}
 		method_code = replace_all(method_code, "%CLASS%", class_->get_name());
-		method_code = replace_all(method_code, "%SIGNATURE%", signature);
+		method_code = replace_all(method_code, "%SIGNATURE%", method_name);
 		method_code = replace_all(method_code, "%PARAMS%", params);
 		method_code = replace_all(method_code, "%METHODBODY%", method->get_method_body());
 		class_code += method_code;

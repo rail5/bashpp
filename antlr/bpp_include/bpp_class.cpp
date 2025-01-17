@@ -29,9 +29,9 @@ void bpp_class::set_name(std::string name) {
 }
 
 bool bpp_class::add_method(std::shared_ptr<bpp_method> method) {
-	std::string signature = method->get_signature();
+	std::string name = method->get_name();
 	for (auto& m : methods) {
-		if (m->get_signature() == signature) {
+		if (m->get_name() == name) {
 			return false;
 		}
 	}
@@ -94,9 +94,9 @@ bool bpp_class::has_destructor() const {
 	return destructor_set;
 }
 
-std::shared_ptr<bpp::bpp_method> bpp_class::get_method(std::string signature) {
+std::shared_ptr<bpp::bpp_method> bpp_class::get_method(std::string name) {
 	for (auto& m : methods) {
-		if (m->get_signature() == signature) {
+		if (m->get_name() == name) {
 			return m;
 		}
 	}

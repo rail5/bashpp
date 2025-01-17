@@ -102,8 +102,6 @@ class bpp_method : public bpp_entity {
 		bpp_scope get_scope() const;
 		bool is_virtual() const;
 
-		virtual std::string get_signature() const;
-
 		void destroy();
 };
 
@@ -164,7 +162,7 @@ class bpp_class : public bpp_entity {
 		bool has_constructor() const;
 		bool has_destructor() const;
 
-		std::shared_ptr<bpp_method> get_method(std::string signature);
+		std::shared_ptr<bpp_method> get_method(std::string name);
 		std::shared_ptr<bpp_datamember> get_datamember(std::string name);
 
 		void inherit(std::shared_ptr<bpp_class> parent);

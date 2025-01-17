@@ -61,25 +61,6 @@ bool bpp_method::is_virtual() const {
 	return m_is_virtual;
 }
 
-std::string bpp_method::get_signature() const {
-	/**
-	 * The format for method signatures is:
-	 * <method_name>____<parameter1_type>__<parameter2_type>__...__<parameterN_type>
-	 * Or, for a method with no parameters, simply <method_name>
-	 */
-	std::string signature = name;
-	if (parameters.empty()) {
-		return signature;
-	}
-	
-	signature += "__";
-	for (auto& p : parameters) {
-		signature += "__";
-		signature += p->get_type()->get_name();
-	}
-	return signature;
-}
-
 void bpp_method::destroy() {
 	name.clear();
 	parameters.clear();

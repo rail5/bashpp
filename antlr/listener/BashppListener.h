@@ -49,9 +49,9 @@ class BashppListener : public BashppParserBaseListener {
 
 		std::set<std::string> protected_keywords = {
 			"class", "constructor", "delete", "destructor",
-			"include", "method", "new", "nullptr",
-			"primitive", "private", "protected", "public",
-			"this", "virtual"
+			"include", "include_once", "method", "new",
+			"nullptr", "primitive", "private", "protected",
+			"public", "this", "virtual"
 		};
 
 		bool in_value_assignment = false;

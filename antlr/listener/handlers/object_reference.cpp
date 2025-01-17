@@ -17,11 +17,10 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 	 * 	@IDENTIFIER.IDENTIFIER.IDENTIFIER...
 	 * Where each IDENTIFIER following a dot is a member of the object referenced by the preceding IDENTIFIER
 	 * 
-	 * This reference may resolve to either a data member or a method
-	 * If it resolves to a data member:
-	 * 		- If that data member is primitive, we're treating this as an rvalue
-	 * 		- If that data member is nonprimitive, this is a method call to .toPrimitive
-	 * 		- If that data member doesn't exist, throw an error
+	 * This reference may resolve to either an object or a method
+	 * If it's a primitive object, treat this as an rvalue and get the value of the primitive object
+	 * If it's a non-primitive object, this is a method call to .toPrimitive
+	 * If it's a method, call the method
 	 */
 
 	object_preaccess_code.clear();

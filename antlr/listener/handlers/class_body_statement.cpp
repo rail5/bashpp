@@ -12,16 +12,24 @@ void BashppListener::enterClass_body_statement(BashppParser::Class_body_statemen
 	skip_comment
 	skip_singlequote_string
 
-	// If we're not in any broader context,
-	// And if this is merely a DELIM or WS token,
-	// Simply add the code to the program
+	// If this is merely a DELIM or WS token,
+	// Simply that DELIM or WS to wherever we are
+
+	std::string delim_or_whitespace = "";
+	if (ctx->DELIM() != nullptr || ctx->WS() != nullptr) {
+		delim_or_whitespace = ctx->getText();
+	}
+
+	// Are we in a string?
+	if (in_string) {
+		current_string_contents += delim_or_whitespace;
+		return;
+	}
+
 	std::shared_ptr<bpp::bpp_program> current_program = std::dynamic_pointer_cast<bpp::bpp_program>(entity_stack.top());
 	if (current_program != nullptr) {
-		// Either DELIM or WS should be set
-		if (ctx->DELIM() != nullptr || ctx->WS() != nullptr) {
-			program->add_code(ctx->getText());
-			return;
-		}
+		current_program->add_code(delim_or_whitespace);
+		return;
 	} else {
 		// If we're in a class body statement, we should be in a class
 		std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());

@@ -21,7 +21,7 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 	 * This reference may resolve to either an object or a method
 	 * If it's a primitive object, treat this as an rvalue and get the value of the primitive object
 	 * If it's a non-primitive object, this is a method call to .toPrimitive
-	 * If it's a method, call the method
+	 * If it's a method, call the method in a supershell and substitute the result
 	 */
 
 	object_preaccess_code.clear();
@@ -50,18 +50,13 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 			throw_syntax_error(ctx->IDENTIFIER(i), "Cannot descend further");
 		}
 
-		bool is_datamember = false;
-		bool is_method = false;
-
 		std::shared_ptr<bpp::bpp_datamember> referenced_datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(current_context->get_class()->get_datamember(ctx->IDENTIFIER(i)->getText()));
 		std::shared_ptr<bpp::bpp_method> referenced_method = std::dynamic_pointer_cast<bpp::bpp_method>(current_context->get_class()->get_method(ctx->IDENTIFIER(i)->getText()));
 
 		if (referenced_datamember != nullptr) {
-			is_datamember = true;
 			object_chain.push_back(referenced_datamember);
 			current_context = referenced_datamember;
 		} else if (referenced_method != nullptr) {
-			is_method = true;
 			can_descend = false;
 			object_chain.push_back(referenced_method);
 		} else {

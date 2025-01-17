@@ -77,6 +77,8 @@ class BashppListener : public BashppParserBaseListener {
 
 		bool in_string = false;
 		std::string current_string_contents = "";
+		std::string pre_string_code = "";
+		std::string post_string_code = "";
 
 		std::shared_ptr<bpp::bpp_class> primitive;
 

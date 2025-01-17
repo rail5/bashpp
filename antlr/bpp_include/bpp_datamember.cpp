@@ -51,11 +51,7 @@ std::shared_ptr<bpp_class> bpp_datamember::get_class() const {
 }
 
 std::string bpp_datamember::get_default_value() const {
-	// Sanitize default value before returning
-	std::string sanitized = default_value;
-	sanitized = replace_all(sanitized, "\\", "\\\\");
-	sanitized = replace_all(sanitized, "\"", "\\\"");
-	return sanitized;
+	return default_value;
 }
 
 std::string bpp_datamember::get_pre_access_code() const {

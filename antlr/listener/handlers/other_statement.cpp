@@ -11,11 +11,16 @@
 void BashppListener::enterOther_statement(BashppParser::Other_statementContext *ctx) {
 	skip_comment
 	skip_singlequote_string
-}
 
-void BashppListener::exitOther_statement(BashppParser::Other_statementContext *ctx) {
-	skip_comment
-	skip_singlequote_string
+	if (in_string) {
+		current_string_contents += ctx->getText();
+		return;
+	}
+
+	if (in_value_assignment) {
+		value_assignment += ctx->getText();
+		return;
+	}
 
 	// If we're not in any broader context, simply add the statement to the program
 	std::shared_ptr<bpp::bpp_program> current_program = std::dynamic_pointer_cast<bpp::bpp_program>(entity_stack.top());
@@ -23,6 +28,11 @@ void BashppListener::exitOther_statement(BashppParser::Other_statementContext *c
 		program->add_code(ctx->getText());
 		return;
 	}
+}
+
+void BashppListener::exitOther_statement(BashppParser::Other_statementContext *ctx) {
+	skip_comment
+	skip_singlequote_string
 }
 
 #endif // ANTLR_LISTENER_HANDLERS_OTHER_STATEMENT_CPP_

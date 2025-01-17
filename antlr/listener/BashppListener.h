@@ -63,6 +63,9 @@ class BashppListener : public BashppParserBaseListener {
 		std::string object_preaccess_code = "";
 		std::string object_postaccess_code = "";
 
+		bool in_string = false;
+		std::string current_string_contents = "";
+
 		std::shared_ptr<bpp::bpp_class> primitive;
 		
 	public:

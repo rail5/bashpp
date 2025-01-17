@@ -29,7 +29,7 @@
 #include "../syntax_error.cpp"
 #include "../internal_error.cpp"
 
-#define skip_comment
+#define skip_comment if (in_comment) return;
 #define skip_singlequote_string if (in_singlequote_string) return;
 #define skip_syntax_errors if (error_thrown) { \
 		if (error_context == ctx) { \

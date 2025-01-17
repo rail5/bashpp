@@ -14,6 +14,8 @@ void BashppListener::enterString(BashppParser::StringContext *ctx) {
 
 	in_string = true;
 
+	current_string_contents.clear();
+
 	if (in_value_assignment) {
 		// Add an open-quote to the value assignment
 		value_assignment += "\"";

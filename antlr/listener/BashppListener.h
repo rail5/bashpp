@@ -59,6 +59,12 @@ class BashppListener : public BashppParserBaseListener {
 		std::string pre_valueassignment_code = "";
 		std::string post_valueassignment_code = "";
 
+		bool in_object_assignment = false;
+		std::string object_assignment_lvalue = "";
+		std::string object_assignment_rvalue = "";
+		std::string pre_objectassignment_code = "";
+		std::string post_objectassignment_code = "";
+
 		std::string object_access_code = "";
 		std::string object_preaccess_code = "";
 		std::string object_postaccess_code = "";

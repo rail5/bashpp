@@ -71,23 +71,6 @@ class BashppListener : public BashppParserBaseListener {
 		this->source_file = source_file;
 	}
 
-	void add_supershell(std::string code) {
-		// Call toPrimitive in a supershell
-		std::string preaccess_code = "function ____supershellRunFunc() {\n";
-		preaccess_code += code;
-		preaccess_code += "}\n";
-		preaccess_code += "bpp____supershell ____supershellOutput ____supershellRunFunc\n";
-
-		std::string access_code = "${____supershellOutput}";
-
-		std::string postaccess_code = "unset ____supershellOutput\n";
-		postaccess_code += "unset -f ____supershellRunFunc\n";
-
-		program->add_code_to_previous_line(preaccess_code);
-		program->add_code_to_next_line(postaccess_code);
-		program->add_code(access_code);
-	}
-
 	void enterProgram(BashppParser::ProgramContext *ctx) override;
 	void exitProgram(BashppParser::ProgramContext *ctx) override;
 

@@ -25,11 +25,13 @@ void BashppListener::enterClass_body_statement(BashppParser::Class_body_statemen
 	// Are we in a string?
 	if (in_string && just_delim_or_whitespace) {
 		current_string_contents += delim_or_whitespace;
+		return;
 	}
 
 	std::shared_ptr<bpp::bpp_program> current_program = std::dynamic_pointer_cast<bpp::bpp_program>(entity_stack.top());
 	if (current_program != nullptr && just_delim_or_whitespace) {
 		current_program->add_code(delim_or_whitespace);
+		return;
 	} else {
 		// If we're in a class body statement, we should be in a class
 		std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());

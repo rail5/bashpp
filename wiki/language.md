@@ -125,7 +125,7 @@ Methods can also take arguments:
 @myObject.myMethodWithArgs "Hello" "World"
 ```
 
-Further, methods can take *objects* as arguments:
+Methods cannot take non-primitive arguments. They can, however, accept pointers to objects:
 
 ```bash
 @class Object {
@@ -133,12 +133,21 @@ Further, methods can take *objects* as arguments:
 }
 
 @class MyClass {
-	@public @method myMethodWithObject @Object obj {
+	@public @method myMethodWithObject @Object* obj {
 		echo "Hello from myMethodWithObject"
 		echo "Object data member: @obj.dataMember"
 	}
 }
+
+@Object myObject
+@Object* myPointer=@new @Object
+
+@MyClass myObject2
+@myObject2.myMethodWithObject &@myObject
+@myObject2.myMethodWithObject @myPointer
 ```
+
+This is because pointers are considered primitives in Bash++, and methods can accept primitives as arguments. This shouldn't cause any issues, as pointers are implicitly dereferenced as needed.
 
 Bash++ does not support method overloading. Each method must have a unique name.
 

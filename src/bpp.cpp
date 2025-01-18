@@ -50,6 +50,7 @@
 #include "listener/handlers/subshell.cpp"
 #include "listener/handlers/supershell.cpp"
 #include "listener/handlers/value_assignment.cpp"
+#include "listener/handlers/extra_statement.cpp"
 
 #include "internal_error.cpp"
 

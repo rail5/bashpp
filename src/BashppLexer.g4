@@ -143,6 +143,11 @@ DOUBLEPIPE: '||';
 
 DELIM: '\n'; // Another dummy token
 
+// Bash variables
+BASH_VAR: '$' IDENTIFIER
+		| '$' '{' IDENTIFIER '}'
+		| '$#';
+
 // Comments
 COMMENT: '#' {
 	switch (modeStack_top) {
@@ -237,10 +242,6 @@ IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]* {
 INVALID_IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*; // Another dummy token
 
 IDENTIFIER_LVALUE: [a-zA-Z_][a-zA-Z0-9_]*; // Yet another dummy token
-
-// Bash variables
-BASH_VAR: '$' IDENTIFIER
-		| '$' '{' IDENTIFIER '}';
 
 // Operators
 ASSIGN: '=';

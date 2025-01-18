@@ -207,6 +207,9 @@ class BashppListener : public BashppParserBaseListener {
 	void enterRaw_rvalue(BashppParser::Raw_rvalueContext *ctx) override;
 	void exitRaw_rvalue(BashppParser::Raw_rvalueContext *ctx) override;
 
+	void enterExtra_statement(BashppParser::Extra_statementContext *ctx) override;
+	void exitExtra_statement(BashppParser::Extra_statementContext *ctx) override;
+
 };
 
 #endif // SRC_LISTENER_BASHPPLISTENER_H_

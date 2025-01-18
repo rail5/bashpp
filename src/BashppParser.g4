@@ -8,7 +8,8 @@ program: statement*;
 // Statements
 statement: (class_definition
 	| class_body_statement
-	| general_statement) DELIM?;
+	| general_statement
+	| extra_statement) DELIM?;
 
 class_body_statement: member_declaration
 	| method_definition
@@ -130,3 +131,5 @@ other_statement: ~(RBRACE | SUPERSHELL_END | QUOTE_END | SINGLEQUOTE_END | NEWLI
 
 // This rule will *only* ever be matched as part a value_assignment
 raw_rvalue: IDENTIFIER | NUMBER | BASH_VAR;
+
+extra_statement: RBRACE;

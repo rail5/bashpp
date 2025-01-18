@@ -41,7 +41,8 @@ int main(int argc, const char* argv[]) {
 	// Remove default error listeners
 	parser.removeErrorListeners();
 	// Add diagnostic error listener
-	parser.addErrorListener(new DiagnosticErrorListener());
+	std::unique_ptr<DiagnosticErrorListener> error_listener = std::make_unique<DiagnosticErrorListener>();
+	parser.addErrorListener(error_listener.get());
 
 	// Enable the parser to use diagnostic messages
 	parser.setErrorHandler(std::make_shared<BailErrorStrategy>());

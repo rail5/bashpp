@@ -79,8 +79,8 @@ int main(int argc, char* argv[]) {
 	bool received_filename = false;
 	bool received_output_filename = false;
 	bool run_on_exit = true;
-	std::string file_to_read;
-	std::string output_file;
+	std::string file_to_read = "";
+	std::string output_file = "";
 
 	std::ostream* output_stream = &std::cout;
 	std::shared_ptr<std::ofstream> outfilestream;
@@ -152,7 +152,8 @@ int main(int argc, char* argv[]) {
 	// Remove default error listeners
 	parser.removeErrorListeners();
 	// Add diagnostic error listener
-	parser.addErrorListener(new DiagnosticErrorListener());
+	std::unique_ptr<DiagnosticErrorListener> error_listener = std::make_unique<DiagnosticErrorListener>();
+	parser.addErrorListener(error_listener.get());
 
 	// Enable the parser to use diagnostic messages
 	parser.setErrorHandler(std::make_shared<BailErrorStrategy>());
@@ -162,7 +163,7 @@ int main(int argc, char* argv[]) {
 		tree = parser.program();
 		// Walk the tree
 		antlr4::tree::ParseTreeWalker walker;
-		BashppListener* listener = new BashppListener();
+		std::unique_ptr<BashppListener> listener = std::make_unique<BashppListener>();
 		char full_path[PATH_MAX];
 		if (realpath(file_to_read.c_str(), full_path) == nullptr) {
 			std::cerr << "Error: Could not resolve full path for file " << file_to_read << std::endl;
@@ -170,8 +171,9 @@ int main(int argc, char* argv[]) {
 		}
 		listener->set_source_file(full_path);
 		listener->set_output_stream(output_stream);
+		listener->set_output_file(output_file);
 		listener->set_run_on_exit(run_on_exit);
-		walker.walk(listener, tree);
+		walker.walk(listener.get(), tree);
 
 	} catch (const antlr4::EmptyStackException& e) {
 		std::cerr << "EmptyStackException: " << e.what() << std::endl;

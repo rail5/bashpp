@@ -71,7 +71,7 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 	antlr4::Lexer::emit(std::move(t));
 }
 
-#define emit(tokenType, text) emit(std::make_unique<CommonToken>(new CommonToken(tokenType, text)))
+#define emit(tokenType, text) emit(std::make_unique<CommonToken>(tokenType, text))
 
 }
 

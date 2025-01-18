@@ -8,7 +8,7 @@
 #include "out/BashppLexer.h"
 #include "out/BashppParser.h"
 
-#include "syntax_error.cpp"
+#include "internal_error.cpp"
 
 using namespace antlr4;
 
@@ -56,8 +56,8 @@ int main(int argc, const char* argv[]) {
 		std::cerr << "EmptyStackException: " << e.what() << std::endl;
 	} catch (const RecognitionException& e) {
 		std::cerr << "Recognition exception: " << e.what() << std::endl;
-	} catch (const syntax_error& e) {
-		std::cerr << "Syntax error: " << e.what() << std::endl;
+	} catch (const internal_error& e) {
+		std::cerr << "Internal error: " << e.what() << std::endl;
 	} catch (const std::exception& e) {
 		std::cerr << "Standard exception: " << e.what() << std::endl;
 	} catch (...) {

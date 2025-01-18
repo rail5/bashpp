@@ -24,20 +24,20 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 	 * If it's a method, call the method in a supershell and substitute the result
 	 */
 
-	object_preaccess_code.clear();
-	object_postaccess_code.clear();
-	object_access_code.clear();
-
 	std::shared_ptr<bpp::bpp_class> current_class = entity_stack.top()->get_containing_class();
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
+
+	std::shared_ptr<bpp::bpp_string> self_reference_entity = std::make_shared<bpp::bpp_string>();
+	self_reference_entity->set_containing_class(current_class);
+	entity_stack.push(self_reference_entity);
 
 	if (current_class == nullptr) {
 		throw_syntax_error(ctx->KEYWORD_THIS(), "Self reference outside of class");
 	}
 
 	if (ctx->IDENTIFIER().size() == 0) {
-		object_access_code = "${__objectAddress}";
+		self_reference_entity->add_code("${__objectAddress}");
 		return;
 	}
 
@@ -51,10 +51,10 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 
 		if (referenced_datamember != nullptr) {
 			object_chain.push_back(referenced_datamember);
-			object_preaccess_code += "this__" + referenced_datamember->get_name() + "=\"${__objectAddress}__" + referenced_datamember->get_name() + "\"\n";
-			object_postaccess_code += "unset this__" + referenced_datamember->get_name() + "\n";
+			self_reference_entity->add_code_to_previous_line("this__" + referenced_datamember->get_name() + "=\"${__objectAddress}__" + referenced_datamember->get_name() + "\"\n");
+			self_reference_entity->add_code_to_next_line("unset this__" + referenced_datamember->get_name() + "\n");
 			if (ctx->IDENTIFIER().size() == 1) {
-				object_access_code = "${!this__" + referenced_datamember->get_name() + "}";
+				self_reference_entity->add_code("${!this__" + referenced_datamember->get_name() + "}");
 				return;
 			}
 		} else if (referenced_method != nullptr) {
@@ -117,11 +117,11 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 		temporary_variable_rvalue = "${" + indirection + temporary_variable + "}__" + object_chain[i]->get_name();
 
 		if (object_chain.size() > 2) {
-			object_preaccess_code += temporary_variable_lvalue + "=\"" + temporary_variable_rvalue + "\"\n";
-			object_postaccess_code += "unset " + temporary_variable_lvalue + "\n";
+			self_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=\"" + temporary_variable_rvalue + "\"\n");
+			self_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
 			indirection = "!";
 		}
-		object_access_code = "${" + indirection + temporary_variable_lvalue + "}";
+		self_reference_entity->add_code("${" + indirection + temporary_variable_lvalue + "}");
 	}
 	/**
 	 * By this point, the deepest reference in the chain that we have access to is:
@@ -142,11 +142,11 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 		temporary_variable_rvalue = "${" + indirection + temporary_variable + "}__" + final_object->get_name();
 
 		if (object_chain.size() > 2) {
-			object_preaccess_code += temporary_variable_lvalue + "=\"" + temporary_variable_rvalue + "\"\n";
-			object_postaccess_code += "unset " + temporary_variable_lvalue + "\n";
+			self_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=\"" + temporary_variable_rvalue + "\"\n");
+			self_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
 			indirection = "!";
 		}
-		object_access_code = "${" + indirection + temporary_variable_lvalue + "}";
+		self_reference_entity->add_code("${" + indirection + temporary_variable_lvalue + "}");
 	} else if (final_method != nullptr) {
 		// Call the given method in a supershell
 
@@ -181,13 +181,13 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 		
 		std::string method_call = "bpp__" + penultimate_class->get_name() + "__" + final_method->get_name();
 
-		object_preaccess_code += "function ____runSupershellFunc() {\n";
-		object_preaccess_code += "	" + method_call + " \"" + indirection_start + object_address + indirection_end +"\" 1\n";
-		object_preaccess_code += "}\n";
-		object_preaccess_code += "bpp____supershell ____supershellOutput ____runSupershellFunc\n";
-		object_access_code = "${____supershellOutput}";
-		object_postaccess_code += "unset ____supershellOutput\n";
-		object_postaccess_code += "unset -f ____runSupershellFunc\n";
+		self_reference_entity->add_code_to_previous_line("function ____runSupershellFunc() {\n");
+		self_reference_entity->add_code_to_previous_line("	" + method_call + " \"" + indirection_start + object_address + indirection_end +"\" 1\n");
+		self_reference_entity->add_code_to_previous_line("}\n");
+		self_reference_entity->add_code_to_previous_line("bpp____supershell ____supershellOutput ____runSupershellFunc\n");
+		self_reference_entity->add_code("${____supershellOutput}");
+		self_reference_entity->add_code_to_next_line("unset ____supershellOutput\n");
+		self_reference_entity->add_code_to_next_line("unset -f ____runSupershellFunc\n");
 	} else {
 		throw internal_error("Terminal entity in the object chain is neither an object nor a method");
 	}
@@ -198,12 +198,18 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 	skip_syntax_errors
 	skip_singlequote_string
 
+	std::shared_ptr<bpp::bpp_string> self_reference_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
+	entity_stack.pop();
+	if (self_reference_entity == nullptr) {
+		throw internal_error("Self reference context was not found in the entity stack");
+	}
+
 	// If we're not in any broader context, simply add the object reference to the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity != nullptr) {
-		current_code_entity->add_code_to_previous_line(object_preaccess_code);
-		current_code_entity->add_code_to_next_line(object_postaccess_code);
-		current_code_entity->add_code(object_access_code);
+		current_code_entity->add_code_to_previous_line(self_reference_entity->get_pre_code());
+		current_code_entity->add_code_to_next_line(self_reference_entity->get_post_code());
+		current_code_entity->add_code(self_reference_entity->get_code());
 		return;
 	}
 }

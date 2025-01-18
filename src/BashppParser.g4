@@ -119,7 +119,7 @@ singlequote_string: SINGLEQUOTE statement* SINGLEQUOTE_END;
 // Comments (skipped)
 comment: COMMENT statement* NEWLINE;
 
-parameter: IDENTIFIER | AT IDENTIFIER WS* IDENTIFIER;
+parameter: IDENTIFIER | AT IDENTIFIER ASTERISK WS* IDENTIFIER;
 
 nullptr_ref: AT KEYWORD_NULLPTR;
 

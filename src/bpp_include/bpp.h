@@ -33,6 +33,7 @@ class bpp_object;
 class bpp_entity {
 	protected:
 		std::shared_ptr<bpp_class> type = nullptr;
+		std::shared_ptr<bpp_class> containing_class = nullptr;
 	public:
 		virtual ~bpp_entity() = default;
 		virtual std::shared_ptr<bpp_class> get_class() const {
@@ -45,6 +46,15 @@ class bpp_entity {
 
 		virtual std::string get_name() const {
 			return "";
+		}
+
+		virtual std::shared_ptr<bpp::bpp_class> get_containing_class() const {
+			return containing_class;
+		}
+
+		virtual bool set_containing_class(std::shared_ptr<bpp::bpp_class> containing_class) {
+			this->containing_class = containing_class;
+			return true;
 		}
 };
 
@@ -72,10 +82,25 @@ class bpp_code_entity : public bpp_entity {
 		virtual std::vector<std::shared_ptr<bpp_class>> get_classes() const;
 		virtual std::vector<std::shared_ptr<bpp_object>> get_objects() const;
 		virtual std::string get_code() const;
+		virtual std::string get_pre_code() const;
+		virtual std::string get_post_code() const;
 		virtual std::shared_ptr<bpp_class> get_class(std::string name);
 		virtual std::shared_ptr<bpp_object> get_object(std::string name);
 
 		virtual void inherit(std::shared_ptr<bpp_code_entity> parent);
+};
+
+class bpp_string : public bpp_code_entity {
+	public:
+		bpp_string();
+
+		void add_code(std::string code) override;
+		void add_code_to_previous_line(std::string code) override;
+		void add_code_to_next_line(std::string code) override;
+
+		std::string get_code() const override;
+		std::string get_pre_code() const override;
+		std::string get_post_code() const override;
 };
 
 class bpp_method : public bpp_code_entity {
@@ -137,7 +162,7 @@ class bpp_method_parameter : public bpp_entity {
 		std::shared_ptr<bpp_class> get_type() const;
 };
 
-class bpp_class : public bpp_entity {
+class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_class> {
 	private:
 		std::string name;
 		std::vector<std::shared_ptr<bpp_method>> methods;
@@ -174,6 +199,9 @@ class bpp_class : public bpp_entity {
 		bpp_class();
 		explicit bpp_class(std::string name);
 		bpp_class(const bpp_class& parent, std::string name);
+
+		std::shared_ptr<bpp_class> get_containing_class() const override;
+		bool set_containing_class(std::shared_ptr<bpp::bpp_class> containing_class) override;
 
 		void set_name(std::string name);
 		bool add_method(std::shared_ptr<bpp_method> method);
@@ -255,6 +283,8 @@ class bpp_program : public bpp_code_entity {
 		std::shared_ptr<bpp_class> primitive_class;
 	public:
 		bpp_program();
+
+		bool set_containing_class(std::shared_ptr<bpp_class> containing_class) override;
 
 		bool add_class(std::shared_ptr<bpp_class> class_) override;
 		bool add_object(std::shared_ptr<bpp_object> object) override;

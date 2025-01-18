@@ -28,22 +28,12 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 	object_postaccess_code.clear();
 	object_access_code.clear();
 
-	std::shared_ptr<bpp::bpp_class> current_class = nullptr;
+	std::shared_ptr<bpp::bpp_class> current_class = entity_stack.top()->get_containing_class();
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	if (current_code_entity == nullptr) {
-		// Must be in a member declaration
-		current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
-	} else {
-		if (entity_stack.size() > 1) {
-			entity_stack.pop();
-			current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
-			entity_stack.push(current_code_entity);
-		}
-	}
 
 	if (current_class == nullptr) {
-		throw_syntax_error(ctx->IDENTIFIER(0), "Self reference outside of class");
+		throw_syntax_error(ctx->KEYWORD_THIS(), "Self reference outside of class");
 	}
 
 	if (ctx->IDENTIFIER().size() == 0) {
@@ -207,14 +197,6 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
-
-	// If we're in a string, add the object reference to the current string contents
-	if (in_string) {
-		pre_string_code += object_preaccess_code;
-		post_string_code += object_postaccess_code;
-		current_string_contents += object_access_code;
-		return;
-	}
 
 	// If we're not in any broader context, simply add the object reference to the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());

@@ -14,7 +14,7 @@ void BashppListener::enterMethod_definition(BashppParser::Method_definitionConte
 	skip_singlequote_string
 
 	// Verify we're in a class
-	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
+	std::shared_ptr<bpp::bpp_class> current_class = entity_stack.top()->get_containing_class();
 	if (current_class == nullptr) {
 		throw_syntax_error(ctx->KEYWORD_METHOD(), "Method definition outside of class body");
 	}
@@ -24,6 +24,7 @@ void BashppListener::enterMethod_definition(BashppParser::Method_definitionConte
 	// Add the method to entity stack
 	std::shared_ptr<bpp::bpp_method> method = std::make_shared<bpp::bpp_method>(method_name);
 	method->inherit(program);
+	method->set_containing_class(current_class);
 	entity_stack.push(method);
 }
 

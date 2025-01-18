@@ -23,12 +23,6 @@ void BashppListener::enterClass_body_statement(BashppParser::Class_body_statemen
 		just_delim_or_whitespace = true;
 	}
 
-	// Are we in a string?
-	if (in_string && just_delim_or_whitespace) {
-		current_string_contents += delim_or_whitespace;
-		return;
-	}
-
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity != nullptr && just_delim_or_whitespace) {
 		current_code_entity->add_code(delim_or_whitespace);

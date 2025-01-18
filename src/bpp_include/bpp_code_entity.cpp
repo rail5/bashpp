@@ -108,6 +108,14 @@ std::string bpp_code_entity::get_code() const {
 	return code;
 }
 
+std::string bpp_code_entity::get_pre_code() const {
+	return "";
+}
+
+std::string bpp_code_entity::get_post_code() const {
+	return "";
+}
+
 std::shared_ptr<bpp::bpp_class> bpp_code_entity::get_class(std::string name) {
 	if (classes.find(name) == classes.end()) {
 		return nullptr;

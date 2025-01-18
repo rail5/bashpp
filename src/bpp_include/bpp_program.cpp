@@ -17,6 +17,10 @@ bpp_program::bpp_program() {
 	classes["primitive"] = primitive_class;
 }
 
+bool bpp_program::set_containing_class(std::shared_ptr<bpp_class> containing_class) {
+	return false;
+}
+
 std::shared_ptr<bpp::bpp_class> bpp_program::get_primitive_class() const {
 	return primitive_class;
 }

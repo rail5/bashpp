@@ -12,17 +12,11 @@ void BashppListener::enterRaw_rvalue(BashppParser::Raw_rvalueContext *ctx) {
 	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
-	if (!in_value_assignment) {
-		return;
-	}
 
-	// One of either IDENTIFIER, NUMBER, or BASH_VAR will be set
-	if (ctx->IDENTIFIER() != nullptr) {
-		value_assignment += ctx->IDENTIFIER()->getText();
-	} else if (ctx->NUMBER() != nullptr) {
-		value_assignment += ctx->NUMBER()->getText();
-	} else if (ctx->BASH_VAR() != nullptr) {
-		value_assignment += ctx->BASH_VAR()->getText();
+	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
+	if (current_code_entity != nullptr) {
+		current_code_entity->add_code(ctx->getText());
+		return;
 	}
 }
 

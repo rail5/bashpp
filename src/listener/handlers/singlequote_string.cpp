@@ -14,10 +14,6 @@ void BashppListener::enterSinglequote_string(BashppParser::Singlequote_stringCon
 	skip_singlequote_string
 	in_singlequote_string = true;
 
-	if (in_value_assignment) {
-		value_assignment += ctx->getText();
-	}
-
 	// If we're not in a broader context, simply add the entire string to the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity != nullptr) {

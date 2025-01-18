@@ -17,6 +17,7 @@
 #include "../antlr/BashppParserBaseListener.h"
 
 #include "../bpp_include/bpp_code_entity.cpp"
+#include "../bpp_include/bpp_string.cpp"
 #include "../bpp_include/bpp_program.cpp"
 #include "../bpp_include/bpp_class.cpp"
 #include "../bpp_include/bpp_constructor.cpp"
@@ -61,11 +62,6 @@ class BashppListener : public BashppParserBaseListener {
 			"public", "this", "virtual"
 		};
 
-		bool in_value_assignment = false;
-		std::string value_assignment = "";
-		std::string pre_valueassignment_code = "";
-		std::string post_valueassignment_code = "";
-
 		bool in_object_assignment = false;
 		std::string object_assignment_lvalue = "";
 		std::string object_assignment_rvalue = "";
@@ -75,11 +71,6 @@ class BashppListener : public BashppParserBaseListener {
 		std::string object_access_code = "";
 		std::string object_preaccess_code = "";
 		std::string object_postaccess_code = "";
-
-		bool in_string = false;
-		std::string current_string_contents = "";
-		std::string pre_string_code = "";
-		std::string post_string_code = "";
 
 		std::shared_ptr<bpp::bpp_class> primitive;
 

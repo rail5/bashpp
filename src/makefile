@@ -1,13 +1,12 @@
 all:
-	antlr4 -Dlanguage=Cpp ./BashppLexer.g4 ./BashppParser.g4 -o ./out
-	#g++ -std=c++17 -O2 -I/usr/include/antlr4-runtime -o BashppParser main.cpp out/BashppLexer.cpp out/BashppParser.cpp -L/usr/lib -lantlr4-runtime
-	g++ -std=c++17 -O2 -I/usr/include/antlr4-runtime -o bpp bpp.cpp out/BashppLexer.cpp out/BashppParser.cpp -L/usr/lib -lantlr4-runtime
+	antlr4 -Dlanguage=Cpp ./BashppLexer.g4 ./BashppParser.g4 -o ./antlr
+	g++ -std=c++17 -O2 -I/usr/include/antlr4-runtime -o bpp bpp.cpp antlr/BashppLexer.cpp antlr/BashppParser.cpp -L/usr/lib -lantlr4-runtime
 
 debug: all
-	g++ -std=c++17 -O2 -I/usr/include/antlr4-runtime -o BashppParser main.cpp out/BashppLexer.cpp out/BashppParser.cpp -L/usr/lib -lantlr4-runtime
+	g++ -std=c++17 -O2 -I/usr/include/antlr4-runtime -o BashppParser main.cpp antlr/BashppLexer.cpp antlr/BashppParser.cpp -L/usr/lib -lantlr4-runtime
 
 clean:
-	rm -rf out
-	rm -f BashppParser
+	rm -rf antlr
 	rm -rf .antlr
+	rm -f BashppParser
 	rm -f bpp

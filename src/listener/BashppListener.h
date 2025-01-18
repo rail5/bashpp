@@ -14,7 +14,7 @@
 #include <stack>
 #include <antlr4-runtime.h>
 
-#include "../out/BashppParserBaseListener.h"
+#include "../antlr/BashppParserBaseListener.h"
 
 #include "../bpp_include/bpp_code_entity.cpp"
 #include "../bpp_include/bpp_program.cpp"

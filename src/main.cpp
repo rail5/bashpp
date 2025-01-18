@@ -5,8 +5,8 @@
 #include <map>
 #include <antlr4-runtime.h>
 
-#include "out/BashppLexer.h"
-#include "out/BashppParser.h"
+#include "antlr/BashppLexer.h"
+#include "antlr/BashppParser.h"
 
 #include "internal_error.cpp"
 

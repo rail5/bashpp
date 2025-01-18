@@ -13,8 +13,8 @@
 
 #include "syntax_error.cpp"
 
-#include "out/BashppLexer.h"
-#include "out/BashppParser.h"
+#include "antlr/BashppLexer.h"
+#include "antlr/BashppParser.h"
 
 #include "listener/BashppListener.h"
 

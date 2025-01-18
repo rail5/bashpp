@@ -1,0 +1,17 @@
+Source: bashpp
+Priority: optional
+Maintainer: rail5 <andrew@rail5.org>
+Build-Depends: debhelper (>= 10), pandoc, antlr4, libantlr4-runtime-dev
+Standards-Version: 3.9.3
+Section: utils
+
+Package: bashpp
+Version: 0.1
+License: GPL-3.0
+Vendor: rail5 <andrew@rail5.org>
+Priority: optional
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Bash with classes
+ Bash++ is a superset of Bash which adds support for object orientation
+

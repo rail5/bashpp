@@ -1,12 +1,12 @@
-all: clean
+all: cleanmain
 	cd src && make
 	mv src/bpp bin/bpp
 
-parser:
+parser: cleanparser
 	cd src && make parser
 	mv src/BashppParser bin/BashppParser
 
-manual:
+manual: cleanmanual
 	mkdir tmp
 	tail -n +6 wiki/language.md > tmp/language.md
 	cp wiki/compiler.md tmp/
@@ -19,9 +19,18 @@ manual:
 	pandoc --standalone --to man tmp/language.md -o debian/bpp.5
 	rm -rf tmp
 
-clean:
+cleansrc:
 	cd src && make clean
-	rm -f bin/*
-	rm -rf tmp
+
+cleanmain:
+	rm -f bin/bpp
+
+cleanparser:
+	rm -f bin/BashppParser
+
+cleanmanual:
 	rm -f debian/bpp.1
 	rm -f debian/bpp.5
+	rm -rf tmp
+
+clean: cleansrc cleanmain cleanparser cleanmanual

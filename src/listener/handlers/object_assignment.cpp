@@ -13,8 +13,14 @@ void BashppListener::enterObject_assignment(BashppParser::Object_assignmentConte
 	skip_syntax_errors
 	skip_singlequote_string
 
+	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
+	if (current_code_entity == nullptr) {
+		current_code_entity = program;
+	}
+
 	std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::make_shared<bpp::bpp_object_assignment>();
 	object_assignment->set_containing_class(entity_stack.top()->get_containing_class());
+	object_assignment->inherit(current_code_entity);
 	entity_stack.push(object_assignment);
 }
 

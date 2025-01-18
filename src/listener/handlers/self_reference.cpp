@@ -30,6 +30,7 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 
 	std::shared_ptr<bpp::bpp_string> self_reference_entity = std::make_shared<bpp::bpp_string>();
 	self_reference_entity->set_containing_class(current_class);
+	self_reference_entity->inherit(current_code_entity);
 	entity_stack.push(self_reference_entity);
 
 	if (current_class == nullptr) {

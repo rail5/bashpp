@@ -19,8 +19,9 @@ void BashppListener::enterString(BashppParser::StringContext *ctx) {
 
 	std::shared_ptr<bpp::bpp_string> string_code_entity = std::make_shared<bpp::bpp_string>();
 	string_code_entity->set_containing_class(current_class);
+	string_code_entity->inherit(current_code_entity);
 	entity_stack.push(string_code_entity);
-	
+
 	// If we're not in a broader context, simply add an open quote to the current code entity
 	if (current_code_entity != nullptr) {
 		current_code_entity->add_code("\"");

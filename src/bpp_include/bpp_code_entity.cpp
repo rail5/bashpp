@@ -101,6 +101,10 @@ std::vector<std::shared_ptr<bpp_object>> bpp_code_entity::get_objects() const {
 	for (auto& o : objects) {
 		result.push_back(o.second);
 	}
+
+	for (auto& o : local_objects) {
+		result.push_back(o.second);
+	}
 	return result;
 }
 
@@ -124,10 +128,15 @@ std::shared_ptr<bpp::bpp_class> bpp_code_entity::get_class(std::string name) {
 }
 
 std::shared_ptr<bpp::bpp_object> bpp_code_entity::get_object(std::string name) {
-	if (objects.find(name) == objects.end()) {
-		return nullptr;
+	if (local_objects.find(name) != local_objects.end()) {
+		return local_objects[name];
 	}
-	return objects[name];
+	
+	if (objects.find(name) != objects.end()) {
+		return objects[name];
+	}
+
+	return nullptr;
 }
 
 void bpp_code_entity::inherit(std::shared_ptr<bpp_code_entity> parent) {

@@ -32,6 +32,7 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 
 	std::shared_ptr<bpp::bpp_string> object_reference_entity = std::make_shared<bpp::bpp_string>();
 	object_reference_entity->set_containing_class(current_code_entity->get_containing_class());
+	object_reference_entity->inherit(current_code_entity);
 	entity_stack.push(object_reference_entity);
 
 	std::shared_ptr<bpp::bpp_object> referenced_object = current_code_entity->get_object(ctx->IDENTIFIER(0)->getText());

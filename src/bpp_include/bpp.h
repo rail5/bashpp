@@ -62,6 +62,7 @@ class bpp_code_entity : public bpp_entity {
 	protected:
 		std::map<std::string, std::shared_ptr<bpp_class>> classes;
 		std::map<std::string, std::shared_ptr<bpp_object>> objects;
+		std::map<std::string, std::shared_ptr<bpp_object>> local_objects;
 		std::string code = "";
 		std::string nextline_buffer = "";
 		std::string postline_buffer = "";
@@ -121,7 +122,6 @@ class bpp_method : public bpp_code_entity {
 	private:
 		std::string name;
 		std::vector<std::shared_ptr<bpp_method_parameter>> parameters;
-		std::map<std::string, std::shared_ptr<bpp_object>> local_objects;
 		bpp_scope scope = SCOPE_PRIVATE;
 		bool m_is_virtual = false;
 	public:
@@ -134,8 +134,6 @@ class bpp_method : public bpp_code_entity {
 		void set_name(std::string name);
 		void set_scope(bpp_scope scope);
 		void set_virtual(bool is_virtual);
-
-		std::shared_ptr<bpp_object> get_object(std::string name) override;
 
 		std::string get_name() const;
 		std::vector<std::shared_ptr<bpp_method_parameter>> get_parameters() const;

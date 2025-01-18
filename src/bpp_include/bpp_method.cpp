@@ -47,18 +47,6 @@ bool bpp_method::add_object(std::shared_ptr<bpp_object> object) {
 	return true;
 }
 
-std::shared_ptr<bpp_object> bpp_method::get_object(std::string name) {
-	if (local_objects.find(name) != local_objects.end()) {
-		return local_objects[name];
-	}
-	
-	if (objects.find(name) != objects.end()) {
-		return objects[name];
-	}
-
-	return nullptr;
-}
-
 bool bpp_method::add_parameter(std::shared_ptr<bpp_method_parameter> parameter) {
 	std::string name = parameter->get_name();
 	for (auto& p : parameters) {

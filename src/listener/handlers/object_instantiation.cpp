@@ -68,7 +68,6 @@ void BashppListener::enterObject_instantiation(BashppParser::Object_instantiatio
 		entity_stack.pop();
 		throw_syntax_error(object_name, "Class already exists: " + new_object->get_name());
 	}
-
 	if (current_code_entity->get_object(new_object->get_name()) != nullptr) {
 		entity_stack.pop();
 		throw_syntax_error(object_name, "Object already exists: " + new_object->get_name());

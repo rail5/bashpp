@@ -28,15 +28,17 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		current_code_entity = program;
+		throw_syntax_error(ctx->IDENTIFIER_LVALUE(), "Object reference outside of code entity");
 	}
 
 	std::shared_ptr<bpp::bpp_string> object_reference_entity = std::make_shared<bpp::bpp_string>();
 	object_reference_entity->set_containing_class(current_code_entity->get_containing_class());
+	object_reference_entity->inherit(current_code_entity);
 	entity_stack.push(object_reference_entity);
 
 	std::shared_ptr<bpp::bpp_object> referenced_object = current_code_entity->get_object(ctx->IDENTIFIER_LVALUE()->getText());
 	if (referenced_object == nullptr) {
+		entity_stack.pop();
 		throw_syntax_error(ctx->AT(), "Object not found: " + ctx->IDENTIFIER_LVALUE()->getText());
 	}
 
@@ -49,6 +51,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 
 	for (size_t i = 0; i < ctx->IDENTIFIER().size(); i++) {
 		if (!can_descend) {
+			entity_stack.pop();
 			throw_syntax_error(ctx->IDENTIFIER(i), "Cannot descend further");
 		}
 
@@ -67,6 +70,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 			can_descend = false;
 			object_chain.push_back(referenced_method);
 		} else {
+			entity_stack.pop();
 			throw_syntax_error(ctx->IDENTIFIER(i), "Member not found: " + ctx->IDENTIFIER(i)->getText());
 		}
 	}
@@ -132,7 +136,6 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 			encasing_end = "}";
 		}
 
-
 		object_reference_entity->add_code(encasing_start + temporary_variable_lvalue + encasing_end);
 	} else if (final_method != nullptr) {
 		// Call the given method in a supershell
@@ -171,6 +174,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 
 		std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(entity_stack.top());
 		if (object_assignment != nullptr) {
+			entity_stack.pop();
 			throw_syntax_error(ctx->IDENTIFIER().back(), "Cannot assign to a method");
 		}
 
@@ -189,6 +193,15 @@ void BashppListener::exitObject_reference_as_lvalue(BashppParser::Object_referen
 	entity_stack.pop();
 	if (object_reference_entity == nullptr) {
 		throw internal_error("Object reference context was not found in the entity stack");
+	}
+
+	// If we're in an object assignment, set the lvalue to the object reference code
+	std::shared_ptr<bpp::bpp_object_assignment> current_object_assignment = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(entity_stack.top());
+	if (current_object_assignment != nullptr) {
+		current_object_assignment->set_lvalue(object_reference_entity->get_code());
+		current_object_assignment->add_code_to_previous_line(object_reference_entity->get_pre_code());
+		current_object_assignment->add_code_to_next_line(object_reference_entity->get_post_code());
+		return;
 	}
 
 	// If we're not in a broader context, simply add the current object access code to the current code entity

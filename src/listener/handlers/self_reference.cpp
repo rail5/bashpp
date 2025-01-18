@@ -23,8 +23,7 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 	 * If it's a non-primitive object, this is a method call to .toPrimitive
 	 * If it's a method, call the method in a supershell and substitute the result
 	 */
-
-	std::shared_ptr<bpp::bpp_class> current_class = entity_stack.top()->get_containing_class();
+	std::shared_ptr<bpp::bpp_class> current_class = entity_stack.top()->get_containing_class().lock();
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
@@ -34,6 +33,7 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 	entity_stack.push(self_reference_entity);
 
 	if (current_class == nullptr) {
+		entity_stack.pop();
 		throw_syntax_error(ctx->KEYWORD_THIS(), "Self reference outside of class");
 	}
 
@@ -55,37 +55,36 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 			self_reference_entity->add_code_to_previous_line("this__" + referenced_datamember->get_name() + "=\"${__objectAddress}__" + referenced_datamember->get_name() + "\"\n");
 			self_reference_entity->add_code_to_next_line("unset this__" + referenced_datamember->get_name() + "\n");
 			if (ctx->IDENTIFIER().size() == 1) {
-				self_reference_entity->add_code("${!this__" + referenced_datamember->get_name() + "}");
-				return;
+				if (referenced_datamember->get_class() == primitive || referenced_datamember->is_pointer()) {
+					self_reference_entity->add_code("${!this__" + referenced_datamember->get_name() + "}");
+					return;
+				}
 			}
 		} else if (referenced_method != nullptr) {
 			object_chain.push_back(referenced_method);
 			can_descend = false;
 		} else {
-			throw_syntax_error(ctx->IDENTIFIER(1), "Member not found: " + ctx->IDENTIFIER(0)->getText());
+			entity_stack.pop();
+			throw_syntax_error(ctx->IDENTIFIER(0), "Member not found: " + ctx->IDENTIFIER(0)->getText());
 		}
 	}
 
-
-	for (size_t i = 2; i < ctx->IDENTIFIER().size(); i++) {
+	for (size_t i = 1; i < ctx->IDENTIFIER().size(); i++) {
 		if (!can_descend) {
+			entity_stack.pop();
 			throw_syntax_error(ctx->IDENTIFIER(i), "Cannot descend further");
 		}
-
-		bool is_datamember = false;
-		bool is_method = false;
 
 		std::shared_ptr<bpp::bpp_datamember> referenced_datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(object_chain.back()->get_class()->get_datamember(ctx->IDENTIFIER(i)->getText()));
 		std::shared_ptr<bpp::bpp_method> referenced_method = std::dynamic_pointer_cast<bpp::bpp_method>(object_chain.back()->get_class()->get_method(ctx->IDENTIFIER(i)->getText()));
 
 		if (referenced_datamember != nullptr) {
-			is_datamember = true;
 			object_chain.push_back(referenced_datamember);
 		} else if (referenced_method != nullptr) {
-			is_method = true;
 			can_descend = false;
 			object_chain.push_back(referenced_method);
 		} else {
+			entity_stack.pop();
 			throw_syntax_error(ctx->IDENTIFIER(i), "Member not found: " + ctx->IDENTIFIER(i)->getText());
 		}
 	}
@@ -94,7 +93,7 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 	std::shared_ptr<bpp::bpp_object> final_object = std::dynamic_pointer_cast<bpp::bpp_object>(object_chain.back());
 	std::shared_ptr<bpp::bpp_method> final_method = std::dynamic_pointer_cast<bpp::bpp_method>(object_chain.back());
 
-	if (final_object != nullptr && final_object->get_class() != primitive) {
+	if (final_object != nullptr && final_object->get_class() != primitive && !final_object->is_pointer()) {
 		// Call to .toPrimitive on a non-primitive data member
 		// Add the toPrimitive method to the object_chain
 		// Set final_method = toPrimitive
@@ -106,8 +105,8 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 
 	bool declared_first_temporary_variable = false;
 
-	for (size_t i = 2; i < object_chain.size() - 1; i++) {
-		std::string indirection = declared_first_temporary_variable ? "!" : "";
+	for (size_t i = 1; i < object_chain.size() - 1; i++) {
+		std::string indirection = "!";
 		std::string temporary_variable_lvalue;
 		std::string temporary_variable_rvalue;
 		std::string temporary_variable = "this";
@@ -131,18 +130,18 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 	 */
 
 	if (final_object != nullptr) {
-		std::string indirection = declared_first_temporary_variable ? "!" : "";
+		std::string indirection = "!";
 		std::string temporary_variable_lvalue;
 		std::string temporary_variable_rvalue;
 		std::string temporary_variable = "this";
-		for (size_t i = 1; i < object_chain.size() - 1; i++) {
+		for (size_t i = 0; i < object_chain.size() - 1; i++) {
 			temporary_variable += "__" + object_chain[i]->get_name();
 		}
 
 		temporary_variable_lvalue = temporary_variable + "__" + final_object->get_name();
 		temporary_variable_rvalue = "${" + indirection + temporary_variable + "}__" + final_object->get_name();
 
-		if (object_chain.size() > 2) {
+		if (object_chain.size() > 1) {
 			self_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=\"" + temporary_variable_rvalue + "\"\n");
 			self_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
 			indirection = "!";

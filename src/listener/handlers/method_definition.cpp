@@ -14,7 +14,7 @@ void BashppListener::enterMethod_definition(BashppParser::Method_definitionConte
 	skip_singlequote_string
 
 	// Verify we're in a class
-	std::shared_ptr<bpp::bpp_class> current_class = entity_stack.top()->get_containing_class();
+	std::shared_ptr<bpp::bpp_class> current_class = entity_stack.top()->get_containing_class().lock();
 	if (current_class == nullptr) {
 		throw_syntax_error(ctx->KEYWORD_METHOD(), "Method definition outside of class body");
 	}

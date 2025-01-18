@@ -33,7 +33,7 @@ class bpp_object;
 class bpp_entity {
 	protected:
 		std::shared_ptr<bpp_class> type = nullptr;
-		std::shared_ptr<bpp_class> containing_class = nullptr;
+		std::weak_ptr<bpp_class> containing_class;
 	public:
 		virtual ~bpp_entity() = default;
 		virtual std::shared_ptr<bpp_class> get_class() const {
@@ -48,11 +48,11 @@ class bpp_entity {
 			return "";
 		}
 
-		virtual std::shared_ptr<bpp::bpp_class> get_containing_class() const {
+		virtual std::weak_ptr<bpp::bpp_class> get_containing_class() const {
 			return containing_class;
 		}
 
-		virtual bool set_containing_class(std::shared_ptr<bpp::bpp_class> containing_class) {
+		virtual bool set_containing_class(std::weak_ptr<bpp::bpp_class> containing_class) {
 			this->containing_class = containing_class;
 			return true;
 		}
@@ -212,8 +212,8 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 		explicit bpp_class(std::string name);
 		bpp_class(const bpp_class& parent, std::string name);
 
-		std::shared_ptr<bpp_class> get_containing_class() const override;
-		bool set_containing_class(std::shared_ptr<bpp::bpp_class> containing_class) override;
+		std::weak_ptr<bpp_class> get_containing_class() const override;
+		bool set_containing_class(std::weak_ptr<bpp::bpp_class> containing_class) override;
 
 		void set_name(std::string name);
 		bool add_method(std::shared_ptr<bpp_method> method);
@@ -296,7 +296,7 @@ class bpp_program : public bpp_code_entity {
 	public:
 		bpp_program();
 
-		bool set_containing_class(std::shared_ptr<bpp_class> containing_class) override;
+		bool set_containing_class(std::weak_ptr<bpp_class> containing_class) override;
 
 		bool add_class(std::shared_ptr<bpp_class> class_) override;
 		bool add_object(std::shared_ptr<bpp_object> object) override;

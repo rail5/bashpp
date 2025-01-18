@@ -28,11 +28,11 @@ bpp_class::bpp_class(const bpp_class& other, std::string name) : name(name) {
 	add_default_toPrimitive();
 }
 
-std::shared_ptr<bpp::bpp_class> bpp_class::get_containing_class() const {
+std::weak_ptr<bpp::bpp_class> bpp_class::get_containing_class() const {
 	return std::const_pointer_cast<bpp::bpp_class>(this->shared_from_this());
 }
 
-bool bpp_class::set_containing_class(std::shared_ptr<bpp::bpp_class> containing_class) {
+bool bpp_class::set_containing_class(std::weak_ptr<bpp::bpp_class> containing_class) {
 	return false;
 }
 

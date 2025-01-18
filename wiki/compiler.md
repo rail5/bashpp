@@ -6,6 +6,7 @@
 $ bpp program.bpp                 # Compile & immediately run the program
 $ bpp program.bpp -o compiled.sh  # Compile & save the program to compiled.sh
 $ bpp program.bpp -o -            # Compile & print the program to stdout
+$ cat program.bpp | bpp           # Pipe previous command output to the compiler
 $ bpp -h # Display help
 $ bpp -v # Display version
 ```
@@ -17,3 +18,5 @@ $ bpp -v # Display version
 	- If the output file is not specified, the program will be executed immediately after compilation
 - `-h` or `--help` : Display help
 - `-v` or `--version` : Display version
+
+If no input file is specified, the compiler will read from stdin.

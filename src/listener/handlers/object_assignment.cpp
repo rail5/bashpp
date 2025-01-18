@@ -13,12 +13,9 @@ void BashppListener::enterObject_assignment(BashppParser::Object_assignmentConte
 	skip_syntax_errors
 	skip_singlequote_string
 
-	in_object_assignment = true;
-
-	object_assignment_lvalue.clear();
-	object_assignment_rvalue.clear();
-	pre_objectassignment_code.clear();
-	post_objectassignment_code.clear();
+	std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::make_shared<bpp::bpp_object_assignment>();
+	object_assignment->set_containing_class(entity_stack.top()->get_containing_class());
+	entity_stack.push(object_assignment);
 }
 
 void BashppListener::exitObject_assignment(BashppParser::Object_assignmentContext *ctx) {
@@ -26,7 +23,17 @@ void BashppListener::exitObject_assignment(BashppParser::Object_assignmentContex
 	skip_syntax_errors
 	skip_singlequote_string
 
-	in_object_assignment = false;
+	std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(entity_stack.top());
+	entity_stack.pop();
+
+	if (object_assignment == nullptr) {
+		throw internal_error("Object assignment context was not found in the entity stack");
+	}
+
+	std::string object_assignment_lvalue = object_assignment->get_lvalue();
+	std::string object_assignment_rvalue = object_assignment->get_rvalue();
+	std::string pre_objectassignment_code = object_assignment->get_pre_code();
+	std::string post_objectassignment_code = object_assignment->get_post_code();
 
 	pre_objectassignment_code += "____assignmentRVal=" + object_assignment_rvalue + "\n";
 	post_objectassignment_code += "unset ____assignmentRVal\n";

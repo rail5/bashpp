@@ -43,14 +43,6 @@ void BashppListener::exitValue_assignment(BashppParser::Value_assignmentContext 
 		return;
 	}
 
-	// Are we in an object_assignment rule?
-	if (in_object_assignment) {
-		pre_objectassignment_code += value_assignment_entity->get_pre_code();
-		post_objectassignment_code += value_assignment_entity->get_post_code();
-		object_assignment_rvalue = value_assignment_entity->get_code();
-		return;
-	}
-
 	// Check if we're in an object instantiation or pointer declaration
 	std::shared_ptr<bpp::bpp_object> current_object = std::dynamic_pointer_cast<bpp::bpp_object>(entity_stack.top());
 	if (current_object != nullptr) {

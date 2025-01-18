@@ -169,7 +169,8 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 		std::string method_call = "bpp__" + penultimate_class->get_name() + "__" + final_method->get_name();
 		object_access_code = method_call + " \"" + indirection_start + object_address + indirection_end +"\" 1";
 
-		if (in_object_assignment) {
+		std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(entity_stack.top());
+		if (object_assignment != nullptr) {
 			throw_syntax_error(ctx->IDENTIFIER().back(), "Cannot assign to a method");
 		}
 
@@ -183,16 +184,6 @@ void BashppListener::exitObject_reference_as_lvalue(BashppParser::Object_referen
 	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
-
-	// If we're in the middle of an object assignment, add the preaccess code and the postaccess code to the program
-	// And pass over our object reference code to the object assignment handler
-	if (in_object_assignment) {
-		pre_objectassignment_code += object_preaccess_code;
-		post_objectassignment_code += object_postaccess_code;
-		object_assignment_lvalue = object_access_code;
-		return;
-	}
-
 
 	// If we're not in a broader context, simply add the current object access code to the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());

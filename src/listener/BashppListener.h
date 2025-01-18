@@ -18,6 +18,7 @@
 
 #include "../bpp_include/bpp_code_entity.cpp"
 #include "../bpp_include/bpp_string.cpp"
+#include "../bpp_include/bpp_object_assignment.cpp"
 #include "../bpp_include/bpp_program.cpp"
 #include "../bpp_include/bpp_class.cpp"
 #include "../bpp_include/bpp_constructor.cpp"
@@ -61,12 +62,6 @@ class BashppListener : public BashppParserBaseListener {
 			"nullptr", "primitive", "private", "protected",
 			"public", "this", "virtual"
 		};
-
-		bool in_object_assignment = false;
-		std::string object_assignment_lvalue = "";
-		std::string object_assignment_rvalue = "";
-		std::string pre_objectassignment_code = "";
-		std::string post_objectassignment_code = "";
 
 		std::string object_access_code = "";
 		std::string object_preaccess_code = "";

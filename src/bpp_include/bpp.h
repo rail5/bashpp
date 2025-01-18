@@ -103,6 +103,20 @@ class bpp_string : public bpp_code_entity {
 		std::string get_post_code() const override;
 };
 
+class bpp_object_assignment : public bpp_string {
+	private:
+		std::string lvalue = "";
+		std::string rvalue = "";
+	public:
+		bpp_object_assignment();
+
+		void set_lvalue(const std::string& lvalue);
+		void set_rvalue(const std::string& rvalue);
+
+		std::string get_lvalue() const;
+		std::string get_rvalue() const;
+};
+
 class bpp_method : public bpp_code_entity {
 	private:
 		std::string name;

@@ -60,6 +60,7 @@ int main(int argc, char* argv[]) {
 	const char* copyright = "Copyright (C) 2025 Andrew S. Rightenburg\n"
 		"GNU GPL v3.0 or later\n";
 	std::string help_string = "Usage: " + std::string(argv[0]) + " [options] [file]\n"
+		"If no file is specified, read from stdin\n"
 		"Options:\n"
 		"  -o, --output <file>   Specify output file\n"
 		"                         If not specified, program will be run on exit\n"
@@ -135,13 +136,26 @@ int main(int argc, char* argv[]) {
 		received_filename = true;
 	}
 
-	std::ifstream stream(file_to_read);
+	std::ifstream file_stream;
+	std::istream* stream = &std::cin;
+
+	if (received_filename) {
+		file_stream.open(file_to_read);
+		stream = &file_stream;
+	}
+
 	if (!stream) {
-		std::cerr << "Error: Could not open source file " << file_to_read << std::endl;
+		std::cerr << program_name << ": Error: Could not open source file" << std::endl;
 		return 1;
 	}
 
-	ANTLRInputStream input(stream);
+	/* If the user didn't provide input, let them know, rather than just hang waiting for cin */
+	if (stream->rdbuf() == std::cin.rdbuf() && isatty(fileno(stdin))) {
+		std::cerr << program_name << " 0.1" << std::endl << copyright << help_string;
+		return 1;
+	}
+
+	ANTLRInputStream input(*stream);
 	BashppLexer lexer(&input);
 	CommonTokenStream tokens(&lexer);
 
@@ -166,8 +180,13 @@ int main(int argc, char* argv[]) {
 		std::unique_ptr<BashppListener> listener = std::make_unique<BashppListener>();
 		char full_path[PATH_MAX];
 		if (realpath(file_to_read.c_str(), full_path) == nullptr) {
-			std::cerr << "Error: Could not resolve full path for file " << file_to_read << std::endl;
-			return 1;
+			if (!received_filename) {
+				const char* inlabel = "stdin";
+				strncpy(full_path, inlabel, strlen(inlabel) + 1);
+			} else {
+				std::cerr << "Error: Could not get full path of source file" << std::endl;
+				return 1;
+			}
 		}
 		listener->set_source_file(full_path);
 		listener->set_output_stream(output_stream);

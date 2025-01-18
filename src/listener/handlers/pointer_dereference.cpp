@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_LISTENER_HANDLERS_POINTER_DEREFERENCE_CPP_
-#define ANTLR_LISTENER_HANDLERS_POINTER_DEREFERENCE_CPP_
+#ifndef SRC_LISTENER_HANDLERS_POINTER_DEREFERENCE_CPP_
+#define SRC_LISTENER_HANDLERS_POINTER_DEREFERENCE_CPP_
 
 #include "../BashppListener.h"
 
@@ -20,4 +20,4 @@ void BashppListener::exitPointer_dereference(BashppParser::Pointer_dereferenceCo
 	skip_singlequote_string
 }
 
-#endif // ANTLR_LISTENER_HANDLERS_POINTER_DEREFERENCE_CPP_
+#endif // SRC_LISTENER_HANDLERS_POINTER_DEREFERENCE_CPP_

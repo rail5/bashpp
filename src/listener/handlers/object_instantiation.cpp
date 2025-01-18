@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_LISTENER_HANDLERS_OBJECT_INSTANTIATION_CPP_
-#define ANTLR_LISTENER_HANDLERS_OBJECT_INSTANTIATION_CPP_
+#ifndef SRC_LISTENER_HANDLERS_OBJECT_INSTANTIATION_CPP_
+#define SRC_LISTENER_HANDLERS_OBJECT_INSTANTIATION_CPP_
 
 #include "../BashppListener.h"
 
@@ -104,4 +104,4 @@ void BashppListener::exitObject_instantiation(BashppParser::Object_instantiation
 	}
 }
 
-#endif // ANTLR_LISTENER_HANDLERS_OBJECT_INSTANTIATION_CPP_
+#endif // SRC_LISTENER_HANDLERS_OBJECT_INSTANTIATION_CPP_

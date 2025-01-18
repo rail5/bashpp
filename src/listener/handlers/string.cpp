@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_LISTENER_HANDLERS_STRING_CPP_
-#define ANTLR_LISTENER_HANDLERS_STRING_CPP_
+#ifndef SRC_LISTENER_HANDLERS_STRING_CPP_
+#define SRC_LISTENER_HANDLERS_STRING_CPP_
 
 #include "../BashppListener.h"
 
@@ -58,4 +58,4 @@ void BashppListener::exitString(BashppParser::StringContext *ctx) {
 	}
 }
 
-#endif // ANTLR_LISTENER_HANDLERS_STRING_CPP_
+#endif // SRC_LISTENER_HANDLERS_STRING_CPP_

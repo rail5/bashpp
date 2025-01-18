@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_BPP_INCLUDE_BPP_H_
-#define ANTLR_BPP_INCLUDE_BPP_H_
+#ifndef SRC_BPP_INCLUDE_BPP_H_
+#define SRC_BPP_INCLUDE_BPP_H_
 
 #include <string>
 #include <vector>
@@ -264,4 +264,4 @@ class bpp_program : public bpp_code_entity {
 
 } // namespace bpp
 
-#endif // ANTLR_BPP_INCLUDE_BPP_H_
+#endif // SRC_BPP_INCLUDE_BPP_H_

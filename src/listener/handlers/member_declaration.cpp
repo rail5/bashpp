@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_LISTENER_HANDLERS_MEMBER_DECLARATION_CPP_
-#define ANTLR_LISTENER_HANDLERS_MEMBER_DECLARATION_CPP_
+#ifndef SRC_LISTENER_HANDLERS_MEMBER_DECLARATION_CPP_
+#define SRC_LISTENER_HANDLERS_MEMBER_DECLARATION_CPP_
 
 #include "../BashppListener.h"
 
@@ -68,4 +68,4 @@ void BashppListener::exitMember_declaration(BashppParser::Member_declarationCont
 	current_class->add_datamember(new_datamember);
 }
 
-#endif // ANTLR_LISTENER_HANDLERS_MEMBER_DECLARATION_CPP_
+#endif // SRC_LISTENER_HANDLERS_MEMBER_DECLARATION_CPP_

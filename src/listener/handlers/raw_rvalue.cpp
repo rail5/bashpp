@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_LISTENER_HANDLERS_RAW_RVALUE_CPP_
-#define ANTLR_LISTENER_HANDLERS_RAW_RVALUE_CPP_
+#ifndef SRC_LISTENER_HANDLERS_RAW_RVALUE_CPP_
+#define SRC_LISTENER_HANDLERS_RAW_RVALUE_CPP_
 
 #include "../BashppListener.h"
 
@@ -32,4 +32,4 @@ void BashppListener::exitRaw_rvalue(BashppParser::Raw_rvalueContext *ctx) {
 	skip_singlequote_string
 }
 
-#endif // ANTLR_LISTENER_HANDLERS_RAW_RVALUE_CPP_
+#endif // SRC_LISTENER_HANDLERS_RAW_RVALUE_CPP_

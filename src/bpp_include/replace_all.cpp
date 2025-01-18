@@ -5,8 +5,8 @@
 
 #include <string>
 
-#ifndef ANTLR_BPP_REPLACE_ALL_CPP_
-#define ANTLR_BPP_REPLACE_ALL_CPP_
+#ifndef SRC_BPP_REPLACE_ALL_CPP_
+#define SRC_BPP_REPLACE_ALL_CPP_
 
 std::string replace_all(std::string str, const std::string& from, const std::string& to) {
 	if (from.empty())
@@ -19,4 +19,4 @@ std::string replace_all(std::string str, const std::string& from, const std::str
 	return str;
 }
 
-#endif // ANTLR_BPP_REPLACE_ALL_CPP_
+#endif // SRC_BPP_REPLACE_ALL_CPP_

@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_LISTENER_HANDLERS_CLASS_DEFINITION_CPP_
-#define ANTLR_LISTENER_HANDLERS_CLASS_DEFINITION_CPP_
+#ifndef SRC_LISTENER_HANDLERS_CLASS_DEFINITION_CPP_
+#define SRC_LISTENER_HANDLERS_CLASS_DEFINITION_CPP_
 
 #include "../BashppListener.h"
 
@@ -66,4 +66,4 @@ void BashppListener::exitClass_definition(BashppParser::Class_definitionContext 
 	program->add_class(new_class);
 }
 
-#endif // ANTLR_LISTENER_HANDLERS_CLASS_DEFINITION_CPP_
+#endif // SRC_LISTENER_HANDLERS_CLASS_DEFINITION_CPP_

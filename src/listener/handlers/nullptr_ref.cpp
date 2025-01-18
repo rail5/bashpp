@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_LISTENER_HANDLERS_NULLPTR_REF_CPP_
-#define ANTLR_LISTENER_HANDLERS_NULLPTR_REF_CPP_
+#ifndef SRC_LISTENER_HANDLERS_NULLPTR_REF_CPP_
+#define SRC_LISTENER_HANDLERS_NULLPTR_REF_CPP_
 
 #include "../BashppListener.h"
 
@@ -20,4 +20,4 @@ void BashppListener::exitNullptr_ref(BashppParser::Nullptr_refContext *ctx) {
 	skip_singlequote_string
 }
 
-#endif // ANTLR_LISTENER_HANDLERS_NULLPTR_REF_CPP_
+#endif // SRC_LISTENER_HANDLERS_NULLPTR_REF_CPP_

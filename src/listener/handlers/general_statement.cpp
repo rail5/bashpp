@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_LISTENER_HANDLERS_GENERAL_STATEMENT_CPP_
-#define ANTLR_LISTENER_HANDLERS_GENERAL_STATEMENT_CPP_
+#ifndef SRC_LISTENER_HANDLERS_GENERAL_STATEMENT_CPP_
+#define SRC_LISTENER_HANDLERS_GENERAL_STATEMENT_CPP_
 
 #include "../BashppListener.h"
 
@@ -28,4 +28,4 @@ void BashppListener::exitGeneral_statement(BashppParser::General_statementContex
 	skip_singlequote_string
 }
 
-#endif // ANTLR_LISTENER_HANDLERS_GENERAL_STATEMENT_CPP_
+#endif // SRC_LISTENER_HANDLERS_GENERAL_STATEMENT_CPP_

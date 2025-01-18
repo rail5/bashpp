@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_BPP_INCLUDE_BPP_METHOD_CPP_
-#define ANTLR_BPP_INCLUDE_BPP_METHOD_CPP_
+#ifndef SRC_BPP_INCLUDE_BPP_METHOD_CPP_
+#define SRC_BPP_INCLUDE_BPP_METHOD_CPP_
 
 #include "bpp.h"
 
@@ -122,4 +122,4 @@ void bpp_method::destroy() {
 
 } // namespace bpp
 
-#endif // ANTLR_BPP_INCLUDE_BPP_METHOD_CPP
+#endif // SRC_BPP_INCLUDE_BPP_METHOD_CPP

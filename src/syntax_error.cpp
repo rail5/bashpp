@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_SYNTAX_ERROR_CPP_
-#define ANTLR_SYNTAX_ERROR_CPP_
+#ifndef SRC_SYNTAX_ERROR_CPP_
+#define SRC_SYNTAX_ERROR_CPP_
 
 #include <iostream>
 #include <string>
@@ -89,4 +89,4 @@ void print_syntax_error(std::string source_file, int line, int column, std::stri
 	file.close();
 }
 
-#endif // ANTLR_SYNTAX_ERROR_CPP_
+#endif // SRC_SYNTAX_ERROR_CPP_

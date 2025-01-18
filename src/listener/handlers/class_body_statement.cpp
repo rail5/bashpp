@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_LISTENER_HANDLERS_CLASS_BODY_STATEMENT_CPP_
-#define ANTLR_LISTENER_HANDLERS_CLASS_BODY_STATEMENT_CPP_
+#ifndef SRC_LISTENER_HANDLERS_CLASS_BODY_STATEMENT_CPP_
+#define SRC_LISTENER_HANDLERS_CLASS_BODY_STATEMENT_CPP_
 
 #include "../BashppListener.h"
 
@@ -54,4 +54,4 @@ void BashppListener::exitClass_body_statement(BashppParser::Class_body_statement
 	skip_singlequote_string
 }
 
-#endif // ANTLR_LISTENER_HANDLERS_CLASS_BODY_STATEMENT_CPP_
+#endif // SRC_LISTENER_HANDLERS_CLASS_BODY_STATEMENT_CPP_

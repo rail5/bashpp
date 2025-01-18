@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_LISTENER_HANDLERS_PARAMETER_CPP_
-#define ANTLR_LISTENER_HANDLERS_PARAMETER_CPP_
+#ifndef SRC_LISTENER_HANDLERS_PARAMETER_CPP_
+#define SRC_LISTENER_HANDLERS_PARAMETER_CPP_
 
 #include "../BashppListener.h"
 
@@ -48,4 +48,4 @@ void BashppListener::exitParameter(BashppParser::ParameterContext *ctx) {
 	skip_singlequote_string
 }
 
-#endif // ANTLR_LISTENER_HANDLERS_PARAMETER_CPP_
+#endif // SRC_LISTENER_HANDLERS_PARAMETER_CPP_

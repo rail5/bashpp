@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_LISTENER_HANDLERS_SINGLEQUOTE_STRING_CPP_
-#define ANTLR_LISTENER_HANDLERS_SINGLEQUOTE_STRING_CPP_
+#ifndef SRC_LISTENER_HANDLERS_SINGLEQUOTE_STRING_CPP_
+#define SRC_LISTENER_HANDLERS_SINGLEQUOTE_STRING_CPP_
 
 #include "../BashppListener.h"
 
@@ -32,4 +32,4 @@ void BashppListener::exitSinglequote_string(BashppParser::Singlequote_stringCont
 	in_singlequote_string = false;
 }
 
-#endif // ANTLR_LISTENER_HANDLERS_SINGLEQUOTE_STRING_CPP_
+#endif // SRC_LISTENER_HANDLERS_SINGLEQUOTE_STRING_CPP_

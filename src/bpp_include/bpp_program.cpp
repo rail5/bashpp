@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_BPP_INCLUDE_BPP_PROGRAM_CPP_
-#define ANTLR_BPP_INCLUDE_BPP_PROGRAM_CPP_
+#ifndef SRC_BPP_INCLUDE_BPP_PROGRAM_CPP_
+#define SRC_BPP_INCLUDE_BPP_PROGRAM_CPP_
 
 #include "bpp.h"
 #include "templates.h"
@@ -159,4 +159,4 @@ bool bpp_program::add_object(std::shared_ptr<bpp_object> object) {
 
 } // namespace bpp
 
-#endif // ANTLR_BPP_INCLUDE_BPP_PROGRAM_CPP
+#endif // SRC_BPP_INCLUDE_BPP_PROGRAM_CPP

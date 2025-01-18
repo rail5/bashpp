@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_INTERNAL_ERROR_CPP_
-#define ANTLR_INTERNAL_ERROR_CPP_
+#ifndef SRC_INTERNAL_ERROR_CPP_
+#define SRC_INTERNAL_ERROR_CPP_
 
 #include <stdexcept>
 
@@ -13,4 +13,4 @@ struct internal_error : public std::runtime_error {
 		: std::runtime_error(msg + "\nYou've found a bug! Please report it.") {}
 };
 
-#endif // ANTLR_INTERNAL_ERROR_CPP_
+#endif // SRC_INTERNAL_ERROR_CPP_

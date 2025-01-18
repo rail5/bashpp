@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_LISTENER_HANDLERS_OBJECT_ADDRESS_CPP_
-#define ANTLR_LISTENER_HANDLERS_OBJECT_ADDRESS_CPP_
+#ifndef SRC_LISTENER_HANDLERS_OBJECT_ADDRESS_CPP_
+#define SRC_LISTENER_HANDLERS_OBJECT_ADDRESS_CPP_
 
 #include "../BashppListener.h"
 
@@ -20,4 +20,4 @@ void BashppListener::exitObject_address(BashppParser::Object_addressContext *ctx
 	skip_singlequote_string
 }
 
-#endif // ANTLR_LISTENER_HANDLERS_OBJECT_ADDRESS_CPP_
+#endif // SRC_LISTENER_HANDLERS_OBJECT_ADDRESS_CPP_

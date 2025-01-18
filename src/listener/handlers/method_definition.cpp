@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_LISTENER_HANDLERS_METHOD_DEFINITION_CPP_
-#define ANTLR_LISTENER_HANDLERS_METHOD_DEFINITION_CPP_
+#ifndef SRC_LISTENER_HANDLERS_METHOD_DEFINITION_CPP_
+#define SRC_LISTENER_HANDLERS_METHOD_DEFINITION_CPP_
 
 #include "../BashppListener.h"
 
@@ -46,4 +46,4 @@ void BashppListener::exitMethod_definition(BashppParser::Method_definitionContex
 	}
 }
 
-#endif // ANTLR_LISTENER_HANDLERS_METHOD_DEFINITION_CPP_
+#endif // SRC_LISTENER_HANDLERS_METHOD_DEFINITION_CPP_

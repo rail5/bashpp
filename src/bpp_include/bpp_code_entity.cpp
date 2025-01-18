@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_BPP_INCLUDE_BPP_CODE_ENTITY_CPP_
-#define ANTLR_BPP_INCLUDE_BPP_CODE_ENTITY_CPP_
+#ifndef SRC_BPP_INCLUDE_BPP_CODE_ENTITY_CPP_
+#define SRC_BPP_INCLUDE_BPP_CODE_ENTITY_CPP_
 
 #include "bpp.h"
 
@@ -133,4 +133,4 @@ void bpp_code_entity::inherit(std::shared_ptr<bpp_code_entity> parent) {
 
 } // namespace bpp
 
-#endif // ANTLR_BPP_INCLUDE_BPP_CODE_ENTITY_CPP_
+#endif // SRC_BPP_INCLUDE_BPP_CODE_ENTITY_CPP_

@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_BPP_INCLUDE_BPP_DESTRUCTOR_CPP_
-#define ANTLR_BPP_INCLUDE_BPP_DESTRUCTOR_CPP_
+#ifndef SRC_BPP_INCLUDE_BPP_DESTRUCTOR_CPP_
+#define SRC_BPP_INCLUDE_BPP_DESTRUCTOR_CPP_
 
 #include "bpp.h"
 
@@ -20,4 +20,4 @@ bool bpp_destructor::add_parameter(std::shared_ptr<bpp_method_parameter> paramet
 
 } // namespace bpp
 
-#endif // ANTLR_BPP_INCLUDE_BPP_DESTRUCTOR_CPP
+#endif // SRC_BPP_INCLUDE_BPP_DESTRUCTOR_CPP

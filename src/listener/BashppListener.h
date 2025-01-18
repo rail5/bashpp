@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef ANTLR_LISTENER_BASHPPLISTENER_H_
-#define ANTLR_LISTENER_BASHPPLISTENER_H_
+#ifndef SRC_LISTENER_BASHPPLISTENER_H_
+#define SRC_LISTENER_BASHPPLISTENER_H_
 
 #include <iostream>
 #include <vector>
@@ -227,4 +227,4 @@ class BashppListener : public BashppParserBaseListener {
 
 };
 
-#endif // ANTLR_LISTENER_BASHPPLISTENER_H_
+#endif // SRC_LISTENER_BASHPPLISTENER_H_

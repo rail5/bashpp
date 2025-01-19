@@ -47,18 +47,19 @@ void BashppListener::enterPointer_declaration(BashppParser::Pointer_declarationC
 		current_code_entity = program;
 	}
 
+	std::shared_ptr<bpp::bpp_class> object_class = current_code_entity->get_class(object_type_text);
+
+	// Verify that the object's class exists
+	if (object_class == nullptr) {
+		throw_syntax_error(ctx->AT(), "Class not found: " + object_type_text);
+	}
+
 	std::shared_ptr<bpp::bpp_object> new_object = std::make_shared<bpp::bpp_object>(object_name_text);
 	new_object->set_pointer(true);
 	entity_stack.push(new_object);
 
-	new_object->set_class(current_code_entity->get_class(object_type_text));
+	new_object->set_class(object_class);
 	new_object->set_address("bpp____ptr__" + new_object->get_class()->get_name() + "__" + new_object->get_name());
-
-	// Verify that the object's class exists
-	if (new_object->get_class() == nullptr) {
-		entity_stack.pop();
-		throw_syntax_error(ctx->AT(), "Class not found: " + object_type->getText());
-	}
 
 	// Verify that the object's name is not already in use (or a protected keyword)
 	if (protected_keywords.find(new_object->get_name()) != protected_keywords.end()) {

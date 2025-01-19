@@ -1,5 +1,5 @@
 ---
-title: Bash++: Download
+title: Download Bash++
 ---
 # Download
 

@@ -20,7 +20,7 @@ function bpp____supershell() {
 	fi
 	$__command 1>"/proc/self/fd/${!__supershellFD}" 2>/dev/null
 	eval "$__outputVar=\$(< "/proc/self/fd/${!__supershellFD}")"
-	echo -n "${__temporaryStorage}">"/proc/self/fd/${!__supershellFD}"
+	echo "${__temporaryStorage}">"/proc/self/fd/${!__supershellFD}"
 }
 )EOF";
 

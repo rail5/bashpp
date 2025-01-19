@@ -32,7 +32,11 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 
 	std::shared_ptr<bpp::bpp_class> current_class = current_code_entity->get_containing_class().lock();
 
-	std::shared_ptr<bpp::bpp_string> object_reference_entity = std::make_shared<bpp::bpp_string>();
+	// Check if we're in an object_address context
+	// This will be important later -- we'll have to return differently if we are
+	std::shared_ptr<bpp::bpp_object_address> object_address_entity = std::dynamic_pointer_cast<bpp::bpp_object_address>(entity_stack.top());
+
+	std::shared_ptr<bpp::bpp_object_reference> object_reference_entity = std::make_shared<bpp::bpp_object_reference>();
 	object_reference_entity->set_containing_class(current_code_entity->get_containing_class());
 	object_reference_entity->inherit(current_code_entity);
 	entity_stack.push(object_reference_entity);
@@ -107,7 +111,7 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 			if (!object_is_pointer) {
 				object_reference_code = "bpp__" + object->get_class()->get_name() + "__" + object->get_name();
 			} else {
-				object_reference_code = object->get_address();
+				object_reference_code = "${" + object->get_address() + "}";
 				created_first_temporary_variable = true;
 			}
 		} else if (method != nullptr) {
@@ -137,6 +141,8 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 		}
 	}
 
+	object_reference_entity->set_reference_type(last_reference_type);
+
 	if (last_reference_type == bpp::reference_type::ref_method) {
 		indirection = ctx->IDENTIFIER().size() > 3 ? "!" : "";
 		std::string method_call = "bpp__" + class_containing_the_method->get_name() + "__" + method->get_name() + " ";
@@ -164,9 +170,16 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 	// Is it a pointer?
 	std::shared_ptr<bpp::bpp_object> last_reference_object = std::dynamic_pointer_cast<bpp::bpp_object>(last_reference_entity);
 	if (last_reference_object != nullptr && last_reference_object->is_pointer()) {
+		object_reference_entity->add_code(object_reference_code);
+		return;
+	}
+
+	// Are we otherwise in an object_address context?
+	if (object_address_entity != nullptr) {
 		object_reference_entity->add_code("${" + object_reference_code + "}");
 		return;
 	}
+
 	// We need to call the .toPrimitive method on the object
 	std::string method_call = "bpp__" + last_reference_entity->get_class()->get_name() + "__toPrimitive ";
 	// Append the containing object's address to the method call
@@ -187,11 +200,34 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 	skip_syntax_errors
 	skip_singlequote_string
 
-	std::shared_ptr<bpp::bpp_string> object_reference_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
+	std::shared_ptr<bpp::bpp_object_reference> object_reference_entity = std::dynamic_pointer_cast<bpp::bpp_object_reference>(entity_stack.top());
 	entity_stack.pop();
 
 	if (object_reference_entity == nullptr) {
 		throw internal_error("Object reference context was not found in the entity stack");
+	}
+
+	// Are we in an object_address context?
+	std::shared_ptr<bpp::bpp_object_address> object_address_entity = std::dynamic_pointer_cast<bpp::bpp_object_address>(entity_stack.top());
+	if (object_address_entity != nullptr) {
+		if (object_reference_entity->get_reference_type() == bpp::reference_type::ref_method) {
+			throw_syntax_error(ctx->IDENTIFIER(ctx->IDENTIFIER().size() - 1), "Cannot get the address of a method");
+		}
+		std::string address = object_reference_entity->get_code();
+		// Some hacky string manipulation to work backwards
+		// If it starts with '${!', we'll change that to '${'
+		// If it doesn't have the indirection exclamation point, but starts with '${', we'll remove the '${' and the closing '}'
+		// TODO(@rail5): This is a hacky way to do this, and should be replaced with a more robust solution
+		if (address.substr(0, 3) == "${!") {
+			address = "${" + address.substr(3);
+		} else if (address.substr(0, 2) == "${") {
+			address = address.substr(2, address.size() - 3);
+		}
+
+		object_address_entity->add_code_to_previous_line(object_reference_entity->get_pre_code());
+		object_address_entity->add_code_to_next_line(object_reference_entity->get_post_code());
+		object_address_entity->add_code(address);
+		return;
 	}
 
 	// If we're not in any broader context, simply add the object reference to the current code entity

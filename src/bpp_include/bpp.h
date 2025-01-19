@@ -23,10 +23,10 @@ enum bpp_scope {
 };
 
 enum reference_type {
-		ref_primitive,
-		ref_method,
-		ref_object
-	};
+	ref_primitive,
+	ref_method,
+	ref_object
+};
 
 class bpp_entity;
 class bpp_code_entity;
@@ -122,6 +122,21 @@ class bpp_object_assignment : public bpp_string {
 
 		std::string get_lvalue() const;
 		std::string get_rvalue() const;
+};
+
+class bpp_object_reference : public bpp_string {
+	private:
+		bpp::reference_type reference_type;
+	public:	
+		bpp_object_reference();
+
+		void set_reference_type(bpp::reference_type reference_type);
+		bpp::reference_type get_reference_type() const;
+};
+
+class bpp_object_address : public bpp_string {
+	public:
+		bpp_object_address() = default;
 };
 
 class bpp_method : public bpp_code_entity {

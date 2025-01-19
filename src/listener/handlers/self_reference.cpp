@@ -27,7 +27,11 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
-	std::shared_ptr<bpp::bpp_string> self_reference_entity = std::make_shared<bpp::bpp_string>();
+	// Check if we're in an object_address context
+	// This will be important later -- we'll have to return differently if we are
+	std::shared_ptr<bpp::bpp_object_address> object_address_entity = std::dynamic_pointer_cast<bpp::bpp_object_address>(entity_stack.top());
+
+	std::shared_ptr<bpp::bpp_object_reference> self_reference_entity = std::make_shared<bpp::bpp_object_reference>();
 	self_reference_entity->set_containing_class(current_class);
 	self_reference_entity->inherit(current_code_entity);
 	entity_stack.push(self_reference_entity);
@@ -114,6 +118,8 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 		}
 	}
 
+	self_reference_entity->set_reference_type(last_reference_type);
+
 	if (last_reference_type == bpp::reference_type::ref_method) {
 		// Call the method in a supershell, and substitute the result in place of the self-reference
 
@@ -143,6 +149,12 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 		throw internal_error("Last reference entity has no class");
 	}
 
+	// Are we otherwise in an object_address context?
+	if (object_address_entity != nullptr) {
+		self_reference_entity->add_code("${!" + self_reference_code + "}");
+		return;
+	}
+
 	// If we're here, the last reference entity is a non-primitive object
 	// We need to call the .toPrimitive method on the object
 	std::string method_call = "bpp__" + last_reference_entity->get_class()->get_name() + "__toPrimitive ";
@@ -163,10 +175,33 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 	skip_syntax_errors
 	skip_singlequote_string
 
-	std::shared_ptr<bpp::bpp_string> self_reference_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
-	entity_stack.pop();
+	std::shared_ptr<bpp::bpp_object_reference> self_reference_entity = std::dynamic_pointer_cast<bpp::bpp_object_reference>(entity_stack.top());
 	if (self_reference_entity == nullptr) {
 		throw internal_error("Self reference context was not found in the entity stack");
+	}
+	entity_stack.pop();
+
+	// Are we in an object_address context?
+	std::shared_ptr<bpp::bpp_object_address> object_address_entity = std::dynamic_pointer_cast<bpp::bpp_object_address>(entity_stack.top());
+	if (object_address_entity != nullptr) {
+		if (self_reference_entity->get_reference_type() == bpp::reference_type::ref_method) {
+			throw_syntax_error(ctx->IDENTIFIER(ctx->IDENTIFIER().size() - 1), "Cannot get the address of a method");
+		}
+		std::string address = self_reference_entity->get_code();
+		// Some hacky string manipulation to work backwards
+		// If it starts with '${!', we'll change that to '${'
+		// If it doesn't have the indirection exclamation point, but starts with '${', we'll remove the '${' and the closing '}'
+		// TODO(@rail5): This is a hacky way to do this, and should be replaced with a more robust solution
+		if (address.substr(0, 3) == "${!") {
+			address = "${" + address.substr(3);
+		} else if (address.substr(0, 2) == "${") {
+			address = address.substr(2, address.size() - 3);
+		}
+
+		object_address_entity->add_code_to_previous_line(self_reference_entity->get_pre_code());
+		object_address_entity->add_code_to_next_line(self_reference_entity->get_post_code());
+		object_address_entity->add_code(address);
+		return;
 	}
 
 	// If we're not in any broader context, simply add the object reference to the current code entity

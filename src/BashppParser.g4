@@ -33,6 +33,7 @@ general_statement: include_statement
 	| string
 	| singlequote_string
 	| comment
+	| nullptr_ref
 	| other_statement
 	| DELIM
 	| WS;

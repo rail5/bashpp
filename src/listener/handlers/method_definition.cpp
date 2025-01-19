@@ -25,6 +25,16 @@ void BashppListener::enterMethod_definition(BashppParser::Method_definitionConte
 	std::shared_ptr<bpp::bpp_method> method = std::make_shared<bpp::bpp_method>(method_name);
 	method->inherit(program);
 	method->set_containing_class(current_class);
+
+	// Set the method's scope
+	if (ctx->KEYWORD_PUBLIC() != nullptr) {
+		method->set_scope(bpp::bpp_scope::SCOPE_PUBLIC);
+	} else if (ctx->KEYWORD_PROTECTED() != nullptr) {
+		method->set_scope(bpp::bpp_scope::SCOPE_PROTECTED);
+	} else {
+		method->set_scope(bpp::bpp_scope::SCOPE_PRIVATE);
+	}
+
 	entity_stack.push(method);
 }
 
@@ -39,6 +49,20 @@ void BashppListener::exitMethod_definition(BashppParser::Method_definitionContex
 
 	// Call destructors for any objects created in the method before we exit it
 	method->destruct_local_objects();
+
+	// If the method is toPrimitive, verify that the scope is public
+	if (method->get_name() == "toPrimitive" && method->get_scope() != bpp::bpp_scope::SCOPE_PUBLIC) {
+		antlr4::tree::TerminalNode* scope_keyword;
+		if (ctx->KEYWORD_PUBLIC() != nullptr) {
+			scope_keyword = ctx->KEYWORD_PUBLIC();
+		} else if (ctx->KEYWORD_PROTECTED() != nullptr) {
+			scope_keyword = ctx->KEYWORD_PROTECTED();
+		} else {
+			scope_keyword = ctx->KEYWORD_PRIVATE();
+		}
+		throw_syntax_error_from_exitRule(scope_keyword, "toPrimitive method must be public");
+		return;
+	}
 
 	// Add the method to the class
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());

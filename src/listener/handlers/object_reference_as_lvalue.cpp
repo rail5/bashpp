@@ -31,6 +31,8 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 		throw_syntax_error(ctx->IDENTIFIER_LVALUE(), "Object reference outside of code entity");
 	}
 
+	std::shared_ptr<bpp::bpp_class> current_class = current_code_entity->get_containing_class().lock();
+
 	std::shared_ptr<bpp::bpp_string> object_reference_entity = std::make_shared<bpp::bpp_string>();
 	object_reference_entity->set_containing_class(current_code_entity->get_containing_class());
 	object_reference_entity->inherit(current_code_entity);
@@ -58,8 +60,13 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 		bool is_datamember = false;
 		bool is_method = false;
 
-		std::shared_ptr<bpp::bpp_datamember> referenced_datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(current_context->get_class()->get_datamember(ctx->IDENTIFIER(i)->getText()));
-		std::shared_ptr<bpp::bpp_method> referenced_method = std::dynamic_pointer_cast<bpp::bpp_method>(current_context->get_class()->get_method(ctx->IDENTIFIER(i)->getText()));
+		std::shared_ptr<bpp::bpp_datamember> referenced_datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(current_context->get_class()->get_datamember(ctx->IDENTIFIER(i)->getText(), current_class));
+		std::shared_ptr<bpp::bpp_method> referenced_method = std::dynamic_pointer_cast<bpp::bpp_method>(current_context->get_class()->get_method(ctx->IDENTIFIER(i)->getText(), current_class));
+
+		if (referenced_datamember == bpp::inaccessible_datamember || referenced_method == bpp::inaccessible_method) {
+			entity_stack.pop();
+			throw_syntax_error(ctx->IDENTIFIER(i), ctx->IDENTIFIER(i)->getText() + " is inaccessible in this context");
+		}
 
 		if (referenced_datamember != nullptr) {
 			is_datamember = true;
@@ -84,7 +91,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 		// Add the toPrimitive method to the object_chain
 		// Set final_method = toPrimitive
 		// Set final_datamember = nullptr
-		final_method = final_object->get_class()->get_method("toPrimitive");
+		final_method = final_object->get_class()->get_method("toPrimitive", current_class);
 		object_chain.push_back(final_method);
 		final_object = nullptr;
 	}
@@ -138,7 +145,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 
 		object_reference_entity->add_code(encasing_start + temporary_variable_lvalue + encasing_end);
 	} else if (final_method != nullptr) {
-		// Call the given method in a supershell
+		// Call the given method
 
 		// Get the penultimate object in the chain
 		std::shared_ptr<bpp::bpp_entity> penultimate_object = object_chain[object_chain.size() - 2];

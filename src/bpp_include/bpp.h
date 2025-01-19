@@ -18,9 +18,12 @@ namespace bpp {
 enum bpp_scope {
 	SCOPE_PUBLIC,
 	SCOPE_PROTECTED,
-	SCOPE_PRIVATE
+	SCOPE_PRIVATE,
+	SCOPE_INACCESSIBLE
 };
 
+class bpp_entity;
+class bpp_code_entity;
 class bpp_program;
 class bpp_class;
 class bpp_method;
@@ -34,6 +37,7 @@ class bpp_entity {
 	protected:
 		std::shared_ptr<bpp_class> type = nullptr;
 		std::weak_ptr<bpp_class> containing_class;
+		std::vector<std::shared_ptr<bpp_class>> parents;
 	public:
 		virtual ~bpp_entity() = default;
 		virtual std::shared_ptr<bpp_class> get_class() const {
@@ -56,7 +60,35 @@ class bpp_entity {
 			this->containing_class = containing_class;
 			return true;
 		}
+
+		virtual void inherit(std::shared_ptr<bpp_entity> parent) {
+			for (auto& p : parent->parents) {
+				parents.push_back(p);
+			}
+			parents.push_back(parent->get_class());
+		}
+
+		virtual void inherit(std::shared_ptr<bpp_code_entity> parent) {
+			inherit(std::dynamic_pointer_cast<bpp_entity>(parent));
+		}
+
+		virtual void inherit(std::shared_ptr<bpp_class> parent) {
+			inherit(std::dynamic_pointer_cast<bpp_entity>(parent));
+		}
+
+		bool is_child_of(std::shared_ptr<bpp_entity> parent) {
+			for (auto& p : parents) {
+				if (p == parent) {
+					return true;
+				}
+			}
+			return false;
+		}
 };
+
+std::shared_ptr<bpp_entity> inaccessible_entity = std::make_shared<bpp_entity>();
+std::shared_ptr<bpp_datamember> inaccessible_datamember = std::make_shared<bpp_datamember>();
+std::shared_ptr<bpp_method> inaccessible_method = std::make_shared<bpp_method>();
 
 class bpp_code_entity : public bpp_entity {
 	protected:
@@ -88,7 +120,7 @@ class bpp_code_entity : public bpp_entity {
 		virtual std::shared_ptr<bpp_class> get_class(std::string name);
 		virtual std::shared_ptr<bpp_object> get_object(std::string name);
 
-		virtual void inherit(std::shared_ptr<bpp_code_entity> parent);
+		void inherit(std::shared_ptr<bpp_code_entity> parent) override;
 };
 
 class bpp_string : public bpp_code_entity {
@@ -203,6 +235,7 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 				toPrimitive->set_name("toPrimitive");
 				std::string default_toPrimitive_body = "	echo " + name + " Instance\n";
 				toPrimitive->add_code(default_toPrimitive_body);
+				toPrimitive->set_scope(bpp_scope::SCOPE_PUBLIC);
 				remove_default_toPrimitive();
 				methods.push_back(toPrimitive);
 			}
@@ -231,10 +264,10 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 		bool has_constructor() const;
 		bool has_destructor() const;
 
-		std::shared_ptr<bpp_method> get_method(std::string name);
-		std::shared_ptr<bpp_datamember> get_datamember(std::string name);
+		std::shared_ptr<bpp_method> get_method(std::string name, std::shared_ptr<bpp_entity> context);
+		std::shared_ptr<bpp_datamember> get_datamember(std::string name, std::shared_ptr<bpp_entity> context);
 
-		void inherit(std::shared_ptr<bpp_class> parent);
+		void inherit(std::shared_ptr<bpp_class> parent) override;
 
 		void destroy();
 };

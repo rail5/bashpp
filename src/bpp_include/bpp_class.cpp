@@ -50,6 +50,10 @@ bool bpp_class::add_method(std::shared_ptr<bpp_method> method) {
 	std::string name = method->get_name();
 
 	if (name == "toPrimitive" && !has_custom_toPrimitive) {
+		// toPrimitive must ALWAYS be public
+		if (method->get_scope() != bpp_scope::SCOPE_PUBLIC) {
+			return false;
+		}
 		remove_default_toPrimitive();
 		has_custom_toPrimitive = true;
 	}
@@ -118,19 +122,47 @@ bool bpp_class::has_destructor() const {
 	return destructor_set;
 }
 
-std::shared_ptr<bpp::bpp_method> bpp_class::get_method(std::string name) {
+std::shared_ptr<bpp::bpp_method> bpp_class::get_method(std::string name, std::shared_ptr<bpp_entity> context) {
 	for (auto& m : methods) {
 		if (m->get_name() == name) {
-			return m;
+			if (m->get_scope() == bpp_scope::SCOPE_PUBLIC) {
+				return m;
+			}
+
+			if (m->get_scope() == bpp_scope::SCOPE_PRIVATE || m->get_scope() == bpp_scope::SCOPE_PROTECTED) {
+				if (context == this->get_class()) {
+					return m;
+				} else {
+					return bpp::inaccessible_method;
+				}
+			}
+
+			if (m->get_scope() == bpp_scope::SCOPE_INACCESSIBLE) {
+				return bpp::inaccessible_method;
+			}
 		}
 	}
 	return nullptr;
 }
 
-std::shared_ptr<bpp::bpp_datamember> bpp_class::get_datamember(std::string name) {
+std::shared_ptr<bpp::bpp_datamember> bpp_class::get_datamember(std::string name, std::shared_ptr<bpp_entity> context) {
 	for (auto& d : datamembers) {
 		if (d->get_name() == name) {
-			return d;
+			if (d->get_scope() == bpp_scope::SCOPE_PUBLIC) {
+				return d;
+			}
+
+			if (d->get_scope() == bpp_scope::SCOPE_PRIVATE || d->get_scope() == bpp_scope::SCOPE_PROTECTED) {
+				if (context == this->get_class()) {
+					return d;
+				} else {
+					return bpp::inaccessible_datamember;
+				}
+			}
+
+			if (d->get_scope() == bpp_scope::SCOPE_INACCESSIBLE) {
+				return bpp::inaccessible_datamember;
+			}
 		}
 	}
 	return nullptr;
@@ -140,11 +172,19 @@ void bpp_class::inherit(std::shared_ptr<bpp_class> parent) {
 	// Inherit methods
 	for (auto& m : parent->get_methods()) {
 		methods.push_back(m);
+		// If the method is marked private, mark it as inaccessible
+		if (m->get_scope() == bpp_scope::SCOPE_PRIVATE) {
+			methods[methods.size() - 1]->set_scope(bpp_scope::SCOPE_INACCESSIBLE);
+		}
 	}
 
 	// Inherit datamembers
 	for (auto& d : parent->get_datamembers()) {
 		datamembers.push_back(d);
+		// If the datamember is marked private, mark it as inaccessible
+		if (d->get_scope() == bpp_scope::SCOPE_PRIVATE) {
+			datamembers[datamembers.size() - 1]->set_scope(bpp_scope::SCOPE_INACCESSIBLE);
+		}
 	}
 
 	// Inherit constructor
@@ -158,6 +198,14 @@ void bpp_class::inherit(std::shared_ptr<bpp_class> parent) {
 		destructor = parent->get_destructor();
 		destructor_set = true;
 	}
+
+	// Inherit parents
+	for (auto& p : parent->parents) {
+		parents.push_back(p);
+	}
+
+	// Mark the parent as a parent of this class
+	parents.push_back(parent);
 }
 
 void bpp_class::destroy() {

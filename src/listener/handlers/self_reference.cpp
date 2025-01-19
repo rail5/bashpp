@@ -85,8 +85,13 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 		std::string identifier_text = identifier->getText();
 
 		// Verify that the given identifier is a member of the last reference entity
-		datamember = last_reference_entity->get_class()->get_datamember(identifier_text);
-		method = last_reference_entity->get_class()->get_method(identifier_text);
+		datamember = last_reference_entity->get_class()->get_datamember(identifier_text, current_class);
+		method = last_reference_entity->get_class()->get_method(identifier_text, current_class);
+
+		if (datamember == bpp::inaccessible_datamember || method == bpp::inaccessible_method) {
+			entity_stack.pop();
+			throw_syntax_error(identifier, identifier_text + " is inaccessible in this context");
+		}
 
 		if (method != nullptr) {
 			// Get the class containing the method

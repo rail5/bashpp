@@ -12,12 +12,15 @@ const char* bpp_supershell_function = R"EOF(function bpp____initsupershell() {
 	rm "$bpp____supershelltempfile"
 }
 function bpp____supershell() {
-	local __outputVar="$1" __command="$2" __supershellFD="bpp____supershellFD__$BASHPID"
+	local __outputVar="$1" __command="$2" __supershellFD="bpp____supershellFD__$BASHPID" __temporaryStorage=""
 	if [[ -z "${!__supershellFD}" ]]; then
 		bpp____initsupershell
+	else
+		__temporaryStorage=$(< "/proc/self/fd/${!__supershellFD}")
 	fi
 	$__command 1>"/proc/self/fd/${!__supershellFD}" 2>/dev/null
 	eval "$__outputVar=\$(< "/proc/self/fd/${!__supershellFD}")"
+	echo -n "${__temporaryStorage}">"/proc/self/fd/${!__supershellFD}"
 }
 )EOF";
 

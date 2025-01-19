@@ -111,7 +111,7 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 		std::string method_name = method->get_name();
 		std::string params = "";
 		for (size_t i = 0; i < method->get_parameters().size(); i++) {
-			params += method->get_parameters()[i]->get_name() + "=\"$" + std::to_string(i + 3) + "\"";
+			params += method->get_parameters()[i]->get_name() + "=\"$" + std::to_string(i + 1) + "\"";
 			if (i < method->get_parameters().size() - 1) {
 				params += " ";
 			}

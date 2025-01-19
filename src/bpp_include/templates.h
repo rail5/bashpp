@@ -66,8 +66,9 @@ const char* template_copy_function = R"EOF(function bpp__%CLASS%____copy() {
 )EOF";
 
 const char* template_method = R"EOF(function bpp__%CLASS%__%SIGNATURE%() {
-	local __objectName="$1" __objectIsPtr="$2" %PARAMS%
-	local __objectAddress="bpp__%CLASS%__${__objectName}"
+	local __objectName="$1" __objectIsPtr="$2"
+	shift 2
+	local __objectAddress="bpp__%CLASS%__${__objectName}" %PARAMS%
 	if [[ "${__objectIsPtr}" -eq 1 ]]; then
 		__objectAddress="${__objectName}"
 	fi

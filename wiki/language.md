@@ -149,6 +149,35 @@ Methods cannot take non-primitive arguments. They can, however, accept pointers 
 
 This is because pointers are considered primitives in Bash++, and methods can accept primitives as arguments. This shouldn't cause any issues, as pointers are implicitly dereferenced as needed.
 
+Like in ordinary Bash functions, these arguments can also be accessed using `$1`, `$2`, etc.:
+
+```bash
+@class MyClass {
+	@public @method myMethodWithArgs {
+		echo "Hello from myMethodWithArgs"
+		echo "Argument 1: $1"
+		echo "Argument 2: $2"
+		echo "All arguments: $@"
+	}
+}
+```
+
+If a method is declared as `@virtual`, it can be overridden in derived classes. If a method is not declared as `@virtual`, it cannot be overridden.
+
+```bash
+@class BaseClass {
+	@virtual @public @method someMethod {
+		echo "Hello from the base class!"
+	}
+}
+
+@class DerivedClass : BaseClass {
+	@public @method someMethod {
+		echo "Hello from the derived class!"
+	}
+}
+```
+
 Bash++ does not support method overloading. Each method must have a unique name.
 
 # Constructors and Destructors

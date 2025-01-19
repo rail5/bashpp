@@ -33,6 +33,7 @@ general_statement: include_statement
 	| string
 	| singlequote_string
 	| comment
+	| object_address
 	| nullptr_ref
 	| other_statement
 	| DELIM
@@ -125,7 +126,7 @@ parameter: (IDENTIFIER | AT IDENTIFIER ASTERISK WS* IDENTIFIER) WS*;
 
 nullptr_ref: AT KEYWORD_NULLPTR;
 
-new_statement: AT KEYWORD_NEW WS* IDENTIFIER;
+new_statement: AT KEYWORD_NEW WS* AT? IDENTIFIER;
 
 // Other statement
 other_statement: ~(RBRACE | SUPERSHELL_END | QUOTE_END | SINGLEQUOTE_END | NEWLINE | SUBSHELL_END | DEPRECATED_SUBSHELL_END)+?;

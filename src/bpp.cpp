@@ -11,6 +11,8 @@
 #include <antlr4-runtime.h>
 #include <getopt.h>
 
+#include "version.h"
+
 #include "syntax_error.cpp"
 
 #include "antlr/BashppLexer.h"
@@ -112,11 +114,11 @@ int main(int argc, char* argv[]) {
 				output_stream = outfilestream.get();
 				break;
 			case 'v':
-				std::cout << program_name << " 0.1" << std::endl << copyright;
+				std::cout << program_name << " " << bpp_compiler_version << std::endl << copyright;
 				return 0;
 				break;
 			case 'h':
-				std::cout << program_name << " 0.1" << std::endl << copyright << help_string;
+				std::cout << program_name << " " << bpp_compiler_version << std::endl << copyright << help_string;
 				return 0;
 				break;
 			case '?':
@@ -152,7 +154,7 @@ int main(int argc, char* argv[]) {
 
 	/* If the user didn't provide input, let them know, rather than just hang waiting for cin */
 	if (stream->rdbuf() == std::cin.rdbuf() && isatty(fileno(stdin))) {
-		std::cerr << program_name << " 0.1" << std::endl << copyright << help_string;
+		std::cerr << program_name << " " << bpp_compiler_version << std::endl << copyright << help_string;
 		return 1;
 	}
 

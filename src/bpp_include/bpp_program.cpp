@@ -57,6 +57,8 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 			assignments += "	local __objAssignment=" + dm->get_default_value() + "\n";
 			assignments += "	eval \"${__objectAddress}__" + dm->get_name() + "=\\$__objAssignment\"\n";
 			assignments += "	unset __objAssignment\n";
+		} else if (dm->is_pointer()) {
+			assignments += "	eval \"${__objectAddress}__" + dm->get_name() + "=\\" + dm->get_default_value() + "\"\n";
 		} else {
 			assignments += "	bpp__" + dm->get_class()->get_name() + "____new \"\" ${__objectAddress}__" + dm->get_name() + "\n";
 		}
@@ -68,7 +70,7 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	std::string deletions = "";
 	for (auto& dm : class_->get_datamembers()) {
 		deletions += dm->get_pre_access_code() + "\n";
-		if (dm->get_class()->get_name() == "primitive") {
+		if (dm->get_class()->get_name() == "primitive" || dm->is_pointer()) {
 			deletions += "	unset ${__objectAddress}__" + dm->get_name() + "\n";
 		} else {
 			deletions += "	bpp__" + dm->get_class()->get_name() + "____delete ${__objectAddress}__" + dm->get_name() + " 1\n";
@@ -82,7 +84,7 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	std::string copies = "";
 	for (auto& dm : class_->get_datamembers()) {
 		copies += dm->get_pre_access_code() + "\n";
-		if (dm->get_class()->get_name() == "primitive") {
+		if (dm->get_class()->get_name() == "primitive" || dm->is_pointer()) {
 			copies += "	local __copyFrom__" + dm->get_name() + "=\"${__copyFromAddress}__" + dm->get_name() + "\"\n";
 			copies += "	eval \"${__copyToAddress}__" + dm->get_name() + "=\\${!__copyFrom__" + dm->get_name() + "}\"\n";
 		} else {
@@ -147,14 +149,13 @@ bool bpp_program::add_object(std::shared_ptr<bpp_object> object) {
 
 	// Is it a pointer?
 	if (object->is_pointer()) {
-		object_code += "bpp__" + type + "____new \"\" " + name + "\n";
+		object_code += object->get_address() + "=\"" + object->get_assignment_value() + "\"\n";
 	} else {
 		object_code += "bpp__" + type + "____new " + name + "\n";
-	}
-
-	// Call the constructor if it exists
-	if (object->get_class()->has_constructor()) {
-		object_code += "bpp__" + type + "____constructor " + name + " " + (object->is_pointer() ? "1" : "0") + "\n";
+		// Call the constructor if it exists
+		if (object->get_class()->has_constructor()) {
+			object_code += "bpp__" + type + "____constructor " + name + " 0\n";
+		}
 	}
 
 	code += object_code;

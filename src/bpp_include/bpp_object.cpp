@@ -42,6 +42,18 @@ void bpp_object::set_address(std::string address) {
 	this->address = address;
 }
 
+void bpp_object::set_assignment_value(std::string assignment_value) {
+	this->assignment_value = assignment_value;
+}
+
+void bpp_object::set_pre_access_code(std::string pre_access_code) {
+	this->pre_access_code = pre_access_code;
+}
+
+void bpp_object::set_post_access_code(std::string post_access_code) {
+	this->post_access_code = post_access_code;
+}
+
 std::string bpp_object::get_name() const {
 	return name;
 }
@@ -50,8 +62,20 @@ std::string bpp_object::get_address() const {
 	return address;
 }
 
+std::string bpp_object::get_assignment_value() const {
+	return assignment_value;
+}
+
 std::shared_ptr<bpp_class> bpp_object::get_class() const {
 	return type;
+}
+
+std::string bpp_object::get_pre_access_code() const {
+	return pre_access_code;
+}
+
+std::string bpp_object::get_post_access_code() const {
+	return post_access_code;
 }
 
 bool bpp_object::is_pointer() const {

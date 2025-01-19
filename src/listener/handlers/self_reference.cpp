@@ -46,6 +46,7 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 	std::shared_ptr<bpp::bpp_entity> last_reference_entity = current_class;
 
 	std::shared_ptr<bpp::bpp_datamember> datamember = nullptr;
+	bool datamember_is_pointer = false;
 	std::shared_ptr<bpp::bpp_method> method = nullptr;
 	std::shared_ptr<bpp::bpp_class> class_containing_the_method = current_class;
 
@@ -95,6 +96,7 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 			last_reference_entity = method;
 		} else if (datamember != nullptr) {
 			bool is_primitive = datamember->get_class() == primitive;
+			datamember_is_pointer = datamember->is_pointer();
 			last_reference_type = is_primitive ? bpp::reference_type::ref_primitive : bpp::reference_type::ref_object;
 			last_reference_entity = datamember;
 
@@ -121,14 +123,14 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 		// Tell the method that we *are* passing a pointer
 		method_call += " 1";
 
-		supershell_code method_code = generate_supershell_code(method_call);
+		code_segment method_code = generate_supershell_code(method_call);
 		self_reference_entity->add_code_to_previous_line(method_code.pre_code);
 		self_reference_entity->add_code_to_next_line(method_code.post_code);
 		self_reference_entity->add_code(method_code.code);
 		return;
 	}
 
-	if (last_reference_entity->get_class() == primitive || last_reference_entity == current_class) {
+	if (last_reference_entity->get_class() == primitive || last_reference_entity == current_class || datamember_is_pointer) {
 		// If the last reference entity is a primitive, simply output the primitive
 		// If last_reference_entity == current_class, then the self-reference is a pointer to the object itself (simply @this)
 		// Which is also a primitive, so we follow the same procedure
@@ -149,7 +151,7 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 	// Tell the method that we *are* passing a pointer
 	method_call += " 1";
 
-	supershell_code method_code = generate_supershell_code(method_call);
+	code_segment method_code = generate_supershell_code(method_call);
 	self_reference_entity->add_code_to_previous_line(method_code.pre_code);
 	self_reference_entity->add_code_to_next_line(method_code.post_code);
 	self_reference_entity->add_code(method_code.code);

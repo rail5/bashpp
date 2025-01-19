@@ -63,7 +63,9 @@ void BashppListener::exitValue_assignment(BashppParser::Value_assignmentContext 
 	if (current_object != nullptr) {
 		// Is it a pointer?
 		if (current_object->is_pointer()) {
-			current_object->set_address(value_assignment_entity->get_code());
+			current_object->set_pre_access_code(value_assignment_entity->get_pre_code());
+			current_object->set_post_access_code(value_assignment_entity->get_post_code());
+			current_object->set_assignment_value(value_assignment_entity->get_code());
 		}
 		// Else
 	}

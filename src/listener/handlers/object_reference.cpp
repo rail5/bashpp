@@ -159,6 +159,12 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 	}
 
 	// If we're here, the last reference entity is a non-primitive object
+	// Is it a pointer?
+	std::shared_ptr<bpp::bpp_object> last_reference_object = std::dynamic_pointer_cast<bpp::bpp_object>(last_reference_entity);
+	if (last_reference_object != nullptr && last_reference_object->is_pointer()) {
+		object_reference_entity->add_code("${" + object_reference_code + "}");
+		return;
+	}
 	// We need to call the .toPrimitive method on the object
 	std::string method_call = "bpp__" + last_reference_entity->get_class()->get_name() + "__toPrimitive ";
 	// Append the containing object's address to the method call

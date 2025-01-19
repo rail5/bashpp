@@ -16,6 +16,7 @@
 
 #include "../antlr/BashppParserBaseListener.h"
 
+#include "../bpp_include/bpp_entity.cpp"
 #include "../bpp_include/bpp_code_entity.cpp"
 #include "../bpp_include/bpp_string.cpp"
 #include "../bpp_include/bpp_object_assignment.cpp"
@@ -66,13 +67,16 @@ class BashppListener : public BashppParserBaseListener {
 		std::shared_ptr<bpp::bpp_class> primitive;
 
 		uint64_t supershell_counter = 0;
-		struct supershell_code {
+		uint64_t new_counter = 0;
+
+		struct code_segment {
 			std::string pre_code;
 			std::string code;
 			std::string post_code;
 		};
-		supershell_code generate_supershell_code(std::string code_to_run_in_supershell) {
-			supershell_code result;
+
+		code_segment generate_supershell_code(std::string code_to_run_in_supershell) {
+			code_segment result;
 
 			std::string supershell_function_name = "____supershellRunFunc" + std::to_string(supershell_counter);
 			std::string supershell_output_variable = "____supershellOutput" + std::to_string(supershell_counter);
@@ -88,6 +92,21 @@ class BashppListener : public BashppParserBaseListener {
 			result.code = "${" + supershell_output_variable + "}";
 
 			supershell_counter++;
+
+			return result;
+		}
+
+		code_segment generate_new_code(std::shared_ptr<bpp::bpp_class> object_class) {
+			code_segment result;
+
+			std::string new_function_name = "bpp__" + object_class->get_name() + "____new";
+			std::string new_output_variable = "____newOutput" + std::to_string(new_counter);
+
+			result.pre_code += new_function_name + " \"\" " + new_output_variable + "\n";
+			result.code = "${" + new_output_variable + "}";
+			result.post_code += "unset " + new_output_variable + "\n";
+
+			new_counter++;
 
 			return result;
 		}

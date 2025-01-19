@@ -41,55 +41,32 @@ class bpp_object;
 
 class bpp_entity {
 	protected:
+		std::map<std::string, std::shared_ptr<bpp_class>> classes;
+		std::map<std::string, std::shared_ptr<bpp_object>> objects;
+		std::map<std::string, std::shared_ptr<bpp_object>> local_objects;
 		std::shared_ptr<bpp_class> type = nullptr;
 		std::weak_ptr<bpp_class> containing_class;
 		std::vector<std::shared_ptr<bpp_class>> parents;
 	public:
 		virtual ~bpp_entity() = default;
-		virtual std::shared_ptr<bpp_class> get_class() const {
-			return type;
-		}
+		virtual bool add_class(std::shared_ptr<bpp_class> class_);
+		virtual bool add_object(std::shared_ptr<bpp_object> object);
 
-		virtual std::string get_address() const {
-			return "";
-		}
+		virtual std::shared_ptr<bpp_class> get_class() const;
+		virtual std::string get_address() const;
+		virtual std::string get_name() const;
+		virtual std::weak_ptr<bpp::bpp_class> get_containing_class() const;
+		virtual bool set_containing_class(std::weak_ptr<bpp::bpp_class> containing_class);
 
-		virtual std::string get_name() const {
-			return "";
-		}
+		virtual void inherit(std::shared_ptr<bpp_entity> parent);
+		virtual void inherit(std::shared_ptr<bpp_class> parent);
 
-		virtual std::weak_ptr<bpp::bpp_class> get_containing_class() const {
-			return containing_class;
-		}
+		bool is_child_of(std::shared_ptr<bpp_entity> parent);
 
-		virtual bool set_containing_class(std::weak_ptr<bpp::bpp_class> containing_class) {
-			this->containing_class = containing_class;
-			return true;
-		}
-
-		virtual void inherit(std::shared_ptr<bpp_entity> parent) {
-			for (auto& p : parent->parents) {
-				parents.push_back(p);
-			}
-			parents.push_back(parent->get_class());
-		}
-
-		virtual void inherit(std::shared_ptr<bpp_code_entity> parent) {
-			inherit(std::dynamic_pointer_cast<bpp_entity>(parent));
-		}
-
-		virtual void inherit(std::shared_ptr<bpp_class> parent) {
-			inherit(std::dynamic_pointer_cast<bpp_entity>(parent));
-		}
-
-		bool is_child_of(std::shared_ptr<bpp_entity> parent) {
-			for (auto& p : parents) {
-				if (p == parent) {
-					return true;
-				}
-			}
-			return false;
-		}
+		virtual std::vector<std::shared_ptr<bpp_class>> get_classes() const;
+		virtual std::vector<std::shared_ptr<bpp_object>> get_objects() const;
+		virtual std::shared_ptr<bpp_class> get_class(std::string name);
+		virtual std::shared_ptr<bpp_object> get_object(std::string name);
 };
 
 std::shared_ptr<bpp_entity> inaccessible_entity = std::make_shared<bpp_entity>();
@@ -98,17 +75,12 @@ std::shared_ptr<bpp_method> inaccessible_method = std::make_shared<bpp_method>()
 
 class bpp_code_entity : public bpp_entity {
 	protected:
-		std::map<std::string, std::shared_ptr<bpp_class>> classes;
-		std::map<std::string, std::shared_ptr<bpp_object>> objects;
-		std::map<std::string, std::shared_ptr<bpp_object>> local_objects;
 		std::string code = "";
 		std::string nextline_buffer = "";
 		std::string postline_buffer = "";
 	public:
 		bpp_code_entity();
 		virtual ~bpp_code_entity() = default;
-		virtual bool add_class(std::shared_ptr<bpp_class> class_);
-		virtual bool add_object(std::shared_ptr<bpp_object> object);
 
 		virtual void add_code(std::string code);
 		virtual void add_code_to_previous_line(std::string code);
@@ -118,15 +90,9 @@ class bpp_code_entity : public bpp_entity {
 		virtual void flush_postline_buffer();
 		virtual void flush_code_buffers();
 
-		virtual std::vector<std::shared_ptr<bpp_class>> get_classes() const;
-		virtual std::vector<std::shared_ptr<bpp_object>> get_objects() const;
 		virtual std::string get_code() const;
 		virtual std::string get_pre_code() const;
 		virtual std::string get_post_code() const;
-		virtual std::shared_ptr<bpp_class> get_class(std::string name);
-		virtual std::shared_ptr<bpp_object> get_object(std::string name);
-
-		void inherit(std::shared_ptr<bpp_code_entity> parent) override;
 };
 
 class bpp_string : public bpp_code_entity {
@@ -279,9 +245,12 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 };
 
 class bpp_object : public bpp_entity {
-	private:
+	protected:
 		std::string name = "";
 		std::string address = "";
+		std::string assignment_value = "";
+		std::string pre_access_code = "";
+		std::string post_access_code = "";
 		std::shared_ptr<bpp_class> type;
 		bool m_is_pointer = false;
 	public:
@@ -293,39 +262,33 @@ class bpp_object : public bpp_entity {
 		void set_pointer(bool is_pointer);
 		void set_name(std::string name);
 		void set_address(std::string address);
+		void set_assignment_value(std::string assignment_value);
+		void set_pre_access_code(std::string pre_access_code);
+		void set_post_access_code(std::string post_access_code);
 
 		std::string get_name() const;
-		std::string get_address() const;
+		virtual std::string get_address() const;
+		std::string get_assignment_value() const;
 		std::shared_ptr<bpp_class> get_class() const;
+		std::string get_pre_access_code() const;
+		std::string get_post_access_code() const;
+
 		bool is_pointer() const;
 };
 
 class bpp_datamember : public bpp_object {
 	private:
-		std::shared_ptr<bpp_class> type;
-		std::string name;
 		std::string default_value = "";
-		std::string pre_access_code = "";
-		std::string post_access_code = "";
 		bpp_scope scope = SCOPE_PRIVATE;
-		bool m_is_pointer = false;
 	public:
 		bpp_datamember();
-		explicit bpp_datamember(std::string name);
 
-		void set_name(std::string name);
-		void set_class(std::shared_ptr<bpp_class> type);
 		void set_default_value(std::string default_value);
-		void set_pre_access_code(std::string pre_access_code);
-		void set_post_access_code(std::string post_access_code);
+		
 		void set_scope(bpp_scope scope);
 
-		std::string get_name() const;
-		std::string get_address() const;
-		std::shared_ptr<bpp_class> get_class() const;
+		std::string get_address() const override;
 		std::string get_default_value() const;
-		std::string get_pre_access_code() const;
-		std::string get_post_access_code() const;
 		bpp_scope get_scope() const;
 
 		void destroy();

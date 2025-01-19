@@ -42,13 +42,7 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 
 	std::string self_reference_code = "__this";
 
-	enum reference_type {
-		ref_primitive,
-		ref_method,
-		ref_object
-	};
-
-	reference_type last_reference_type = reference_type::ref_object;
+	bpp::reference_type last_reference_type = bpp::reference_type::ref_object;
 	std::shared_ptr<bpp::bpp_entity> last_reference_entity = current_class;
 
 	std::shared_ptr<bpp::bpp_datamember> datamember = nullptr;
@@ -62,13 +56,13 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 		bool throw_error = false;
 		std::string error_string = "";
 		switch (last_reference_type) {
-			case reference_type::ref_object:
+			case bpp::reference_type::ref_object:
 				break;
-			case reference_type::ref_primitive:
+			case bpp::reference_type::ref_primitive:
 				throw_error = true;
 				error_string = "Unexpected identifier after primitive object reference";
 				break;
-			case reference_type::ref_method:
+			case bpp::reference_type::ref_method:
 				throw_error = true;
 				error_string = "Unexpected identifier after method reference";
 				break;
@@ -97,11 +91,11 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 			// Get the class containing the method
 			class_containing_the_method = last_reference_entity->get_class();
 			// Update the last reference entity and type
-			last_reference_type = reference_type::ref_method;
+			last_reference_type = bpp::reference_type::ref_method;
 			last_reference_entity = method;
 		} else if (datamember != nullptr) {
 			bool is_primitive = datamember->get_class() == primitive;
-			last_reference_type = is_primitive ? reference_type::ref_primitive : reference_type::ref_object;
+			last_reference_type = is_primitive ? bpp::reference_type::ref_primitive : bpp::reference_type::ref_object;
 			last_reference_entity = datamember;
 
 			indirection = created_first_temporary_variable ? "!" : "";
@@ -118,7 +112,7 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 		}
 	}
 
-	if (last_reference_type == reference_type::ref_method) {
+	if (last_reference_type == bpp::reference_type::ref_method) {
 		// Call the method in a supershell, and substitute the result in place of the self-reference
 
 		std::string method_call = "bpp__" + class_containing_the_method->get_name() + "__" + method->get_name() + " ";

@@ -160,13 +160,10 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 		
 		std::string method_call = "bpp__" + penultimate_class->get_name() + "__" + final_method->get_name();
 
-		object_reference_entity->add_code_to_previous_line("function ____runSupershellFunc() {\n");
-		object_reference_entity->add_code_to_previous_line("	" + method_call + " \"" + indirection_start + object_address + indirection_end +"\" 1\n");
-		object_reference_entity->add_code_to_previous_line("}\n");
-		object_reference_entity->add_code_to_previous_line("bpp____supershell ____supershellOutput ____runSupershellFunc\n");
-		object_reference_entity->add_code("${____supershellOutput}");
-		object_reference_entity->add_code_to_next_line("unset ____supershellOutput\n");
-		object_reference_entity->add_code_to_next_line("unset -f ____runSupershellFunc\n");
+		supershell_code method_code = generate_supershell_code(method_call + " \"" + indirection_start + object_address + indirection_end + "\" 1");
+		object_reference_entity->add_code_to_previous_line(method_code.pre_code);
+		object_reference_entity->add_code_to_next_line(method_code.post_code);
+		object_reference_entity->add_code(method_code.code);
 	} else {
 		throw internal_error("Terminal entity in the object chain is neither an object nor a method");
 	}

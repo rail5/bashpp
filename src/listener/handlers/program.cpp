@@ -12,9 +12,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterProgram(BashppParser::ProgramContext *ctx) {
-	program->add_code("#!/usr/bin/env bash\n");
-	program->add_code(bpp_supershell_function);
-
 	entity_stack.push(program);
 
 	primitive = program->get_primitive_class();	
@@ -26,6 +23,12 @@ void BashppListener::exitProgram(BashppParser::ProgramContext *ctx) {
 	}
 
 	program->flush_code_buffers();
+
+	program->prepend_code("#!/usr/bin/env bash\n");
+
+	if (supershell_counter > 0) {
+		program->prepend_code(bpp_supershell_function);
+	}
 
 	entity_stack.pop();
 	if (!entity_stack.empty()) {

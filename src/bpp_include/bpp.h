@@ -22,6 +22,12 @@ enum bpp_scope {
 	SCOPE_INACCESSIBLE
 };
 
+enum reference_type {
+		ref_primitive,
+		ref_method,
+		ref_object
+	};
+
 class bpp_entity;
 class bpp_code_entity;
 class bpp_program;
@@ -335,6 +341,8 @@ class bpp_program : public bpp_code_entity {
 
 		bool add_class(std::shared_ptr<bpp_class> class_) override;
 		bool add_object(std::shared_ptr<bpp_object> object) override;
+
+		void prepend_code(std::string code);
 
 		std::shared_ptr<bpp_class> get_primitive_class() const;
 };

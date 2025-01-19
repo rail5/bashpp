@@ -48,6 +48,9 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 		case CONNECTIVE:
 		case DOUBLEAMPERSAND:
 		case DOUBLEPIPE:
+		case SUPERSHELL_START:
+		case SUBSHELL_START:
+		case DEPRECATED_SUBSHELL_START:
 			incoming_token_can_be_lvalue = true;
 			hit_at_in_current_command = false;
 			hit_lbrace_in_current_command = false;

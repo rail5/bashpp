@@ -11,7 +11,6 @@ const char* bpp_supershell_function = R"EOF(function bpp____initsupershell() {
 	eval "exec {bpp____supershellFD__$BASHPID}<>\"$bpp____supershelltempfile\""
 	rm "$bpp____supershelltempfile"
 }
-
 function bpp____supershell() {
 	local __outputVar="$1" __command="$2" __supershellFD="bpp____supershellFD__$BASHPID"
 	if [[ -z "${!__supershellFD}" ]]; then

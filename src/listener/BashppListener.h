@@ -65,6 +65,33 @@ class BashppListener : public BashppParserBaseListener {
 
 		std::shared_ptr<bpp::bpp_class> primitive;
 
+		uint64_t supershell_counter = 0;
+		struct supershell_code {
+			std::string pre_code;
+			std::string code;
+			std::string post_code;
+		};
+		supershell_code generate_supershell_code(std::string code_to_run_in_supershell) {
+			supershell_code result;
+
+			std::string supershell_function_name = "____supershellRunFunc" + std::to_string(supershell_counter);
+			std::string supershell_output_variable = "____supershellOutput" + std::to_string(supershell_counter);
+
+			result.pre_code += "function " + supershell_function_name + "() {\n";
+			result.pre_code += "	" + code_to_run_in_supershell + "\n";
+			result.pre_code += "}\n";
+			result.pre_code += "bpp____supershell " + supershell_output_variable + " " + supershell_function_name + "\n";
+
+			result.post_code += "unset -f " + supershell_function_name + "\n";
+			result.post_code += "unset " + supershell_output_variable + "\n";
+
+			result.code = "${" + supershell_output_variable + "}";
+
+			supershell_counter++;
+
+			return result;
+		}
+
 		bool error_thrown = false;
 		antlr4::ParserRuleContext* error_context = nullptr;
 

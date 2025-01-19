@@ -215,6 +215,8 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 		std::weak_ptr<bpp_class> get_containing_class() const override;
 		bool set_containing_class(std::weak_ptr<bpp::bpp_class> containing_class) override;
 
+		std::shared_ptr<bpp_class> get_class() const override;
+
 		void set_name(std::string name);
 		bool add_method(std::shared_ptr<bpp_method> method);
 		bool add_datamember(std::shared_ptr<bpp_datamember> datamember);

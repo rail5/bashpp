@@ -37,160 +37,124 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 		throw_syntax_error(ctx->KEYWORD_THIS(), "Self reference outside of class");
 	}
 
-	if (ctx->IDENTIFIER().size() == 0) {
-		self_reference_entity->add_code("${__objectAddress}");
+	self_reference_entity->add_code_to_previous_line("__this=${__objectAddress}\n");
+	self_reference_entity->add_code_to_next_line("unset __this\n");
+
+	std::string self_reference_code = "__this";
+
+	enum reference_type {
+		ref_primitive,
+		ref_method,
+		ref_object
+	};
+
+	reference_type last_reference_type = reference_type::ref_object;
+	std::shared_ptr<bpp::bpp_entity> last_reference_entity = current_class;
+
+	std::shared_ptr<bpp::bpp_datamember> datamember = nullptr;
+	std::shared_ptr<bpp::bpp_method> method = nullptr;
+	std::shared_ptr<bpp::bpp_class> class_containing_the_method = current_class;
+
+	bool created_first_temporary_variable = false;
+	std::string indirection = "";
+
+	for (auto& identifier : ctx->IDENTIFIER()) {
+		bool throw_error = false;
+		std::string error_string = "";
+		switch (last_reference_type) {
+			case reference_type::ref_object:
+				break;
+			case reference_type::ref_primitive:
+				throw_error = true;
+				error_string = "Unexpected identifier after primitive object reference";
+				break;
+			case reference_type::ref_method:
+				throw_error = true;
+				error_string = "Unexpected identifier after method reference";
+				break;
+			default:
+				entity_stack.pop();
+				throw internal_error("Unknown reference type");
+		}
+
+		if (throw_error) {
+			entity_stack.pop();
+			throw_syntax_error(identifier, error_string);
+		}
+
+		std::string identifier_text = identifier->getText();
+
+		// Verify that the given identifier is a member of the last reference entity
+		datamember = last_reference_entity->get_class()->get_datamember(identifier_text);
+		method = last_reference_entity->get_class()->get_method(identifier_text);
+
+		if (method != nullptr) {
+			// Get the class containing the method
+			class_containing_the_method = last_reference_entity->get_class();
+			// Update the last reference entity and type
+			last_reference_type = reference_type::ref_method;
+			last_reference_entity = method;
+		} else if (datamember != nullptr) {
+			bool is_primitive = datamember->get_class() == primitive;
+			last_reference_type = is_primitive ? reference_type::ref_primitive : reference_type::ref_object;
+			last_reference_entity = datamember;
+
+			indirection = created_first_temporary_variable ? "!" : "";
+			std::string temporary_variable_lvalue = self_reference_code + "__" + identifier_text;
+			std::string temporary_variable_rvalue = "${" + indirection + self_reference_code + "}__" + identifier_text;
+
+			self_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n");
+			self_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
+			self_reference_code = temporary_variable_lvalue;
+			created_first_temporary_variable = true;
+		} else {
+			entity_stack.pop();
+			throw_syntax_error(identifier, last_reference_entity->get_name() + " has no member named " + identifier_text);
+		}
+	}
+
+	if (last_reference_type == reference_type::ref_method) {
+		// Call the method in a supershell, and substitute the result in place of the self-reference
+
+		std::string method_call = "bpp__" + class_containing_the_method->get_name() + "__" + method->get_name() + " ";
+		// Append the containing object's address to the method call
+		method_call += "${" + self_reference_code + "}";
+		// Tell the method that we *are* passing a pointer
+		method_call += " 1";
+
+		supershell_code method_code = generate_supershell_code(method_call);
+		self_reference_entity->add_code_to_previous_line(method_code.pre_code);
+		self_reference_entity->add_code_to_next_line(method_code.post_code);
+		self_reference_entity->add_code(method_code.code);
 		return;
 	}
 
-	std::vector<std::shared_ptr<bpp::bpp_entity>> object_chain;
-
-	bool can_descend = true;
-
-	if (ctx->IDENTIFIER().size() >= 1) {
-		std::shared_ptr<bpp::bpp_datamember> referenced_datamember = current_class->get_datamember(ctx->IDENTIFIER(0)->getText());
-		std::shared_ptr<bpp::bpp_method> referenced_method = current_class->get_method(ctx->IDENTIFIER(0)->getText());
-
-		if (referenced_datamember != nullptr) {
-			object_chain.push_back(referenced_datamember);
-			self_reference_entity->add_code_to_previous_line("this__" + referenced_datamember->get_name() + "=\"${__objectAddress}__" + referenced_datamember->get_name() + "\"\n");
-			self_reference_entity->add_code_to_next_line("unset this__" + referenced_datamember->get_name() + "\n");
-			if (ctx->IDENTIFIER().size() == 1) {
-				if (referenced_datamember->get_class() == primitive || referenced_datamember->is_pointer()) {
-					self_reference_entity->add_code("${!this__" + referenced_datamember->get_name() + "}");
-					return;
-				}
-			}
-		} else if (referenced_method != nullptr) {
-			object_chain.push_back(referenced_method);
-			can_descend = false;
-		} else {
-			entity_stack.pop();
-			throw_syntax_error(ctx->IDENTIFIER(0), "Member not found: " + ctx->IDENTIFIER(0)->getText());
-		}
+	if (last_reference_entity->get_class() == primitive || last_reference_entity == current_class) {
+		// If the last reference entity is a primitive, simply output the primitive
+		// If last_reference_entity == current_class, then the self-reference is a pointer to the object itself (simply @this)
+		// Which is also a primitive, so we follow the same procedure
+		indirection = created_first_temporary_variable ? "!" : "";
+		self_reference_entity->add_code("${" + indirection + self_reference_code + "}");
+		return;
 	}
 
-	for (size_t i = 1; i < ctx->IDENTIFIER().size(); i++) {
-		if (!can_descend) {
-			entity_stack.pop();
-			throw_syntax_error(ctx->IDENTIFIER(i), "Cannot descend further");
-		}
-
-		std::shared_ptr<bpp::bpp_datamember> referenced_datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(object_chain.back()->get_class()->get_datamember(ctx->IDENTIFIER(i)->getText()));
-		std::shared_ptr<bpp::bpp_method> referenced_method = std::dynamic_pointer_cast<bpp::bpp_method>(object_chain.back()->get_class()->get_method(ctx->IDENTIFIER(i)->getText()));
-
-		if (referenced_datamember != nullptr) {
-			object_chain.push_back(referenced_datamember);
-		} else if (referenced_method != nullptr) {
-			can_descend = false;
-			object_chain.push_back(referenced_method);
-		} else {
-			entity_stack.pop();
-			throw_syntax_error(ctx->IDENTIFIER(i), "Member not found: " + ctx->IDENTIFIER(i)->getText());
-		}
+	if (last_reference_entity->get_class() == nullptr) {
+		throw internal_error("Last reference entity has no class");
 	}
 
-	// Check the type of the last element in the object chain
-	std::shared_ptr<bpp::bpp_object> final_object = std::dynamic_pointer_cast<bpp::bpp_object>(object_chain.back());
-	std::shared_ptr<bpp::bpp_method> final_method = std::dynamic_pointer_cast<bpp::bpp_method>(object_chain.back());
+	// If we're here, the last reference entity is a non-primitive object
+	// We need to call the .toPrimitive method on the object
+	std::string method_call = "bpp__" + last_reference_entity->get_class()->get_name() + "__toPrimitive ";
+	// Append the containing object's address to the method call
+	method_call += "${" + self_reference_code + "}";
+	// Tell the method that we *are* passing a pointer
+	method_call += " 1";
 
-	if (final_object != nullptr && final_object->get_class() != primitive && !final_object->is_pointer()) {
-		// Call to .toPrimitive on a non-primitive data member
-		// Add the toPrimitive method to the object_chain
-		// Set final_method = toPrimitive
-		// Set final_datamember = nullptr
-		final_method = final_object->get_class()->get_method("toPrimitive");
-		object_chain.push_back(final_method);
-		final_object = nullptr;
-	}
+	supershell_code method_code = generate_supershell_code(method_call);
+	self_reference_entity->add_code_to_previous_line(method_code.pre_code);
+	self_reference_entity->add_code_to_next_line(method_code.post_code);
+	self_reference_entity->add_code(method_code.code);
 
-	bool declared_first_temporary_variable = false;
-
-	for (size_t i = 1; i < object_chain.size() - 1; i++) {
-		std::string indirection = "!";
-		std::string temporary_variable_lvalue;
-		std::string temporary_variable_rvalue;
-		std::string temporary_variable = "this";
-		for (size_t j = 1; j < i; j++) {
-			temporary_variable += "__" + object_chain[j]->get_name();
-		}
-		temporary_variable_lvalue = temporary_variable + "__" + object_chain[i]->get_name();
-		temporary_variable_rvalue = "${" + indirection + temporary_variable + "}__" + object_chain[i]->get_name();
-
-		if (object_chain.size() > 2) {
-			self_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=\"" + temporary_variable_rvalue + "\"\n");
-			self_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
-			indirection = "!";
-		}
-		self_reference_entity->add_code("${" + indirection + temporary_variable_lvalue + "}");
-	}
-	/**
-	 * By this point, the deepest reference in the chain that we have access to is:
-	 * ${this__object1__object2__object3__....objectN-1}
-	 * Where objectN (the next one, the one we don't have yet) is either a primitive or a method
-	 */
-
-	if (final_object != nullptr) {
-		std::string indirection = "!";
-		std::string temporary_variable_lvalue;
-		std::string temporary_variable_rvalue;
-		std::string temporary_variable = "this";
-		for (size_t i = 0; i < object_chain.size() - 1; i++) {
-			temporary_variable += "__" + object_chain[i]->get_name();
-		}
-
-		temporary_variable_lvalue = temporary_variable + "__" + final_object->get_name();
-		temporary_variable_rvalue = "${" + indirection + temporary_variable + "}__" + final_object->get_name();
-
-		if (object_chain.size() > 1) {
-			self_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=\"" + temporary_variable_rvalue + "\"\n");
-			self_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
-			indirection = "!";
-		}
-		self_reference_entity->add_code("${" + indirection + temporary_variable_lvalue + "}");
-	} else if (final_method != nullptr) {
-		// Call the given method in a supershell
-
-		// Get the penultimate object in the chain
-		std::shared_ptr<bpp::bpp_entity> penultimate_object = object_chain[object_chain.size() - 2];
-		if (penultimate_object == nullptr) {
-			throw internal_error("Penultimate entity in the object chain is not an object");
-		}
-		// Get its class
-		std::shared_ptr<bpp::bpp_class> penultimate_class = penultimate_object->get_class();
-		if (penultimate_class == nullptr) {
-			throw internal_error("Penultimate entity in the object chain does not have a class");
-		}
-
-		std::string object_address = "this";
-
-		for (size_t i = 1; i < object_chain.size() - 1; i++) {
-			object_address += "__" + object_chain[i]->get_name();
-		}
-
-		std::string indirection_start = "";
-		std::string indirection_end = "";
-
-		if (object_chain.size() > 1) {
-			indirection_start = "${";
-			indirection_end = "}";
-		}
-
-		if (object_chain.size() > 2) {
-			indirection_start += "!";
-		}
-		
-		std::string method_call = "bpp__" + penultimate_class->get_name() + "__" + final_method->get_name();
-
-		self_reference_entity->add_code_to_previous_line("function ____runSupershellFunc() {\n");
-		self_reference_entity->add_code_to_previous_line("	" + method_call + " \"" + indirection_start + object_address + indirection_end +"\" 1\n");
-		self_reference_entity->add_code_to_previous_line("}\n");
-		self_reference_entity->add_code_to_previous_line("bpp____supershell ____supershellOutput ____runSupershellFunc\n");
-		self_reference_entity->add_code("${____supershellOutput}");
-		self_reference_entity->add_code_to_next_line("unset ____supershellOutput\n");
-		self_reference_entity->add_code_to_next_line("unset -f ____runSupershellFunc\n");
-	} else {
-		throw internal_error("Terminal entity in the object chain is neither an object nor a method");
-	}
 }
 
 void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx) {

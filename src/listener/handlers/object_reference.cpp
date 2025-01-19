@@ -53,6 +53,9 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 
 	std::string object_reference_code = "";
 
+	std::string encase_open = ctx->IDENTIFIER().size() > 2 ? "${" : "";
+	std::string encase_close = ctx->IDENTIFIER().size() > 2 ? "}" : "";
+
 	for (auto& identifier : ctx->IDENTIFIER()) {
 		bool throw_error = false;
 		std::string error_string = "";
@@ -78,9 +81,7 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 		}
 		std::string identifier_text = identifier->getText();
 
-		std::shared_ptr<bpp::bpp_class> reference_class;
-
-		reference_class = last_reference_entity->get_class();
+		std::shared_ptr<bpp::bpp_class> reference_class = last_reference_entity->get_class();
 		if (reference_class != nullptr) {
 			object = nullptr;
 			datamember = reference_class->get_datamember(identifier_text, current_class);
@@ -137,8 +138,9 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 	}
 
 	if (last_reference_type == bpp::reference_type::ref_method) {
+		indirection = ctx->IDENTIFIER().size() > 3 ? "!" : "";
 		std::string method_call = "bpp__" + class_containing_the_method->get_name() + "__" + method->get_name() + " ";
-		method_call += "${" + object_reference_code + "}";
+		method_call += encase_open + indirection + object_reference_code + encase_close;
 		method_call += " 1";
 
 		code_segment method_code = generate_supershell_code(method_call);
@@ -168,7 +170,8 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 	// We need to call the .toPrimitive method on the object
 	std::string method_call = "bpp__" + last_reference_entity->get_class()->get_name() + "__toPrimitive ";
 	// Append the containing object's address to the method call
-	method_call += "${" + object_reference_code + "}";
+	indirection = ctx->IDENTIFIER().size() > 3 ? "!" : "";
+	method_call += encase_open + indirection + object_reference_code + encase_close;
 	// Tell the method that we *are* passing a pointer
 	method_call += " 1";
 

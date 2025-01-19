@@ -58,7 +58,12 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 			assignments += "	eval \"${__objectAddress}__" + dm->get_name() + "=\\$__objAssignment\"\n";
 			assignments += "	unset __objAssignment\n";
 		} else if (dm->is_pointer()) {
-			assignments += "	eval \"${__objectAddress}__" + dm->get_name() + "=\\" + dm->get_default_value() + "\"\n";
+			std::string default_value = dm->get_default_value();
+			std::string default_value_preface = "";
+			if (!default_value.empty() && default_value[0] == '$') {
+				default_value_preface = "\\";
+			}
+			assignments += "	eval \"${__objectAddress}__" + dm->get_name() + "=" + default_value_preface + default_value + "\"\n";
 		} else {
 			assignments += "	bpp__" + dm->get_class()->get_name() + "____new \"\" ${__objectAddress}__" + dm->get_name() + "\n";
 		}

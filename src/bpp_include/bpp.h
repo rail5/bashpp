@@ -69,9 +69,11 @@ class bpp_entity {
 		virtual std::shared_ptr<bpp_object> get_object(std::string name);
 };
 
-std::shared_ptr<bpp_entity> inaccessible_entity = std::make_shared<bpp_entity>();
-std::shared_ptr<bpp_datamember> inaccessible_datamember = std::make_shared<bpp_datamember>();
-std::shared_ptr<bpp_method> inaccessible_method = std::make_shared<bpp_method>();
+const std::shared_ptr<bpp_entity> inaccessible_entity = std::make_shared<bpp_entity>();
+const std::shared_ptr<bpp_datamember> inaccessible_datamember = std::make_shared<bpp_datamember>();
+const std::shared_ptr<bpp_method> inaccessible_method = std::make_shared<bpp_method>();
+
+const char bpp_nullptr[] = "0";
 
 class bpp_code_entity : public bpp_entity {
 	protected:
@@ -265,6 +267,7 @@ class bpp_object : public bpp_entity {
 		void set_assignment_value(std::string assignment_value);
 		void set_pre_access_code(std::string pre_access_code);
 		void set_post_access_code(std::string post_access_code);
+		void set_nullptr();
 
 		std::string get_name() const;
 		virtual std::string get_address() const;
@@ -272,6 +275,7 @@ class bpp_object : public bpp_entity {
 		std::shared_ptr<bpp_class> get_class() const;
 		std::string get_pre_access_code() const;
 		std::string get_post_access_code() const;
+		bool is_nullptr() const;
 
 		bool is_pointer() const;
 };

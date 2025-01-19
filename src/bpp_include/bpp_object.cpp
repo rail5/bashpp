@@ -54,6 +54,12 @@ void bpp_object::set_post_access_code(std::string post_access_code) {
 	this->post_access_code = post_access_code;
 }
 
+void bpp_object::set_nullptr() {
+	if (m_is_pointer) {
+		assignment_value = bpp::bpp_nullptr;
+	}
+}
+
 std::string bpp_object::get_name() const {
 	return name;
 }
@@ -76,6 +82,10 @@ std::string bpp_object::get_pre_access_code() const {
 
 std::string bpp_object::get_post_access_code() const {
 	return post_access_code;
+}
+
+bool bpp_object::is_nullptr() const {
+	return m_is_pointer && assignment_value == bpp::bpp_nullptr;
 }
 
 bool bpp_object::is_pointer() const {

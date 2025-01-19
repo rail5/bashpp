@@ -88,6 +88,11 @@ void BashppListener::exitPointer_declaration(BashppParser::Pointer_declarationCo
 
 	entity_stack.pop();
 
+	// If there is no assignment value set, set it to nullptr
+	if (new_object->get_assignment_value().empty()) {
+		new_object->set_nullptr();
+	}
+
 	std::shared_ptr<bpp::bpp_datamember> current_datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(entity_stack.top());
 	if (current_datamember != nullptr) {
 		// We're midway through a class member declaration

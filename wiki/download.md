@@ -1,6 +1,3 @@
----
-title: Download Bash++
----
-# Download
+# Download Bash++
 
 TBD

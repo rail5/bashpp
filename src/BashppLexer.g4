@@ -117,7 +117,6 @@ SUPERSHELL_END: '@('; // This is a dummy token to make the lexer happy
 					// The actual end of a supershell is detected by the RPAREN rule (below)
 
 AT: '@';
-DOLLAR: '$';
 
 AT_LITERAL: '@'; // Another dummy token
 
@@ -274,6 +273,30 @@ BACKTICK: '`' {
 DEPRECATED_SUBSHELL_START: '`'; // Another dummy token
 DEPRECATED_SUBSHELL_END: '`'; // Yet another dummy token
 
+SUBSHELL_START: '$(' {
+	switch (modeStack_top) {
+		case mode_singlequote:
+		case mode_comment:
+			// Emit a dummy token
+			emit(SUBSHELL_LITERAL, "$(");
+			break;
+		default:
+			modeStack.push(mode_subshell);
+			nestedSubshellStack.push(parenDepth);
+			if (!inSubshell) {
+				initialSubshellDepth = parenDepth;
+			}
+			inSubshell = true;
+			emit(SUBSHELL_START, "$(");
+			break;
+	}
+	parenDepth++;
+};
+
+SUBSHELL_LITERAL: '$('; // Another dummy token
+
+DOLLAR: '$';
+
 LPAREN: '(' {
 	switch (modeStack_top) {
 		case mode_quote:
@@ -293,9 +316,6 @@ LPAREN: '(' {
 	}
 	parenDepth++;
 };
-
-SUBSHELL_START: '('; // This is a dummy token to make the lexer happy
-					// The actual start of a subshell is detected by the LPAREN rule (above)
 
 RPAREN: ')' {
 	parenDepth--;

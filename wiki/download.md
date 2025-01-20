@@ -1,5 +1,7 @@
 ---
-title: Download Bash++
+link-title: Download
 ---
+
+# Download Bash++
 
 TBD

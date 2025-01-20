@@ -28,17 +28,31 @@
 
 ## License
 
-![GNU GPL v3](https://www.gnu.org/graphics/gplv3-with-text-136x68.png)
-
-The Bash++ language and compiler are licensed under the [GNU General Public License v3](https://www.gnu.org/licenses/gpl-3.0.html).
+<div style="display: flex; align-items: center;">
+	<div style="width: 200px;">
+		<img src="Bash++_files/gplv3-with-text-136x68.png" alt="GNU GPL v3" style="width: 136px; height: 68px;">
+	</div>
+	<div>
+		The Bash++ language and compiler are licensed under the
+		<a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU General Public License v3</a>.
+	</div>
+</div>
+<br>
 
 This does not affect any code you write in Bash++ -- only the Bash++ language and compiler themselves. You are perfectly free to use Bash++ to write proprietary software, or software under a different license.
 
 ## Documentation License
 
-![CC-BY-SA](https://licensebuttons.net/l/by-sa/3.0/88x31.png)
-
-This documentation is licensed under the [Creative Commons Attribution-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-sa/4.0/) license.
+<div style="display: flex; align-items: center;">
+	<div style="width: 200px;">
+		<img src="Bash++_files/88x31.png" alt="CC-BY-SA" style="width: 115px; height: 40px;">
+	</div>
+	<div>
+		This documentation is licensed under the
+		<a href="https://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International</a> license.
+	</div>
+</div>
+<br>
 
 **You are free to:**
 

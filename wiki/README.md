@@ -28,7 +28,7 @@
 
 ## License
 
-<div style="display: flex; align-items: center;">
+<div style="display: flex; align-items: center; padding-bottom: 1em;">
 	<div style="width: 200px;">
 		<img src="https://www.gnu.org/graphics/gplv3-with-text-136x68.png" alt="GNU GPL v3" style="width: 136px; height: 68px;">
 	</div>
@@ -36,15 +36,13 @@
 		The Bash++ language and compiler are licensed under the
 		<a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU General Public License v3</a>.
 	</div>
-  <br>
-  <br>
 </div>
 
 This does not affect any code you write in Bash++ -- only the Bash++ language and compiler themselves. You are perfectly free to use Bash++ to write software under a different license.
 
 ## Documentation License
 
-<div style="display: flex; align-items: center;">
+<div style="display: flex; align-items: center; padding-bottom: 1em;">
 	<div style="width: 200px;">
 		<img src="https://licensebuttons.net/l/by-sa/3.0/88x31.png" alt="CC-BY-SA" style="width: 115px; height: 40px;">
 	</div>

@@ -125,7 +125,8 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 
 		std::string method_call = "bpp__" + class_containing_the_method->get_name() + "__" + method->get_name() + " ";
 		// Append the containing object's address to the method call
-		method_call += "${" + self_reference_code + "}";
+		indirection = ctx->IDENTIFIER().size() > 1 ? "!" : "";
+		method_call += "${" + indirection + self_reference_code + "}";
 		// Tell the method that we *are* passing a pointer
 		method_call += " 1";
 

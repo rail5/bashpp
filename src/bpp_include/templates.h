@@ -44,9 +44,9 @@ const char* template_new_function = R"EOF(function bpp__%CLASS%____new() {
 
 const char* template_delete_function = R"EOF(function bpp__%CLASS%____delete() {
 	local __objectName="$1" __objectIsPtr="$2"
-	local __objectAddress="bpp__%CLASS%__${__objectName}"
-	if [[ "${__objectIsPtr}" -eq 1 ]]; then
-		__objectAddress="${__objectName}"
+	local __objectAddress="${__objectName}"
+	if [[ "${__objectIsPtr}" -ne 1 ]]; then
+		__objectAddress="bpp__%CLASS%__${__objectName}"
 	fi
 %DELETIONS%
 	unset ${__objectAddress}____inUse
@@ -55,12 +55,12 @@ const char* template_delete_function = R"EOF(function bpp__%CLASS%____delete() {
 
 const char* template_copy_function = R"EOF(function bpp__%CLASS%____copy() {
 	local __copyFrom="$1" __copyTo="$2" __copyFromIsPtr="$3" __copyToIsPtr="$4"
-	local __copyFromAddress="bpp__%CLASS%__${__copyFrom}" __copyToAddress="bpp__%CLASS%__${__copyTo}"
-	if [[ "${__copyFromIsPtr}" -eq 1 ]]; then
-		__copyFromAddress="${__copyFrom}"
+	local __copyFromAddress="${__copyFrom}" __copyToAddress="${__copyTo}"
+	if [[ "${__copyFromIsPtr}" -ne 1 ]]; then
+		__copyFromAddress="bpp__%CLASS%__${__copyFrom}"
 	fi
-	if [[ "${__copyToIsPtr}" -eq 1 ]]; then
-		__copyToAddress="${__copyTo}"
+	if [[ "${__copyToIsPtr}" -ne 1 ]]; then
+		__copyToAddress="bpp__%CLASS%__${__copyTo}"
 	fi
 %COPIES%
 	eval "${__copyToAddress}____inUse=1"
@@ -70,9 +70,9 @@ const char* template_copy_function = R"EOF(function bpp__%CLASS%____copy() {
 const char* template_method = R"EOF(function bpp__%CLASS%__%SIGNATURE%() {
 	local __objectName="$1" __objectIsPtr="$2"
 	shift 2
-	local __objectAddress="bpp__%CLASS%__${__objectName}" %PARAMS%
-	if [[ "${__objectIsPtr}" -eq 1 ]]; then
-		__objectAddress="${__objectName}"
+	local __objectAddress="${__objectName}" %PARAMS%
+	if [[ "${__objectIsPtr}" -ne 1 ]]; then
+		__objectAddress="bpp__%CLASS%__${__objectName}"
 	fi
 %METHODBODY%
 }
@@ -80,9 +80,9 @@ const char* template_method = R"EOF(function bpp__%CLASS%__%SIGNATURE%() {
 
 const char* template_constructor = R"EOF(function bpp__%CLASS%____constructor() {
 	local __objectName="$1" __objectIsPtr="$2"
-	local __objectAddress="bpp__%CLASS%__${__objectName}"
-	if [[ "${__objectIsPtr}" -eq 1 ]]; then
-		__objectAddress="${__objectName}"
+	local __objectAddress="${__objectName}"
+	if [[ "${__objectIsPtr}" -ne 1 ]]; then
+		__objectAddress="bpp__%CLASS%__${__objectName}"
 	fi
 %CONSTRUCTORBODY%
 }
@@ -90,9 +90,9 @@ const char* template_constructor = R"EOF(function bpp__%CLASS%____constructor() 
 
 const char* template_destructor = R"EOF(function bpp__%CLASS%____destructor() {
 	local __objectName="$1" __objectIsPtr="$2"
-	local __objectAddress="bpp__%CLASS%__${__objectName}"
-	if [[ "${__objectIsPtr}" -eq 1 ]]; then
-		__objectAddress="${__objectName}"
+	local __objectAddress="${__objectName}"
+	if [[ "${__objectIsPtr}" -ne 1 ]]; then
+		__objectAddress="bpp__%CLASS%__${__objectName}"
 	fi
 %DESTRUCTORBODY%
 }

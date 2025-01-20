@@ -30,7 +30,7 @@
 
 <div style="display: flex; align-items: center;">
 	<div style="width: 200px;">
-		<img src="Bash++_files/gplv3-with-text-136x68.png" alt="GNU GPL v3" style="width: 136px; height: 68px;">
+		<img src="https://www.gnu.org/graphics/gplv3-with-text-136x68.png" alt="GNU GPL v3" style="width: 136px; height: 68px;">
 	</div>
 	<div>
 		The Bash++ language and compiler are licensed under the
@@ -45,7 +45,7 @@ This does not affect any code you write in Bash++ -- only the Bash++ language an
 
 <div style="display: flex; align-items: center;">
 	<div style="width: 200px;">
-		<img src="Bash++_files/88x31.png" alt="CC-BY-SA" style="width: 115px; height: 40px;">
+		<img src="https://licensebuttons.net/l/by-sa/3.0/88x31.png" alt="CC-BY-SA" style="width: 115px; height: 40px;">
 	</div>
 	<div>
 		This documentation is licensed under the

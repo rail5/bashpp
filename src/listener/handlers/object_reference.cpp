@@ -114,7 +114,7 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 			if (!object_is_pointer) {
 				object_reference_code = "bpp__" + object->get_class()->get_name() + "__" + object->get_name();
 			} else {
-				object_reference_code = "${" + object->get_address() + "}";
+				object_reference_code = object->get_address();
 				created_first_temporary_variable = true;
 			}
 		} else if (method != nullptr) {
@@ -173,7 +173,8 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 	// Is it a pointer?
 	std::shared_ptr<bpp::bpp_object> last_reference_object = std::dynamic_pointer_cast<bpp::bpp_object>(last_reference_entity);
 	if (last_reference_object != nullptr && last_reference_object->is_pointer()) {
-		object_reference_entity->add_code(object_reference_code);
+		indirection = created_second_temporary_variable ? "!" : "";
+		object_reference_entity->add_code("${" + indirection + object_reference_code + "}");
 		return;
 	}
 

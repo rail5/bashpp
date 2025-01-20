@@ -347,7 +347,10 @@ RPAREN: ')' {
 			// Just emit the RPAREN token
 			break;
 		case mode_arith:
-			if ((parenDepth - 1) == nestedArithStack_top) {
+			if ((parenDepth - 1) == nestedArithStack_top && _input->LA(1) == ')') {
+				// Translation:
+				// If the current token is a right parenthesis and the next token is also a right parenthesis,
+				// And these two match the top of the nestedArithStack, then we're at the end of the arithmetic expression
 				nestedArithStack.pop();
 				modeStack.pop();
 				emit(BASH_ARITH_END, ")");

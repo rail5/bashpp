@@ -36,8 +36,9 @@
 		The Bash++ language and compiler are licensed under the
 		<a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU General Public License v3</a>.
 	</div>
+  <br>
+  <br>
 </div>
-<br>
 
 This does not affect any code you write in Bash++ -- only the Bash++ language and compiler themselves. You are perfectly free to use Bash++ to write software under a different license.
 
@@ -52,7 +53,6 @@ This does not affect any code you write in Bash++ -- only the Bash++ language an
 		<a href="https://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International</a> license.
 	</div>
 </div>
-<br>
 
 **You are free to:**
 

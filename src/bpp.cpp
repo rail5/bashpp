@@ -167,7 +167,7 @@ int main(int argc, char* argv[]) {
 
 	/* If the user didn't provide input, let them know, rather than just hang waiting for cin */
 	if (stream->rdbuf() == std::cin.rdbuf() && isatty(fileno(stdin))) {
-		std::cerr << program_name << " " << bpp_compiler_version << std::endl << copyright << help_string;
+		std::cerr << program_name << " " << bpp_compiler_version << std::endl << help_string;
 		return 1;
 	}
 

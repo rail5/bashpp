@@ -236,6 +236,9 @@ class BashppListener : public BashppParserBaseListener {
 	void enterDeprecated_subshell(BashppParser::Deprecated_subshellContext *ctx) override;
 	void exitDeprecated_subshell(BashppParser::Deprecated_subshellContext *ctx) override;
 
+	void enterBash_arithmetic(BashppParser::Bash_arithmeticContext *ctx) override;
+	void exitBash_arithmetic(BashppParser::Bash_arithmeticContext *ctx) override;
+
 	void enterString(BashppParser::StringContext *ctx) override;
 	void exitString(BashppParser::StringContext *ctx) override;
 

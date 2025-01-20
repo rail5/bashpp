@@ -26,6 +26,7 @@
 #include "listener/handlers/constructor_definition.cpp"
 #include "listener/handlers/delete_statement.cpp"
 #include "listener/handlers/deprecated_subshell.cpp"
+#include "listener/handlers/bash_arithmetic.cpp"
 #include "listener/handlers/destructor_definition.cpp"
 #include "listener/handlers/general_statement.cpp"
 #include "listener/handlers/include_statement.cpp"

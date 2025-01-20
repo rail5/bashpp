@@ -39,7 +39,7 @@
 </div>
 <br>
 
-This does not affect any code you write in Bash++ -- only the Bash++ language and compiler themselves. You are perfectly free to use Bash++ to write proprietary software, or software under a different license.
+This does not affect any code you write in Bash++ -- only the Bash++ language and compiler themselves. You are perfectly free to use Bash++ to write software under a different license.
 
 ## Documentation License
 

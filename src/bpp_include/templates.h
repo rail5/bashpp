@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#ifndef SRC_BPP_TEMPLATES_H_
-#define SRC_BPP_TEMPLATES_H_
+#ifndef SRC_BPP_INCLUDE_TEMPLATES_H_
+#define SRC_BPP_INCLUDE_TEMPLATES_H_
 
 const char* bpp_supershell_function = R"EOF(function bpp____initsupershell() {
 	local bpp____supershelltempfile="$(mktemp -p /dev/shm/ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX)"
@@ -98,4 +98,4 @@ const char* template_destructor = R"EOF(function bpp__%CLASS%____destructor() {
 }
 )EOF";
 
-#endif // SRC_BPP_TEMPLATES_H_
+#endif // SRC_BPP_INCLUDE_TEMPLATES_H_

@@ -17,6 +17,10 @@ void BashppListener::enterString(BashppParser::StringContext *ctx) {
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
+	if (current_code_entity == nullptr) {
+		throw_syntax_error(ctx->QUOTE(), "String outside of code entity");
+	}
+
 	std::shared_ptr<bpp::bpp_string> string_code_entity = std::make_shared<bpp::bpp_string>();
 	string_code_entity->set_containing_class(current_class);
 	string_code_entity->inherit(current_code_entity);

@@ -70,51 +70,6 @@ void BashppListener::exitObject_assignment(BashppParser::Object_assignmentContex
 			current_code_entity->add_code(method_call);
 			return;
 		}
-
-/*
-		std::shared_ptr<bpp::bpp_datamember> lvalue_as_datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(lvalue_object);
-		std::shared_ptr<bpp::bpp_object> lvalue_as_object = std::dynamic_pointer_cast<bpp::bpp_object>(lvalue_object);
-
-		std::shared_ptr<bpp::bpp_datamember> rvalue_as_datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(rvalue_object);
-		std::shared_ptr<bpp::bpp_object> rvalue_as_object = std::dynamic_pointer_cast<bpp::bpp_object>(rvalue_object);
-
-		if (lvalue_as_datamember != nullptr) {
-			std::cout << "Lvalue is a datamember and here is the information I have on it:" << std::endl;
-			std::cout << "Name: " << lvalue_as_datamember->get_name() << std::endl;
-			std::cout << "Class: " << lvalue_as_datamember->get_class()->get_name() << std::endl;
-			std::cout << "Address: " << lvalue_as_datamember->get_address() << std::endl;
-			std::cout << "Returned from reference_as_lvalue: " << object_assignment->get_lvalue() << std::endl;
-		} else if (lvalue_as_object != nullptr) {
-			std::cout << "Lvalue is an object and here is the information I have on it:" << std::endl;
-			std::cout << "Name: " << lvalue_as_object->get_name() << std::endl;
-			std::cout << "Class: " << lvalue_as_object->get_class()->get_name() << std::endl;
-			std::cout << "Address: " << lvalue_as_object->get_address() << std::endl;
-			std::cout << "Returned from reference_as_lvalue: " << object_assignment->get_lvalue() << std::endl;
-		} else {
-			throw internal_error("Lvalue is neither a datamember nor an object");
-		}
-
-		if (rvalue_as_datamember != nullptr) {
-			std::cout << "Rvalue is a datamember and here is the information I have on it:" << std::endl;
-			std::cout << "Name: " << rvalue_as_datamember->get_name() << std::endl;
-			std::cout << "Class: " << rvalue_as_datamember->get_class()->get_name() << std::endl;
-			std::cout << "Address: " << rvalue_as_datamember->get_address() << std::endl;
-			std::cout << "Returned from reference: " << object_assignment->get_rvalue() << std::endl;
-		} else if (rvalue_as_object != nullptr) {
-			std::cout << "Rvalue is an object and here is the information I have on it:" << std::endl;
-			std::cout << "Name: " << rvalue_as_object->get_name() << std::endl;
-			std::cout << "Class: " << rvalue_as_object->get_class()->get_name() << std::endl;
-			std::cout << "Address: " << rvalue_as_object->get_address() << std::endl;
-			std::cout << "Returned from reference: " << object_assignment->get_rvalue() << std::endl;
-		} else {
-			throw internal_error("Rvalue is neither a datamember nor an object");
-		}
-
-		std::cout << "Pre-code: " << object_assignment->get_pre_code() << std::endl;
-		std::cout << "Post-code: " << object_assignment->get_post_code() << std::endl;
-
-		exit(1);
-*/
 	}
 
 	std::string object_assignment_lvalue = object_assignment->get_lvalue();

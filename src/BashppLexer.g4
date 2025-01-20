@@ -90,6 +90,8 @@ ESCAPE: '\\' . {
 		} else {
 			emit(ESCAPE_LITERAL, getText());
 		}
+	} else if (getText() == "\\@") {
+		emit(AT_LITERAL, "@");
 	}
 };
 

@@ -67,8 +67,8 @@ int main(int argc, char* argv[]) {
 		"If no file is specified, read from stdin\n"
 		"Options:\n"
 		"  -o, --output <file>   Specify output file\n"
-		"                         If not specified, program will be run on exit\n"
-		"                         If specified as '-', output will be written to stdout\n"
+		"                         If not specified, program will run on exit\n"
+		"                         If specified as '-', program will be written to stdout\n"
 		"  -v, --version         Print version information\n"
 		"  -h, --help            Print this help message\n";
 	int c;

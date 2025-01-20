@@ -184,7 +184,7 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 	}
 
 	// Are we in a value_assignment context?
-	if (value_assignment_entity != nullptr) {
+	if (value_assignment_entity != nullptr && value_assignment_entity->lvalue_is_nonprimitive()) {
 		value_assignment_entity->set_nonprimitive_object(last_reference_entity);
 		value_assignment_entity->set_nonprimitive_assignment(true);
 		object_reference_entity->add_code(object_reference_code);

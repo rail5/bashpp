@@ -21,6 +21,13 @@ void BashppListener::enterValue_assignment(BashppParser::Value_assignmentContext
 	std::shared_ptr<bpp::bpp_value_assignment> value_assignment_entity = std::make_shared<bpp::bpp_value_assignment>();
 	value_assignment_entity->set_containing_class(entity_stack.top()->get_containing_class());
 	value_assignment_entity->inherit(current_code_entity);
+
+	// If we're in an object assignment context, determine whether the lvalue is primitive or nonprimitive
+	std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(entity_stack.top());
+	if (object_assignment != nullptr) {
+		value_assignment_entity->set_lvalue_nonprimitive(object_assignment->lvalue_is_nonprimitive());
+	}
+
 	entity_stack.push(value_assignment_entity);
 }
 

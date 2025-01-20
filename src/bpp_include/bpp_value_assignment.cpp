@@ -20,12 +20,20 @@ void bpp_value_assignment::set_nonprimitive_object(std::shared_ptr<bpp_entity> o
 	nonprimitive_object = object;
 }
 
+void bpp_value_assignment::set_lvalue_nonprimitive(bool is_nonprimitive) {
+	lvalue_nonprimitive = is_nonprimitive;
+}
+
 bool bpp_value_assignment::is_nonprimitive_assignment() const {
 	return nonprimitive_assignment;
 }
 
 std::shared_ptr<bpp_entity> bpp_value_assignment::get_nonprimitive_object() const {
 	return nonprimitive_object;
+}
+
+bool bpp_value_assignment::lvalue_is_nonprimitive() const {
+	return lvalue_nonprimitive;
 }
 
 } // namespace bpp

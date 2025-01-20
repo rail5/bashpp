@@ -72,6 +72,10 @@ void BashppListener::exitObject_assignment(BashppParser::Object_assignmentContex
 		}
 	}
 
+	if (object_assignment->lvalue_is_nonprimitive() && !object_assignment->rvalue_is_nonprimitive()) {
+		throw_syntax_error_sym(ctx->getStart(), "Cannot assign a primitive value to a nonprimitive object");
+	}
+
 	std::string object_assignment_lvalue = object_assignment->get_lvalue();
 	std::string object_assignment_rvalue = object_assignment->get_rvalue();
 	std::string pre_objectassignment_code = object_assignment->get_pre_code();

@@ -114,14 +114,17 @@ class bpp_value_assignment : public bpp_string {
 	private:
 		bool nonprimitive_assignment = false;
 		std::shared_ptr<bpp_entity> nonprimitive_object;
+		bool lvalue_nonprimitive = false;
 	public:
 		bpp_value_assignment();
 
 		void set_nonprimitive_assignment(bool is_nonprimitive);
 		void set_nonprimitive_object(std::shared_ptr<bpp_entity> object);
+		void set_lvalue_nonprimitive(bool is_nonprimitive);
 
 		bool is_nonprimitive_assignment() const;
 		std::shared_ptr<bpp_entity> get_nonprimitive_object() const;
+		bool lvalue_is_nonprimitive() const;
 };
 
 class bpp_object_assignment : public bpp_string {

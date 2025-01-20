@@ -160,7 +160,7 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 	}
 
 	// If we're here, the last reference entity is a non-primitive object
-	if (value_assignment_entity != nullptr) {
+	if (value_assignment_entity != nullptr && value_assignment_entity->lvalue_is_nonprimitive()) {
 		// If we're in a value_assignment context, set the nonprimitive object and set the nonprimitive flag
 		value_assignment_entity->set_nonprimitive_object(last_reference_entity);
 		value_assignment_entity->set_nonprimitive_assignment(true);

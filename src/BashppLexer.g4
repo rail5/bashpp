@@ -12,6 +12,7 @@ int initialSupershellDepth = 0;
 int initialSubshellDepth = 0;
 std::stack<int> nestedSupershellStack;
 std::stack<int> nestedSubshellStack;
+std::stack<int> nestedArithStack;
 bool inSupershell = false;
 bool inSubshell = false;
 bool inDeprecatedSubshell = false;
@@ -23,6 +24,7 @@ bool hit_lbrace_in_current_command = false;
 enum lexer_special_mode_type {
 	mode_supershell,
 	mode_subshell,
+	mode_arith,
 	mode_quote,
 	mode_singlequote,
 	mode_comment,
@@ -34,6 +36,7 @@ std::stack<lexer_special_mode_type> modeStack;
 #define modeStack_top (modeStack.empty() ? no_mode : modeStack.top())
 #define nestedSupershellStack_top (nestedSupershellStack.empty() ? 0 : nestedSupershellStack.top())
 #define nestedSubshellStack_top (nestedSubshellStack.empty() ? 0 : nestedSubshellStack.top())
+#define nestedArithStack_top (nestedArithStack.empty() ? 0 : nestedArithStack.top())
 
 inline bool contains_double_underscore(const std::string& s) {
 	return s.find("__") != std::string::npos;
@@ -273,6 +276,24 @@ BACKTICK: '`' {
 DEPRECATED_SUBSHELL_START: '`'; // Another dummy token
 DEPRECATED_SUBSHELL_END: '`'; // Yet another dummy token
 
+BASH_ARITH_START: '$((' {
+	switch (modeStack_top) {
+		case mode_singlequote:
+		case mode_comment:
+			// Emit a dummy token
+			emit(BASH_ARITH_LITERAL, "$((");
+			break;
+		default:
+			modeStack.push(mode_arith);
+			nestedArithStack.push(parenDepth);
+			emit(BASH_ARITH_START, "$((");
+			break;
+	}
+	parenDepth += 2;
+};
+
+BASH_ARITH_LITERAL: '$(('; // Another dummy token
+
 SUBSHELL_START: '$(' {
 	switch (modeStack_top) {
 		case mode_singlequote:
@@ -325,6 +346,13 @@ RPAREN: ')' {
 		case mode_comment:
 			// Just emit the RPAREN token
 			break;
+		case mode_arith:
+			if ((parenDepth - 1) == nestedArithStack_top) {
+				nestedArithStack.pop();
+				modeStack.pop();
+				emit(BASH_ARITH_END, ")");
+			}
+			break;
 		case mode_subshell:
 			if (parenDepth == nestedSubshellStack_top) {
 				if (parenDepth == initialSubshellDepth) {
@@ -350,6 +378,9 @@ RPAREN: ')' {
 
 SUBSHELL_END: ')'; // This is a dummy token to make the lexer happy
 					// The actual end of a subshell is detected by the RPAREN rule (above)
+
+BASH_ARITH_END: ')'; // This is a dummy token to make the lexer happy
+					// The actual end of a bash arithmetic expression is detected by the RPAREN rule (above)
 
 LBRACKET: '[';
 RBRACKET: ']';

@@ -30,6 +30,7 @@ general_statement: include_statement
 	| supershell
 	| subshell
 	| deprecated_subshell
+	| bash_arithmetic
 	| string
 	| singlequote_string
 	| comment
@@ -64,6 +65,7 @@ value_assignment: ASSIGN ((raw_rvalue
 	| singlequote_string
 	| subshell
 	| deprecated_subshell
+	| bash_arithmetic
 	| object_reference
 	| self_reference
 	| nullptr_ref
@@ -114,6 +116,9 @@ subshell: SUBSHELL_START statement* SUBSHELL_END;
 
 deprecated_subshell: DEPRECATED_SUBSHELL_START statement* DEPRECATED_SUBSHELL_END;
 
+// Bash arithmetic
+bash_arithmetic: BASH_ARITH_START statement* BASH_ARITH_END RPAREN;
+
 // Strings
 string: QUOTE statement* QUOTE_END;
 
@@ -129,7 +134,7 @@ nullptr_ref: AT KEYWORD_NULLPTR;
 new_statement: AT KEYWORD_NEW WS* AT? IDENTIFIER;
 
 // Other statement
-other_statement: ~(RBRACE | SUPERSHELL_END | QUOTE_END | SINGLEQUOTE_END | NEWLINE | SUBSHELL_END | DEPRECATED_SUBSHELL_END)+?;
+other_statement: ~(RBRACE | SUPERSHELL_END | QUOTE_END | SINGLEQUOTE_END | NEWLINE | SUBSHELL_END | DEPRECATED_SUBSHELL_END | BASH_ARITH_END)+?;
 
 // This rule will *only* ever be matched as part a value_assignment
 raw_rvalue: IDENTIFIER | NUMBER | BASH_VAR;

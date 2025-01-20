@@ -110,18 +110,46 @@ class bpp_string : public bpp_code_entity {
 		std::string get_post_code() const override;
 };
 
+class bpp_value_assignment : public bpp_string {
+	private:
+		bool nonprimitive_assignment = false;
+		std::shared_ptr<bpp_entity> nonprimitive_object;
+	public:
+		bpp_value_assignment();
+
+		void set_nonprimitive_assignment(bool is_nonprimitive);
+		void set_nonprimitive_object(std::shared_ptr<bpp_entity> object);
+
+		bool is_nonprimitive_assignment() const;
+		std::shared_ptr<bpp_entity> get_nonprimitive_object() const;
+};
+
 class bpp_object_assignment : public bpp_string {
 	private:
 		std::string lvalue = "";
 		std::string rvalue = "";
+
+		bool lvalue_nonprimitive = false;
+		bool rvalue_nonprimitive = false;
+
+		std::shared_ptr<bpp_entity> lvalue_object;
+		std::shared_ptr<bpp_entity> rvalue_object;
 	public:
 		bpp_object_assignment();
 
 		void set_lvalue(const std::string& lvalue);
 		void set_rvalue(const std::string& rvalue);
+		void set_lvalue_nonprimitive(bool is_nonprimitive);
+		void set_rvalue_nonprimitive(bool is_nonprimitive);
+		void set_lvalue_object(std::shared_ptr<bpp_entity> object);
+		void set_rvalue_object(std::shared_ptr<bpp_entity> object);
 
 		std::string get_lvalue() const;
 		std::string get_rvalue() const;
+		bool lvalue_is_nonprimitive() const;
+		bool rvalue_is_nonprimitive() const;
+		std::shared_ptr<bpp_entity> get_lvalue_object() const;
+		std::shared_ptr<bpp_entity> get_rvalue_object() const;
 };
 
 class bpp_object_reference : public bpp_string {

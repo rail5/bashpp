@@ -19,6 +19,7 @@
 #include "../bpp_include/bpp_entity.cpp"
 #include "../bpp_include/bpp_code_entity.cpp"
 #include "../bpp_include/bpp_string.cpp"
+#include "../bpp_include/bpp_value_assignment.cpp"
 #include "../bpp_include/bpp_object_reference.cpp"
 #include "../bpp_include/bpp_object_assignment.cpp"
 #include "../bpp_include/bpp_program.cpp"

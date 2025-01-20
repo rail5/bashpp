@@ -32,6 +32,9 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 	}
 
 	std::shared_ptr<bpp::bpp_class> current_class = current_code_entity->get_containing_class().lock();
+	
+	// Are we in an object_assignment context?
+	std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(entity_stack.top());
 
 	std::shared_ptr<bpp::bpp_string> object_reference_entity = std::make_shared<bpp::bpp_string>();
 	object_reference_entity->set_containing_class(current_code_entity->get_containing_class());
@@ -87,13 +90,18 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 	std::shared_ptr<bpp::bpp_method> final_method = std::dynamic_pointer_cast<bpp::bpp_method>(object_chain[object_chain.size() - 1]);
 
 	if (final_object != nullptr && final_object->get_class() != primitive) {
-		// Call to .toPrimitive on a non-primitive data member
-		// Add the toPrimitive method to the object_chain
-		// Set final_method = toPrimitive
-		// Set final_datamember = nullptr
-		final_method = final_object->get_class()->get_method("toPrimitive", current_class);
-		object_chain.push_back(final_method);
-		final_object = nullptr;
+		if (object_assignment != nullptr) {
+			object_assignment->set_lvalue_nonprimitive(true);
+			object_assignment->set_lvalue_object(final_object);
+		} else {
+			// Call to .toPrimitive on a non-primitive data member
+			// Add the toPrimitive method to the object_chain
+			// Set final_method = toPrimitive
+			// Set final_datamember = nullptr
+			final_method = final_object->get_class()->get_method("toPrimitive", current_class);
+			object_chain.push_back(final_method);
+			final_object = nullptr;
+		}
 	}
 
 	bool declared_first_temporary_variable = false;
@@ -126,8 +134,22 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 		for (size_t i = 1; i < object_chain.size() - 1; i++) {
 			temporary_variable += "__" + object_chain[i]->get_name();
 		}
-
-		temporary_variable_lvalue = temporary_variable + "__" + final_object->get_name();
+		// TODO(@rail5): Below: super hacky! Redo this whole thing from scratch ASAP
+		if (object_assignment != nullptr && final_object->get_class() != primitive && !final_object->is_pointer()) {
+			switch (object_chain.size()) {
+			case 1:
+				temporary_variable_lvalue = temporary_variable;
+				break;
+			case 2:
+				temporary_variable_lvalue = "${" + temporary_variable + "__" + final_object->get_name() + "}";
+				break;
+			default:
+				temporary_variable_lvalue = temporary_variable + "__" + final_object->get_name();
+				break;
+			}
+		} else {
+			temporary_variable_lvalue = temporary_variable + "__" + final_object->get_name();
+		}
 		temporary_variable_rvalue = "${" + indirection + temporary_variable + "}__" + final_object->get_name();
 
 		if (object_chain.size() > 2) {
@@ -140,6 +162,9 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 
 		if (object_chain.size() > 2) {
 			encasing_start = "${";
+			if (object_assignment != nullptr && final_object->get_class() != primitive && !final_object->is_pointer()) {
+				encasing_start += "!";
+			}
 			encasing_end = "}";
 		}
 

@@ -36,6 +36,9 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 	// This will be important later -- we'll have to return differently if we are
 	std::shared_ptr<bpp::bpp_object_address> object_address_entity = std::dynamic_pointer_cast<bpp::bpp_object_address>(entity_stack.top());
 
+	// Check if we're in a value_assignment context
+	std::shared_ptr<bpp::bpp_value_assignment> value_assignment_entity = std::dynamic_pointer_cast<bpp::bpp_value_assignment>(entity_stack.top());
+
 	std::shared_ptr<bpp::bpp_object_reference> object_reference_entity = std::make_shared<bpp::bpp_object_reference>();
 	object_reference_entity->set_containing_class(current_code_entity->get_containing_class());
 	object_reference_entity->inherit(current_code_entity);
@@ -177,6 +180,14 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 	// Are we otherwise in an object_address context?
 	if (object_address_entity != nullptr) {
 		object_reference_entity->add_code("${" + object_reference_code + "}");
+		return;
+	}
+
+	// Are we in a value_assignment context?
+	if (value_assignment_entity != nullptr) {
+		value_assignment_entity->set_nonprimitive_object(last_reference_entity);
+		value_assignment_entity->set_nonprimitive_assignment(true);
+		object_reference_entity->add_code(object_reference_code);
 		return;
 	}
 

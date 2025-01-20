@@ -178,8 +178,13 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 
 	// If we're here, the last reference entity is a non-primitive object
 
-	// TODO(@rail5): Assignments to non-primitive objects
-	// Ie, copies
+	// Are we in an object assignment context?
+	if (object_assignment != nullptr) {
+		object_assignment->set_lvalue_nonprimitive(true);
+		object_assignment->set_lvalue_object(last_reference_entity);
+		self_reference_entity->add_code("${!" + self_reference_code + "}");
+		return;
+	}
 
 	// We need to call the .toPrimitive method on the object
 	std::string method_call = "bpp__" + last_reference_entity->get_class()->get_name() + "__toPrimitive ";

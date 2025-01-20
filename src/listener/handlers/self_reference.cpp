@@ -31,6 +31,9 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 	// This will be important later -- we'll have to return differently if we are
 	std::shared_ptr<bpp::bpp_object_address> object_address_entity = std::dynamic_pointer_cast<bpp::bpp_object_address>(entity_stack.top());
 
+	// Check if we're in a value_assignment context
+	std::shared_ptr<bpp::bpp_value_assignment> value_assignment_entity = std::dynamic_pointer_cast<bpp::bpp_value_assignment>(entity_stack.top());
+
 	std::shared_ptr<bpp::bpp_object_reference> self_reference_entity = std::make_shared<bpp::bpp_object_reference>();
 	self_reference_entity->set_containing_class(current_class);
 	self_reference_entity->inherit(current_code_entity);
@@ -157,6 +160,13 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 	}
 
 	// If we're here, the last reference entity is a non-primitive object
+	if (value_assignment_entity != nullptr) {
+		// If we're in a value_assignment context, set the nonprimitive object and set the nonprimitive flag
+		value_assignment_entity->set_nonprimitive_object(last_reference_entity);
+		value_assignment_entity->set_nonprimitive_assignment(true);
+		self_reference_entity->add_code("${!" + self_reference_code + "}");
+		return;
+	}
 	// We need to call the .toPrimitive method on the object
 	std::string method_call = "bpp__" + last_reference_entity->get_class()->get_name() + "__toPrimitive ";
 	// Append the containing object's address to the method call

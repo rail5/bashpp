@@ -20,12 +20,44 @@ void bpp_object_assignment::set_rvalue(const std::string& rvalue) {
 	this->rvalue = rvalue;
 }
 
+void bpp_object_assignment::set_lvalue_nonprimitive(bool is_nonprimitive) {
+	lvalue_nonprimitive = is_nonprimitive;
+}
+
+void bpp_object_assignment::set_rvalue_nonprimitive(bool is_nonprimitive) {
+	rvalue_nonprimitive = is_nonprimitive;
+}
+
+void bpp_object_assignment::set_lvalue_object(std::shared_ptr<bpp_entity> object) {
+	lvalue_object = object;
+}
+
+void bpp_object_assignment::set_rvalue_object(std::shared_ptr<bpp_entity> object) {
+	rvalue_object = object;
+}
+
 std::string bpp_object_assignment::get_lvalue() const {
 	return lvalue;
 }
 
 std::string bpp_object_assignment::get_rvalue() const {
 	return rvalue;
+}
+
+bool bpp_object_assignment::lvalue_is_nonprimitive() const {
+	return lvalue_nonprimitive;
+}
+
+bool bpp_object_assignment::rvalue_is_nonprimitive() const {
+	return rvalue_nonprimitive;
+}
+
+std::shared_ptr<bpp_entity> bpp_object_assignment::get_lvalue_object() const {
+	return lvalue_object;
+}
+
+std::shared_ptr<bpp_entity> bpp_object_assignment::get_rvalue_object() const {
+	return rvalue_object;
 }
 
 } // namespace bpp

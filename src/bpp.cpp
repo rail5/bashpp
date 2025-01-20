@@ -12,6 +12,7 @@
 #include <getopt.h>
 
 #include "version.h"
+#include "updated_year.h"
 
 #include "syntax_error.cpp"
 
@@ -61,8 +62,19 @@ using namespace antlr4;
 
 int main(int argc, char* argv[]) {
 	const char* program_name = "Bash++";
-	const char* copyright = "Copyright (C) 2025 Andrew S. Rightenburg\n"
-		"GNU GPL v3.0 or later\n";
+	const char* copyright = "Copyright (C) 2024-"
+		bpp_compiler_updated_year
+		" Andrew S. Rightenburg\n\n"
+		"This program is free software; you can redistribute it and/or modify\n"
+		"it under the terms of the GNU General Public License as published by\n"
+		"the Free Software Foundation; either version 3 of the License, or\n"
+		"(at your option) any later version.\n\n"
+		"This program is distributed in the hope that it will be useful,\n"
+		"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+		"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+		"GNU General Public License for more details.\n\n"
+		"You should have received a copy of the GNU General Public License\n"
+		"along with this program. If not, see http://www.gnu.org/licenses/.\n";
 	std::string help_string = "Usage: " + std::string(argv[0]) + " [options] [file]\n"
 		"If no file is specified, read from stdin\n"
 		"Options:\n"
@@ -119,7 +131,7 @@ int main(int argc, char* argv[]) {
 				return 0;
 				break;
 			case 'h':
-				std::cout << program_name << " " << bpp_compiler_version << std::endl << copyright << help_string;
+				std::cout << program_name << " " << bpp_compiler_version << std::endl << help_string;
 				return 0;
 				break;
 			case '?':

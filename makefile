@@ -1,6 +1,7 @@
 VERSION=$$(dpkg-parsechangelog -l debian/changelog --show-field version)
+LASTUPDATEDYEAR=$$(date +%Y -d@$$(dpkg-parsechangelog -l debian/changelog --show-field timestamp))
 
-all: cleanmain update-version
+all: cleanmain update-version update-year
 	cd src && make
 	mv src/bpp bin/bpp
 
@@ -25,6 +26,12 @@ update-version:
 	@ \
 	if [ ! -z "$(VERSION)" ]; then \
 		echo "#define bpp_compiler_version \"$(VERSION)\"" > src/version.h; \
+	fi;
+
+update-year:
+	@ \
+	if [ ! -z "$(LASTUPDATEDYEAR)" ]; then \
+		echo "#define bpp_compiler_updated_year \"$(LASTUPDATEDYEAR)\"" > src/updated_year.h; \
 	fi;
 
 cleansrc:

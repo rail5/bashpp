@@ -89,7 +89,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 	std::shared_ptr<bpp::bpp_object> final_object = std::dynamic_pointer_cast<bpp::bpp_object>(object_chain[object_chain.size() - 1]);
 	std::shared_ptr<bpp::bpp_method> final_method = std::dynamic_pointer_cast<bpp::bpp_method>(object_chain[object_chain.size() - 1]);
 
-	if (final_object != nullptr && final_object->get_class() != primitive) {
+	if (final_object != nullptr && final_object->get_class() != primitive && !final_object->is_pointer()) {
 		if (object_assignment != nullptr) {
 			object_assignment->set_lvalue_nonprimitive(true);
 			object_assignment->set_lvalue_object(final_object);
@@ -110,7 +110,12 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 		std::string indirection = declared_first_temporary_variable ? "!" : "";
 		std::string temporary_variable_lvalue;
 		std::string temporary_variable_rvalue;
-		std::string temporary_variable = "bpp__" + referenced_object->get_class()->get_name() + "__" + referenced_object->get_name();
+		std::string temporary_variable;
+		if (referenced_object->is_pointer()) {
+			temporary_variable = "bpp____ptr__" + referenced_object->get_class()->get_name() + "__" + referenced_object->get_name();
+		} else {
+			temporary_variable = "bpp__" + referenced_object->get_class()->get_name() + "__" + referenced_object->get_name();
+		}
 		for (size_t j = 1; j < i; j++) {
 			temporary_variable += "__" + object_chain[j]->get_name();
 		}
@@ -130,7 +135,12 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 		std::string indirection = declared_first_temporary_variable ? "!" : "";
 		std::string temporary_variable_lvalue;
 		std::string temporary_variable_rvalue;
-		std::string temporary_variable = "bpp__" + referenced_object->get_class()->get_name() + "__" + referenced_object->get_name();
+		std::string temporary_variable;
+		if (referenced_object->is_pointer()) {
+			temporary_variable = "bpp____ptr__" + referenced_object->get_class()->get_name() + "__" + referenced_object->get_name();
+		} else {
+			temporary_variable = "bpp__" + referenced_object->get_class()->get_name() + "__" + referenced_object->get_name();
+		}
 		for (size_t i = 1; i < object_chain.size() - 1; i++) {
 			temporary_variable += "__" + object_chain[i]->get_name();
 		}
@@ -147,6 +157,11 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 				temporary_variable_lvalue = temporary_variable + "__" + final_object->get_name();
 				break;
 			}
+		// This just gets worse and worse. Redo the whole object_reference_as_lvalue ASAP
+		} else if (object_assignment != nullptr && final_object->get_class() != primitive && final_object->is_pointer() && object_chain.size() == 1) {
+			temporary_variable_lvalue = temporary_variable;
+		} else if (object_assignment != nullptr && final_object->get_class() != primitive && final_object->is_pointer() && object_chain.size() == 2) {
+			temporary_variable_lvalue = "${" + temporary_variable + "}__" + final_object->get_name();
 		} else {
 			temporary_variable_lvalue = temporary_variable + "__" + final_object->get_name();
 		}

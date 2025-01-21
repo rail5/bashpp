@@ -24,6 +24,7 @@ bool hit_lbrace_in_current_command = false;
 enum lexer_special_mode_type {
 	mode_supershell,
 	mode_subshell,
+	mode_typecast,
 	mode_arith,
 	mode_quote,
 	mode_singlequote,
@@ -237,6 +238,16 @@ KEYWORD_THIS: 'this' {
 
 KEYWORD_THIS_LVALUE: 'this'; // Another dummy token
 
+KEYWORD_UPCAST: '@upcast' {
+	modeStack.push(mode_typecast);
+};
+KEYWORD_DOWNCAST: '@downcast' {
+	modeStack.push(mode_typecast);
+};
+KEYWORD_CAST: '@cast' {
+	modeStack.push(mode_typecast);
+};
+
 // Identifiers
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]* {
 	if (contains_double_underscore(getText())) {
@@ -322,6 +333,7 @@ DOLLAR: '$';
 
 LPAREN: '(' {
 	switch (modeStack_top) {
+		case mode_typecast:
 		case mode_quote:
 		case mode_singlequote:
 		case mode_comment:
@@ -343,6 +355,9 @@ LPAREN: '(' {
 RPAREN: ')' {
 	parenDepth--;
 	switch (modeStack_top) {
+		case mode_typecast:
+			modeStack.pop();
+			break;
 		case mode_quote:
 		case mode_singlequote:
 		case mode_comment:

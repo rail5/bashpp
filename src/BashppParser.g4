@@ -35,6 +35,8 @@ general_statement: include_statement
 	| singlequote_string
 	| comment
 	| object_address
+	| pointer_dereference
+	| typecast
 	| nullptr_ref
 	| other_statement
 	| DELIM
@@ -71,6 +73,7 @@ value_assignment: ASSIGN ((raw_rvalue
 	| nullptr_ref
 	| pointer_dereference
 	| object_address
+	| typecast
 	| supershell)+
 	| new_statement)?;
 
@@ -132,6 +135,19 @@ parameter: (IDENTIFIER | AT IDENTIFIER ASTERISK WS* IDENTIFIER) WS*;
 nullptr_ref: AT KEYWORD_NULLPTR;
 
 new_statement: AT KEYWORD_NEW WS* AT? IDENTIFIER;
+
+typecast: (KEYWORD_CAST | KEYWORD_UPCAST | KEYWORD_DOWNCAST) WS* LPAREN WS* AT? IDENTIFIER WS* ASTERISK? WS* RPAREN WS* (
+	raw_rvalue
+	| string
+	| singlequote_string
+	| subshell
+	| deprecated_subshell
+	| object_reference
+	| self_reference
+	| pointer_dereference
+	| object_address
+	| supershell
+	| new_statement);
 
 // Other statement
 other_statement: ~(RBRACE | SUPERSHELL_END | QUOTE_END | SINGLEQUOTE_END | NEWLINE | SUBSHELL_END | DEPRECATED_SUBSHELL_END | BASH_ARITH_END)+?;

@@ -125,7 +125,7 @@ Methods can also take arguments:
 @myObject.myMethodWithArgs "Hello" "World"
 ```
 
-Methods cannot take non-primitive arguments. They can, however, accept pointers to objects:
+Further, methods can accept non-primitive objects as arguments:
 
 ```bash
 @class Object {
@@ -133,21 +133,17 @@ Methods cannot take non-primitive arguments. They can, however, accept pointers 
 }
 
 @class MyClass {
-	@public @method myMethodWithObject @Object* obj {
+	@public @method myMethodWithObject @Object obj {
 		echo "Hello from myMethodWithObject"
 		echo "Object data member: @obj.dataMember"
 	}
 }
 
 @Object myObject
-@Object* myPointer=@new @Object
-
-@MyClass myObject2
-@myObject2.myMethodWithObject &@myObject
-@myObject2.myMethodWithObject @myPointer
+@myObject.dataMember="Hello, world!"
+@MyClass myClassObject
+@myClassObject.myMethodWithObject @myObject # Pass myObject as an argument
 ```
-
-This is because pointers are considered primitives in Bash++, and methods can accept primitives as arguments. This shouldn't cause any issues, as pointers are implicitly dereferenced as needed.
 
 Like in ordinary Bash functions, these arguments can also be accessed using `$1`, `$2`, etc.:
 
@@ -321,6 +317,60 @@ Bash++ supports single inheritance. A class can inherit from another class using
 ```
 
 In this example, `DerivedClass` inherits from `BaseClass`. The derived class has access to the data members and methods of the base class. If a method is declared `@virtual`, it can be overridden in the derived class. If a method is not declared `@virtual`, it cannot be overridden.
+
+# Explicit Object Casting
+
+Bash++ supports explicit object casting using the `@cast` keyword. This allows you to cast an object to a different class.
+
+```bash
+@class ClassA {
+	@public dataMember="Hello, world!"
+}
+
+@class ClassB {
+	@public dataMember="Goodbye, world!"
+}
+
+@ClassA myObjectA
+@ClassB myObjectB=@cast(ClassB) @myObjectA # Cast myObjectA to ClassB
+
+echo "@myObjectB.dataMember" # Prints "Hello, world!"
+```
+
+The `@cast` keyword does not perform any type checking. It simply changes the type of the object. If the cast is invalid, the object will be in an invalid state, but the compiler will not throw an error.
+
+For *slightly* more careful casting, you can use the `@upcast` or `@downcast` keywords. `@upcast` will cast an object to a base class, while `@downcast` will cast an object to a derived class. If the cast is invalid, the compiler will throw an error.
+
+```bash
+@class BaseClass {
+	@public dataMember="Hello, world!"
+}
+
+@class DerivedClass : BaseClass {
+	@public derivedDataMember="Goodbye, world!"
+}
+
+@BaseClass myBaseObject
+@DerivedClass myDerivedObject=@downcast(DerivedClass) @myBaseObject
+@BaseClass myBaseObject2=@upcast(BaseClass) @myDerivedObject
+```
+
+An `@upcast` will perform a compile-time check to verify that we're casting *up* the inheritance hierarchy. An `@downcast` will perform a similar check to verify that we're casting *down* the inheritance hierarchy. If the cast is invalid, the compiler will throw an error.
+
+You can also cast pointers:
+
+```bash
+@class BaseClass {
+	@public dataMember="Hello, world!"
+}
+
+@class DerivedClass : BaseClass {
+	@public derivedDataMember="Goodbye, world!"
+}
+
+@BaseClass* myBasePointer=@new @BaseClass
+@DerivedClass* myDerivedPointer=@downcast(DerivedClass*) @myBasePointer
+```
 
 # Pointers
 

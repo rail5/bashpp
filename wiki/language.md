@@ -355,7 +355,7 @@ For *slightly* more careful casting, you can use the `@upcast` or `@downcast` ke
 @BaseClass myBaseObject2=@upcast(BaseClass) @myDerivedObject
 ```
 
-An `@upcast` will perform a compile-time check to verify that we're casting *up* the inheritance hierarchy. An `@downcast` will perform a similar check to verify that we're casting *down* the inheritance hierarchy. If the cast is invalid, the compiler will throw an error.
+An `@upcast` will perform a compile-time check to verify that we're casting *up* the inheritance hierarchy. A `@downcast` will perform a similar check to verify that we're casting *down* the inheritance hierarchy. If the cast is invalid, the compiler will throw an error.
 
 You can also cast pointers:
 

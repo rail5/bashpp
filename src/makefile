@@ -6,14 +6,26 @@ ANTLR4_PATH = /usr/lib/x86_64-linux-gnu/libantlr4-runtime.a
 all: antlr4
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -o bpp bpp.cpp antlr/BashppLexer.cpp antlr/BashppParser.cpp $(ANTLR4_PATH)
 
+sll: antlr4
+	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -o bpp-sll bpp_sll.cpp antlr/BashppLexer.cpp antlr/BashppParser.cpp $(ANTLR4_PATH)
+
 parser: antlr4
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -o BashppParser main.cpp antlr/BashppLexer.cpp antlr/BashppParser.cpp -L/usr/lib -lantlr4-runtime
 
 antlr4:
 	antlr4 -Dlanguage=Cpp ./BashppLexer.g4 ./BashppParser.g4 -o ./antlr
 
-clean:
+clean-antlr4:
 	rm -rf antlr
 	rm -rf .antlr
+
+clean-parser:
 	rm -f BashppParser
+
+clean-bpp:
 	rm -f bpp
+
+clean-bpp-sll:
+	rm -f bpp-sll
+
+clean: clean-antlr4 clean-parser clean-bpp clean-bpp-sll

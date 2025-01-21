@@ -1,15 +1,19 @@
 VERSION=$$(dpkg-parsechangelog -l debian/changelog --show-field version)
 LASTUPDATEDYEAR=$$(date +%Y -d@$$(dpkg-parsechangelog -l debian/changelog --show-field timestamp))
 
-all: cleanmain update-version update-year
+all: clean-src clean-main update-version update-year
 	cd src && make
 	mv src/bpp bin/bpp
 
-parser: cleanparser
+sll: clean-src
+	cd src && make sll
+	mv src/bpp-sll bin/bpp-sll
+
+parser: clean-parser
 	cd src && make parser
 	mv src/BashppParser bin/BashppParser
 
-manual: cleanmanual
+manual: clean-manual
 	mkdir tmp
 	tail -n +6 wiki/language.md > tmp/language.md
 	cp wiki/compiler.md tmp/
@@ -34,18 +38,21 @@ update-year:
 		echo "#define bpp_compiler_updated_year \"$(LASTUPDATEDYEAR)\"" > src/updated_year.h; \
 	fi;
 
-cleansrc:
+clean-src:
 	cd src && make clean
 
-cleanmain:
+clean-main:
 	rm -f bin/bpp
 
-cleanparser:
+clean-sll:
+	rm -f bin/bpp-sll
+
+clean-parser:
 	rm -f bin/BashppParser
 
-cleanmanual:
+clean-manual:
 	rm -f debian/bpp.1
 	rm -f debian/bpp.5
 	rm -rf tmp
 
-clean: cleansrc cleanmain cleanparser cleanmanual
+clean: clean-src clean-main clean-parser clean-manual

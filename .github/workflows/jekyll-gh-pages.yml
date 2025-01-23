@@ -41,10 +41,7 @@ jobs:
           source: ./wiki/
           destination: ./_site
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          name: github-pages
-          path: ./_site
+        uses: actions/upload-pages-artifact@v2
 
   # Deployment job
   deploy:
@@ -57,5 +54,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
-        with:
-          artifact_name: github-pages

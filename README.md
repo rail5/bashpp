@@ -21,4 +21,4 @@ Bash with classes
 @myBashpp.printInfo
 ```
 
-More documentation is available on the [website](https://bashpp.rail5.org).
+More documentation is available on the [website](https://bpp.sh).

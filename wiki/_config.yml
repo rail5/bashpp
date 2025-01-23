@@ -1,5 +1,5 @@
-name: bashpp.rail5.org
-title: bashpp.rail5.org
+name: bpp.sh
+title: bpp.sh
 remote_theme: jekyll/minima
 plugins:
 - jekyll-remote-theme

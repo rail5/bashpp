@@ -39,12 +39,12 @@ jobs:
         uses: actions/jekyll-build-pages@v1
         with:
           source: wiki
-          destination: _site
+          destination: wiki/_site
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           name: jekyll-site
-          path: _site
+          path: wiki/_site
 
   # Deployment job
   deploy:

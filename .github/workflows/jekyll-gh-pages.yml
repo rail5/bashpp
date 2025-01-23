@@ -57,5 +57,5 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v2
         with:
-          artifact-name: jekyll-site
+          artifact_name: jekyll-site
         id: deployment

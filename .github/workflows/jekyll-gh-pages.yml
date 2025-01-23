@@ -43,7 +43,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          name: jekyll-site
+          name: github-pages
           path: wiki/_site
 
   # Deployment job
@@ -57,5 +57,5 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v2
         with:
-          artifact_name: jekyll-site
+          artifact_name: github-pages
         id: deployment

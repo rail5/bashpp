@@ -38,13 +38,10 @@ jobs:
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
-          source: wiki
-          destination: wiki/_site
+          source: ./wiki/
+          destination: ./_site
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          artifact_name: github-pages
-          path: wiki/_site
+        uses: actions/upload-pages-artifact@v4
 
   # Deployment job
   deploy:
@@ -55,7 +52,5 @@ jobs:
     needs: build
     steps:
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v2
-        with:
-          artifact_name: github-pages
         id: deployment
+        uses: actions/deploy-pages@v2

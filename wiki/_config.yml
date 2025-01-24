@@ -1,5 +1,5 @@
-name: bpp.sh
-title: bpp.sh
+name: Bash++
+title: Bash++
 remote_theme: jekyll/minima
 plugins:
 - jekyll-remote-theme

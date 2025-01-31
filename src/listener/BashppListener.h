@@ -50,6 +50,7 @@ class BashppListener : public BashppParserBaseListener {
 		std::ostream* output_stream = &std::cout;
 		std::string output_file;
 		bool run_on_exit = false;
+		std::vector<std::string> arguments = {};
 
 		std::shared_ptr<bpp::bpp_program> program = std::make_shared<bpp::bpp_program>();
 
@@ -156,6 +157,10 @@ class BashppListener : public BashppParserBaseListener {
 
 	void set_run_on_exit(bool run_on_exit) {
 		this->run_on_exit = run_on_exit;
+	}
+	
+	void set_arguments(std::vector<std::string> arguments) {
+		this->arguments = arguments;
 	}
 
 	void enterProgram(BashppParser::ProgramContext *ctx) override;

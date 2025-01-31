@@ -131,6 +131,8 @@ int main(int argc, char* argv[]) {
 
 	std::ostream* output_stream = &std::cout;
 	std::shared_ptr<std::ofstream> outfilestream;
+
+	std::vector<std::string> arguments = {};
 	
 	while ((c = getopt_long(argc, argv, "o:vh", long_options, &option_index)) != -1) {
 		switch(c) {
@@ -175,11 +177,11 @@ int main(int argc, char* argv[]) {
 	
 	for (option_index = optind; option_index < argc; option_index++) {
 		if (received_filename) {
-			std::cerr << program_name << ": Error: Multiple files specified" << std::endl;
-			return 1;
+			arguments.push_back(argv[option_index]);
+		} else {
+			file_to_read = argv[option_index];
+			received_filename = true;
 		}
-		file_to_read = argv[option_index];
-		received_filename = true;
 	}
 
 	std::ifstream file_stream;
@@ -233,6 +235,7 @@ int main(int argc, char* argv[]) {
 	listener->set_output_stream(output_stream);
 	listener->set_output_file(output_file);
 	listener->set_run_on_exit(run_on_exit);
+	listener->set_arguments(arguments);
 
 	bool success = false;
 	try {

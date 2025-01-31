@@ -42,6 +42,12 @@ void BashppListener::exitProgram(BashppParser::ProgramContext *ctx) {
 			chmod(output_file.c_str(), 0755);
 		}
 	} else {
+
+		std::string arguments_string = "";
+		for (std::string argument : arguments) {
+			arguments_string += " \"" + replace_all(argument, "\"", "\\\"") + "\"";
+		}
+
 		std::string temp_dir = std::filesystem::temp_directory_path();
 		char temp_file[4097];
 		strncpy(temp_file, temp_dir.c_str(), 4096);
@@ -54,7 +60,10 @@ void BashppListener::exitProgram(BashppParser::ProgramContext *ctx) {
 		std::ofstream temp_stream(temp_file);
 		temp_stream << program->get_code();
 		temp_stream.close();
-		system(("bash " + std::string(temp_file)).c_str());
+
+		std::string command = "bash " + std::string(temp_file) + arguments_string;
+
+		system(command.c_str());
 		unlink(temp_file);
 	}
 }

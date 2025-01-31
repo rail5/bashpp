@@ -46,7 +46,7 @@ general_statement: include_statement
 include_statement: AT (KEYWORD_INCLUDE | KEYWORD_INCLUDE_ONCE) WS* string;
 
 // Class definition
-class_definition: AT KEYWORD_CLASS WS* IDENTIFIER WS* (COLON WS* IDENTIFIER WS*)? LBRACE (class_body_statement | general_statement)* RBRACE;
+class_definition: AT KEYWORD_CLASS WS* IDENTIFIER WS* (COLON WS* IDENTIFIER WS*)? LBRACE_ROOTLEVEL (class_body_statement | general_statement | extra_statement)* RBRACE_ROOTLEVEL;
 
 // Member declarations
 member_declaration: AT (KEYWORD_PUBLIC | KEYWORD_PRIVATE | KEYWORD_PROTECTED) WS* IDENTIFIER value_assignment?
@@ -96,17 +96,17 @@ object_address: AMPERSAND (object_reference | self_reference);
 
 // Object reference
 object_reference: AT IDENTIFIER (DOT IDENTIFIER)*
-	| AT LBRACE IDENTIFIER (DOT IDENTIFIER)* RBRACE;
+	| AT (LBRACE | LBRACE_ROOTLEVEL) IDENTIFIER (DOT IDENTIFIER)* (RBRACE | RBRACE_ROOTLEVEL);
 
 object_reference_as_lvalue: AT IDENTIFIER_LVALUE (DOT IDENTIFIER)*
-	| AT LBRACE IDENTIFIER_LVALUE (DOT IDENTIFIER)* RBRACE;
+	| AT (LBRACE | LBRACE_ROOTLEVEL) IDENTIFIER_LVALUE (DOT IDENTIFIER)* (RBRACE | RBRACE_ROOTLEVEL);
 
 // Self-reference from within a class
 self_reference: AT KEYWORD_THIS (DOT IDENTIFIER)*
-	| AT LBRACE KEYWORD_THIS (DOT IDENTIFIER)* RBRACE;
+	| AT (LBRACE | LBRACE_ROOTLEVEL) KEYWORD_THIS (DOT IDENTIFIER)* (RBRACE | RBRACE_ROOTLEVEL);
 
 self_reference_as_lvalue: AT KEYWORD_THIS_LVALUE (DOT IDENTIFIER)*
-	| AT LBRACE KEYWORD_THIS_LVALUE (DOT IDENTIFIER)* RBRACE;
+	| AT (LBRACE | LBRACE_ROOTLEVEL) KEYWORD_THIS_LVALUE (DOT IDENTIFIER)* (RBRACE | RBRACE_ROOTLEVEL);
 
 // Delete statement
 delete_statement: AT KEYWORD_DELETE WS* (object_reference | self_reference);
@@ -150,7 +150,7 @@ typecast: (KEYWORD_CAST | KEYWORD_UPCAST | KEYWORD_DOWNCAST) WS* LPAREN WS* AT? 
 	| new_statement);
 
 // Other statement
-other_statement: ~(RBRACE | SUPERSHELL_END | QUOTE_END | SINGLEQUOTE_END | NEWLINE | SUBSHELL_END | DEPRECATED_SUBSHELL_END | BASH_ARITH_END)+?;
+other_statement: ~(RBRACE | RBRACE_ROOTLEVEL | SUPERSHELL_END | QUOTE_END | SINGLEQUOTE_END | NEWLINE | SUBSHELL_END | DEPRECATED_SUBSHELL_END | BASH_ARITH_END)+?;
 
 // This rule will *only* ever be matched as part a value_assignment
 raw_rvalue: IDENTIFIER | NUMBER | BASH_VAR;

@@ -8,6 +8,7 @@ lexer grammar BashppLexer;
 
 @lexer::members {
 int parenDepth = 0;
+int braceDepth = 0;
 int initialSupershellDepth = 0;
 int initialSubshellDepth = 0;
 std::stack<int> nestedSupershellStack;
@@ -265,8 +266,28 @@ IDENTIFIER_LVALUE: [a-zA-Z_][a-zA-Z0-9_]*; // Yet another dummy token
 ASSIGN: '=';
 DOT: '.';
 
-LBRACE: '{';
-RBRACE: '}';
+LBRACE: '{' {
+	if (modeStack_top == no_mode) {
+		if (braceDepth == 0) {
+			emit(LBRACE_ROOTLEVEL, getText());
+		}
+		braceDepth++;
+	}
+};
+
+
+RBRACE: '}' {
+	if (modeStack_top == no_mode) {
+		// Make sure we don't decrement the braceDepth below zero
+		braceDepth = std::max(braceDepth - 1, 0);
+		if (braceDepth == 0) {
+			emit(RBRACE_ROOTLEVEL, getText());
+		}
+	}
+};
+
+LBRACE_ROOTLEVEL: '{'; // Another dummy token
+RBRACE_ROOTLEVEL: '}'; // Yet another dummy token
 
 BACKTICK: '`' {
 	switch (modeStack_top) {

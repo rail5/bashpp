@@ -27,6 +27,7 @@ enum lexer_special_mode_type {
 	mode_subshell,
 	mode_typecast,
 	mode_arith,
+	mode_reference,
 	mode_quote,
 	mode_singlequote,
 	mode_comment,
@@ -123,7 +124,11 @@ SUPERSHELL_START: '@(' {
 SUPERSHELL_END: '@('; // This is a dummy token to make the lexer happy
 					// The actual end of a supershell is detected by the RPAREN rule (below)
 
-AT: '@';
+AT: '@' {
+	if (_input->LA(1) == '{') {
+		modeStack.push(mode_reference);
+	}
+};
 
 AT_LITERAL: '@'; // Another dummy token
 
@@ -160,6 +165,7 @@ BASH_VAR: '$' IDENTIFIER
 // Comments
 COMMENT: '#' {
 	switch (modeStack_top) {
+		case mode_reference:
 		case mode_quote:
 		case mode_singlequote:
 		case mode_comment:
@@ -267,22 +273,29 @@ ASSIGN: '=';
 DOT: '.';
 
 LBRACE: '{' {
-	if (modeStack_top == no_mode) {
-		if (braceDepth == 0) {
-			emit(LBRACE_ROOTLEVEL, getText());
-		}
-		braceDepth++;
+	switch (modeStack_top) {
+		case mode_reference:
+		case no_mode:
+			if (braceDepth == 0) {
+				emit(LBRACE_ROOTLEVEL, getText());
+			}
+			braceDepth++;
+			break;
 	}
 };
 
 
 RBRACE: '}' {
-	if (modeStack_top == no_mode) {
-		// Make sure we don't decrement the braceDepth below zero
-		braceDepth = std::max(braceDepth - 1, 0);
-		if (braceDepth == 0) {
-			emit(RBRACE_ROOTLEVEL, getText());
-		}
+	switch (modeStack_top) {
+		case mode_reference:
+			modeStack.pop();
+			// Fall through
+		case no_mode:
+			braceDepth = std::max(braceDepth - 1, 0);
+			if (braceDepth == 0) {
+				emit(RBRACE_ROOTLEVEL, getText());
+			}
+			break;
 	}
 };
 
@@ -350,7 +363,11 @@ SUBSHELL_START: '$(' {
 
 SUBSHELL_LITERAL: '$('; // Another dummy token
 
-DOLLAR: '$';
+DOLLAR: '$' {
+	if (_input->LA(1) == '{') {
+		modeStack.push(mode_reference);
+	}
+};
 
 LPAREN: '(' {
 	switch (modeStack_top) {

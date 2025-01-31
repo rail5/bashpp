@@ -44,7 +44,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 	std::shared_ptr<bpp::bpp_object> referenced_object = current_code_entity->get_object(ctx->IDENTIFIER_LVALUE()->getText());
 	if (referenced_object == nullptr) {
 		entity_stack.pop();
-		throw_syntax_error(ctx->AT(), "Object not found: " + ctx->IDENTIFIER_LVALUE()->getText());
+		throw_syntax_error(ctx->AT(0), "Object not found: " + ctx->IDENTIFIER_LVALUE()->getText());
 	}
 
 	std::vector<std::shared_ptr<bpp::bpp_entity>> object_chain;

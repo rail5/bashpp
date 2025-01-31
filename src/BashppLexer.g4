@@ -28,6 +28,7 @@ enum lexer_special_mode_type {
 	mode_typecast,
 	mode_arith,
 	mode_reference,
+	mode_array_assigment,
 	mode_quote,
 	mode_singlequote,
 	mode_comment,
@@ -269,7 +270,21 @@ INVALID_IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*; // Another dummy token
 IDENTIFIER_LVALUE: [a-zA-Z_][a-zA-Z0-9_]*; // Yet another dummy token
 
 // Operators
-ASSIGN: '=';
+ASSIGN: '=' {
+	switch (modeStack_top) {
+		case mode_reference:
+		case mode_quote:
+		case mode_singlequote:
+		case mode_comment:
+			break;
+		default:
+			if (_input->LA(1) == '(') {
+				modeStack.push(mode_array_assigment);
+			}
+			break;
+	}
+};
+
 DOT: '.';
 
 LBRACE: '{' {
@@ -377,6 +392,9 @@ LPAREN: '(' {
 		case mode_comment:
 			// Just emit the LPAREN token
 			break;
+		case mode_array_assigment:
+			emit(ARRAY_ASSIGN_START, "(");
+			break;
 		default:
 			nestedSubshellStack.push(parenDepth);
 			modeStack.push(mode_subshell);
@@ -393,6 +411,9 @@ LPAREN: '(' {
 RPAREN: ')' {
 	parenDepth--;
 	switch (modeStack_top) {
+		case mode_array_assigment:
+			emit(ARRAY_ASSIGN_END, ")");
+			// Fall through
 		case mode_typecast:
 			modeStack.pop();
 			break;
@@ -439,6 +460,9 @@ SUBSHELL_END: ')'; // This is a dummy token to make the lexer happy
 
 BASH_ARITH_END: ')'; // This is a dummy token to make the lexer happy
 					// The actual end of a bash arithmetic expression is detected by the RPAREN rule (above)
+
+ARRAY_ASSIGN_START: '('; // Another dummy token
+ARRAY_ASSIGN_END: ')'; // Yet another dummy token
 
 LBRACKET: '[';
 RBRACKET: ']';

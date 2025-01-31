@@ -62,7 +62,7 @@ constructor_definition: AT KEYWORD_CONSTRUCTOR WS* LBRACE general_statement* RBR
 destructor_definition: AT KEYWORD_DESTRUCTOR WS* LBRACE general_statement* RBRACE;
 
 // Value assignment
-value_assignment: ASSIGN ((raw_rvalue
+value_assignment: PLUS? ASSIGN ((raw_rvalue
 	| string
 	| singlequote_string
 	| subshell
@@ -75,7 +75,8 @@ value_assignment: ASSIGN ((raw_rvalue
 	| object_address
 	| typecast
 	| supershell)+
-	| new_statement)?;
+	| new_statement
+	| array_value)?;
 
 // Object instantiation
 object_instantiation: AT IDENTIFIER_LVALUE WS* IDENTIFIER (value_assignment)?
@@ -149,8 +150,10 @@ typecast: (KEYWORD_CAST | KEYWORD_UPCAST | KEYWORD_DOWNCAST) WS* LPAREN WS* AT? 
 	| supershell
 	| new_statement);
 
+array_value: ARRAY_ASSIGN_START statement* ARRAY_ASSIGN_END;
+
 // Other statement
-other_statement: ~(RBRACE | RBRACE_ROOTLEVEL | SUPERSHELL_END | QUOTE_END | SINGLEQUOTE_END | NEWLINE | SUBSHELL_END | DEPRECATED_SUBSHELL_END | BASH_ARITH_END)+?;
+other_statement: ~(RBRACE | RBRACE_ROOTLEVEL | SUPERSHELL_END | QUOTE_END | SINGLEQUOTE_END | NEWLINE | SUBSHELL_END | DEPRECATED_SUBSHELL_END | BASH_ARITH_END | ARRAY_ASSIGN_END)+?;
 
 // This rule will *only* ever be matched as part a value_assignment
 raw_rvalue: IDENTIFIER | NUMBER | BASH_VAR;

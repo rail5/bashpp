@@ -86,7 +86,13 @@ void BashppListener::exitObject_assignment(BashppParser::Object_assignmentContex
 
 	std::string assignment_operator = object_assignment->is_adding() ? "+=" : "=";
 
-	std::string object_assignment_code = "eval " + object_assignment_lvalue + assignment_operator + "\\$____assignmentRVal\n";
+	std::string object_assignment_code;
+
+	if (object_assignment->rvalue_is_array()) {
+		object_assignment_code = "eval \"" + object_assignment_lvalue + assignment_operator + "(\\\"\\$____assignmentRVal\\\")\"\n";
+	} else {
+		object_assignment_code = "eval " + object_assignment_lvalue + assignment_operator + "\\$____assignmentRVal\n";
+	}
 
 	// If we're not in a broader context, simply add the object assignment code to the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());

@@ -71,6 +71,7 @@ void BashppListener::exitValue_assignment(BashppParser::Value_assignmentContext 
 	std::shared_ptr<bpp::bpp_object_assignment> current_object_assignment = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(entity_stack.top());
 	if (current_object_assignment != nullptr) {
 		current_object_assignment->set_adding(value_assignment_entity->is_adding());
+		current_object_assignment->set_rvalue_array(value_assignment_entity->is_array_assignment());
 		current_object_assignment->set_rvalue(value_assignment_entity->get_code());
 		current_object_assignment->add_code_to_previous_line(value_assignment_entity->get_pre_code());
 		current_object_assignment->add_code_to_next_line(value_assignment_entity->get_post_code());

@@ -142,6 +142,7 @@ class bpp_object_assignment : public bpp_string {
 		std::shared_ptr<bpp_entity> lvalue_object;
 		std::shared_ptr<bpp_entity> rvalue_object;
 		bool adding = false;
+		bool rvalue_array = false;
 	public:
 		bpp_object_assignment();
 
@@ -152,6 +153,7 @@ class bpp_object_assignment : public bpp_string {
 		void set_lvalue_object(std::shared_ptr<bpp_entity> object);
 		void set_rvalue_object(std::shared_ptr<bpp_entity> object);
 		void set_adding(bool is_adding);
+		void set_rvalue_array(bool is_array);
 
 		std::string get_lvalue() const;
 		std::string get_rvalue() const;
@@ -160,6 +162,7 @@ class bpp_object_assignment : public bpp_string {
 		std::shared_ptr<bpp_entity> get_lvalue_object() const;
 		std::shared_ptr<bpp_entity> get_rvalue_object() const;
 		bool is_adding() const;
+		bool rvalue_is_array() const;
 };
 
 class bpp_object_reference : public bpp_string {

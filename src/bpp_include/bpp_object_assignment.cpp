@@ -40,6 +40,10 @@ void bpp_object_assignment::set_adding(bool is_adding) {
 	adding = is_adding;
 }
 
+void bpp_object_assignment::set_rvalue_array(bool is_array) {
+	rvalue_array = is_array;
+}
+
 std::string bpp_object_assignment::get_lvalue() const {
 	return lvalue;
 }
@@ -66,6 +70,10 @@ std::shared_ptr<bpp_entity> bpp_object_assignment::get_rvalue_object() const {
 
 bool bpp_object_assignment::is_adding() const {
 	return adding;
+}
+
+bool bpp_object_assignment::rvalue_is_array() const {
+	return rvalue_array;
 }
 
 } // namespace bpp

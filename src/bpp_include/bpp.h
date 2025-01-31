@@ -137,12 +137,11 @@ class bpp_object_assignment : public bpp_string {
 	private:
 		std::string lvalue = "";
 		std::string rvalue = "";
-
 		bool lvalue_nonprimitive = false;
 		bool rvalue_nonprimitive = false;
-
 		std::shared_ptr<bpp_entity> lvalue_object;
 		std::shared_ptr<bpp_entity> rvalue_object;
+		bool adding = false;
 	public:
 		bpp_object_assignment();
 
@@ -152,6 +151,7 @@ class bpp_object_assignment : public bpp_string {
 		void set_rvalue_nonprimitive(bool is_nonprimitive);
 		void set_lvalue_object(std::shared_ptr<bpp_entity> object);
 		void set_rvalue_object(std::shared_ptr<bpp_entity> object);
+		void set_adding(bool is_adding);
 
 		std::string get_lvalue() const;
 		std::string get_rvalue() const;
@@ -159,6 +159,7 @@ class bpp_object_assignment : public bpp_string {
 		bool rvalue_is_nonprimitive() const;
 		std::shared_ptr<bpp_entity> get_lvalue_object() const;
 		std::shared_ptr<bpp_entity> get_rvalue_object() const;
+		bool is_adding() const;
 };
 
 class bpp_object_reference : public bpp_string {

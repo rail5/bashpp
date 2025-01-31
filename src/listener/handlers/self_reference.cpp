@@ -140,6 +140,35 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 		return;
 	}
 
+	// Are we accessing an index of an array?
+	if (ctx->LBRACKET() != nullptr) {
+		// We're accessing an array index
+		// Either:
+		//   1. ctx->AT(1) is set
+		//   2. ctx->BASH_VAR() is set
+		//   3. ctx->NUMBER() is set
+		
+		std::string temporary_variable_lvalue = self_reference_code + "____arrayIndex";
+		std::string temporary_variable_rvalue = "${" + indirection + self_reference_code + "}[";
+
+		if (ctx->AT().size() > 1) {
+			temporary_variable_rvalue += "@";
+		} else if (ctx->BASH_VAR() != nullptr) {
+			temporary_variable_rvalue += ctx->BASH_VAR()->getText();
+		} else if (ctx->NUMBER() != nullptr) {
+			temporary_variable_rvalue += ctx->NUMBER()->getText();
+		} else {
+			entity_stack.pop();
+			throw_syntax_error(ctx->LBRACKET(), "Invalid array index");
+		}
+
+		temporary_variable_rvalue += "]";
+
+		self_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n");
+		self_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
+		self_reference_code = temporary_variable_lvalue;
+	}
+
 	if (last_reference_entity->get_class() == primitive || last_reference_entity == current_class || datamember_is_pointer) {
 		// If the last reference entity is a primitive, simply output the primitive
 		// If last_reference_entity == current_class, then the self-reference is a pointer to the object itself (simply @this)

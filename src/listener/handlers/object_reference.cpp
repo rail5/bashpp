@@ -159,6 +159,35 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 		return;
 	}
 
+	// Are we accessing an index of an array?
+	if (ctx->LBRACKET() != nullptr) {
+		// We're accessing an array index
+		// Either:
+		//   1. ctx->AT(1) is set
+		//   2. ctx->BASH_VAR() is set
+		//   3. ctx->NUMBER() is set
+		
+		std::string temporary_variable_lvalue = object_reference_code + "____arrayIndex";
+		std::string temporary_variable_rvalue = "${" + indirection + object_reference_code + "[";
+
+		if (ctx->AT().size() > 1) {
+			temporary_variable_rvalue += "@";
+		} else if (ctx->BASH_VAR() != nullptr) {
+			temporary_variable_rvalue += ctx->BASH_VAR()->getText();
+		} else if (ctx->NUMBER() != nullptr) {
+			temporary_variable_rvalue += ctx->NUMBER()->getText();
+		} else {
+			entity_stack.pop();
+			throw_syntax_error(ctx->LBRACKET(), "Invalid array index");
+		}
+
+		temporary_variable_rvalue += "]}";
+
+		object_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n");
+		object_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
+		object_reference_code = temporary_variable_lvalue;
+	}
+
 	if (last_reference_type == bpp::reference_type::ref_primitive || datamember_is_pointer) {
 		indirection = created_second_temporary_variable ? "!" : "";
 		object_reference_entity->add_code("${" + indirection + object_reference_code + "}");

@@ -167,8 +167,14 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 		//   2. ctx->BASH_VAR() is set
 		//   3. ctx->NUMBER() is set
 		
+		std::string counting = ctx->POUNDKEY() != nullptr ? "#" : "";
+
+		if (counting == "#" && indirection == "!") {
+			throw internal_error("Count requested and indirection required. I did not prepare for this. FIXME.");
+		}
+
 		std::string temporary_variable_lvalue = object_reference_code + "____arrayIndex";
-		std::string temporary_variable_rvalue = "${" + indirection + object_reference_code + "[";
+		std::string temporary_variable_rvalue = "${" + counting + indirection + object_reference_code + "[";
 
 		if (ctx->AT().size() > 1) {
 			temporary_variable_rvalue += "@";
@@ -189,7 +195,7 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 	}
 
 	if (last_reference_type == bpp::reference_type::ref_primitive || datamember_is_pointer) {
-		indirection = created_second_temporary_variable ? "!" : "";
+		indirection = (created_second_temporary_variable && ctx->POUNDKEY() == nullptr) ? "!" : "";
 		object_reference_entity->add_code("${" + indirection + object_reference_code + "}");
 		return;
 	}

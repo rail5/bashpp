@@ -167,13 +167,28 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 		self_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n");
 		self_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
 		self_reference_code = temporary_variable_lvalue;
+
+		if (ctx->POUNDKEY() != nullptr) {
+			// Getting the length
+			temporary_variable_lvalue = self_reference_code + "____arrayLengthString";
+			temporary_variable_rvalue = "\\${#${" + self_reference_code + "}}";
+			self_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n");
+			self_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
+
+			temporary_variable_lvalue = self_reference_code + "____arrayLength";
+			temporary_variable_rvalue = "${" + self_reference_code + "____arrayLengthString}";
+			self_reference_entity->add_code_to_previous_line("eval \"" + temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\"\n");
+			self_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
+
+			self_reference_code = temporary_variable_lvalue;
+		}
 	}
 
 	if (last_reference_entity->get_class() == primitive || last_reference_entity == current_class || datamember_is_pointer) {
 		// If the last reference entity is a primitive, simply output the primitive
 		// If last_reference_entity == current_class, then the self-reference is a pointer to the object itself (simply @this)
 		// Which is also a primitive, so we follow the same procedure
-		indirection = created_first_temporary_variable ? "!" : "";
+		indirection = (created_first_temporary_variable && ctx->POUNDKEY() == nullptr) ? "!" : "";
 		self_reference_entity->add_code("${" + indirection + self_reference_code + "}");
 		return;
 	}

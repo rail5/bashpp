@@ -115,16 +115,22 @@ class bpp_value_assignment : public bpp_string {
 		bool nonprimitive_assignment = false;
 		std::shared_ptr<bpp_entity> nonprimitive_object;
 		bool lvalue_nonprimitive = false;
+		bool array_assignment = false;
+		bool adding = false;
 	public:
 		bpp_value_assignment();
 
 		void set_nonprimitive_assignment(bool is_nonprimitive);
 		void set_nonprimitive_object(std::shared_ptr<bpp_entity> object);
 		void set_lvalue_nonprimitive(bool is_nonprimitive);
+		void set_array_assignment(bool is_array);
+		void set_adding(bool is_adding);
 
 		bool is_nonprimitive_assignment() const;
 		std::shared_ptr<bpp_entity> get_nonprimitive_object() const;
 		bool lvalue_is_nonprimitive() const;
+		bool is_array_assignment() const;
+		bool is_adding() const;
 };
 
 class bpp_object_assignment : public bpp_string {
@@ -330,16 +336,18 @@ class bpp_datamember : public bpp_object {
 	private:
 		std::string default_value = "";
 		bpp_scope scope = SCOPE_PRIVATE;
+		bool array = false;
 	public:
 		bpp_datamember();
 
 		void set_default_value(std::string default_value);
-		
 		void set_scope(bpp_scope scope);
+		void set_array(bool is_array);
 
 		std::string get_address() const override;
 		std::string get_default_value() const;
 		bpp_scope get_scope() const;
+		bool is_array() const;
 
 		void destroy();
 };

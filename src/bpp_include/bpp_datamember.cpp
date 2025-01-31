@@ -20,6 +20,10 @@ void bpp_datamember::set_scope(bpp_scope scope) {
 	this->scope = scope;
 }
 
+void bpp_datamember::set_array(bool is_array) {
+	array = is_array;
+}
+
 std::string bpp_datamember::get_address() const {
 	return "bpp__" + type->get_name() + "__${__objectName}__" + name;
 }
@@ -30,6 +34,10 @@ std::string bpp_datamember::get_default_value() const {
 
 bpp_scope bpp_datamember::get_scope() const {
 	return scope;
+}
+
+bool bpp_datamember::is_array() const {
+	return array;
 }
 
 void bpp_datamember::destroy() {

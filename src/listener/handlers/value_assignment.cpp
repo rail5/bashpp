@@ -57,6 +57,11 @@ void BashppListener::exitValue_assignment(BashppParser::Value_assignmentContext 
 		current_datamember->set_default_value(value_assignment_entity->get_code());
 		current_datamember->set_pre_access_code(value_assignment_entity->get_pre_code());
 		current_datamember->set_post_access_code(value_assignment_entity->get_post_code());
+
+		// Check if this is an array assignment
+		if (value_assignment_entity->is_array_assignment()) {
+			current_datamember->set_array(true);
+		}
 		return;
 	}
 

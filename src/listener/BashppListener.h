@@ -258,6 +258,9 @@ class BashppListener : public BashppParserBaseListener {
 	void enterRaw_rvalue(BashppParser::Raw_rvalueContext *ctx) override;
 	void exitRaw_rvalue(BashppParser::Raw_rvalueContext *ctx) override;
 
+	void enterArray_value(BashppParser::Array_valueContext *ctx) override;
+	void exitArray_value(BashppParser::Array_valueContext *ctx) override;
+
 	void enterTypecast(BashppParser::TypecastContext *ctx) override;
 	void exitTypecast(BashppParser::TypecastContext *ctx) override;
 

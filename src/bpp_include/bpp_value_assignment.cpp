@@ -24,6 +24,14 @@ void bpp_value_assignment::set_lvalue_nonprimitive(bool is_nonprimitive) {
 	lvalue_nonprimitive = is_nonprimitive;
 }
 
+void bpp_value_assignment::set_array_assignment(bool is_array) {
+	array_assignment = is_array;
+}
+
+void bpp_value_assignment::set_adding(bool is_adding) {
+	adding = is_adding;
+}
+
 bool bpp_value_assignment::is_nonprimitive_assignment() const {
 	return nonprimitive_assignment;
 }
@@ -34,6 +42,14 @@ std::shared_ptr<bpp_entity> bpp_value_assignment::get_nonprimitive_object() cons
 
 bool bpp_value_assignment::lvalue_is_nonprimitive() const {
 	return lvalue_nonprimitive;
+}
+
+bool bpp_value_assignment::is_array_assignment() const {
+	return array_assignment;
+}
+
+bool bpp_value_assignment::is_adding() const {
+	return adding;
 }
 
 } // namespace bpp

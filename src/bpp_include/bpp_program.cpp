@@ -54,9 +54,14 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	for (auto& dm : class_->get_datamembers()) {
 		assignments += dm->get_pre_access_code() + "\n";
 		if (dm->get_class()->get_name() == "primitive") {
-			assignments += "	local __objAssignment=" + dm->get_default_value() + "\n";
-			assignments += "	eval \"${__objectAddress}__" + dm->get_name() + "=\\$__objAssignment\"\n";
-			assignments += "	unset __objAssignment\n";
+			// Is it an array?
+			if (dm->is_array()) {
+				assignments += "	eval \"${__objectAddress}__" + dm->get_name() + "=" + dm->get_default_value() + "\"\n";
+			} else {
+				assignments += "	local __objAssignment=" + dm->get_default_value() + "\n";
+				assignments += "	eval \"${__objectAddress}__" + dm->get_name() + "=\\$__objAssignment\"\n";
+				assignments += "	unset __objAssignment\n";
+			}
 		} else if (dm->is_pointer()) {
 			std::string default_value = dm->get_default_value();
 			std::string default_value_preface = "";

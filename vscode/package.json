@@ -1,0 +1,30 @@
+{
+  "name": "bashpp",
+  "displayName": "Bash++",
+  "description": "Syntax highlighting for Bash++",
+  "version": "0.0.1",
+  "publisher": "Andrew S. Rightenburg",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rail5/bashpp.git"
+    },
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "bashpp",
+      "aliases": ["Bash++ Script", "bashpp"],
+      "extensions": [".bpp"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "bashpp",
+      "scopeName": "source.bashpp",
+      "path": "./syntaxes/bashpp.tmLanguage.json"
+    }]
+  }
+}

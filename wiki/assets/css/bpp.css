@@ -1,0 +1,39 @@
+.source\.bashpp {
+	color: #CCCCCC;
+}
+
+.comment\.line\.number-sign\.shell, .comment\.line\.shebang\.shell {
+	color: #6A9955;
+}
+
+.storage\.type\.bashpp, .storage\.modifier\.bashpp, .keyword\.other\.bashpp, .punctuation\.definition\.logical-expression\.shell {
+	color: #569CD6;
+}
+
+.entity\.name\.type\.class\.bashpp, .entity\.name\.type\.parentclass\.bashpp {
+	color: #4EC9B0;
+}
+
+.entity\.name\.function\.method\.bashpp {
+	color: #DCDCAA;
+}
+
+.string\.quoted\.double\.shell, .string\.quoted\.single\.shell, .string\.interpolated\.supershell, .string\.interpolated\.dollar\.shell {
+	color: #CE9178;
+}
+
+.variable\.other\.bashpp, .variable\.parameter\.bashpp, .variable\.other\.bracket\.bashpp, .variable\.other\.normal\.shell, .variable\.other\.positional\.shell, .variable\.other\.special\.shell, .variable\.other\.bracket\.shell {
+	color: #9CDCFE;
+}
+
+.support\.function\.builtin\.shell {
+	color: #DCDCAA;
+}
+
+.variable\.other\.normal\.bashpp {
+	color: #9CDCFE;
+}
+
+.keyword\.control\.shell {
+	color: #C586C0;
+}

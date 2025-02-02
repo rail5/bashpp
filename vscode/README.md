@@ -2,7 +2,7 @@
 
 This extension provides basic syntax highlighting for Bash++ files.
 
-## Building
+## Building from source
 
 First, you need to install `npm`, `node` and `vsce`.
 

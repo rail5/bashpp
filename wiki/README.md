@@ -2,9 +2,9 @@
 
 > Bash with classes
 
-<div>
+<div class="highlight"><pre class="highlight"><code>
 {%- include code/snippets/example.html -%}
-</div>
+</code></pre></div>
 
 ## Documentation
 

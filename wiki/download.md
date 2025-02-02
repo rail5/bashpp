@@ -14,4 +14,4 @@ You can check the progress of its development on the [GitHub repository](https:/
 
 The Bash++ extension for Visual Studio Code provides basic syntax highlighting.
 
-You can download it from [GitHub](https://github.com/rail5/bashpp/releases/download/v0.0.1/bashpp-0.0.1.vsix).
+You can download it from [GitHub](https://github.com/rail5/bashpp/releases/download/v0.0.2/bashpp-0.0.2.vsix).

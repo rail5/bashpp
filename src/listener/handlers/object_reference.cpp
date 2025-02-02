@@ -27,7 +27,7 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw_syntax_error_from_exitRule(ctx->IDENTIFIER(0), "Object reference outside of code entity");
+		throw_syntax_error(ctx->IDENTIFIER(0), "Object reference outside of code entity");
 	}
 
 	std::shared_ptr<bpp::bpp_class> current_class = current_code_entity->get_containing_class().lock();

@@ -3,7 +3,7 @@
   "displayName": "Bash++",
   "description": "Syntax highlighting for Bash++",
   "version": "0.0.1",
-  "publisher": "Andrew S. Rightenburg",
+  "publisher": "rail5",
   "repository": {
     "type": "git",
     "url": "https://github.com/rail5/bashpp.git"

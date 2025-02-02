@@ -36,7 +36,7 @@ To distinguish between the two, Bash++ uses the `@` symbol to denote objects. Fo
 Classes are declared in Bash++ using the `@class` keyword. The class definition can contain data members, methods, and constructors/destructors.
 
 <div>
-\{%- include code/snippets/classes-overview.html -%\}
+{%- include code/snippets/classes-overview.html -%}
 </div>
 
 ## But what if I want to use the `@` symbol for something else?
@@ -44,13 +44,13 @@ Classes are declared in Bash++ using the `@class` keyword. The class definition 
 You can simply *escape* the `@` symbol using a backslash:
 
 <div>
-\{%- include code/snippets/email-1.html -%\}
+{%- include code/snippets/email-1.html -%}
 </div>
 
 Or you can enclose it in *single-quotes*. As in Bash, single-quotes prevent the shell from interpreting the enclosed text, and we'll pass it through verbatim:
 
 <div>
-\{%- include code/snippets/email-2.html -%\}
+{%- include code/snippets/email-2.html -%}
 </div>
 
 # Data Members
@@ -62,7 +62,7 @@ Data members may be given default values, as shown in the example above. If no d
 A class can also contain *non-primitive* data members -- that is, objects.
 
 <div>
-\{%- include code/snippets/datamembers-example.html -%\}
+{%- include code/snippets/datamembers-example.html -%}
 </div>
 
 Bash++ does not support nested classes.
@@ -70,7 +70,7 @@ Bash++ does not support nested classes.
 We can access the data members of an object using the `@` symbol and the familiar `.` notation:
 
 <div>
-\{%- include code/snippets/datamembers-access.html -%\}
+{%- include code/snippets/datamembers-access.html -%}
 </div>
 
 # Methods
@@ -80,25 +80,25 @@ Methods are the functions associated with the class; they're declared using the 
 Methods can also take arguments:
 
 <div>
-\{%- include code/snippets/methods-example.html -%\}
+{%- include code/snippets/methods-example.html -%}
 </div>
 
 Further, methods can accept non-primitive objects as arguments:
 
 <div>
-\{%- include code/snippets/methods-nonprimitive-arguments-example.html -%\}
+{%- include code/snippets/methods-nonprimitive-arguments-example.html -%}
 </div>
 
 Like in ordinary Bash functions, these arguments can also be accessed using `$1`, `$2`, etc.:
 
 <div>
-\{%- include code/snippets/methods-accessing-arguments-by-positional-variables.html -%\}
+{%- include code/snippets/methods-accessing-arguments-by-positional-variables.html -%}
 </div>
 
 If a method is declared as `@virtual`, it can be overridden in derived classes. If a method is not declared as `@virtual`, it cannot be overridden.
 
 <div>
-\{%- include code/snippets/method-overriding-example.html -%\}
+{%- include code/snippets/method-overriding-example.html -%}
 </div>
 
 Bash++ does not support method overloading. Each method must have a unique name.
@@ -108,7 +108,7 @@ Bash++ does not support method overloading. Each method must have a unique name.
 Classes can have constructors and destructors, which are special methods that are called when an object is created and destroyed, respectively. Constructors are declared using the `@constructor` keyword, and destructors are declared using the `@destructor` keyword.
 
 <div>
-\{%- include code/snippets/constructors-destructors-example.html -%\}
+{%- include code/snippets/constructors-destructors-example.html -%}
 </div>
 
 An object's constructor will be called as soon as it is initialized.
@@ -120,7 +120,7 @@ An object's destructor will be called if:
  - The object is explicitly destroyed using the `@delete` keyword
 
 <div>
-\{%- include code/snippets/destructor-example-2.html -%\}
+{%- include code/snippets/destructor-example-2.html -%}
 </div>
 
 # "toPrimitive" Object Casting
@@ -128,7 +128,7 @@ An object's destructor will be called if:
 In Bash++, every class has a method called `toPrimitive` that returns a string representation of the object. This method is called automatically when an object is used in a context where a primitive is expected.
 
 <div>
-\{%- include code/snippets/toprimitive-example.html -%\}
+{%- include code/snippets/toprimitive-example.html -%}
 </div>
 
 In the above example, the *default* `toPrimitive` method is used, and the script will output: `Object: MyClass Instance`.
@@ -136,7 +136,7 @@ In the above example, the *default* `toPrimitive` method is used, and the script
 You can define a custom `toPrimitive` method for your class to return a more meaningful string representation:
 
 <div>
-\{%- include code/snippets/custom-toprimitive-example.html -%\}
+{%- include code/snippets/custom-toprimitive-example.html -%}
 </div>
 
 In this case, the script will output: `Object: MyClass instance with data member: Hello, world!`.
@@ -148,19 +148,19 @@ When referencing an object, you use the `@` symbol followed by the object's name
 To reference an object's data member or method, you use the `@` symbol followed by the object's name, a dot (`.`), and the data member or method name.
 
 <div>
-\{%- include code/snippets/object-reference-example.html -%\}
+{%- include code/snippets/object-reference-example.html -%}
 </div>
 
 There may be ambiguity when using the `@` symbol in a string. To avoid this, you can use the `@{}` syntax to explicitly reference an object. This is similar to the `${}` syntax used in Bash to reference variables in situations where there may be ambiguity. For example, suppose we want to echo the data member of an object:
 
 <div>
-\{%- include code/snippets/object-reference-ambiguity-1.html -%\}
+{%- include code/snippets/object-reference-ambiguity-1.html -%}
 </div>
 
 This will unambiguously reference `dataMember` belonging to `myObject`. However, suppose what we *really* wanted to do was print the result of `myObject.toPrimitive` followed by the **string** `.dataMember`. We can use the `@{}` syntax to do this:
 
 <div>
-\{%- include code/snippets/object-reference-ambiguity-2.html -%\}
+{%- include code/snippets/object-reference-ambiguity-2.html -%}
 </div>
 
 Here, we used the `@{}` syntax to explicitly reference `myObject` as an object, without interpreting the characters that followed it as part of the object reference.
@@ -172,7 +172,7 @@ This is identical to the `${}` syntax used in Bash to reference variables in sit
 The `@this` keyword is used to refer to the current object within a method. It is similar to the `this` keyword in other object-oriented languages.
 
 <div>
-\{%- include code/snippets/this-example.html -%\}
+{%- include code/snippets/this-example.html -%}
 </div>
 
 # Inheritance
@@ -180,7 +180,7 @@ The `@this` keyword is used to refer to the current object within a method. It i
 Bash++ supports single inheritance. A class can inherit from another class using the following syntax:
 
 <div>
-\{%- include code/snippets/inheritance-example.html -%\}
+{%- include code/snippets/inheritance-example.html -%}
 </div>
 
 In this example, `DerivedClass` inherits from `BaseClass`. The derived class has access to the data members and methods of the base class. If a method is declared `@virtual`, it can be overridden in the derived class. If a method is not declared `@virtual`, it cannot be overridden.
@@ -190,7 +190,7 @@ In this example, `DerivedClass` inherits from `BaseClass`. The derived class has
 Bash++ supports explicit object casting using the `@cast` keyword. This allows you to cast an object to a different class.
 
 <div>
-\{%- include code/snippets/object-casting-example.html -%\}
+{%- include code/snippets/object-casting-example.html -%}
 </div>
 
 The `@cast` keyword does not perform any type checking. It simply changes the type of the object. If the cast is invalid, the object will be in an invalid state, but the compiler will not throw an error.
@@ -198,7 +198,7 @@ The `@cast` keyword does not perform any type checking. It simply changes the ty
 For *slightly* more careful casting, you can use the `@upcast` or `@downcast` keywords. `@upcast` will cast an object to a base class, while `@downcast` will cast an object to a derived class. If the cast is invalid, the compiler will throw an error.
 
 <div>
-\{%- include code/snippets/upcast-downcast-example.html -%\}
+{%- include code/snippets/upcast-downcast-example.html -%}
 </div>
 
 An `@upcast` will perform a compile-time check to verify that we're casting *up* the inheritance hierarchy. A `@downcast` will perform a similar check to verify that we're casting *down* the inheritance hierarchy. If the cast is invalid, the compiler will throw an error.
@@ -206,7 +206,7 @@ An `@upcast` will perform a compile-time check to verify that we're casting *up*
 You can also cast pointers:
 
 <div>
-\{%- include code/snippets/pointer-casting-example.html -%\}
+{%- include code/snippets/pointer-casting-example.html -%}
 </div>
 
 # Pointers
@@ -214,7 +214,7 @@ You can also cast pointers:
 Bash++ supports pointers to objects. A pointer is a reference to an object, rather than the object itself. Pointers are declared using the familiar C-style `*` syntax:
 
 <div>
-\{%- include code/snippets/pointers-example.html -%\}
+{%- include code/snippets/pointers-example.html -%}
 </div>
 
 In the above example, `myPointer` is a pointer to an object of type `MyClass`. It is initially set to nothing at all (`@nullptr`). The pointer is then assigned to `myObject`. Afterwards, a new object is created using the `@new` keyword, and a pointer to it is stored in `myObject2`.
@@ -222,7 +222,7 @@ In the above example, `myPointer` is a pointer to an object of type `MyClass`. I
 We can access the data members of a pointer using exactly the same syntax as we would for an object:
 
 <div>
-\{%- include code/snippets/object-reference-via-pointer.html -%\}
+{%- include code/snippets/object-reference-via-pointer.html -%}
 </div>
 
 We don't have to use the spooky `->` operator from C++. Just use the familiar `.` notation.
@@ -236,13 +236,13 @@ Since Bash++ compiles to Bash, we don't have direct, unadulterated access to mem
 Bash++ keeps track of objects internally by assigning values to variables with special names. For example, the following:
 
 <div>
-\{%- include code/snippets/how-objects-are-stored-1.html -%\}
+{%- include code/snippets/how-objects-are-stored-1.html -%}
 </div>
 
 Might be internally represented as:
 
 <div>
-\{%- include code/snippets/how-objects-are-stored-2.html -%\}
+{%- include code/snippets/how-objects-are-stored-2.html -%}
 </div>
 
 When we create a pointer to an object, or ask about this object's "address," we're really just getting the *prefix* of the variable names that represent the object. In the above case, the address given by `&@myObject` would be `bpp__MyClass__myObject`.
@@ -254,7 +254,7 @@ We mentioned at the beginning of this document that identifiers cannot contain t
 Because pointers are primitives, using a pointer in a context where a primitive would be expected will not call the `toPrimitive` method automatically, but will simply return the pointer. However, we can still call the `toPrimitive` method explicitly:
 
 <div>
-\{%- include code/snippets/pointers-and-toprimitive.html -%\}
+{%- include code/snippets/pointers-and-toprimitive.html -%}
 </div>
 
 ## `@new` and `@delete`
@@ -262,7 +262,7 @@ Because pointers are primitives, using a pointer in a context where a primitive 
 The `@new` keyword is used to create a new object and return a pointer to it. The `@delete` keyword is used to destroy an object and set the pointer to `@nullptr`.
 
 <div>
-\{%- include code/snippets/new-and-delete.html -%\}
+{%- include code/snippets/new-and-delete.html -%}
 </div>
 
 An object's destructor will be called when it is deleted.
@@ -270,7 +270,7 @@ An object's destructor will be called when it is deleted.
 We can also declare pointers as data members of a class:
 
 <div>
-\{%- include code/snippets/pointers-as-datamembers.html -%\}
+{%- include code/snippets/pointers-as-datamembers.html -%}
 </div>
 
 A class's destructor will not automatically delete its pointer data members. If you want to delete a pointer data member, you must do so explicitly. If, however, a class contains non-primitive data members (which are not pointers), they will be automatically deleted when the object is destroyed.
@@ -278,7 +278,7 @@ A class's destructor will not automatically delete its pointer data members. If 
 All pointers are set to `@nullptr` by default until otherwise specified. For example:
 
 <div>
-\{%- include code/snippets/nullptr.html -%\}
+{%- include code/snippets/nullptr.html -%}
 </div>
 
 When writing `@new {some class}`, or `@delete {some object/pointer}`, the identifier which follows the `@new` or `@delete` keyword must be a class name or an object/pointer, respectively. It can be optionally preceded by an `@` symbol, but this is not required. `@new @MyClass` and `@new MyClass` are equivalent. `@delete @myObject` and `@delete myObject` are equivalent.
@@ -296,7 +296,7 @@ If a pointer is declared without being assigned a value, it is automatically set
 The `@include` directive is used to include the contents of another Bash++ script in the current file. This is useful for splitting code into multiple files for better organization and reusability.
 
 <div>
-\{%- include code/snippets/include-example.html -%\}
+{%- include code/snippets/include-example.html -%}
 </div>
 
 The `@include` directive is processed at compile time, and the contents of the included file are inserted into the current file before compilation.
@@ -304,7 +304,7 @@ The `@include` directive is processed at compile time, and the contents of the i
 Note that you can still include regular Bash scripts in a Bash++ script using the `source` command (or `.`):
 
 <div>
-\{%- include code/snippets/source.html -%\}
+{%- include code/snippets/source.html -%}
 </div>
 
 However, scripts included with `source` or `.` will not be processed by the Bash++ compiler and will not have access to Bash++ features.
@@ -312,7 +312,7 @@ However, scripts included with `source` or `.` will not be processed by the Bash
 You can also use the `@include_once` directive to ensure that a file is included only once. This can be useful if you have multiple files that include the same file.
 
 <div>
-\{%- include code/snippets/include-once-example.html -%\}
+{%- include code/snippets/include-once-example.html -%}
 </div>
 
 # Supershells
@@ -322,13 +322,13 @@ Ordinary Bash supports a construct called a "subshell," which is created by encl
 Subshells are generally useful when you want to run a command in a separate environment or when you want to isolate changes to the environment. But, another common use for subshells is simply to store the output of a command in a variable:
 
 <div>
-\{%- include code/snippets/subshells.html -%\}
+{%- include code/snippets/subshells.html -%}
 </div>
 
 This is perfectly reasonable. However, with Bash++ methods, we may like to store the output of a method in a variable, while also *allowing* the method to make changes to the environment. This is where the "supershell" comes in.
 
 <div>
-\{%- include code/snippets/supershells.html -%\}
+{%- include code/snippets/supershells.html -%}
 </div>
 
 As you can see from the above, the syntax is very similar. The only difference is the use of the `@` symbol instead of the `$`. This allows us to store the output of a command, function, or method into a variable, while also preserving changes that that command, function, or method makes to the environment.
@@ -336,19 +336,19 @@ As you can see from the above, the syntax is very similar. The only difference i
 By default, calling an object's method in a context where a primitive is expected will run the method inside of a supershell. For example:
 
 <div>
-\{%- include code/snippets/supershells-as-default.html -%\}
+{%- include code/snippets/supershells-as-default.html -%}
 </div>
 
 The above will run `@myObject.myMethod` in a *supershell*, allowing it to make changes to the environment. The output of the method will be stored in `command_output`, and the value of `dataMember` will be changed to "New value."
 
 <div>
-\{%- include code/snippets/supershells-as-default-2.html -%\}
+{%- include code/snippets/supershells-as-default-2.html -%}
 </div>
 
 If, by contrast, we were to run the method in an ordinary *subshell*:
 
 <div>
-\{%- include code/snippets/subshells-2.html -%\}
+{%- include code/snippets/subshells-2.html -%}
 </div>
 
 The output of the command would be stored, but `@myObject.dataMember` would not be changed.
@@ -356,13 +356,13 @@ The output of the command would be stored, but `@myObject.dataMember` would not 
 You can also run ordinary commands and Bash functions in supershells, allowing them to make changes to the environment as well. For example:
 
 <div>
-\{%- include code/snippets/supershells-ordinary-bash-functions.html -%\}
+{%- include code/snippets/supershells-ordinary-bash-functions.html -%}
 </div>
 
 If you would like to isolate an object's method from the surrounding environment, you can still call it within a subshell:
 
 <div>
-\{%- include code/snippets/object-method-within-a-subshell.html -%\}
+{%- include code/snippets/object-method-within-a-subshell.html -%}
 </div>
 
 Supershells *do not* run in an isolated environment or separate shell. They run in the same shell as the surrounding code -- their output is simply captured and stored rather than printed.
@@ -370,5 +370,5 @@ Supershells *do not* run in an isolated environment or separate shell. They run 
 You can also run a command in a supershell without storing its output in a variable:
 
 <div>
-\{%- include code/snippets/supershells-without-permanent-storage.html -%\}
+{%- include code/snippets/supershells-without-permanent-storage.html -%}
 </div>

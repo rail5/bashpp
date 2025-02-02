@@ -5,10 +5,6 @@ all: clean-src clean-main update-version update-year
 	cd src && make
 	mv src/bpp bin/bpp
 
-sll: clean-src
-	cd src && make sll
-	mv src/bpp-sll bin/bpp-sll
-
 parser: clean-parser
 	cd src && make parser
 	mv src/BashppParser bin/BashppParser
@@ -43,9 +39,6 @@ clean-src:
 
 clean-main:
 	rm -f bin/bpp
-
-clean-sll:
-	rm -f bin/bpp-sll
 
 clean-parser:
 	rm -f bin/BashppParser

@@ -188,15 +188,52 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 				throw internal_error("Count requested and indirection required. I did not prepare for this. FIXME.");
 			}
 
+			/**
+			 * Suppose we have an 'object' with a datamember 'array' which is an array of primitives
+			 * Accessing index 'i' of that array would, in Bash++, take the form:
+			 * 		@object.array[$i]
+			 * And the compiled code's version of the reference:
+			 * 		${bpp__objectClass__object__array[$i]}
+			 * 
+			 * Suppose however that 'object' has a non-primitive datamember 'inner' which has a datamember 'array' which is an array of primitives
+			 * (In this case, we're nesting -- the array is not a datamember of 'object', but of 'object.inner')
+			 * Accessing index 'i' of that array would, in Bash++, take the form:
+			 * 		@object.inner.array[$i]
+			 * But the compiled code's version of the reference would have to take a slightly different form,
+			 * Since we have to dereference the pointer to 'inner' before we can access 'array':
+			 * 		bpp__objectClass__object__inner__array=${bpp__objectClass__object__inner}__array
+			 * This "bpp__objectClass__object__inner__array" evaluates to a STRING which is the variable name where the array is actually stored
+			 * We then have to evaluate that string to get the actual values stored in the array:
+			 * 		bpp__objectClass__object__inner__arrayString="${bpp__objectClass__object__inner__array}[${i}]"
+			 * 			# This first line gives us a string such as "actual_array_variable_name[$i]"
+			 * 			# This string is not a variable reference, but a string which represents the variable reference
+			 * 		eval bpp__objectClass__object__inner__arrayIndex="\${${bpp__objectClass__object__inner__arrayString}"}"
+			 * 			# This second line gives us the actual value stored in the array at index 'i'
+			 * 
+			 * So, we have to follow a different procedure based on whether or not we have to dereference a pointer
+			 * 
+			 * To make this code less disgraceful, at some point, object references should be re-worked altogether
+			 * In the meantime, we can do a HACKY fix by checking the size of the IDENTIFIER list
+			 * If it's greater than 2, we're guaranteed to have to dereference a pointer
+			 * If it's not, we're guaranteed not to have to dereference a pointer
+			 * 
+			 * TODO(@rail5): Fix this. Really just fix object references from the ground-up
+			 */
+
+			bool have_to_dereference_a_pointer = ctx->IDENTIFIER().size() > 2;
+
 			std::string temporary_variable_lvalue = object_reference_code + "____arrayIndexString";
-			std::string temporary_variable_rvalue = counting + "${" + indirection + object_reference_code + "}[";
-			temporary_variable_rvalue += object_reference_entity->get_array_index();
-			temporary_variable_rvalue += "]";
+			std::string temporary_variable_rvalue;
+
+			if (have_to_dereference_a_pointer) {
+				temporary_variable_rvalue = counting + "${" + object_reference_code + "}[" + object_reference_entity->get_array_index() + "]";
+			} else {
+				temporary_variable_rvalue = counting + "${" + indirection + object_reference_code + "[" + object_reference_entity->get_array_index() + "]}";
+			}
 
 			object_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n");
 			object_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
 
-			temporary_variable_lvalue = object_reference_code + "____arrayIndex";
 			temporary_variable_rvalue = "${" + object_reference_code + "____arrayIndexString}";
 
 			// If we're counting, we need to add another small layer of abstraction
@@ -209,8 +246,11 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 				temporary_variable_rvalue = "\\${" + temporary_variable_rvalue + "}";
 			}
 
-			object_reference_entity->add_code_to_previous_line("eval " + temporary_variable_lvalue + "=\"" + temporary_variable_rvalue + "\"\n");
-			object_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
+			if (have_to_dereference_a_pointer) {
+				temporary_variable_lvalue = object_reference_code + "____arrayIndex";
+				object_reference_entity->add_code_to_previous_line("eval " + temporary_variable_lvalue + "=\"" + temporary_variable_rvalue + "\"\n");
+				object_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
+			}
 
 			object_reference_code = temporary_variable_lvalue;
 		}

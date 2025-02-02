@@ -33,6 +33,18 @@ jobs:
         uses: actions/checkout@v3
         with:
           lfs: true
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+      - name: Install Node.js dependencies
+        run: |
+          cd wiki/_includes/code
+          npm install vscode-textmate vscode-oniguruma
+      - name: Run Node.js Code Highlighter
+        run: |
+          cd wiki/_includes/code
+          node colorize.js snippets/example.bpp
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Build with Jekyll

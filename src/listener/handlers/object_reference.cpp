@@ -184,10 +184,6 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 
 			std::string counting = ctx->POUNDKEY() != nullptr ? "#" : "";
 
-			if (counting == "#" && indirection == "!") {
-				throw internal_error("Count requested and indirection required. I did not prepare for this. FIXME.");
-			}
-
 			/**
 			 * Suppose we have an 'object' with a datamember 'array' which is an array of primitives
 			 * Accessing index 'i' of that array would, in Bash++, take the form:
@@ -228,7 +224,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 			if (have_to_dereference_a_pointer) {
 				temporary_variable_rvalue = counting + "${" + object_reference_code + "}[" + object_reference_entity->get_array_index() + "]";
 			} else {
-				temporary_variable_rvalue = counting + "${" + indirection + object_reference_code + "[" + object_reference_entity->get_array_index() + "]}";
+				temporary_variable_rvalue = "${" + counting + indirection + object_reference_code + "[" + object_reference_entity->get_array_index() + "]}";
 			}
 
 			object_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n");

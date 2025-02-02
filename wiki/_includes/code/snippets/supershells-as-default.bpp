@@ -1,0 +1,11 @@
+@class MyClass {
+	@public dataMember="Default value"
+	@public @method myMethod {
+		@this.dataMember="New value"
+		echo "Hello from myMethod"
+	}
+}
+
+@MyClass myObject
+command_output="@myObject.myMethod"
+echo "$command_output"

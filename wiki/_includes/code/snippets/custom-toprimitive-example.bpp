@@ -1,0 +1,11 @@
+@class MyClass {
+	@public dataMember="Hello, world!"
+
+	@public @method toPrimitive {
+		echo "MyClass instance with data member: @this.dataMember"
+	}
+}
+
+@MyClass myObject
+
+echo "Object: @myObject" # Calls myObject.toPrimitive

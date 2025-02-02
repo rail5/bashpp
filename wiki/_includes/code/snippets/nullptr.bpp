@@ -1,0 +1,3 @@
+@MyClass* myPointer1
+@MyClass* myPointer2=@nullptr # Same result as above
+@MyClass* myPointer3=@new @MyClass # Not @nullptr

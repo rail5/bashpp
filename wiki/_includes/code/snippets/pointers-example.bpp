@@ -1,0 +1,9 @@
+@class MyClass {
+	@public dataMember="Hello, world!"
+}
+
+@MyClass myObject
+@MyClass* myPointer # Empty pointer
+@myPointer=&@myObject # Assign pointer to object
+
+@MyClass myObject2=@new @MyClass

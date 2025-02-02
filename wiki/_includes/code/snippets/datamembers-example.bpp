@@ -1,0 +1,8 @@
+@class Object {
+	@public dataMember
+}
+
+@class MyClass {
+	@public primitiveDataMember
+	@public @Object nonPrimitiveDataMember
+}

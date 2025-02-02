@@ -1,0 +1,3 @@
+@MyClass myObject
+@myObject.dataMember="Hello, world!"
+echo "@myObject.dataMember"

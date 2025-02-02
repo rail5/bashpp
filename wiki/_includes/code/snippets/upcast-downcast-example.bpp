@@ -1,0 +1,11 @@
+@class BaseClass {
+	@public dataMember="Hello, world!"
+}
+
+@class DerivedClass : BaseClass {
+	@public derivedDataMember="Goodbye, world!"
+}
+
+@BaseClass myBaseObject
+@DerivedClass myDerivedObject=@downcast(DerivedClass) @myBaseObject
+@BaseClass myBaseObject2=@upcast(BaseClass) @myDerivedObject

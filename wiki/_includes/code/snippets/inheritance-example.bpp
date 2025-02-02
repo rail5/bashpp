@@ -1,0 +1,15 @@
+@class BaseClass {
+	@public baseDataMember="Hello, world!"
+
+	@virtual @public @method someMethod {
+		echo "Hello from the base class!"
+	}
+}
+
+@class DerivedClass : BaseClass {
+	@public derivedDataMember="Hello, world!"
+
+	@public @method someMethod {
+		echo "Hello from the derived class!"
+	}
+}

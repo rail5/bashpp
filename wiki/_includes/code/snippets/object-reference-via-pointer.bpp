@@ -1,0 +1,2 @@
+@myPointer.dataMember="Hello, world!"
+echo "@myPointer.dataMember"

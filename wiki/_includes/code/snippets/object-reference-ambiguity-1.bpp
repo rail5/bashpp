@@ -1,0 +1,9 @@
+@class MyClass {
+	@public dataMember="Data Member"
+	@public @method toPrimitive {
+		echo "object"
+	}
+}
+
+@MyClass myObject
+echo "@myObject.dataMember" # Prints "Data Member"

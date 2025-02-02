@@ -1,0 +1,8 @@
+@class MyClass {
+	@public dataMember="Hello, world!"
+	# No custom toPrimitive method is defined here
+}
+
+@MyClass myObject
+
+echo "Object: @myObject" # Calls myObject.toPrimitive

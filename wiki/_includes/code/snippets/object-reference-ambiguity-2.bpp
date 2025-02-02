@@ -1,0 +1,1 @@
+echo "@{myObject}.dataMember" # Prints "object.dataMember"

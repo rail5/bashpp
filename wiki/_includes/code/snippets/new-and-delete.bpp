@@ -1,0 +1,7 @@
+@class MyClass {
+	@public dataMember="Hello, world!"
+}
+
+@MyClass* myPointer=@new @MyClass
+
+@delete myPointer

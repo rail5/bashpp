@@ -1,0 +1,7 @@
+@class MyClass {
+	@public dataMember="Hello, world!"
+
+	@public @method myMethod {
+		echo "Data member: @this.dataMember"
+	}
+}

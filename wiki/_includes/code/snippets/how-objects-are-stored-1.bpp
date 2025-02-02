@@ -1,0 +1,6 @@
+@class MyClass {
+	@public dataMember="Hello, world!"
+	@public anotherDataMember="Goodbye, world!"
+}
+
+@MyClass myObject

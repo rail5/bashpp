@@ -1,0 +1,15 @@
+@class MyClass {
+	@public @method myMethod {
+		echo "Hello from myMethod"
+	}
+
+	@public @method myMethodWithArgs arg1 arg2 {
+		echo "Hello from myMethodWithArgs"
+		echo "Argument 1: $arg1"
+		echo "Argument 2: $arg2"
+	}
+}
+
+@MyClass myObject
+@myObject.myMethod
+@myObject.myMethodWithArgs "Hello" "World"

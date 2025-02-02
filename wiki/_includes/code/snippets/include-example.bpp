@@ -1,0 +1,2 @@
+@include "file1.bpp" # Same working directory
+@include "/path/to/file.bpp" # Absolute path

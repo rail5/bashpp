@@ -1,0 +1,11 @@
+@class BaseClass {
+	@virtual @public @method someMethod {
+		echo "Hello from the base class!"
+	}
+}
+
+@class DerivedClass : BaseClass {
+	@public @method someMethod {
+		echo "Hello from the derived class!"
+	}
+}

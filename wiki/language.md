@@ -43,15 +43,15 @@ Classes are declared in Bash++ using the `@class` keyword. The class definition 
 
 You can simply *escape* the `@` symbol using a backslash:
 
-```bash
-echo "email\@address.com"
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/email-1.html -%}
+</code></pre></div>
 
 Or you can enclose it in *single-quotes*. As in Bash, single-quotes prevent the shell from interpreting the enclosed text, and we'll pass it through verbatim:
 
-```bash
-echo 'email@address.com'
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/email-2.html -%}
+</code></pre></div>
 
 # Data Members
 
@@ -61,30 +61,17 @@ Data members may be given default values, as shown in the example above. If no d
 
 A class can also contain *non-primitive* data members -- that is, objects.
 
-```bash
-@class Object {
-	@public dataMember
-}
-
-@class MyClass {
-	@public primitiveDataMember
-	@public @Object nonPrimitiveDataMember
-}
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/datamembers-example.html -%}
+</code></pre></div>
 
 Bash++ does not support nested classes.
 
 We can access the data members of an object using the `@` symbol and the familiar `.` notation:
 
-```bash
-@MyClass myObject
-
-@myObject.primitiveDataMember="Hello, world!"
-echo "@myObject.primitiveDataMember"
-
-@myObject.nonPrimitiveDataMember.dataMember="Hello, world!"
-echo "@myObject.nonPrimitiveDataMember.dataMember"
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/datamembers-access.html -%}
+</code></pre></div>
 
 # Methods
 
@@ -92,72 +79,27 @@ Methods are the functions associated with the class; they're declared using the 
 
 Methods can also take arguments:
 
-```bash
-@class MyClass {
-	@public @method myMethod {
-		echo "Hello from myMethod"
-	}
-
-	@public @method myMethodWithArgs arg1 arg2 {
-		echo "Hello from myMethodWithArgs"
-		echo "Argument 1: $arg1"
-		echo "Argument 2: $arg2"
-	}
-}
-
-@MyClass myObject
-@myObject.myMethod
-@myObject.myMethodWithArgs "Hello" "World"
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/methods-example.html -%}
+</code></pre></div>
 
 Further, methods can accept non-primitive objects as arguments:
 
-```bash
-@class Object {
-	@public dataMember
-}
-
-@class MyClass {
-	@public @method myMethodWithObject @Object obj {
-		echo "Hello from myMethodWithObject"
-		echo "Object data member: @obj.dataMember"
-	}
-}
-
-@Object myObject
-@myObject.dataMember="Hello, world!"
-@MyClass myClassObject
-@myClassObject.myMethodWithObject @myObject # Pass myObject as an argument
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/methods-nonprimitive-arguments-example.html -%}
+</code></pre></div>
 
 Like in ordinary Bash functions, these arguments can also be accessed using `$1`, `$2`, etc.:
 
-```bash
-@class MyClass {
-	@public @method myMethodWithArgs {
-		echo "Hello from myMethodWithArgs"
-		echo "Argument 1: $1"
-		echo "Argument 2: $2"
-		echo "All arguments: $@"
-	}
-}
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/methods-accessing-arguments-by-positional-variables.html -%}
+</code></pre></div>
 
 If a method is declared as `@virtual`, it can be overridden in derived classes. If a method is not declared as `@virtual`, it cannot be overridden.
 
-```bash
-@class BaseClass {
-	@virtual @public @method someMethod {
-		echo "Hello from the base class!"
-	}
-}
-
-@class DerivedClass : BaseClass {
-	@public @method someMethod {
-		echo "Hello from the derived class!"
-	}
-}
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/method-overriding-example.html -%}
+</code></pre></div>
 
 Bash++ does not support method overloading. Each method must have a unique name.
 
@@ -165,16 +107,9 @@ Bash++ does not support method overloading. Each method must have a unique name.
 
 Classes can have constructors and destructors, which are special methods that are called when an object is created and destroyed, respectively. Constructors are declared using the `@constructor` keyword, and destructors are declared using the `@destructor` keyword.
 
-```bash
-@class MyClass {
-	@constructor {
-		echo "Constructor called"
-	}
-	@destructor {
-		echo "Destructor called"
-	}
-}
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/constructors-destructors-example.html -%}
+</code></pre></div>
 
 An object's constructor will be called as soon as it is initialized.
 
@@ -184,48 +119,25 @@ An object's destructor will be called if:
 
  - The object is explicitly destroyed using the `@delete` keyword
 
-```bash
-@class MyClass {
-	@destructor {
-		echo "Destructor called"
-	}
-}
-@MyClass myObject
-@delete myObject
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/destructor-example-2.html -%}
+</code></pre></div>
 
 # "toPrimitive" Object Casting
 
 In Bash++, every class has a method called `toPrimitive` that returns a string representation of the object. This method is called automatically when an object is used in a context where a primitive is expected.
 
-```bash
-@class MyClass {
-	@public dataMember="Hello, world!"
-	# No custom toPrimitive method is defined here
-}
-
-@MyClass myObject
-
-echo "Object: @myObject" # Calls myObject.toPrimitive
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/toprimitive-example.html -%}
+</code></pre></div>
 
 In the above example, the *default* `toPrimitive` method is used, and the script will output: `Object: MyClass Instance`.
 
 You can define a custom `toPrimitive` method for your class to return a more meaningful string representation:
 
-```bash
-@class MyClass {
-	@public dataMember="Hello, world!"
-
-	@public @method toPrimitive {
-		echo "MyClass instance with data member: @this.dataMember"
-	}
-}
-
-@MyClass myObject
-
-echo "Object: @myObject" # Calls myObject.toPrimitive
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/custom-toprimitive-example.html -%}
+</code></pre></div>
 
 In this case, the script will output: `Object: MyClass instance with data member: Hello, world!`.
 
@@ -235,31 +147,21 @@ When referencing an object, you use the `@` symbol followed by the object's name
 
 To reference an object's data member or method, you use the `@` symbol followed by the object's name, a dot (`.`), and the data member or method name.
 
-```bash
-@MyClass myObject
-@myObject.dataMember="Hello, world!"
-echo "@myObject.dataMember"
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/object-reference-example.html -%}
+</code></pre></div>
 
 There may be ambiguity when using the `@` symbol in a string. To avoid this, you can use the `@{}` syntax to explicitly reference an object. This is similar to the `${}` syntax used in Bash to reference variables in situations where there may be ambiguity. For example, suppose we want to echo the data member of an object:
 
-```bash
-@class MyClass {
-	@public dataMember="Data Member"
-	@public @method toPrimitive {
-		echo "object"
-	}
-}
-
-@MyClass myObject
-echo "@myObject.dataMember" # Prints "Data Member"
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/object-reference-ambiguity-1.html -%}
+</code></pre></div>
 
 This will unambiguously reference `dataMember` belonging to `myObject`. However, suppose what we *really* wanted to do was print the result of `myObject.toPrimitive` followed by the **string** `.dataMember`. We can use the `@{}` syntax to do this:
 
-```bash
-echo "@{myObject}.dataMember" # Prints "object.dataMember"
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/object-reference-ambiguity-2.html -%}
+</code></pre></div>
 
 Here, we used the `@{}` syntax to explicitly reference `myObject` as an object, without interpreting the characters that followed it as part of the object reference.
 
@@ -269,37 +171,17 @@ This is identical to the `${}` syntax used in Bash to reference variables in sit
 
 The `@this` keyword is used to refer to the current object within a method. It is similar to the `this` keyword in other object-oriented languages.
 
-```bash
-@class MyClass {
-	@public dataMember="Hello, world!"
-
-	@public @method myMethod {
-		echo "Data member: @this.dataMember"
-	}
-}
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/this-example.html -%}
+</code></pre></div>
 
 # Inheritance
 
 Bash++ supports single inheritance. A class can inherit from another class using the following syntax:
 
-```bash
-@class BaseClass {
-	@public baseDataMember="Hello, world!"
-
-	@virtual @public @method someMethod {
-		echo "Hello from the base class!"
-	}
-}
-
-@class DerivedClass : BaseClass {
-	@public derivedDataMember="Hello, world!"
-
-	@public @method someMethod {
-		echo "Hello from the derived class!"
-	}
-}
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/inheritance-example.html -%}
+</code></pre></div>
 
 In this example, `DerivedClass` inherits from `BaseClass`. The derived class has access to the data members and methods of the base class. If a method is declared `@virtual`, it can be overridden in the derived class. If a method is not declared `@virtual`, it cannot be overridden.
 
@@ -307,80 +189,41 @@ In this example, `DerivedClass` inherits from `BaseClass`. The derived class has
 
 Bash++ supports explicit object casting using the `@cast` keyword. This allows you to cast an object to a different class.
 
-```bash
-@class ClassA {
-	@public dataMember="Hello, world!"
-}
-
-@class ClassB {
-	@public dataMember="Goodbye, world!"
-}
-
-@ClassA myObjectA
-@ClassB myObjectB=@cast(ClassB) @myObjectA # Cast myObjectA to ClassB
-
-echo "@myObjectB.dataMember" # Prints "Hello, world!"
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/object-casting-example.html -%}
+</code></pre></div>
 
 The `@cast` keyword does not perform any type checking. It simply changes the type of the object. If the cast is invalid, the object will be in an invalid state, but the compiler will not throw an error.
 
 For *slightly* more careful casting, you can use the `@upcast` or `@downcast` keywords. `@upcast` will cast an object to a base class, while `@downcast` will cast an object to a derived class. If the cast is invalid, the compiler will throw an error.
 
-```bash
-@class BaseClass {
-	@public dataMember="Hello, world!"
-}
-
-@class DerivedClass : BaseClass {
-	@public derivedDataMember="Goodbye, world!"
-}
-
-@BaseClass myBaseObject
-@DerivedClass myDerivedObject=@downcast(DerivedClass) @myBaseObject
-@BaseClass myBaseObject2=@upcast(BaseClass) @myDerivedObject
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/upcast-downcast-example.html -%}
+</code></pre></div>
 
 An `@upcast` will perform a compile-time check to verify that we're casting *up* the inheritance hierarchy. A `@downcast` will perform a similar check to verify that we're casting *down* the inheritance hierarchy. If the cast is invalid, the compiler will throw an error.
 
 You can also cast pointers:
 
-```bash
-@class BaseClass {
-	@public dataMember="Hello, world!"
-}
-
-@class DerivedClass : BaseClass {
-	@public derivedDataMember="Goodbye, world!"
-}
-
-@BaseClass* myBasePointer=@new @BaseClass
-@DerivedClass* myDerivedPointer=@downcast(DerivedClass*) @myBasePointer
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/pointer-casting-example.html -%}
+</code></pre></div>
 
 # Pointers
 
 Bash++ supports pointers to objects. A pointer is a reference to an object, rather than the object itself. Pointers are declared using the familiar C-style `*` syntax:
 
-```bash
-@class MyClass {
-	@public dataMember="Hello, world!"
-}
-
-@MyClass myObject
-@MyClass* myPointer # Empty pointer
-@myPointer=&@myObject # Assign pointer to object
-
-@MyClass myObject2=@new @MyClass
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/pointers-example.html -%}
+</code></pre></div>
 
 In the above example, `myPointer` is a pointer to an object of type `MyClass`. It is initially set to nothing at all (`@nullptr`). The pointer is then assigned to `myObject`. Afterwards, a new object is created using the `@new` keyword, and a pointer to it is stored in `myObject2`.
 
 We can access the data members of a pointer using exactly the same syntax as we would for an object:
 
-```bash
-@myPointer.dataMember="Hello, world!"
-echo "@myPointer.dataMember"
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/object-reference-via-pointer.html -%}
+</code></pre></div>
 
 We don't have to use the spooky `->` operator from C++. Just use the familiar `.` notation.
 
@@ -392,21 +235,15 @@ Since Bash++ compiles to Bash, we don't have direct, unadulterated access to mem
 
 Bash++ keeps track of objects internally by assigning values to variables with special names. For example, the following:
 
-```bash
-@class MyClass {
-	@public dataMember="Hello, world!"
-	@public anotherDataMember="Goodbye, world!"
-}
-
-@MyClass myObject
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/how-objects-are-stored-1.html -%}
+</code></pre></div>
 
 Might be internally represented as:
 
-```bash
-bpp__MyClass__myObject__dataMember="Hello, world!"
-bpp__MyClass__myObject__anotherDataMember="Goodbye, world!"
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/how-objects-are-stored-2.html -%}
+</code></pre></div>
 
 When we create a pointer to an object, or ask about this object's "address," we're really just getting the *prefix* of the variable names that represent the object. In the above case, the address given by `&@myObject` would be `bpp__MyClass__myObject`.
 
@@ -416,49 +253,33 @@ We mentioned at the beginning of this document that identifiers cannot contain t
 
 Because pointers are primitives, using a pointer in a context where a primitive would be expected will not call the `toPrimitive` method automatically, but will simply return the pointer. However, we can still call the `toPrimitive` method explicitly:
 
-```bash
-@MyClass* myPointer=@new @MyClass # Declare a pointer
-echo "@myPointer" # Echoes the pointer
-echo "@myPointer.toPrimitive" # Calls the toPrimitive method
-
-@MyClass myObject # Declare an object (not a pointer)
-echo "@myObject" # Calls the toPrimitive method
-echo "@myObject.toPrimitive" # Also calls the toPrimitive method
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/pointers-and-toprimitive.html -%}
+</code></pre></div>
 
 ## `@new` and `@delete`
 
 The `@new` keyword is used to create a new object and return a pointer to it. The `@delete` keyword is used to destroy an object and set the pointer to `@nullptr`.
 
-```bash
-@class MyClass {
-	@public dataMember="Hello, world!"
-}
-
-@MyClass* myPointer=@new @MyClass
-
-@delete myPointer
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/new-and-delete.html -%}
+</code></pre></div>
 
 An object's destructor will be called when it is deleted.
 
 We can also declare pointers as data members of a class:
 
-```bash
-@class MyClass {
-	@public @MyClass* pointer
-}
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/pointers-as-datamembers.html -%}
+</code></pre></div>
 
 A class's destructor will not automatically delete its pointer data members. If you want to delete a pointer data member, you must do so explicitly. If, however, a class contains non-primitive data members (which are not pointers), they will be automatically deleted when the object is destroyed.
 
 All pointers are set to `@nullptr` by default until otherwise specified. For example:
 
-```bash
-@MyClass* myPointer1
-@MyClass* myPointer2=@nullptr # Same result as above
-@MyClass* myPointer3=@new @MyClass # Not @nullptr
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/nullptr.html -%}
+</code></pre></div>
 
 When writing `@new {some class}`, or `@delete {some object/pointer}`, the identifier which follows the `@new` or `@delete` keyword must be a class name or an object/pointer, respectively. It can be optionally preceded by an `@` symbol, but this is not required. `@new @MyClass` and `@new MyClass` are equivalent. `@delete @myObject` and `@delete myObject` are equivalent.
 
@@ -474,30 +295,25 @@ If a pointer is declared without being assigned a value, it is automatically set
 
 The `@include` directive is used to include the contents of another Bash++ script in the current file. This is useful for splitting code into multiple files for better organization and reusability.
 
-```bash
-@include "file1.bpp" # Same working directory
-@include "/path/to/file.bpp" # Absolute path
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/include-example.html -%}
+</code></pre></div>
 
 The `@include` directive is processed at compile time, and the contents of the included file are inserted into the current file before compilation.
 
 Note that you can still include regular Bash scripts in a Bash++ script using the `source` command (or `.`):
 
-```bash
-source "script.sh"
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/source.html -%}
+</code></pre></div>
 
 However, scripts included with `source` or `.` will not be processed by the Bash++ compiler and will not have access to Bash++ features.
 
 You can also use the `@include_once` directive to ensure that a file is included only once. This can be useful if you have multiple files that include the same file.
 
-```bash
-@include "class_definition.bpp"
-@include "class_definition.bpp" # Error! Re-definition of the same class
-
-@include_once "class_definition.bpp"
-@include_once "class_definition.bpp" # OK! The compiler will only include the file the first time around
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/include-once-example.html -%}
+</code></pre></div>
 
 # Supershells
 
@@ -505,97 +321,54 @@ Ordinary Bash supports a construct called a "subshell," which is created by encl
 
 Subshells are generally useful when you want to run a command in a separate environment or when you want to isolate changes to the environment. But, another common use for subshells is simply to store the output of a command in a variable:
 
-```bash
-var=$(command)
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/subshells.html -%}
+</code></pre></div>
 
 This is perfectly reasonable. However, with Bash++ methods, we may like to store the output of a method in a variable, while also *allowing* the method to make changes to the environment. This is where the "supershell" comes in.
 
-```bash
-var=@(command)
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/supershells.html -%}
+</code></pre></div>
 
 As you can see from the above, the syntax is very similar. The only difference is the use of the `@` symbol instead of the `$`. This allows us to store the output of a command, function, or method into a variable, while also preserving changes that that command, function, or method makes to the environment.
 
 By default, calling an object's method in a context where a primitive is expected will run the method inside of a supershell. For example:
 
-```bash
-@class MyClass {
-	@public dataMember="Default value"
-	@public @method myMethod {
-		@this.dataMember="New value"
-		echo "Hello from myMethod"
-	}
-}
-
-@MyClass myObject
-command_output="@myObject.myMethod"
-echo "$command_output"
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/supershells-as-default.html -%}
+</code></pre></div>
 
 The above will run `@myObject.myMethod` in a *supershell*, allowing it to make changes to the environment. The output of the method will be stored in `command_output`, and the value of `dataMember` will be changed to "New value."
 
-```bash
-command_output="@myObject.myMethod"
-command_output=@(@myObject.myMethod) # These two are exactly equivalent,
-                                     # both run in supershells and can
-                                     # therefore make changes to the environment
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/supershells-as-default-2.html -%}
+</code></pre></div>
 
 If, by contrast, we were to run the method in an ordinary *subshell*:
 
-```bash
-command_output=$(@myObject.myMethod)
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/subshells-2.html -%}
+</code></pre></div>
 
 The output of the command would be stored, but `@myObject.dataMember` would not be changed.
 
 You can also run ordinary commands and Bash functions in supershells, allowing them to make changes to the environment as well. For example:
 
-```bash
-regular_bash_variable="abc"
-
-function regular_bash_function() {
-	regular_bash_variable="123"
-	echo "Hello from an ordinary Bash function"
-}
-
-# Using a Bash subshell:
-echo "Initial value of regular_bash_variable: $regular_bash_variable" # "abc"
-command_output=$(regular_bash_function)
-echo "New value of regular_bash_variable: $regular_bash_variable" # Still "abc", unchanged
-echo "Command output: $command_output" # "Hello from an ordinary Bash function"
-
-# Using a Bash++ supershell:
-echo "Initial value of regular_bash_variable: $regular_bash_variable" # "abc"
-command_output=@(regular_bash_function)
-echo "New value of regular_bash_variable: $regular_bash_variable" # "123"
-echo "Command output: $command_output" # "Hello from an ordinary Bash function"
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/supershells-ordinary-bash-functions.html -%}
+</code></pre></div>
 
 If you would like to isolate an object's method from the surrounding environment, you can still call it within a subshell:
 
-```bash
-command_output=$(@myObject.myMethod) # Ordinary subshell, won't change the environment
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/object-method-within-a-subshell.html -%}
+</code></pre></div>
 
 Supershells *do not* run in an isolated environment or separate shell. They run in the same shell as the surrounding code -- their output is simply captured and stored rather than printed.
 
 You can also run a command in a supershell without storing its output in a variable:
 
-```bash
-if [[ "@(command)" == "expected output" ]]; then
-	echo "Command output matches expected output"
-fi
-
-for i in @(seq 1 10); do
-	echo "Iteration $i"
-done
-
-while [[ @(echo true) == "true" ]]; do
-	echo "This loop will run forever"
-	echo "And the supershell will be re-evaluated each time"
-done
-
-@(echo "echo hi") # Expands to "echo hi" and runs it
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/supershells-without-permanent-storage.html -%}
+</code></pre></div>

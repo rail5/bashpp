@@ -1,0 +1,4 @@
+command_output="@myObject.myMethod"
+command_output=@(@myObject.myMethod) # These two are exactly equivalent,
+                                     # both run in supershells and can
+                                     # therefore make changes to the environment

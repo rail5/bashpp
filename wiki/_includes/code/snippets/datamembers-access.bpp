@@ -1,0 +1,7 @@
+@MyClass myObject
+
+@myObject.primitiveDataMember="Hello, world!"
+echo "@myObject.primitiveDataMember"
+
+@myObject.nonPrimitiveDataMember.dataMember="Hello, world!"
+echo "@myObject.nonPrimitiveDataMember.dataMember"

@@ -1,0 +1,7 @@
+@class MyClass {
+	@destructor {
+		echo "Destructor called"
+	}
+}
+@MyClass myObject
+@delete myObject

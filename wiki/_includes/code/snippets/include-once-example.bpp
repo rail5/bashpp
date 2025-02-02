@@ -1,0 +1,5 @@
+@include "class_definition.bpp"
+@include "class_definition.bpp" # Error! Re-definition of the same class
+
+@include_once "class_definition.bpp"
+@include_once "class_definition.bpp" # OK! The compiler will only include the file the first time around

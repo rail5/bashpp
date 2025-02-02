@@ -1,0 +1,14 @@
+if [[ "@(command)" == "expected output" ]]; then
+	echo "Command output matches expected output"
+fi
+
+for i in @(seq 1 10); do
+	echo "Iteration $i"
+done
+
+while [[ @(echo true) == "true" ]]; do
+	echo "This loop will run forever"
+	echo "And the supershell will be re-evaluated each time"
+done
+
+@(echo "echo hi") # Expands to "echo hi" and runs it

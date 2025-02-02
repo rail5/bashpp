@@ -1,0 +1,8 @@
+@class MyClass {
+	@public @method myMethodWithArgs {
+		echo "Hello from myMethodWithArgs"
+		echo "Argument 1: $1"
+		echo "Argument 2: $2"
+		echo "All arguments: $@"
+	}
+}

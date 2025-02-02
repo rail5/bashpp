@@ -4,11 +4,13 @@ link-title: Download
 
 # Download Bash++
 
+## Bash++ Compiler
+
 The compiler is currently in *pre-alpha* stage and is not yet available for download.
 
 You can check the progress of its development on the [GitHub repository](https://github.com/rail5/bashpp).
 
-# Bash++ VSCode Extension
+## Bash++ VSCode Extension
 
 The Bash++ extension for Visual Studio Code provides basic syntax highlighting for Bash++ code.
 

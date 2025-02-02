@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
 		"GNU General Public License for more details.\n\n"
 		"You should have received a copy of the GNU General Public License\n"
 		"along with this program. If not, see http://www.gnu.org/licenses/.\n";
-	std::string help_string = "Usage: " + std::string(argv[0]) + " [options] [file]\n"
+	const char* help_string = "Usage: bpp [options] [file]\n"
 		"If no file is specified, read from stdin\n"
 		"Options:\n"
 		"  -o, --output <file>   Specify output file\n"

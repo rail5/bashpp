@@ -266,6 +266,9 @@ class BashppListener : public BashppParserBaseListener {
 	void enterArray_value(BashppParser::Array_valueContext *ctx) override;
 	void exitArray_value(BashppParser::Array_valueContext *ctx) override;
 
+	void enterArray_index(BashppParser::Array_indexContext *ctx) override;
+	void exitArray_index(BashppParser::Array_indexContext *ctx) override;
+
 	void enterTypecast(BashppParser::TypecastContext *ctx) override;
 	void exitTypecast(BashppParser::TypecastContext *ctx) override;
 

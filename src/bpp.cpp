@@ -55,6 +55,7 @@
 #include "listener/handlers/supershell.cpp"
 #include "listener/handlers/value_assignment.cpp"
 #include "listener/handlers/array_value.cpp"
+#include "listener/handlers/array_index.cpp"
 #include "listener/handlers/typecast.cpp"
 #include "listener/handlers/extra_statement.cpp"
 

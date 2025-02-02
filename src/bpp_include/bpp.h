@@ -168,11 +168,14 @@ class bpp_object_assignment : public bpp_string {
 class bpp_object_reference : public bpp_string {
 	private:
 		bpp::reference_type reference_type;
+		std::string array_index = "";
 	public:	
 		bpp_object_reference();
 
 		void set_reference_type(bpp::reference_type reference_type);
+		void set_array_index(const std::string& array_index);
 		bpp::reference_type get_reference_type() const;
+		std::string get_array_index() const;
 };
 
 class bpp_object_address : public bpp_string {

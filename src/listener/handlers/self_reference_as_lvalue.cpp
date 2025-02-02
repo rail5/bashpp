@@ -33,7 +33,7 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(ctx->AT(0), "Object reference outside of code entity");
+		throw_syntax_error(ctx->AT(), "Object reference outside of code entity");
 	}
 
 	// Are we in an object_assignment context?

@@ -66,6 +66,11 @@ void BashppListener::exitMethod_definition(BashppParser::Method_definitionContex
 
 	// Add the method to the class
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
+
+	if (current_class == nullptr) {
+		throw internal_error("Current class was not found in the entity stack");
+	}
+
 	if (!current_class->add_method(method)) {
 		throw_syntax_error_from_exitRule(ctx->IDENTIFIER(), "Method redefinition: " + method->get_name());
 	}

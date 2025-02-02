@@ -173,8 +173,8 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 			throw internal_error("Count requested and indirection required. I did not prepare for this. FIXME.");
 		}
 
-		std::string temporary_variable_lvalue = object_reference_code + "____arrayIndex";
-		std::string temporary_variable_rvalue = "${" + counting + indirection + object_reference_code + "[";
+		std::string temporary_variable_lvalue = object_reference_code + "____arrayIndexString";
+		std::string temporary_variable_rvalue = counting + "${" + indirection + object_reference_code + "}[";
 
 		if (ctx->AT().size() > 1) {
 			temporary_variable_rvalue += "@";
@@ -187,10 +187,27 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 			throw_syntax_error(ctx->LBRACKET(), "Invalid array index");
 		}
 
-		temporary_variable_rvalue += "]}";
+		temporary_variable_rvalue += "]";
 
 		object_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n");
 		object_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
+
+		temporary_variable_lvalue = object_reference_code + "____arrayIndex";
+		temporary_variable_rvalue = "${" + object_reference_code + "____arrayIndexString}";
+
+		// If we're counting, we need to add another small layer of abstraction
+		// Ordinarily, by this point, we've set up a temporary variable whose value is a STRING (not in fact a variable reference,
+		// but a string which represents the variable reference -- ie, rather than object[$value], a string such as "object[\$value]")
+		// In the case that we're counting, that string has been modified to be "#object[\$value]",
+		// And so we need to set the temporary variable to be the result of evaluating that string -- but only after that string is
+		// Surrounded by ${} to make it a variable reference
+		if (ctx->POUNDKEY() != nullptr) {
+			temporary_variable_rvalue = "\\${" + temporary_variable_rvalue + "}";
+		}
+
+		object_reference_entity->add_code_to_previous_line("eval " + temporary_variable_lvalue + "=\"" + temporary_variable_rvalue + "\"\n");
+		object_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
+
 		object_reference_code = temporary_variable_lvalue;
 	}
 

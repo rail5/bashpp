@@ -149,7 +149,7 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 		//   3. ctx->NUMBER() is set
 		
 		std::string temporary_variable_lvalue = self_reference_code + "____arrayIndex";
-		std::string temporary_variable_rvalue = "${" + indirection + self_reference_code + "}[";
+		std::string temporary_variable_rvalue = "${" + self_reference_code + "}[";
 
 		if (ctx->AT().size() > 1) {
 			temporary_variable_rvalue += "@";

@@ -2,11 +2,7 @@
 
 > Bash with classes
 
-To include the contents of an HTML file, you can use the following syntax:
-
-```html
-<!--#include file="code/snippets/example.html" -->
-```
+{%- include code/snippets/example.html -%}
 
 ## Documentation
 

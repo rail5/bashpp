@@ -2,23 +2,10 @@
 
 > Bash with classes
 
-```bash
-@class Bashpp {
-  @public author="Andrew S. Rightenburg"
-  @public source="https://github.com/rail5/bashpp"
-  @public license="GNU GPL v3"
+To include the contents of an HTML file, you can use the following syntax:
 
-  @public @method printInfo {
-    echo "Bash++ is a superset of Bash that adds support for classes and objects."
-    echo "It's meant to be a simple way to add object-orientation to Bash scripts."
-    echo "Author: @this.author"
-    echo "Source: @this.source"
-    echo "License: @this.license"
-  }
-}
-
-@Bashpp myBashpp
-@myBashpp.printInfo
+```html
+<!--#include file="code/snippets/example.html" -->
 ```
 
 ## Documentation

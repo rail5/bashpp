@@ -2,9 +2,9 @@
 
 > Bash with classes
 
-
+<div>
 {%- include code/snippets/example.html -%}
-
+</div>
 
 ## Documentation
 

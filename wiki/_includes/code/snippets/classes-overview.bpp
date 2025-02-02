@@ -1,0 +1,16 @@
+@class MyClass {
+	@private dataMember1
+	@public dataMember2="default value"
+
+	@public @method myMethod {
+		echo "Hello from myMethod"
+	}
+
+	@constructor {
+		echo "Constructor called"
+	}
+
+	@destructor {
+		echo "Destructor called"
+	}
+}

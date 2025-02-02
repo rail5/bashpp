@@ -35,24 +35,9 @@ To distinguish between the two, Bash++ uses the `@` symbol to denote objects. Fo
 
 Classes are declared in Bash++ using the `@class` keyword. The class definition can contain data members, methods, and constructors/destructors.
 
-```bash
-@class MyClass {
-	@private dataMember1
-	@public dataMember2="default value"
-
-	@public @method myMethod {
-		echo "Hello from myMethod"
-	}
-
-	@constructor {
-		echo "Constructor called"
-	}
-
-	@destructor {
-		echo "Destructor called"
-	}
-}
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/classes-overview.html -%}
+</code></pre></div>
 
 ## But what if I want to use the `@` symbol for something else?
 

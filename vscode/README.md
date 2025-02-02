@@ -2,6 +2,10 @@
 
 This extension provides basic syntax highlighting for Bash++ files.
 
+## Website
+
+You can find more information about Bash++ at [bpp.sh](https://bpp.sh)
+
 ## Building from source
 
 First, you need to install `npm`, `node` and `vsce`.
@@ -24,6 +28,8 @@ This will create a `.vsix` file that you can install in VSCode.
 The TextMate grammar is a modified version of the [Bash](https://github.com/microsoft/vscode-textmate/blob/main/test-cases/themes/syntaxes/Shell-Unix-Bash.tmLanguage.json) grammar provided by Microsoft.
 
 The original grammar is licensed under the [MIT License](https://choosealicense.com/licenses/mit/)
+
+This extension (as well as the Bash++ language and compiler) are licensed under the [GNU General Public License v3](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ## MIT License
 

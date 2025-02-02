@@ -44,7 +44,7 @@ jobs:
       - name: Run Node.js Code Highlighter
         run: |
           cd wiki/_includes/code
-          node colorize.js snippets/example.bpp
+          node colorize.js snippets/example.bpp snippets/example.html
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Build with Jekyll

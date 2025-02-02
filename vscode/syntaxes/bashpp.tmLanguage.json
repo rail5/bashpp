@@ -29,9 +29,6 @@
 			"include": "#function-definition"
 		},
 		{
-			"include": "#variable"
-		},
-		{
 			"include": "#interpolation"
 		},
 		{
@@ -59,10 +56,13 @@
 			"include": "#class-declaration"
 		},
 		{
+			"include": "#method-declaration"
+		},
+		{
 			"include": "#member-declaration"
 		},
 		{
-			"include": "#method-declaration"
+			"include": "#variable"
 		}
 	],
 	"repository": {
@@ -854,14 +854,6 @@
 				}
 			]
 		},
-		"member-declaration": {
-			"patterns": [
-				{
-					"match": "(?<=(@public|@private|@protected)\\s(@[a-zA-Z_][a-zA-Z0-9_]*\\s)?)(?!.*__)[a-zA-Z_][a-zA-Z0-9_]*(?=\\s|=|$)",
-					"name": "variable.other.bashpp"
-				}
-			]
-		},
 		"method-declaration": {
 			"patterns": [
 				{
@@ -869,8 +861,20 @@
 					"name": "entity.name.function.method.bashpp"
 				},
 				{
-					"match": "(?<=@method\\s([a-zA-Z_][a-zA-Z0-9_]*\\s)+)(?!.*__)[a-zA-Z_][a-zA-Z0-9_]*(?=\\s|$)",
+					"match": "(?<=@method\\s(([a-zA-Z_][a-zA-Z0-9_]*\\s)|(@[a-zA-Z_][a-zA-Z0-9_]*\\*?\\s))+)(?!.*__)[a-zA-Z_][a-zA-Z0-9_]*(?=\\s|$)",
 					"name": "variable.parameter.bashpp"
+				},
+				{
+					"match": "(?<=@method\\s(([a-zA-Z_][a-zA-Z0-9_]*\\s)|(@[a-zA-Z_][a-zA-Z0-9_]*\\*?\\s))+)(?!.*__)@[a-zA-Z_][a-zA-Z0-9_]*\\*?(?=\\s|$)",
+					"name": "storage.type.bashpp"
+				}
+			]
+		},
+		"member-declaration": {
+			"patterns": [
+				{
+					"match": "(?<=(@public|@private|@protected)\\s(@[a-zA-Z_][a-zA-Z0-9_]*\\*?\\s)?)(?!.*__)[a-zA-Z_][a-zA-Z0-9_]*(?=\\s|=|$)",
+					"name": "variable.other.bashpp"
 				}
 			]
 		},
@@ -1301,7 +1305,7 @@
 							"name": "punctuation.definition.variable.bashpp"
 						}
 					},
-					"match": "(@)(?!class\\b)(?!public\\b)(?!private\\b)(?!protected\\b)(?!virtual\\b)(?!method\\b)(?!constructor\\b)(?!destructor\\b)(?!new\\b)(?!delete\\b)(?!nullptr\\b)(?!include_once\\b)(?!include\\b)(?!upcast\\b)(?!downcast\\b)(?!cast\\b)(?!.*__)[a-zA-Z_]([a-zA-Z0-9_]*\\.?)*",
+					"match": "(?<!\\\\)(@)(?!class\\b)(?!public\\b)(?!private\\b)(?!protected\\b)(?!virtual\\b)(?!method\\b)(?!constructor\\b)(?!destructor\\b)(?!new\\b)(?!delete\\b)(?!nullptr\\b)(?!include_once\\b)(?!include\\b)(?!upcast\\b)(?!downcast\\b)(?!cast\\b)(?!.*__)[a-zA-Z_]([a-zA-Z0-9_]*\\.?)*",
 					"name": "variable.other.normal.bashpp"
 				},
 				{

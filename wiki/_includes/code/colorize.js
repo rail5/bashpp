@@ -44,6 +44,8 @@ registry.loadGrammar('source.bashpp').then(grammar => {
       return lineHtml;
     }).join('\n');
 
-    const htmlContent = `${htmlLines}`;
+    const htmlContent = `<div class="highlight"><pre class="highlight"><code>
+${htmlLines}
+</code></pre></div>`;
     fs.writeFileSync(outputFilePath, htmlContent);
   });

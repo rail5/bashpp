@@ -42,16 +42,29 @@ Optional:
 On Debian-based systems, you can install the prerequisites with:
 
 ```bash
-sudo apt update
-sudo apt install build-essential antlr4 libantlr4-runtime-dev pandoc perl debhelper
+$ sudo apt update
+$ sudo apt install build-essential antlr4 libantlr4-runtime-dev pandoc perl debhelper
 ```
 
 ### Building
 
 ```bash
-make # Build the Bash++ compiler, which can then be found at bin/bpp
-make manual # Build the manpages, which can then be found at debian/bpp.1 and debian/bpp.5
-make parser # Build 'BashppParser', prints lexer output & parse trees. Useful for debugging.
-make test # Run the test suite. The test suite is itself written in Bash++.
-debuild -us -uc # Build the Debian .deb package for installation
+$ make # Build the Bash++ compiler, which can then be found at bin/bpp
+$ make manual # Build the manpages, which can then be found at debian/bpp.1 and debian/bpp.5
+$ make parser # Build 'BashppParser', prints lexer output & parse trees. Useful for debugging.
+$ make test # Run the test suite. The test suite is itself written in Bash++.
+$ debuild -us -uc # Build the Debian .deb package for installation
 ```
+
+## Using the compiler
+
+```bash
+$ bpp program.bpp                 # Compile & immediately run the program
+$ bpp program.bpp -o compiled.sh  # Compile & save the program to compiled.sh
+$ bpp program.bpp -o -            # Compile & print the program to stdout
+$ cat program.bpp | bpp           # Pipe previous command output to the compiler
+$ bpp -h # Display help
+$ bpp -v # Display version
+```
+
+It's strongly recommended to use the `-o` flag to specify an output file. If you don't, you'll be re-compiling the program every time you run it, which could take some time, especially for larger programs. Using `-o` and subsequently running the compiled program is much faster for subsequent runs.

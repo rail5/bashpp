@@ -17,7 +17,7 @@
 
 void print_syntax_error(std::string source_file, int line, int column, std::string msg, std::stack<std::string> include_chain) {
 	std::string color_red = "\033[0;31m";
-	std::string color_purple = "\033[0;35m";
+	std::string color_purple = "\033[1;35m";
 	std::string color_reset = "\033[0m";
 	if (!isatty(fileno(stderr))) {
 		color_red = "";

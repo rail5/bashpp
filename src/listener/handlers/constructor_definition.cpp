@@ -48,6 +48,9 @@ void BashppListener::exitConstructor_definition(BashppParser::Constructor_defini
 
 	entity_stack.pop();
 
+	// Call destructors for any objects created in the constructor before we exit it
+	constructor->destruct_local_objects();
+
 	// Add the constructor to the class
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 

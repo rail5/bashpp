@@ -28,7 +28,7 @@ void BashppListener::enterString(BashppParser::StringContext *ctx) {
 
 	// If we're not in a broader context, simply add an open quote to the current code entity
 	if (current_code_entity != nullptr) {
-		current_code_entity->add_code("\"");
+		current_code_entity->add_code("\"", false);
 		return;
 	}
 }
@@ -50,7 +50,7 @@ void BashppListener::exitString(BashppParser::StringContext *ctx) {
 	if (current_code_entity != nullptr) {
 		current_code_entity->add_code_to_previous_line(string_code_entity->get_pre_code());
 		current_code_entity->add_code_to_next_line(string_code_entity->get_post_code());
-		current_code_entity->add_code(string_code_entity->get_code() + "\"");
+		current_code_entity->add_code(string_code_entity->get_code() + "\"", false);
 		return;
 	}
 }

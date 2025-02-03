@@ -84,7 +84,7 @@ class bpp_code_entity : public bpp_entity {
 		bpp_code_entity();
 		virtual ~bpp_code_entity() = default;
 
-		virtual void add_code(std::string code);
+		virtual void add_code(std::string code, bool add_newline = true);
 		virtual void add_code_to_previous_line(std::string code);
 		virtual void add_code_to_next_line(std::string code);
 
@@ -101,7 +101,7 @@ class bpp_string : public bpp_code_entity {
 	public:
 		bpp_string();
 
-		void add_code(std::string code) override;
+		void add_code(std::string code, bool add_newline = true) override;
 		void add_code_to_previous_line(std::string code) override;
 		void add_code_to_next_line(std::string code) override;
 

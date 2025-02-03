@@ -12,7 +12,7 @@ namespace bpp {
 
 bpp_string::bpp_string() {}
 
-void bpp_string::add_code(std::string code) {
+void bpp_string::add_code(std::string code, bool add_newline) {
 	nextline_buffer += code;
 }
 

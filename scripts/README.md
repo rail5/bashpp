@@ -2,6 +2,8 @@
 
 This directory contains some example scripts that demonstrate how to use Bash++.
 
+More detailed descriptions of the language can be found at the [website](https://bpp.sh/language.html).
+
  - [toprimitive.bpp](toprimitive.bpp) - Demonstrates how to use **.toPrimitive** methods
 
  - [constructors-and-destructors.bpp](constructors-and-destructors.bpp) - Demonstrates how to use **constructors** and **destructors**

@@ -110,6 +110,19 @@ class bpp_string : public bpp_code_entity {
 		std::string get_post_code() const override;
 };
 
+class bash_while : public bpp_string {
+	private:
+		int supershell_count = 0;
+		std::vector<std::string> supershell_function_calls = {};
+	public:
+		bash_while();
+
+		void increment_supershell_count();
+		void add_supershell_function_call(const std::string& function_call);
+		int get_supershell_count() const;
+		std::vector<std::string> get_supershell_function_calls() const;
+};
+
 class bpp_delete_statement : public bpp_string {
 	private:
 		std::shared_ptr<bpp::bpp_object> object_to_delete;

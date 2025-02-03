@@ -19,6 +19,7 @@
 #include "../bpp_include/bpp_entity.cpp"
 #include "../bpp_include/bpp_code_entity.cpp"
 #include "../bpp_include/bpp_string.cpp"
+#include "../bpp_include/bash_while.cpp"
 #include "../bpp_include/bpp_delete_statement.cpp"
 #include "../bpp_include/bpp_value_assignment.cpp"
 #include "../bpp_include/bpp_object_reference.cpp"
@@ -61,6 +62,8 @@ class BashppListener : public BashppParserBaseListener {
 
 		bool in_comment = false;
 		bool in_singlequote_string = false;
+		bool in_while_statement = false;
+		std::shared_ptr<bpp::bash_while> current_while_statement = nullptr;
 
 		std::stack<std::shared_ptr<bpp::bpp_entity>> entity_stack;
 		// The entity_stack is used to keep track of the current entity being processed
@@ -92,9 +95,22 @@ class BashppListener : public BashppParserBaseListener {
 			result.pre_code += "function " + supershell_function_name + "() {\n";
 			result.pre_code += "	" + code_to_run_in_supershell + "\n";
 			result.pre_code += "}\n";
-			result.pre_code += "bpp____supershell " + supershell_output_variable + " " + supershell_function_name + "\n";
 
-			result.post_code += "unset -f " + supershell_function_name + "\n";
+			// TODO(@rail5): This HACKY fix does not unset the supershell run-function after while loops end
+			// The 'unset -f' command is simply discarded
+			// If it wasn't discarded, we would not be able to re-evaluate the supershell on each loop iteration (as the function would be unset)
+			// More properly, the function should be unset after the loop ends
+			// But it's very hard to determine when the loop ends.
+			// We would have to parse the entire loop to determine this, rather than just the first line
+			// As it stands, it likely won't cause too much of a problem. But it is unnecessary, persistent memory usage and should be fixed
+			if (in_while_statement) {
+				current_while_statement->add_supershell_function_call("bpp____supershell " + supershell_output_variable + " " + supershell_function_name);
+				current_while_statement->increment_supershell_count();
+			} else {
+				result.pre_code += "bpp____supershell " + supershell_output_variable + " " + supershell_function_name + "\n";
+				result.post_code += "unset -f " + supershell_function_name + "\n";
+			}
+
 			result.post_code += "unset " + supershell_output_variable + "\n";
 
 			result.code = "${" + supershell_output_variable + "}";
@@ -329,6 +345,9 @@ class BashppListener : public BashppParserBaseListener {
 
 	void enterTypecast(BashppParser::TypecastContext *ctx) override;
 	void exitTypecast(BashppParser::TypecastContext *ctx) override;
+
+	void enterBash_while_declaration(BashppParser::Bash_while_declarationContext *ctx) override;
+	void exitBash_while_declaration(BashppParser::Bash_while_declarationContext *ctx) override;
 
 	void enterExtra_statement(BashppParser::Extra_statementContext *ctx) override;
 	void exitExtra_statement(BashppParser::Extra_statementContext *ctx) override;

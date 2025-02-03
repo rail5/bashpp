@@ -23,6 +23,17 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 	std::string filename = ctx->string()->getText();
 	filename = filename.substr(1, filename.length() - 2);
 
+	// Is this a relative path?
+	// If so, we should search for the file in the same directory as the current source file
+	// NOT NECESSARILY the same as the current working directory
+	if (filename[0] != '/') {
+		// Get the directory of the current source file
+		std::string current_directory = source_file.substr(0, source_file.find_last_of('/'));
+
+		// Append the filename to the directory
+		filename = current_directory + "/" + filename;
+	}
+
 	// Get the full path of the file
 	char full_path[PATH_MAX];
 	if (realpath(filename.c_str(), full_path) == nullptr) {

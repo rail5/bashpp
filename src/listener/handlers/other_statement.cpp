@@ -13,6 +13,13 @@ void BashppListener::enterOther_statement(BashppParser::Other_statementContext *
 	skip_syntax_errors
 	skip_singlequote_string
 
+	// If we're in a class, throw an error
+	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
+	if (current_class != nullptr) {
+		throw_syntax_error_sym(ctx->start, "Stray statement in class definition");
+		return;
+	}
+
 	// If we're not in any broader context, simply add the statement to the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity != nullptr) {

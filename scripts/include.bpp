@@ -1,0 +1,4 @@
+@include "supershell.bpp"
+
+echo "Included from include.bpp"
+

@@ -195,6 +195,24 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 			indirection = (created_first_temporary_variable && ctx->POUNDKEY() == nullptr) ? "!" : "";
 			self_reference_entity->add_code("${" + indirection + self_reference_code + "}");
 			ready_to_exit = true;
+
+			// Are we in a delete statement?
+			std::shared_ptr<bpp::bpp_delete_statement> delete_entity = std::dynamic_pointer_cast<bpp::bpp_delete_statement>(entity_stack.top());
+			if (delete_entity != nullptr) {
+				if (last_reference_entity->get_class() == primitive) {
+					throw_syntax_error_from_exitRule(ctx->IDENTIFIER(ctx->IDENTIFIER().size() - 1), "Cannot call @delete on a primitive");
+				}
+				if (last_reference_entity == current_class) {
+					throw_syntax_error_from_exitRule(ctx->KEYWORD_THIS(), "Cannot call @delete on '@this'");
+				}
+
+				delete_entity->set_object_to_delete(std::dynamic_pointer_cast<bpp::bpp_object>(last_reference_entity));
+				delete_entity->set_force_pointer(true);
+				delete_entity->add_code_to_previous_line(self_reference_entity->get_pre_code());
+				delete_entity->add_code_to_next_line(self_reference_entity->get_post_code());
+				delete_entity->add_code("${!" + self_reference_code + "}");
+				return;
+			}
 		}
 	}
 
@@ -218,6 +236,25 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 			value_assignment_entity->set_nonprimitive_assignment(true);
 			self_reference_entity->add_code("${!" + self_reference_code + "}");
 			ready_to_exit = true;
+		}
+
+		// Are we in a delete statement?
+		std::shared_ptr<bpp::bpp_delete_statement> delete_entity = std::dynamic_pointer_cast<bpp::bpp_delete_statement>(entity_stack.top());
+		if (delete_entity != nullptr) {
+			if (self_reference_entity->get_reference_type() == bpp::reference_type::ref_method) {
+				throw_syntax_error_from_exitRule(ctx->IDENTIFIER(ctx->IDENTIFIER().size() - 1), "Cannot call @delete on a method");
+			}
+
+			if (self_reference_entity->get_reference_type() == bpp::reference_type::ref_primitive) {
+				throw_syntax_error_from_exitRule(ctx->IDENTIFIER(ctx->IDENTIFIER().size() - 1), "Cannot call @delete on a primitive");
+			}
+
+			delete_entity->set_object_to_delete(std::dynamic_pointer_cast<bpp::bpp_object>(last_reference_entity));
+			delete_entity->set_force_pointer(true);
+			delete_entity->add_code_to_previous_line(self_reference_entity->get_pre_code());
+			delete_entity->add_code_to_next_line(self_reference_entity->get_post_code());
+			delete_entity->add_code("${!" + self_reference_code + "}");
+			return;
 		}
 	}
 

@@ -123,18 +123,20 @@ class BashppListener : public BashppParserBaseListener {
 			return result;
 		}
 
-		code_segment generate_delete_code(std::shared_ptr<bpp::bpp_object> object, const std::string& object_reference_string) {
+		code_segment generate_delete_code(std::shared_ptr<bpp::bpp_object> object, const std::string& object_reference_string, bool force_pointer = false) {
 			// The object_reference_string is how the compiled code should refer to the object
 			// Ie, if the object is a pointer, this should be the address of the object
 			code_segment result;
 
 			std::string delete_function_name = "bpp__" + object->get_class()->get_name() + "____delete";
 
+			bool is_pointer = object->is_pointer() || force_pointer;
+
 			if (object->get_class()->has_destructor()) {
-				result.pre_code += "bpp__" + object->get_class()->get_name() + "____destructor " + object_reference_string + " " + (object->is_pointer() ? "1" : "0") + "\n";
+				result.pre_code += "bpp__" + object->get_class()->get_name() + "____destructor " + object_reference_string + " " + (is_pointer ? "1" : "0") + "\n";
 			}
 
-			result.pre_code += delete_function_name + " " + object_reference_string + " " + (object->is_pointer() ? "1" : "0") + "\n";
+			result.pre_code += delete_function_name + " " + object_reference_string + " " + (is_pointer ? "1" : "0") + "\n";
 
 			return result;
 		}

@@ -113,11 +113,14 @@ class bpp_string : public bpp_code_entity {
 class bpp_delete_statement : public bpp_string {
 	private:
 		std::shared_ptr<bpp::bpp_object> object_to_delete;
+		bool force_ptr = false;
 	public:
 		bpp_delete_statement() = default;
 
 		void set_object_to_delete(std::shared_ptr<bpp::bpp_object> object);
+		void set_force_pointer(bool force_pointer);
 		std::shared_ptr<bpp::bpp_object> get_object_to_delete() const;
+		bool force_pointer() const;
 };
 
 class bpp_value_assignment : public bpp_string {

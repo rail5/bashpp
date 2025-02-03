@@ -68,7 +68,7 @@ void BashppListener::exitDelete_statement(BashppParser::Delete_statementContext 
 	}
 
 	// Generate the delete code
-	code_segment delete_code = generate_delete_code(delete_entity->get_object_to_delete(), delete_entity->get_code());
+	code_segment delete_code = generate_delete_code(delete_entity->get_object_to_delete(), delete_entity->get_code(), delete_entity->force_pointer());
 
 	// Add any necessary access code to the code entity
 	current_code_entity->add_code_to_previous_line(delete_entity->get_pre_code());

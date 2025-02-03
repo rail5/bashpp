@@ -23,13 +23,13 @@ More detailed descriptions of the language can be found at the [website](https:/
 The Bash++ compiler is currently in pre-alpha stage, so some features may not work as expected.
 
 As of 2025-02-03:
-| Example Script                  | Works? | Notes                                                                 |
-|---------------------------------|--------|-----------------------------------------------------------------------|
-| toprimitive.bpp                 | **Yes**| Fully functional                                                      |
-| constructors-and-destructors.bpp| **Yes**| Fully functional                                                      |
-| supershell.bpp                  | **Yes**| Fully functional                                                      |
-| include.bpp                     | **Yes**| Fully functional                                                      |
-| inheritance.bpp                 | No     | `@virtual` method overriding has not been implemented                 |
-| pointers.bpp                    | No     | A mess                                                                |
-| queue.bpp                       | **Yes**| Fully functional                                                      |
-| casting.bpp                     | No     | These casting methods have not been implemented                       |
+| Example Script                  | Works?  | Notes                                                                 |
+|---------------------------------|---------|-----------------------------------------------------------------------|
+| toprimitive.bpp                 | **Yes** | Fully functional                                                      |
+| constructors-and-destructors.bpp| **Yes** | Fully functional                                                      |
+| supershell.bpp                  | **Yes** | Fully functional                                                      |
+| include.bpp                     | **Yes** | Fully functional                                                      |
+| inheritance.bpp                 | No      | `@virtual` method overriding has not been implemented                 |
+| pointers.bpp                    | No      | A mess                                                                |
+| queue.bpp                       | **Yes** | Fully functional                                                      |
+| casting.bpp                     | No      | These casting methods have not been implemented                       |

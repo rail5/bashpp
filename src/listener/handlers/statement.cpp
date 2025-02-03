@@ -19,11 +19,11 @@ void BashppListener::exitStatement(BashppParser::StatementContext *ctx) {
 	skip_syntax_errors
 	skip_singlequote_string
 
-	std::shared_ptr<bpp::bpp_program> current_program = std::dynamic_pointer_cast<bpp::bpp_program>(entity_stack.top());
-	if (current_program != nullptr) {
+	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
+	if (current_code_entity != nullptr) {
 		// Make sure we add terminal tokens to the program
 		if (ctx->DELIM() != nullptr) {
-			program->add_code(ctx->DELIM()->getText());
+			current_code_entity->add_code(ctx->DELIM()->getText());
 			return;
 		}
 	}

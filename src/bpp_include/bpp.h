@@ -110,6 +110,16 @@ class bpp_string : public bpp_code_entity {
 		std::string get_post_code() const override;
 };
 
+class bpp_delete_statement : public bpp_string {
+	private:
+		std::shared_ptr<bpp::bpp_object> object_to_delete;
+	public:
+		bpp_delete_statement() = default;
+
+		void set_object_to_delete(std::shared_ptr<bpp::bpp_object> object);
+		std::shared_ptr<bpp::bpp_object> get_object_to_delete() const;
+};
+
 class bpp_value_assignment : public bpp_string {
 	private:
 		bool nonprimitive_assignment = false;

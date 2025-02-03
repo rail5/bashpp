@@ -254,6 +254,13 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 		if (last_reference_type == bpp::reference_type::ref_primitive || datamember_is_pointer) {
 			indirection = (created_second_temporary_variable && ctx->POUNDKEY() == nullptr) ? "!" : "";
 			object_reference_entity->add_code("${" + indirection + object_reference_code + "}");
+
+			std::shared_ptr<bpp::bpp_delete_statement> delete_entity = std::dynamic_pointer_cast<bpp::bpp_delete_statement>(entity_stack.top());
+			if (delete_entity != nullptr && datamember_is_pointer) {
+				std::shared_ptr<bpp::bpp_object> last_reference_object = std::dynamic_pointer_cast<bpp::bpp_object>(last_reference_entity);
+				delete_entity->set_object_to_delete(last_reference_object);
+			}
+
 			ready_to_exit = true;
 		}
 	}
@@ -264,13 +271,25 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 		}
 
 		// If we're here, the last reference entity is a non-primitive object
-		// Is it a pointer?
 		std::shared_ptr<bpp::bpp_object> last_reference_object = std::dynamic_pointer_cast<bpp::bpp_object>(last_reference_entity);
-		if (last_reference_object != nullptr && last_reference_object->is_pointer()) {
-			indirection = created_second_temporary_variable ? "!" : "";
-			object_reference_entity->add_code("${" + indirection + object_reference_code + "}");
+		std::string code_to_add = "";
+
+		// Are we in a delete statement?
+		std::shared_ptr<bpp::bpp_delete_statement> delete_entity = std::dynamic_pointer_cast<bpp::bpp_delete_statement>(entity_stack.top());
+		if (delete_entity != nullptr) {
+			delete_entity->set_object_to_delete(last_reference_object);
+			code_to_add = object_reference_code;
 			ready_to_exit = true;
 		}
+
+		// Is it a pointer?
+		if (last_reference_object != nullptr && last_reference_object->is_pointer()) {
+			indirection = created_second_temporary_variable ? "!" : "";
+			code_to_add = "${" + indirection + object_reference_code + "}";
+			ready_to_exit = true;
+		}
+
+		object_reference_entity->add_code(code_to_add);
 	}
 
 	if (!ready_to_exit) {
@@ -307,6 +326,23 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 	}
 
 	// Ready to exit
+
+	// Are we in a delete statement?
+	std::shared_ptr<bpp::bpp_delete_statement> delete_entity = std::dynamic_pointer_cast<bpp::bpp_delete_statement>(entity_stack.top());
+	if (delete_entity != nullptr) {
+		if (object_reference_entity->get_reference_type() == bpp::reference_type::ref_method) {
+			throw_syntax_error_from_exitRule(ctx->IDENTIFIER(ctx->IDENTIFIER().size() - 1), "Cannot call @delete on a method");
+		}
+
+		if (object_reference_entity->get_reference_type() == bpp::reference_type::ref_primitive) {
+			throw_syntax_error_from_exitRule(ctx->IDENTIFIER(ctx->IDENTIFIER().size() - 1), "Cannot call @delete on a primitive");
+		}
+
+		delete_entity->add_code_to_previous_line(object_reference_entity->get_pre_code());
+		delete_entity->add_code_to_next_line(object_reference_entity->get_post_code());
+		delete_entity->add_code(object_reference_entity->get_code());
+		return;
+	}
 
 	// Are we in an object_address context?
 	if (object_address_entity != nullptr) {

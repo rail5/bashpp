@@ -19,6 +19,7 @@
 #include "../bpp_include/bpp_entity.cpp"
 #include "../bpp_include/bpp_code_entity.cpp"
 #include "../bpp_include/bpp_string.cpp"
+#include "../bpp_include/bpp_delete_statement.cpp"
 #include "../bpp_include/bpp_value_assignment.cpp"
 #include "../bpp_include/bpp_object_reference.cpp"
 #include "../bpp_include/bpp_object_assignment.cpp"
@@ -114,10 +115,26 @@ class BashppListener : public BashppParserBaseListener {
 			if (object_class->has_constructor()) {
 				result.post_code += "bpp__" + object_class->get_name() + "____constructor ${" + new_output_variable + "} 1\n";
 			}
-			
+
 			result.post_code += "unset " + new_output_variable + "\n";
 
 			new_counter++;
+
+			return result;
+		}
+
+		code_segment generate_delete_code(std::shared_ptr<bpp::bpp_object> object, const std::string& object_reference_string) {
+			// The object_reference_string is how the compiled code should refer to the object
+			// Ie, if the object is a pointer, this should be the address of the object
+			code_segment result;
+
+			std::string delete_function_name = "bpp__" + object->get_class()->get_name() + "____delete";
+
+			if (object->get_class()->has_destructor()) {
+				result.pre_code += "bpp__" + object->get_class()->get_name() + "____destructor " + object_reference_string + " " + (object->is_pointer() ? "1" : "0") + "\n";
+			}
+
+			result.pre_code += delete_function_name + " " + object_reference_string + " " + (object->is_pointer() ? "1" : "0") + "\n";
 
 			return result;
 		}

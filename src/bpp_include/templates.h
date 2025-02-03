@@ -52,6 +52,10 @@ const char* template_delete_function = R"EOF(function bpp__%CLASS%____delete() {
 	if [[ "${__objectIsPtr}" -ne 1 ]]; then
 		__objectAddress="bpp__%CLASS%__${__objectName}"
 	fi
+	if [[ "${__objectAddress}" == "0" ]]; then
+		>&2 echo "Bash++: Error: Attempted to delete null object"
+		return
+	fi
 %DELETIONS%
 	unset ${__objectAddress}____inUse
 }
@@ -66,6 +70,14 @@ const char* template_copy_function = R"EOF(function bpp__%CLASS%____copy() {
 	if [[ "${__copyToIsPtr}" -ne 1 ]]; then
 		__copyToAddress="bpp__%CLASS%__${__copyTo}"
 	fi
+	if [[ "${__copyFromAddress}" == "0" ]]; then
+		>&2 echo "Bash++: Error: Attempted to copy from null object"
+		return
+	fi
+	if [[ "${__copyToAddress}" == "0" ]]; then
+		>&2 echo "Bash++: Error: Attempted to copy to null object"
+		return
+	fi
 %COPIES%
 	eval "${__copyToAddress}____inUse=1"
 }
@@ -78,6 +90,10 @@ const char* template_method = R"EOF(function bpp__%CLASS%__%SIGNATURE%() {
 	if [[ "${__objectIsPtr}" -ne 1 ]]; then
 		__objectAddress="bpp__%CLASS%__${__objectName}"
 	fi
+	if [[ "${__objectAddress}" == "0" ]]; then
+		>&2 echo "Bash++: Error: Attempted to call method on null object"
+		return
+	fi
 %METHODBODY%
 }
 )EOF";
@@ -88,6 +104,10 @@ const char* template_constructor = R"EOF(function bpp__%CLASS%____constructor() 
 	if [[ "${__objectIsPtr}" -ne 1 ]]; then
 		__objectAddress="bpp__%CLASS%__${__objectName}"
 	fi
+	if [[ "${__objectAddress}" == "0" ]]; then
+		>&2 echo "Bash++: Error: Attempted to construct null object"
+		return
+	fi
 %CONSTRUCTORBODY%
 }
 )EOF";
@@ -97,6 +117,10 @@ const char* template_destructor = R"EOF(function bpp__%CLASS%____destructor() {
 	local __objectAddress="${__objectName}"
 	if [[ "${__objectIsPtr}" -ne 1 ]]; then
 		__objectAddress="bpp__%CLASS%__${__objectName}"
+	fi
+	if [[ "${__objectAddress}" == "0" ]]; then
+		>&2 echo "Bash++: Error: Attempted to destruct null object"
+		return
 	fi
 %DESTRUCTORBODY%
 }

@@ -16,9 +16,10 @@
 #include <sys/types.h>
 
 void print_syntax_error(std::string source_file, int line, int column, std::string msg, std::stack<std::string> include_chain) {
-	std::string color_red = "\033[0;31m";
-	std::string color_purple = "\033[1;35m";
-	std::string color_reset = "\033[0m";
+	bool is_tty = isatty(fileno(stderr));
+	std::string color_red = is_tty ? "\033[0;31m" : "";
+	std::string color_purple = is_tty ? "\033[1;35m" : "";
+	std::string color_reset = is_tty ? "\033[0m" : "";
 	if (!isatty(fileno(stderr))) {
 		color_red = "";
 		color_reset = "";

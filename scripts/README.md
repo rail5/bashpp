@@ -22,7 +22,7 @@ More detailed descriptions of the language can be found at the [website](https:/
 
 The Bash++ compiler is currently in pre-alpha stage, so some features may not work as expected.
 
-As of now (2025-02-02):
+As of 2025-02-03:
 | Example Script                  | Works? | Notes                                                                 |
 |---------------------------------|--------|-----------------------------------------------------------------------|
 | toprimitive.bpp                 | Yes    | Fully functional                                                      |

@@ -20,6 +20,7 @@ void BashppListener::enterMember_declaration(BashppParser::Member_declarationCon
 	}
 
 	std::shared_ptr<bpp::bpp_datamember> new_datamember = std::make_shared<bpp::bpp_datamember>();
+	new_datamember->set_containing_class(current_class);
 	entity_stack.push(new_datamember);
 
 	// Get visibility

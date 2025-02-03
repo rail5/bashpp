@@ -63,8 +63,8 @@ class bpp_entity {
 
 		bool is_child_of(std::shared_ptr<bpp_entity> parent);
 
-		virtual std::vector<std::shared_ptr<bpp_class>> get_classes() const;
-		virtual std::vector<std::shared_ptr<bpp_object>> get_objects() const;
+		virtual std::map<std::string, std::shared_ptr<bpp_class>> get_classes() const;
+		virtual std::map<std::string, std::shared_ptr<bpp_object>> get_objects() const;
 		virtual std::shared_ptr<bpp_class> get_class(std::string name);
 		virtual std::shared_ptr<bpp_object> get_object(std::string name);
 };

@@ -63,10 +63,10 @@ void bpp_entity::inherit(std::shared_ptr<bpp_entity> parent) {
 	parents.push_back(parent->get_class());
 
 	for (auto& c : parent->get_classes()) {
-		classes[c->get_name()] = c;
+		classes[c.first] = c.second;
 	}
 	for (auto& o : parent->get_objects()) {
-		objects[o->get_name()] = o;
+		objects[o.first] = o.second;
 	}
 }
 
@@ -83,24 +83,16 @@ bool bpp_entity::is_child_of(std::shared_ptr<bpp_entity> parent) {
 	return false;
 }
 
-std::vector<std::shared_ptr<bpp_class>> bpp_entity::get_classes() const {
-	std::vector<std::shared_ptr<bpp_class>> result;
-	for (auto& c : classes) {
-		result.push_back(c.second);
-	}
-	return result;
+std::map<std::string, std::shared_ptr<bpp_class>> bpp_entity::get_classes() const {
+	return classes;
 }
 
-std::vector<std::shared_ptr<bpp_object>> bpp_entity::get_objects() const {
-	std::vector<std::shared_ptr<bpp_object>> result;
-	for (auto& o : objects) {
-		result.push_back(o.second);
-	}
-
+std::map<std::string, std::shared_ptr<bpp_object>> bpp_entity::get_objects() const {
+	std::map<std::string, std::shared_ptr<bpp_object>> all_objects = objects;
 	for (auto& o : local_objects) {
-		result.push_back(o.second);
+		all_objects[o.first] = o.second;
 	}
-	return result;
+	return all_objects;
 }
 
 std::shared_ptr<bpp::bpp_class> bpp_entity::get_class(std::string name) {

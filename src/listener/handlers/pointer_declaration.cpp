@@ -25,6 +25,9 @@ void BashppListener::enterPointer_declaration(BashppParser::Pointer_declarationC
 		throw_syntax_error(ctx->AT(), "Stray pointer declaration inside class body.\nDid you mean to declare a data member?\nIf so, start by declaring the data member with a visibility keyword (@public, @private, @protected)");
 	}
 
+	// Actually get the containing class
+	current_class = entity_stack.top()->get_containing_class().lock();
+
 	antlr4::tree::TerminalNode* object_type = nullptr;
 	antlr4::tree::TerminalNode* object_name = nullptr;
 
@@ -47,15 +50,25 @@ void BashppListener::enterPointer_declaration(BashppParser::Pointer_declarationC
 		current_code_entity = program;
 	}
 
+	// Are we in a data member declaration?
+	std::shared_ptr<bpp::bpp_datamember> current_datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(entity_stack.top());
+
 	std::shared_ptr<bpp::bpp_class> object_class = current_code_entity->get_class(object_type_text);
 
 	// Verify that the object's class exists
 	if (object_class == nullptr) {
-		throw_syntax_error(ctx->AT(), "Class not found: " + object_type_text);
+		// Is it the current class?
+		std::shared_ptr<bpp::bpp_class> containing_class = current_datamember->get_containing_class().lock();
+		if (containing_class != nullptr && containing_class->get_name() == object_type_text) {
+			object_class = containing_class;
+		} else {
+			throw_syntax_error(ctx->AT(), "Class not found: " + object_type_text);
+		}
 	}
 
 	std::shared_ptr<bpp::bpp_object> new_object = std::make_shared<bpp::bpp_object>(object_name_text);
 	new_object->set_pointer(true);
+	new_object->set_containing_class(current_class);
 	entity_stack.push(new_object);
 
 	new_object->set_class(object_class);

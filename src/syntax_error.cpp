@@ -17,15 +17,16 @@
 
 void print_syntax_error(std::string source_file, int line, int column, std::string msg, std::stack<std::string> include_chain) {
 	std::string color_red = "\033[0;31m";
+	std::string color_purple = "\033[0;35m";
 	std::string color_reset = "\033[0m";
 	if (!isatty(fileno(stderr))) {
 		color_red = "";
 		color_reset = "";
 	}
 
-	std::cerr << source_file << ":" << line << ":" << column << ": " << std::endl;
+	std::cerr << color_purple << source_file << color_reset << ":" << line << ":" << column << ": " << std::endl;
 	while (!include_chain.empty()) {
-		std::cerr << "In file included from " << include_chain.top() << std::endl;
+		std::cerr << "In file included from " << color_purple << include_chain.top() << color_reset << std::endl;
 		include_chain.pop();
 	}
 	std::cerr << color_red << "error: " << color_reset << msg << std::endl;

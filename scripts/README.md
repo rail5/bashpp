@@ -1,11 +1,11 @@
 # Bash++ Scripts
 
-For now, this directory holds:
+This directory contains some example scripts that demonstrate how to use Bash++.
 
- - Some example Bash++ scripts in the format `scriptname.bpp`
-
- - Files in the format `scriptname-compiled.sh` which were *compiled by hand*
-
-We'll be compiling by hand until the syntax is fully fleshed-out and we're ready to make the compiler proper
-
-[Shellwatch](https://github.com/rail5/shellwatch) is a small program made to help with this effort
+ - [toprimitive.bpp](toprimitive.bpp) - Demonstrates how to use **.toPrimitive** methods
+ - [constructors-and-destructors.bpp](constructors-and-destructors.bpp) - Demonstrates how to use **constructors** and **destructors**
+ - [supershell.bpp](supershell.bpp) - Demonstrates how to use Bash++ **supershells**
+ - [include.bpp](include.bpp) - Demonstrates how to use the **include** directive
+ - [inheritance.bpp](inheritance.bpp) - Demonstrates **inheritance** and **polymorphism** in Bash++
+ - [pointers.bpp](pointers.bpp) - Demonstrates how to use **pointers** in Bash++
+ - [queue.bpp](queue.bpp) - A small example of a **queue** implemented in Bash++ using pointers

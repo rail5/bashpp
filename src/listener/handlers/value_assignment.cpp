@@ -95,9 +95,6 @@ void BashppListener::exitValue_assignment(BashppParser::Value_assignmentContext 
 		}
 		// Else
 	}
-
-	// Check if we're in an object assignment
-
 }
 
 #endif // SRC_LISTENER_HANDLERS_VALUE_ASSIGNMENT_CPP_

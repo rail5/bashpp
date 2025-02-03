@@ -33,7 +33,7 @@ bool bpp_method::add_object(std::shared_ptr<bpp_object> object) {
 
 	// Is it a pointer?
 	if (object->is_pointer()) {
-		object_code += "bpp__" + type + "____new \"\" " + name + "\n";
+		object_code += object->get_address() + "=\"" + object->get_assignment_value() + "\"\n";
 	} else {
 		object_code += "bpp__" + type + "____new " + name + "\n";
 	}

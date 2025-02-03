@@ -25,11 +25,11 @@ The Bash++ compiler is currently in pre-alpha stage, so some features may not wo
 As of 2025-02-03:
 | Example Script                  | Works? | Notes                                                                 |
 |---------------------------------|--------|-----------------------------------------------------------------------|
-| toprimitive.bpp                 | Yes    | Fully functional                                                      |
-| constructors-and-destructors.bpp| Yes    | Fully functional                                                      |
-| supershell.bpp                  | Yes    | Fully functional                                                      |
-| include.bpp                     | Yes    | Fully functional                                                      |
+| toprimitive.bpp                 | **Yes**| Fully functional                                                      |
+| constructors-and-destructors.bpp| **Yes**| Fully functional                                                      |
+| supershell.bpp                  | **Yes**| Fully functional                                                      |
+| include.bpp                     | **Yes**| Fully functional                                                      |
 | inheritance.bpp                 | No     | `@virtual` method overriding has not been implemented                 |
 | pointers.bpp                    | No     | A mess                                                                |
-| queue.bpp                       | No     | Everything works except the `while` loop at the end -- the supershell is not re-evaluated each time. If you instead put the call to `@testQueue.isEmpty` in a *subshell*, it works perfectly well |
-| casting.bpp                     | No     | These casting methods have not been implemented                        |
+| queue.bpp                       | **Yes**| Fully functional                                                      |
+| casting.bpp                     | No     | These casting methods have not been implemented                       |

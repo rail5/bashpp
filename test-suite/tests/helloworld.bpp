@@ -1,0 +1,11 @@
+@class HelloWorld {
+	@private member="Hello, World!"
+
+	@public @method display arg {
+		echo "@this.member"
+		echo "Hello, $arg!"
+	}
+}
+
+@HelloWorld hello
+@hello.display "test"

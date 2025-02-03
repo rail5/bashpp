@@ -9,6 +9,10 @@
 echo "Running tests..."
 echo "----------------"
 
+# Hello, world
+@runner.runTest "Hello, World" "test-suite/tests/helloworld.bpp" "Hello, World!
+Hello, test!"
+
 # Supershells
 @runner.runTest "Supershells" "test-suite/tests/supershells.bpp" "Command matches expected output
 Iteration 1

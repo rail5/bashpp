@@ -44,12 +44,6 @@
 			"include": "#pathname"
 		},
 		{
-			"include": "#keyword"
-		},
-		{
-			"include": "#support"
-		},
-		{
 			"include": "#bashpp-keyword"
 		},
 		{
@@ -62,8 +56,18 @@
 			"include": "#member-declaration"
 		},
 		{
+			"include": "#bashpp-variable"
+		},
+		{
+			"include": "#keyword"
+		},
+		{
+			"include": "#support"
+		},
+		{
 			"include": "#variable"
 		}
+		
 	],
 	"repository": {
 		"case-clause": {
@@ -814,18 +818,6 @@
 				}
 			]
 		},
-		"keyword": {
-			"patterns": [
-				{
-					"match": "(?<=^|;|&|\\s)(?:if|then|else|elif|fi|for|in|do|done|select|case|continue|esac|while|until|return|coproc)(?=\\s|;|&|$)",
-					"name": "keyword.control.shell"
-				},
-				{
-					"match": "(?<=^|;|&|\\s)(?:export|declare|typeset|local|readonly)(?=\\s|;|&|$)",
-					"name": "storage.modifier.shell"
-				}
-			]
-		},
 		"bashpp-keyword": {
 			"patterns": [
 				{
@@ -875,6 +867,18 @@
 				{
 					"match": "(?<=(@public|@private|@protected)\\s(@[a-zA-Z_][a-zA-Z0-9_]*\\*?\\s)?)(?!.*__)[a-zA-Z_][a-zA-Z0-9_]*(?=\\s|=|$)",
 					"name": "variable.other.bashpp"
+				}
+			]
+		},
+		"keyword": {
+			"patterns": [
+				{
+					"match": "(?<=^|;|&|\\s)(?:if|then|else|elif|fi|for|in|do|done|select|case|continue|esac|while|until|return|coproc)(?=\\s|;|&|$)",
+					"name": "keyword.control.shell"
+				},
+				{
+					"match": "(?<=^|;|&|\\s)(?:export|declare|typeset|local|readonly)(?=\\s|;|&|$)",
+					"name": "storage.modifier.shell"
 				}
 			]
 		},
@@ -1234,6 +1238,55 @@
 				}
 			]
 		},
+		"bashpp-variable": {
+			"patterns": [
+				{
+					"captures": {
+						"1": {
+							"name": "punctuation.definition.variable.bashpp"
+						}
+					},
+					"match": "(?<!\\\\)(@)(?!class\\b)(?!public\\b)(?!private\\b)(?!protected\\b)(?!virtual\\b)(?!method\\b)(?!constructor\\b)(?!destructor\\b)(?!new\\b)(?!delete\\b)(?!nullptr\\b)(?!include_once\\b)(?!include\\b)(?!upcast\\b)(?!downcast\\b)(?!cast\\b)(?!.*__)[a-zA-Z_]([a-zA-Z0-9_]*\\.?)*",
+					"name": "variable.other.normal.bashpp"
+				},
+				{
+					"begin": "@\\{",
+					"captures": {
+						"0": {
+							"name": "punctuation.definition.variable.bashpp"
+						}
+					},
+					"end": "\\}",
+					"name": "variable.other.bracket.bashpp",
+					"patterns": [
+						{
+							"match": "!|:[-=?+]?|\\*|@|#{1,2}|%{1,2}|/",
+							"name": "keyword.operator.expansion.bashpp"
+						},
+						{
+							"captures": {
+								"1": {
+									"name": "punctuation.section.array.bashpp"
+								},
+								"3": {
+									"name": "punctuation.section.array.bashpp"
+								}
+							},
+							"match": "(\\[)([^\\]]+)(\\])"
+						},
+						{
+							"include": "#string"
+						},
+						{
+							"include": "#variable"
+						},
+						{
+							"include": "#interpolation"
+						}
+					]
+				}
+			]
+		},
 		"variable": {
 			"patterns": [
 				{
@@ -1284,51 +1337,6 @@
 								},
 								"3": {
 									"name": "punctuation.section.array.shell"
-								}
-							},
-							"match": "(\\[)([^\\]]+)(\\])"
-						},
-						{
-							"include": "#string"
-						},
-						{
-							"include": "#variable"
-						},
-						{
-							"include": "#interpolation"
-						}
-					]
-				},
-				{
-					"captures": {
-						"1": {
-							"name": "punctuation.definition.variable.bashpp"
-						}
-					},
-					"match": "(?<!\\\\)(@)(?!class\\b)(?!public\\b)(?!private\\b)(?!protected\\b)(?!virtual\\b)(?!method\\b)(?!constructor\\b)(?!destructor\\b)(?!new\\b)(?!delete\\b)(?!nullptr\\b)(?!include_once\\b)(?!include\\b)(?!upcast\\b)(?!downcast\\b)(?!cast\\b)(?!.*__)[a-zA-Z_]([a-zA-Z0-9_]*\\.?)*",
-					"name": "variable.other.normal.bashpp"
-				},
-				{
-					"begin": "@\\{",
-					"captures": {
-						"0": {
-							"name": "punctuation.definition.variable.bashpp"
-						}
-					},
-					"end": "\\}",
-					"name": "variable.other.bracket.bashpp",
-					"patterns": [
-						{
-							"match": "!|:[-=?+]?|\\*|@|#{1,2}|%{1,2}|/",
-							"name": "keyword.operator.expansion.bashpp"
-						},
-						{
-							"captures": {
-								"1": {
-									"name": "punctuation.section.array.bashpp"
-								},
-								"3": {
-									"name": "punctuation.section.array.bashpp"
 								}
 							},
 							"match": "(\\[)([^\\]]+)(\\])"

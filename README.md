@@ -2,7 +2,7 @@
 
 Bash with classes
 
-```java
+```javascript
 @class Bashpp {
   @public author="Andrew S. Rightenburg"
   @public source="https://github.com/rail5/bashpp"

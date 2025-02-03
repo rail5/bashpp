@@ -1,0 +1,23 @@
+@class TestStats {
+	@private numberOfFailedTests=0
+	@private numberOfPassedTests=0
+	@private numberOfUntestedTests=0
+
+	@public @method incrementFailedTests {
+		@this.numberOfFailedTests=$((@this.numberOfFailedTests + 1))
+	}
+
+	@public @method incrementPassedTests {
+		@this.numberOfPassedTests=$((@this.numberOfPassedTests + 1))
+	}
+
+	@public @method incrementUntestedTests {
+		@this.numberOfUntestedTests=$((@this.numberOfUntestedTests + 1))
+	}
+
+	@public @method toPrimitive {
+		echo "Tests Passed: @this.numberOfPassedTests"
+		echo "Tests Failed: @this.numberOfFailedTests"
+		echo "Tests Untested: @this.numberOfUntestedTests"
+	}
+}

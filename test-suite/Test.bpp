@@ -1,0 +1,77 @@
+@include_once "bpp_path.bpp"
+
+@class Test {
+	@protected name
+	@protected status="untested"
+	@protected sourceFile
+	@protected expectedOutput
+
+	@public @method setName name {
+		@this.name="$name"
+	}
+
+	@public @method setSourceFile sourceFile {
+		@this.sourceFile="$sourceFile"
+
+		if [[ ! -f "@this.sourceFile" ]]; then
+			echo "The source file @this.sourceFile does not exist."
+			echo "CWD: $(pwd)"
+			exit 1
+		fi
+	}
+
+	@public @method setExpectedOutput expectedOutput {
+		@this.expectedOutput="$expectedOutput"
+	}
+
+	@public @method getName {
+		echo "@this.name"
+	}
+
+	@public @method getStatus {
+		echo "@this.status"
+	}
+
+	@public @method getSourceFile {
+		echo "@this.sourceFile"
+	}
+
+	@public @method getExpectedOutput {
+		echo "@this.expectedOutput"
+	}
+
+	@public @method run {
+		if [[ -z "@this.name" ]] || [[ -z "@this.sourceFile" ]]; then
+			echo "Test name and source file must be set before running the test."
+			exit 1
+		fi
+
+		local output="@(bin/bpp @this.sourceFile)"
+		if [[ "$output" == "@this.expectedOutput" ]]; then
+			@this.status="pass"
+		else
+			@this.status="fail"
+		fi
+	}
+
+	@public @method toPrimitive {
+		# Display the test name and status
+		# In the format:
+		# TestName: Status
+		# The status should be colored green if pass, red if fail, and yellow if untested
+
+		local statusColor="33"
+		if [[ "@this.status" == "pass" ]]; then
+			statusColor="32"
+		elif [[ "@this.status" == "fail" ]]; then
+			statusColor="31"
+		fi
+
+		local colorize="\033[1;${statusColor}m" uncolorize="\033[0m"
+
+		echo -n "@this.name: "
+		echo -n -e "${colorize}"
+		echo -n "@this.status"
+		echo -e "${uncolorize}"
+	}
+}

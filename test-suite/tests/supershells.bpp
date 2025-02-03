@@ -1,0 +1,9 @@
+if [[ "@(echo "expected output")" == "expected output" ]]; then
+	echo "Command matches expected output"
+fi
+
+for i in @(seq 1 10); do
+	echo "Iteration $i"
+done
+
+@(echo "echo hi")

@@ -1,0 +1,29 @@
+@class TestRunner {
+	@private @TestStats* stats
+
+	@public @method setStats stats {
+		@this.stats="$stats" # This should be rewritten when type checking is properly implemented
+	}
+
+	@public @method runTest name sourceFile expectedOutput {
+		@Test test
+		@test.setName "$name"
+		@test.setSourceFile "$sourceFile"
+		@test.setExpectedOutput "$expectedOutput"
+		@test.run
+
+		# TODO(@rail5): I wanted to write this as a 'case' statement,
+		# And discovered that 'case' statements are broken
+		# (All the pre-code and post-code segments get haphazardly added around the case statement, breaking it)
+		# Fix 'case' statements in the compiler.
+		if [[ "@test.getStatus" == "pass" ]]; then
+			@this.stats.incrementPassedTests
+		elif [[ "@test.getStatus" == "fail" ]]; then
+			@this.stats.incrementFailedTests
+		elif [[ "@test.getStatus" == "untested" ]]; then
+			@this.stats.incrementUntestedTests
+		fi
+
+		echo @test
+	}
+}

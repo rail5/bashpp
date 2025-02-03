@@ -5,6 +5,9 @@ all: clean-src clean-main update-version update-year
 	cd src && make
 	mv src/bpp bin/bpp
 
+test:
+	bin/bpp test-suite/run.bpp
+
 parser: clean-parser
 	cd src && make parser
 	mv src/BashppParser bin/BashppParser

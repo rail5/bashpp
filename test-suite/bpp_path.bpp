@@ -1,0 +1,13 @@
+@class bpp {
+	@public path="bin/bpp"
+
+	@constructor {
+		if [[ ! -f "@this.path" ]]; then
+			echo "The bpp compiler was not found at @this.path"
+			echo "CWD: $(pwd)"
+			exit 1
+		fi
+	}
+}
+
+@bpp compiler

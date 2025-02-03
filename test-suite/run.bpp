@@ -1,0 +1,28 @@
+@include_once "TestStats.bpp"
+@include_once "Test.bpp"
+@include_once "TestRunner.bpp"
+
+@TestStats stats
+@TestRunner runner
+@runner.setStats &@stats
+
+echo "Running tests..."
+echo "----------------"
+
+# Supershells
+@runner.runTest "Supershells" "test-suite/tests/supershells.bpp" "Command matches expected output
+Iteration 1
+Iteration 2
+Iteration 3
+Iteration 4
+Iteration 5
+Iteration 6
+Iteration 7
+Iteration 8
+Iteration 9
+Iteration 10
+hi"
+
+
+echo "----------------"
+echo "@stats"

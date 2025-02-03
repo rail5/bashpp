@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.0.4]
+
+- Patched a bug introduced in the previous change that messed up highlighting of Bash++ variables within strings.
+
 ## [0.0.3]
 
 - Moved Bash++-specific highlighting rules to a higher priority than shell keywords and builtins.

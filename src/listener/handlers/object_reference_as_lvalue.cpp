@@ -167,7 +167,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 		}
 		temporary_variable_rvalue = "${" + indirection + temporary_variable + "}__" + final_object->get_name();
 
-		if (object_chain.size() > 2) {
+		if (object_chain.size() > 1) {
 			object_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=\"" + temporary_variable_rvalue + "\"\n");
 			object_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
 		}
@@ -175,7 +175,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 		std::string encasing_start = "";
 		std::string encasing_end = "";
 
-		if (object_chain.size() > 2) {
+		if (object_chain.size() > 1) {
 			encasing_start = "${";
 			if (object_assignment != nullptr && final_object->get_class() != primitive && !final_object->is_pointer()) {
 				encasing_start += "!";

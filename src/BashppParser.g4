@@ -40,6 +40,7 @@ general_statement: include_statement
 	| pointer_dereference
 	| typecast
 	| nullptr_ref
+	| bash_while_declaration
 	| other_statement
 	| DELIM
 	| WS;
@@ -156,8 +157,13 @@ array_value: ARRAY_ASSIGN_START statement* ARRAY_ASSIGN_END;
 
 array_index: LBRACKET statement* RBRACKET;
 
+// Bash while loops
+// We only need to catch these so that we can implement our hacky fix to make sure supershells are re-evaluated after each iteration
+// TODO(@rail5): Do better
+bash_while_declaration: BASH_KEYWORD_WHILE statement* BASH_WHILE_END;
+
 // Other statement
-other_statement: ~(RBRACE | RBRACE_ROOTLEVEL | RBRACKET | SUPERSHELL_END | QUOTE_END | SINGLEQUOTE_END | NEWLINE | SUBSHELL_END | DEPRECATED_SUBSHELL_END | BASH_ARITH_END | ARRAY_ASSIGN_END)+?;
+other_statement: ~(RBRACE | RBRACE_ROOTLEVEL | RBRACKET | SUPERSHELL_END | QUOTE_END | SINGLEQUOTE_END | NEWLINE | SUBSHELL_END | DEPRECATED_SUBSHELL_END | BASH_ARITH_END | ARRAY_ASSIGN_END | BASH_WHILE_END)+?;
 
 // This rule will *only* ever be matched as part a value_assignment
 raw_rvalue: IDENTIFIER | NUMBER | BASH_VAR;

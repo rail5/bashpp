@@ -22,6 +22,8 @@ bool incoming_token_can_be_lvalue = true;
 bool hit_at_in_current_command = false;
 bool hit_lbrace_in_current_command = false;
 
+bool waiting_to_terminate_while_statement = false;
+
 enum lexer_special_mode_type {
 	mode_supershell,
 	mode_subshell,
@@ -52,6 +54,7 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 			break;
 		case DELIM:
 		case NEWLINE:
+		case BASH_WHILE_END:
 		case CONNECTIVE:
 		case DOUBLEAMPERSAND:
 		case DOUBLEPIPE:
@@ -144,6 +147,10 @@ NEWLINE: '\n' {
 			break;
 		default:
 			emit(DELIM, "\n");
+			if (waiting_to_terminate_while_statement) {
+				emit(BASH_WHILE_END, "\n");
+				waiting_to_terminate_while_statement = false;
+			}
 			break;
 	}
 };
@@ -262,6 +269,10 @@ IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]* {
 		emit(INVALID_IDENTIFIER, getText());
 	} else if (incoming_token_can_be_lvalue) {
 		emit(IDENTIFIER_LVALUE, getText());
+		if (getText() == "while") {
+			emit(BASH_KEYWORD_WHILE, getText());
+			waiting_to_terminate_while_statement = true;
+		}
 	}
 };
 
@@ -489,3 +500,6 @@ LESSTHAN: '<';
 GREATERTHAN: '>';
 
 CATCHALL: .;
+
+BASH_KEYWORD_WHILE: 'while';
+BASH_WHILE_END: 'while'; // Another in a long list of dummy tokens

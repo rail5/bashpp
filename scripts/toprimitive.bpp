@@ -29,12 +29,6 @@
 		@this.outerDataMember.update "$newValue"
 	}
 	
-	@public @method updateWithObject @Object* newValue {
-		# This method takes an object pointer as an argument
-		@delete @this.outerDataMember
-		@this.outerDataMember=@newValue
-	}
-	
 	@public @method toPrimitive {
 		# This overrides the default "toPrimitive" method
 		@this.outerDataMember.display

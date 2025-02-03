@@ -110,6 +110,11 @@ class BashppListener : public BashppParserBaseListener {
 
 			result.pre_code += new_function_name + " \"\" " + new_output_variable + "\n";
 			result.code = "${" + new_output_variable + "}";
+
+			if (object_class->has_constructor()) {
+				result.post_code += "bpp__" + object_class->get_name() + "____constructor ${" + new_output_variable + "} 1\n";
+			}
+			
 			result.post_code += "unset " + new_output_variable + "\n";
 
 			new_counter++;

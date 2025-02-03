@@ -71,6 +71,10 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 			assignments += "	eval \"${__objectAddress}__" + dm->get_name() + "=" + default_value_preface + default_value + "\"\n";
 		} else {
 			assignments += "	bpp__" + dm->get_class()->get_name() + "____new \"\" ${__objectAddress}__" + dm->get_name() + "\n";
+			// Call the constructor if it exists
+			if (dm->get_class()->has_constructor()) {
+				assignments += "	bpp__" + dm->get_class()->get_name() + "____constructor \"${__objectAddress}__" + dm->get_name() + "\" 1\n";
+			}
 		}
 		assignments += dm->get_post_access_code() + "\n";
 	}

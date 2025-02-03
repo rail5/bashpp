@@ -83,6 +83,7 @@ bool bpp_class::set_constructor(std::shared_ptr<bpp_constructor> constructor) {
 		return false;
 	}
 	this->constructor = constructor;
+	constructor_set = true;
 	return true;
 }
 
@@ -91,6 +92,7 @@ bool bpp_class::set_destructor(std::shared_ptr<bpp_destructor> destructor) {
 		return false;
 	}
 	this->destructor = destructor;
+	destructor_set = true;
 	return true;
 }
 

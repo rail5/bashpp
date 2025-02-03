@@ -1,5 +1,5 @@
-VERSION=$$(dpkg-parsechangelog -l debian/changelog --show-field version)
-LASTUPDATEDYEAR=$$(date +%Y -d@$$(dpkg-parsechangelog -l debian/changelog --show-field timestamp))
+VERSION=$$(dpkg-parsechangelog -l debian/changelog --show-field version || echo "0.1")
+LASTUPDATEDYEAR=$$(date +%Y -d@$$(dpkg-parsechangelog -l debian/changelog --show-field timestamp || date +%Y) || echo "2025")
 
 all: clean-src clean-main update-version update-year
 	cd src && make

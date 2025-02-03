@@ -32,7 +32,7 @@ void BashppListener::enterConstructor_definition(BashppParser::Constructor_defin
 
 	std::shared_ptr<bpp::bpp_constructor> constructor = std::make_shared<bpp::bpp_constructor>();
 	constructor->set_containing_class(current_class);
-	constructor->inherit(current_class);
+	constructor->inherit(program);
 	entity_stack.push(constructor);
 }
 

@@ -23,6 +23,13 @@ Bash with classes
 
 More documentation is available on the [website](https://bpp.sh).
 
+![GPLv3](https://www.gnu.org/graphics/gplv3-with-text-136x68.png)
+
+
+The Bash++ language and compiler are licensed under the GNU General Public License v3.
+
+This does not affect any code you write in Bash++ – only the Bash++ language and compiler themselves. You are perfectly free to use Bash++ to write software under a different license.
+
 ## Building from source
 
 The Bash++ compiler is currently in pre-alpha, and is not yet ready for general use. It's expected to break often, and is not yet feature-complete. However, if you'd like to build it from source, you can of course do so. Please report any bugs you find to the [issue tracker](https://github.com/rail5/bashpp/issues).

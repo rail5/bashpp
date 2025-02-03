@@ -68,3 +68,15 @@ $ bpp -v # Display version
 ```
 
 It's strongly recommended to use the `-o` flag to specify an output file. If you don't, you'll be re-compiling the program every time you run it, which could take some time, especially for larger programs. Using `-o` and subsequently running the compiled program is much faster for subsequent runs.
+
+## Debugging
+
+If you encounter a bug, please report it to the [issue tracker](https://github.com/rail5/bashpp/issues).
+
+If you'd like to debug the compiler yourself, you can use the `make parser` target to build the `BashppParser` executable in the `bin/` directory. This will print the lexer output and parse trees for an input file. This can be useful for debugging syntax errors and compiler issues.
+
+```bash
+$ bin/BashppParser program.bpp
+```
+
+[Shellwatch](https://github.com/rail5/shellwatch) is a tool designed specifically to help debug Bash++ programs and compiler issues. Shellwatch will step a Bash script line-by-line, showing the current state of variables and their values, as well as the current line of the script being executed. Shellwatch will also allow you to modify the values of stored variables before continuing script execution. This tool can be very helpful for debugging complex (compiled) Bash++ programs which are hard to analyze with your eyes alone.

@@ -12,8 +12,14 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterProgram(BashppParser::ProgramContext *ctx) {
-	entity_stack.push(program);
+	if (included) {
+		program = included_from->get_program();
 
+		// Inherit all of the parent program's included files
+		included_files = included_from->get_included_files();
+	}
+
+	entity_stack.push(program);
 	primitive = program->get_primitive_class();	
 }
 
@@ -24,15 +30,23 @@ void BashppListener::exitProgram(BashppParser::ProgramContext *ctx) {
 
 	program->flush_code_buffers();
 
-	if (supershell_counter > 0) {
-		program->prepend_code(bpp_supershell_function);
-	}
+	if (!included) {
+		if (supershell_counter > 0) {
+			program->prepend_code(bpp_supershell_function);
+		}
 
-	program->prepend_code("#!/usr/bin/env bash\n");
+		program->prepend_code("#!/usr/bin/env bash\n");
+	}
 
 	entity_stack.pop();
 	if (!entity_stack.empty()) {
 		throw internal_error("entity_stack is not empty after exiting program");
+	}
+
+	if (included) {
+		included_from->add_to_supershell_counter(supershell_counter);
+		included_from->add_to_new_counter(new_counter);
+		return;
 	}
 
 	if (!run_on_exit) {

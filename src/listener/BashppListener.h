@@ -47,6 +47,9 @@
 class BashppListener : public BashppParserBaseListener {
 	private:
 		std::string source_file;
+		bool included = false;
+		std::set<std::string> included_files = {};
+		BashppListener* included_from = nullptr;
 		std::ostream* output_stream = &std::cout;
 		std::string output_file;
 		bool run_on_exit = false;
@@ -147,6 +150,22 @@ class BashppListener : public BashppParserBaseListener {
 		this->source_file = source_file;
 	}
 
+	void set_included(bool included) {
+		this->included = included;
+	}
+
+	void set_included_from(BashppListener* included_from) {
+		this->included_from = included_from;
+	}
+
+	void add_to_supershell_counter(uint64_t value) {
+		supershell_counter += value;
+	}
+
+	void add_to_new_counter(uint64_t value) {
+		new_counter += value;
+	}
+
 	void set_output_stream(std::ostream* output_stream) {
 		this->output_stream = output_stream;
 	}
@@ -161,6 +180,14 @@ class BashppListener : public BashppParserBaseListener {
 	
 	void set_arguments(std::vector<std::string> arguments) {
 		this->arguments = arguments;
+	}
+
+	std::shared_ptr<bpp::bpp_program> get_program() {
+		return program;
+	}
+
+	std::set<std::string> get_included_files() {
+		return included_files;
 	}
 
 	void enterProgram(BashppParser::ProgramContext *ctx) override;

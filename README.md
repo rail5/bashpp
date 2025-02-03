@@ -87,3 +87,7 @@ $ bin/BashppParser program.bpp
 ```
 
 [Shellwatch](https://github.com/rail5/shellwatch) is a tool designed specifically to help debug Bash++ programs and compiler issues. Shellwatch will step a Bash script line-by-line, showing the current state of variables and their values, as well as the current line of the script being executed. Shellwatch will also allow you to modify the values of stored variables before continuing script execution. This tool can be very helpful for debugging complex (compiled) Bash++ programs which are hard to analyze with your eyes alone.
+
+```bash
+shellwatch compiled-program.sh
+```

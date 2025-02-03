@@ -1,7 +1,7 @@
 CXX = g++
 CXXFLAGS = -std=gnu++17 -O2
 INCLUDEFLAGS = -I/usr/include/antlr4-runtime
-ANTLR4_PATH = /usr/lib/x86_64-linux-gnu/libantlr4-runtime.a
+ANTLR4_PATH = $(shell find /usr/lib -name libantlr4-runtime.a | head -n 1)
 
 all: antlr4
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -o bpp bpp.cpp antlr/BashppLexer.cpp antlr/BashppParser.cpp $(ANTLR4_PATH)

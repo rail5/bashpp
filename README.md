@@ -51,6 +51,7 @@ sudo apt install build-essential antlr4 libantlr4-runtime-dev pandoc perl debhel
 ```bash
 make # Build the Bash++ compiler, which can then be found at bin/bpp
 make manual # Build the manpages, which can then be found at debian/bpp.1 and debian/bpp.5
-make parser # Build 'bin/BashppParser', which will print lexer output and parse trees. Useful for debugging.
+make parser # Build 'BashppParser', prints lexer output & parse trees. Useful for debugging.
+make test # Run the test suite. The test suite is itself written in Bash++.
 debuild -us -uc # Build the Debian .deb package for installation
 ```

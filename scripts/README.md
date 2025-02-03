@@ -31,5 +31,5 @@ As of now (2025-02-02):
 | include.bpp                     | Yes    | Fully functional                                                      |
 | inheritance.bpp                 | No     | `@virtual` method overriding has not been implemented                 |
 | pointers.bpp                    | No     | A mess                                                                |
-| queue.bpp                       | No     | Everything works except the `while` loop at the end -- the supershell is not re-evaluated each time |
+| queue.bpp                       | No     | Everything works except the `while` loop at the end -- the supershell is not re-evaluated each time. If you instead put the call to `@testQueue.isEmpty` in a *subshell*, it works perfectly well |
 | casting.bpp                     | No     | These casting methods have not been implemented                        |

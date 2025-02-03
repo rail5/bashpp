@@ -28,7 +28,7 @@ jobs:
   # Build job
   build:
     runs-on: ubuntu-latest
-    if: ${{ env.GITHUB_ACTIONS == 'true' }} # Conditional check to ensure the job only runs on GitHub Actions
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }} # Conditional check to ensure the job only runs on GitHub Actions
     steps:
       - name: Checkout
         uses: actions/checkout@v3

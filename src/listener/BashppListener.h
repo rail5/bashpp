@@ -51,6 +51,7 @@ class BashppListener : public BashppParserBaseListener {
 		bool included = false;
 		std::set<std::string> included_files = {};
 		BashppListener* included_from = nullptr;
+		std::stack<std::string> include_stack;
 		std::ostream* output_stream = &std::cout;
 		std::string output_file;
 		bool run_on_exit = false;
@@ -151,7 +152,7 @@ class BashppListener : public BashppParserBaseListener {
 		#define output_syntax_error(symbol, msg) \
 			int line = symbol->getLine(); \
 			int column = symbol->getCharPositionInLine(); \
-			print_syntax_error(source_file, line, column, msg); \
+			print_syntax_error(source_file, line, column, msg, get_include_stack()); \
 			program_has_errors = true;
 
 		#define throw_syntax_error_sym(symbol, msg) \
@@ -180,6 +181,8 @@ class BashppListener : public BashppParserBaseListener {
 
 	void set_included_from(BashppListener* included_from) {
 		this->included_from = included_from;
+		include_stack = included_from->get_include_stack();
+		include_stack.push(included_from->source_file);
 	}
 
 	void add_to_supershell_counter(uint64_t value) {
@@ -212,6 +215,10 @@ class BashppListener : public BashppParserBaseListener {
 
 	std::set<std::string> get_included_files() {
 		return included_files;
+	}
+
+	std::stack<std::string> get_include_stack() {
+		return include_stack;
 	}
 
 	void enterProgram(BashppParser::ProgramContext *ctx) override;

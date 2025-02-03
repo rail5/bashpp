@@ -9,12 +9,13 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <stack>
 
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
 
-void print_syntax_error(std::string source_file, int line, int column, std::string msg) {
+void print_syntax_error(std::string source_file, int line, int column, std::string msg, std::stack<std::string> include_chain) {
 	std::string color_red = "\033[0;31m";
 	std::string color_reset = "\033[0m";
 	if (!isatty(fileno(stderr))) {
@@ -22,8 +23,12 @@ void print_syntax_error(std::string source_file, int line, int column, std::stri
 		color_reset = "";
 	}
 
-	std::cerr << source_file << ":" << line << ":" << column << ": " << std::endl
-		<< color_red << "error: " << color_reset << msg << std::endl;
+	std::cerr << source_file << ":" << line << ":" << column << ": " << std::endl;
+	while (!include_chain.empty()) {
+		std::cerr << "In file included from " << include_chain.top() << std::endl;
+		include_chain.pop();
+	}
+	std::cerr << color_red << "error: " << color_reset << msg << std::endl;
 
 	// Open the source file for reading
 	std::ifstream file(source_file);

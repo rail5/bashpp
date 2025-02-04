@@ -2,8 +2,6 @@
 
 Bash with classes
 
-<img src="https://vp.rail5.org/bpp/badge.svg" title="" alt="tests-pass-rate" width="137">
-
 ```javascript
 @class Bashpp {
   @public author="Andrew S. Rightenburg"
@@ -31,6 +29,10 @@ More documentation is available on the [website](https://bpp.sh).
 The Bash++ language and compiler are licensed under the GNU General Public License v3.
 
 This does not affect any code you write in Bash++ – only the Bash++ language and compiler themselves. You are perfectly free to use Bash++ to write software under a different license.
+
+## Test results
+
+<img src="https://vp.rail5.org/bpp/badge.svg" title="" alt="tests-pass-rate" width="137">
 
 ## Building from source
 

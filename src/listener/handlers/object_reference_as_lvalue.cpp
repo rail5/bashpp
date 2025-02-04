@@ -197,8 +197,16 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 		if (penultimate_class == nullptr) {
 			throw internal_error("Penultimate entity in the object chain does not have a class");
 		}
-
-		std::string object_address = "bpp__" + referenced_object->get_class()->get_name() + "__" + referenced_object->get_name();
+		// Is it a program-level pointer?
+		std::shared_ptr<bpp::bpp_object> penultimate_object_as_object = std::dynamic_pointer_cast<bpp::bpp_object>(penultimate_object);
+		bool is_ptr = (penultimate_object_as_object != nullptr) && penultimate_object_as_object->is_pointer();
+		// Get its address
+		std::string object_address;
+		if (is_ptr) {
+			object_address = penultimate_object->get_address();
+		} else {
+			object_address = "bpp__" + referenced_object->get_class()->get_name() + "__" + referenced_object->get_name();
+		}
 
 		for (size_t i = 1; i < object_chain.size() - 1; i++) {
 			object_address += "__" + object_chain[i]->get_name();
@@ -207,7 +215,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 		std::string indirection_start = "";
 		std::string indirection_end = "";
 
-		if (object_chain.size() > 2) {
+		if (object_chain.size() > 2 || is_ptr) {
 			indirection_start = "${";
 			indirection_end = "}";
 		}

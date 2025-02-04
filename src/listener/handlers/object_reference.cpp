@@ -133,6 +133,8 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 			} else {
 				object_reference_code = object->get_address();
 				created_first_temporary_variable = true;
+				encase_open = "${";
+				encase_close = "}";
 			}
 		} else if (method != nullptr) {
 			class_containing_the_method = last_reference_entity->get_class();

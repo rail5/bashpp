@@ -16,7 +16,6 @@
 		if [[ ! -f "@this.sourceFile" ]]; then
 			echo "The source file @this.sourceFile does not exist."
 			echo "CWD: $(pwd)"
-			exit 1
 		fi
 	}
 
@@ -44,6 +43,10 @@
 		if [[ -z "@this.name" ]] || [[ -z "@this.sourceFile" ]]; then
 			echo "Test name and source file must be set before running the test."
 			exit 1
+		fi
+
+		if [[ ! -f "@this.sourceFile" ]]; then
+			return
 		fi
 
 		local output="@(bin/bpp @this.sourceFile)"

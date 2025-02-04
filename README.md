@@ -2,7 +2,7 @@
 
 Bash with classes
 
-![tests-pass-rate](https://vp.rail5.org/bpp/badge.svg)
+<img src="https://vp.rail5.org/bpp/badge.svg" title="" alt="tests-pass-rate" width="137">
 
 ```javascript
 @class Bashpp {

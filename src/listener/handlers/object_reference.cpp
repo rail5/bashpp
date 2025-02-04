@@ -259,6 +259,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 			if (delete_entity != nullptr && datamember_is_pointer) {
 				std::shared_ptr<bpp::bpp_object> last_reference_object = std::dynamic_pointer_cast<bpp::bpp_object>(last_reference_entity);
 				delete_entity->set_object_to_delete(last_reference_object);
+				delete_entity->set_force_pointer(true);
 			}
 
 			ready_to_exit = true;
@@ -278,6 +279,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 		std::shared_ptr<bpp::bpp_delete_statement> delete_entity = std::dynamic_pointer_cast<bpp::bpp_delete_statement>(entity_stack.top());
 		if (delete_entity != nullptr) {
 			delete_entity->set_object_to_delete(last_reference_object);
+			delete_entity->set_force_pointer(true);
 			code_to_add = object_reference_code;
 			ready_to_exit = true;
 		}

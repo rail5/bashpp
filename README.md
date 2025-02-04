@@ -95,3 +95,7 @@ $ bin/BashppParser program.bpp
 ```bash
 $ shellwatch compiled-program.sh
 ```
+
+## VSCode extension
+
+The [Bash++ extension for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=rail5.bashpp) provides syntax highlighting for Bash++.

@@ -35,6 +35,11 @@ void BashppListener::enterMethod_definition(BashppParser::Method_definitionConte
 		method->set_scope(bpp::bpp_scope::SCOPE_PRIVATE);
 	}
 
+	// Virtual?
+	if (ctx->KEYWORD_VIRTUAL() != nullptr) {
+		method->set_virtual(true);
+	}
+
 	entity_stack.push(method);
 }
 

@@ -70,6 +70,10 @@ void bpp_method::set_virtual(bool is_virtual) {
 	m_is_virtual = is_virtual;
 }
 
+void bpp_method::set_inherited(bool is_inherited) {
+	inherited = is_inherited;
+}
+
 std::string bpp_method::get_name() const {
 	return name;
 }
@@ -84,6 +88,10 @@ bpp_scope bpp_method::get_scope() const {
 
 bool bpp_method::is_virtual() const {
 	return m_is_virtual;
+}
+
+bool bpp_method::is_inherited() const {
+	return inherited;
 }
 
 void bpp_method::destruct_local_objects() {

@@ -58,8 +58,14 @@ bool bpp_class::add_method(std::shared_ptr<bpp_method> method) {
 		has_custom_toPrimitive = true;
 	}
 
-	for (auto& m : methods) {
-		if (m->get_name() == name) {
+	for (auto it = methods.begin(); it != methods.end(); it++) {
+		if ((*it)->get_name() == name) {
+			if ((*it)->is_inherited() && (*it)->is_virtual()) {
+				// Override the inherited virtual method
+				methods.erase(it);
+				methods.push_back(method);
+				return true;
+			}
 			return false;
 		}
 	}
@@ -173,11 +179,15 @@ std::shared_ptr<bpp::bpp_datamember> bpp_class::get_datamember(std::string name,
 void bpp_class::inherit(std::shared_ptr<bpp_class> parent) {
 	// Inherit methods
 	for (auto& m : parent->get_methods()) {
+		if (m->get_name() == "toPrimitive") {
+			continue; // Don't inherit toPrimitive
+		}
 		methods.push_back(m);
 		// If the method is marked private, mark it as inaccessible
 		if (m->get_scope() == bpp_scope::SCOPE_PRIVATE) {
 			methods[methods.size() - 1]->set_scope(bpp_scope::SCOPE_INACCESSIBLE);
 		}
+		methods.back()->set_inherited(true);
 	}
 
 	// Inherit datamembers

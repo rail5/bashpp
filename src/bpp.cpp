@@ -3,6 +3,8 @@
  * Bash++: Bash with classes
  */
 
+volatile int bpp_exit_code = 0;
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -229,5 +231,5 @@ int main(int argc, char* argv[]) {
 		std::cerr << "Unknown exception occurred" << std::endl;
 	}
 
-	return 0;
+	return bpp_exit_code;
 }

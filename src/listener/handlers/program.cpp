@@ -77,7 +77,8 @@ void BashppListener::exitProgram(BashppParser::ProgramContext *ctx) {
 
 		std::string command = "bash " + std::string(temp_file) + arguments_string;
 
-		system(command.c_str());
+		// Run the program and get its exit code
+		bpp_exit_code = WEXITSTATUS(system(command.c_str()));
 		unlink(temp_file);
 	}
 }

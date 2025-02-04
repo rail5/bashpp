@@ -32,7 +32,11 @@ This does not affect any code you write in Bash++ – only the Bash++ language a
 
 ## Building from source
 
-The Bash++ compiler is currently in pre-alpha, and is not yet ready for general use. It's expected to break often, and is not yet feature-complete. However, if you'd like to build it from source, you can of course do so. Please report any bugs you find to the [issue tracker](https://github.com/rail5/bashpp/issues).
+> [!IMPORTANT]
+> The Bash++ compiler is currently in pre-alpha, and is not yet ready for general use. It's expected to break often, and is not yet feature-complete.
+>
+
+Please report any bugs you find to the [issue tracker](https://github.com/rail5/bashpp/issues).
 
 ### Prerequisites
 
@@ -74,7 +78,7 @@ $ bpp -h # Display help
 $ bpp -v # Display version
 ```
 
-It's strongly recommended to use the `-o` flag to specify an output file. If you don't, you'll be re-compiling the program every time you run it, which could take some time, especially for larger programs. Using `-o` and running the compiled program is much faster for subsequent runs.
+It's strongly recommended to use the `-o` flag to specify an output file. If you don't, you'll be re-compiling your programs every time you run them, which could take some time, especially for larger programs. Using `-o` and running the compiled program is much faster for subsequent runs.
 
 ## Debugging
 

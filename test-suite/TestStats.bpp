@@ -15,6 +15,10 @@
 		@this.numberOfUntestedTests=$((@this.numberOfUntestedTests + 1))
 	}
 
+	@public @method getFailCount {
+		echo "@this.numberOfFailedTests"
+	}
+
 	@public @method toPrimitive {
 		echo "Tests Passed: @this.numberOfPassedTests"
 		echo "Tests Failed: @this.numberOfFailedTests"

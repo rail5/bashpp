@@ -83,3 +83,7 @@ Hello from BaseClass!
 
 echo "----------------"
 echo "@stats"
+
+if [[ "@stats.getFailCount" -gt 0 ]]; then
+	exit 1
+fi

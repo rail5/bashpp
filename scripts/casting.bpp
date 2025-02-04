@@ -24,16 +24,16 @@
 @DerivedClass derivedObject
 @UnrelatedClass unrelatedObject
 
-@baseObject.display # Echoes "Hello from the BaseClass!" and "default value"
-@derivedObject.display # Echoes "Hello from the DerivedClass!" and "default value"
+@baseObject.display # Echoes "Hello from BaseClass!" and "default value"
+@derivedObject.display # Echoes "Hello from DerivedClass!" and "default value"
 @unrelatedObject.display # Echoes "Hello from UnrelatedClass!"
 
 # Casting
 @BaseClass* basePointer=@downcast(BaseClass) @new DerivedClass # Compile-time check: BaseClass is a parent of DerivedClass
-@basePointer.display # Echoes "Hello from the BaseClass!" and "default value"
+@basePointer.display # Echoes "Hello from BaseClass!" and "default value"
 
 @DerivedClass* derivedPointer=@upcast(DerivedClass) @new BaseClass # Compile-time check: DerivedClass is a child of BaseClass
-@derivedPointer.display # Echoes "Hello from the DerivedClass!" and "default value"
+@derivedPointer.display # Echoes "Hello from DerivedClass!" and "default value"
 
 @BaseClass* anotherBasePointer=@cast(BaseClass) @new UnrelatedClass # No type checking, compiler will just cast it
-@anotherBasePointer.display # Echoes "Hello from UnrelatedClass!" and a blank line (no 'member' data member has been defined in UnrelatedClass)
+@anotherBasePointer.display # Echoes "Hello from BaseClass!" and a blank line (no 'member' data member has been defined in UnrelatedClass)

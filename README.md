@@ -2,6 +2,8 @@
 
 Bash with classes
 
+![tests-pass-rate](https://vp.rail5.org/bpp/badge.svg)
+
 ```javascript
 @class Bashpp {
   @public author="Andrew S. Rightenburg"

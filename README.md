@@ -32,7 +32,7 @@ This does not affect any code you write in Bash++ – only the Bash++ language a
 
 ## Test results
 
-<img src="https://vp.rail5.org/bpp/badge.svg" title="" alt="tests-pass-rate" width="137">
+<img src="https://vp.rail5.org/bpp/badge.svg?nocache" title="" alt="tests-pass-rate" width="137">
 
 ## Building from source
 

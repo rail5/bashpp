@@ -1,0 +1,6 @@
+# Set a flag if we are running in a tty
+in_tty=false
+
+if [[ -t 1 ]]; then
+	in_tty=true
+fi

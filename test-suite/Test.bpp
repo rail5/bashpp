@@ -1,4 +1,5 @@
 @include_once "bpp_path.bpp"
+@include_once "detect-tty.bpp"
 
 @class Test {
 	@protected name
@@ -71,6 +72,11 @@
 		fi
 
 		local colorize="\033[1;${statusColor}m" uncolorize="\033[0m"
+
+		if [[ "$in_tty" == "false" ]]; then
+			colorize=""
+			uncolorize=""
+		fi
 
 		echo -n "@this.name: "
 		echo -n -e "${colorize}"

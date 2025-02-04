@@ -1,0 +1,6 @@
+@include "included.bpp"
+
+echo "Including file"
+
+@include_once "included.bpp"
+@include_once "included.bpp"

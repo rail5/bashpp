@@ -1,0 +1,25 @@
+@class Person {
+	@public name
+	
+	@constructor {
+		@this.name="John Q. Public"
+		echo "Constructor called: @this.name"
+	}
+	
+	@destructor {
+		echo "Destructing @this.name"
+	}
+}
+
+@Person john
+@class ScopeDemonstration {
+	@public @method call {
+		@Person mike
+	}
+}
+
+@ScopeDemonstration demo
+@demo.call
+
+@Person john2
+@delete @john2

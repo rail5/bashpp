@@ -27,6 +27,26 @@ Iteration 9
 Iteration 10
 hi"
 
+# Queue example
+@runner.runTest "Queue Example" "test-suite/tests/queue.bpp" "a
+b
+c"
+
+# toPrimitive
+@runner.runTest "toPrimitive" "test-suite/tests/toprimitive.bpp" "Object Instance
+Test Object #2"
+
+# Constructors and Destructors
+@runner.runTest "Constructors and Destructors" "test-suite/tests/constructors-and-destructors.bpp" "Constructor called: John Q. Public
+Constructor called: John Q. Public
+Destructing John Q. Public
+Constructor called: John Q. Public
+Destructing John Q. Public"
+
+# Includes
+@runner.runTest "Includes" "test-suite/tests/include.bpp" "Included file
+Including file"
+
 
 echo "----------------"
 echo "@stats"

@@ -4,8 +4,8 @@
 # How do we do it in Bash++?
 
 @class Animal {
-	@private height="60cm"
-	@private weight="30kg"
+	@protected height="60cm"
+	@protected weight="30kg"
 	
 	@public @method updateHeight height {
 		@this.height="$height"

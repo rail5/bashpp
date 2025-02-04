@@ -177,6 +177,16 @@ world
 !
 !"
 
+@runner.runTest "Case statements" "test-suite/tests/case.bpp" "default
+case1
+case2
+case3"
+
+@runner.runTest "If...Elif statements" "test-suite/tests/if-elif.bpp" "default
+case1
+case2
+case3"
+
 echo "----------------"
 echo "@stats"
 

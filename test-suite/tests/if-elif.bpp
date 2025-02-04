@@ -1,0 +1,28 @@
+@class MyClass {
+	@public member="default value"
+
+	@public @method test {
+		if [[ "@this.member" == "case1" ]]; then
+			echo "case1"
+		elif [[ "@this.member" == "case2" ]]; then
+			echo "case2"
+		elif [[ "@this.member" == "case3" ]]; then
+			echo "case3"
+		else
+			echo "default"
+		fi
+	}
+
+	@public @method update val {
+		@this.member="$val"
+	}
+}
+
+@MyClass myObject
+@myObject.test # "default"
+@myObject.update "case1"
+@myObject.test # "case1"
+@myObject.update "case2"
+@myObject.test # "case2"
+@myObject.update "case3"
+@myObject.test # "case3"

@@ -81,6 +81,101 @@ default value
 Hello from BaseClass!
 "
 
+# Arrays as Data Members
+@runner.runTest "Arrays as Data Members #1" "test-suite/tests/arrays-as-datamembers-1.bpp" "hello
+hello
+hello
+hello
+1
+world
+world
+world
+world
+2
+hello
+hello
+hello
+hello
+world
+world
+world
+world
+!
+!
+!
+!
+a
+a
+a
+a
+b
+b
+b
+b
+c
+c
+c
+c
+d
+d
+d
+d"
+
+@runner.runTest "Arrays as Data Members #2" "test-suite/tests/arrays-as-datamembers-2.bpp" "hello
+hello
+hello
+hello
+1
+world
+world
+world
+world
+2
+hello
+hello
+hello
+hello
+world
+world
+world
+world
+!
+!
+!
+!
+a
+a
+a
+a
+b
+b
+b
+b
+c
+c
+c
+c
+d
+d
+d
+d"
+
+@runner.runTest "Arrays as Data Members #3" "test-suite/tests/arrays-as-datamembers-3.bpp" "hello
+hello
+hello
+hello
+hello
+hello
+hello
+hello
+world
+world
+world
+world
+!
+!
+!
+!"
 
 echo "----------------"
 echo "@stats"

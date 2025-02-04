@@ -1,0 +1,59 @@
+# Same as number 1, but all objects are pointers
+
+@class DeepestInner {
+	@public member=()
+}
+
+@class DeeperInner {
+	@public member=()
+	@public @DeepestInner* inner=@new DeepestInner
+}
+
+@class Inner {
+	@public member=()
+	@public @DeeperInner* inner=@new DeeperInner
+}
+
+@class Outer {
+	@public member=()
+	@public @Inner* inner=@new Inner
+
+	@public @method add arg {
+		@this.member+=("$arg")
+		@this.inner.member+=("$arg")
+		@this.inner.inner.member+=("$arg")
+		@this.inner.inner.inner.member+=("$arg")
+	}
+
+	@public @method display index {
+		echo "@{this.member[$index]}"
+		echo "@{this.inner.member[$index]}"
+		echo "@{this.inner.inner.member[$index]}"
+		echo "@{this.inner.inner.inner.member[$index]}"
+	}
+
+	@public @method size {
+		echo "@{#this.member[@]}"
+	}
+}
+
+@Outer* outer=@new Outer
+@outer.add "hello"
+@outer.display 0
+
+@outer.size
+
+@outer.add "world"
+@outer.display 1
+
+@outer.size
+
+@outer.add "!"
+@outer.add "a"
+@outer.add "b"
+@outer.add "c"
+@outer.add "d"
+
+for i in @(seq 0 $((@{outer.size} - 1))); do
+	@outer.display $i
+done

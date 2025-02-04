@@ -1,0 +1,50 @@
+# Arrays as datamembers
+# Accessing elements in those arrays via object_reference_as_lvalue
+
+@class DeepestInner {
+	@public member=()
+}
+
+@class DeeperInner {
+	@public member=()
+	@public @DeepestInner inner
+}
+
+@class Inner {
+	@public member=()
+	@public @DeeperInner inner
+}
+
+@class Outer {
+	@public member=()
+	@public @Inner inner
+}
+
+@Outer outer
+
+@outer.member+=("hello")
+@outer.inner.member+=("hello")
+@outer.inner.inner.member+=("hello")
+@outer.inner.inner.inner.member+=("hello")
+
+echo "@{outer.member[0]}"
+echo "@{outer.inner.member[0]}"
+echo "@{outer.inner.inner.member[0]}"
+echo "@{outer.inner.inner.inner.member[0]}"
+
+@outer.member+=("world")
+@outer.inner.member+=("world")
+@outer.inner.inner.member+=("world")
+@outer.inner.inner.inner.member+=("world")
+
+@outer.member+=("!")
+@outer.inner.member+=("!")
+@outer.inner.inner.member+=("!")
+@outer.inner.inner.inner.member+=("!")
+
+for i in @(seq 0 $((@{#outer.member[@]} - 1))); do
+	echo "@{outer.member[$i]}"
+	echo "@{outer.inner.member[$i]}"
+	echo "@{outer.inner.inner.member[$i]}"
+	echo "@{outer.inner.inner.inner.member[$i]}"
+done

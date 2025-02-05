@@ -12,6 +12,12 @@ echo "----------------"
 @runner.runTest "Hello, World" "test-suite/tests/helloworld.bpp" "Hello, World!
 Hello, test!"
 
+# Object references
+@runner.runTest "Object References #1" "test-suite/tests/object-references-1.bpp" "Outer Instance
+Inner Instance
+DeeperInner Instance
+DeepestInner Instance"
+
 # Supershells
 @runner.runTest "Supershells" "test-suite/tests/supershells.bpp" "Command matches expected output
 Iteration 1

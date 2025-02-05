@@ -1,0 +1,20 @@
+@class DeepestInner {
+}
+
+@class DeeperInner {
+	@public @DeepestInner inner
+}
+
+@class Inner {
+	@public @DeeperInner inner
+}
+
+@class Outer {
+	@public @Inner inner
+}
+
+@Outer outer
+echo "@outer" # Echoes "Outer Instance"
+echo "@outer.inner" # Echoes "Inner Instance"
+echo "@outer.inner.inner" # Echoes "DeeperInner Instance"
+echo "@outer.inner.inner.inner" # Echoes "DeepestInner Instance"

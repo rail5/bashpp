@@ -189,7 +189,11 @@ case3"
 @runner.runTest "If...Elif statements" "test-suite/tests/if-elif.bpp" "default
 case1
 case2
-case3"
+case3
+\@this.member is case1
+\@this.othermember is case1
+\@this.anothermember is case1
+default"
 
 echo "----------------"
 echo "@runner.stats"

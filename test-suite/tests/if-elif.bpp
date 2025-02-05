@@ -1,5 +1,7 @@
 @class MyClass {
 	@public member="default value"
+	@public othermember="other value"
+	@public anothermember="another value"
 
 	@public @method test {
 		if [[ "@this.member" == "case1" ]]; then
@@ -13,8 +15,28 @@
 		fi
 	}
 
+	@public @method secondPass {
+		if [[ "@this.member" == "case1" ]]; then
+			echo "\@this.member is case1"
+		elif [[ "@this.othermember" == "case1" ]]; then
+			echo "\@this.othermember is case1"
+		elif [[ "@this.anothermember" == "case1" ]]; then
+			echo "\@this.anothermember is case1"
+		else
+			echo "default"
+		fi
+	}
+
 	@public @method update val {
 		@this.member="$val"
+	}
+
+	@public @method updateOther val {
+		@this.othermember="$val"
+	}
+
+	@public @method updateAnother val {
+		@this.anothermember="$val"
 	}
 }
 
@@ -26,3 +48,14 @@
 @myObject.test # "case2"
 @myObject.update "case3"
 @myObject.test # "case3"
+
+@myObject.update "case1"
+@myObject.secondPass # "@this.member is case1"
+@myObject.updateOther "case1"
+@myObject.update "default"
+@myObject.secondPass # "@this.othermember is case1"
+@myObject.updateAnother "case1"
+@myObject.updateOther "default"
+@myObject.secondPass # "@this.anothermember is case1"
+@myObject.updateAnother "default"
+@myObject.secondPass # "default"

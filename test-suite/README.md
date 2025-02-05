@@ -6,6 +6,8 @@ This is a test suite for the Bash++ compiler. It is designed to test the compile
 
 <img src="https://vp.rail5.org/bpp/badge.svg?nocache" title="" alt="tests-pass-rate" width="137">
 
+<img src="https://vp.rail5.org/bpp/test-results.svg?nocache" title="" alt="test-results" width="360">
+
 ## Running the Test Suite
 
 First, compile the Bash++ compiler by running `make` in the root directory of the project.

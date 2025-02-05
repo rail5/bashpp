@@ -4,6 +4,7 @@
 	@constructor {
 		if [[ ! -f "@this.path" ]]; then
 			echo "The bpp compiler was not found at @this.path"
+			echo "Run 'make' to build the compiler, and run the test suite via 'make test'"
 			echo "CWD: $(pwd)"
 			exit 1
 		fi

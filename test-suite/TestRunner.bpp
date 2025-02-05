@@ -1,9 +1,7 @@
-@class TestRunner {
-	@private @TestStats* stats
+@include_once "TestStats.bpp"
 
-	@public @method setStats stats {
-		@this.stats="$stats" # This should be rewritten when type checking is properly implemented
-	}
+@class TestRunner {
+	@public @TestStats stats
 
 	@public @method runTest name sourceFile expectedOutput {
 		@Test test

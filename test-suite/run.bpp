@@ -3,9 +3,7 @@
 @include_once "Test.bpp"
 @include_once "TestRunner.bpp"
 
-@TestStats stats
 @TestRunner runner
-@runner.setStats &@stats
 
 echo "Running tests..."
 echo "----------------"
@@ -188,8 +186,8 @@ case2
 case3"
 
 echo "----------------"
-echo "@stats"
+echo "@runner.stats"
 
-if [[ "@stats.getFailCount" -gt 0 ]]; then
+if [[ "@runner.stats.getFailCount" -gt 0 ]]; then
 	exit 1
 fi

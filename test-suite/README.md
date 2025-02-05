@@ -2,6 +2,10 @@
 
 This is a test suite for the Bash++ compiler. It is designed to test the compiler's ability to compile and run Bash++ code.
 
+## Latest Results
+
+<img src="https://vp.rail5.org/bpp/badge.svg?nocache" title="" alt="tests-pass-rate" width="137">
+
 ## Running the Test Suite
 
 First, compile the Bash++ compiler by running `make` in the root directory of the project.

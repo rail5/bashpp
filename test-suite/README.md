@@ -23,14 +23,12 @@ Tests are configured in `run.bpp` in the following format:
 @include_once "Test.bpp"
 @include_once "TestRunner.bpp"
 
-@TestStats stats # Initialize an object to store test statistics (pass/fail counts)
 @TestRunner runner # Initialize a test runner object
-@runner.setStats &@stats # Pass the address of the stats object to the runner, so it can update the stats as tests are run
 
 # Add test cases to the runner
 @runner.runTest "Name of the test" "test-suite/tests/path-to-the-test-script.bpp" "Expected output"
 
 # ...
 
-echo "@stats" # Print the test statistics
+echo "@runner.stats" # Print the test statistics
 ```

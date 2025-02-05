@@ -318,7 +318,9 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 		// We need to call the .toPrimitive method on the object
 		std::string method_call = "bpp__" + last_reference_entity->get_class()->get_name() + "__toPrimitive ";
 		// Append the containing object's address to the method call
-		indirection = ctx->IDENTIFIER().size() > 3 ? "!" : "";
+		encase_open = ctx->IDENTIFIER().size() > 1 ? "${" : "";
+		encase_close = ctx->IDENTIFIER().size() > 1 ? "}" : "";
+		indirection = ctx->IDENTIFIER().size() > 2 ? "!" : "";
 		method_call += encase_open + indirection + object_reference_code + encase_close;
 		// Tell the method that we *are* passing a pointer
 		method_call += " 1";

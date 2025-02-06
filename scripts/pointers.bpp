@@ -17,7 +17,7 @@
 
 # Usages
 echo "@testObject1.data" # Outputs default value
-echo "@testObject2.data" # Empty output! Pointer doesn't point to anything
+echo "@testObject2.data" # Runtime error! Pointer doesn't point to anything
 
 @testObject3.data="new value for object number 3"
 echo "@testObject3.data" # Outputs the new value we just gave it
@@ -28,10 +28,10 @@ echo "@testObject5.data" # This is a pointer to testObject4 -- same as above
 
 # Freeing memory
 @delete @testObject1 # No problem, even though testObject1 is not a pointer
-@delete @testObject2 # Nothing to delete -- the pointer doesn't point anywhere
+@delete @testObject2 # Runtime error -- the pointer doesn't point anywhere
 @delete @testObject3 # No problem -- clearing the memory pointed to by this pointer
-@delete @testObject3Copy # Nothing to delete -- this points to the same thing we just cleared!
-@delete @testObject4
-@delete @testObject5 # Same here.
+@delete @testObject3Copy # Runtime error -- this points to the same thing we just cleared!
+@delete @testObject4 # No problem
+@delete @testObject5 # Runtime error
 
 # echo "@testObject1.data" # Compiler error! We've cleared that memory, man!

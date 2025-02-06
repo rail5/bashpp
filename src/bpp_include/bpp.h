@@ -41,9 +41,9 @@ class bpp_object;
 
 class bpp_entity {
 	protected:
-		std::map<std::string, std::shared_ptr<bpp_class>> classes;
-		std::map<std::string, std::shared_ptr<bpp_object>> objects;
-		std::map<std::string, std::shared_ptr<bpp_object>> local_objects;
+		std::unordered_map<std::string, std::shared_ptr<bpp_class>> classes;
+		std::unordered_map<std::string, std::shared_ptr<bpp_object>> objects;
+		std::unordered_map<std::string, std::shared_ptr<bpp_object>> local_objects;
 		std::shared_ptr<bpp_class> type = nullptr;
 		std::weak_ptr<bpp_class> containing_class;
 		std::vector<std::shared_ptr<bpp_class>> parents;
@@ -63,8 +63,8 @@ class bpp_entity {
 
 		bool is_child_of(std::shared_ptr<bpp_entity> parent);
 
-		virtual std::map<std::string, std::shared_ptr<bpp_class>> get_classes() const;
-		virtual std::map<std::string, std::shared_ptr<bpp_object>> get_objects() const;
+		virtual std::unordered_map<std::string, std::shared_ptr<bpp_class>> get_classes() const;
+		virtual std::unordered_map<std::string, std::shared_ptr<bpp_object>> get_objects() const;
 		virtual std::shared_ptr<bpp_class> get_class(const std::string& name);
 		virtual std::shared_ptr<bpp_object> get_object(const std::string& name);
 };

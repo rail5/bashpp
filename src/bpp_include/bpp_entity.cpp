@@ -83,12 +83,12 @@ bool bpp_entity::is_child_of(std::shared_ptr<bpp_entity> parent) {
 	return false;
 }
 
-std::map<std::string, std::shared_ptr<bpp_class>> bpp_entity::get_classes() const {
+std::unordered_map<std::string, std::shared_ptr<bpp_class>> bpp_entity::get_classes() const {
 	return classes;
 }
 
-std::map<std::string, std::shared_ptr<bpp_object>> bpp_entity::get_objects() const {
-	std::map<std::string, std::shared_ptr<bpp_object>> all_objects = objects;
+std::unordered_map<std::string, std::shared_ptr<bpp_object>> bpp_entity::get_objects() const {
+	std::unordered_map<std::string, std::shared_ptr<bpp_object>> all_objects = objects;
 	for (auto& o : local_objects) {
 		all_objects[o.first] = o.second;
 	}

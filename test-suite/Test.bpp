@@ -50,8 +50,31 @@
 			return
 		fi
 
-		local output="@(bin/bpp @this.sourceFile)"
-		if [[ "$output" == "@this.expectedOutput" ]]; then
+		local output
+		IFS= read -r -d '' output < <(bin/bpp @this.sourceFile 2>&1; printf "\0")
+		
+		# Split the output into lines and split the expected output into lines
+		mapfile -t outputLines < <(echo "$output")
+		mapfile -t expectedOutputLines < <(echo "@this.expectedOutput")
+
+		# If the output and expected output have different numbers of lines, the test fails immediately
+		if [[ "${#outputLines[@]}" -ne "${#expectedOutputLines[@]}" ]]; then
+			@this.status="fail"
+			return
+		fi
+
+		# Compare each line
+		local i=0
+		local pass=true
+		while [[ "$i" -lt "${#outputLines[@]}" ]]; do
+			if ! [[ "${outputLines[$i]}" =~ ${expectedOutputLines[$i]} ]]; then
+				pass=false
+				break
+			fi
+			i=$((i+1))
+		done
+
+		if [[ "$pass" == "true" ]]; then
 			@this.status="pass"
 		else
 			@this.status="fail"

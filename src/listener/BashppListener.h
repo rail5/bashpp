@@ -203,6 +203,10 @@ class BashppListener : public BashppParserBaseListener {
 		include_stack.push(included_from->source_file);
 	}
 
+	void set_errors() {
+		program_has_errors = true;
+	}
+
 	void add_to_supershell_counter(uint64_t value) {
 		supershell_counter += value;
 	}

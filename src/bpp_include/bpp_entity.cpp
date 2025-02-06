@@ -95,14 +95,14 @@ std::map<std::string, std::shared_ptr<bpp_object>> bpp_entity::get_objects() con
 	return all_objects;
 }
 
-std::shared_ptr<bpp::bpp_class> bpp_entity::get_class(std::string name) {
+std::shared_ptr<bpp::bpp_class> bpp_entity::get_class(const std::string& name) {
 	if (classes.find(name) == classes.end()) {
 		return nullptr;
 	}
 	return classes[name];
 }
 
-std::shared_ptr<bpp::bpp_object> bpp_entity::get_object(std::string name) {
+std::shared_ptr<bpp::bpp_object> bpp_entity::get_object(const std::string& name) {
 	if (local_objects.find(name) != local_objects.end()) {
 		return local_objects[name];
 	}

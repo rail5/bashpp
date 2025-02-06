@@ -12,7 +12,7 @@ namespace bpp {
 
 bpp_datamember::bpp_datamember() {}
 
-void bpp_datamember::set_default_value(std::string default_value) {
+void bpp_datamember::set_default_value(const std::string& default_value) {
 	this->default_value = default_value;
 }
 

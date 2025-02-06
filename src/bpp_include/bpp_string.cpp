@@ -12,15 +12,15 @@ namespace bpp {
 
 bpp_string::bpp_string() {}
 
-void bpp_string::add_code(std::string code, bool add_newline) {
+void bpp_string::add_code(const std::string& code, bool add_newline) {
 	nextline_buffer += code;
 }
 
-void bpp_string::add_code_to_previous_line(std::string code) {
+void bpp_string::add_code_to_previous_line(const std::string& code) {
 	this->code += code;
 }
 
-void bpp_string::add_code_to_next_line(std::string code) {
+void bpp_string::add_code_to_next_line(const std::string& code) {
 	postline_buffer += code;
 }
 

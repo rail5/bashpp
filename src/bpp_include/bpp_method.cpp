@@ -12,7 +12,7 @@ namespace bpp {
 
 bpp_method::bpp_method() {}
 
-bpp_method::bpp_method(std::string name) : name(name) {}
+bpp_method::bpp_method(const std::string& name) : name(name) {}
 
 bool bpp_method::add_object(std::shared_ptr<bpp_object> object) {
 	std::string name = object->get_name();
@@ -58,7 +58,7 @@ bool bpp_method::add_parameter(std::shared_ptr<bpp_method_parameter> parameter) 
 	return true;
 }
 
-void bpp_method::set_name(std::string name) {
+void bpp_method::set_name(const std::string& name) {
 	this->name = name;
 }
 

@@ -12,7 +12,7 @@ namespace bpp {
 
 bpp_class::bpp_class() {}
 
-bpp_class::bpp_class(std::string name) : name(name) {
+bpp_class::bpp_class(const std::string& name) : name(name) {
 	add_default_toPrimitive();
 }
 
@@ -40,7 +40,7 @@ bool bpp_class::set_containing_class(std::weak_ptr<bpp::bpp_class> containing_cl
 	return false;
 }
 
-void bpp_class::set_name(std::string name) {
+void bpp_class::set_name(const std::string& name) {
 	this->name = name;
 
 	add_default_toPrimitive();
@@ -130,7 +130,7 @@ bool bpp_class::has_destructor() const {
 	return destructor_set;
 }
 
-std::shared_ptr<bpp::bpp_method> bpp_class::get_method(std::string name, std::shared_ptr<bpp_entity> context) {
+std::shared_ptr<bpp::bpp_method> bpp_class::get_method(const std::string& name, std::shared_ptr<bpp_entity> context) {
 	for (auto& m : methods) {
 		if (m->get_name() == name) {
 			if (m->get_scope() == bpp_scope::SCOPE_PUBLIC) {
@@ -153,7 +153,7 @@ std::shared_ptr<bpp::bpp_method> bpp_class::get_method(std::string name, std::sh
 	return nullptr;
 }
 
-std::shared_ptr<bpp::bpp_datamember> bpp_class::get_datamember(std::string name, std::shared_ptr<bpp_entity> context) {
+std::shared_ptr<bpp::bpp_datamember> bpp_class::get_datamember(const std::string& name, std::shared_ptr<bpp_entity> context) {
 	for (auto& d : datamembers) {
 		if (d->get_name() == name) {
 			if (d->get_scope() == bpp_scope::SCOPE_PUBLIC) {

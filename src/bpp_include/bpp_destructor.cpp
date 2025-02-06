@@ -12,7 +12,7 @@ namespace bpp {
 
 bpp_destructor::bpp_destructor() : bpp_method("destructor") {}
 
-bpp_destructor::bpp_destructor(std::string name) : bpp_method(name) {}
+bpp_destructor::bpp_destructor(const std::string& name) : bpp_method(name) {}
 
 bool bpp_destructor::add_parameter(std::shared_ptr<bpp_method_parameter> parameter) {
 	return false;

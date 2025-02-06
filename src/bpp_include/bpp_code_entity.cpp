@@ -12,7 +12,7 @@ namespace bpp {
 
 bpp_code_entity::bpp_code_entity() {}
 
-void bpp_code_entity::add_code(std::string code, bool add_newline) {
+void bpp_code_entity::add_code(const std::string& code, bool add_newline) {
 	// If the code has a newline char, flush the nextline_buffer and the postline_buffer
 	if (code.find("\n") != std::string::npos && add_newline) {
 		flush_nextline_buffer();
@@ -30,11 +30,11 @@ void bpp_code_entity::add_code(std::string code, bool add_newline) {
 	nextline_buffer += code;
 }
 
-void bpp_code_entity::add_code_to_previous_line(std::string code) {
+void bpp_code_entity::add_code_to_previous_line(const std::string& code) {
 	this->code += code;
 }
 
-void bpp_code_entity::add_code_to_next_line(std::string code) {
+void bpp_code_entity::add_code_to_next_line(const std::string& code) {
 	postline_buffer += code;
 }
 

@@ -176,7 +176,7 @@ bool bpp_program::add_object(std::shared_ptr<bpp_object> object) {
 	return true;
 }
 
-void bpp_program::prepend_code(std::string code) {
+void bpp_program::prepend_code(const std::string& code) {
 	this->code = code + this->code;
 }
 

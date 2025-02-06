@@ -65,8 +65,8 @@ class bpp_entity {
 
 		virtual std::map<std::string, std::shared_ptr<bpp_class>> get_classes() const;
 		virtual std::map<std::string, std::shared_ptr<bpp_object>> get_objects() const;
-		virtual std::shared_ptr<bpp_class> get_class(std::string name);
-		virtual std::shared_ptr<bpp_object> get_object(std::string name);
+		virtual std::shared_ptr<bpp_class> get_class(const std::string& name);
+		virtual std::shared_ptr<bpp_object> get_object(const std::string& name);
 };
 
 const std::shared_ptr<bpp_entity> inaccessible_entity = std::make_shared<bpp_entity>();
@@ -84,9 +84,9 @@ class bpp_code_entity : public bpp_entity {
 		bpp_code_entity();
 		virtual ~bpp_code_entity() = default;
 
-		virtual void add_code(std::string code, bool add_newline = true);
-		virtual void add_code_to_previous_line(std::string code);
-		virtual void add_code_to_next_line(std::string code);
+		virtual void add_code(const std::string& code, bool add_newline = true);
+		virtual void add_code_to_previous_line(const std::string& code);
+		virtual void add_code_to_next_line(const std::string& code);
 
 		virtual void flush_nextline_buffer();
 		virtual void flush_postline_buffer();
@@ -101,9 +101,9 @@ class bpp_string : public bpp_code_entity {
 	public:
 		bpp_string();
 
-		void add_code(std::string code, bool add_newline = true) override;
-		void add_code_to_previous_line(std::string code) override;
-		void add_code_to_next_line(std::string code) override;
+		void add_code(const std::string& code, bool add_newline = true) override;
+		void add_code_to_previous_line(const std::string& code) override;
+		void add_code_to_next_line(const std::string& code) override;
 
 		std::string get_code() const override;
 		std::string get_pre_code() const override;
@@ -246,12 +246,12 @@ class bpp_method : public bpp_code_entity {
 		bool inherited = false;
 	public:
 		bpp_method();
-		explicit bpp_method(std::string name);
+		explicit bpp_method(const std::string& name);
 
 		bool add_object(std::shared_ptr<bpp_object> object) override;
 
 		virtual bool add_parameter(std::shared_ptr<bpp_method_parameter> parameter);
-		void set_name(std::string name);
+		void set_name(const std::string& name);
 		void set_scope(bpp_scope scope);
 		void set_virtual(bool is_virtual);
 		void set_inherited(bool is_inherited);
@@ -270,7 +270,7 @@ class bpp_method : public bpp_code_entity {
 class bpp_constructor : public bpp_method {
 	public:
 		bpp_constructor();
-		explicit bpp_constructor(std::string name);
+		explicit bpp_constructor(const std::string& name);
 
 		bool add_parameter(std::shared_ptr<bpp_method_parameter> parameter) override;
 };
@@ -278,7 +278,7 @@ class bpp_constructor : public bpp_method {
 class bpp_destructor : public bpp_method {
 	public:
 		bpp_destructor();
-		explicit bpp_destructor(std::string name);
+		explicit bpp_destructor(const std::string& name);
 
 		bool add_parameter(std::shared_ptr<bpp_method_parameter> parameter) override;
 };
@@ -288,7 +288,7 @@ class bpp_method_parameter : public bpp_entity {
 		std::shared_ptr<bpp_class> type;
 		std::string name;
 	public:
-		explicit bpp_method_parameter(std::string name);
+		explicit bpp_method_parameter(const std::string& name);
 
 		void set_type(std::shared_ptr<bpp_class>);
 
@@ -332,7 +332,7 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 		}
 	public:
 		bpp_class();
-		explicit bpp_class(std::string name);
+		explicit bpp_class(const std::string& name);
 		bpp_class(const bpp_class& parent, std::string name);
 
 		std::weak_ptr<bpp_class> get_containing_class() const override;
@@ -340,7 +340,7 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 
 		std::shared_ptr<bpp_class> get_class() const override;
 
-		void set_name(std::string name);
+		void set_name(const std::string& name);
 		bool add_method(std::shared_ptr<bpp_method> method);
 		bool add_datamember(std::shared_ptr<bpp_datamember> datamember);
 		bool set_constructor(std::shared_ptr<bpp_constructor> constructor);
@@ -354,8 +354,8 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 		bool has_constructor() const;
 		bool has_destructor() const;
 
-		std::shared_ptr<bpp_method> get_method(std::string name, std::shared_ptr<bpp_entity> context);
-		std::shared_ptr<bpp_datamember> get_datamember(std::string name, std::shared_ptr<bpp_entity> context);
+		std::shared_ptr<bpp_method> get_method(const std::string& name, std::shared_ptr<bpp_entity> context);
+		std::shared_ptr<bpp_datamember> get_datamember(const std::string& name, std::shared_ptr<bpp_entity> context);
 
 		void inherit(std::shared_ptr<bpp_class> parent) override;
 
@@ -373,16 +373,16 @@ class bpp_object : public bpp_entity {
 		bool m_is_pointer = false;
 	public:
 		bpp_object();
-		explicit bpp_object(std::string name);
-		bpp_object(std::string name, bool is_pointer);
+		explicit bpp_object(const std::string& name);
+		bpp_object(const std::string& name, bool is_pointer);
 
 		void set_class(std::shared_ptr<bpp_class> object_class);
 		void set_pointer(bool is_pointer);
-		void set_name(std::string name);
-		void set_address(std::string address);
-		void set_assignment_value(std::string assignment_value);
-		void set_pre_access_code(std::string pre_access_code);
-		void set_post_access_code(std::string post_access_code);
+		void set_name(const std::string& name);
+		void set_address(const std::string& address);
+		void set_assignment_value(const std::string& assignment_value);
+		void set_pre_access_code(const std::string& pre_access_code);
+		void set_post_access_code(const std::string& post_access_code);
 		void set_nullptr();
 
 		std::string get_name() const;
@@ -404,7 +404,7 @@ class bpp_datamember : public bpp_object {
 	public:
 		bpp_datamember();
 
-		void set_default_value(std::string default_value);
+		void set_default_value(const std::string& default_value);
 		void set_scope(bpp_scope scope);
 		void set_array(bool is_array);
 
@@ -427,7 +427,7 @@ class bpp_program : public bpp_code_entity {
 		bool add_class(std::shared_ptr<bpp_class> class_) override;
 		bool add_object(std::shared_ptr<bpp_object> object) override;
 
-		void prepend_code(std::string code);
+		void prepend_code(const std::string& code);
 
 		std::shared_ptr<bpp_class> get_primitive_class() const;
 };

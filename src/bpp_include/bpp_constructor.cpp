@@ -12,7 +12,7 @@ namespace bpp {
 
 bpp_constructor::bpp_constructor() : bpp_method("constructor") {}
 
-bpp_constructor::bpp_constructor(std::string name) : bpp_method(name) {}
+bpp_constructor::bpp_constructor(const std::string& name) : bpp_method(name) {}
 
 bool bpp_constructor::add_parameter(std::shared_ptr<bpp_method_parameter> parameter) {
 	return false;

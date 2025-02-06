@@ -12,9 +12,9 @@ namespace bpp {
 
 bpp_object::bpp_object() {}
 
-bpp_object::bpp_object(std::string name) : name(name) {}
+bpp_object::bpp_object(const std::string& name) : name(name) {}
 
-bpp_object::bpp_object(std::string name, bool is_pointer) : name(name) {
+bpp_object::bpp_object(const std::string& name, bool is_pointer) : name(name) {
 	m_is_pointer = is_pointer;
 	if (!m_is_pointer) {
 		std::string type = this->type->get_name();
@@ -30,7 +30,7 @@ void bpp_object::set_pointer(bool is_pointer) {
 	m_is_pointer = is_pointer;
 }
 
-void bpp_object::set_name(std::string name) {
+void bpp_object::set_name(const std::string& name) {
 	this->name = name;
 	if (!m_is_pointer) {
 		std::string type = this->type->get_name();
@@ -38,19 +38,19 @@ void bpp_object::set_name(std::string name) {
 	}
 }
 
-void bpp_object::set_address(std::string address) {
+void bpp_object::set_address(const std::string& address) {
 	this->address = address;
 }
 
-void bpp_object::set_assignment_value(std::string assignment_value) {
+void bpp_object::set_assignment_value(const std::string& assignment_value) {
 	this->assignment_value = assignment_value;
 }
 
-void bpp_object::set_pre_access_code(std::string pre_access_code) {
+void bpp_object::set_pre_access_code(const std::string& pre_access_code) {
 	this->pre_access_code = pre_access_code;
 }
 
-void bpp_object::set_post_access_code(std::string post_access_code) {
+void bpp_object::set_post_access_code(const std::string& post_access_code) {
 	this->post_access_code = post_access_code;
 }
 

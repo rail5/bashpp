@@ -15,6 +15,12 @@ bpp_program::bpp_program() {
 	primitive_class = std::make_shared<bpp_class>();
 	primitive_class->set_name("primitive");
 	classes["primitive"] = primitive_class;
+
+	// Pre-allocate space for the unordered_maps:
+	// classes, objects
+	// This is a performance optimization
+	classes.reserve(10);
+	objects.reserve(20);
 }
 
 bool bpp_program::set_containing_class(std::weak_ptr<bpp_class> containing_class) {

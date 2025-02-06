@@ -141,7 +141,7 @@ class bash_if : public bpp_string {
 		const std::vector<std::pair<std::string, std::string>>& get_conditional_branches() const;
 };
 
-class bash_if_branch : public bpp_string {
+class bash_if_branch : public bpp_code_entity {
 	private:
 		std::shared_ptr<bpp::bash_if> if_statement;
 	public:

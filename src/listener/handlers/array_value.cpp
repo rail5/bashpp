@@ -18,21 +18,19 @@ void BashppListener::enterArray_value(BashppParser::Array_valueContext *ctx) {
 	 * (...)
 	 * Where the contents of the parentheses are the array elements
 	 * Empty arrays are written as ()
-	 * 
-	 * This rule should only ever be caught inside a value_assignment context
 	 */
 
-	// Get the current value_assignment entity
-	std::shared_ptr<bpp::bpp_value_assignment> value_assignment_entity = std::dynamic_pointer_cast<bpp::bpp_value_assignment>(entity_stack.top());
+	// Get the current code entity
+	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
-	if (value_assignment_entity == nullptr) {
-		throw internal_error("Array value outside of value assignment");
+	if (current_code_entity == nullptr) {
+		throw internal_error("Array value outside of code entity");
 	}
 
 	// Create a new code entity for the array value
 	std::shared_ptr<bpp::bpp_string> arrayvalue_entity = std::make_shared<bpp::bpp_string>();
-	arrayvalue_entity->set_containing_class(value_assignment_entity->get_containing_class());
-	arrayvalue_entity->inherit(value_assignment_entity);
+	arrayvalue_entity->set_containing_class(current_code_entity->get_containing_class());
+	arrayvalue_entity->inherit(current_code_entity);
 
 	// Push the entity onto the stack
 	entity_stack.push(arrayvalue_entity);
@@ -51,18 +49,28 @@ void BashppListener::exitArray_value(BashppParser::Array_valueContext *ctx) {
 
 	entity_stack.pop();
 
-	// Verify that we're in a value_assignment context
+	// Check if we're in a value_assignment context
 	std::shared_ptr<bpp::bpp_value_assignment> value_assignment_entity = std::dynamic_pointer_cast<bpp::bpp_value_assignment>(entity_stack.top());
 
-	if (value_assignment_entity == nullptr) {
-		throw internal_error("Array value outside of value assignment");
+	if (value_assignment_entity != nullptr) {
+		value_assignment_entity->set_array_assignment(true);
+		value_assignment_entity->add_code_to_previous_line(arrayvalue_entity->get_pre_code());
+		value_assignment_entity->add_code_to_next_line(arrayvalue_entity->get_post_code());
+		value_assignment_entity->add_code("(" + arrayvalue_entity->get_code() + ")");
+		return;
 	}
 
-	value_assignment_entity->set_array_assignment(true);
+	// If we're not in a value assignment context, that means we're assigning the array value to a primitive variable
+	// The way to do that is just to add the code to the current code entity
+	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
-	value_assignment_entity->add_code_to_previous_line(arrayvalue_entity->get_pre_code());
-	value_assignment_entity->add_code_to_next_line(arrayvalue_entity->get_post_code());
-	value_assignment_entity->add_code("(" + arrayvalue_entity->get_code() + ")");
+	if (current_code_entity == nullptr) {
+		throw internal_error("Array value outside of code entity");
+	}
+
+	current_code_entity->add_code_to_previous_line(arrayvalue_entity->get_pre_code());
+	current_code_entity->add_code_to_next_line(arrayvalue_entity->get_post_code());
+	current_code_entity->add_code("(" + arrayvalue_entity->get_code() + ")");
 }
 
 #endif // SRC_LISTENER_HANDLERS_ARRAY_VALUE_CPP_

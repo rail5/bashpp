@@ -60,6 +60,7 @@ volatile int bpp_exit_code = 0;
 #include "listener/handlers/array_index.cpp"
 #include "listener/handlers/typecast.cpp"
 #include "listener/handlers/bash_while_declaration.cpp"
+#include "listener/handlers/bash_if_statement.cpp"
 #include "listener/handlers/extra_statement.cpp"
 
 #include "internal_error.cpp"

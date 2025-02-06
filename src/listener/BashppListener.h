@@ -20,6 +20,8 @@
 #include "../bpp_include/bpp_code_entity.cpp"
 #include "../bpp_include/bpp_string.cpp"
 #include "../bpp_include/bash_while.cpp"
+#include "../bpp_include/bash_if.cpp"
+#include "../bpp_include/bash_if_branch.cpp"
 #include "../bpp_include/bpp_delete_statement.cpp"
 #include "../bpp_include/bpp_value_assignment.cpp"
 #include "../bpp_include/bpp_object_reference.cpp"
@@ -348,6 +350,18 @@ class BashppListener : public BashppParserBaseListener {
 
 	void enterBash_while_declaration(BashppParser::Bash_while_declarationContext *ctx) override;
 	void exitBash_while_declaration(BashppParser::Bash_while_declarationContext *ctx) override;
+
+	void enterBash_if_statement(BashppParser::Bash_if_statementContext *ctx) override;
+	void exitBash_if_statement(BashppParser::Bash_if_statementContext *ctx) override;
+
+	void enterBash_if_root_branch(BashppParser::Bash_if_root_branchContext *ctx) override;
+	void exitBash_if_root_branch(BashppParser::Bash_if_root_branchContext *ctx) override;
+
+	void enterBash_if_else_branch(BashppParser::Bash_if_else_branchContext *ctx) override;
+	void exitBash_if_else_branch(BashppParser::Bash_if_else_branchContext *ctx) override;
+
+	void enterBash_if_condition(BashppParser::Bash_if_conditionContext *ctx) override;
+	void exitBash_if_condition(BashppParser::Bash_if_conditionContext *ctx) override;
 
 	void enterExtra_statement(BashppParser::Extra_statementContext *ctx) override;
 	void exitExtra_statement(BashppParser::Extra_statementContext *ctx) override;

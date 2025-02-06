@@ -11,6 +11,7 @@ int parenDepth = 0;
 int braceDepth = 0;
 int initialSupershellDepth = 0;
 int initialSubshellDepth = 0;
+int IfDepth = 0;
 std::stack<int> nestedSupershellStack;
 std::stack<int> nestedSubshellStack;
 std::stack<int> nestedArithStack;
@@ -30,7 +31,7 @@ enum lexer_special_mode_type {
 	mode_typecast,
 	mode_arith,
 	mode_reference,
-	mode_array_assigment,
+	mode_array_assignment,
 	mode_quote,
 	mode_singlequote,
 	mode_comment,
@@ -263,16 +264,123 @@ KEYWORD_CAST: '@cast' {
 	modeStack.push(mode_typecast);
 };
 
+// Bash keywords
+BASH_KEYWORD_IF: 'if' {
+	switch (modeStack_top) {
+		case mode_quote:
+		case mode_singlequote:
+		case mode_comment:
+		case mode_arith:
+		case mode_array_assignment:
+			emit(IDENTIFIER_LVALUE, getText());
+			break;
+		default:
+			if (incoming_token_can_be_lvalue) {
+				IfDepth++;
+			} else {
+				emit(IDENTIFIER_LVALUE, getText());
+			}
+			break;
+	}
+};
+
+BASH_KEYWORD_ELIF: 'elif' {
+	switch (modeStack_top) {
+		case mode_quote:
+		case mode_singlequote:
+		case mode_comment:
+		case mode_arith:
+		case mode_array_assignment:
+			emit(IDENTIFIER_LVALUE, getText());
+			break;
+		default:
+			if (!(incoming_token_can_be_lvalue && IfDepth > 0)) {
+				emit(IDENTIFIER_LVALUE, getText());
+			}
+			break;
+	}
+};
+
+BASH_KEYWORD_THEN: 'then' {
+	switch (modeStack_top) {
+		case mode_quote:
+		case mode_singlequote:
+		case mode_comment:
+		case mode_arith:
+		case mode_array_assignment:
+			emit(IDENTIFIER_LVALUE, getText());
+			break;
+		default:
+			if (!(incoming_token_can_be_lvalue && IfDepth > 0)) {
+				emit(IDENTIFIER_LVALUE, getText());
+			}
+			break;
+	}
+};
+
+BASH_KEYWORD_ELSE: 'else' {
+	switch (modeStack_top) {
+		case mode_quote:
+		case mode_singlequote:
+		case mode_comment:
+		case mode_arith:
+		case mode_array_assignment:
+			emit(IDENTIFIER_LVALUE, getText());
+			break;
+		default:
+			if (!(incoming_token_can_be_lvalue && IfDepth > 0)) {
+				emit(IDENTIFIER_LVALUE, getText());
+			}
+			break;
+	}
+};
+
+BASH_KEYWORD_FI: 'fi' {
+	switch (modeStack_top) {
+		case mode_quote:
+		case mode_singlequote:
+		case mode_comment:
+		case mode_arith:
+		case mode_array_assignment:
+			emit(IDENTIFIER_LVALUE, getText());
+			break;
+		default:
+			if (incoming_token_can_be_lvalue && IfDepth > 0) {
+				IfDepth--;
+			} else {
+				emit(IDENTIFIER_LVALUE, getText());
+			}
+			break;
+	}
+};
+
+BASH_KEYWORD_WHILE: 'while' {
+	switch (modeStack_top) {
+		case mode_quote:
+		case mode_singlequote:
+		case mode_comment:
+		case mode_arith:
+		case mode_array_assignment:
+			emit(IDENTIFIER_LVALUE, getText());
+			break;
+		default:
+			if (incoming_token_can_be_lvalue) {
+				waiting_to_terminate_while_statement = true;
+			} else {
+				emit(IDENTIFIER_LVALUE, getText());
+			}
+			break;
+	}
+};
+
+BASH_WHILE_END: 'while'; // Another in a long list of dummy tokens
+
 // Identifiers
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]* {
 	if (contains_double_underscore(getText())) {
 		emit(INVALID_IDENTIFIER, getText());
 	} else if (incoming_token_can_be_lvalue) {
 		emit(IDENTIFIER_LVALUE, getText());
-		if (getText() == "while") {
-			emit(BASH_KEYWORD_WHILE, getText());
-			waiting_to_terminate_while_statement = true;
-		}
 	}
 };
 
@@ -290,7 +398,7 @@ ASSIGN: '=' {
 			break;
 		default:
 			if (_input->LA(1) == '(') {
-				modeStack.push(mode_array_assigment);
+				modeStack.push(mode_array_assignment);
 			}
 			break;
 	}
@@ -403,7 +511,7 @@ LPAREN: '(' {
 		case mode_comment:
 			// Just emit the LPAREN token
 			break;
-		case mode_array_assigment:
+		case mode_array_assignment:
 			emit(ARRAY_ASSIGN_START, "(");
 			break;
 		default:
@@ -422,7 +530,7 @@ LPAREN: '(' {
 RPAREN: ')' {
 	parenDepth--;
 	switch (modeStack_top) {
-		case mode_array_assigment:
+		case mode_array_assignment:
 			emit(ARRAY_ASSIGN_END, ")");
 			// Fall through
 		case mode_typecast:
@@ -500,6 +608,3 @@ LESSTHAN: '<';
 GREATERTHAN: '>';
 
 CATCHALL: .;
-
-BASH_KEYWORD_WHILE: 'while';
-BASH_WHILE_END: 'while'; // Another in a long list of dummy tokens

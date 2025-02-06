@@ -41,6 +41,7 @@ general_statement: include_statement
 	| typecast
 	| nullptr_ref
 	| bash_while_declaration
+	| bash_if_statement
 	| other_statement
 	| DELIM
 	| WS;
@@ -162,8 +163,21 @@ array_index: LBRACKET statement* RBRACKET;
 // TODO(@rail5): Do better
 bash_while_declaration: BASH_KEYWORD_WHILE statement* BASH_WHILE_END;
 
+// Bash if statements
+bash_if_statement: bash_if_root_branch bash_if_else_branch* BASH_KEYWORD_FI;
+
+bash_if_root_branch: BASH_KEYWORD_IF bash_if_condition statement*;
+
+bash_if_else_branch: (BASH_KEYWORD_ELIF bash_if_condition | BASH_KEYWORD_ELSE) statement*;
+
+bash_if_condition: statement* DELIM WS* BASH_KEYWORD_THEN; // Kind of a hack
+	// Meant to catch the condition of an if statement
+	// As in 'if [[ "@this.member" == "value" ]]; then'
+	// Or 'if command; then'
+	// Without caring whether it started with 'if' or 'elif'
+
 // Other statement
-other_statement: ~(RBRACE | RBRACE_ROOTLEVEL | RBRACKET | SUPERSHELL_END | QUOTE_END | SINGLEQUOTE_END | NEWLINE | SUBSHELL_END | DEPRECATED_SUBSHELL_END | BASH_ARITH_END | ARRAY_ASSIGN_END | BASH_WHILE_END)+?;
+other_statement: ~(RBRACE | RBRACE_ROOTLEVEL | RBRACKET | SUPERSHELL_END | QUOTE_END | SINGLEQUOTE_END | NEWLINE | SUBSHELL_END | DEPRECATED_SUBSHELL_END | BASH_ARITH_END | ARRAY_ASSIGN_END | BASH_WHILE_END | BASH_KEYWORD_IF | BASH_KEYWORD_ELIF | BASH_KEYWORD_THEN | BASH_KEYWORD_ELSE | BASH_KEYWORD_FI)+?;
 
 // This rule will *only* ever be matched as part a value_assignment
 raw_rvalue: IDENTIFIER | NUMBER | BASH_VAR;

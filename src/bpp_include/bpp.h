@@ -123,6 +123,34 @@ class bash_while : public bpp_string {
 		std::vector<std::string> get_supershell_function_calls() const;
 };
 
+class bash_if : public bpp_string {
+	private:
+		std::string conditional_branch_pre_code = "";
+		std::string conditional_branch_post_code = "";
+		std::vector<std::pair<std::string, std::string>> conditional_branches = {};
+	public:
+		bash_if();
+
+		void add_conditional_branch_pre_code(const std::string& pre_code);
+		void add_conditional_branch_post_code(const std::string& post_code);
+		void new_branch();
+		void add_condition_code(const std::string& condition_code);
+		void add_branch_code(const std::string& branch_code);
+		std::string get_conditional_branch_pre_code() const;
+		std::string get_conditional_branch_post_code() const;
+		const std::vector<std::pair<std::string, std::string>>& get_conditional_branches() const;
+};
+
+class bash_if_branch : public bpp_string {
+	private:
+		std::shared_ptr<bpp::bash_if> if_statement;
+	public:
+		bash_if_branch();
+
+		void set_if_statement(std::shared_ptr<bpp::bash_if> if_statement);
+		std::shared_ptr<bpp::bash_if> get_if_statement() const;
+};
+
 class bpp_delete_statement : public bpp_string {
 	private:
 		std::shared_ptr<bpp::bpp_object> object_to_delete;

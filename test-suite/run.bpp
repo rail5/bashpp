@@ -9,19 +9,19 @@ echo "Running tests..."
 echo "----------------"
 
 # Hello, world
-@runner.runTest "Hello, World" "test-suite/tests/helloworld.bpp" "Hello, World!
+@runner.addTest "Hello, World" "test-suite/tests/helloworld.bpp" "Hello, World!
 Hello, test!
 "
 
 # Object references
-@runner.runTest "Object References #1" "test-suite/tests/object-references-1.bpp" "Outer Instance
+@runner.addTest "Object References #1" "test-suite/tests/object-references-1.bpp" "Outer Instance
 Inner Instance
 DeeperInner Instance
 DeepestInner Instance
 "
 
 # Supershells
-@runner.runTest "Supershells" "test-suite/tests/supershells.bpp" "Command matches expected output
+@runner.addTest "Supershells" "test-suite/tests/supershells.bpp" "Command matches expected output
 Iteration 1
 Iteration 2
 Iteration 3
@@ -36,18 +36,18 @@ hi
 "
 
 # Queue example
-@runner.runTest "Queue Example" "test-suite/tests/queue.bpp" "a
+@runner.addTest "Queue Example" "test-suite/tests/queue.bpp" "a
 b
 c
 "
 
 # toPrimitive
-@runner.runTest "toPrimitive" "test-suite/tests/toprimitive.bpp" "Object Instance
+@runner.addTest "toPrimitive" "test-suite/tests/toprimitive.bpp" "Object Instance
 Test Object #2
 "
 
 # Constructors and Destructors
-@runner.runTest "Constructors and Destructors" "test-suite/tests/constructors-and-destructors.bpp" "Constructor called: John Q\\. Public
+@runner.addTest "Constructors and Destructors" "test-suite/tests/constructors-and-destructors.bpp" "Constructor called: John Q\\. Public
 Constructor called: John Q\\. Public
 Destructing John Q\\. Public
 Constructor called: John Q\\. Public
@@ -55,12 +55,12 @@ Destructing John Q\\. Public
 "
 
 # Includes
-@runner.runTest "Includes" "test-suite/tests/include.bpp" "Included file
+@runner.addTest "Includes" "test-suite/tests/include.bpp" "Included file
 Including file
 "
 
 # Pointers
-@runner.runTest "Pointers" "test-suite/tests/pointers.bpp" "default value for primitive data member
+@runner.addTest "Pointers" "test-suite/tests/pointers.bpp" "default value for primitive data member
 .*0__data: invalid variable name
 new value for object number 3
 new value for object number 3
@@ -72,7 +72,7 @@ Bash\\+\\+: Error: Attempted to delete null object
 "
 
 # Inheritance
-@runner.runTest "Inheritance" "test-suite/tests/inheritance.bpp" "You extend your hand to pet it, but the 60cm, 30kg beast bares its teeth
+@runner.addTest "Inheritance" "test-suite/tests/inheritance.bpp" "You extend your hand to pet it, but the 60cm, 30kg beast bares its teeth
 You pet the dog
 You are devoured by the lion
 \\.\\.\\.Why did you try to pet a 200kg lion\\?
@@ -81,7 +81,7 @@ You are devoured by the lion
 "
 
 # Casting
-@runner.runTest "Casting" "test-suite/tests/casting.bpp" "Hello from BaseClass!
+@runner.addTest "Casting" "test-suite/tests/casting.bpp" "Hello from BaseClass!
 default value
 Hello from DerivedClass!
 default value
@@ -95,7 +95,7 @@ Hello from BaseClass!
 "
 
 # Arrays as Data Members
-@runner.runTest "Arrays as Data Members #1" "test-suite/tests/arrays-as-datamembers-1.bpp" "hello
+@runner.addTest "Arrays as Data Members #1" "test-suite/tests/arrays-as-datamembers-1.bpp" "hello
 hello
 hello
 hello
@@ -135,7 +135,7 @@ d
 d
 "
 
-@runner.runTest "Arrays as Data Members #2" "test-suite/tests/arrays-as-datamembers-2.bpp" "hello
+@runner.addTest "Arrays as Data Members #2" "test-suite/tests/arrays-as-datamembers-2.bpp" "hello
 hello
 hello
 hello
@@ -175,7 +175,7 @@ d
 d
 "
 
-@runner.runTest "Arrays as Data Members #3" "test-suite/tests/arrays-as-datamembers-3.bpp" "hello
+@runner.addTest "Arrays as Data Members #3" "test-suite/tests/arrays-as-datamembers-3.bpp" "hello
 hello
 hello
 hello
@@ -193,13 +193,13 @@ world
 !
 "
 
-@runner.runTest "Case statements" "test-suite/tests/case.bpp" "default
+@runner.addTest "Case statements" "test-suite/tests/case.bpp" "default
 case1
 case2
 case3
 "
 
-@runner.runTest "If...Elif statements" "test-suite/tests/if-elif.bpp" "default
+@runner.addTest "If...Elif statements" "test-suite/tests/if-elif.bpp" "default
 case1
 case2
 case3
@@ -208,6 +208,14 @@ case3
 \@this\\.anothermember is case1
 default
 "
+
+if [[ $# -gt 0 ]]; then
+	for testName in "$@"; do
+		@runner.runTest "$testName"
+	done
+else
+	@runner.runAllTests
+fi
 
 echo "----------------"
 echo "@runner.stats"

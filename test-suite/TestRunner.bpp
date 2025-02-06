@@ -15,17 +15,11 @@
 		# (All the pre-code and post-code segments get haphazardly added around the case statement, breaking it)
 		# Fix 'case' statements in the compiler.
 
-		# TODO(@rail5): Turns out if ... elif is broken too
-		# The supershell function call for "@test.getStatus" is inserted directly before the 'elif', rather than before the 'if'
-		# Which means the function doesn't get called, and the substituted string is empty when we're trying to compare it to "fail" or "untested"
-		# Fix if ... elif in the compiler.
 		if [[ "@test.getStatus" == "pass" ]]; then
 			@this.stats.incrementPassedTests
-		fi
-		if [[ "@test.getStatus" == "fail" ]]; then
+		elif [[ "@test.getStatus" == "fail" ]]; then
 			@this.stats.incrementFailedTests
-		fi
-		if [[ "@test.getStatus" == "untested" ]]; then
+		elif [[ "@test.getStatus" == "untested" ]]; then
 			@this.stats.incrementUntestedTests
 		fi
 

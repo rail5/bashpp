@@ -113,7 +113,6 @@ void BashppListener::exitBash_if_statement(BashppParser::Bash_if_statementContex
 	}
 
 	current_code_entity->add_code_to_previous_line(if_statement_entity->get_conditional_branch_pre_code());
-	current_code_entity->add_code_to_next_line(if_statement_entity->get_conditional_branch_post_code());
 	
 	for (const auto& branch : if_statement_entity->get_conditional_branches()) {
 		current_code_entity->add_code(branch.first);
@@ -121,6 +120,7 @@ void BashppListener::exitBash_if_statement(BashppParser::Bash_if_statementContex
 	}
 
 	current_code_entity->add_code("fi");
+	current_code_entity->add_code(if_statement_entity->get_conditional_branch_post_code());
 }
 
 void BashppListener::enterBash_if_root_branch(BashppParser::Bash_if_root_branchContext *ctx) {

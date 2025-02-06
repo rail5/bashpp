@@ -14,6 +14,8 @@ First, compile the Bash++ compiler by running `make` in the root directory of th
 
 Then, run the test suite by running `make test` in the root directory of the project.
 
+You can run *specific* test cases by passing an argument to the script. For example, `bin/bpp test-suite/run.bpp "Hello, World" "Supershells"` will run only the test cases named "Hello, World" and "Supershells".
+
 ## Test Suite Structure
 
 The test suite is itself written in Bash++.
@@ -32,9 +34,11 @@ Tests are configured in `run.bpp` in the following format:
 @TestRunner runner # Initialize a test runner object
 
 # Add test cases to the runner
-@runner.runTest "Name of the test" "test-suite/tests/path-to-the-test-script.bpp" "Expected output"
+@runner.addTest "Name of the test" "test-suite/tests/path-to-the-test-script.bpp" "Expected output"
 
 # ...
+
+@runner.runAllTests # Run all the tests
 
 echo "@runner.stats" # Print the test statistics
 ```

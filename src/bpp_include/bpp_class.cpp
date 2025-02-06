@@ -185,7 +185,7 @@ void bpp_class::inherit(std::shared_ptr<bpp_class> parent) {
 		methods.push_back(m);
 		// If the method is marked private, mark it as inaccessible
 		if (m->get_scope() == bpp_scope::SCOPE_PRIVATE) {
-			methods[methods.size() - 1]->set_scope(bpp_scope::SCOPE_INACCESSIBLE);
+			methods.back()->set_scope(bpp_scope::SCOPE_INACCESSIBLE);
 		}
 		methods.back()->set_inherited(true);
 	}
@@ -195,7 +195,7 @@ void bpp_class::inherit(std::shared_ptr<bpp_class> parent) {
 		datamembers.push_back(d);
 		// If the datamember is marked private, mark it as inaccessible
 		if (d->get_scope() == bpp_scope::SCOPE_PRIVATE) {
-			datamembers[datamembers.size() - 1]->set_scope(bpp_scope::SCOPE_INACCESSIBLE);
+			datamembers.back()->set_scope(bpp_scope::SCOPE_INACCESSIBLE);
 		}
 	}
 

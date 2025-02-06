@@ -337,11 +337,11 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 	std::shared_ptr<bpp::bpp_delete_statement> delete_entity = std::dynamic_pointer_cast<bpp::bpp_delete_statement>(entity_stack.top());
 	if (delete_entity != nullptr) {
 		if (object_reference_entity->get_reference_type() == bpp::reference_type::ref_method) {
-			throw_syntax_error_from_exitRule(ctx->IDENTIFIER(ctx->IDENTIFIER().size() - 1), "Cannot call @delete on a method");
+			throw_syntax_error_from_exitRule(ctx->IDENTIFIER().back(), "Cannot call @delete on a method");
 		}
 
 		if (object_reference_entity->get_reference_type() == bpp::reference_type::ref_primitive) {
-			throw_syntax_error_from_exitRule(ctx->IDENTIFIER(ctx->IDENTIFIER().size() - 1), "Cannot call @delete on a primitive");
+			throw_syntax_error_from_exitRule(ctx->IDENTIFIER().back(), "Cannot call @delete on a primitive");
 		}
 
 		delete_entity->add_code_to_previous_line(object_reference_entity->get_pre_code());
@@ -353,7 +353,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 	// Are we in an object_address context?
 	if (object_address_entity != nullptr) {
 		if (object_reference_entity->get_reference_type() == bpp::reference_type::ref_method) {
-			throw_syntax_error_from_exitRule(ctx->IDENTIFIER(ctx->IDENTIFIER().size() - 1), "Cannot get the address of a method");
+			throw_syntax_error_from_exitRule(ctx->IDENTIFIER().back(), "Cannot get the address of a method");
 		}
 		std::string address = object_reference_entity->get_code();
 		// Some hacky string manipulation to work backwards

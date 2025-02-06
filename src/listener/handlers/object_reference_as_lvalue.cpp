@@ -86,8 +86,8 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 	}
 
 	// Check the type of the last element in the object chain
-	std::shared_ptr<bpp::bpp_object> final_object = std::dynamic_pointer_cast<bpp::bpp_object>(object_chain[object_chain.size() - 1]);
-	std::shared_ptr<bpp::bpp_method> final_method = std::dynamic_pointer_cast<bpp::bpp_method>(object_chain[object_chain.size() - 1]);
+	std::shared_ptr<bpp::bpp_object> final_object = std::dynamic_pointer_cast<bpp::bpp_object>(object_chain.back());
+	std::shared_ptr<bpp::bpp_method> final_method = std::dynamic_pointer_cast<bpp::bpp_method>(object_chain.back());
 
 	if (final_object != nullptr && final_object->get_class() != primitive && !final_object->is_pointer()) {
 		if (object_assignment != nullptr) {

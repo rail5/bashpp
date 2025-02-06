@@ -130,14 +130,14 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 		// If so, throw a syntax error
 		if (object_assignment != nullptr) {
 			entity_stack.pop();
-			throw_syntax_error(ctx->IDENTIFIER(ctx->IDENTIFIER().size() - 1), "Cannot assign to a method");
+			throw_syntax_error(ctx->IDENTIFIER().back(), "Cannot assign to a method");
 		}
 
 		// Check if we're in an object address context
 		// If so, throw a syntax error
 		if (object_address_entity != nullptr) {
 			entity_stack.pop();
-			throw_syntax_error(ctx->IDENTIFIER(ctx->IDENTIFIER().size() - 1), "Cannot take the address of a method");
+			throw_syntax_error(ctx->IDENTIFIER().back(), "Cannot take the address of a method");
 		}
 
 		std::string method_call = "bpp__" + class_containing_the_method->get_name() + "__" + method->get_name() + " ";

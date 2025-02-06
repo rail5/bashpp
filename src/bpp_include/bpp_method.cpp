@@ -96,6 +96,10 @@ bool bpp_method::is_inherited() const {
 
 void bpp_method::destruct_local_objects() {
 	for (auto& o : local_objects) {
+		// If it's a pointer, don't delete it
+		if (o.second->is_pointer()) {
+			continue;
+		}
 		// If it has a destructor, call it
 		if (o.second->get_class()->has_destructor()) {
 			code += "bpp__" + o.second->get_class()->get_name() + "____destructor " + o.first + " 0\n";

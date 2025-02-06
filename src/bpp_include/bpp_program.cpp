@@ -79,6 +79,7 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 		assignments += dm->get_post_access_code() + "\n";
 	}
 	class_code = replace_all(class_code, "%ASSIGNMENTS%", assignments);
+	assignments = "";
 
 	// Replace all instances of %DELETIONS% with the deletions for the __delete function
 	std::string deletions = "";
@@ -93,6 +94,7 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 		deletions += dm->get_post_access_code() + "\n";
 	}
 	class_code = replace_all(class_code, "%DELETIONS%", deletions);
+	deletions = "";
 
 	// Replace all instances of %COPIES% with the copies for the __copy function
 	std::string copies = "";
@@ -107,6 +109,7 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 		copies += dm->get_post_access_code() + "\n";
 	}
 	class_code = replace_all(class_code, "%COPIES%", copies);
+	copies = "";
 
 	// Replace %CONSTRUCTORBODY% with the constructor body
 	if (class_->has_constructor()) {

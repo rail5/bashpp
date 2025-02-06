@@ -37,7 +37,7 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 		throw_syntax_error(ctx->KEYWORD_THIS(), "Self reference outside of class");
 	}
 
-	self_reference_entity->add_code_to_previous_line("__this=${__objectAddress}\n");
+	self_reference_entity->add_code_to_previous_line("local __this=${__objectAddress}\n");
 	self_reference_entity->add_code_to_next_line("unset __this\n");
 }
 
@@ -124,7 +124,7 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 			std::string temporary_variable_lvalue = self_reference_code + "__" + identifier_text;
 			std::string temporary_variable_rvalue = "${" + indirection + self_reference_code + "}__" + identifier_text;
 
-			self_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n");
+			self_reference_entity->add_code_to_previous_line("local " + temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n");
 			self_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
 			self_reference_code = temporary_variable_lvalue;
 			created_first_temporary_variable = true;
@@ -168,7 +168,7 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 			temporary_variable_rvalue += self_reference_entity->get_array_index();
 			temporary_variable_rvalue += "]";
 
-			self_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n");
+			self_reference_entity->add_code_to_previous_line("local " + temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n");
 			self_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
 			self_reference_code = temporary_variable_lvalue;
 
@@ -176,12 +176,12 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 				// Getting the length
 				temporary_variable_lvalue = self_reference_code + "____arrayLengthString";
 				temporary_variable_rvalue = "\\${#${" + self_reference_code + "}}";
-				self_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n");
+				self_reference_entity->add_code_to_previous_line("local " + temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n");
 				self_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
 
 				temporary_variable_lvalue = self_reference_code + "____arrayLength";
 				temporary_variable_rvalue = "${" + self_reference_code + "____arrayLengthString}";
-				self_reference_entity->add_code_to_previous_line("eval \"" + temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\"\n");
+				self_reference_entity->add_code_to_previous_line("eval local \"" + temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\"\n");
 				self_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
 
 				self_reference_code = temporary_variable_lvalue;

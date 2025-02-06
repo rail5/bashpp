@@ -47,7 +47,7 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 	self_reference_entity->inherit(current_code_entity);
 	entity_stack.push(self_reference_entity);
 
-	self_reference_entity->add_code_to_previous_line("__this=${__objectAddress}\n");
+	self_reference_entity->add_code_to_previous_line("local __this=${__objectAddress}\n");
 	self_reference_entity->add_code_to_next_line("unset __this\n");
 
 	std::string self_reference_code = "__this";
@@ -113,7 +113,7 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 			std::string temporary_variable_lvalue = self_reference_code + "__" + identifier_text;
 			std::string temporary_variable_rvalue = "${" + indirection + self_reference_code + "}__" + identifier_text;
 
-			self_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n");
+			self_reference_entity->add_code_to_previous_line("local " + temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n");
 			self_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
 			self_reference_code = temporary_variable_lvalue;
 			created_first_temporary_variable = true;

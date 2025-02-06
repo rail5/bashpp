@@ -147,6 +147,8 @@ class bash_if_branch : public bpp_code_entity {
 	public:
 		bash_if_branch();
 
+		bool add_object(std::shared_ptr<bpp_object> object) override;
+
 		void set_if_statement(std::shared_ptr<bpp::bash_if> if_statement);
 		std::shared_ptr<bpp::bash_if> get_if_statement() const;
 };

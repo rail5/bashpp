@@ -165,6 +165,17 @@ int main(int argc, char* argv[]) {
 	std::istream* stream = &std::cin;
 
 	if (received_filename) {
+		// Verify that the file exists, is readable, and is a regular file
+		struct stat file_stat;
+		if (stat(file_to_read.c_str(), &file_stat) != 0) {
+			std::cerr << program_name << ": Error: Could not open source file '" << file_to_read << "'" << std::endl;
+			return 1;
+		}
+
+		if (!S_ISREG(file_stat.st_mode)) {
+			std::cerr << program_name << ": Error: '" << file_to_read << "' is not a regular file" << std::endl;
+			return 1;
+		}
 		file_stream.open(file_to_read);
 		stream = &file_stream;
 	}

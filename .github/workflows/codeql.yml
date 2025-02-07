@@ -10,10 +10,12 @@
 # supported CodeQL languages.
 #
 name: "CodeQL Advanced"
-
 on:
   pull_request:
     branches: [ "main" ]
+  push:
+    paths:
+      - '.github/workflows/codeql.yml'
   schedule:
     - cron: '36 16 * * 4'
 

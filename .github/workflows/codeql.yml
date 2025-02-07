@@ -57,6 +57,13 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Install build dependencies
+      run: |
+        if [ ${{ matrix.language }} == 'c-cpp' ]; then
+          sudo apt-get update
+          sudo apt-get install build-essential antlr4 libantlr4-runtime-dev pandoc
+        fi
+
     # Add any setup steps before running the `github/codeql-action/init` action.
     # This includes steps like installing compilers or runtimes (`actions/setup-node`
     # or others). This is typically only required for manual builds.

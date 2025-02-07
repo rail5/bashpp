@@ -63,14 +63,14 @@ void print_syntax_error(std::string source_file, int line, int column, std::stri
 		std::getline(file, line_contents);
 	}
 
-	if (line_contents.length() >= terminal_width) {
+	if (static_cast<int>(line_contents.length()) >= terminal_width) {
 		// Cut out just enough to show where the error is
 		int start = column - (terminal_width / 2);
 		if (start < 0) {
 			start = 0;
 		}
 		int end = start + terminal_width;
-		if (end > line_contents.length()) {
+		if (end > static_cast<int>(line_contents.length())) {
 			end = line_contents.length();
 			start = end - terminal_width;
 		}

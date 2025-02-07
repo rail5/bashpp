@@ -88,6 +88,8 @@ int main(int argc, char* argv[]) {
 		"  -o, --output <file>   Specify output file\n"
 		"                         If not specified, program will run on exit\n"
 		"                         If specified as '-', program will be written to stdout\n"
+		"  -p, --parse-tree      Display parse tree (do not compile program)\n"
+		"  -t, --tokens          Display tokens (do not compile program)\n"
 		"  -v, --version         Print version information\n"
 		"  -h, --help            Print this help message\n";
 	int c;
@@ -95,9 +97,11 @@ int main(int argc, char* argv[]) {
 	int option_index = 0;
 	
 	static struct option long_options[] = {
+		{"help", no_argument, 0, 'h'},
 		{"output", required_argument, 0, 'o'},
-		{"version", no_argument, 0, 'v'},
-		{"help", no_argument, 0, 'h'}
+		{"parse-tree", no_argument, 0, 'p'},
+		{"tokens", no_argument, 0, 't'},
+		{"version", no_argument, 0, 'v'}
 	};
 
 	bool received_filename = false;
@@ -106,13 +110,20 @@ int main(int argc, char* argv[]) {
 	std::string file_to_read = "";
 	std::string output_file = "";
 
+	bool display_parse_tree = false;
+	bool display_tokens = false;
+
 	std::ostream* output_stream = &std::cout;
 	std::shared_ptr<std::ofstream> outfilestream;
 
 	std::vector<std::string> arguments = {};
 	
-	while ((c = getopt_long(argc, argv, "o:vh", long_options, &option_index)) != -1) {
+	while ((c = getopt_long(argc, argv, "ho:ptv", long_options, &option_index)) != -1) {
 		switch(c) {
+			case 'h':
+				std::cout << program_name << " " << bpp_compiler_version << std::endl << help_string;
+				return 0;
+				break;
 			case 'o':
 				if (received_output_filename) {
 					std::cerr << program_name << ": Error: Multiple output files specified" << std::endl;
@@ -135,12 +146,14 @@ int main(int argc, char* argv[]) {
 				}
 				output_stream = outfilestream.get();
 				break;
+			case 'p':
+				display_parse_tree = true;
+				break;
+			case 't':
+				display_tokens = true;
+				break;
 			case 'v':
 				std::cout << program_name << " " << bpp_compiler_version << std::endl << copyright;
-				return 0;
-				break;
-			case 'h':
-				std::cout << program_name << " " << bpp_compiler_version << std::endl << help_string;
 				return 0;
 				break;
 			case '?':
@@ -196,6 +209,14 @@ int main(int argc, char* argv[]) {
 	CommonTokenStream tokens(&lexer);
 
 	tokens.fill();
+	
+	if (display_tokens) {
+		for (auto token : tokens.getTokens()) {
+			std::cout << "Token: " << token->getText() 
+					  << ", Type: " << lexer.getVocabulary().getSymbolicName(token->getType()) 
+					  << std::endl;
+		}
+	}
 
 	BashppParser parser(&tokens);
 
@@ -211,6 +232,15 @@ int main(int argc, char* argv[]) {
 	tree::ParseTree* tree = nullptr;
 	try {
 		tree = parser.program();
+
+		if (display_parse_tree) {
+			std::cout << tree->toStringTree(&parser, true) << std::endl;
+		}
+
+		if (display_parse_tree || display_tokens) {
+			return bpp_exit_code;
+		}
+
 		// Walk the tree
 		antlr4::tree::ParseTreeWalker walker;
 		std::unique_ptr<BashppListener> listener = std::make_unique<BashppListener>();

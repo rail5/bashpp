@@ -250,7 +250,7 @@ int main(int argc, char* argv[]) {
 				const char* inlabel = "stdin";
 				strncpy(full_path, inlabel, strlen(inlabel) + 1);
 			} else {
-				std::cerr << "Error: Could not open source file '" << file_to_read << "'" << std::endl;
+				std::cerr << "Error: Could not get full path of source file '" << file_to_read << "'" << std::endl;
 				return 1;
 			}
 		}

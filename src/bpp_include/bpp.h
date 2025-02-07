@@ -39,6 +39,12 @@ class bpp_constructor;
 class bpp_destructor;
 class bpp_object;
 
+static const std::shared_ptr<bpp_entity> inaccessible_entity = std::make_shared<bpp_entity>();
+static const std::shared_ptr<bpp_datamember> inaccessible_datamember = std::make_shared<bpp_datamember>();
+static const std::shared_ptr<bpp_method> inaccessible_method = std::make_shared<bpp_method>();
+
+static const char bpp_nullptr[] = "0";
+
 class bpp_entity {
 	protected:
 		std::unordered_map<std::string, std::shared_ptr<bpp_class>> classes;
@@ -68,12 +74,6 @@ class bpp_entity {
 		virtual std::shared_ptr<bpp_class> get_class(const std::string& name);
 		virtual std::shared_ptr<bpp_object> get_object(const std::string& name);
 };
-
-static const std::shared_ptr<bpp_entity> inaccessible_entity = std::make_shared<bpp_entity>();
-static const std::shared_ptr<bpp_datamember> inaccessible_datamember = std::make_shared<bpp_datamember>();
-static const std::shared_ptr<bpp_method> inaccessible_method = std::make_shared<bpp_method>();
-
-const char bpp_nullptr[] = "0";
 
 class bpp_code_entity : public bpp_entity {
 	protected:

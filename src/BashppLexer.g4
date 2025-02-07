@@ -2,9 +2,10 @@ lexer grammar BashppLexer;
 
 @header {
 #include <memory>
-#include <stack>
 #include <string>
 #include <cstdint>
+
+#include "../SensibleStack.cpp"
 }
 
 @lexer::members {
@@ -15,9 +16,9 @@ int initialSubshellDepth = 0;
 int IfDepth = 0;
 int CaseDepth = 0;
 int64_t most_recent_case_keyword_metatoken_position = INT64_MIN;
-std::stack<int> nestedSupershellStack;
-std::stack<int> nestedSubshellStack;
-std::stack<int> nestedArithStack;
+SensibleStack<int> nestedSupershellStack;
+SensibleStack<int> nestedSubshellStack;
+SensibleStack<int> nestedArithStack;
 bool inSupershell = false;
 bool inSubshell = false;
 bool inDeprecatedSubshell = false;
@@ -32,6 +33,7 @@ bool waiting_to_terminate_while_statement = false;
 bool can_increment_metatoken_counter = true;
 
 enum lexer_special_mode_type {
+	no_mode,
 	mode_supershell,
 	mode_subshell,
 	mode_typecast,
@@ -40,16 +42,10 @@ enum lexer_special_mode_type {
 	mode_array_assignment,
 	mode_quote,
 	mode_singlequote,
-	mode_comment,
-	no_mode
+	mode_comment
 };
 
-std::stack<lexer_special_mode_type> modeStack;
-
-#define modeStack_top (modeStack.empty() ? no_mode : modeStack.top())
-#define nestedSupershellStack_top (nestedSupershellStack.empty() ? 0 : nestedSupershellStack.top())
-#define nestedSubshellStack_top (nestedSubshellStack.empty() ? 0 : nestedSubshellStack.top())
-#define nestedArithStack_top (nestedArithStack.empty() ? 0 : nestedArithStack.top())
+SensibleStack<lexer_special_mode_type> modeStack;
 
 inline bool contains_double_underscore(const std::string& s) {
 	return s.find("__") != std::string::npos;
@@ -90,9 +86,9 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 	}
 
 	// Count meta-tokens
-	if (t->getType() != WS && t->getText() != "\n" && modeStack_top != mode_comment) {
+	if (t->getType() != WS && t->getText() != "\n" && modeStack.top() != mode_comment) {
 		can_increment_metatoken_counter = true;
-	} else if (modeStack_top == no_mode && can_increment_metatoken_counter) {
+	} else if (modeStack.top() == no_mode && can_increment_metatoken_counter) {
 		can_increment_metatoken_counter = false;
 		metaTokenCount++;
 	}
@@ -107,7 +103,7 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 
 ESCAPE: '\\' . {
 	// Don't escape if we're in a single-quoted string
-	if (modeStack_top == mode_singlequote) {
+	if (modeStack.top() == mode_singlequote) {
 		if (getText() == "\\'") {
 			emit(SINGLEQUOTE_END, "\\'");
 			modeStack.pop();
@@ -125,7 +121,7 @@ ESCAPE_LITERAL: '\\' .; // Dummy token
 SUPERSHELL_START: '@(' {
 	// Per Bash conventions, no expansion takes place within a single-quoted string
 	// So don't start a supershell if we're in a single-quoted string
-	switch (modeStack_top) {
+	switch (modeStack.top()) {
 		case mode_singlequote:
 			emit(AT_LITERAL, "@(");
 			break;
@@ -158,7 +154,7 @@ WS: [ \t\r]+;
 
 // Delimiters (newlines and semicolons, as in Bash)
 NEWLINE: '\n' {
-	switch (modeStack_top) {
+	switch (modeStack.top()) {
 		case mode_comment:
 			modeStack.pop();
 			break;
@@ -189,7 +185,7 @@ BASH_VAR: '$' IDENTIFIER
 
 // Comments
 COMMENT: '#' {
-	switch (modeStack_top) {
+	switch (modeStack.top()) {
 		case mode_reference:
 		case mode_quote:
 		case mode_singlequote:
@@ -206,7 +202,7 @@ POUNDKEY: '#'; // Yet another dummy token
 
 // Strings
 QUOTE: '"' {
-	switch (modeStack_top) {
+	switch (modeStack.top()) {
 		case mode_quote:
 			emit(QUOTE_END, "\"");
 			modeStack.pop();
@@ -228,7 +224,7 @@ QUOTE_LITERAL: '"'; // Another dummy token
 
 // Single-quoted strings
 SINGLEQUOTE: '\'' {
-	switch (modeStack_top) {
+	switch (modeStack.top()) {
 		case mode_singlequote:
 			emit(SINGLEQUOTE_END, "'");
 			modeStack.pop();
@@ -282,7 +278,7 @@ KEYWORD_CAST: '@cast' {
 
 // Bash keywords
 BASH_KEYWORD_IF: 'if' {
-	switch (modeStack_top) {
+	switch (modeStack.top()) {
 		case mode_quote:
 		case mode_singlequote:
 		case mode_comment:
@@ -301,7 +297,7 @@ BASH_KEYWORD_IF: 'if' {
 };
 
 BASH_KEYWORD_ELIF: 'elif' {
-	switch (modeStack_top) {
+	switch (modeStack.top()) {
 		case mode_quote:
 		case mode_singlequote:
 		case mode_comment:
@@ -318,7 +314,7 @@ BASH_KEYWORD_ELIF: 'elif' {
 };
 
 BASH_KEYWORD_THEN: 'then' {
-	switch (modeStack_top) {
+	switch (modeStack.top()) {
 		case mode_quote:
 		case mode_singlequote:
 		case mode_comment:
@@ -335,7 +331,7 @@ BASH_KEYWORD_THEN: 'then' {
 };
 
 BASH_KEYWORD_ELSE: 'else' {
-	switch (modeStack_top) {
+	switch (modeStack.top()) {
 		case mode_quote:
 		case mode_singlequote:
 		case mode_comment:
@@ -352,7 +348,7 @@ BASH_KEYWORD_ELSE: 'else' {
 };
 
 BASH_KEYWORD_FI: 'fi' {
-	switch (modeStack_top) {
+	switch (modeStack.top()) {
 		case mode_quote:
 		case mode_singlequote:
 		case mode_comment:
@@ -371,7 +367,7 @@ BASH_KEYWORD_FI: 'fi' {
 };
 
 BASH_KEYWORD_WHILE: 'while' {
-	switch (modeStack_top) {
+	switch (modeStack.top()) {
 		case mode_quote:
 		case mode_singlequote:
 		case mode_comment:
@@ -390,7 +386,7 @@ BASH_KEYWORD_WHILE: 'while' {
 };
 
 BASH_KEYWORD_CASE: 'case' {
-	switch (modeStack_top) {
+	switch (modeStack.top()) {
 		case mode_quote:
 		case mode_singlequote:
 		case mode_comment:
@@ -470,7 +466,7 @@ Now that that's out of the way, we can say with complete accuracy,
  */
 
 BASH_KEYWORD_IN: 'in' {
-	switch (modeStack_top) {
+	switch (modeStack.top()) {
 		case mode_quote:
 		case mode_singlequote:
 		case mode_comment:
@@ -486,7 +482,7 @@ BASH_KEYWORD_IN: 'in' {
 };
 
 BASH_KEYWORD_ESAC: 'esac' {
-	switch (modeStack_top) {
+	switch (modeStack.top()) {
 		case mode_quote:
 		case mode_singlequote:
 		case mode_comment:
@@ -520,7 +516,7 @@ IDENTIFIER_LVALUE: [a-zA-Z_][a-zA-Z0-9_]*; // Yet another dummy token
 
 // Operators
 ASSIGN: '=' {
-	switch (modeStack_top) {
+	switch (modeStack.top()) {
 		case mode_reference:
 		case mode_quote:
 		case mode_singlequote:
@@ -537,7 +533,7 @@ ASSIGN: '=' {
 DOT: '.';
 
 LBRACE: '{' {
-	switch (modeStack_top) {
+	switch (modeStack.top()) {
 		case mode_reference:
 		case no_mode:
 			if (braceDepth == 0) {
@@ -550,7 +546,7 @@ LBRACE: '{' {
 
 
 RBRACE: '}' {
-	switch (modeStack_top) {
+	switch (modeStack.top()) {
 		case mode_reference:
 			modeStack.pop();
 			// Fall through
@@ -567,7 +563,7 @@ LBRACE_ROOTLEVEL: '{'; // Another dummy token
 RBRACE_ROOTLEVEL: '}'; // Yet another dummy token
 
 BACKTICK: '`' {
-	switch (modeStack_top) {
+	switch (modeStack.top()) {
 		case mode_singlequote:
 		case mode_comment:
 			// Just emit the BACKTICK token
@@ -588,7 +584,7 @@ DEPRECATED_SUBSHELL_START: '`'; // Another dummy token
 DEPRECATED_SUBSHELL_END: '`'; // Yet another dummy token
 
 BASH_ARITH_START: '$((' {
-	switch (modeStack_top) {
+	switch (modeStack.top()) {
 		case mode_singlequote:
 		case mode_comment:
 			// Emit a dummy token
@@ -606,7 +602,7 @@ BASH_ARITH_START: '$((' {
 BASH_ARITH_LITERAL: '$(('; // Another dummy token
 
 SUBSHELL_START: '$(' {
-	switch (modeStack_top) {
+	switch (modeStack.top()) {
 		case mode_singlequote:
 		case mode_comment:
 			// Emit a dummy token
@@ -634,7 +630,7 @@ DOLLAR: '$' {
 };
 
 LPAREN: '(' {
-	switch (modeStack_top) {
+	switch (modeStack.top()) {
 		case mode_typecast:
 		case mode_quote:
 		case mode_singlequote:
@@ -659,7 +655,7 @@ LPAREN: '(' {
 
 RPAREN: ')' {
 	parenDepth--;
-	switch (modeStack_top) {
+	switch (modeStack.top()) {
 		case mode_array_assignment:
 			emit(ARRAY_ASSIGN_END, ")");
 			// Fall through
@@ -672,7 +668,7 @@ RPAREN: ')' {
 			// Just emit the RPAREN token
 			break;
 		case mode_arith:
-			if ((parenDepth - 1) == nestedArithStack_top && _input->LA(1) == ')') {
+			if ((parenDepth - 1) == nestedArithStack.top() && _input->LA(1) == ')') {
 				// Translation:
 				// If the current token is a right parenthesis and the next token is also a right parenthesis,
 				// And these two match the top of the nestedArithStack, then we're at the end of the arithmetic expression
@@ -682,7 +678,7 @@ RPAREN: ')' {
 			}
 			break;
 		case mode_subshell:
-			if (parenDepth == nestedSubshellStack_top) {
+			if (parenDepth == nestedSubshellStack.top()) {
 				if (parenDepth == initialSubshellDepth) {
 					inSubshell = false;
 				}
@@ -692,7 +688,7 @@ RPAREN: ')' {
 			}
 			break;
 		case mode_supershell:
-			if (parenDepth == nestedSupershellStack_top) {
+			if (parenDepth == nestedSupershellStack.top()) {
 				if (parenDepth == initialSupershellDepth) {
 					inSupershell = false;
 				}

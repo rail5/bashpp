@@ -2,7 +2,7 @@
   "name": "bashpp",
   "displayName": "Bash++",
   "description": "Syntax highlighting for Bash++",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "publisher": "rail5",
   "repository": {
     "type": "git",

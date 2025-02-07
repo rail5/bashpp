@@ -1,0 +1,10 @@
+@class HereStringsTest {
+	@public member="value"
+
+	@public @method tryHereString {
+		cat <<<"abc def @this.member hij"
+	}
+}
+
+@HereStringsTest test
+@test.tryHereString

@@ -209,6 +209,15 @@ case3
 default
 "
 
+@runner.addTest "Heredocs" "test-suite/tests/heredocs.bpp" "abc
+def
+value
+hij
+"
+
+@runner.addTest "HereStrings" "test-suite/tests/herestrings.bpp" "abc def value hij
+"
+
 if [[ $# -gt 0 ]]; then
 	for testName in "$@"; do
 		@runner.runTest "$testName"

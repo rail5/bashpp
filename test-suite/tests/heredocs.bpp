@@ -1,0 +1,15 @@
+@class HereDocsTest {
+	@public member="value"
+
+	@public @method tryHereDoc {
+		cat <<EOF
+abc
+def
+@this.member
+hij
+EOF
+	}
+}
+
+@HereDocsTest test
+@test.tryHereDoc

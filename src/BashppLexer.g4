@@ -4,6 +4,7 @@ lexer grammar BashppLexer;
 #include <memory>
 #include <stack>
 #include <string>
+#include <cstdint>
 }
 
 @lexer::members {
@@ -12,6 +13,8 @@ int braceDepth = 0;
 int initialSupershellDepth = 0;
 int initialSubshellDepth = 0;
 int IfDepth = 0;
+int CaseDepth = 0;
+int64_t most_recent_case_keyword_metatoken_position = INT64_MIN;
 std::stack<int> nestedSupershellStack;
 std::stack<int> nestedSubshellStack;
 std::stack<int> nestedArithStack;
@@ -19,11 +22,14 @@ bool inSupershell = false;
 bool inSubshell = false;
 bool inDeprecatedSubshell = false;
 
+int64_t metaTokenCount = 0;
+
 bool incoming_token_can_be_lvalue = true;
 bool hit_at_in_current_command = false;
 bool hit_lbrace_in_current_command = false;
 
 bool waiting_to_terminate_while_statement = false;
+bool can_increment_metatoken_counter = true;
 
 enum lexer_special_mode_type {
 	mode_supershell,
@@ -82,6 +88,16 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 			incoming_token_can_be_lvalue = false;
 			break;
 	}
+
+	// Count meta-tokens
+	if (t->getType() != WS && t->getText() != "\n" && modeStack_top != mode_comment) {
+		can_increment_metatoken_counter = true;
+	} else if (modeStack_top == no_mode && can_increment_metatoken_counter) {
+		can_increment_metatoken_counter = false;
+		metaTokenCount++;
+	}
+
+
 	antlr4::Lexer::emit(std::move(t));
 }
 
@@ -272,17 +288,13 @@ BASH_KEYWORD_IF: 'if' {
 		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
-			if (incoming_token_can_be_lvalue) {
-				emit(IDENTIFIER_LVALUE, getText());
-			} else {
-				emit(IDENTIFIER, getText());
-			}
+			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
 			break;
 		default:
 			if (incoming_token_can_be_lvalue) {
 				IfDepth++;
 			} else {
-				emit(IDENTIFIER_LVALUE, getText());
+				emit(IDENTIFIER, getText());
 			}
 			break;
 	}
@@ -295,15 +307,11 @@ BASH_KEYWORD_ELIF: 'elif' {
 		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
-			if (incoming_token_can_be_lvalue) {
-				emit(IDENTIFIER_LVALUE, getText());
-			} else {
-				emit(IDENTIFIER, getText());
-			}
+			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
 			break;
 		default:
 			if (!(incoming_token_can_be_lvalue && IfDepth > 0)) {
-				emit(IDENTIFIER_LVALUE, getText());
+				emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
 			}
 			break;
 	}
@@ -316,15 +324,11 @@ BASH_KEYWORD_THEN: 'then' {
 		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
-			if (incoming_token_can_be_lvalue) {
-				emit(IDENTIFIER_LVALUE, getText());
-			} else {
-				emit(IDENTIFIER, getText());
-			}
+			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
 			break;
 		default:
 			if (!(incoming_token_can_be_lvalue && IfDepth > 0)) {
-				emit(IDENTIFIER_LVALUE, getText());
+				emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
 			}
 			break;
 	}
@@ -337,15 +341,11 @@ BASH_KEYWORD_ELSE: 'else' {
 		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
-			if (incoming_token_can_be_lvalue) {
-				emit(IDENTIFIER_LVALUE, getText());
-			} else {
-				emit(IDENTIFIER, getText());
-			}
+			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
 			break;
 		default:
 			if (!(incoming_token_can_be_lvalue && IfDepth > 0)) {
-				emit(IDENTIFIER_LVALUE, getText());
+				emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
 			}
 			break;
 	}
@@ -358,17 +358,13 @@ BASH_KEYWORD_FI: 'fi' {
 		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
-			if (incoming_token_can_be_lvalue) {
-				emit(IDENTIFIER_LVALUE, getText());
-			} else {
-				emit(IDENTIFIER, getText());
-			}
+			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
 			break;
 		default:
 			if (incoming_token_can_be_lvalue && IfDepth > 0) {
 				IfDepth--;
 			} else {
-				emit(IDENTIFIER_LVALUE, getText());
+				emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
 			}
 			break;
 	}
@@ -381,11 +377,7 @@ BASH_KEYWORD_WHILE: 'while' {
 		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
-			if (incoming_token_can_be_lvalue) {
-				emit(IDENTIFIER_LVALUE, getText());
-			} else {
-				emit(IDENTIFIER, getText());
-			}
+			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
 			break;
 		default:
 			if (incoming_token_can_be_lvalue) {
@@ -397,6 +389,119 @@ BASH_KEYWORD_WHILE: 'while' {
 	}
 };
 
+BASH_KEYWORD_CASE: 'case' {
+	switch (modeStack_top) {
+		case mode_quote:
+		case mode_singlequote:
+		case mode_comment:
+		case mode_arith:
+		case mode_array_assignment:
+			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
+			break;
+		default:
+			if (incoming_token_can_be_lvalue) {
+				CaseDepth++;
+				most_recent_case_keyword_metatoken_position = metaTokenCount;
+			} else {
+				emit(IDENTIFIER, getText());
+			}
+	}
+};
+
+/*
+How can we handle the *in* keyword in a case statement?
+An ordinary case statement looks something like this:
+	case $var in
+		1)
+			echo "One"
+			;;
+		2)
+			echo "Two"
+			;;
+		*)
+			echo "Not one or two"
+			;;
+	esac
+
+Consider a slightly more obscure (but perfectly valid) case:
+	case in in
+		in)
+			in=in
+			./in in
+			;;
+	esac
+
+Here we have several 'in's. Which one is the keyword?
+	(Of course the second one is the keyword here)
+
+One obvious thought is that: maybe it's sufficient to check if 'in' is the *last* non-whitespace token of the current line
+Another potential approach is to check if 'in' is the second non-whitespace token after 'case'
+
+But consider the following (still perfectly valid) Bash code:
+	case "$(echo "a b c") d e f" #comment
+	in "a b c d e f")
+			echo "Match"
+			;;
+	esac
+
+In this case, the 'in' keyword is not the last non-whitespace token of the current line,
+nor is it the second non-whitespace token after 'case'
+
+We can define a new term: 'meta-token'. By our definition, 'in' must be the second "meta-token" after 'case'
+What is a meta-token?
+	Whitespace does not count as a meta-token
+	Comments do not count as meta-tokens
+	Constructs such as quotes, subshells, supershells, and arithmetic expressions are *single* meta-tokens
+		The parser for Bash++ actually considers strings to be sequences of statements
+		(This is because there may be object references etc inside strings which we need to resolve)
+		Therefore, a string is not a single token -- it is composed of many tokens.
+	But here we define a "meta-token" in a way such that, for example:
+		"$(echo "a b c") d e f"
+	Is a single meta-token
+		(And therefore, 'in' is the second meta-token after 'case' in the above example)
+	We take the highest-level of these multi-token constructs (strings, subshells, etc)
+		In the above case, the highest level is the outer string -- the quote marks surrounding the whole expression
+	And we wait for this construct to terminate before we consider the next "meta-token"
+
+Now that that's out of the way, we can say with complete accuracy,
+	That in a properly-written 'case' statement,
+	The 'in' keyword must be the second meta-token after 'case'.
+
+ */
+
+BASH_KEYWORD_IN: 'in' {
+	switch (modeStack_top) {
+		case mode_quote:
+		case mode_singlequote:
+		case mode_comment:
+		case mode_arith:
+		case mode_array_assignment:
+			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
+			break;
+		default:
+			if (metaTokenCount != most_recent_case_keyword_metatoken_position + 2) {
+				emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
+			}
+	}
+};
+
+BASH_KEYWORD_ESAC: 'esac' {
+	switch (modeStack_top) {
+		case mode_quote:
+		case mode_singlequote:
+		case mode_comment:
+		case mode_arith:
+		case mode_array_assignment:
+			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
+			break;
+		default:
+			if (incoming_token_can_be_lvalue && CaseDepth > 0) {
+				CaseDepth--;
+			} else {
+				emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
+			}
+	}
+};
 
 BASH_WHILE_END: 'while'; // Another in a long list of dummy tokens
 

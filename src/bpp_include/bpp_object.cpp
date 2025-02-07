@@ -14,14 +14,6 @@ bpp_object::bpp_object() {}
 
 bpp_object::bpp_object(const std::string& name) : name(name) {}
 
-bpp_object::bpp_object(const std::string& name, bool is_pointer) : name(name) {
-	m_is_pointer = is_pointer;
-	if (!m_is_pointer) {
-		std::string type = this->type->get_name();
-		address = "bpp__" + type + "__" + name;
-	}
-}
-
 void bpp_object::set_class(std::shared_ptr<bpp_class> object_class) {
 	this->type = object_class;
 }

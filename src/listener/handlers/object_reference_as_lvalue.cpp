@@ -60,9 +60,6 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 			throw_syntax_error(ctx->IDENTIFIER(i), "Cannot descend further");
 		}
 
-		bool is_datamember = false;
-		bool is_method = false;
-
 		std::shared_ptr<bpp::bpp_datamember> referenced_datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(current_context->get_class()->get_datamember(ctx->IDENTIFIER(i)->getText(), current_class));
 		std::shared_ptr<bpp::bpp_method> referenced_method = std::dynamic_pointer_cast<bpp::bpp_method>(current_context->get_class()->get_method(ctx->IDENTIFIER(i)->getText(), current_class));
 
@@ -72,11 +69,9 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 		}
 
 		if (referenced_datamember != nullptr) {
-			is_datamember = true;
 			object_chain.push_back(referenced_datamember);
 			current_context = referenced_datamember;
 		} else if (referenced_method != nullptr) {
-			is_method = true;
 			can_descend = false;
 			object_chain.push_back(referenced_method);
 		} else {

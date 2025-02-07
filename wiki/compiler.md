@@ -16,6 +16,8 @@ $ bpp -v # Display version
 - `-o` or `--output` : Specify the output file
 	- If the output file is `-`, the program will be printed to stdout
 	- If the output file is not specified, the program will be executed immediately after compilation
+- `-t` or `--tokens` : Display lexer output (do not compile)
+- `-p` or `--parse-tree` : Display parse tree (do not compile)
 - `-h` or `--help` : Display help
 - `-v` or `--version` : Display version
 

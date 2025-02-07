@@ -8,10 +8,6 @@ all: clean-src clean-main update-version update-year
 test:
 	bin/bpp test-suite/run.bpp
 
-parser: clean-parser
-	cd src && make parser
-	mv src/BashppParser bin/BashppParser
-
 manual: clean-manual
 	mkdir tmp
 	tail -n +6 wiki/language.md > tmp/language.md
@@ -57,12 +53,9 @@ clean-src:
 clean-main:
 	rm -f bin/bpp
 
-clean-parser:
-	rm -f bin/BashppParser
-
 clean-manual:
 	rm -f debian/bpp.1
 	rm -f debian/bpp.5
 	rm -rf tmp
 
-clean: clean-src clean-main clean-parser clean-manual
+clean: clean-src clean-main clean-manual

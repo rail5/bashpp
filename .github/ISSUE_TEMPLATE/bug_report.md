@@ -23,7 +23,7 @@ Steps to reproduce the behavior:
 4. See error
 
 **Expected behavior**
-A clear and concise description of what you expected to happen. In some cases this isn't necessary ("I expected the compiler to not segfault," etc).
+A clear description of what you expected to happen. In some cases this isn't necessary ("I expected the compiler to not segfault," etc).
 
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
@@ -32,7 +32,7 @@ If applicable, add screenshots to help explain your problem.
 If this is a problem with the compiler, please include the code that you were trying to compile. If you have it available, it would also be helpful to include the output from `BashppParser`. Please encase the code and parser output in triple backticks (```) to format it correctly.
 
 **Operating System**
-Which OS and which version are you running? If running a GNU/Linux distribution such as Debian, please include the name of the distribution
+Which OS and which version are you running? If running a GNU/Linux distribution such as Debian, please include the name of the distribution.
 
 **Additional context**
 Add any other context about the problem here.

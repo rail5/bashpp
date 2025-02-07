@@ -272,7 +272,11 @@ BASH_KEYWORD_IF: 'if' {
 		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
-			emit(IDENTIFIER_LVALUE, getText());
+			if (incoming_token_can_be_lvalue) {
+				emit(IDENTIFIER_LVALUE, getText());
+			} else {
+				emit(IDENTIFIER, getText());
+			}
 			break;
 		default:
 			if (incoming_token_can_be_lvalue) {
@@ -291,7 +295,11 @@ BASH_KEYWORD_ELIF: 'elif' {
 		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
-			emit(IDENTIFIER_LVALUE, getText());
+			if (incoming_token_can_be_lvalue) {
+				emit(IDENTIFIER_LVALUE, getText());
+			} else {
+				emit(IDENTIFIER, getText());
+			}
 			break;
 		default:
 			if (!(incoming_token_can_be_lvalue && IfDepth > 0)) {
@@ -308,7 +316,11 @@ BASH_KEYWORD_THEN: 'then' {
 		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
-			emit(IDENTIFIER_LVALUE, getText());
+			if (incoming_token_can_be_lvalue) {
+				emit(IDENTIFIER_LVALUE, getText());
+			} else {
+				emit(IDENTIFIER, getText());
+			}
 			break;
 		default:
 			if (!(incoming_token_can_be_lvalue && IfDepth > 0)) {
@@ -325,7 +337,11 @@ BASH_KEYWORD_ELSE: 'else' {
 		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
-			emit(IDENTIFIER_LVALUE, getText());
+			if (incoming_token_can_be_lvalue) {
+				emit(IDENTIFIER_LVALUE, getText());
+			} else {
+				emit(IDENTIFIER, getText());
+			}
 			break;
 		default:
 			if (!(incoming_token_can_be_lvalue && IfDepth > 0)) {
@@ -342,7 +358,11 @@ BASH_KEYWORD_FI: 'fi' {
 		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
-			emit(IDENTIFIER_LVALUE, getText());
+			if (incoming_token_can_be_lvalue) {
+				emit(IDENTIFIER_LVALUE, getText());
+			} else {
+				emit(IDENTIFIER, getText());
+			}
 			break;
 		default:
 			if (incoming_token_can_be_lvalue && IfDepth > 0) {
@@ -361,7 +381,11 @@ BASH_KEYWORD_WHILE: 'while' {
 		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
-			emit(IDENTIFIER_LVALUE, getText());
+			if (incoming_token_can_be_lvalue) {
+				emit(IDENTIFIER_LVALUE, getText());
+			} else {
+				emit(IDENTIFIER, getText());
+			}
 			break;
 		default:
 			if (incoming_token_can_be_lvalue) {
@@ -372,6 +396,7 @@ BASH_KEYWORD_WHILE: 'while' {
 			break;
 	}
 };
+
 
 BASH_WHILE_END: 'while'; // Another in a long list of dummy tokens
 

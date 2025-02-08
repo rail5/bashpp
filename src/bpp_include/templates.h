@@ -9,9 +9,9 @@
 const char* bpp_supershell_function = R"EOF(function bpp____initsupershell() {
 	local bpp____supershellDirectory="/dev/shm/"
 	if [[ ! -d "${bpp____supershellDirectory}" ]]; then
-		bpp____supershellDirectory="${TMPDIR:-/tmp}"
+		bpp____supershellDirectory="${TMPDIR:-/tmp/}"
 	fi
-	local bpp____supershelltempfile="$(mktemp -p ${bpp____supershellDirectory} XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX)"
+	local bpp____supershelltempfile="$(mktemp "${bpp____supershellDirectory}/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")"
 	eval "exec {bpp____supershellFD__$BASHPID}<>\"$bpp____supershelltempfile\""
 	rm "$bpp____supershelltempfile"
 }

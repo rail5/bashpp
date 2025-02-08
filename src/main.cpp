@@ -137,6 +137,24 @@ int main(int argc, char* argv[]) {
 					break;
 				}
 
+				// Check if we have permission to write to the specified output file
+				// If the file already exists, verify write access; if it doesn't, verify write access on its parent directory
+				struct stat statbuf;
+				if (stat(output_file.c_str(), &statbuf) == 0) {
+					// File exists
+					if (access(output_file.c_str(), W_OK) != 0) {
+						std::cerr << program_name << ": Error: No write permission for file " << output_file << std::endl;
+						return 1;
+					}
+				} else {
+					// File does not exist; check write permission on the parent directory
+					std::string::size_type pos = output_file.find_last_of('/');
+					std::string dir = (pos != std::string::npos) ? output_file.substr(0, pos) : ".";
+					if (access(dir.c_str(), W_OK) != 0) {
+						std::cerr << program_name << ": Error: No write permission in directory " << dir << std::endl;
+						return 1;
+					}
+				}
 				output_stream = std::dynamic_pointer_cast<std::ostream>(std::make_shared<std::ofstream>(output_file));
 				if (output_stream == nullptr) {
 					std::cerr << program_name << ": Error: Could not open file " << output_file << " for output" << std::endl;

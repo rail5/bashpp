@@ -168,10 +168,6 @@ NEWLINE: '\n' {
 	}
 };
 
-SEMICOLON: ';' {
-	emit(DELIM, ";");
-};
-
 CONNECTIVE: DOUBLEAMPERSAND | DOUBLEPIPE; 
 DOUBLEAMPERSAND: '&&';
 DOUBLEPIPE: '||';
@@ -499,7 +495,13 @@ BASH_KEYWORD_ESAC: 'esac' {
 	}
 };
 
+BASH_CASE_PATTERN_DELIM: ';;';
+
 BASH_WHILE_END: 'while'; // Another in a long list of dummy tokens
+
+SEMICOLON: ';' {
+	emit(DELIM, ";");
+};
 
 // Identifiers
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]* {

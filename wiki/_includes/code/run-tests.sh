@@ -13,6 +13,9 @@ testsSkipped=0
 # Run the tests
 testResults=$(make test)
 
+# Print test output for debug
+echo "$testResults"
+
 # Parse the test results
 while read -r line; do
 	if [[ $line == "Tests Passed:"* ]]; then

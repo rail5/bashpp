@@ -27,6 +27,10 @@ bool bpp_program::set_containing_class(std::weak_ptr<bpp_class> containing_class
 	return false;
 }
 
+void bpp_program::set_output_stream(std::shared_ptr<std::ostream> output_stream) {
+	code = output_stream;
+}
+
 std::shared_ptr<bpp::bpp_class> bpp_program::get_primitive_class() const {
 	return primitive_class;
 }
@@ -148,7 +152,7 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 		class_code += method_code;
 	}
 
-	code += class_code;
+	*code << class_code << std::flush;
 
 	return true;
 }
@@ -181,12 +185,8 @@ bool bpp_program::add_object(std::shared_ptr<bpp_object> object) {
 		}
 	}
 
-	code += object_code;
+	*code << object_code << std::flush;
 	return true;
-}
-
-void bpp_program::prepend_code(const std::string& code) {
-	this->code = code + this->code;
 }
 
 } // namespace bpp

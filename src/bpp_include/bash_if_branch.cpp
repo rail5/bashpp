@@ -41,7 +41,7 @@ bool bash_if_branch::add_object(std::shared_ptr<bpp_object> object) {
 		object_code += "bpp__" + type + "____constructor " + name + " " + (object->is_pointer() ? "1" : "0") + "\n";
 	}
 
-	code += object_code;
+	*code << object_code << std::flush;
 	return true;
 }
 

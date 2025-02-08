@@ -55,11 +55,9 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 	listener.set_included(true);
 	listener.set_included_from(this);
 	listener.set_run_on_exit(false);
+	listener.set_supershell_counter(supershell_counter);
+	listener.set_output_stream(output_stream);
 	listener.set_output_file("");
-
-	// Create a new stringstream to store the output
-	std::stringstream included_output_stream;
-	listener.set_output_stream(&included_output_stream);
 
 	// Create a new ANTLR input stream
 	std::ifstream file_stream(full_path);

@@ -20,9 +20,9 @@ void bpp_code_entity::add_code(const std::string& code, bool add_newline) {
 	if (code.find("\n") != std::string::npos && add_newline) {
 		flush_nextline_buffer();
 
-		this->code += code;
+		*this->code << code << std::flush;
 		if (code.back() != '\n') {
-			this->code += "\n";
+			*this->code << "\n" << std::flush;
 		}
 		
 		flush_postline_buffer();
@@ -36,7 +36,7 @@ void bpp_code_entity::add_code(const std::string& code, bool add_newline) {
 }
 
 void bpp_code_entity::add_code_to_previous_line(const std::string& code) {
-	this->code += code;
+	*this->code << code << std::flush;
 	buffers_flushed = false;
 }
 
@@ -47,9 +47,9 @@ void bpp_code_entity::add_code_to_next_line(const std::string& code) {
 
 void bpp_code_entity::flush_nextline_buffer() {
 	if (!nextline_buffer.empty()) {
-		code += nextline_buffer;
+		*code << nextline_buffer << std::flush;
 		if (nextline_buffer.back() != '\n') {
-			code += "\n";
+			*code << "\n" << std::flush;
 		}
 	}
 	nextline_buffer = "";
@@ -57,9 +57,9 @@ void bpp_code_entity::flush_nextline_buffer() {
 
 void bpp_code_entity::flush_postline_buffer() {
 	if (!postline_buffer.empty()) {
-		code += postline_buffer;
+		*code << postline_buffer << std::flush;
 		if (postline_buffer.back() != '\n') {
-			code += "\n";
+			*code << "\n" << std::flush;
 		}
 	}
 	postline_buffer = "";
@@ -72,7 +72,11 @@ void bpp_code_entity::flush_code_buffers() {
 }
 
 std::string bpp_code_entity::get_code() const {
-	return code;
+	std::shared_ptr<std::ostringstream> ss = std::dynamic_pointer_cast<std::ostringstream>(code);
+	if (ss == nullptr) {
+		return "";
+	}
+	return ss->str();
 }
 
 std::string bpp_code_entity::get_pre_code() const {

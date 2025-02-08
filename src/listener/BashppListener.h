@@ -55,7 +55,7 @@ class BashppListener : public BashppParserBaseListener {
 		std::set<std::string> included_files = {};
 		BashppListener* included_from = nullptr;
 		std::stack<std::string> include_stack;
-		std::ostream* output_stream = &std::cout;
+		std::shared_ptr<std::ostream> output_stream;
 		std::string output_file;
 		bool run_on_exit = false;
 		std::vector<std::string> arguments = {};
@@ -118,6 +118,10 @@ class BashppListener : public BashppParserBaseListener {
 			result.code = "${" + supershell_output_variable + "}";
 
 			supershell_counter++;
+
+			if (supershell_counter == 1) {
+				program->add_code_to_previous_line(bpp_supershell_function);
+			}
 
 			return result;
 		}
@@ -207,15 +211,15 @@ class BashppListener : public BashppParserBaseListener {
 		program_has_errors = true;
 	}
 
-	void add_to_supershell_counter(uint64_t value) {
-		supershell_counter += value;
+	void set_supershell_counter(uint64_t value) {
+		supershell_counter = value;
 	}
 
 	void add_to_new_counter(uint64_t value) {
 		new_counter += value;
 	}
 
-	void set_output_stream(std::ostream* output_stream) {
+	void set_output_stream(std::shared_ptr<std::ostream> output_stream) {
 		this->output_stream = output_stream;
 	}
 

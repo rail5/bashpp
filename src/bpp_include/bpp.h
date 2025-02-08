@@ -7,6 +7,7 @@
 #define SRC_BPP_INCLUDE_BPP_H_
 
 #include <string>
+#include <sstream>
 #include <vector>
 #include <unordered_map>
 #include <memory>
@@ -77,7 +78,7 @@ class bpp_entity {
 
 class bpp_code_entity : public bpp_entity {
 	protected:
-		std::string code = "";
+		std::shared_ptr<std::ostream> code = std::make_shared<std::ostringstream>();
 		std::string nextline_buffer = "";
 		std::string postline_buffer = "";
 		bool buffers_flushed = false;
@@ -427,10 +428,10 @@ class bpp_program : public bpp_code_entity {
 
 		bool set_containing_class(std::weak_ptr<bpp_class> containing_class) override;
 
+		void set_output_stream(std::shared_ptr<std::ostream> output_stream);
+
 		bool add_class(std::shared_ptr<bpp_class> class_) override;
 		bool add_object(std::shared_ptr<bpp_object> object) override;
-
-		void prepend_code(const std::string& code);
 
 		std::shared_ptr<bpp_class> get_primitive_class() const;
 };

@@ -17,7 +17,7 @@ void bpp_string::add_code(const std::string& code, bool add_newline) {
 }
 
 void bpp_string::add_code_to_previous_line(const std::string& code) {
-	this->code += code;
+	*this->code << code << std::flush;
 }
 
 void bpp_string::add_code_to_next_line(const std::string& code) {
@@ -29,7 +29,11 @@ std::string bpp_string::get_code() const {
 }
 
 std::string bpp_string::get_pre_code() const {
-	return code;
+	std::shared_ptr<std::ostringstream> ss = std::dynamic_pointer_cast<std::ostringstream>(code);
+	if (ss == nullptr) {
+		return "";
+	}
+	return ss->str();
 }
 
 std::string bpp_string::get_post_code() const {

@@ -43,7 +43,7 @@ bool bpp_method::add_object(std::shared_ptr<bpp_object> object) {
 		object_code += "bpp__" + type + "____constructor " + name + " " + (object->is_pointer() ? "1" : "0") + "\n";
 	}
 
-	code += object_code;
+	*code << object_code << std::flush;
 	return true;
 }
 
@@ -102,10 +102,10 @@ void bpp_method::destruct_local_objects() {
 		}
 		// If it has a destructor, call it
 		if (o.second->get_class()->has_destructor()) {
-			code += "bpp__" + o.second->get_class()->get_name() + "____destructor " + o.first + " 0\n";
+			*code << "bpp__" + o.second->get_class()->get_name() + "____destructor " + o.first + " 0\n" << std::flush;
 		}
 		// Call delete
-		code += "bpp__" + o.second->get_class()->get_name() + "____delete " + o.first + " 0\n";
+		*code << "bpp__" + o.second->get_class()->get_name() + "____delete " + o.first + " 0\n" << std::flush;
 	}
 	local_objects.clear();
 }
@@ -113,7 +113,10 @@ void bpp_method::destruct_local_objects() {
 void bpp_method::destroy() {
 	name.clear();
 	parameters.clear();
-	code.clear();
+	std::shared_ptr<std::ostringstream> ss = std::dynamic_pointer_cast<std::ostringstream>(code);
+	if (ss != nullptr) {
+		ss->clear();
+	}
 	nextline_buffer.clear();
 	postline_buffer.clear();
 	scope = SCOPE_PRIVATE;

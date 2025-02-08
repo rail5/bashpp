@@ -113,8 +113,7 @@ int main(int argc, char* argv[]) {
 	bool display_parse_tree = false;
 	bool display_tokens = false;
 
-	std::ostream* output_stream = &std::cout;
-	std::shared_ptr<std::ofstream> outfilestream;
+	std::shared_ptr<std::ostream> output_stream(&std::cout, [](std::ostream*){});
 
 	std::vector<std::string> arguments = {};
 	
@@ -135,16 +134,14 @@ int main(int argc, char* argv[]) {
 				output_file = std::string(optarg);
 
 				if (output_file == "-") {
-					output_stream = &std::cout;
 					break;
 				}
 
-				outfilestream = std::make_shared<std::ofstream>(output_file);
-				if (!*outfilestream) {
+				output_stream = std::dynamic_pointer_cast<std::ostream>(std::make_shared<std::ofstream>(output_file));
+				if (output_stream == nullptr) {
 					std::cerr << program_name << ": Error: Could not open file " << output_file << " for output" << std::endl;
 					return 1;
 				}
-				output_stream = outfilestream.get();
 				break;
 			case 'p':
 				display_parse_tree = true;
@@ -228,6 +225,21 @@ int main(int argc, char* argv[]) {
 
 	// Enable the parser to use diagnostic messages
 	parser.setErrorHandler(std::make_shared<BailErrorStrategy>());
+
+	if (run_on_exit) {
+		// Create a temporary file to store the program
+		std::string temp_dir = std::filesystem::temp_directory_path();
+		char temp_file[4097];
+		strncpy(temp_file, temp_dir.c_str(), 4096);
+		strncat(temp_file, "/bashpp_temp_XXXXXX", 4096 - strlen(temp_file));
+		int fd = mkstemp(temp_file);
+		if (fd == -1) {
+			throw std::runtime_error("Failed to create temporary file");
+		}
+		close(fd);
+		output_stream = std::dynamic_pointer_cast<std::ostream>(std::make_shared<std::ofstream>(temp_file));
+		output_file = std::string(temp_file);
+	}
 
 	tree::ParseTree* tree = nullptr;
 	try {

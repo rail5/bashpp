@@ -4,9 +4,9 @@ This is a test suite for the Bash++ compiler. It is designed to test the compile
 
 ## Latest Results
 
-<img src="https://vp.rail5.org/bpp/badge.svg?nocache" title="" alt="tests-pass-rate" width="137">
+<img src="https://bpp.sh/badge.svg?nocache" title="" alt="tests-pass-rate" width="137">
 
-<img src="https://vp.rail5.org/bpp/test-results.svg?nocache" title="" alt="test-results" width="300">
+<img src="https://bpp.sh/test-results.svg?nocache" title="" alt="test-results" width="300">
 
 ## Running the Test Suite
 

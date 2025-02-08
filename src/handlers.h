@@ -3,6 +3,9 @@
  * Bash++: Bash with classes
  */
 
+#ifndef SRC_HANDLERS_H_
+#define SRC_HANDLERS_H_
+
 #include "listener/handlers/class_body_statement.cpp"
 #include "listener/handlers/class_definition.cpp"
 #include "listener/handlers/comment.cpp"
@@ -42,3 +45,5 @@
 #include "listener/handlers/bash_while_declaration.cpp"
 #include "listener/handlers/bash_if_statement.cpp"
 #include "listener/handlers/extra_statement.cpp"
+
+#endif // SRC_HANDLERS_H_

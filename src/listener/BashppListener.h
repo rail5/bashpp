@@ -260,6 +260,15 @@ class BashppListener : public BashppParserBaseListener {
 	void enterBash_if_condition(BashppParser::Bash_if_conditionContext *ctx) override;
 	void exitBash_if_condition(BashppParser::Bash_if_conditionContext *ctx) override;
 
+	void enterBash_case_statement(BashppParser::Bash_case_statementContext *ctx) override;
+	void exitBash_case_statement(BashppParser::Bash_case_statementContext *ctx) override;
+
+	void enterBash_case_pattern(BashppParser::Bash_case_patternContext *ctx) override;
+	void exitBash_case_pattern(BashppParser::Bash_case_patternContext *ctx) override;
+
+	void enterBash_case_pattern_header(BashppParser::Bash_case_pattern_headerContext *ctx) override;
+	void exitBash_case_pattern_header(BashppParser::Bash_case_pattern_headerContext *ctx) override;
+
 	void enterExtra_statement(BashppParser::Extra_statementContext *ctx) override;
 	void exitExtra_statement(BashppParser::Extra_statementContext *ctx) override;
 

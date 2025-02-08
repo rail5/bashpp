@@ -19,6 +19,22 @@ void BashppListener::enterBash_case_statement(BashppParser::Bash_case_statementC
 	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
+
+	/**
+	 * Bash case statements take the form
+	 * 		case (something) in
+	 * 			pattern1)
+	 * 				...
+	 * 				;;
+	 * 			...
+	 * 		esac
+	 * 
+	 * The code to handle each pattern will be caught by the Bash_case_pattern context
+	 * 	These will be children of the Bash_case_statement context in the parse tree
+	 * 
+	 * The patterns to be matched will be caught by the Bash_case_pattern_header context
+	 * 	These will be children of the Bash_case_pattern context in the parse tree
+	 */
 }
 
 void BashppListener::exitBash_case_statement(BashppParser::Bash_case_statementContext *ctx) {

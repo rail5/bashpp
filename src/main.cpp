@@ -21,7 +21,7 @@ volatile int bpp_exit_code = 0;
 #include "antlr/BashppLexer.h"
 #include "antlr/BashppParser.h"
 
-#include "listener/BashppListener.h"
+#include "listener/BashppListener.cpp"
 
 #include "handlers.h"
 

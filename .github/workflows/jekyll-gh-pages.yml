@@ -29,7 +29,7 @@ concurrency:
 jobs:
   # Build job
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }} # Conditional check to ensure the job only runs on GitHub Actions
     steps:
       - name: Checkout
@@ -48,6 +48,10 @@ jobs:
         run: |
           cd wiki/_includes/code
           bash ./colorize-all.sh
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install build-essential antlr4 libantlr4-runtime-dev
       - name: Generate Test Stats SVG
         run: |
           bash wiki/_includes/code/run-tests.sh

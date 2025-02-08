@@ -80,6 +80,7 @@ class bpp_code_entity : public bpp_entity {
 		std::string code = "";
 		std::string nextline_buffer = "";
 		std::string postline_buffer = "";
+		bool buffers_flushed = false;
 	public:
 		bpp_code_entity();
 		virtual ~bpp_code_entity() = default;

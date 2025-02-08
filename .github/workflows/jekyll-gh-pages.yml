@@ -7,6 +7,8 @@ on:
     branches: ["main"]
     paths:
       - "wiki/**"
+      - "src/**"
+      - "test-suite/**"
       - ".github/workflows/jekyll-gh-pages.yml"
 
   # Allows you to run this workflow manually from the Actions tab
@@ -46,6 +48,9 @@ jobs:
         run: |
           cd wiki/_includes/code
           bash ./colorize-all.sh
+      - name: Generate Test Stats SVG
+        run: |
+          bash wiki/_includes/code/run-tests.sh
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Build with Jekyll

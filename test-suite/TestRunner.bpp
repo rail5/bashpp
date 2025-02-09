@@ -8,18 +8,18 @@
 
 	@public @method updateStats test {
 		@Test* test="$test"
-		# TODO(@rail5): I wanted to write this as a 'case' statement,
-		# And discovered that 'case' statements are broken
-		# (All the pre-code and post-code segments get haphazardly added around the case statement, breaking it)
-		# Fix 'case' statements in the compiler.
 
-		if [[ "@test.getStatus" == "pass" ]]; then
-			@this.stats.incrementPassedTests
-		elif [[ "@test.getStatus" == "fail" ]]; then
-			@this.stats.incrementFailedTests
-		elif [[ "@test.getStatus" == "untested" ]]; then
-			@this.stats.incrementUntestedTests
-		fi
+		case "@test.getStatus" in
+			"pass")
+				@this.stats.incrementPassedTests
+				;;
+			"fail")
+				@this.stats.incrementFailedTests
+				;;
+			"untested")
+				@this.stats.incrementUntestedTests
+				;;
+		esac
 
 		echo @test.toPrimitive
 	}

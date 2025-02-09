@@ -182,12 +182,24 @@ void bpp_class::inherit(std::shared_ptr<bpp_class> parent) {
 		if (m->get_name() == "toPrimitive") {
 			continue; // Don't inherit toPrimitive
 		}
-		methods.push_back(m);
-		// If the method is marked private, mark it as inaccessible
-		if (m->get_scope() == bpp_scope::SCOPE_PRIVATE) {
-			methods.back()->set_scope(bpp_scope::SCOPE_INACCESSIBLE);
+		// Write a proxy method to the base class's method
+		std::shared_ptr<bpp_method> proxy = std::make_shared<bpp_method>();
+		proxy->set_name(m->get_name());
+		proxy->set_scope( (m->get_scope() == bpp_scope::SCOPE_PRIVATE) ? bpp_scope::SCOPE_INACCESSIBLE : m->get_scope() );
+		proxy->set_virtual(m->is_virtual());
+		proxy->set_inherited(true);
+
+		std::string proxy_method_code = "bpp__" + parent->get_name() + "__" + m->get_name()
+			+ " ${__objectName} ${__objectIsPtr}";
+		// Add the parameters
+		for (auto& p : m->get_parameters()) {
+			proxy->add_parameter(p);
+			proxy_method_code += " \"$" + p->get_name() + "\"";
 		}
-		methods.back()->set_inherited(true);
+		proxy_method_code += "\n";
+		proxy->add_code(proxy_method_code);
+
+		methods.push_back(proxy);
 	}
 
 	// Inherit datamembers

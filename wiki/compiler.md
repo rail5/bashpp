@@ -2,7 +2,7 @@
 
 ## Basic usage
 
-`bpp [options] [file] -- [arguments]`
+`bpp [options] [file] ...`
 
 ```bash
 $ bpp program.bpp                 # Compile & immediately run the program

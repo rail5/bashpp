@@ -250,7 +250,7 @@ int main(int argc, char* argv[]) {
 		char full_path[PATH_MAX];
 		if (realpath(file_to_read.c_str(), full_path) == nullptr) {
 			if (!received_filename) {
-				const char* inlabel = "stdin";
+				const char* inlabel = "<stdin>";
 				strncpy(full_path, inlabel, strlen(inlabel) + 1);
 			} else {
 				std::cerr << "Error: Could not get full path of source file '" << file_to_read << "'" << std::endl;

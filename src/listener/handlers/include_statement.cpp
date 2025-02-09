@@ -28,7 +28,17 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 	// NOT NECESSARILY the same as the current working directory
 	if (filename[0] != '/') {
 		// Get the directory of the current source file
-		std::string current_directory = source_file.substr(0, source_file.find_last_of('/'));
+		// If the program is being read from stdin, we should use the current working directory
+		std::string current_directory;
+		if (source_file == "<stdin>") {
+			char current_working_directory[PATH_MAX];
+			if (getcwd(current_working_directory, PATH_MAX) == nullptr) {
+				throw internal_error("Could not get current working directory");
+			}
+			current_directory = current_working_directory;
+		} else {
+			current_directory = source_file.substr(0, source_file.find_last_of('/'));
+		}
 
 		// Append the filename to the directory
 		filename = current_directory + "/" + filename;

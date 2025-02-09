@@ -132,6 +132,23 @@ class bpp_code_entity : public bpp_entity {
  * 						That spans multiple lines
  * 						And has a reference to ${the resolved reference}"
  * 					{post-code necessary to clear the memory}
+ * 
+ * So, bpp_string gives us more direct control over where the pre- and post-code is added
+ * 
+ * 	In some other part of the compiler where we're parsing the above example string,
+ * 	The code might look something like:
+ * 			entity->add_code_to_previous_line(pre_code);
+ * 			entity->add_code_to_next_line(post_code);
+ * 				^ These two lines prepare the code buffers in the code_entity
+ * 			entity->add_code("echo \"This is a very long string....."); // etc
+ * 				^ This line adds the code & *maybe* flushes the buffers we just prepared
+ * 	Where "entity" may be a bpp_code_entity or a bpp_string
+ * 
+ * 	In general, parser rules which handle things such as object references
+ * 	Don't pay attention to whether they're dealing with a bpp_code_entity or a bpp_string.
+ * 	The code necessary to fetch an object reference (for example) is simply added to the pre-code buffer,
+ * 	And the code necessary to clear that memory is simply added to the post-code buffer.
+ * 	The question of whether or when those buffers should be flushed is left to the entity itself (code_entity or string)
  */
 class bpp_string : public bpp_code_entity {
 	public:

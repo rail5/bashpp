@@ -190,7 +190,7 @@ void bpp_class::inherit(std::shared_ptr<bpp_class> parent) {
 		proxy->set_inherited(true);
 
 		std::string proxy_method_code = "bpp__" + parent->get_name() + "__" + m->get_name()
-			+ " ${__objectName} ${__objectIsPtr}";
+			+ " ${__objectAddress} 1";
 		// Add the parameters
 		for (auto& p : m->get_parameters()) {
 			proxy->add_parameter(p);

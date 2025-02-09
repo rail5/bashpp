@@ -60,7 +60,7 @@ class BashppListener : public BashppParserBaseListener {
 		std::shared_ptr<std::ostream> output_stream;
 		std::string output_file;
 		bool run_on_exit = false;
-		std::vector<std::string> arguments = {};
+		std::vector<char*> arguments = {};
 
 		std::shared_ptr<bpp::bpp_program> program = std::make_shared<bpp::bpp_program>();
 
@@ -132,7 +132,7 @@ class BashppListener : public BashppParserBaseListener {
 	void set_output_stream(std::shared_ptr<std::ostream> output_stream);
 	void set_output_file(std::string output_file);
 	void set_run_on_exit(bool run_on_exit) ;
-	void set_arguments(std::vector<std::string> arguments);
+	void set_arguments(std::vector<char*> arguments);
 
 	std::shared_ptr<bpp::bpp_program> get_program();
 	std::set<std::string> get_included_files();

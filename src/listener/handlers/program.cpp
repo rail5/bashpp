@@ -54,8 +54,8 @@ void BashppListener::exitProgram(BashppParser::ProgramContext *ctx) {
 		}
 	} else {
 		std::string arguments_string = "";
-		for (std::string argument : arguments) {
-			arguments_string += " \"" + replace_all(argument, "\"", "\\\"") + "\"";
+		for (auto argument : arguments) {
+			arguments_string += " \"" + replace_all(std::string(argument), "\"", "\\\"") + "\"";
 		}
 
 		std::string command = "bash " + output_file + arguments_string;

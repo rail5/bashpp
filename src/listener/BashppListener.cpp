@@ -122,7 +122,7 @@ void BashppListener::set_run_on_exit(bool run_on_exit) {
 	this->run_on_exit = run_on_exit;
 }
 
-void BashppListener::set_arguments(std::vector<std::string> arguments) {
+void BashppListener::set_arguments(std::vector<char*> arguments) {
 	this->arguments = arguments;
 }
 

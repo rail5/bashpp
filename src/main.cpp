@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
 
 	std::shared_ptr<std::ostream> output_stream(&std::cout, [](std::ostream*){});
 
-	std::vector<std::string> program_arguments = {};
+	std::vector<char*> program_arguments = {};
 	std::vector<char*> compiler_arguments = {};
 	program_arguments.reserve(argc);
 	compiler_arguments.reserve(argc);

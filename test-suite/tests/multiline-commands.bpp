@@ -1,5 +1,8 @@
 @class MyClass {
 	@public member="value"
+	@public @method do {
+		echo "hello"
+	}
 }
 
 @MyClass myObject
@@ -7,4 +10,5 @@
 echo one two three \
 four five six \
 @myObject.member \
+@myObject.do \
 seven eight nine

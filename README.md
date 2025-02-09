@@ -74,8 +74,8 @@ $ debuild -us -uc # Build the Debian .deb package for installation
 
 ```bash
 $ bpp program.bpp                 # Compile & immediately run the program
-$ bpp program.bpp -o compiled.sh  # Compile & save the program to compiled.sh
-$ bpp program.bpp -o -            # Compile & print the program to stdout
+$ bpp -o compiled.sh program.bpp  # Compile & save the program to compiled.sh
+$ bpp -o - program.bpp            # Compile & print the program to stdout
 $ cat program.bpp | bpp           # Pipe previous command output to the compiler
 $ bpp -h # Display help
 $ bpp -v # Display version

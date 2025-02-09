@@ -16,6 +16,13 @@ Then, run the test suite by running `make test` in the root directory of the pro
 
 You can run *specific* test cases by passing an argument to the script. For example, `bin/bpp test-suite/run.bpp "Hello, World" "Supershells"` will run only the test cases named "Hello, World" and "Supershells".
 
+### Options
+
+ - `-h`: Display help
+ - `-l`: List all test cases
+
+Calling `run.bpp` with no arguments will run all the test cases.
+
 ## Test Suite Structure
 
 The test suite is itself written in Bash++.

@@ -47,7 +47,7 @@
 			echo "Test name must be provided."
 			exit 1
 		fi
-		for i in @(seq 0 @{#this.tests[@]}); do
+		for i in @(seq 0 $((@{#this.tests[@]} - 1))); do
 			@Test* test="@{this.tests[$i]}"
 			if [[ "@test.getName" == "$name" ]]; then
 				@test.run
@@ -57,5 +57,12 @@
 		done
 		echo "Test not found: $name"
 		@this.stats.incrementUntestedTests
+	}
+
+	@public @method listTests {
+		for i in @(seq 0 $((@{#this.tests[@]} - 1))); do
+			@Test* test="@{this.tests[$i]}"
+			echo "@test.getName"
+		done
 	}
 }

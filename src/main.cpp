@@ -44,8 +44,9 @@ int main(int argc, char* argv[]) {
 		"GNU General Public License for more details.\n\n"
 		"You should have received a copy of the GNU General Public License\n"
 		"along with this program. If not, see http://www.gnu.org/licenses/.\n";
-	const char* help_string = "Usage: bpp [options] [file]\n"
+	const char* help_string = "Usage: bpp [options] [file] -- [arguments]\n"
 		"If no file is specified, read from stdin\n"
+		"All arguments after the file are passed to the compiled program\n"
 		"Options:\n"
 		"  -o, --output <file>   Specify output file\n"
 		"                         If not specified, program will run on exit\n"
@@ -78,8 +79,27 @@ int main(int argc, char* argv[]) {
 	std::shared_ptr<std::ostream> output_stream(&std::cout, [](std::ostream*){});
 
 	std::vector<std::string> arguments = {};
+
 	
-	while ((c = getopt_long(argc, argv, "ho:ptv", long_options, &option_index)) != -1) {
+	// Find the first non-option argument, interpret it as the source file to compile,
+	// And store any subsequent arguments as arguments to the program
+	int new_argc = 1;
+	char** new_argv = new char*[argc];
+	new_argv[0] = argv[0];
+
+	for (int i = 1; i < argc; i++) {
+		if (!received_filename && argv[i][0] != '-') {
+			file_to_read = std::string(argv[i]);
+			received_filename = true;
+		} else if (received_filename) {
+			arguments.push_back(argv[i]);
+		} else {
+			// Add the argument to the new_argv array
+			new_argv[new_argc++] = argv[i];
+		}
+	}
+	
+	while ((c = getopt_long(new_argc, new_argv, "ho:ptv", long_options, &option_index)) != -1) {
 		switch(c) {
 			case 'h':
 				std::cout << program_name << " " << bpp_compiler_version << std::endl << help_string;
@@ -139,15 +159,6 @@ int main(int argc, char* argv[]) {
 					return 1;
 				}
 				break;
-		}
-	}
-	
-	for (option_index = optind; option_index < argc; option_index++) {
-		if (received_filename) {
-			arguments.push_back(argv[option_index]);
-		} else {
-			file_to_read = argv[option_index];
-			received_filename = true;
 		}
 	}
 

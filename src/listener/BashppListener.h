@@ -22,6 +22,8 @@
 #include "../bpp_include/bash_while.cpp"
 #include "../bpp_include/bash_if.cpp"
 #include "../bpp_include/bash_if_branch.cpp"
+#include "../bpp_include/bash_case.cpp"
+#include "../bpp_include/bash_case_pattern.cpp"
 #include "../bpp_include/bpp_delete_statement.cpp"
 #include "../bpp_include/bpp_value_assignment.cpp"
 #include "../bpp_include/bpp_object_reference.cpp"

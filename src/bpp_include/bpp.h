@@ -189,6 +189,28 @@ class bash_if_branch : public bpp_code_entity {
 		std::shared_ptr<bpp::bash_if> get_if_statement() const;
 };
 
+class bash_case : public bpp_string {
+	private:
+		std::string cases = "";
+	public:
+		bash_case();
+
+		void add_case(const std::string& case_);
+
+		const std::string& get_cases() const;
+};
+
+class bash_case_pattern : public bpp_string {
+	private:
+		std::string pattern = "";
+	public:
+		bash_case_pattern();
+
+		void set_pattern(const std::string& pattern);
+
+		const std::string& get_pattern() const;
+};
+
 class bpp_delete_statement : public bpp_string {
 	private:
 		std::shared_ptr<bpp::bpp_object> object_to_delete;

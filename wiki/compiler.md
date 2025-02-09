@@ -24,4 +24,5 @@ $ bpp -v # Display version
 - `-v` or `--version` : Display version
 
 If no input file is specified, the compiler will read from stdin.
+
 Arguments after the input file are passed to the compiled program.

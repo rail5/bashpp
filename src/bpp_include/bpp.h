@@ -99,6 +99,40 @@ class bpp_code_entity : public bpp_entity {
 		virtual std::string get_post_code() const;
 };
 
+/**
+ * bpp_code_entity vs. bpp_string:
+ * The practical difference between bpp_code_entity and bpp_string is how we handle the code buffers
+ * 
+ * When you call add_code() on a bpp_code_entity, it will flush the pre_code and post_code buffers
+ * 		Meaning that we're treating the pre_code and post_code buffers as the pre- and post-code for *this particular line* of code
+ * 		So when we finish writing this line of code, we should ensure that this line of code is preceded by its pre-code,
+ * 		And followed by its post-code
+ * 
+ * 				In a bpp_code_entity, the code:
+ * 					echo @this.dataMember
+ * 				Becomes:
+ * 					{pre-code necessary to fetch @this.dataMember}
+ * 					echo ${the resolved reference}
+ * 					{post-code necessary to clear the memory}
+ * 
+ * In a bpp_string, however, calling add_code() does not flush those buffers.
+ * 		Why?
+ * 		Because, if you imagine we're literally dealing with an actual string (although the same rules apply in some other cases),
+ * 		It's important not to muddy up the contents of the string with a bunch of pre- and post-code
+ * 		If, for example, there are object references within the string, they should be resolved BEFORE the entire string,
+ * 		And cleared AFTER the entire string
+ * 
+ * 				This ensures that for a bpp_string, the code:
+ * 					echo "This is a very long string
+ * 						That spans multiple lines
+ * 						And has a reference to @this.dataMember"
+ * 				Becomes:
+ * 					{pre-code necessary to fetch @this.dataMember}
+ * 					echo "This is a very long string
+ * 						That spans multiple lines
+ * 						And has a reference to ${the resolved reference}"
+ * 					{post-code necessary to clear the memory}
+ */
 class bpp_string : public bpp_code_entity {
 	public:
 		bpp_string();

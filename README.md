@@ -52,7 +52,7 @@ Please report any bugs you find to the [issue tracker](https://github.com/rail5/
 
 Optional:
  - `pandoc` and `perl` for building the documentation
- - `debhelper` for building the Debian package and keeping version numbers up-to-date via `dpk-parsechangelog`
+ - `debhelper` for building the Debian package and keeping version numbers up-to-date via `dpkg-parsechangelog`
 
 On Debian-based systems, you can install the prerequisites with:
 

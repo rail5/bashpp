@@ -78,28 +78,27 @@ int main(int argc, char* argv[]) {
 
 	std::shared_ptr<std::ostream> output_stream(&std::cout, [](std::ostream*){});
 
-	std::vector<std::string> arguments = {};
-	arguments.reserve(argc);
+	std::vector<std::string> program_arguments = {};
+	std::vector<char*> compiler_arguments = {};
+	program_arguments.reserve(argc);
+	compiler_arguments.reserve(argc);
+	compiler_arguments.push_back(argv[0]);
 	
 	// Find the first non-option argument, interpret it as the source file to compile,
 	// And store any subsequent arguments as arguments to the program
-	std::vector<char*> new_argv = {};
-	new_argv.reserve(argc);
-	new_argv.push_back(argv[0]);
-
 	for (int i = 1; i < argc; i++) {
 		if (!received_filename && argv[i][0] != '-' && strncmp(argv[i-1], "-o", 2) != 0) {
 			file_to_read = argv[i];
 			received_filename = true;
 		} else if (received_filename) {
-			arguments.push_back(argv[i]);
+			program_arguments.push_back(argv[i]);
 		} else {
-			// Add the argument to the new_argv array
-			new_argv.push_back(argv[i]);
+			// Add the argument to the compiler_arguments array
+			compiler_arguments.push_back(argv[i]);
 		}
 	}
 	
-	while ((c = getopt_long(static_cast<int>(new_argv.size()), new_argv.data(), "ho:ptv", long_options, &option_index)) != -1) {
+	while ((c = getopt_long(static_cast<int>(compiler_arguments.size()), compiler_arguments.data(), "ho:ptv", long_options, &option_index)) != -1) {
 		switch(c) {
 			case 'h':
 				std::cout << program_name << " " << bpp_compiler_version << std::endl << help_string;
@@ -261,7 +260,7 @@ int main(int argc, char* argv[]) {
 		listener->set_output_stream(output_stream);
 		listener->set_output_file(output_file);
 		listener->set_run_on_exit(run_on_exit);
-		listener->set_arguments(arguments);
+		listener->set_arguments(program_arguments);
 		walker.walk(listener.get(), tree);
 
 	} catch (const antlr4::EmptyStackException& e) {

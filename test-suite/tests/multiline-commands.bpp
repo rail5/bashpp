@@ -1,0 +1,10 @@
+@class MyClass {
+	@public member="value"
+}
+
+@MyClass myObject
+
+echo one two three \
+four five six \
+@myObject.member \
+seven eight nine

@@ -218,6 +218,9 @@ hij
 @runner.addTest "Herestrings" "test-suite/tests/herestrings.bpp" "abc def value hij
 "
 
+@runner.addTest "Multiline commands" "test-suite/tests/multiline-commands.bpp" "one two three four five six value seven eight nine
+"
+
 if [[ $# -gt 0 ]]; then
 	for testName in "$@"; do
 		@runner.runTest "$testName"

@@ -196,7 +196,9 @@ world
 @runner.addTest "Case statements" "test-suite/tests/case.bpp" "default
 case1
 case2
+otherMember is case4
 case3
+case4
 "
 
 @runner.addTest "If...Elif statements" "test-suite/tests/if-elif.bpp" "default

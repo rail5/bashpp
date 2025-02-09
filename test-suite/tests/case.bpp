@@ -1,14 +1,22 @@
 @class MyClass {
 	@public member="default value"
+	@public otherMember="case4"
 
 	@public @method test {
-		case "@this.member" in
-			"case1") echo "case1" ;;
-			"case2")
-				echo "case2"
-				;;
+		case "@this.member" in # comment
+			"case1") echo "case1" ;; # comment
+			"case2") #comment
+				echo "case2" #comment
+				case "@this.otherMember" in # nested case statement
+					"case4") echo "otherMember is @this.otherMember" ;;
+					*) echo "default" ;;
+				esac
+				;; # comment
 			"case3")
 				echo "case3" ;;
+			@this.otherMember)
+				echo "case4"
+				;;
 			*) echo "default"
 				;;
 		esac
@@ -24,6 +32,8 @@
 @myObject.update "case1"
 @myObject.test # "case1"
 @myObject.update "case2"
-@myObject.test # "case2"
+@myObject.test # "case2" (newline) "otherMember is case4"
 @myObject.update "case3"
 @myObject.test # "case3"
+@myObject.update "case4"
+@myObject.test # "case4"

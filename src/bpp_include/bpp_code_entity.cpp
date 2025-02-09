@@ -17,7 +17,8 @@ void bpp_code_entity::add_code(const std::string& code, bool add_newline) {
 		return;
 	}
 	// If the code has a newline char, flush the nextline_buffer and the postline_buffer
-	if (code.find("\n") != std::string::npos && add_newline) {
+	size_t newline_index = code.find("\n");
+	if (newline_index != std::string::npos && add_newline && (newline_index == 0 || code[newline_index - 1] != '\\')) {
 		flush_nextline_buffer();
 
 		*this->code << code << std::flush;

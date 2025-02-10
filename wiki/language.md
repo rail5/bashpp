@@ -83,10 +83,10 @@ Methods can also take arguments:
 {%- include code/snippets/methods-example.html -%}
 </code></pre></div>
 
-Further, methods can accept non-primitive objects as arguments:
+Methods cannot take non-primitive arguments. They can, however, take *pointers* to objects as arguments:
 
 <div class="highlight"><pre class="highlight"><code>
-{%- include code/snippets/methods-nonprimitive-arguments-example.html -%}
+{%- include code/snippets/methods-pointer-arguments-example.html -%}
 </code></pre></div>
 
 Like in ordinary Bash functions, these arguments can also be accessed using `$1`, `$2`, etc.:
@@ -123,7 +123,7 @@ An object's destructor will be called if:
 {%- include code/snippets/destructor-example-2.html -%}
 </code></pre></div>
 
-# "toPrimitive" Object Casting
+# .toPrimitive
 
 In Bash++, every class has a method called `toPrimitive` that returns a string representation of the object. This method is called automatically when an object is used in a context where a primitive is expected.
 

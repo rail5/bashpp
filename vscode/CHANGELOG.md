@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.0.6]
+
+- Update syntax rules: methods cannot take non-primitive arguments, but they can take pointers to non-primitive types.
+
 ## [0.0.5]
 
 - Updated icon

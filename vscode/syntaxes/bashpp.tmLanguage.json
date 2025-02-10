@@ -861,7 +861,7 @@
 					"name": "entity.name.function.method.bashpp"
 				},
 				{
-					"match": "(?<=@method\\s(([a-zA-Z_][a-zA-Z0-9_]*\\s)|(@[a-zA-Z_][a-zA-Z0-9_]*\\*?\\s))+)(?!.*__)[a-zA-Z_][a-zA-Z0-9_]*(?=\\s|$)",
+					"match": "(?<=@method\\s(([a-zA-Z_][a-zA-Z0-9_]*\\s)|(@[a-zA-Z_][a-zA-Z0-9_]*\\*\\s))+)(?!.*__)[a-zA-Z_][a-zA-Z0-9_]*(?=\\s|$)",
 					"name": "variable.parameter.bashpp"
 				},
 				{

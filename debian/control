@@ -1,11 +1,11 @@
-Source: bashpp
+Source: bpp
 Priority: optional
 Maintainer: rail5 <andrew@rail5.org>
 Build-Depends: debhelper (>= 10), pandoc, antlr4, libantlr4-runtime-dev, perl
 Standards-Version: 3.9.3
 Section: utils
 
-Package: bashpp
+Package: bpp
 Version: 0.1
 License: GPL-3.0
 Vendor: rail5 <andrew@rail5.org>

@@ -1,0 +1,14 @@
+@class Object {
+	@public dataMember="default value"
+}
+
+@class MyClass {
+	@public @method myMethodWithObject @Object* obj {
+		echo "Hello from myMethodWithObject"
+		echo "Object data member: @obj.dataMember"
+	}
+}
+
+@Object myObject
+@MyClass myClassObject
+@myClassObject.myMethodWithObject &@myObject # Pass myObject as an argument

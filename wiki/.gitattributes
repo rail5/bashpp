@@ -5,3 +5,6 @@ favicon-96x96.png filter=lfs diff=lfs merge=lfs -text
 web-app-manifest-192x192.png filter=lfs diff=lfs merge=lfs -text
 web-app-manifest-512x512.png filter=lfs diff=lfs merge=lfs -text
 banner.png filter=lfs diff=lfs merge=lfs -text
+banner-inverted.png filter=lfs diff=lfs merge=lfs -text
+banner-transparent.png filter=lfs diff=lfs merge=lfs -text
+banner-transparent-inverted.png filter=lfs diff=lfs merge=lfs -text

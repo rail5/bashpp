@@ -1,0 +1,17 @@
+@class MyClass{
+	@public member="default value"
+	@public command="echo hello"
+}
+
+@MyClass myObject
+echo @myObject.member # "default value"
+echo @myObject.command # "echo hello"
+
+@myObject.member="new value"
+echo @myObject.member # "new value"
+
+@myObject.command # "hello"
+
+@myObject.command="echo hello again"
+echo @myObject.command # "echo hello again"
+@myObject.command # "hello again"

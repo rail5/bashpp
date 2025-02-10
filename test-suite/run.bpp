@@ -19,6 +19,14 @@ DeeperInner Instance
 DeepestInner Instance
 "
 
+@runner.addTest "Object References #2" "test-suite/tests/object-references-2.bpp" "default value
+echo hello
+new value
+hello
+echo hello again
+hello again
+"
+
 # Supershells
 @runner.addTest "Supershells" "test-suite/tests/supershells.bpp" "Command matches expected output
 Iteration 1

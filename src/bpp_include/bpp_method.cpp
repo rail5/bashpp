@@ -47,6 +47,23 @@ bool bpp_method::add_object(std::shared_ptr<bpp_object> object) {
 	return true;
 }
 
+bool bpp_method::add_object_as_parameter(std::shared_ptr<bpp_object> object) {
+	std::string name = object->get_name();
+	if (objects.find(name) != objects.end() || local_objects.find(name) != local_objects.end()) {
+		return false;
+	}
+
+	// Verify that the type of the object is a valid class
+	std::string type = object->get_class()->get_name();
+	if (classes.find(type) == classes.end()) {
+		return false;
+	}
+	object->set_pointer(true);
+	local_objects[name] = object;
+
+	return true;
+}
+
 bool bpp_method::add_parameter(std::shared_ptr<bpp_method_parameter> parameter) {
 	std::string name = parameter->get_name();
 	for (auto& p : parameters) {
@@ -54,6 +71,18 @@ bool bpp_method::add_parameter(std::shared_ptr<bpp_method_parameter> parameter) 
 			return false;
 		}
 	}
+
+	if (parameter->get_type()->get_name() != "primitive") {
+		// Instantiate a temporary object for the parameter
+		std::shared_ptr<bpp_object> object = std::make_shared<bpp_object>(name, true);
+		object->set_class(parameter->get_type());
+		object->set_name(name);
+		object->set_address(name);
+		if (!add_object_as_parameter(object)) {
+			return false;
+		}
+	}
+
 	parameters.push_back(parameter);
 	return true;
 }

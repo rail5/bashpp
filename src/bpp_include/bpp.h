@@ -326,6 +326,7 @@ class bpp_method : public bpp_code_entity {
 		explicit bpp_method(const std::string& name);
 
 		bool add_object(std::shared_ptr<bpp_object> object) override;
+		bool add_object_as_parameter(std::shared_ptr<bpp_object> object);
 
 		virtual bool add_parameter(std::shared_ptr<bpp_method_parameter> parameter);
 		void set_name(const std::string& name);

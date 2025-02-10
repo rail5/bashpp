@@ -83,11 +83,11 @@ int main(int argc, char* argv[]) {
 	program_arguments.reserve(argc);
 	compiler_arguments.reserve(argc);
 	compiler_arguments.push_back(argv[0]);
-	
+
 	// Find the first non-option argument, interpret it as the source file to compile,
 	// And store any subsequent arguments as arguments to the program
 	for (int i = 1; i < argc; i++) {
-		if (!received_filename && argv[i][0] != '-' && strncmp(argv[i-1], "-o", 2) != 0) {
+		if (!received_filename && argv[i][0] != '-' && strcmp(argv[i-1], "-o") != 0) {
 			file_to_read = argv[i];
 			received_filename = true;
 		} else if (received_filename) {

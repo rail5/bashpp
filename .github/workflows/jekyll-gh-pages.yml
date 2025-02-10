@@ -47,13 +47,28 @@ jobs:
         run: |
           cd wiki/_includes/code
           bash ./colorize-all.sh
+      - name: Check if source or tests have changed
+        id: code_changed
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            code:
+              - 'src/**'
+              - 'test-suite/**'
       - name: Install build dependencies
+        if: steps.code_changed.outputs.code == 'true'
         run: |
           sudo apt-get update
           sudo apt-get install build-essential antlr4 libantlr4-runtime-dev
-      - name: Generate Test Stats SVG
+      - name: Run tests and generate test stats SVG
+        if: steps.code_changed.outputs.code == 'true'
         run: |
           bash wiki/_includes/code/run-tests.sh
+      - name: Preserve old test stats SVG
+        if: steps.code_changed.outputs.code == 'false'
+        run: |
+          curl -o wiki/test-results.svg https://bpp.sh/test-results.svg
+          curl -o wiki/badge.svg https://bpp.sh/badge.svg
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Build with Jekyll

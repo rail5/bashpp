@@ -14,10 +14,10 @@ manual: clean-manual
 	cp wiki/compiler.md tmp/
 	#
 	sed -i '1s/^/% bpp(1) Version '"$(VERSION)"' | Manual for the Bash++ compiler\n/' tmp/compiler.md
-	sed -i 's/Using the Bash++ compiler/NAME\nbpp - compiler for the Bash++ language/g' tmp/compiler.md
+	sed -i 's/Using the Bash++ compiler/NAME\nbpp - Compiler for the Bash++ language/g' tmp/compiler.md
 	sed -i 's/# Basic usage/ SYNOPSIS/g' tmp/compiler.md
 	#
-	sed -i '1s/^/% bpp(5) Version '"$(VERSION)"' | Manual for the Bash++ language\n/' tmp/language.md
+	sed -i '1s/^/% bpp(7) Version '"$(VERSION)"' | Manual for the Bash++ language\n/' tmp/language.md
 	sed -i 's/Programming in Bash++/NAME\nbpp - The Bash++ language/g' tmp/language.md
 	#
 	# Regex replace all Jekyll {%- include -%} tags with the actual code snippets we're including
@@ -32,7 +32,7 @@ manual: clean-manual
 	sed -i 's/<\/code><\/pre><\/div>/```/g' tmp/language.md
 	#
 	pandoc --standalone --to man tmp/compiler.md -o debian/bpp.1
-	pandoc --standalone --to man tmp/language.md -o debian/bpp.5
+	pandoc --standalone --to man tmp/language.md -o debian/bpp.7
 	rm -rf tmp
 
 update-version:
@@ -55,7 +55,7 @@ clean-main:
 
 clean-manual:
 	rm -f debian/bpp.1
-	rm -f debian/bpp.5
+	rm -f debian/bpp.7
 	rm -rf tmp
 
 clean: clean-src clean-main clean-manual

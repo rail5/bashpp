@@ -1,0 +1,7 @@
+apple-touch-icon.png filter=lfs diff=lfs merge=lfs -text
+favicon.ico filter=lfs diff=lfs merge=lfs -text
+favicon.svg filter=lfs diff=lfs merge=lfs -text
+favicon-96x96.png filter=lfs diff=lfs merge=lfs -text
+web-app-manifest-192x192.png filter=lfs diff=lfs merge=lfs -text
+web-app-manifest-512x512.png filter=lfs diff=lfs merge=lfs -text
+banner.png filter=lfs diff=lfs merge=lfs -text

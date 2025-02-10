@@ -134,7 +134,7 @@ string: QUOTE statement* QUOTE_END;
 singlequote_string: SINGLEQUOTE statement* SINGLEQUOTE_END;
 
 // Comments (skipped)
-comment: COMMENT statement* NEWLINE;
+comment: COMMENT statement* (NEWLINE | EOF);
 
 parameter: (IDENTIFIER | AT IDENTIFIER ASTERISK WS* IDENTIFIER) WS*;
 

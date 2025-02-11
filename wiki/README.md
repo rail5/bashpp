@@ -1,6 +1,16 @@
-# Bash++
+---
+title: Bash++
+---
 
-> Bash with classes
+<style>
+	.page-content {
+		padding: 0 0 !important;
+	}
+</style>
+
+<div style="text-align: center;">
+<img src="https://bpp.sh/banner-transparent-inverted-cropped.webp" alt="Bash++" style="width: 50%;">
+</div>
 
 <div class="highlight"><pre class="highlight"><code>
 {%- include code/snippets/example.html -%}

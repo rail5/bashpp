@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.0.7]
+
+- Patched a bug causing valid identifiers to not be recognized
+  - Identifiers in Bash++ cannot contain two consecutive underscores. The regex for this in the syntax rules was mistakenly written such that, if the *line* itself contained two consecutive underscores, a valid identifier on that line would not be matched.
+
 ## [0.0.6]
 
 - Update syntax rules: methods cannot take non-primitive arguments, but they can take pointers to non-primitive types.

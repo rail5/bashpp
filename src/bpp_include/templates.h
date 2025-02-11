@@ -54,7 +54,7 @@ const char* template_delete_function = R"EOF(function bpp__%CLASS%____delete() {
 	fi
 	local __inUseVar="${__objectAddress}____inUse"
 	if [[ "${__objectAddress}" == "0" ]] || [[ "${!__inUseVar}" -ne 1 ]]; then
-		>&2 echo "Bash++: Error: Attempted to delete null object"
+		>&2 echo "Bash++: Error: %CLASS%: Attempted to delete null object"
 		return
 	fi
 %DELETIONS%
@@ -73,11 +73,11 @@ const char* template_copy_function = R"EOF(function bpp__%CLASS%____copy() {
 	fi
 	local __copyFromInUseVar="${__copyFromAddress}____inUse" __copyToInUseVar="${__copyToAddress}____inUse"
 	if [[ "${__copyFromAddress}" == "0" ]] || [[ "${!__copyFromInUseVar}" -ne 1 ]]; then
-		>&2 echo "Bash++: Error: Attempted to copy from null object"
+		>&2 echo "Bash++: Error: %CLASS%: Attempted to copy from null object"
 		return
 	fi
 	if [[ "${__copyToAddress}" == "0" ]] || [[ "${!__copyToInUseVar}" -ne 1 ]]; then
-		>&2 echo "Bash++: Error: Attempted to copy to null object"
+		>&2 echo "Bash++: Error: %CLASS%: Attempted to copy to null object"
 		return
 	fi
 %COPIES%
@@ -94,7 +94,7 @@ const char* template_method = R"EOF(function bpp__%CLASS%__%SIGNATURE%() {
 	fi
 	local __inUseVar="${__objectAddress}____inUse"
 	if [[ "${__objectAddress}" == "0" ]] || [[ "${!__inUseVar}" -ne 1 ]]; then
-		>&2 echo "Bash++: Error: Attempted to call method on null object"
+		>&2 echo "Bash++: Error: Attempted to call @%CLASS%.%SIGNATURE% on null object"
 		return
 	fi
 %METHODBODY%
@@ -109,7 +109,7 @@ const char* template_constructor = R"EOF(function bpp__%CLASS%____constructor() 
 	fi
 	local __inUseVar="${__objectAddress}____inUse"
 	if [[ "${__objectAddress}" == "0" ]] || [[ "${!__inUseVar}" -ne 1 ]]; then
-		>&2 echo "Bash++: Error: Attempted to construct null object"
+		>&2 echo "Bash++: Error: %CLASS%: Attempted to construct null object"
 		return
 	fi
 %CONSTRUCTORBODY%
@@ -124,7 +124,7 @@ const char* template_destructor = R"EOF(function bpp__%CLASS%____destructor() {
 	fi
 	local __inUseVar="${__objectAddress}____inUse"
 	if [[ "${__objectAddress}" == "0" ]] || [[ "${!__inUseVar}" -ne 1 ]]; then
-		>&2 echo "Bash++: Error: Attempted to destruct null object"
+		>&2 echo "Bash++: Error: %CLASS%: Attempted to destruct null object"
 		return
 	fi
 %DESTRUCTORBODY%

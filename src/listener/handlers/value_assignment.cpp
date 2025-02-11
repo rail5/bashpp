@@ -104,7 +104,6 @@ void BashppListener::exitValue_assignment(BashppParser::Value_assignmentContext 
 			current_object->set_post_access_code(value_assignment_entity->get_post_code());
 			current_object->set_assignment_value(value_assignment_entity->get_code());
 		}
-		// Else
 	}
 }
 

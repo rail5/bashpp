@@ -43,6 +43,7 @@ class bpp_value_assignment;
 class bpp_object_assignment;
 class bpp_object_reference;
 class bpp_object_address;
+class bpp_typecast;
 class bpp_method;
 class bpp_constructor;
 class bpp_destructor;
@@ -338,6 +339,16 @@ class bpp_object_address : public bpp_string {
 		bpp_object_address() = default;
 };
 
+class bpp_typecast : public bpp_string {
+	private:
+		std::shared_ptr<bpp_object> object_to_cast;
+	public:
+		bpp_typecast();
+
+		void set_object_to_cast(std::shared_ptr<bpp_object> object);
+		std::shared_ptr<bpp_object> get_object_to_cast() const;
+};
+
 class bpp_method : public bpp_code_entity {
 	private:
 		std::string name;
@@ -473,6 +484,7 @@ class bpp_object : public bpp_entity {
 		std::string post_access_code = "";
 		std::shared_ptr<bpp_class> type;
 		bool m_is_pointer = false;
+		std::shared_ptr<bpp::bpp_object> copy_from = nullptr;
 	public:
 		bpp_object();
 		explicit bpp_object(const std::string& name);
@@ -486,6 +498,7 @@ class bpp_object : public bpp_entity {
 		void set_pre_access_code(const std::string& pre_access_code);
 		void set_post_access_code(const std::string& post_access_code);
 		void set_nullptr();
+		void set_copy_from(std::shared_ptr<bpp::bpp_object> object);
 
 		std::string get_name() const;
 		virtual std::string get_address() const;
@@ -494,6 +507,7 @@ class bpp_object : public bpp_entity {
 		std::string get_pre_access_code() const;
 		std::string get_post_access_code() const;
 		bool is_nullptr() const;
+		std::shared_ptr<bpp::bpp_object> get_copy_from() const;
 
 		bool is_pointer() const;
 };

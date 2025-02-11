@@ -54,6 +54,10 @@ void bpp_object::set_nullptr() {
 	}
 }
 
+void bpp_object::set_copy_from(std::shared_ptr<bpp::bpp_object> object) {
+	copy_from = object;
+}
+
 std::string bpp_object::get_name() const {
 	return name;
 }
@@ -84,6 +88,10 @@ bool bpp_object::is_nullptr() const {
 
 bool bpp_object::is_pointer() const {
 	return m_is_pointer;
+}
+
+std::shared_ptr<bpp::bpp_object> bpp_object::get_copy_from() const {
+	return copy_from;
 }
 
 } // namespace bpp

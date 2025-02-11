@@ -29,6 +29,7 @@
 #include "../bpp_include/bpp_object_reference.cpp"
 #include "../bpp_include/bpp_object_assignment.cpp"
 #include "../bpp_include/bpp_pointer_dereference.cpp"
+#include "../bpp_include/bpp_typecast.cpp"
 #include "../bpp_include/bpp_program.cpp"
 #include "../bpp_include/bpp_class.cpp"
 #include "../bpp_include/bpp_constructor.cpp"

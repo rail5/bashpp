@@ -288,6 +288,12 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 			ready_to_exit = true;
 		}
 
+		// Are we casting this object to some other type?
+		std::shared_ptr<bpp::bpp_typecast> typecast = std::dynamic_pointer_cast<bpp::bpp_typecast>(entity_stack.top());
+		if (typecast != nullptr) {
+			typecast->set_object_to_cast(last_reference_object);
+		}
+
 		// Is it a pointer?
 		if (last_reference_object != nullptr && last_reference_object->is_pointer()) {
 			// Are we dereferencing a pointer?

@@ -82,6 +82,48 @@ Bash\\+\\+: Error: Attempted to delete null object
 Object data member: default value
 "
 
+@runner.addTest "Pointer Dereferencing" "test-suite/tests/pointer-dereferencing.bpp" "bpp__MyClass__[0-9]+
+MyClass Instance
+default value
+default value
+Displaying default value
+Displaying default value
+Displaying default value
+Displaying default value
+.+line [0-9]+: bpp__MyClass__[0-9]+: command not found
+MyClass Instance
+hello
+hello
+bpp__MyClass__[0-9]+
+default value
+default value
+bpp__ContainingClass__containingObject
+ContainingClass Instance
+bpp__MyClass__[0-9]+
+MyClass Instance
+default value
+default value
+Displaying default value
+Displaying default value
+Displaying default value
+Displaying default value
+.+line [0-9]+: bpp__MyClass__[0-9]+: command not found
+MyClass Instance
+.+line [0-9]+: bpp__ContainingClass__containingObject: command not found
+ContainingClass Instance
+hello again
+hello again
+hello
+hello
+bpp__ContainingClass__containingObject
+echo hello again
+echo hello again
+new value
+default value
+new value
+default value
+"
+
 # Inheritance
 @runner.addTest "Inheritance" "test-suite/tests/inheritance.bpp" "You extend your hand to pet it, but the 60cm, 30kg beast bares its teeth
 You pet the dog

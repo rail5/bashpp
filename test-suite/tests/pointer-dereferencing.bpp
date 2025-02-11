@@ -1,0 +1,101 @@
+@class MyClass {
+	@public member="default value"
+	@public command="echo hello"
+
+	@public @method display {
+		echo "Displaying @this.member"
+	}
+}
+
+@MyClass* myObject=@new MyClass
+
+echo @myObject # Outputs the pointer (memory address) of the object
+echo *@myObject # Dereferences the object and calls .toPrimitive
+
+echo @myObject.member # Outputs the member variable of the object
+echo *@myObject.member # Same as above
+
+echo @myObject.display # Calls the method of the object in a supershell
+echo *@myObject.display # Same as above
+
+@myObject.display # Calls the method of the object
+*@myObject.display # Same as above
+
+@myObject # Tries (and fails) to run the pointer (memory address) of the object as a shell command
+*@myObject # Calls .toPrimitive
+
+@myObject.command # Expands to 'echo hello' and runs it
+*@myObject.command # Same as above
+
+var=@myObject
+echo $var # Outputs the pointer (memory address) of the object
+var=@myObject.member
+echo $var # Outputs the member variable of the object
+var=*@myObject.member
+echo $var # Same as above
+
+
+@class ContainingClass {
+	@public @MyClass* object
+	@public command="echo hello again"
+
+	@constructor {
+		@this.object=@new MyClass
+	}
+
+	@destructor {
+		@delete @this.object
+	}
+
+	@public @method runTestOnSelfReferences {
+		echo @this # Outputs the pointer (memory address) of 'this'
+		echo *@this # Dereferences 'this' and calls .toPrimitive
+
+		echo @this.object # Outputs the pointer (memory address) of the object
+		echo *@this.object # Dereferences the object and calls .toPrimitive
+
+		echo @this.object.member # Outputs the member variable of the object
+		echo *@this.object.member # Same as above
+
+		echo @this.object.display # Calls the method of the object in a supershell
+		echo *@this.object.display # Same as above
+
+		@this.object.display # Calls the method of the object
+		*@this.object.display # Same as above
+
+		@this.object # Tries (and fails) to run the pointer (memory address) of the object as a shell command
+		*@this.object # Calls .toPrimitive
+
+		@this # Tries (and fails) to run the pointer (memory address) of 'this' as a shell command
+		*@this # Calls .toPrimitive
+
+		@this.command # Expands to 'echo hello again' and runs it
+		*@this.command # Same as above
+
+		@this.object.command # Expands to 'echo hello' and runs it
+		*@this.object.command # Same as above
+
+		local var=@this
+		echo $var # Outputs the pointer (memory address) of 'this'
+		var=@this.command
+		echo $var # Outputs the member variable of 'this'
+		var=*@this.command
+		echo $var # Same as above
+	}
+}
+
+@ContainingClass containingObject
+@containingObject.runTestOnSelfReferences
+@delete @containingObject
+
+@MyClass myObject2
+@myObject2.member="new value"
+echo @myObject2.member # "new value"
+@myObject2=*@myObject # Calls the copy constructor
+echo @myObject2.member # "default value"
+
+@ContainingClass containingObject2
+@containingObject2.object.member="new value"
+echo @containingObject2.object.member # "new value"
+@containingObject2.object=&@myObject2 # Copies the pointer
+echo @containingObject2.object.member # "default value"

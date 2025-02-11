@@ -95,7 +95,7 @@ pointer_declaration: AT IDENTIFIER_LVALUE ASTERISK WS* IDENTIFIER (value_assignm
 object_assignment: (object_reference_as_lvalue | self_reference_as_lvalue) value_assignment;
 
 // Pointer dereference
-pointer_dereference: ASTERISK (object_reference | self_reference);
+pointer_dereference: ASTERISK (object_reference | object_reference_as_lvalue | self_reference | self_reference_as_lvalue);
 
 // Object address
 object_address: AMPERSAND (object_reference | self_reference);

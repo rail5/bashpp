@@ -28,6 +28,7 @@ int64_t metaTokenCount = 0;
 bool incoming_token_can_be_lvalue = true;
 bool hit_at_in_current_command = false;
 bool hit_lbrace_in_current_command = false;
+bool hit_asterisk_in_current_command = false;
 
 bool waiting_to_terminate_while_statement = false;
 bool can_increment_metatoken_counter = true;
@@ -67,6 +68,7 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 			incoming_token_can_be_lvalue = true;
 			hit_at_in_current_command = false;
 			hit_lbrace_in_current_command = false;
+			hit_asterisk_in_current_command = false;
 			break;
 		case AT:
 			if (hit_at_in_current_command) {
@@ -79,6 +81,12 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 				incoming_token_can_be_lvalue = false;
 			}
 			hit_lbrace_in_current_command = true;
+			break;
+		case ASTERISK:
+			if (hit_asterisk_in_current_command) {
+				incoming_token_can_be_lvalue = false;
+			}
+			hit_asterisk_in_current_command = true;
 			break;
 		default:
 			incoming_token_can_be_lvalue = false;

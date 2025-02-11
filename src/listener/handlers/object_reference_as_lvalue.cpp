@@ -223,17 +223,24 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 		throw internal_error("Last reference entity has no class");
 	}
 
+	// Are we dereferencing a pointer?
+	std::shared_ptr<bpp::bpp_pointer_dereference> pointer_dereference = std::dynamic_pointer_cast<bpp::bpp_pointer_dereference>(current_code_entity);
+
 	// If we're here, the last reference entity is a non-primitive object
 	// Is it a pointer?
 	if (last_reference_object != nullptr && last_reference_object->is_pointer()) {
-		// Are we dereferencing a pointer?
-		std::shared_ptr<bpp::bpp_pointer_dereference> pointer_dereference = std::dynamic_pointer_cast<bpp::bpp_pointer_dereference>(current_code_entity);
 		if (pointer_dereference != nullptr) {
-			// Call .toPrimitive
-			std::string method_call = "bpp__" + last_reference_object->get_class()->get_name() + "__toPrimitive ";
-			method_call += "${" + object_reference_code + "} 1";
+			if (object_assignment != nullptr) {
+				object_assignment->set_lvalue_nonprimitive(true);
+				object_assignment->set_lvalue_object(last_reference_object);
+				object_reference_entity->add_code(encase_open + indirection + object_reference_code + encase_close);
+			} else {
+				// Call .toPrimitive
+				std::string method_call = "bpp__" + last_reference_object->get_class()->get_name() + "__toPrimitive ";
+				method_call += "${" + object_reference_code + "} 1";
 
-			object_reference_entity->add_code(method_call);
+				object_reference_entity->add_code(method_call);
+			}
 			return;
 		} else {
 			object_reference_entity->add_code(encase_open + indirection + object_reference_code + encase_close);
@@ -242,10 +249,11 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 	}
 
 	if (object_assignment != nullptr) {
-		if (last_reference_object != nullptr && !last_reference_object->is_pointer()) {
+		if (last_reference_object != nullptr && (!last_reference_object->is_pointer() || pointer_dereference != nullptr)) {
 			object_assignment->set_lvalue_nonprimitive(true);
 			object_assignment->set_lvalue_object(last_reference_object);
 		}
+		object_reference_entity->add_code(encase_open + indirection + object_reference_code + encase_close);
 		return;
 	}
 

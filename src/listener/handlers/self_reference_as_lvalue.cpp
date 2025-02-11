@@ -153,15 +153,33 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 	}
 
 	if (last_reference_type == bpp::reference_type::ref_primitive || last_reference_entity == current_class || datamember_is_pointer) {
-		// Always add indirection if it's not an object assignment,
-		// Never add indirection if it *is* an object assignment
-		std::string indirection = object_assignment == nullptr ? "!" : "";
+		// Never add indirection if it's an object assignment
+		// Don't add indirection if the last reference entity is the current class
+		std::string indirection = (object_assignment == nullptr && last_reference_entity != current_class) ? "!" : "";
 		self_reference_entity->add_code("${" + indirection + self_reference_code + "}");
 
 		// If we're in an object assignment, and the reference is just '@this', throw a syntax error
 		if (object_assignment != nullptr && last_reference_entity == current_class) {
 			entity_stack.pop();
 			throw_syntax_error(ctx->KEYWORD_THIS_LVALUE(), "Cannot assign to @this");
+		}
+
+		// Are we dereferencing a pointer?
+		std::shared_ptr<bpp::bpp_pointer_dereference> pointer_dereference = std::dynamic_pointer_cast<bpp::bpp_pointer_dereference>(current_code_entity);
+		if (pointer_dereference != nullptr && last_reference_type != bpp::reference_type::ref_primitive) {
+			// Call .toPrimitive
+			std::string method_call = "bpp__" + last_reference_entity->get_class()->get_name() + "__toPrimitive ";
+			// Append the containing object's address to the method call
+			method_call += "${" + indirection + self_reference_code + "}";
+			// Tell the method that we *are* passing a pointer
+			method_call += " 1";
+			
+			pointer_dereference->add_code_to_previous_line(self_reference_entity->get_pre_code());
+			pointer_dereference->add_code_to_next_line(self_reference_entity->get_post_code());
+			pointer_dereference->add_code(method_call);
+
+			// Clear the self reference entity's code buffers
+			self_reference_entity->clear_all_buffers();
 		}
 		return;
 	}

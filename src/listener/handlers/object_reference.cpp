@@ -65,6 +65,9 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 	// Check if we're in a value_assignment context
 	std::shared_ptr<bpp::bpp_value_assignment> value_assignment_entity = std::dynamic_pointer_cast<bpp::bpp_value_assignment>(entity_stack.top());
 
+	// Are we dereferencing a pointer?
+	std::shared_ptr<bpp::bpp_pointer_dereference> pointer_dereference = std::dynamic_pointer_cast<bpp::bpp_pointer_dereference>(current_code_entity);
+
 	bpp::reference_type last_reference_type = bpp::reference_type::ref_object;
 	std::shared_ptr<bpp::bpp_entity> last_reference_entity = current_code_entity;
 
@@ -263,7 +266,6 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 				delete_entity->set_object_to_delete(last_reference_object);
 				delete_entity->set_force_pointer(true);
 			}
-
 			ready_to_exit = true;
 		}
 	}
@@ -288,9 +290,33 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 
 		// Is it a pointer?
 		if (last_reference_object != nullptr && last_reference_object->is_pointer()) {
-			indirection = created_second_temporary_variable ? "!" : "";
-			code_to_add = "${" + indirection + object_reference_code + "}";
-			ready_to_exit = true;
+			// Are we dereferencing a pointer?
+			if (pointer_dereference != nullptr) {
+				// Is this pointer dereference part of a larger value assignment?
+				if (pointer_dereference->get_value_assignment() != nullptr) {
+					pointer_dereference->add_code_to_previous_line(object_reference_entity->get_pre_code());
+					pointer_dereference->add_code_to_next_line(object_reference_entity->get_post_code());
+					pointer_dereference->get_value_assignment()->set_nonprimitive_assignment(true);
+					pointer_dereference->get_value_assignment()->set_nonprimitive_object(last_reference_object);
+				} else {
+					// Call .toPrimitive
+					std::string method_call = "bpp__" + last_reference_object->get_class()->get_name() + "__toPrimitive ";
+					// Append the containing object's address to the method call
+					method_call += "${" + object_reference_code + "}";
+					// Tell the method that we *are* passing a pointer
+					method_call += " 1";
+
+					code_segment method_code = generate_supershell_code(method_call);
+					object_reference_entity->add_code_to_previous_line(method_code.pre_code);
+					object_reference_entity->add_code_to_next_line(method_code.post_code);
+					code_to_add = method_code.code;
+				}
+				ready_to_exit = true;
+			} else {
+				indirection = created_second_temporary_variable ? "!" : "";
+				code_to_add = "${" + indirection + object_reference_code + "}";
+				ready_to_exit = true;
+			}
 		}
 
 		object_reference_entity->add_code(code_to_add);

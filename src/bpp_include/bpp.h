@@ -31,14 +31,26 @@ enum reference_type {
 
 class bpp_entity;
 class bpp_code_entity;
-class bpp_program;
-class bpp_class;
+class bpp_string;
+class bash_while;
+class bash_if;
+class bash_if_branch;
+class bash_case;
+class bash_case_pattern;
+class bpp_delete_statement;
+class bpp_pointer_dereference;
+class bpp_value_assignment;
+class bpp_object_assignment;
+class bpp_object_reference;
+class bpp_object_address;
 class bpp_method;
-class bpp_method_parameter;
-class bpp_datamember;
 class bpp_constructor;
 class bpp_destructor;
+class bpp_method_parameter;
+class bpp_class;
 class bpp_object;
+class bpp_datamember;
+class bpp_program;
 
 static const std::shared_ptr<bpp_entity> inaccessible_entity = std::make_shared<bpp_entity>();
 static const std::shared_ptr<bpp_datamember> inaccessible_datamember = std::make_shared<bpp_datamember>();
@@ -93,6 +105,8 @@ class bpp_code_entity : public bpp_entity {
 		virtual void flush_nextline_buffer();
 		virtual void flush_postline_buffer();
 		virtual void flush_code_buffers();
+
+		virtual void clear_all_buffers();
 
 		virtual std::string get_code() const;
 		virtual std::string get_pre_code() const;
@@ -239,6 +253,16 @@ class bpp_delete_statement : public bpp_string {
 		void set_force_pointer(bool force_pointer);
 		std::shared_ptr<bpp::bpp_object> get_object_to_delete() const;
 		bool force_pointer() const;
+};
+
+class bpp_pointer_dereference : public bpp_string {
+	private:
+		std::shared_ptr<bpp::bpp_value_assignment> value_assignment;
+	public:
+		bpp_pointer_dereference();
+
+		void set_value_assignment(std::shared_ptr<bpp::bpp_value_assignment> value_assignment);
+		std::shared_ptr<bpp::bpp_value_assignment> get_value_assignment() const;
 };
 
 class bpp_value_assignment : public bpp_string {

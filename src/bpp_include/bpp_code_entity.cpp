@@ -72,6 +72,16 @@ void bpp_code_entity::flush_code_buffers() {
 	buffers_flushed = true;
 }
 
+void bpp_code_entity::clear_all_buffers() {
+	nextline_buffer = "";
+	postline_buffer = "";
+	std::shared_ptr<std::ostringstream> ss = std::dynamic_pointer_cast<std::ostringstream>(code);
+	if (ss != nullptr) {
+		ss->str("");
+	}
+	buffers_flushed = false;
+}
+
 std::string bpp_code_entity::get_code() const {
 	std::shared_ptr<std::ostringstream> ss = std::dynamic_pointer_cast<std::ostringstream>(code);
 	if (ss == nullptr) {

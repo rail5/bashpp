@@ -28,6 +28,7 @@
 #include "../bpp_include/bpp_value_assignment.cpp"
 #include "../bpp_include/bpp_object_reference.cpp"
 #include "../bpp_include/bpp_object_assignment.cpp"
+#include "../bpp_include/bpp_pointer_dereference.cpp"
 #include "../bpp_include/bpp_program.cpp"
 #include "../bpp_include/bpp_class.cpp"
 #include "../bpp_include/bpp_constructor.cpp"
@@ -84,16 +85,6 @@ class BashppListener : public BashppParserBaseListener {
 		uint64_t supershell_counter = 0;
 		uint64_t new_counter = 0;
 
-		struct code_segment {
-			std::string pre_code;
-			std::string code;
-			std::string post_code;
-		};
-
-		code_segment generate_supershell_code(std::string code_to_run_in_supershell);
-		code_segment generate_new_code(std::shared_ptr<bpp::bpp_class> object_class);
-		code_segment generate_delete_code(std::shared_ptr<bpp::bpp_object> object, const std::string& object_reference_string, bool force_pointer = false);
-
 		bool error_thrown = false;
 		antlr4::ParserRuleContext* error_context = nullptr;
 
@@ -137,6 +128,16 @@ class BashppListener : public BashppParserBaseListener {
 	std::shared_ptr<bpp::bpp_program> get_program();
 	std::set<std::string> get_included_files();
 	std::stack<std::string> get_include_stack();
+
+	struct code_segment {
+		std::string pre_code;
+		std::string code;
+		std::string post_code;
+	};
+
+	code_segment generate_supershell_code(std::string code_to_run_in_supershell);
+	code_segment generate_new_code(std::shared_ptr<bpp::bpp_class> object_class);
+	code_segment generate_delete_code(std::shared_ptr<bpp::bpp_object> object, const std::string& object_reference_string, bool force_pointer = false);
 
 	void enterProgram(BashppParser::ProgramContext *ctx) override;
 	void exitProgram(BashppParser::ProgramContext *ctx) override;

@@ -193,6 +193,31 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 			// If last_reference_entity == current_class, then the self-reference is a pointer to the object itself (simply @this)
 			// Which is also a primitive, so we follow the same procedure
 			indirection = (created_first_temporary_variable && ctx->POUNDKEY() == nullptr) ? "!" : "";
+
+			// Are we dereferencing a pointer?
+			std::shared_ptr<bpp::bpp_pointer_dereference> pointer_dereference = std::dynamic_pointer_cast<bpp::bpp_pointer_dereference>(current_code_entity);
+
+			if (pointer_dereference != nullptr && last_reference_entity->get_class() != primitive) {
+				// Are we in a value assignment?
+				if (value_assignment_entity != nullptr) {
+					// TODO(@rail5): Non-primitive copies
+					return;
+				}
+				// Call .toPrimitive in a supershell and substitute the result
+				std::string method_call = "bpp__" + last_reference_entity->get_class()->get_name() + "__toPrimitive ";
+				method_call += "${" + indirection + self_reference_code + "} 1";
+
+				code_segment method_code = generate_supershell_code(method_call);
+				self_reference_entity->add_code_to_previous_line(method_code.pre_code);
+				self_reference_entity->add_code_to_next_line(method_code.post_code);
+				self_reference_entity->add_code(method_code.code);
+
+				current_code_entity->add_code_to_previous_line(self_reference_entity->get_pre_code());
+				current_code_entity->add_code_to_next_line(self_reference_entity->get_post_code());
+				current_code_entity->add_code(self_reference_entity->get_code());
+				return;
+			}
+
 			self_reference_entity->add_code("${" + indirection + self_reference_code + "}");
 			ready_to_exit = true;
 

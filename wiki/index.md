@@ -1,7 +1,3 @@
----
-title: Bash++
----
-
 <style>
 	.page-content {
 		padding: 0 0 !important;

@@ -14,8 +14,8 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 	skip_singlequote_string
 
 	/**
-	 * Object references take the form
-	 * 	@IDENTIFIER.IDENTIFIER.IDENTIFIER...
+	 * Lvalue object references take the form
+	 * 	@IDENTIFIER_LVALUE.IDENTIFIER.IDENTIFIER...
 	 * Where each IDENTIFIER following a dot is a member of the object referenced by the preceding IDENTIFIER
 	 * 
 	 * This reference may resolve to either an object or a method
@@ -28,210 +28,233 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(ctx->IDENTIFIER_LVALUE(), "Object reference outside of code entity");
+		throw_syntax_error(ctx->AT(), "Object reference outside of code entity");
 	}
 
 	std::shared_ptr<bpp::bpp_class> current_class = current_code_entity->get_containing_class().lock();
-	
-	// Are we in an object_assignment context?
-	std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(entity_stack.top());
 
-	std::shared_ptr<bpp::bpp_string> object_reference_entity = std::make_shared<bpp::bpp_string>();
+	std::shared_ptr<bpp::bpp_object_reference> object_reference_entity = std::make_shared<bpp::bpp_object_reference>();
 	object_reference_entity->set_containing_class(current_code_entity->get_containing_class());
 	object_reference_entity->inherit(current_code_entity);
 	entity_stack.push(object_reference_entity);
 
-	std::shared_ptr<bpp::bpp_object> referenced_object = current_code_entity->get_object(ctx->IDENTIFIER_LVALUE()->getText());
-	if (referenced_object == nullptr) {
+	// Start by getting the first identifier
+	std::string first_object_name = ctx->IDENTIFIER_LVALUE()->getText();
+	std::shared_ptr<bpp::bpp_object> first_object = current_code_entity->get_object(first_object_name);
+	if (first_object == nullptr) {
 		entity_stack.pop();
-		throw_syntax_error(ctx->AT(), "Object not found: " + ctx->IDENTIFIER_LVALUE()->getText());
+		throw_syntax_error(ctx->AT(), "Object not found: " + first_object_name);
 	}
 
-	std::vector<std::shared_ptr<bpp::bpp_entity>> object_chain;
-	object_chain.push_back(referenced_object);
+	bpp::reference_type last_reference_type = bpp::reference_type::ref_object;
+	std::shared_ptr<bpp::bpp_entity> last_reference_entity = first_object;
 
-	std::shared_ptr<bpp::bpp_entity> current_context = referenced_object;
+	// If it's a method, which class contains the method?
+	// This shared_ptr will be filled in & updated as we go along
+	std::shared_ptr<bpp::bpp_class> class_containing_the_method;
 
-	bool can_descend = true;
+	std::shared_ptr<bpp::bpp_object> object = first_object;
+	std::shared_ptr<bpp::bpp_datamember> datamember;
+	std::shared_ptr<bpp::bpp_method> method;
 
-	for (size_t i = 0; i < ctx->IDENTIFIER().size(); i++) {
-		if (!can_descend) {
-			entity_stack.pop();
-			throw_syntax_error(ctx->IDENTIFIER(i), "Cannot descend further");
-		}
+	bool created_first_temporary_variable = false;
+	bool created_second_temporary_variable = false;
+	std::string encase_open = "";
+	std::string encase_close = "";
+	std::string indirection = "";
 
-		std::shared_ptr<bpp::bpp_datamember> referenced_datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(current_context->get_class()->get_datamember(ctx->IDENTIFIER(i)->getText(), current_class));
-		std::shared_ptr<bpp::bpp_method> referenced_method = std::dynamic_pointer_cast<bpp::bpp_method>(current_context->get_class()->get_method(ctx->IDENTIFIER(i)->getText(), current_class));
-
-		if (referenced_datamember == bpp::inaccessible_datamember || referenced_method == bpp::inaccessible_method) {
-			entity_stack.pop();
-			throw_syntax_error(ctx->IDENTIFIER(i), ctx->IDENTIFIER(i)->getText() + " is inaccessible in this context");
-		}
-
-		if (referenced_datamember != nullptr) {
-			object_chain.push_back(referenced_datamember);
-			current_context = referenced_datamember;
-		} else if (referenced_method != nullptr) {
-			can_descend = false;
-			object_chain.push_back(referenced_method);
-		} else {
-			entity_stack.pop();
-			throw_syntax_error(ctx->IDENTIFIER(i), "Member not found: " + ctx->IDENTIFIER(i)->getText());
-		}
+	// Generate the first bit of pre-code
+	std::string object_reference_code;
+	if (first_object->is_pointer()) {
+		created_first_temporary_variable = true;
+		encase_open = "${";
+		encase_close = "}";
+		object_reference_code = first_object->get_address();
+	} else {
+		object_reference_code = "bpp__" + first_object->get_class()->get_name() + "__" + first_object->get_name();
 	}
 
-	// Check the type of the last element in the object chain
-	std::shared_ptr<bpp::bpp_object> final_object = std::dynamic_pointer_cast<bpp::bpp_object>(object_chain.back());
-	std::shared_ptr<bpp::bpp_method> final_method = std::dynamic_pointer_cast<bpp::bpp_method>(object_chain.back());
-
-	if (final_object != nullptr && final_object->get_class() != primitive && !final_object->is_pointer()) {
-		if (object_assignment != nullptr) {
-			object_assignment->set_lvalue_nonprimitive(true);
-			object_assignment->set_lvalue_object(final_object);
-		} else {
-			// Call to .toPrimitive on a non-primitive data member
-			// Add the toPrimitive method to the object_chain
-			// Set final_method = toPrimitive
-			// Set final_datamember = nullptr
-			final_method = final_object->get_class()->get_method("toPrimitive", current_class);
-			object_chain.push_back(final_method);
-			final_object = nullptr;
-		}
-	}
-
-	bool declared_first_temporary_variable = false;
-
-	for (size_t i = 2; i < object_chain.size() - 1; i++) {
-		std::string indirection = declared_first_temporary_variable ? "!" : "";
-		std::string temporary_variable_lvalue;
-		std::string temporary_variable_rvalue;
-		std::string temporary_variable;
-		if (referenced_object->is_pointer()) {
-			temporary_variable = "bpp____ptr__" + referenced_object->get_class()->get_name() + "__" + referenced_object->get_name();
-		} else {
-			temporary_variable = "bpp__" + referenced_object->get_class()->get_name() + "__" + referenced_object->get_name();
-		}
-		for (size_t j = 1; j < i; j++) {
-			temporary_variable += "__" + object_chain[j]->get_name();
-		}
-		temporary_variable_lvalue = temporary_variable + "__" + object_chain[i]->get_name();
-		temporary_variable_rvalue = "${" + indirection + temporary_variable + "}__" + object_chain[i]->get_name();
-		object_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=\"" + temporary_variable_rvalue + "\"\n");
-		object_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
-		declared_first_temporary_variable = true;
-	}
-	/**
-	 * By this point, the deepest reference in the chain that we have access to is:
-	 * ${bpp__objectClass__object1__object2__object3__....objectN-1}
-	 * Where objectN (the next one, the one we don't have yet) is either a primitive or a method
-	 */
-
-	if (final_object != nullptr) {
-		std::string indirection = declared_first_temporary_variable ? "!" : "";
-		std::string temporary_variable_lvalue;
-		std::string temporary_variable_rvalue;
-		std::string temporary_variable;
-		if (referenced_object->is_pointer()) {
-			temporary_variable = "bpp____ptr__" + referenced_object->get_class()->get_name() + "__" + referenced_object->get_name();
-		} else {
-			temporary_variable = "bpp__" + referenced_object->get_class()->get_name() + "__" + referenced_object->get_name();
-		}
-		for (size_t i = 1; i < object_chain.size() - 1; i++) {
-			temporary_variable += "__" + object_chain[i]->get_name();
-		}
-		// TODO(@rail5): Below: super hacky! Redo this whole thing from scratch ASAP
-		if (object_assignment != nullptr && final_object->get_class() != primitive && !final_object->is_pointer()) {
-			switch (object_chain.size()) {
-			case 1:
-				temporary_variable_lvalue = temporary_variable;
+	// Iterate over the list of identifiers
+	for (auto& identifier : ctx->IDENTIFIER()) {
+		bool throw_error = false;
+		std::string error_string = "";
+		switch (last_reference_type) {
+			case bpp::reference_type::ref_object:
 				break;
-			case 2:
-				temporary_variable_lvalue = "${" + temporary_variable + "__" + final_object->get_name() + "}";
+			case bpp::reference_type::ref_primitive:
+				throw_error = true;
+				error_string = "Unexpected identifier after primitive object reference";
+				break;
+			case bpp::reference_type::ref_method:
+				throw_error = true;
+				error_string = "Unexpected identifier after method reference";
 				break;
 			default:
-				temporary_variable_lvalue = temporary_variable + "__" + final_object->get_name();
-				break;
-			}
-		// This just gets worse and worse. Redo the whole object_reference_as_lvalue ASAP
-		} else if (object_assignment != nullptr && final_object->get_class() != primitive && final_object->is_pointer() && object_chain.size() == 1) {
-			temporary_variable_lvalue = temporary_variable;
-		} else if (object_assignment != nullptr && final_object->get_class() != primitive && final_object->is_pointer() && object_chain.size() == 2) {
-			temporary_variable_lvalue = "${" + temporary_variable + "}__" + final_object->get_name();
-		} else {
-			temporary_variable_lvalue = temporary_variable + "__" + final_object->get_name();
+				throw internal_error("Unknown reference type");
 		}
-		temporary_variable_rvalue = "${" + indirection + temporary_variable + "}__" + final_object->get_name();
 
-		if (object_chain.size() > 1) {
-			object_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=\"" + temporary_variable_rvalue + "\"\n");
+		if (throw_error) {
+			entity_stack.pop();
+			throw_syntax_error(identifier, error_string);
+		}
+
+		std::string identifier_text = identifier->getText();
+
+		std::shared_ptr<bpp::bpp_class> reference_class = last_reference_entity->get_class();
+
+		object = nullptr;
+		datamember = reference_class->get_datamember(identifier_text, current_class);
+		method = reference_class->get_method(identifier_text, current_class);
+
+		if (datamember == bpp::inaccessible_datamember || method == bpp::inaccessible_method) {
+			entity_stack.pop();
+			throw_syntax_error(identifier, identifier_text + " is inaccessible in this context");
+		}
+
+		if (method != nullptr) {
+			class_containing_the_method = last_reference_entity->get_class();
+			last_reference_type = bpp::reference_type::ref_method;
+			last_reference_entity = method;
+		} else if (datamember != nullptr) {
+			last_reference_type = (datamember->get_class() == primitive) ? bpp::reference_type::ref_primitive : bpp::reference_type::ref_object;
+			last_reference_entity = datamember;
+
+			indirection = created_second_temporary_variable ? "!" : "";
+			std::string temporary_variable_lvalue = object_reference_code + "__" + identifier_text;
+			std::string temporary_variable_rvalue = "${" + indirection + object_reference_code + "}__" + identifier_text;
+
+			if (created_first_temporary_variable) {
+				object_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n");
+				object_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
+				created_second_temporary_variable = true;
+			}
+
+			object_reference_code = temporary_variable_lvalue;
+			created_first_temporary_variable = true;
+		} else {
+			entity_stack.pop();
+			throw_syntax_error(identifier, last_reference_entity->get_name() + " has no member named " + identifier_text);
+		}
+	}
+
+	object_reference_entity->set_reference_type(last_reference_type);
+
+	// Are we in an object_assignment context?
+	std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(current_code_entity);
+
+	// Now that we've finished iterating through the identifiers
+	encase_open = created_first_temporary_variable ? "${" : "";
+	encase_close = created_first_temporary_variable ? "}" : "";
+	indirection = created_second_temporary_variable ? "!" : "";
+
+	if (object_assignment != nullptr) {
+		// Special encasing rules for object assignments
+		encase_open = created_second_temporary_variable ? "${" : "";
+		encase_close = created_second_temporary_variable ? "}" : "";
+		indirection = "";
+	}
+
+	if (last_reference_type == bpp::reference_type::ref_method) {
+		if (object_assignment != nullptr) {
+			entity_stack.pop();
+			throw_syntax_error(ctx->AT(), "Cannot assign to a method");
+		}
+		// Call the method directly -- not in a supershell
+		std::string method_call = "bpp__" + class_containing_the_method->get_name() + "__" + method->get_name() + " ";
+		method_call += encase_open + indirection + object_reference_code + encase_close;
+		method_call += " 1";
+
+		object_reference_entity->add_code(method_call);
+		return;
+	}
+
+	// Are we accessing an index of an array?
+	if (ctx->array_index() != nullptr) {
+		std::string counting = ctx->POUNDKEY() != nullptr ? "#" : "";
+
+		bool have_to_dereference_a_pointer = ctx->IDENTIFIER().size() > 1;
+
+		std::string temporary_variable_lvalue = object_reference_code + "____arrayIndexString";
+		std::string temporary_variable_rvalue;
+
+		if (have_to_dereference_a_pointer) {
+			temporary_variable_rvalue = counting + "${" + object_reference_code + "}[" + object_reference_entity->get_array_index() + "]";
+		} else {
+			temporary_variable_rvalue = "${" + counting + indirection + object_reference_code + "[" + object_reference_entity->get_array_index() + "]}";
+		}
+
+		object_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n");
+		object_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
+
+		temporary_variable_rvalue = "${" + object_reference_code + "____arrayIndexString}";
+
+		if (ctx->POUNDKEY() != nullptr) {
+			temporary_variable_rvalue = "\\${" + temporary_variable_rvalue + "}";
+		}
+
+		if (have_to_dereference_a_pointer) {
+			temporary_variable_lvalue = object_reference_code + "____arrayIndex";
+			object_reference_entity->add_code_to_previous_line("eval " + temporary_variable_lvalue + "=\"" + temporary_variable_rvalue + "\"\n");
 			object_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
 		}
 
-		std::string encasing_start = "";
-		std::string encasing_end = "";
-
-		if (object_chain.size() > 1) {
-			encasing_start = "${";
-			if (object_assignment != nullptr && final_object->get_class() != primitive && !final_object->is_pointer()) {
-				encasing_start += "!";
-			}
-			encasing_end = "}";
-		}
-
-		object_reference_entity->add_code(encasing_start + temporary_variable_lvalue + encasing_end);
-	} else if (final_method != nullptr) {
-		// Call the given method
-
-		// Get the penultimate object in the chain
-		std::shared_ptr<bpp::bpp_entity> penultimate_object = object_chain[object_chain.size() - 2];
-		if (penultimate_object == nullptr) {
-			throw internal_error("Penultimate entity in the object chain is not an object");
-		}
-		// Get its class
-		std::shared_ptr<bpp::bpp_class> penultimate_class = penultimate_object->get_class();
-		if (penultimate_class == nullptr) {
-			throw internal_error("Penultimate entity in the object chain does not have a class");
-		}
-		// Is it a program-level pointer?
-		std::shared_ptr<bpp::bpp_object> penultimate_object_as_object = std::dynamic_pointer_cast<bpp::bpp_object>(penultimate_object);
-		bool is_ptr = (penultimate_object_as_object != nullptr) && penultimate_object_as_object->is_pointer();
-		// Get its address
-		std::string object_address;
-		if (is_ptr) {
-			object_address = penultimate_object->get_address();
-		} else {
-			object_address = "bpp__" + referenced_object->get_class()->get_name() + "__" + referenced_object->get_name();
-		}
-
-		for (size_t i = 1; i < object_chain.size() - 1; i++) {
-			object_address += "__" + object_chain[i]->get_name();
-		}
-
-		std::string indirection_start = "";
-		std::string indirection_end = "";
-
-		if (object_chain.size() > 2 || is_ptr) {
-			indirection_start = "${";
-			indirection_end = "}";
-		}
-
-		if (object_chain.size() > 3) {
-			indirection_start += "!";
-		}
-		
-		std::string method_call = "bpp__" + penultimate_class->get_name() + "__" + final_method->get_name();
-		object_reference_entity->add_code(method_call + " \"" + indirection_start + object_address + indirection_end +"\" 1");
-
-		std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(entity_stack.top());
-		if (object_assignment != nullptr) {
-			entity_stack.pop();
-			throw_syntax_error(ctx->IDENTIFIER().back(), "Cannot assign to a method");
-		}
-
-	} else {
-		throw internal_error("Terminal entity in the object chain is neither an object nor a method");
+		object_reference_code = temporary_variable_lvalue;
 	}
 
+	bool datamember_is_pointer = (datamember != nullptr) && (datamember->is_pointer());
+	std::shared_ptr<bpp::bpp_object> last_reference_object = std::dynamic_pointer_cast<bpp::bpp_object>(last_reference_entity);
+	std::shared_ptr<bpp::bpp_delete_statement> delete_entity = std::dynamic_pointer_cast<bpp::bpp_delete_statement>(current_code_entity);
+
+	if (last_reference_type == bpp::reference_type::ref_primitive || datamember_is_pointer) {
+		if (ctx->POUNDKEY() != nullptr) {
+			indirection = "";
+		}
+		object_reference_entity->add_code(encase_open + indirection + object_reference_code + encase_close);
+
+		if (delete_entity != nullptr && datamember_is_pointer) {
+			
+			delete_entity->set_object_to_delete(last_reference_object);
+			delete_entity->set_force_pointer(true);
+		}
+		return;
+	}
+
+	if (last_reference_entity->get_class() == nullptr) {
+		throw internal_error("Last reference entity has no class");
+	}
+
+	// If we're here, the last reference entity is a non-primitive object
+	// Is it a pointer?
+	if (last_reference_object != nullptr && last_reference_object->is_pointer()) {
+		// Are we dereferencing a pointer?
+		std::shared_ptr<bpp::bpp_pointer_dereference> pointer_dereference = std::dynamic_pointer_cast<bpp::bpp_pointer_dereference>(current_code_entity);
+		if (pointer_dereference != nullptr) {
+			// Call .toPrimitive
+			std::string method_call = "bpp__" + last_reference_object->get_class()->get_name() + "__toPrimitive ";
+			method_call += "${" + object_reference_code + "} 1";
+
+			object_reference_entity->add_code(method_call);
+			return;
+		} else {
+			object_reference_entity->add_code(encase_open + indirection + object_reference_code + encase_close);
+			return;
+		}
+	}
+
+	if (object_assignment != nullptr) {
+		if (last_reference_object != nullptr && !last_reference_object->is_pointer()) {
+			object_assignment->set_lvalue_nonprimitive(true);
+			object_assignment->set_lvalue_object(last_reference_object);
+		}
+		return;
+	}
+
+	if (last_reference_object != nullptr) {
+		// Call .toPrimitive
+		std::string method_call = "bpp__" + last_reference_object->get_class()->get_name() + "__toPrimitive ";
+		method_call += encase_open + indirection + object_reference_code + encase_close + " 1";
+		object_reference_entity->add_code(method_call);
+	}
 }
 
 void BashppListener::exitObject_reference_as_lvalue(BashppParser::Object_reference_as_lvalueContext *ctx) {
@@ -239,29 +262,34 @@ void BashppListener::exitObject_reference_as_lvalue(BashppParser::Object_referen
 	skip_syntax_errors
 	skip_singlequote_string
 
-	std::shared_ptr<bpp::bpp_string> object_reference_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
-	entity_stack.pop();
+	std::shared_ptr<bpp::bpp_object_reference> object_reference_entity = std::dynamic_pointer_cast<bpp::bpp_object_reference>(entity_stack.top());
+
 	if (object_reference_entity == nullptr) {
-		throw internal_error("Object reference context was not found in the entity stack");
+		throw internal_error("Object reference entity not found on the entity stack");
 	}
 
-	// If we're in an object assignment, set the lvalue to the object reference code
-	std::shared_ptr<bpp::bpp_object_assignment> current_object_assignment = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(entity_stack.top());
-	if (current_object_assignment != nullptr) {
-		current_object_assignment->set_lvalue(object_reference_entity->get_code());
-		current_object_assignment->add_code_to_previous_line(object_reference_entity->get_pre_code());
-		current_object_assignment->add_code_to_next_line(object_reference_entity->get_post_code());
-		return;
-	}
+	entity_stack.pop();
 
-	// If we're not in a broader context, simply add the current object access code to the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	if (current_code_entity != nullptr) {
-		current_code_entity->add_code_to_previous_line(object_reference_entity->get_pre_code());
-		current_code_entity->add_code_to_next_line(object_reference_entity->get_post_code());
-		current_code_entity->add_code(object_reference_entity->get_code());
+
+	if (current_code_entity == nullptr) {
+		throw internal_error("Current code entity was not found on the entity stack");
+	}
+
+	std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(current_code_entity);
+
+	// Are we in an object assignment?
+	if (object_assignment != nullptr) {
+		object_assignment->set_lvalue(object_reference_entity->get_code());
+		object_assignment->add_code_to_previous_line(object_reference_entity->get_pre_code());
+		object_assignment->add_code_to_next_line(object_reference_entity->get_post_code());
 		return;
 	}
+
+	// If we're not in any broader context, simply add the object reference to the current code entity
+	current_code_entity->add_code_to_previous_line(object_reference_entity->get_pre_code());
+	current_code_entity->add_code_to_next_line(object_reference_entity->get_post_code());
+	current_code_entity->add_code(object_reference_entity->get_code());
 }
 
 #endif // SRC_LISTENER_HANDLERS_OBJECT_REFERENCE_AS_LVALUE_CPP_

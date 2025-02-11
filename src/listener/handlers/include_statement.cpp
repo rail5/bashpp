@@ -95,19 +95,20 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 		antlr4::tree::ParseTreeWalker walker;
 		walker.walk(&listener, tree);
 	} catch (const antlr4::EmptyStackException& e) {
-		throw_syntax_error(ctx->AT(), "EmptyStackException: " + std::string(e.what()));
+		std::cerr << "Empty stack exception from included file '" << full_path << "'" << std::endl;
+		throw antlr4::EmptyStackException(e);
 	} catch (const antlr4::RecognitionException& e) {
-		std::cerr << "Recognition exception: " << e.what() << std::endl;
-		throw_syntax_error(ctx->AT(), "Recognition exception: " + std::string(e.what()));
+		std::cerr << "Recognition exception from included file '" << full_path << "'" << std::endl;
+		throw antlr4::RecognitionException(e);
 	} catch (const internal_error& e) {
-		std::cerr << "Internal error: " << e.what() << std::endl;
-		throw_syntax_error(ctx->AT(), "Internal error: " + std::string(e.what()));
+		std::cerr << "Internal error from included file '" << full_path << "'" << std::endl;
+		throw internal_error(e);
 	} catch (const std::exception& e) {
-		std::cerr << "Standard exception: " << e.what() << std::endl;
-		throw_syntax_error(ctx->AT(), "Standard exception: " + std::string(e.what()));
+		std::cerr << "Standard exception from included file '" << full_path << "'" << std::endl;
+		throw std::exception(e);
 	} catch (...) {
-		std::cerr << "Unknown exception occurred" << std::endl;
-		throw_syntax_error(ctx->AT(), "Unknown exception occurred");
+		std::cerr << "Unknown exception occurred (from included file '" << full_path << "')" << std::endl;
+		throw;
 	}
 
 	// The code, objects, classes, etc should all have been added to the current program by the included program's new listener

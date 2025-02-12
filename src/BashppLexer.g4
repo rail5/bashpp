@@ -24,7 +24,7 @@ bool inSupershell = false;
 bool inSubshell = false;
 bool inDeprecatedSubshell = false;
 bool waiting_for_heredoc_terminator = false;
-bool waiting_for_heredoc_content = false;
+bool waiting_for_heredoc_content_start = false;
 
 int64_t metaTokenCount = 0;
 
@@ -176,9 +176,9 @@ NEWLINE: '\n' {
 				emit(BASH_WHILE_END, "\n");
 				waiting_to_terminate_while_statement = false;
 			}
-			if (waiting_for_heredoc_content) {
-				emit(HEREDOC_CONTENT, "\n");
-				waiting_for_heredoc_content = false;
+			if (waiting_for_heredoc_content_start) {
+				emit(HEREDOC_CONTENT_START, "\n");
+				waiting_for_heredoc_content_start = false;
 				modeStack.push(mode_heredoc);
 			}
 			break;
@@ -202,6 +202,7 @@ COMMENT: '#' {
 		case mode_reference:
 		case mode_quote:
 		case mode_singlequote:
+		case mode_heredoc:
 		case mode_comment:
 			emit(POUNDKEY, "#");
 			break;
@@ -236,7 +237,7 @@ HEREDOC_START: '<<' {
 
 HEREDOC_LITERAL: '<<'; // Another dummy token
 
-HEREDOC_CONTENT: '<<'; // Yet another dummy token
+HEREDOC_CONTENT_START: '<<'; // Yet another dummy token
 
 // Strings
 QUOTE: '"' {
@@ -246,6 +247,7 @@ QUOTE: '"' {
 			modeStack.pop();
 			break;
 		case mode_comment:
+		case mode_heredoc:
 		case mode_singlequote:
 			emit(QUOTE_LITERAL, "\"");
 			break;
@@ -268,6 +270,7 @@ SINGLEQUOTE: '\'' {
 			modeStack.pop();
 			break;
 		case mode_quote:
+		case mode_heredoc:
 		case mode_comment:
 			emit(SINGLEQUOTE_LITERAL, "'");
 			break;
@@ -319,6 +322,7 @@ BASH_KEYWORD_IF: 'if' {
 	switch (modeStack.top()) {
 		case mode_quote:
 		case mode_singlequote:
+		case mode_heredoc:
 		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
@@ -338,6 +342,7 @@ BASH_KEYWORD_ELIF: 'elif' {
 	switch (modeStack.top()) {
 		case mode_quote:
 		case mode_singlequote:
+		case mode_heredoc:
 		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
@@ -355,6 +360,7 @@ BASH_KEYWORD_THEN: 'then' {
 	switch (modeStack.top()) {
 		case mode_quote:
 		case mode_singlequote:
+		case mode_heredoc:
 		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
@@ -372,6 +378,7 @@ BASH_KEYWORD_ELSE: 'else' {
 	switch (modeStack.top()) {
 		case mode_quote:
 		case mode_singlequote:
+		case mode_heredoc:
 		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
@@ -389,6 +396,7 @@ BASH_KEYWORD_FI: 'fi' {
 	switch (modeStack.top()) {
 		case mode_quote:
 		case mode_singlequote:
+		case mode_heredoc:
 		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
@@ -408,6 +416,7 @@ BASH_KEYWORD_WHILE: 'while' {
 	switch (modeStack.top()) {
 		case mode_quote:
 		case mode_singlequote:
+		case mode_heredoc:
 		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
@@ -427,6 +436,7 @@ BASH_KEYWORD_CASE: 'case' {
 	switch (modeStack.top()) {
 		case mode_quote:
 		case mode_singlequote:
+		case mode_heredoc:
 		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
@@ -507,6 +517,7 @@ BASH_KEYWORD_IN: 'in' {
 	switch (modeStack.top()) {
 		case mode_quote:
 		case mode_singlequote:
+		case mode_heredoc:
 		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
@@ -523,6 +534,7 @@ BASH_KEYWORD_ESAC: 'esac' {
 	switch (modeStack.top()) {
 		case mode_quote:
 		case mode_singlequote:
+		case mode_heredoc:
 		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
@@ -555,7 +567,7 @@ IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]* {
 
 	if (waiting_for_heredoc_terminator) {
 		waiting_for_heredoc_terminator = false;
-		waiting_for_heredoc_content = true;
+		waiting_for_heredoc_content_start = true;
 		nestedHeredocStack.push(getText());
 	}
 
@@ -577,6 +589,7 @@ ASSIGN: '=' {
 	switch (modeStack.top()) {
 		case mode_reference:
 		case mode_quote:
+		case mode_heredoc:
 		case mode_singlequote:
 		case mode_comment:
 			break;
@@ -692,6 +705,7 @@ LPAREN: '(' {
 		case mode_typecast:
 		case mode_quote:
 		case mode_singlequote:
+		case mode_heredoc:
 		case mode_comment:
 			// Just emit the LPAREN token
 			break;
@@ -722,6 +736,7 @@ RPAREN: ')' {
 			break;
 		case mode_quote:
 		case mode_singlequote:
+		case mode_heredoc:
 		case mode_comment:
 			// Just emit the RPAREN token
 			break;

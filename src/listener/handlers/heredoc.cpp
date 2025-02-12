@@ -89,7 +89,7 @@ void BashppListener::exitHeredoc_header(BashppParser::Heredoc_headerContext *ctx
 
 	heredoc_entity->add_code_to_previous_line(heredoc_header_entity->get_pre_code());
 	heredoc_entity->add_code_to_next_line(heredoc_header_entity->get_post_code());
-	heredoc_entity->add_code(ctx->HEREDOC_START()->getText() + heredoc_header_entity->get_code() + ctx->HEREDOC_CONTENT()->getText());
+	heredoc_entity->add_code(ctx->HEREDOC_START()->getText() + heredoc_header_entity->get_code() + ctx->HEREDOC_CONTENT_START()->getText());
 }
 
 #endif // SRC_LISTENER_HANDLERS_HEREDOC_CPP_

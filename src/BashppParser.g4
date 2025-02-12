@@ -137,7 +137,7 @@ singlequote_string: SINGLEQUOTE statement* SINGLEQUOTE_END;
 // Heredocs
 heredoc: heredoc_header statement* HEREDOC_END;
 
-heredoc_header: HEREDOC_START statement* HEREDOC_CONTENT;
+heredoc_header: HEREDOC_START statement* HEREDOC_CONTENT_START;
 
 // Comments (skipped)
 comment: COMMENT statement* (NEWLINE | EOF);
@@ -234,7 +234,6 @@ Excluded tokens which will not cause any problems (special tokens, emitted in sp
 	- BASH_ARITH_END
 	- ARRAY_ASSIGN_END
 	- BASH_WHILE_END
-	- HEREDOC_CONTENT
 	- HEREDOC_END
 
 Excluded tokens which CAN AND WILL cause problems:
@@ -257,7 +256,7 @@ other_statement: ~(RBRACE | RBRACE_ROOTLEVEL
 	| BASH_KEYWORD_IF | BASH_KEYWORD_ELIF
 	| BASH_KEYWORD_THEN | BASH_KEYWORD_ELSE
 	| BASH_KEYWORD_FI | BASH_CASE_PATTERN_DELIM
-	| HEREDOC_CONTENT | HEREDOC_END)+?;
+	| HEREDOC_END)+?;
 
 // This rule will *only* ever be matched as part a value_assignment
 raw_rvalue: IDENTIFIER | NUMBER | BASH_VAR;

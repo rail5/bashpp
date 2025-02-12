@@ -54,6 +54,3 @@ This does not affect any code you write in Bash++ -- only the Bash++ language an
  - **Attribution** -- You must give [appropriate credit](https://creativecommons.org/licenses/by-sa/4.0/#ref-appropriate-credit), provide a link to the license, and [indicate if changes were made](https://creativecommons.org/licenses/by-sa/4.0/#ref-indicate-changes). You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.
 
  - **ShareAlike** -- If you remix, transform, or build upon the material, you must distribute your contributions under the [same license](https://creativecommons.org/licenses/by-sa/4.0/#ref-same-license) as the original.
-
-I also give my personal (though I suppose legally dubious) permission to redistribute this documentation, modified or unmodified, without providing attribution. If there was a Creative Commons ShareAlike license without an attribution clause, I would've selected it. All that matters to me is that other people are given the **same rights** to *your changes* that **you were given** to the *original.*
-

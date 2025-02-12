@@ -1,0 +1,6 @@
+@class MyClass {
+	@public member="default value"
+}
+
+echo @(echo hi; @MyClass myObject) # Object declared within a supershell, changes to the environment are preserved
+echo @myObject.member # "default value"

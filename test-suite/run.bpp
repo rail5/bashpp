@@ -28,7 +28,7 @@ hello again
 "
 
 # Supershells
-@runner.addTest "Supershells" "test-suite/tests/supershells.bpp" "Command matches expected output
+@runner.addTest "Supershells #1" "test-suite/tests/supershells.bpp" "Command matches expected output
 Iteration 1
 Iteration 2
 Iteration 3
@@ -40,6 +40,10 @@ Iteration 8
 Iteration 9
 Iteration 10
 hi
+"
+
+@runner.addTest "Supershells #2" "test-suite/tests/supershells-2.bpp" "hi
+default value
 "
 
 # Subshells

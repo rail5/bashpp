@@ -19,6 +19,7 @@
 #include "../bpp_include/bpp_entity.cpp"
 #include "../bpp_include/bpp_code_entity.cpp"
 #include "../bpp_include/bpp_string.cpp"
+#include "../bpp_include/bpp_supershell.cpp"
 #include "../bpp_include/bash_while.cpp"
 #include "../bpp_include/bash_if.cpp"
 #include "../bpp_include/bash_if_branch.cpp"

@@ -32,6 +32,7 @@ enum reference_type {
 class bpp_entity;
 class bpp_code_entity;
 class bpp_string;
+class bpp_supershell;
 class bash_while;
 class bash_if;
 class bash_if_branch;
@@ -176,6 +177,11 @@ class bpp_string : public bpp_code_entity {
 		std::string get_code() const override;
 		std::string get_pre_code() const override;
 		std::string get_post_code() const override;
+};
+
+class bpp_supershell : public bpp_string {
+	public:
+		bool add_object(std::shared_ptr<bpp_object> object) override;
 };
 
 class bash_while : public bpp_string {

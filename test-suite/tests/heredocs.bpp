@@ -13,3 +13,13 @@ EOF
 
 @HereDocsTest test
 @test.tryHereDoc
+
+cat <<EOF >bpptestExampleOut
+abc
+def
+@test.member
+hij
+EOF
+
+cat bpptestExampleOut
+rm bpptestExampleOut

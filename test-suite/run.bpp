@@ -286,6 +286,10 @@ default
 def
 value
 hij
+abc
+def
+value
+hij
 "
 
 @runner.addTest "Herestrings" "test-suite/tests/herestrings.bpp" "abc def value hij

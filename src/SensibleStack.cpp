@@ -32,4 +32,25 @@ class SensibleStack : public std::stack<T> {
 		}
 };
 
+/**
+* A stack that returns an empty string if empty
+*/
+class SensibleStringStack : public std::stack<std::string> {
+	public:
+		SensibleStringStack() : std::stack<std::string>() {}
+
+		std::string top() {
+			if (this->empty()) {
+				return "";
+			}
+			return std::stack<std::string>::top();
+		}
+
+		inline void pop() {
+			if (!this->empty()) {
+				std::stack<std::string>::pop();
+			}
+		}
+};
+
 #endif // SRC_SENSIBLESTACK_CPP_

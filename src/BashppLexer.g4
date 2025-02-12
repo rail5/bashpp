@@ -19,9 +19,12 @@ int64_t most_recent_case_keyword_metatoken_position = INT64_MIN;
 SensibleStack<int> nestedSupershellStack;
 SensibleStack<int> nestedSubshellStack;
 SensibleStack<int> nestedArithStack;
+SensibleStringStack nestedHeredocStack;
 bool inSupershell = false;
 bool inSubshell = false;
 bool inDeprecatedSubshell = false;
+bool waiting_for_heredoc_terminator = false;
+bool waiting_for_heredoc_content = false;
 
 int64_t metaTokenCount = 0;
 
@@ -43,6 +46,7 @@ enum lexer_special_mode_type {
 	mode_array_assignment,
 	mode_quote,
 	mode_singlequote,
+	mode_heredoc,
 	mode_comment
 };
 
@@ -172,6 +176,11 @@ NEWLINE: '\n' {
 				emit(BASH_WHILE_END, "\n");
 				waiting_to_terminate_while_statement = false;
 			}
+			if (waiting_for_heredoc_content) {
+				emit(HEREDOC_CONTENT, "\n");
+				waiting_for_heredoc_content = false;
+				modeStack.push(mode_heredoc);
+			}
 			break;
 	}
 };
@@ -203,6 +212,31 @@ COMMENT: '#' {
 };
 
 POUNDKEY: '#'; // Yet another dummy token
+
+// Heredocs
+HERESTRING_START: '<<<';
+
+HEREDOC_START: '<<' {
+	switch (modeStack.top()) {
+		case mode_typecast:
+		case mode_arith:
+		case mode_reference:
+		case mode_array_assignment:
+		case mode_quote:
+		case mode_singlequote:
+		case mode_comment:
+		case mode_heredoc:
+			emit(HEREDOC_LITERAL, "<<");
+			break;
+		default:
+			waiting_for_heredoc_terminator = true;
+			break;
+	}
+};
+
+HEREDOC_LITERAL: '<<'; // Another dummy token
+
+HEREDOC_CONTENT: '<<'; // Yet another dummy token
 
 // Strings
 QUOTE: '"' {
@@ -518,7 +552,21 @@ IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]* {
 	} else if (incoming_token_can_be_lvalue) {
 		emit(IDENTIFIER_LVALUE, getText());
 	}
+
+	if (waiting_for_heredoc_terminator) {
+		waiting_for_heredoc_terminator = false;
+		waiting_for_heredoc_content = true;
+		nestedHeredocStack.push(getText());
+	}
+
+	if (modeStack.top() == mode_heredoc && getText() == nestedHeredocStack.top()) {
+		modeStack.pop();
+		nestedHeredocStack.pop();
+		emit(HEREDOC_END, getText());
+	}
 };
+
+HEREDOC_END: [a-zA-Z_][a-zA-Z0-9_]*; // Another dummy token
 
 INVALID_IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*; // Another dummy token
 

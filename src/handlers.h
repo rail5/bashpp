@@ -38,6 +38,7 @@
 #include "listener/handlers/string.cpp"
 #include "listener/handlers/subshell.cpp"
 #include "listener/handlers/supershell.cpp"
+#include "listener/handlers/heredoc.cpp"
 #include "listener/handlers/value_assignment.cpp"
 #include "listener/handlers/array_value.cpp"
 #include "listener/handlers/array_index.cpp"

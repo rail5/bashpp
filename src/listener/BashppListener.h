@@ -274,6 +274,12 @@ class BashppListener : public BashppParserBaseListener {
 	void enterBash_case_pattern_header(BashppParser::Bash_case_pattern_headerContext *ctx) override;
 	void exitBash_case_pattern_header(BashppParser::Bash_case_pattern_headerContext *ctx) override;
 
+	void enterHeredoc(BashppParser::HeredocContext *ctx) override;
+	void exitHeredoc(BashppParser::HeredocContext *ctx) override;
+
+	void enterHeredoc_header(BashppParser::Heredoc_headerContext *ctx) override;
+	void exitHeredoc_header(BashppParser::Heredoc_headerContext *ctx) override;
+
 	void enterExtra_statement(BashppParser::Extra_statementContext *ctx) override;
 	void exitExtra_statement(BashppParser::Extra_statementContext *ctx) override;
 

@@ -30,19 +30,28 @@ The Bash++ language and compiler are licensed under the GNU General Public Licen
 
 This does not affect any code you write in Bash++ – only the Bash++ language and compiler themselves. You are perfectly free to use Bash++ to write software under a different license.
 
-## Test results
-
-<img src="https://bpp.sh/badge.svg?nocache" title="" alt="tests-pass-rate" width="137">
-
-## Building from source
+## Installation
 
 > [!IMPORTANT]
-> The Bash++ compiler is currently in pre-alpha, and is not yet ready for general use. It's expected to break often, and is not yet feature-complete.
+> The Bash++ compiler is currently in *beta*, and is expected to have bugs. Please report any bugs you find to the [issue tracker](https://github.com/rail5/bashpp/issues).
 >
 
-Please report any bugs you find to the [issue tracker](https://github.com/rail5/bashpp/issues).
+### Debian GNU/Linux
 
-### Prerequisites
+Users of Debian-based distributions can install the compiler from the [deb.rail5.org](https://deb.rail5.org) repository.
+
+```shell
+sudo curl -s -o /etc/apt/trusted.gpg.d/rail5-signing-key.gpg "https://deb.rail5.org/rail5-signing-key.gpg"
+sudo curl -s -o /etc/apt/sources.list.d/rail5.list "https://deb.rail5.org/rail5.list"
+sudo apt update
+sudo apt install bpp
+```
+
+Pre-built packages are available for **amd64**, **i386**, and **arm64** architectures. The .debs can also be downloaded directly from the [GitHub releases page](https://github.com/rail5/bashpp/releases/latest)
+
+### Building from source
+
+#### Prerequisites
 
  - `bash`
  - `make`
@@ -61,7 +70,7 @@ $ sudo apt update
 $ sudo apt install build-essential antlr4 libantlr4-runtime-dev pandoc perl debhelper
 ```
 
-### Building
+#### Building
 
 ```bash
 $ make        # Build the Bash++ compiler, which can then be found at bin/bpp

@@ -6,9 +6,25 @@ link-title: Download
 
 ## Compiler
 
-The compiler is currently in *pre-alpha* stage and is not yet available for download.
+The compiler is currently in *beta* and is expected to have bugs.
 
-You can check the progress of its development on the [GitHub repository](https://github.com/rail5/bashpp).
+Please report any bugs you encounter on the [issue tracker](https://github.com/rail5/bashpp/issues).
+
+### Debian GNU/Linux
+
+Users of Debian-based distributions can install the compiler from the [deb.rail5.org](https://deb.rail5.org) repository.
+
+```shell
+sudo curl -s -o /etc/apt/trusted.gpg.d/rail5-signing-key.gpg "https://deb.rail5.org/rail5-signing-key.gpg"
+sudo curl -s -o /etc/apt/sources.list.d/rail5.list "https://deb.rail5.org/rail5.list"
+sudo apt update
+
+sudo apt install bpp
+```
+
+### Source
+
+The source for the Bash++ compiler is available on [GitHub](https://github.com/rail5/bashpp).
 
 ## VSCode Extension
 

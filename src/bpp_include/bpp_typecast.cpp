@@ -22,5 +22,4 @@ std::shared_ptr<bpp_object> bpp_typecast::get_object_to_cast() const {
 
 } // namespace bpp
  
- #endif // SRC_BPP_INCLUDE_BPP_TYPECAST_CPP_
- 
+#endif // SRC_BPP_INCLUDE_BPP_TYPECAST_CPP_

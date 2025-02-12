@@ -224,6 +224,10 @@ class bash_if_branch : public bpp_code_entity {
 
 		void set_if_statement(std::shared_ptr<bpp::bash_if> if_statement);
 		std::shared_ptr<bpp::bash_if> get_if_statement() const;
+
+		std::string get_code() const override;
+		std::string get_pre_code() const override;
+		std::string get_post_code() const override;
 };
 
 class bash_case : public bpp_string {

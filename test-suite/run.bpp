@@ -42,6 +42,20 @@ Iteration 10
 hi
 "
 
+# Subshells
+@runner.addTest "Subshells #1" "test-suite/tests/subshells.bpp" "hi
+hi
+default value
+new value
+new value
+"
+
+@runner.addTest "Subshells #2" "test-suite/tests/subshells-2.bpp" ".+
+error:.+
+.*
+.*
+"
+
 # Queue example
 @runner.addTest "Queue Example" "test-suite/tests/queue.bpp" "a
 b

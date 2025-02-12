@@ -1,0 +1,13 @@
+echo $(echo hi) # "hi"
+echo `echo hi` # "hi"
+
+@class MyClass {
+	@public member="default value"
+}
+
+@MyClass myObject
+echo @myObject.member # "default value"
+@myObject.member="new value"
+echo @myObject.member # "new value"
+(@myObject.member="newer value") # Change within a subshell, environment is not affected
+echo @myObject.member # "new value"

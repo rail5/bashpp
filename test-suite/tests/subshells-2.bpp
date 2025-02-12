@@ -1,0 +1,6 @@
+@class MyClass {
+	@public member="default value"
+}
+
+(@MyClass myObject)
+echo @myObject.member # Syntax error -- object was declared within a subshell, so it is not accessible here

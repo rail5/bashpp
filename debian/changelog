@@ -1,5 +1,9 @@
-bpp (0.1) unstable; urgency=low
+bpp (0.1) unstable; urgency=medium
 
   * Initial release
+    Bash++ is still considered to be in beta (or alpha, take your pick)
+    And is expected to break often and have many bugs.
+    Please report any bugs you find to the GitHub issue tracker:
+    https://github.com/rail5/bashpp/issues
 
- -- rail5 <andrew@rail5.org>  Sat, 18 Jan 2025 11:03:03 +0800
+ -- rail5 <andrew@rail5.org>  Wed, 12 Feb 2025 20:09:39 +0800

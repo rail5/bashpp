@@ -4,7 +4,7 @@
 
 override_dh_auto_install:
 	make manual
-	install -D -m 0755 bin/bpp "$$(pwd)/debian/bashpp/usr/bin/bpp"
+	install -D -m 0755 bin/bpp "$$(pwd)/debian/bpp/usr/bin/bpp"
 
 override_dh_strip:
 	dh_strip --no-automatic-dbgsym

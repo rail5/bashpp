@@ -67,7 +67,7 @@
 		local i=0
 		local pass=true
 		while [[ "$i" -lt "${#outputLines[@]}" ]]; do
-			if ! [[ "${outputLines[$i]}" =~ ${expectedOutputLines[$i]} ]]; then
+			if ! [[ "@(grep -o -P "${expectedOutputLines[$i]}" <<<"${outputLines[$i]}")" == "${outputLines[$i]}" ]]; then
 				pass=false
 				break
 			fi

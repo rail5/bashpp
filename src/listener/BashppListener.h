@@ -279,6 +279,9 @@ class BashppListener : public BashppParserBaseListener {
 	void enterExtra_statement(BashppParser::Extra_statementContext *ctx) override;
 	void exitExtra_statement(BashppParser::Extra_statementContext *ctx) override;
 
+	void enterTerminal_token(BashppParser::Terminal_tokenContext *ctx) override;
+	void exitTerminal_token(BashppParser::Terminal_tokenContext *ctx) override;
+
 };
 
 #endif // SRC_LISTENER_BASHPPLISTENER_H_

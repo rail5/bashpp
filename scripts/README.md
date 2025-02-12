@@ -20,6 +20,4 @@ More detailed descriptions of the language can be found at the [website](https:/
 
  - [stack.bpp](stack.bpp) - A small example of a **stack** implemented in Bash++
 
- - [casting.bpp](casting.bpp) - Demonstrates how to use **type casting** in Bash++
-
 The Bash++ compiler is currently in pre-alpha stage, so some features may not work as expected.

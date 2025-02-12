@@ -1,7 +1,7 @@
 /**
- * Copyright (C) 2025 rail5
- * Bash++: Bash with classes
- */
+* Copyright (C) 2025 rail5
+* Bash++: Bash with classes
+*/
 
 #ifndef SRC_LISTENER_HANDLERS_OBJECT_REFERENCE_AS_LVALUE_CPP_
 #define SRC_LISTENER_HANDLERS_OBJECT_REFERENCE_AS_LVALUE_CPP_

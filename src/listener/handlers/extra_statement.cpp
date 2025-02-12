@@ -1,7 +1,7 @@
 /**
- * Copyright (C) 2025 rail5
- * Bash++: Bash with classes
- */
+* Copyright (C) 2025 rail5
+* Bash++: Bash with classes
+*/
 
 #ifndef SRC_LISTENER_HANDLERS_EXTRA_STATEMENT_CPP_
 #define SRC_LISTENER_HANDLERS_EXTRA_STATEMENT_CPP_

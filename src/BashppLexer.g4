@@ -467,7 +467,7 @@ Now that that's out of the way, we can say with complete accuracy,
 	That in a properly-written 'case' statement,
 	The 'in' keyword must be the second meta-token after 'case'.
 
- */
+*/
 
 BASH_KEYWORD_IN: 'in' {
 	switch (modeStack.top()) {

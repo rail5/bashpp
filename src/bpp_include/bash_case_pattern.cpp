@@ -1,16 +1,16 @@
 /**
- * Copyright (C) 2025 rail5
- * Bash++: Bash with classes
- */
+* Copyright (C) 2025 rail5
+* Bash++: Bash with classes
+*/
 
- #ifndef SRC_BPP_INCLUDE_BASH_CASE_PATTERN_CPP_
- #define SRC_BPP_INCLUDE_BASH_CASE_PATTERN_CPP_
+#ifndef SRC_BPP_INCLUDE_BASH_CASE_PATTERN_CPP_
+#define SRC_BPP_INCLUDE_BASH_CASE_PATTERN_CPP_
 
- #include "bpp.h"
+#include "bpp.h"
 
- namespace bpp {
+namespace bpp {
 
- bash_case_pattern::bash_case_pattern() {}
+bash_case_pattern::bash_case_pattern() {}
 
 void bash_case_pattern::set_pattern(const std::string& pattern) {
 	this->pattern = pattern;

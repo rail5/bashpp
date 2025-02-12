@@ -1,7 +1,7 @@
 /**
- * Copyright (C) 2025 rail5
- * Bash++: Bash with classes
- */
+* Copyright (C) 2025 rail5
+* Bash++: Bash with classes
+*/
 
 #ifndef SRC_HANDLERS_H_
 #define SRC_HANDLERS_H_

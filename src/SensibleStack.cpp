@@ -1,7 +1,7 @@
 /**
- * Copyright (C) 2025 rail5
- * Bash++: Bash with classes
- */
+* Copyright (C) 2025 rail5
+* Bash++: Bash with classes
+*/
 
 #ifndef SRC_SENSIBLESTACK_CPP_
 #define SRC_SENSIBLESTACK_CPP_
@@ -10,8 +10,8 @@
 #include <type_traits>
 
 /**
- * A stack that returns zero if empty
- */
+* A stack that returns zero if empty
+*/
 template <typename T, typename = std::enable_if<std::is_arithmetic_v<T>>>
 class SensibleStack : public std::stack<T> {
 	public:

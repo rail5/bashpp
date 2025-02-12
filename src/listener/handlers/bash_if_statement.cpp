@@ -1,15 +1,15 @@
 /**
- * Copyright (C) 2025 rail5
- * Bash++: Bash with classes
- */
+* Copyright (C) 2025 rail5
+* Bash++: Bash with classes
+*/
 
 /**
- * This file contains parser rules for all of:
- * 		1. Bash_if_statement
- * 		2. Bash_if_root_branch
- * 		3. Bash_if_else_branch
- * 		4. Bash_if_condition
- */
+* This file contains parser rules for all of:
+* 		1. Bash_if_statement
+* 		2. Bash_if_root_branch
+* 		3. Bash_if_else_branch
+* 		4. Bash_if_condition
+*/
 
 #ifndef SRC_LISTENER_HANDLERS_BASH_IF_STATEMENT_CPP_
 #define SRC_LISTENER_HANDLERS_BASH_IF_STATEMENT_CPP_

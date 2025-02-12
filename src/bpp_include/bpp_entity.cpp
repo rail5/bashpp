@@ -1,7 +1,7 @@
 /**
- * Copyright (C) 2025 rail5
- * Bash++: Bash with classes
- */
+* Copyright (C) 2025 rail5
+* Bash++: Bash with classes
+*/
 
 #ifndef SRC_BPP_INCLUDE_BPP_ENTITY_CPP_
 #define SRC_BPP_INCLUDE_BPP_ENTITY_CPP_

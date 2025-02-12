@@ -1,3 +1,14 @@
+bpp (0.1.1) unstable; urgency=medium
+
+  * Patch: Override get_code methods in bash_if_branch
+    The base code_entity version of these methods return empty strings
+    for pre-and post-code buffers
+    This broke if statements that weren't split across multiple lines,
+    and therefore never caused the code buffers to be flushed
+  * Patch: Add stray terminal tokens to program
+
+ -- rail5 <andrew@rail5.org>  Wed, 12 Feb 2025 22:25:09 +0800
+
 bpp (0.1) unstable; urgency=medium
 
   * Initial release

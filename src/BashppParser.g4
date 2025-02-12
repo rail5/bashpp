@@ -41,7 +41,6 @@ general_statement: include_statement
 	| comment
 	| object_address
 	| pointer_dereference
-	| typecast
 	| nullptr_ref
 	| bash_while_declaration
 	| bash_if_statement
@@ -82,7 +81,6 @@ value_assignment: PLUS? ASSIGN ((raw_rvalue
 	| nullptr_ref
 	| pointer_dereference
 	| object_address
-	| typecast
 	| supershell)+
 	| new_statement
 	| array_value)?;
@@ -150,19 +148,6 @@ parameter: (IDENTIFIER | AT IDENTIFIER ASTERISK WS* IDENTIFIER) WS*;
 nullptr_ref: AT KEYWORD_NULLPTR;
 
 new_statement: AT KEYWORD_NEW WS* AT? IDENTIFIER;
-
-typecast: (KEYWORD_CAST | KEYWORD_UPCAST | KEYWORD_DOWNCAST) WS* LPAREN WS* AT? IDENTIFIER WS* ASTERISK? WS* RPAREN WS* (
-	raw_rvalue
-	| string
-	| singlequote_string
-	| subshell
-	| deprecated_subshell
-	| object_reference
-	| self_reference
-	| pointer_dereference
-	| object_address
-	| supershell
-	| new_statement);
 
 array_value: ARRAY_ASSIGN_START statement* ARRAY_ASSIGN_END;
 

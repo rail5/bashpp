@@ -30,7 +30,6 @@
 #include "../bpp_include/bpp_object_reference.cpp"
 #include "../bpp_include/bpp_object_assignment.cpp"
 #include "../bpp_include/bpp_pointer_dereference.cpp"
-#include "../bpp_include/bpp_typecast.cpp"
 #include "../bpp_include/bpp_program.cpp"
 #include "../bpp_include/bpp_class.cpp"
 #include "../bpp_include/bpp_constructor.cpp"
@@ -246,9 +245,6 @@ class BashppListener : public BashppParserBaseListener {
 
 	void enterArray_index(BashppParser::Array_indexContext *ctx) override;
 	void exitArray_index(BashppParser::Array_indexContext *ctx) override;
-
-	void enterTypecast(BashppParser::TypecastContext *ctx) override;
-	void exitTypecast(BashppParser::TypecastContext *ctx) override;
 
 	void enterBash_while_declaration(BashppParser::Bash_while_declarationContext *ctx) override;
 	void exitBash_while_declaration(BashppParser::Bash_while_declarationContext *ctx) override;

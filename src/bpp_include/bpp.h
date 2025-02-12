@@ -44,7 +44,6 @@ class bpp_value_assignment;
 class bpp_object_assignment;
 class bpp_object_reference;
 class bpp_object_address;
-class bpp_typecast;
 class bpp_method;
 class bpp_constructor;
 class bpp_destructor;
@@ -343,16 +342,6 @@ class bpp_object_reference : public bpp_string {
 class bpp_object_address : public bpp_string {
 	public:
 		bpp_object_address() = default;
-};
-
-class bpp_typecast : public bpp_string {
-	private:
-		std::shared_ptr<bpp_object> object_to_cast;
-	public:
-		bpp_typecast();
-
-		void set_object_to_cast(std::shared_ptr<bpp_object> object);
-		std::shared_ptr<bpp_object> get_object_to_cast() const;
 };
 
 class bpp_method : public bpp_code_entity {

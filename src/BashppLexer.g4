@@ -40,7 +40,6 @@ enum lexer_special_mode_type {
 	no_mode,
 	mode_supershell,
 	mode_subshell,
-	mode_typecast,
 	mode_arith,
 	mode_reference,
 	mode_array_assignment,
@@ -219,7 +218,6 @@ HERESTRING_START: '<<<';
 
 HEREDOC_START: '<<' {
 	switch (modeStack.top()) {
-		case mode_typecast:
 		case mode_arith:
 		case mode_reference:
 		case mode_array_assignment:
@@ -306,16 +304,6 @@ KEYWORD_THIS: 'this' {
 };
 
 KEYWORD_THIS_LVALUE: 'this'; // Another dummy token
-
-KEYWORD_UPCAST: '@upcast' {
-	modeStack.push(mode_typecast);
-};
-KEYWORD_DOWNCAST: '@downcast' {
-	modeStack.push(mode_typecast);
-};
-KEYWORD_CAST: '@cast' {
-	modeStack.push(mode_typecast);
-};
 
 // Bash keywords
 BASH_KEYWORD_IF: 'if' {
@@ -702,7 +690,6 @@ DOLLAR: '$' {
 
 LPAREN: '(' {
 	switch (modeStack.top()) {
-		case mode_typecast:
 		case mode_quote:
 		case mode_singlequote:
 		case mode_heredoc:
@@ -730,8 +717,6 @@ RPAREN: ')' {
 	switch (modeStack.top()) {
 		case mode_array_assignment:
 			emit(ARRAY_ASSIGN_END, ")");
-			// Fall through
-		case mode_typecast:
 			modeStack.pop();
 			break;
 		case mode_quote:

@@ -2,8 +2,11 @@ parser grammar BashppParser;
 
 options {tokenVocab=BashppLexer;}
 
+// TODO(@rail5): The parser is slow, and relies too much on ANTLR's lookahead and backtracking.
+// We should be able to parse using SLL if we're careful about restructuring the grammar to remove ambiguity.
+
 // Program
-program: statement*;
+program: (statement | terminal_token)*;
 
 // Statements
 statement: (class_definition
@@ -130,17 +133,17 @@ deprecated_subshell: DEPRECATED_SUBSHELL_START statement* DEPRECATED_SUBSHELL_EN
 bash_arithmetic: BASH_ARITH_START statement* BASH_ARITH_END RPAREN;
 
 // Strings
-string: QUOTE statement* QUOTE_END;
+string: QUOTE (statement | terminal_token)* QUOTE_END;
 
-singlequote_string: SINGLEQUOTE statement* SINGLEQUOTE_END;
+singlequote_string: SINGLEQUOTE (statement | terminal_token)* SINGLEQUOTE_END;
 
 // Heredocs
-heredoc: heredoc_header statement* HEREDOC_END;
+heredoc: heredoc_header (statement | terminal_token)* HEREDOC_END;
 
 heredoc_header: HEREDOC_START statement* HEREDOC_CONTENT_START;
 
 // Comments (skipped)
-comment: COMMENT statement* (NEWLINE | EOF);
+comment: COMMENT (statement | terminal_token)* (NEWLINE | EOF);
 
 parameter: (IDENTIFIER | AT IDENTIFIER ASTERISK WS* IDENTIFIER) WS*;
 
@@ -191,62 +194,6 @@ bash_case_pattern: bash_case_pattern_header statement* BASH_CASE_PATTERN_DELIM;
 bash_case_pattern_header: statement* RPAREN;
 
 // Other statement
-/*
-Some of the following rules are OK --
-	-- SUPERSHELL_END, SUBSHELL_END, etc will only be emitted by the lexer in special cases,
-	And in those special cases, these tokens are guaranteed to be matched as part of an earlier rule
-Others, however, are NOT.
-	For example: RBRACE, RBRACE_ROOTLEVEL, RBRACKET, BASH_KEYWORD_IF, ...
-Take the parser rule 'array_index' for example:
-	LBRACKET statement* RBRACKET
-
-If 'RBRACKET' was not EXCLUDED by this other_statement rule, then the parser could (and would) screw up as follows:
-
-		[index1] [index2] unrelated statements [index3]
-		^------^ ^------^                      ^------^ (correct parsing)
-
-	Would be matched as a SINGLE array index spanning the entire line
-
-		[index1] [index2] unrelated statements [index3]
-		^--------------------------------------------^ (incorrect parsing)
-
-	Because the interim RBRACKETS would be caught as 'other_statement's under the statement* rule
-So by excluding these terminal tokens, we ensure that they are only matched as part of a larger rule
-HOWEVER...
-In the event that they are NOT special tokens (RBRACKET is not a special token, for example),
-	And can be emitted by the lexer at any time,
-They're liable to utterly destroy parsing.
-For example, if we had some source code like the following:
-	echo "ab]cd"
-The parser would see:
-	echo "ab
-And then stop -- because the solitary RBRACKET cannot be matched as part of any rule.
-
-TODO(@rail5): This urgently needs to be fixed.
-
-Excluded tokens which will not cause any problems (special tokens, emitted in special cases):
-	- SUPERSHELL_END
-	- QUOTE_END
-	- SINGLEQUOTE_END
-	- NEWLINE
-	- SUBSHELL_END
-	- DEPRECATED_SUBSHELL_END
-	- BASH_ARITH_END
-	- ARRAY_ASSIGN_END
-	- BASH_WHILE_END
-	- HEREDOC_END
-
-Excluded tokens which CAN AND WILL cause problems:
-	- RBRACE
-	- RBRACE_ROOTLEVEL
-	- RBRACKET
-	- BASH_KEYWORD_IF
-	- BASH_KEYWORD_ELIF
-	- BASH_KEYWORD_THEN
-	- BASH_KEYWORD_ELSE
-	- BASH_KEYWORD_FI
-	- BASH_CASE_PATTERN_DELIM
-*/
 other_statement: ~(RBRACE | RBRACE_ROOTLEVEL
 	| RBRACKET | SUPERSHELL_END
 	| QUOTE_END | SINGLEQUOTE_END
@@ -262,3 +209,5 @@ other_statement: ~(RBRACE | RBRACE_ROOTLEVEL
 raw_rvalue: IDENTIFIER | NUMBER | BASH_VAR;
 
 extra_statement: RBRACE;
+
+terminal_token: RBRACE_ROOTLEVEL | RBRACKET | BASH_KEYWORD_IF | BASH_KEYWORD_ELIF | BASH_KEYWORD_THEN | BASH_KEYWORD_ELSE | BASH_KEYWORD_FI | BASH_CASE_PATTERN_DELIM;

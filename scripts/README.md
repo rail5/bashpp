@@ -18,6 +18,8 @@ More detailed descriptions of the language can be found at the [website](https:/
 
  - [queue.bpp](queue.bpp) - A small example of a **queue** implemented in Bash++ using pointers
 
+ - [stack.bpp](stack.bpp) - A small example of a **stack** implemented in Bash++
+
  - [casting.bpp](casting.bpp) - Demonstrates how to use **type casting** in Bash++
 
 The Bash++ compiler is currently in pre-alpha stage, so some features may not work as expected.

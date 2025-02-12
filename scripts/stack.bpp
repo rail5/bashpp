@@ -1,0 +1,34 @@
+@class Stack {
+	@private stack=()
+
+	@public @method size {
+		echo "@{#this.stack[@]}"
+	}
+
+	@public @method push value {
+		@this.stack+=("$value")
+	}
+
+	@public @method pop {
+		if [[ @this.size -gt 0 ]]; then
+			local value="@{this.stack[$((@this.size - 1))]}"
+			unset &@this.stack[$((@this.size - 1))]
+			echo "$value"
+		fi
+	}
+
+	@public @method top {
+		if [[ @this.size -gt 0 ]]; then
+			echo "@{this.stack[$((@this.size - 1))]}"
+		fi
+	}
+}
+
+@Stack stack
+@stack.push "!"
+@stack.push "world"
+@stack.push "Hello"
+
+@stack.pop # "Hello"
+@stack.pop # "world"
+@stack.pop # "!"

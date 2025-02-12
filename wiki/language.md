@@ -185,30 +185,6 @@ Bash++ supports single inheritance. A class can inherit from another class using
 
 In this example, `DerivedClass` inherits from `BaseClass`. The derived class has access to the data members and methods of the base class. If a method is declared `@virtual`, it can be overridden in the derived class. If a method is not declared `@virtual`, it cannot be overridden.
 
-# Explicit Object Casting
-
-Bash++ supports explicit object casting using the `@cast` keyword. This allows you to cast an object to a different class.
-
-<div class="highlight"><pre class="highlight"><code>
-{%- include code/snippets/object-casting-example.html -%}
-</code></pre></div>
-
-The `@cast` keyword does not perform any type checking. It simply changes the type of the object. If the cast is invalid, the object will be in an invalid state, but the compiler will not throw an error.
-
-For *slightly* more careful casting, you can use the `@upcast` or `@downcast` keywords. `@upcast` will cast an object to a base class, while `@downcast` will cast an object to a derived class. If the cast is invalid, the compiler will throw an error.
-
-<div class="highlight"><pre class="highlight"><code>
-{%- include code/snippets/upcast-downcast-example.html -%}
-</code></pre></div>
-
-An `@upcast` will perform a compile-time check to verify that we're casting *up* the inheritance hierarchy. A `@downcast` will perform a similar check to verify that we're casting *down* the inheritance hierarchy. If the cast is invalid, the compiler will throw an error.
-
-You can also cast pointers:
-
-<div class="highlight"><pre class="highlight"><code>
-{%- include code/snippets/pointer-casting-example.html -%}
-</code></pre></div>
-
 # Pointers
 
 Bash++ supports pointers to objects. A pointer is a reference to an object, rather than the object itself. Pointers are declared using the familiar C-style `*` syntax:

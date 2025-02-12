@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
 	int c;
 	opterr = 0;
 	int option_index = 0;
-	
+
 	static struct option long_options[] = {
 		{"help", no_argument, 0, 'h'},
 		{"output", required_argument, 0, 'o'},
@@ -97,7 +97,7 @@ int main(int argc, char* argv[]) {
 			compiler_arguments.push_back(argv[i]);
 		}
 	}
-	
+
 	while ((c = getopt_long(static_cast<int>(compiler_arguments.size()), compiler_arguments.data(), "ho:ptv", long_options, &option_index)) != -1) {
 		switch(c) {
 			case 'h':
@@ -196,7 +196,7 @@ int main(int argc, char* argv[]) {
 	CommonTokenStream tokens(&lexer);
 
 	tokens.fill();
-	
+
 	if (display_tokens) {
 		for (auto token : tokens.getTokens()) {
 			std::cout << "Token: " << token->getText() 

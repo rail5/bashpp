@@ -32,7 +32,7 @@ void BashppListener::enterClass_body_statement(BashppParser::Class_body_statemen
 	if (just_delim_or_whitespace) {
 		return;
 	}
-	
+
 	if (current_code_entity == nullptr) {
 		// If we're in a class body statement, we should be in a class
 		std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());

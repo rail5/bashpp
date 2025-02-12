@@ -25,7 +25,7 @@ void bpp_code_entity::add_code(const std::string& code, bool add_newline) {
 		if (code.back() != '\n') {
 			*this->code << "\n" << std::flush;
 		}
-		
+
 		flush_postline_buffer();
 		buffers_flushed = true;
 		return;

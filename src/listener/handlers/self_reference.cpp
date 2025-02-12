@@ -162,7 +162,7 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 			//   1. ctx->AT(1) is set
 			//   2. ctx->BASH_VAR() is set
 			//   3. ctx->NUMBER() is set
-			
+
 			std::string temporary_variable_lvalue = self_reference_code + "____arrayIndex";
 			std::string temporary_variable_rvalue = "${" + self_reference_code + "}[";
 			temporary_variable_rvalue += self_reference_entity->get_array_index();

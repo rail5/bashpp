@@ -113,7 +113,7 @@ void BashppListener::exitBash_if_statement(BashppParser::Bash_if_statementContex
 	}
 
 	current_code_entity->add_code_to_previous_line(if_statement_entity->get_conditional_branch_pre_code());
-	
+
 	for (const auto& branch : if_statement_entity->get_conditional_branches()) {
 		current_code_entity->add_code(branch.first);
 		current_code_entity->add_code(branch.second);

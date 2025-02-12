@@ -173,7 +173,7 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 			method_call += "${" + indirection + self_reference_code + "}";
 			// Tell the method that we *are* passing a pointer
 			method_call += " 1";
-			
+
 			pointer_dereference->add_code_to_previous_line(self_reference_entity->get_pre_code());
 			pointer_dereference->add_code_to_next_line(self_reference_entity->get_post_code());
 			pointer_dereference->add_code(method_call);
@@ -183,7 +183,7 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 		}
 		return;
 	}
-	
+
 	if (last_reference_entity->get_class() == nullptr) {
 		throw internal_error("Last reference entity has no class");
 	}

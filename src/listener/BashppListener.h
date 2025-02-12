@@ -109,11 +109,11 @@ class BashppListener : public BashppParserBaseListener {
 			throw_syntax_error_sym(symbol, msg) \
 			set_error_context \
 			return;
-		
+
 		#define throw_syntax_error_from_exitRule(token, msg) antlr4::Token* symbol = token->getSymbol(); \
 			output_syntax_error(symbol, msg) \
 			return;
-		
+
 	public:
 
 	void set_source_file(std::string source_file);

@@ -212,7 +212,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 		object_reference_entity->add_code(encase_open + indirection + object_reference_code + encase_close);
 
 		if (delete_entity != nullptr && datamember_is_pointer) {
-			
+
 			delete_entity->set_object_to_delete(last_reference_object);
 			delete_entity->set_force_pointer(true);
 		}

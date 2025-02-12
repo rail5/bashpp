@@ -17,7 +17,7 @@ void BashppListener::enterValue_assignment(BashppParser::Value_assignmentContext
 	if (current_code_entity == nullptr) {
 		current_code_entity = program;
 	}
-	
+
 	std::shared_ptr<bpp::bpp_value_assignment> value_assignment_entity = std::make_shared<bpp::bpp_value_assignment>();
 	value_assignment_entity->set_containing_class(entity_stack.top()->get_containing_class());
 	value_assignment_entity->inherit(current_code_entity);

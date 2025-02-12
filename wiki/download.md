@@ -18,7 +18,6 @@ Users of Debian-based distributions can install the compiler from the [deb.rail5
 sudo curl -s -o /etc/apt/trusted.gpg.d/rail5-signing-key.gpg "https://deb.rail5.org/rail5-signing-key.gpg"
 sudo curl -s -o /etc/apt/sources.list.d/rail5.list "https://deb.rail5.org/rail5.list"
 sudo apt update
-
 sudo apt install bpp
 ```
 

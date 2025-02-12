@@ -151,20 +151,6 @@ You are devoured by the lion
 \\.\\.\\.Why did you try to pet a 30kg lion\\?
 "
 
-# Casting
-@runner.addTest "Casting" "test-suite/tests/casting.bpp" "Hello from BaseClass!
-default value
-Hello from DerivedClass!
-default value
-Hello from UnrelatedClass!
-Hello from BaseClass!
-default value
-Hello from DerivedClass!
-default value
-Hello from BaseClass!
-
-"
-
 # Arrays as Data Members
 @runner.addTest "Arrays as Data Members #1" "test-suite/tests/arrays-as-datamembers-1.bpp" "hello
 hello

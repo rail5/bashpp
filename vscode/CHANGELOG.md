@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.0.9]
+
+- Updated syntax rules to reflect the removal of type-casting from Bash++
+  - Type-casting may be implemented in a future version of Bash++, but for now, it is not a feature of the language.
+
 ## [0.0.8]
 
 - Properly highlight variables within heredocs

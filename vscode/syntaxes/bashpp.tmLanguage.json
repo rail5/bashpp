@@ -670,7 +670,18 @@
 							"name": "keyword.control.heredoc-token.shell"
 						}
 					},
-					"name": "string.unquoted.heredoc.shell"
+					"name": "string.unquoted.heredoc.shell",
+					"patterns": [
+						{
+							"include": "#variable"
+						},
+						{
+							"include": "#interpolation"
+						},
+						{
+							"include": "$self"
+						}
+					]
 				}
 			]
 		},

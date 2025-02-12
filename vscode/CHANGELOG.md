@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.0.8]
+
+- Properly highlight variables within heredocs
+
 ## [0.0.7]
 
 - Patched a bug causing valid identifiers to not be recognized

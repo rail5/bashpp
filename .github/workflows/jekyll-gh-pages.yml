@@ -54,6 +54,7 @@ jobs:
           filters: |
             code:
               - 'src/**'
+              - 'stdlib/**'
               - 'test-suite/**'
       - name: Install build dependencies
         if: steps.code_changed.outputs.code == 'true'
@@ -69,6 +70,19 @@ jobs:
         run: |
           curl -o wiki/test-results.svg https://bpp.sh/test-results.svg
           curl -o wiki/badge.svg https://bpp.sh/badge.svg
+      - name: Generate STL documentation
+        if: steps.code_changed.outputs.code == 'true'
+        run: |
+          sudo apt-get install git
+          git clone https://github.com/rail5/autodoc-bpp.git autodoc-bpp
+          bin/bpp -I "$(pwd)/stdlib/"" autodoc-bpp/autodoc.bpp -d "$(pwd)/stdlib/" -n "Bash++ Standard Library" -e -o "wiki/stl/" -m md
+      - name: Preserve old STL documentation
+        if: steps.code_changed.outputs.code == 'false'
+        run: |
+          links=$(curl -s https://bpp.sh/stl/index.html | grep -oP 'href=".*?stl/.*?\.html"' | sed 's/href="//' | sed 's/"//')
+          for link in $links; do
+            curl -o "wiki/stl/$(basename $link)" "https://bpp.sh/stl/$(basename $link)"
+          done
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Build with Jekyll

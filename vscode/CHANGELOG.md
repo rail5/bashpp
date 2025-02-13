@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.2.0]
+
+- Brought syntax rules up to speed with Bash++ v0.2.0 by adding support for angle-bracket includes such as @include &lt;file&gt;
+
 ## [0.0.9]
 
 - Updated syntax rules to reflect the removal of type-casting from Bash++

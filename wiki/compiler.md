@@ -44,7 +44,7 @@ Static linking is enabled by default. This means that the compiled code from inc
 
 The primary advantage of static linking in Bash++ is that the compiled program is a single Bash script that can be run on any system with Bash installed. The user does not need to have Bash++ installed, nor do they need to have the included files.
 
-Dynamic linking is useful when the included files are frequently updated or when the compiled program is very large. In this case, the compiled program will be smaller and will run faster, but it will require the included files to be present at runtime.
+Dynamic linking is useful when the included files are frequently updated or when the compiled program is very large. In this case, the compiled program will be smaller, but it will require the included files to be present at runtime.
 
 When an included file is dynamically linked, the compiler will place a Bash `source` directive in the compiled program. This directive will load the included file at runtime.
 

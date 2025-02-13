@@ -287,6 +287,67 @@ hij
 @runner.addTest "Stray Terminals" "test-suite/tests/stray-terminals.bpp" "abc]}{}{{}} if elif then else fi ;; 
 "
 
+# Standard Library tests
+@runner.addTest "STL Arrays" "test-suite/tests/stdlib-arrays.bpp" "0
+3
+c
+a
+b
+c
+4
+a
+d
+b
+c
+3
+a
+d
+c
+2
+d
+c
+1
+d
+0
+3
+hello
+world
+!
+0
+"
+
+@runner.addTest "STL Stacks" "test-suite/tests/stdlib-stacks.bpp" "0
+3
+false
+c
+c
+2
+b
+a
+0
+true
+3
+!
+0
+true
+"
+
+@runner.addTest "STL Queues" "test-suite/tests/stdlib-queues.bpp" "0
+3
+false
+a
+c
+a
+2
+b
+c
+0
+true
+3
+0
+true
+"
+
 while getopts "lh" opt; do
 	case $opt in
 		l)

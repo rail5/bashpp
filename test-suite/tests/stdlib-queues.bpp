@@ -1,0 +1,25 @@
+@include "../../stdlib/Queue.bpp"
+
+@Queue queue
+
+@queue.size # 0
+@queue.enqueue a
+@queue.enqueue b
+@queue.enqueue c
+@queue.size # 3
+@queue.empty # false
+@queue.front # a
+@queue.back # c
+@queue.dequeue # a
+@queue.size # 2
+@queue.dequeue # b
+@queue.dequeue # c
+@queue.size # 0
+@queue.empty # true
+@queue.enqueue hello
+@queue.enqueue world
+@queue.enqueue !
+@queue.size # 3
+@queue.clear
+@queue.size # 0
+@queue.empty # true

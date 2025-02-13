@@ -1,0 +1,43 @@
+@include "../../stdlib/Array.bpp"
+
+@Array array
+
+@array.size # 0
+@array.push a
+@array.push b
+@array.push c
+@array.size # 3
+@array.back # c
+@array.at 0 # a
+@array.at 1 # b
+@array.at 2 # c
+@array.insert 1 d
+@array.size # 4
+@array.at 0 # a
+@array.at 1 # d
+@array.at 2 # b
+@array.at 3 # c
+@array.remove 2
+@array.size # 3
+@array.at 0 # a
+@array.at 1 # d
+@array.at 2 # c
+@array.remove 0
+@array.size # 2
+@array.at 0 # d
+@array.at 1 # c
+@array.remove 1
+@array.size # 1
+@array.at 0 # d
+@array.remove 0
+@array.size # 0
+
+@array.push hello
+@array.push world
+@array.push !
+@array.size # 3
+@array.at 0 # hello
+@array.at 1 # world
+@array.at 2 # !
+@array.clear
+@array.size # 0

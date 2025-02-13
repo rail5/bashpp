@@ -1,0 +1,25 @@
+@include "../../stdlib/Stack.bpp"
+
+@Stack stack
+
+@stack.size # 0
+@stack.push a
+@stack.push b
+@stack.push c
+@stack.size # 3
+@stack.empty # false
+@stack.top # c
+@stack.pop # c
+@stack.size # 2
+@stack.pop # b
+@stack.pop # a
+@stack.size # 0
+@stack.empty # true
+@stack.push hello
+@stack.push world
+@stack.push !
+@stack.size # 3
+@stack.top # !
+@stack.clear
+@stack.size # 0
+@stack.empty # true

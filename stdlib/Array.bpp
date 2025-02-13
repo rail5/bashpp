@@ -72,4 +72,8 @@
 			fi
 		fi
 	}
+
+	@public @method clear {
+		unset &@this.array
+	}
 }

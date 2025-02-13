@@ -279,6 +279,8 @@ The `@include` directive is used to include the contents of another Bash++ scrip
 
 The `@include` directive is processed at compile time, and the contents of the included file are inserted into the current file before compilation.
 
+If the included file is given in angle-brackets (`<` and `>`), the compiler will search for the file in the include path. The compiler's default include path is `/usr/lib/bpp/stdlib/`. You can add additional directories to the include path using the `-I` or `--include` option when invoking the compiler.
+
 Note that you can still include regular Bash scripts in a Bash++ script using the `source` command (or `.`):
 
 <div class="highlight"><pre class="highlight"><code>

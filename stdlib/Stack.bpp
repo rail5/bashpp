@@ -1,0 +1,32 @@
+@class Stack {
+	@protected stack=()
+
+	@public @method size {
+		echo "@{#this.stack[@]}"
+	}
+
+	@public @method push value {
+		@this.stack+=("$value")
+	}
+
+	@public @method pop {
+		if [[ @{#this.stack[@]} -gt 0 ]]; then
+			echo "@{this.stack[$((@{#this.stack[@]} - 1))]}"
+			unset &@this.stack[$((@{#this.stack[@]} - 1))]
+		fi
+	}
+
+	@public @method top {
+		if [[ @{#this.stack[@]} -gt 0 ]]; then
+			echo "@{this.stack[$((@{#this.stack[@]} - 1))]}"
+		fi
+	}
+
+	@public @method clear {
+		unset &@this.stack
+	}
+
+	@public @method empty {
+		[[ @{#this.stack[@]} -eq 0 ]] && echo "true" || echo "false"
+	}
+}

@@ -1,9 +1,18 @@
 VERSION=$$(dpkg-parsechangelog -l debian/changelog --show-field version || echo "0.1")
 LASTUPDATEDYEAR=$$(date +%Y -d@$$(dpkg-parsechangelog -l debian/changelog --show-field timestamp || date +%Y) || echo "2025")
 
-all: clean-src clean-main update-version update-year
+all: compiler std
+
+compiler: clean-src clean-main update-version update-year
 	cd src && make
 	mv src/bpp bin/bpp
+
+std: clean-std compiler
+	@for file in "stdlib/"*.bpp; do \
+		echo "Compiling stdlib: $$file"; \
+		base=$$(basename $$file .bpp); \
+		bin/bpp -o stdlib/$$base.sh $$file; \
+	done
 
 test:
 	bin/bpp test-suite/run.bpp
@@ -53,9 +62,12 @@ clean-src:
 clean-main:
 	rm -f bin/bpp
 
+clean-std:
+	rm -f stdlib/*.sh
+
 clean-manual:
 	rm -f debian/bpp.1
 	rm -f debian/bpp.7
 	rm -rf tmp
 
-clean: clean-src clean-main clean-manual
+clean: clean-src clean-main clean-std clean-manual

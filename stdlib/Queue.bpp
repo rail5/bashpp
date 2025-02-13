@@ -1,0 +1,63 @@
+@class QueueNode {
+	@public data
+	@public @QueueNode* next
+}
+
+@class Queue {
+	@protected @QueueNode* head
+	@protected @QueueNode* tail
+	@protected queueSize=0
+
+	@public @method size {
+		echo "@this.queueSize"
+	}
+
+	@public @method empty {
+		[[ @this.queueSize -eq 0 ]] && echo "true" || echo "false"
+	}
+
+	@public @method enqueue value {
+		@QueueNode* node=@new QueueNode
+		@node.data="$value"
+
+		if [[ @this.queueSize -eq 0 ]]; then
+			@this.head=@node
+			@this.tail=@node
+		else
+			@this.tail.next=@node
+			@this.tail=@node
+		fi
+
+		@this.queueSize=$((@this.queueSize + 1))
+	}
+
+	@public @method dequeue {
+		if [[ @this.queueSize -gt 0 ]]; then
+			@QueueNode* node=@this.head
+			@this.head=@this.head.next
+			@this.queueSize=$((@this.queueSize - 1))
+			echo "@node.data"
+			@delete @node
+		fi
+	}
+
+	@public @method front {
+		if [[ @this.queueSize -gt 0 ]]; then
+			echo "@this.head.data"
+		fi
+	}
+
+	@public @method back {
+		if [[ @this.queueSize -gt 0 ]]; then
+			echo "@this.tail.data"
+		fi
+	}
+
+	@public @method clear {
+		local size=@this.queueSize
+		while [[ $size -gt 0 ]]; do
+			@this.dequeue >/dev/null
+			size=$((size - 1))
+		done
+	}
+}

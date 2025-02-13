@@ -1,0 +1,71 @@
+@class Array {
+	@protected array=()
+
+	@public @method size {
+		echo "@{#this.array[@]}"
+	}
+
+	@public @method push value {
+		@this.array+=("$value")
+	}
+
+	@public @method back {
+		if [[ @{#this.array[@]} -gt 0 ]]; then
+			echo "@{this.array[$((@{#this.array[@]} - 1))]}"
+		fi
+	}
+
+	@public @method at index {
+		if [[ $index -ge 0 && $index -lt @{#this.array[@]} ]]; then
+			echo "@{this.array[$index]}"
+		fi
+	}
+
+	@public @method insert index value {
+		if [[ $index -ge 0 && $index -le @{#this.array[@]} ]]; then
+			local arr=() i=0
+			while [[ $i -lt $index ]]; do
+				arr+=("@{this.array[$i]}")
+				i=$((i + 1))
+			done
+
+			arr+=("$value")
+
+			while [[ $i -lt @{#this.array[@]} ]]; do
+				arr+=("@{this.array[$i]}")
+				i=$((i + 1))
+			done
+
+			@this.array=("${arr[0]}")
+			i=1
+			while [[ $i -lt ${#arr[@]} ]]; do
+				@this.array+=("${arr[$i]}")
+				i=$((i + 1))
+			done
+		fi
+	}
+
+	@public @method remove index {
+		if [[ $index -ge 0 && $index -lt @{#this.array[@]} ]]; then
+			local arr=() i=0
+			while [[ $i -lt $index ]]; do
+				arr+=("@{this.array[$i]}")
+				i=$((i + 1))
+			done
+
+			i=$((i + 1))
+
+			while [[ $i -lt @{#this.array[@]} ]]; do
+				arr+=("@{this.array[$i]}")
+				i=$((i + 1))
+			done
+
+			@this.array=("${arr[0]}")
+			i=1
+			while [[ $i -lt ${#arr[@]} ]]; do
+				@this.array+=("${arr[$i]}")
+				i=$((i + 1))
+			done
+		fi
+	}
+}

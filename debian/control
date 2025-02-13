@@ -6,12 +6,21 @@ Standards-Version: 3.9.3
 Section: utils
 
 Package: bpp
-Version: 0.1
+Version: 0.2
 License: GPL-3.0
 Vendor: rail5 <andrew@rail5.org>
 Priority: optional
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, libstd-bpp
 Description: Bash with classes
  Bash++ is a superset of Bash which adds support for object orientation
 
+Package: libstd-bpp
+Version: 0.2
+License: GPL-3.0
+Vendor: rail5 <andrew@rail5.org>
+Priority: optional
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Standard library for Bash++
+ The standard library for Bash++ (common data structures and algorithms)

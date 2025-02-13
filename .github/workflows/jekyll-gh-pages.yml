@@ -56,6 +56,7 @@ jobs:
               - 'src/**'
               - 'stdlib/**'
               - 'test-suite/**'
+              - '.github/workflows/jekyll-gh-pages.yml'
       - name: Install build dependencies
         if: steps.code_changed.outputs.code == 'true'
         run: |
@@ -75,7 +76,7 @@ jobs:
         run: |
           sudo apt-get install git
           git clone https://github.com/rail5/autodoc-bpp.git autodoc-bpp
-          bin/bpp -I "$(pwd)/stdlib/"" autodoc-bpp/autodoc.bpp -d "$(pwd)/stdlib/" -n "Bash++ Standard Library" -e -o "wiki/stl/" -m md
+          bin/bpp -I "$(pwd)/stdlib/" autodoc-bpp/autodoc.bpp -d "$(pwd)/stdlib/" -n "Bash++ Standard Library" -e -o "wiki/stl/" -m md
       - name: Preserve old STL documentation
         if: steps.code_changed.outputs.code == 'false'
         run: |

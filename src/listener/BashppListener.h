@@ -20,7 +20,8 @@
 #include "../bpp_include/bpp_code_entity.cpp"
 #include "../bpp_include/bpp_string.cpp"
 #include "../bpp_include/bpp_supershell.cpp"
-#include "../bpp_include/bash_while.cpp"
+#include "../bpp_include/bash_while_loop.cpp"
+#include "../bpp_include/bash_while_condition.cpp"
 #include "../bpp_include/bash_if.cpp"
 #include "../bpp_include/bash_if_branch.cpp"
 #include "../bpp_include/bash_case.cpp"
@@ -68,8 +69,8 @@ class BashppListener : public BashppParserBaseListener {
 
 		bool in_comment = false;
 		bool in_singlequote_string = false;
-		bool in_while_statement = false;
-		std::shared_ptr<bpp::bash_while> current_while_statement = nullptr;
+		bool in_while_condition = false;
+		std::shared_ptr<bpp::bash_while_condition> current_while_condition = nullptr;
 
 		std::stack<std::shared_ptr<bpp::bpp_entity>> entity_stack;
 		// The entity_stack is used to keep track of the current entity being processed
@@ -246,9 +247,6 @@ class BashppListener : public BashppParserBaseListener {
 	void enterArray_index(BashppParser::Array_indexContext *ctx) override;
 	void exitArray_index(BashppParser::Array_indexContext *ctx) override;
 
-	void enterBash_while_declaration(BashppParser::Bash_while_declarationContext *ctx) override;
-	void exitBash_while_declaration(BashppParser::Bash_while_declarationContext *ctx) override;
-
 	void enterBash_if_statement(BashppParser::Bash_if_statementContext *ctx) override;
 	void exitBash_if_statement(BashppParser::Bash_if_statementContext *ctx) override;
 
@@ -269,6 +267,12 @@ class BashppListener : public BashppParserBaseListener {
 
 	void enterBash_case_pattern_header(BashppParser::Bash_case_pattern_headerContext *ctx) override;
 	void exitBash_case_pattern_header(BashppParser::Bash_case_pattern_headerContext *ctx) override;
+
+	void enterBash_while_loop(BashppParser::Bash_while_loopContext *ctx) override;
+	void exitBash_while_loop(BashppParser::Bash_while_loopContext *ctx) override;
+
+	void enterBash_while_condition(BashppParser::Bash_while_conditionContext *ctx) override;
+	void exitBash_while_condition(BashppParser::Bash_while_conditionContext *ctx) override;
 
 	void enterHeredoc(BashppParser::HeredocContext *ctx) override;
 	void exitHeredoc(BashppParser::HeredocContext *ctx) override;

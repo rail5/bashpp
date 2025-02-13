@@ -25,9 +25,9 @@ BashppListener::code_segment BashppListener::generate_supershell_code(std::strin
 	// But it's very hard to determine when the loop ends.
 	// We would have to parse the entire loop to determine this, rather than just the first line
 	// As it stands, it likely won't cause too much of a problem. But it is unnecessary, persistent memory usage and should be fixed
-	if (in_while_statement) {
-		current_while_statement->add_supershell_function_call("bpp____supershell " + supershell_output_variable + " " + supershell_function_name);
-		current_while_statement->increment_supershell_count();
+	if (in_while_condition) {
+		current_while_condition->add_supershell_function_call("bpp____supershell " + supershell_output_variable + " " + supershell_function_name);
+		current_while_condition->increment_supershell_count();
 	} else {
 		result.pre_code += "bpp____supershell " + supershell_output_variable + " " + supershell_function_name + "\n";
 		result.post_code += "unset -f " + supershell_function_name + "\n";

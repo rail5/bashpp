@@ -33,7 +33,8 @@ class bpp_entity;
 class bpp_code_entity;
 class bpp_string;
 class bpp_supershell;
-class bash_while;
+class bash_while_loop;
+class bash_while_condition;
 class bash_if;
 class bash_if_branch;
 class bash_case;
@@ -183,12 +184,26 @@ class bpp_supershell : public bpp_string {
 		bool add_object(std::shared_ptr<bpp_object> object) override;
 };
 
-class bash_while : public bpp_string {
+class bash_while_loop : public bpp_code_entity {
+	private:
+		std::shared_ptr<bpp::bash_while_condition> while_condition;
+	public:
+		bash_while_loop();
+
+		void set_while_condition(std::shared_ptr<bpp::bash_while_condition> while_condition);
+		std::shared_ptr<bpp::bash_while_condition> get_while_condition() const;
+
+		std::string get_code() const override;
+		std::string get_pre_code() const override;
+		std::string get_post_code() const override;
+};
+
+class bash_while_condition : public bpp_string {
 	private:
 		int supershell_count = 0;
 		std::vector<std::string> supershell_function_calls = {};
 	public:
-		bash_while();
+		bash_while_condition();
 
 		void increment_supershell_count();
 		void add_supershell_function_call(const std::string& function_call);

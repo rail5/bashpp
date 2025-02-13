@@ -15,6 +15,7 @@ int initialSupershellDepth = 0;
 int initialSubshellDepth = 0;
 int IfDepth = 0;
 int CaseDepth = 0;
+int WhileDepth = 0;
 int64_t most_recent_case_keyword_metatoken_position = INT64_MIN;
 SensibleStack<int> nestedSupershellStack;
 SensibleStack<int> nestedSubshellStack;
@@ -33,7 +34,6 @@ bool hit_at_in_current_command = false;
 bool hit_lbrace_in_current_command = false;
 bool hit_asterisk_in_current_command = false;
 
-bool waiting_to_terminate_while_statement = false;
 bool can_increment_metatoken_counter = true;
 
 enum lexer_special_mode_type {
@@ -61,7 +61,6 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 			break;
 		case DELIM:
 		case NEWLINE:
-		case BASH_WHILE_END:
 		case CONNECTIVE:
 		case DOUBLEAMPERSAND:
 		case DOUBLEPIPE:
@@ -171,10 +170,6 @@ NEWLINE: '\n' {
 			break;
 		default:
 			emit(DELIM, "\n");
-			if (waiting_to_terminate_while_statement) {
-				emit(BASH_WHILE_END, "\n");
-				waiting_to_terminate_while_statement = false;
-			}
 			if (waiting_for_heredoc_content_start) {
 				emit(HEREDOC_CONTENT_START, "\n");
 				waiting_for_heredoc_content_start = false;
@@ -412,9 +407,47 @@ BASH_KEYWORD_WHILE: 'while' {
 			break;
 		default:
 			if (incoming_token_can_be_lvalue) {
-				waiting_to_terminate_while_statement = true;
+				WhileDepth++;
 			} else {
-				emit(IDENTIFIER_LVALUE, getText());
+				emit(IDENTIFIER, getText());
+			}
+			break;
+	}
+};
+
+BASH_KEYWORD_DO: 'do' {
+	switch (modeStack.top()) {
+		case mode_quote:
+		case mode_singlequote:
+		case mode_heredoc:
+		case mode_comment:
+		case mode_arith:
+		case mode_array_assignment:
+			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
+			break;
+		default:
+			if (!(incoming_token_can_be_lvalue && WhileDepth > 0)) {
+				emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
+			}
+			break;
+	}
+};
+
+BASH_KEYWORD_DONE: 'done' {
+	switch (modeStack.top()) {
+		case mode_quote:
+		case mode_singlequote:
+		case mode_heredoc:
+		case mode_comment:
+		case mode_arith:
+		case mode_array_assignment:
+			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
+			break;
+		default:
+			if (incoming_token_can_be_lvalue && WhileDepth > 0) {
+				WhileDepth--;
+			} else {
+				emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
 			}
 			break;
 	}
@@ -538,8 +571,6 @@ BASH_KEYWORD_ESAC: 'esac' {
 };
 
 BASH_CASE_PATTERN_DELIM: ';;';
-
-BASH_WHILE_END: 'while'; // Another in a long list of dummy tokens
 
 SEMICOLON: ';' {
 	emit(DELIM, ";");

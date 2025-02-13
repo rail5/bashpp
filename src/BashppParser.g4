@@ -42,7 +42,7 @@ general_statement: include_statement
 	| object_address
 	| pointer_dereference
 	| nullptr_ref
-	| bash_while_declaration
+	| bash_while_loop
 	| bash_if_statement
 	| bash_case_statement
 	| heredoc
@@ -153,11 +153,6 @@ array_value: ARRAY_ASSIGN_START statement* ARRAY_ASSIGN_END;
 
 array_index: LBRACKET statement* RBRACKET;
 
-// Bash while loops
-// We only need to catch these so that we can implement our hacky fix to make sure supershells are re-evaluated after each iteration
-// TODO(@rail5): Do better
-bash_while_declaration: BASH_KEYWORD_WHILE statement* BASH_WHILE_END;
-
 // Bash if statements
 bash_if_statement: bash_if_root_branch bash_if_else_branch* BASH_KEYWORD_FI;
 
@@ -170,6 +165,11 @@ bash_if_condition: statement* DELIM WS* BASH_KEYWORD_THEN; // Kind of a hack
 	// As in 'if [[ "@this.member" == "value" ]]; then'
 	// Or 'if command; then'
 	// Without caring whether it started with 'if' or 'elif'
+
+// Bash while loops
+bash_while_loop: bash_while_condition statement* BASH_KEYWORD_DONE;
+
+bash_while_condition: BASH_KEYWORD_WHILE statement* DELIM WS* BASH_KEYWORD_DO;
 
 // Bash case statements
 bash_case_statement: BASH_KEYWORD_CASE statement* BASH_KEYWORD_IN (WS | DELIM)* bash_case_pattern* (WS | DELIM)* BASH_KEYWORD_ESAC;
@@ -184,7 +184,8 @@ other_statement: ~(RBRACE | RBRACE_ROOTLEVEL
 	| QUOTE_END | SINGLEQUOTE_END
 	| NEWLINE | SUBSHELL_END
 	| DEPRECATED_SUBSHELL_END | BASH_ARITH_END
-	| ARRAY_ASSIGN_END | BASH_WHILE_END
+	| ARRAY_ASSIGN_END | BASH_KEYWORD_DONE
+	| BASH_KEYWORD_DO
 	| BASH_KEYWORD_IF | BASH_KEYWORD_ELIF
 	| BASH_KEYWORD_THEN | BASH_KEYWORD_ELSE
 	| BASH_KEYWORD_FI | BASH_CASE_PATTERN_DELIM
@@ -195,4 +196,4 @@ raw_rvalue: IDENTIFIER | NUMBER | BASH_VAR;
 
 extra_statement: RBRACE;
 
-terminal_token: RBRACE_ROOTLEVEL | RBRACKET | BASH_KEYWORD_IF | BASH_KEYWORD_ELIF | BASH_KEYWORD_THEN | BASH_KEYWORD_ELSE | BASH_KEYWORD_FI | BASH_CASE_PATTERN_DELIM;
+terminal_token: RBRACE_ROOTLEVEL | RBRACKET | BASH_KEYWORD_IF | BASH_KEYWORD_ELIF | BASH_KEYWORD_THEN | BASH_KEYWORD_ELSE | BASH_KEYWORD_FI | BASH_CASE_PATTERN_DELIM | BASH_KEYWORD_DONE | BASH_KEYWORD_DO;

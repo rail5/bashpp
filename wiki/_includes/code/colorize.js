@@ -39,7 +39,9 @@ registry.loadGrammar('source.bashpp').then(grammar => {
       const lineHtml = lineTokens.map(token => {
         const className = token.scopes.join(' ');
         const content = lineContent.substring(token.startIndex, token.endIndex);
-        return `<span class="${className}">${content}</span>`;
+        // Replace '<' and '>' with '&lt;' and '&gt;'
+        const escapedContent = content.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return `<span class="${className}">${escapedContent}</span>`;
       }).join('');
       return lineHtml;
     }).join('\n');

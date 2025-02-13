@@ -4,7 +4,7 @@ The Bash++ Standard Library is a collection of common data structures and algori
 
 ## Contents
 
-{% assign stl_pages = site.pages | where_exp: "page", "page.path contains 'stl/' and page.path != 'stl/index.md' and page.path != 'stl/index.html'" %}
+{% assign stl_pages = site.pages | where_exp: "page", "page.path contains 'stl/' and page.path != \"stl/index.md\" and page.path != \"stl/index.html\"" %}
 <ul>
 	{% for page in stl_pages %}
 	<li><a href="{{ page.url }}">{{ page.title }}</a></li>

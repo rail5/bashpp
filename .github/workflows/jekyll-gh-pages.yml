@@ -76,6 +76,8 @@ jobs:
         run: |
           sudo apt-get install git
           git clone https://github.com/rail5/autodoc-bpp.git autodoc-bpp
+          # In the file 'autodoc-bpp/autodoc.bpp', replace "<Array>" with "<Array.bpp>" so that we can build using the local STL
+          sed -i 's/<Array>/<Array.bpp>/g' autodoc-bpp/autodoc.bpp
           bin/bpp -I$(pwd)/stdlib/ autodoc-bpp/autodoc.bpp -d "$(pwd)/stdlib/" -n "Bash++ Standard Library" -e -o "wiki/stl/" -m md
       - name: Preserve old STL documentation
         if: steps.code_changed.outputs.code == 'false'

@@ -16,6 +16,7 @@ void BashppListener::enterProgram(BashppParser::ProgramContext *ctx) {
 
 	if (included) {
 		program = included_from->get_program();
+		program->set_output_stream(output_stream);
 
 		// Inherit all of the parent program's included files
 		included_files = included_from->get_included_files();

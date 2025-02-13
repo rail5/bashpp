@@ -52,6 +52,8 @@ int main(int argc, char* argv[]) {
 		"                         If not specified, program will run on exit\n"
 		"                         If specified as '-', program will be written to stdout\n"
 		"  -I, --include <path>  Add directory to include path\n"
+		"  -D, --dynamic         Enable dynamic linking\n"
+		"                         (Default is static linking)\n"
 		"  -p, --parse-tree      Display parse tree (do not compile program)\n"
 		"  -t, --tokens          Display tokens (do not compile program)\n"
 		"  -v, --version         Print version information\n"
@@ -63,6 +65,7 @@ int main(int argc, char* argv[]) {
 	static struct option long_options[] = {
 		{"help", no_argument, 0, 'h'},
 		{"include", required_argument, 0, 'I'},
+		{"dynamic", no_argument, 0, 'D'},
 		{"output", required_argument, 0, 'o'},
 		{"parse-tree", no_argument, 0, 'p'},
 		{"tokens", no_argument, 0, 't'},
@@ -82,6 +85,8 @@ int main(int argc, char* argv[]) {
 
 	std::shared_ptr<std::vector<std::string>> include_paths = std::make_shared<std::vector<std::string>>();
 	include_paths->push_back("/usr/lib/bpp/stdlib/");
+
+	bool dynamic_linking = false;
 
 	std::vector<char*> program_arguments = {};
 	std::vector<char*> compiler_arguments = {};
@@ -105,8 +110,11 @@ int main(int argc, char* argv[]) {
 
 	struct stat statbuf;
 
-	while ((c = getopt_long(static_cast<int>(compiler_arguments.size()), compiler_arguments.data(), "hI:o:ptv", long_options, &option_index)) != -1) {
+	while ((c = getopt_long(static_cast<int>(compiler_arguments.size()), compiler_arguments.data(), "DhI:o:ptv", long_options, &option_index)) != -1) {
 		switch(c) {
+			case 'D':
+				dynamic_linking = true;
+				break;
 			case 'h':
 				std::cout << program_name << " " << bpp_compiler_version << std::endl << help_string;
 				return 0;
@@ -278,6 +286,7 @@ int main(int argc, char* argv[]) {
 		}
 		listener->set_source_file(full_path);
 		listener->set_include_paths(include_paths);
+		listener->set_dynamic_linking(dynamic_linking);
 		listener->set_output_stream(output_stream);
 		listener->set_output_file(output_file);
 		listener->set_run_on_exit(run_on_exit);

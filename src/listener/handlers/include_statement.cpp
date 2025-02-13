@@ -87,7 +87,15 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 	listener.set_included_from(this);
 	listener.set_run_on_exit(false);
 	listener.set_supershell_counter(supershell_counter);
-	listener.set_output_stream(output_stream);
+
+	if (!dynamic_linking) {
+		// If we're linking statically, copy the compiled code from the included file to the current program
+		listener.set_output_stream(output_stream);
+	} else {
+		// Otherwise, throw its output in the garbage
+		std::shared_ptr<std::ofstream> garbage_stream = std::make_shared<std::ofstream>("/dev/null");
+		listener.set_output_stream(garbage_stream);
+	}
 	listener.set_output_file("");
 
 	// Create a new ANTLR input stream
@@ -132,9 +140,34 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 		throw;
 	}
 
-	// The code, objects, classes, etc should all have been added to the current program by the included program's new listener
-
+	// The objects, classes, etc should all have been added to the current program by the included program's new listener
 	ctx->children.clear();
+
+	// Recover our original output stream
+	program->set_output_stream(output_stream);
+
+	// If we're linking statically, the code was also added
+	// If we're linking dynamically, we need to add a little source directive here
+	if (dynamic_linking) {
+		// If the 'full path' has an extension, we should remove it
+		std::string full_path_str = full_path;
+		// Get the file basename
+		std::string basename = full_path_str.substr(full_path_str.find_last_of('/') + 1);
+		std::string directory = full_path_str.substr(0, full_path_str.find_last_of('/'));
+		// Get the file extension
+		std::string extension = basename.substr(basename.find_last_of('.') + 1);
+
+		// If the extension exists, remove it
+		if (extension.length() > 0) {
+			basename = basename.substr(0, basename.find_last_of('.'));
+		}
+
+		// Append a '.sh' extension
+		basename += ".sh";
+		
+		// Add a source directive
+		current_code_entity->add_code("source \"" + directory + "/" + basename + "\"\n");
+	}
 }
 
 void BashppListener::exitInclude_statement(BashppParser::Include_statementContext *ctx) {

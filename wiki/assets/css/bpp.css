@@ -18,7 +18,7 @@
 	color: #DCDCAA;
 }
 
-.string\.quoted\.double\.shell, .string\.quoted\.single\.shell, .string\.interpolated\.supershell, .string\.interpolated\.dollar\.shell {
+.string\.quoted\.double\.shell, .string\.quoted\.single\.shell, .string\.interpolated\.supershell, .string\.interpolated\.dollar\.shell, .string\.quoted\.includepath\.bashpp {
 	color: #CE9178;
 }
 

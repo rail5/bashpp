@@ -1,26 +1,50 @@
+#AUTODOC#
+
+#CLASS Array
+## The Array class provides a simple array implementation in Bash++.
 @class Array {
+	##MEMBER protected primitive array
+	### The array that stores the elements.
 	@protected array=()
 
+	##METHOD public size
+	### Echoes the number of elements in the array.
 	@public @method size {
 		echo "@{#this.array[@]}"
 	}
 
+	##METHOD public push
+	### Pushes a value onto the end of the array.
+	###PARAM primitive value
+	#### The value to push onto the end of the array.
 	@public @method push value {
 		@this.array+=("$value")
 	}
 
+	##METHOD public back
+	### Echoes the last element in the array.
 	@public @method back {
 		if [[ @{#this.array[@]} -gt 0 ]]; then
 			echo "@{this.array[$((@{#this.array[@]} - 1))]}"
 		fi
 	}
 
+	##METHOD public at
+	### Echoes the element at the specified index.
+	###PARAM primitive index
+	#### The index of the element to echo.
 	@public @method at index {
 		if [[ $index -ge 0 && $index -lt @{#this.array[@]} ]]; then
 			echo "@{this.array[$index]}"
 		fi
 	}
 
+	##METHOD public insert
+	### Inserts a value at the specified index.
+	###PARAM primitive index
+	#### The index at which to insert the value.
+	###PARAM primitive value
+	#### The value to insert.
 	@public @method insert index value {
 		if [[ $index -ge 0 && $index -le @{#this.array[@]} ]]; then
 			local arr=() i=0
@@ -45,6 +69,10 @@
 		fi
 	}
 
+	##METHOD public remove
+	### Removes the element at the specified index.
+	###PARAM primitive index
+	#### The index of the element to remove.
 	@public @method remove index {
 		if [[ $index -ge 0 && $index -lt @{#this.array[@]} ]]; then
 			local arr=() i=0
@@ -73,7 +101,10 @@
 		fi
 	}
 
+	##METHOD public clear
+	### Clears the array.
 	@public @method clear {
 		unset &@this.array
 	}
 }
+#ENDAUTODOC#

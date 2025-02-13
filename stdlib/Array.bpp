@@ -66,6 +66,10 @@
 				@this.array+=("${arr[$i]}")
 				i=$((i + 1))
 			done
+
+			if [[ ${#arr[@]} -eq 0 ]]; then
+				unset &@this.array
+			fi
 		fi
 	}
 }

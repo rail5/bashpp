@@ -352,3 +352,7 @@ You can also run a command in a supershell without storing its output in a varia
 <div class="highlight"><pre class="highlight"><code>
 {%- include code/snippets/supershells-without-permanent-storage.html -%}
 </code></pre></div>
+
+# Standard Library
+
+The [Bash++ Standard Library](stl/index.md) is a collection of common data structures and algorithms implemented in Bash++. It is provided by the `libstd-bpp` package, which is included with the Bash++ compiler.

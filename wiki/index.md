@@ -16,6 +16,7 @@
 
  - [Programming in Bash++](language.md)
  - [Using the Bash++ compiler](compiler.md)
+ - [Standard Library](stl/index.md)
 
 ## License
 

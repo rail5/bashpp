@@ -69,6 +69,14 @@ bool bpp_class::add_method(std::shared_ptr<bpp_method> method) {
 			return false;
 		}
 	}
+
+	// If this method shares the name of a datamember, reject it
+	for (auto& d : datamembers) {
+		if (d->get_name() == name) {
+			return false;
+		}
+	}
+
 	methods.push_back(method);
 	return true;
 }
@@ -80,6 +88,14 @@ bool bpp_class::add_datamember(std::shared_ptr<bpp_datamember> datamember) {
 			return false;
 		}
 	}
+
+	// If this datamember shares the name of a method, reject it
+	for (auto& m : methods) {
+		if (m->get_name() == name) {
+			return false;
+		}
+	}
+
 	datamembers.push_back(datamember);
 	return true;
 }

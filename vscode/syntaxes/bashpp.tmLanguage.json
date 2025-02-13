@@ -8,6 +8,9 @@
 	"name": "Bash++ Script",
 	"patterns": [
 		{
+			"include": "#bashpp-includepath"
+		},
+		{
 			"include": "#comment"
 		},
 		{
@@ -834,6 +837,18 @@
 				{
 					"match": "(?<=^|;|&|\\s)(?:export|declare|typeset|local|readonly)(?=\\s|;|&|$)",
 					"name": "storage.modifier.shell"
+				}
+			]
+		},
+		"bashpp-includepath": {
+			"patterns": [
+				{
+					"match": "(?<=@include\\s)<[^\\s]+>",
+					"name": "string.quoted.includepath.bashpp"
+				},
+				{
+					"match": "(?<=@include_once\\s)<[^\\s]+>",
+					"name": "string.quoted.includepath.bashpp"
 				}
 			]
 		},

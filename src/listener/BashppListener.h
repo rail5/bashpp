@@ -57,6 +57,7 @@ class BashppListener : public BashppParserBaseListener {
 	private:
 		std::string source_file;
 		bool included = false;
+		std::shared_ptr<std::vector<std::string>> include_paths = nullptr;
 		std::set<std::string> included_files = {};
 		BashppListener* included_from = nullptr;
 		std::stack<std::string> include_stack;
@@ -117,6 +118,7 @@ class BashppListener : public BashppParserBaseListener {
 	public:
 
 	void set_source_file(std::string source_file);
+	void set_include_paths(std::shared_ptr<std::vector<std::string>> include_paths);
 	void set_included(bool included);
 	void set_included_from(BashppListener* included_from);
 	void set_errors();
@@ -128,6 +130,7 @@ class BashppListener : public BashppParserBaseListener {
 	void set_arguments(std::vector<char*> arguments);
 
 	std::shared_ptr<bpp::bpp_program> get_program();
+	std::shared_ptr<std::vector<std::string>> get_include_paths();
 	std::set<std::string> get_included_files();
 	std::stack<std::string> get_include_stack();
 

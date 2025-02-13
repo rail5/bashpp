@@ -16,43 +16,63 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_program> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_program>(entity_stack.top());
 
+	antlr4::tree::TerminalNode* initial_node = nullptr;
+
+	if (ctx->KEYWORD_INCLUDE() != nullptr) {
+		initial_node = ctx->KEYWORD_INCLUDE();
+	} else if (ctx->KEYWORD_INCLUDE_ONCE() != nullptr) {
+		initial_node = ctx->KEYWORD_INCLUDE_ONCE();
+	}
+
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(ctx->AT(), "Include statements can only be used at the top level of a program");
+		throw_syntax_error(initial_node, "Include statements can only be used at the top level of a program");
 	}
 
-	std::string filename = ctx->string()->getText();
-	filename = filename.substr(1, filename.length() - 2);
+	std::string filename = ctx->INCLUDE_PATH()->getText();
 
-	// Is this a relative path?
-	// If so, we should search for the file in the same directory as the current source file
-	// NOT NECESSARILY the same as the current working directory
-	if (filename[0] != '/') {
-		// Get the directory of the current source file
-		// If the program is being read from stdin, we should use the current working directory
-		std::string current_directory;
-		if (source_file == "<stdin>") {
-			char current_working_directory[PATH_MAX];
-			if (getcwd(current_working_directory, PATH_MAX) == nullptr) {
-				throw internal_error("Could not get current working directory");
+	if (ctx->LOCAL_INCLUDE_PATH_START() == nullptr) {
+		// Search for the file in the include paths
+		bool found = false;
+		for (const std::string& include_path : *include_paths) {
+			std::string full_path = include_path + "/" + filename;
+			if (access(full_path.c_str(), F_OK) == 0) {
+				filename = full_path;
+				found = true;
+				break;
 			}
-			current_directory = current_working_directory;
-		} else {
-			current_directory = source_file.substr(0, source_file.find_last_of('/'));
 		}
+		if (!found) {
+			throw_syntax_error(initial_node, "File not found: " + filename);
+		}
+	} else {
+		// This is a "local" include -- meaning we should start scanning from the same directory as the current source file
+		// Unless the path given is an absolute path (starting with '/')
+		// NOT NECESSARILY the same as the current working directory
+		if (filename[0] != '/') {
+			// Get the directory of the current source file
+			// If the program is being read from stdin, we should use the current working directory
+			std::string current_directory;
+			if (source_file == "<stdin>") {
+				char current_working_directory[PATH_MAX];
+				if (getcwd(current_working_directory, PATH_MAX) == nullptr) {
+					throw internal_error("Could not get current working directory");
+				}
+				current_directory = current_working_directory;
+			} else {
+				current_directory = source_file.substr(0, source_file.find_last_of('/'));
+			}
 
-		// Append the filename to the directory
-		filename = current_directory + "/" + filename;
+			// Append the filename to the directory
+			filename = current_directory + "/" + filename;
+		}
 	}
-
 	// Get the full path of the file
 	char full_path[PATH_MAX];
 	if (realpath(filename.c_str(), full_path) == nullptr) {
-		throw_syntax_error(ctx->AT(), "File not found: " + filename);
+		throw_syntax_error(initial_node, "File not found: " + filename);
 	}
 
 	if (ctx->KEYWORD_INCLUDE_ONCE() != nullptr && included_files.find(full_path) != included_files.end()) {
-		// Tell the current parser to skip parsing the inner 'string' rule
-		ctx->string()->parent = nullptr;
 		ctx->children.clear();
 		return;
 	}
@@ -62,6 +82,7 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 	// Create a new listener
 	BashppListener listener;
 	listener.set_source_file(full_path);
+	listener.set_include_paths(include_paths);
 	listener.set_included(true);
 	listener.set_included_from(this);
 	listener.set_run_on_exit(false);
@@ -113,8 +134,6 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 
 	// The code, objects, classes, etc should all have been added to the current program by the included program's new listener
 
-	// Tell the current parser to skip parsing the inner 'string' rule
-	ctx->string()->parent = nullptr;
 	ctx->children.clear();
 }
 

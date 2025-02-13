@@ -36,6 +36,8 @@ bool hit_asterisk_in_current_command = false;
 
 bool can_increment_metatoken_counter = true;
 
+bool parsing_include_path = false;
+
 enum lexer_special_mode_type {
 	no_mode,
 	mode_supershell,
@@ -290,8 +292,18 @@ KEYWORD_DESTRUCTOR: 'destructor';
 KEYWORD_NEW: 'new';
 KEYWORD_DELETE: 'delete';
 KEYWORD_NULLPTR: 'nullptr';
-KEYWORD_INCLUDE_ONCE: 'include_once';
-KEYWORD_INCLUDE: 'include';
+
+KEYWORD_INCLUDE_ONCE: '@include_once' {
+	if (modeStack.top() == no_mode) {
+		pushMode(PARSE_INCLUDE_PATH);
+	}
+};
+KEYWORD_INCLUDE: '@include' {
+	if (modeStack.top() == no_mode) {
+		pushMode(PARSE_INCLUDE_PATH);
+	}
+};
+
 KEYWORD_THIS: 'this' {
 	if (incoming_token_can_be_lvalue) {
 		emit(KEYWORD_THIS_LVALUE, getText());
@@ -823,3 +835,22 @@ LESSTHAN: '<';
 GREATERTHAN: '>';
 
 CATCHALL: .;
+
+mode PARSE_INCLUDE_PATH;
+
+INCLUDE_PATH_WS: [ \t\r]+ -> skip;
+
+INCLUDE_PATH_START: '<';
+INCLUDE_PATH_END: '>' -> popMode;
+
+LOCAL_INCLUDE_PATH_START: '"' {
+	if (parsing_include_path) {
+		parsing_include_path = false;
+		emit(INCLUDE_PATH_END, "\"");
+		popMode();
+	} else {
+		parsing_include_path = true;
+	}
+};
+
+INCLUDE_PATH: ~["<>\n]+;

@@ -51,6 +51,7 @@ int main(int argc, char* argv[]) {
 		"  -o, --output <file>   Specify output file\n"
 		"                         If not specified, program will run on exit\n"
 		"                         If specified as '-', program will be written to stdout\n"
+		"  -I, --include <path>  Add directory to include path\n"
 		"  -p, --parse-tree      Display parse tree (do not compile program)\n"
 		"  -t, --tokens          Display tokens (do not compile program)\n"
 		"  -v, --version         Print version information\n"
@@ -61,6 +62,7 @@ int main(int argc, char* argv[]) {
 
 	static struct option long_options[] = {
 		{"help", no_argument, 0, 'h'},
+		{"include", required_argument, 0, 'I'},
 		{"output", required_argument, 0, 'o'},
 		{"parse-tree", no_argument, 0, 'p'},
 		{"tokens", no_argument, 0, 't'},
@@ -77,6 +79,9 @@ int main(int argc, char* argv[]) {
 	bool display_tokens = false;
 
 	std::shared_ptr<std::ostream> output_stream(&std::cout, [](std::ostream*){});
+
+	std::shared_ptr<std::vector<std::string>> include_paths = std::make_shared<std::vector<std::string>>();
+	include_paths->push_back("/usr/lib/bpp/stdlib/");
 
 	std::vector<char*> program_arguments = {};
 	std::vector<char*> compiler_arguments = {};
@@ -98,11 +103,26 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	while ((c = getopt_long(static_cast<int>(compiler_arguments.size()), compiler_arguments.data(), "ho:ptv", long_options, &option_index)) != -1) {
+	struct stat statbuf;
+
+	while ((c = getopt_long(static_cast<int>(compiler_arguments.size()), compiler_arguments.data(), "hI:o:ptv", long_options, &option_index)) != -1) {
 		switch(c) {
 			case 'h':
 				std::cout << program_name << " " << bpp_compiler_version << std::endl << help_string;
 				return 0;
+				break;
+			case 'I':
+				statbuf = {};
+				// Verify the given include path is a directory
+				if (stat(optarg, &statbuf) != 0) {
+					std::cerr << program_name << ": Error: Include path '" << optarg << "' does not exist" << std::endl;
+					return 1;
+				}
+				if (!S_ISDIR(statbuf.st_mode)) {
+					std::cerr << program_name << ": Error: Include path '" << optarg << "' is not a directory" << std::endl;
+					return 1;
+				}
+				include_paths->push_back(std::string(optarg));
 				break;
 			case 'o':
 				if (received_output_filename) {
@@ -120,7 +140,7 @@ int main(int argc, char* argv[]) {
 
 				// Check if we have permission to write to the specified output file
 				// If the file already exists, verify write access; if it doesn't, verify write access on its parent directory
-				struct stat statbuf;
+				statbuf = {};
 				if (stat(output_file.c_str(), &statbuf) == 0) {
 					// File exists
 					if (access(output_file.c_str(), W_OK) != 0) {
@@ -257,6 +277,7 @@ int main(int argc, char* argv[]) {
 			}
 		}
 		listener->set_source_file(full_path);
+		listener->set_include_paths(include_paths);
 		listener->set_output_stream(output_stream);
 		listener->set_output_file(output_file);
 		listener->set_run_on_exit(run_on_exit);

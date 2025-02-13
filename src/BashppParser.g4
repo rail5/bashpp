@@ -51,7 +51,7 @@ general_statement: include_statement
 	| WS;
 
 // Include statement
-include_statement: AT (KEYWORD_INCLUDE | KEYWORD_INCLUDE_ONCE) WS* string;
+include_statement: (KEYWORD_INCLUDE | KEYWORD_INCLUDE_ONCE) (INCLUDE_PATH_START | LOCAL_INCLUDE_PATH_START) INCLUDE_PATH INCLUDE_PATH_END;
 
 // Class definition
 class_definition: AT KEYWORD_CLASS WS* IDENTIFIER WS* (COLON WS* IDENTIFIER WS*)? LBRACE_ROOTLEVEL (class_body_statement | general_statement | extra_statement)* RBRACE_ROOTLEVEL;

@@ -88,6 +88,10 @@ void BashppListener::set_source_file(std::string source_file) {
 	this->source_file = source_file;
 }
 
+void BashppListener::set_include_paths(std::shared_ptr<std::vector<std::string>> include_paths) {
+	this->include_paths = include_paths;
+}
+
 void BashppListener::set_included(bool included) {
 	this->included = included;
 }
@@ -128,6 +132,10 @@ void BashppListener::set_arguments(std::vector<char*> arguments) {
 
 std::shared_ptr<bpp::bpp_program> BashppListener::get_program() {
 	return program;
+}
+
+std::shared_ptr<std::vector<std::string>> BashppListener::get_include_paths() {
+	return include_paths;
 }
 
 std::set<std::string> BashppListener::get_included_files() {

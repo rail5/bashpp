@@ -29,7 +29,7 @@ function bpp____supershell() {
 )EOF";
 
 const char* template_new_function = R"EOF(function bpp__%CLASS%____new() {
-	local __objectName="$1" __setPtr="$2"
+	local __objectName="$1"
 	if [[ "${__objectName}" == "" ]]; then
 		while : ; do
 			__objectName="$RANDOM$RANDOM$RANDOM$RANDOM"
@@ -40,9 +40,7 @@ const char* template_new_function = R"EOF(function bpp__%CLASS%____new() {
 	local __objectAddress="bpp__%CLASS%__${__objectName}"
 	eval "${__objectAddress}____inUse=1"
 %ASSIGNMENTS%
-	if [[ ! -z "${__setPtr}" ]]; then
-		eval ${__setPtr}=\${__objectAddress}
-	fi
+	echo "${__objectAddress}"
 }
 )EOF";
 

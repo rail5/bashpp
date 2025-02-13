@@ -37,8 +37,6 @@ void BashppListener::exitProgram(BashppParser::ProgramContext *ctx) {
 	}
 
 	if (included) {
-		included_from->set_supershell_counter(supershell_counter);
-		included_from->add_to_new_counter(new_counter);
 		if (program_has_errors) {
 			included_from->set_errors();
 		}

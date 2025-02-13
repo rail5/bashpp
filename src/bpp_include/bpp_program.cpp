@@ -80,7 +80,9 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 			}
 			assignments += "	eval \"${__objectAddress}__" + dm->get_name() + "=" + default_value_preface + default_value + "\"\n";
 		} else {
-			assignments += "	bpp__" + dm->get_class()->get_name() + "____new \"\" ${__objectAddress}__" + dm->get_name() + "\n";
+			// Call 'new' in a supershell and assign its output
+			assignments += "	bpp____supershell \"${__objectAddress}__" + dm->get_name() + "\" \"bpp__" + dm->get_class()->get_name() + "____new\"\n";
+			increment_supershell_counter();
 			// Call the constructor if it exists
 			if (dm->get_class()->has_constructor()) {
 				assignments += "	bpp__" + dm->get_class()->get_name() + "____constructor \"${__objectAddress}__" + dm->get_name() + "\" 1\n";
@@ -181,7 +183,7 @@ bool bpp_program::add_object(std::shared_ptr<bpp_object> object) {
 		if (object->get_copy_from() != nullptr) {
 			object_code += "bpp__" + type + "____copy " + object->get_copy_from()->get_address() + " " + object->get_address() + " 1 1\n";
 		} else {
-			object_code += "bpp__" + type + "____new " + name + "\n";
+			object_code += "bpp__" + type + "____new " + name + " >/dev/null\n";
 			// Call the constructor if it exists
 			if (object->get_class()->has_constructor()) {
 				object_code += "bpp__" + type + "____constructor " + name + " 0\n";
@@ -191,6 +193,23 @@ bool bpp_program::add_object(std::shared_ptr<bpp_object> object) {
 
 	*code << object_code << std::flush;
 	return true;
+}
+
+void bpp_program::set_supershell_counter(uint64_t value) {
+	supershell_counter = value;
+}
+
+void bpp_program::increment_supershell_counter() {
+	supershell_counter++;
+	if (supershell_counter == 1) {
+		// This is the first object to be created in a supershell
+		// We need to add the code to create the supershell
+		add_code_to_previous_line(bpp_supershell_function);
+	}
+}
+
+uint64_t bpp_program::get_supershell_counter() const {
+	return supershell_counter;
 }
 
 } // namespace bpp

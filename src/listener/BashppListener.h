@@ -16,6 +16,8 @@
 
 #include "../antlr/BashppParserBaseListener.h"
 
+class BashppListener;
+
 #include "../bpp_include/bpp_entity.cpp"
 #include "../bpp_include/bpp_code_entity.cpp"
 #include "../bpp_include/bpp_string.cpp"
@@ -53,7 +55,7 @@
 		return; \
 		}
 
-class BashppListener : public BashppParserBaseListener {
+class BashppListener : public BashppParserBaseListener, std::enable_shared_from_this<BashppListener> {
 	private:
 		std::string source_file;
 		bool included = false;
@@ -85,9 +87,6 @@ class BashppListener : public BashppParserBaseListener {
 		};
 
 		std::shared_ptr<bpp::bpp_class> primitive;
-
-		uint64_t supershell_counter = 0;
-		uint64_t new_counter = 0;
 
 		bool error_thrown = false;
 		antlr4::ParserRuleContext* error_context = nullptr;
@@ -124,8 +123,6 @@ class BashppListener : public BashppParserBaseListener {
 	void set_included(bool included);
 	void set_included_from(BashppListener* included_from);
 	void set_errors();
-	void set_supershell_counter(uint64_t value);
-	void add_to_new_counter(uint64_t value);
 	void set_output_stream(std::shared_ptr<std::ostream> output_stream);
 	void set_output_file(std::string output_file);
 	void set_run_on_exit(bool run_on_exit) ;
@@ -143,7 +140,6 @@ class BashppListener : public BashppParserBaseListener {
 	};
 
 	code_segment generate_supershell_code(std::string code_to_run_in_supershell);
-	code_segment generate_new_code(std::shared_ptr<bpp::bpp_class> object_class);
 	code_segment generate_delete_code(std::shared_ptr<bpp::bpp_object> object, const std::string& object_reference_string, bool force_pointer = false);
 
 	void enterProgram(BashppParser::ProgramContext *ctx) override;

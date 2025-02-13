@@ -35,11 +35,13 @@ void BashppListener::enterNew_statement(BashppParser::New_statementContext *ctx)
 		throw_syntax_error(ctx->IDENTIFIER(), "Class not found: " + class_name);
 	}
 
-	code_segment new_object_code = generate_new_code(new_class);
+	// Call the class's "new" method in a supershell and substitute the result
+	std::string new_method_call = "bpp__" + class_name + "____new";
 
-	current_code_entity->add_code_to_previous_line(new_object_code.pre_code);
-	current_code_entity->add_code_to_next_line(new_object_code.post_code);
-	current_code_entity->add_code(new_object_code.code);
+	code_segment new_code = generate_supershell_code(new_method_call);
+	current_code_entity->add_code_to_previous_line(new_code.pre_code);
+	current_code_entity->add_code_to_next_line(new_code.post_code);
+	current_code_entity->add_code(new_code.code);
 }
 
 void BashppListener::exitNew_statement(BashppParser::New_statementContext *ctx) {

@@ -549,17 +549,21 @@ class bpp_datamember : public bpp_object {
 class bpp_program : public bpp_code_entity {
 	private:
 		std::shared_ptr<bpp_class> primitive_class;
+		uint64_t supershell_counter = 0;
 	public:
 		bpp_program();
 
 		bool set_containing_class(std::weak_ptr<bpp_class> containing_class) override;
-
 		void set_output_stream(std::shared_ptr<std::ostream> output_stream);
 
 		bool add_class(std::shared_ptr<bpp_class> class_) override;
 		bool add_object(std::shared_ptr<bpp_object> object) override;
 
 		std::shared_ptr<bpp_class> get_primitive_class() const;
+
+		void set_supershell_counter(uint64_t value);
+		void increment_supershell_counter();
+		uint64_t get_supershell_counter() const;
 };
 
 } // namespace bpp

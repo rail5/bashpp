@@ -11,6 +11,8 @@
 BashppListener::code_segment BashppListener::generate_supershell_code(std::string code_to_run_in_supershell) {
 	BashppListener::code_segment result;
 
+	uint64_t supershell_counter = program->get_supershell_counter();
+
 	std::string supershell_function_name = "____supershellRunFunc" + std::to_string(supershell_counter);
 	std::string supershell_output_variable = "____supershellOutput" + std::to_string(supershell_counter);
 
@@ -18,50 +20,18 @@ BashppListener::code_segment BashppListener::generate_supershell_code(std::strin
 	result.pre_code += "	" + code_to_run_in_supershell + "\n";
 	result.pre_code += "}\n";
 
-	// TODO(@rail5): This HACKY fix does not unset the supershell run-function after while loops end
-	// The 'unset -f' command is simply discarded
-	// If it wasn't discarded, we would not be able to re-evaluate the supershell on each loop iteration (as the function would be unset)
-	// More properly, the function should be unset after the loop ends
-	// But it's very hard to determine when the loop ends.
-	// We would have to parse the entire loop to determine this, rather than just the first line
-	// As it stands, it likely won't cause too much of a problem. But it is unnecessary, persistent memory usage and should be fixed
 	if (in_while_condition) {
 		current_while_condition->add_supershell_function_call("bpp____supershell " + supershell_output_variable + " " + supershell_function_name);
 		current_while_condition->increment_supershell_count();
 	} else {
 		result.pre_code += "bpp____supershell " + supershell_output_variable + " " + supershell_function_name + "\n";
-		result.post_code += "unset -f " + supershell_function_name + "\n";
 	}
-
+	result.post_code += "unset -f " + supershell_function_name + "\n";
 	result.post_code += "unset " + supershell_output_variable + "\n";
 
 	result.code = "${" + supershell_output_variable + "}";
 
-	supershell_counter++;
-
-	if (supershell_counter == 1) {
-		program->add_code_to_previous_line(bpp_supershell_function);
-	}
-
-	return result;
-}
-
-BashppListener::code_segment BashppListener::generate_new_code(std::shared_ptr<bpp::bpp_class> object_class) {
-	BashppListener::code_segment result;
-
-	std::string new_function_name = "bpp__" + object_class->get_name() + "____new";
-	std::string new_output_variable = "____newOutput" + std::to_string(new_counter);
-
-	result.pre_code += new_function_name + " \"\" " + new_output_variable + "\n";
-	result.code = "${" + new_output_variable + "}";
-
-	if (object_class->has_constructor()) {
-		result.post_code += "bpp__" + object_class->get_name() + "____constructor ${" + new_output_variable + "} 1\n";
-	}
-
-	result.post_code += "unset " + new_output_variable + "\n";
-
-	new_counter++;
+	program->increment_supershell_counter();
 
 	return result;
 }
@@ -108,14 +78,6 @@ void BashppListener::set_included_from(BashppListener* included_from) {
 
 void BashppListener::set_errors() {
 	program_has_errors = true;
-}
-
-void BashppListener::set_supershell_counter(uint64_t value) {
-	supershell_counter = value;
-}
-
-void BashppListener::add_to_new_counter(uint64_t value) {
-	new_counter += value;
 }
 
 void BashppListener::set_output_stream(std::shared_ptr<std::ostream> output_stream) {

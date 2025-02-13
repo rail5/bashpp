@@ -86,7 +86,6 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 	listener.set_included(true);
 	listener.set_included_from(this);
 	listener.set_run_on_exit(false);
-	listener.set_supershell_counter(supershell_counter);
 
 	if (!dynamic_linking) {
 		// If we're linking statically, copy the compiled code from the included file to the current program

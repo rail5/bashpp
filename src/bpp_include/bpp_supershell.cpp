@@ -34,7 +34,7 @@ bool bpp_supershell::add_object(std::shared_ptr<bpp_object> object) {
 		if (object->get_copy_from() != nullptr) {
 			object_code += "bpp__" + type + "____copy " + object->get_copy_from()->get_address() + " " + object->get_address() + " 1 1\n";
 		} else {
-			object_code += "bpp__" + type + "____new " + name + "\n";
+			object_code += "bpp__" + type + "____new " + name + " >/dev/null\n";
 			// Call the constructor if it exists
 			if (object->get_class()->has_constructor()) {
 				object_code += "bpp__" + type + "____constructor " + name + " 0\n";

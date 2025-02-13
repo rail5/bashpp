@@ -1,3 +1,31 @@
+bpp (0.2.0) unstable; urgency=medium
+
+  * Added a small standard library to store common data structures
+    This standard library will be provided by the libstd-bpp package
+    Which package will be a dependency of bpp
+    Standard library has for now: Array, Stack, Queue
+  * Added option for dynamic linking (-D) in the compiler
+    If dynamic linking is enabled, the code from @include'd files will
+    Not be copied into your compiled file, but instead, your compiled
+    Program will contain a Bash "source" directive pointing to the
+    Compiled version of the dynamically linked library, linking it at
+    Runtime.
+    If you dynamically link an included file such as:
+    /usr/lib/bpp/stdlib/Stack.bpp
+    Your compiled program will expect to be able to find at runtime:
+    /usr/lib/bpp/stdlib/Stack.sh
+  * Added support for angle-bracket includes and compiler include paths
+    A Bash++ directive such as @include <file> will scan the include
+    Paths for the given file.
+    The default include path is /usr/lib/bpp/stdlib
+    More include paths can be added with the -I option in the compiler
+    Include paths will be searched in the order in which they are added
+  * Properly parse Bash while loops
+  * @new properly returns a pointer (thanks to supershells)
+  * Patch: Ensure methods and datamembers don't share names
+
+ -- rail5 <andrew@rail5.org>  Thu, 13 Feb 2025 19:33:29 +0800
+
 bpp (0.1.1) unstable; urgency=medium
 
   * Patch: Override get_code methods in bash_if_branch

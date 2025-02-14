@@ -78,15 +78,25 @@ jobs:
           git clone https://github.com/rail5/autodoc-bpp.git autodoc-bpp
           # In the file 'autodoc-bpp/autodoc.bpp', replace "<Array>" with "<Array.bpp>" so that we can build using the local STL
           sed -i 's/<Array>/<Array.bpp>/g' autodoc-bpp/autodoc.bpp
+          # Generate the docs with autodoc-bpp
           bin/bpp -I$(pwd)/stdlib/ autodoc-bpp/autodoc.bpp -d "$(pwd)/stdlib/" -n "Bash++ Standard Library" -e -o "wiki/stl/" -m md
+          # Create copies for each of these to preserve their sources
+          for file in wiki/stl/*.md; do
+            cp "$file" wiki/stl/$(basename $file .md).source.txt
+          done
+          # These copies will be used in later runs to preserve the old documentation if we don't need to regenerate it
       - name: Preserve old STL documentation
         if: steps.code_changed.outputs.code == 'false'
         run: |
           links=$(curl -s https://bpp.sh/stl/index.html | grep -oP 'href=".*?stl/.*"' | sed 's/href="//' | sed 's/"//')
           for link in $links; do
+            # If the link does not end in .html, skip it
+            if [[ $link != *.html ]]; then
+              continue
+            fi
             echo "Found $link"
-            echo "Downloading https://bpp.sh/stl/$(basename $link) --> wiki/stl/$(basename $link)"
-            curl -o "wiki/stl/$(basename $link)" "https://bpp.sh/stl/$(basename $link)"
+            echo "Downloading https://bpp.sh/stl/$(basename $link .html).source.txt --> wiki/stl/$(basename $link .html).md"
+            curl -o "wiki/stl/$(basename $link .html).source.txt" "https://bpp.sh/stl/$(basename $link .html).md"
           done
       - name: Setup Pages
         uses: actions/configure-pages@v3

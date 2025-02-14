@@ -1,6 +1,6 @@
 # Bash++
 
-![Bash++: Bash with classes](./wiki/banner.png)
+<img title="" src="./wiki/banner.png" alt="Bash++: Bash with classes" width="319" data-align="center">
 
 ```javascript
 @class Bashpp {

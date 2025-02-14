@@ -1,3 +1,12 @@
+bpp (0.2.1) unstable; urgency=medium
+
+  * Fixed #4:
+    Do not emit the 'connective' token in contexts in which the
+    connective symbol should be interpreted as a literal
+    Also recognize a solitary pipe as a valid connective
+
+ -- rail5 <andrew@rail5.org>  Fri, 14 Feb 2025 16:13:13 +0800
+
 bpp (0.2.0) unstable; urgency=medium
 
   * Added a small standard library to store common data structures

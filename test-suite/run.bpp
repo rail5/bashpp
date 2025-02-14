@@ -287,6 +287,10 @@ hij
 @runner.addTest "Stray Terminals" "test-suite/tests/stray-terminals.bpp" "abc]}{}{{}} if elif then else fi ;; 
 "
 
+@runner.addTest "Connectives" "test-suite/tests/connectives.bpp" "abc
+String && def \|\| def \| def && more string
+"
+
 # Standard Library tests
 @runner.addTest "STL Arrays" "test-suite/tests/stdlib-arrays.bpp" "0
 3

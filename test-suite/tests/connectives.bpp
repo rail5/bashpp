@@ -1,0 +1,22 @@
+@class ConnectiveTest {
+	@public @method a {
+		read input
+		echo "$input"
+	}
+
+	@public @method b {
+		echo "abc" | @this.a
+	}
+
+	@public @method c {
+		echo "def"
+	}
+
+	@public @method d {
+		echo "String && @this.c || @this.c | @this.c && more string"
+	}
+}
+
+@ConnectiveTest test
+@test.b # "abc"
+@test.d # "String && def || def | def && more string"

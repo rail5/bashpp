@@ -2,7 +2,7 @@
   "name": "bashpp",
   "displayName": "Bash++",
   "description": "Syntax highlighting for Bash++",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "rail5",
   "repository": {
     "type": "git",
@@ -20,6 +20,7 @@
       "id": "bashpp",
       "aliases": ["Bash++", "bashpp"],
       "extensions": [".bpp"],
+      "firstLine": "^#!.*\\b(bpp)\\b",
       "configuration": "./language-configuration.json"
     }],
     "grammars": [{

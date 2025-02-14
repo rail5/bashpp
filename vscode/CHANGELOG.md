@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.2.1]
+
+- Identify source files as Bash++ even without the `.bpp` extension by checking the shebang line for `bpp` as the interpreter.
+
 ## [0.2.0]
 
 - Brought syntax rules up to speed with Bash++ v0.2.0 by adding support for angle-bracket includes such as @include &lt;file&gt;

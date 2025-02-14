@@ -82,8 +82,10 @@ jobs:
       - name: Preserve old STL documentation
         if: steps.code_changed.outputs.code == 'false'
         run: |
-          links=$(curl -s https://bpp.sh/stl/index.html | grep -oP 'href=".*?stl/.*?\.html"' | sed 's/href="//' | sed 's/"//')
+          links=$(curl -s https://bpp.sh/stl/index.html | grep -oP 'href=".*?stl/.*"' | sed 's/href="//' | sed 's/"//')
           for link in $links; do
+            echo "Found $link"
+            echo "Downloading https://bpp.sh/stl/$(basename $link) --> wiki/stl/$(basename $link)"
             curl -o "wiki/stl/$(basename $link)" "https://bpp.sh/stl/$(basename $link)"
           done
       - name: Setup Pages

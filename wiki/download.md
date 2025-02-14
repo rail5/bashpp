@@ -29,4 +29,4 @@ The source for the Bash++ compiler is available on [GitHub](https://github.com/r
 
 The Bash++ extension for Visual Studio Code provides basic syntax highlighting.
 
-You can download it from [GitHub](https://github.com/rail5/bashpp/releases/) or install it from the [VSCode Marketplace](https://marketplace.visualstudio.com/items?itemName=rail5.bashpp).
+You can download it from [GitHub](https://github.com/rail5/bashpp/releases/), or install it from the [VSCode Marketplace](https://marketplace.visualstudio.com/items?itemName=rail5.bashpp) or the [Open VSX Registry](https://open-vsx.org/extension/rail5/bashpp).

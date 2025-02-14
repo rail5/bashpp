@@ -205,6 +205,19 @@ DOUBLEPIPE: '||' {
 			break;
 	}
 };
+PIPE: '|' {
+	switch (modeStack.top()) {
+		case mode_comment:
+		case mode_quote:
+		case mode_singlequote:
+		case mode_heredoc:
+			emit(CATCHALL, "|");
+			break;
+		default:
+			emit(CONNECTIVE, "|");
+			break;
+	}
+};
 
 CONNECTIVE: '&&'; // Another dummy token
 

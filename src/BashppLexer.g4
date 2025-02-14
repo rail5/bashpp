@@ -64,8 +64,6 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 		case DELIM:
 		case NEWLINE:
 		case CONNECTIVE:
-		case DOUBLEAMPERSAND:
-		case DOUBLEPIPE:
 		case SUPERSHELL_START:
 		case SUBSHELL_START:
 		case DEPRECATED_SUBSHELL_START:
@@ -181,9 +179,34 @@ NEWLINE: '\n' {
 	}
 };
 
-CONNECTIVE: DOUBLEAMPERSAND | DOUBLEPIPE; 
-DOUBLEAMPERSAND: '&&';
-DOUBLEPIPE: '||';
+DOUBLEAMPERSAND: '&&' {
+	switch (modeStack.top()) {
+		case mode_comment:
+		case mode_quote:
+		case mode_singlequote:
+		case mode_heredoc:
+			emit(CATCHALL, "&&");
+			break;
+		default:
+			emit(CONNECTIVE, "&&");
+			break;
+	}
+};
+DOUBLEPIPE: '||' {
+	switch (modeStack.top()) {
+		case mode_comment:
+		case mode_quote:
+		case mode_singlequote:
+		case mode_heredoc:
+			emit(CATCHALL, "||");
+			break;
+		default:
+			emit(CONNECTIVE, "||");
+			break;
+	}
+};
+
+CONNECTIVE: '&&'; // Another dummy token
 
 DELIM: '\n'; // Another dummy token
 

@@ -51,17 +51,20 @@ void BashppListener::exitBash_while_loop(BashppParser::Bash_while_loopContext *c
 	current_code_entity->add_code_to_previous_line(while_statement->get_while_condition()->get_pre_code());
 	current_code_entity->add_code_to_next_line(while_statement->get_while_condition()->get_post_code());
 
-	current_code_entity->add_code_to_previous_line("while " + while_statement->get_while_condition()->get_code() + "; do\n");
-
-	std::string supershell_reevaluation = "";
+	std::string supershell_evaluation = "";
 	for (const std::string& function_call : while_statement->get_while_condition()->get_supershell_function_calls()) {
-		supershell_reevaluation += function_call + "\n";
+		supershell_evaluation += function_call + "\n";
 	}
+
+	current_code_entity->add_code_to_previous_line(supershell_evaluation); // Evaluate the supershell before the while loop starts
+
+	current_code_entity->add_code_to_previous_line("while " + while_statement->get_while_condition()->get_code() + "; do\n");
 
 	current_code_entity->add_code_to_previous_line(while_statement->get_pre_code());
 	current_code_entity->add_code_to_next_line(while_statement->get_post_code());
 
-	current_code_entity->add_code(while_statement->get_code() + "\n" + supershell_reevaluation + "done\n");
+	// Re-evaluate the supershell at the end of the while loop (before the next iteration)
+	current_code_entity->add_code(while_statement->get_code() + "\n" + supershell_evaluation + "done\n");
 }
 
 void BashppListener::enterBash_while_condition(BashppParser::Bash_while_conditionContext *ctx) {

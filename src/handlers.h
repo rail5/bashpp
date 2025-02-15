@@ -43,6 +43,7 @@
 #include "listener/handlers/array_value.cpp"
 #include "listener/handlers/array_index.cpp"
 #include "listener/handlers/bash_while_loop.cpp"
+#include "listener/handlers/bash_for_loop.cpp"
 #include "listener/handlers/bash_if_statement.cpp"
 #include "listener/handlers/bash_case_statement.cpp"
 #include "listener/handlers/extra_statement.cpp"

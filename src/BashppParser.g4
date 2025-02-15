@@ -45,6 +45,7 @@ general_statement: include_statement
 	| bash_while_loop
 	| bash_if_statement
 	| bash_case_statement
+	| bash_for_loop
 	| heredoc
 	| other_statement
 	| DELIM
@@ -178,6 +179,11 @@ bash_case_pattern: bash_case_pattern_header statement* BASH_CASE_PATTERN_DELIM;
 
 bash_case_pattern_header: statement* RPAREN;
 
+// Bash for statements
+bash_for_loop: bash_for_header statement* BASH_KEYWORD_DONE;
+
+bash_for_header: BASH_KEYWORD_FOR WS* (IDENTIFIER | INVALID_IDENTIFIER) WS* BASH_KEYWORD_IN statement* DELIM WS* BASH_KEYWORD_DO;
+
 // Other statement
 other_statement: ~(RBRACE | RBRACE_ROOTLEVEL
 	| RBRACKET | SUPERSHELL_END
@@ -196,4 +202,4 @@ raw_rvalue: IDENTIFIER | NUMBER | BASH_VAR;
 
 extra_statement: RBRACE;
 
-terminal_token: RBRACE_ROOTLEVEL | RBRACKET | BASH_KEYWORD_IF | BASH_KEYWORD_ELIF | BASH_KEYWORD_THEN | BASH_KEYWORD_ELSE | BASH_KEYWORD_FI | BASH_CASE_PATTERN_DELIM | BASH_KEYWORD_DONE | BASH_KEYWORD_DO;
+terminal_token: RBRACE_ROOTLEVEL | RBRACKET | BASH_KEYWORD_IF | BASH_KEYWORD_ELIF | BASH_KEYWORD_THEN | BASH_KEYWORD_ELSE | BASH_KEYWORD_FI | BASH_CASE_PATTERN_DELIM | BASH_KEYWORD_DONE | BASH_KEYWORD_DO | BASH_KEYWORD_DONE;

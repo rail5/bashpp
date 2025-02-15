@@ -15,8 +15,10 @@ int initialSupershellDepth = 0;
 int initialSubshellDepth = 0;
 int IfDepth = 0;
 int CaseDepth = 0;
+int ForDepth = 0;
 int WhileDepth = 0;
 int64_t most_recent_case_keyword_metatoken_position = INT64_MIN;
+int64_t most_recent_for_keyword_metatoken_position = INT64_MIN;
 SensibleStack<int> nestedSupershellStack;
 SensibleStack<int> nestedSubshellStack;
 SensibleStack<int> nestedArithStack;
@@ -39,7 +41,7 @@ bool can_increment_metatoken_counter = true;
 bool parsing_include_path = false;
 
 enum lexer_special_mode_type {
-	no_mode,
+	no_mode = 0,
 	mode_supershell,
 	mode_subshell,
 	mode_arith,
@@ -52,6 +54,14 @@ enum lexer_special_mode_type {
 };
 
 SensibleStack<lexer_special_mode_type> modeStack;
+
+enum for_or_while {
+	neither = 0,
+	for_loop,
+	while_loop
+};
+
+SensibleStack<for_or_while> forWhileStack;
 
 inline bool contains_double_underscore(const std::string& s) {
 	return s.find("__") != std::string::npos;
@@ -456,6 +466,7 @@ BASH_KEYWORD_WHILE: 'while' {
 		default:
 			if (incoming_token_can_be_lvalue) {
 				WhileDepth++;
+				forWhileStack.push(for_or_while::while_loop);
 			} else {
 				emit(IDENTIFIER, getText());
 			}
@@ -474,7 +485,7 @@ BASH_KEYWORD_DO: 'do' {
 			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
 			break;
 		default:
-			if (!(incoming_token_can_be_lvalue && WhileDepth > 0)) {
+			if ( !( incoming_token_can_be_lvalue && (WhileDepth > 0 || ForDepth > 0) ) ) {
 				emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
 			}
 			break;
@@ -492,8 +503,13 @@ BASH_KEYWORD_DONE: 'done' {
 			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
 			break;
 		default:
-			if (incoming_token_can_be_lvalue && WhileDepth > 0) {
-				WhileDepth--;
+			if (incoming_token_can_be_lvalue) {
+				if (forWhileStack.top() == for_or_while::while_loop && WhileDepth > 0) {
+					WhileDepth--;
+				} else if (forWhileStack.top() == for_or_while::for_loop && ForDepth > 0) {
+					ForDepth--;
+				}
+				forWhileStack.pop();
 			} else {
 				emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
 			}
@@ -521,8 +537,29 @@ BASH_KEYWORD_CASE: 'case' {
 	}
 };
 
+BASH_KEYWORD_FOR: 'for' {
+	switch (modeStack.top()) {
+		case mode_quote:
+		case mode_singlequote:
+		case mode_heredoc:
+		case mode_comment:
+		case mode_arith:
+		case mode_array_assignment:
+			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
+			break;
+		default:
+			if (incoming_token_can_be_lvalue) {
+				ForDepth++;
+				most_recent_for_keyword_metatoken_position = metaTokenCount;
+				forWhileStack.push(for_or_while::for_loop);
+			} else {
+				emit(IDENTIFIER, getText());
+			}
+	}
+};
+
 /*
-How can we handle the *in* keyword in a case statement?
+How can we handle the *in* keyword in a 'case' (or 'for') statement?
 An ordinary case statement looks something like this:
 	case $var in
 		1)
@@ -593,7 +630,8 @@ BASH_KEYWORD_IN: 'in' {
 			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
 			break;
 		default:
-			if (metaTokenCount != most_recent_case_keyword_metatoken_position + 2) {
+			if (metaTokenCount != most_recent_case_keyword_metatoken_position + 2
+				&& metaTokenCount != most_recent_for_keyword_metatoken_position + 2) {
 				emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
 			}
 	}

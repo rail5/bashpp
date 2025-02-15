@@ -26,7 +26,7 @@ void BashppListener::enterSupershell(BashppParser::SupershellContext *ctx) {
 		throw_syntax_error(ctx->SUPERSHELL_START(), "Supershell outside of a code entity");
 	}
 
-	std::shared_ptr<bpp::bpp_supershell> supershell_entity = std::make_shared<bpp::bpp_supershell>();
+	std::shared_ptr<bpp::bpp_string> supershell_entity = std::make_shared<bpp::bpp_string>();
 	supershell_entity->set_containing_class(current_code_entity->get_containing_class());
 	supershell_entity->inherit(current_code_entity);
 	entity_stack.push(supershell_entity);
@@ -37,7 +37,7 @@ void BashppListener::exitSupershell(BashppParser::SupershellContext *ctx) {
 	skip_syntax_errors
 	skip_singlequote_string
 
-	std::shared_ptr<bpp::bpp_supershell> supershell_entity = std::dynamic_pointer_cast<bpp::bpp_supershell>(entity_stack.top());
+	std::shared_ptr<bpp::bpp_string> supershell_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 	if (supershell_entity == nullptr) {
 		throw internal_error("Supershell context was not found in the entity stack");
 	}

@@ -21,13 +21,13 @@ class BashppListener;
 #include "../bpp_include/bpp_entity.cpp"
 #include "../bpp_include/bpp_code_entity.cpp"
 #include "../bpp_include/bpp_string.cpp"
-#include "../bpp_include/bpp_supershell.cpp"
 #include "../bpp_include/bash_while_loop.cpp"
 #include "../bpp_include/bash_while_condition.cpp"
 #include "../bpp_include/bash_if.cpp"
 #include "../bpp_include/bash_if_branch.cpp"
 #include "../bpp_include/bash_case.cpp"
 #include "../bpp_include/bash_case_pattern.cpp"
+#include "../bpp_include/bash_for.cpp"
 #include "../bpp_include/bpp_delete_statement.cpp"
 #include "../bpp_include/bpp_value_assignment.cpp"
 #include "../bpp_include/bpp_object_reference.cpp"
@@ -274,6 +274,12 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 
 	void enterBash_while_condition(BashppParser::Bash_while_conditionContext *ctx) override;
 	void exitBash_while_condition(BashppParser::Bash_while_conditionContext *ctx) override;
+
+	void enterBash_for_loop(BashppParser::Bash_for_loopContext *ctx) override;
+	void exitBash_for_loop(BashppParser::Bash_for_loopContext *ctx) override;
+
+	void enterBash_for_header(BashppParser::Bash_for_headerContext *ctx) override;
+	void exitBash_for_header(BashppParser::Bash_for_headerContext *ctx) override;
 
 	void enterHeredoc(BashppParser::HeredocContext *ctx) override;
 	void exitHeredoc(BashppParser::HeredocContext *ctx) override;

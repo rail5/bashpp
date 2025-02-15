@@ -32,7 +32,6 @@ enum reference_type {
 class bpp_entity;
 class bpp_code_entity;
 class bpp_string;
-class bpp_supershell;
 class bash_while_loop;
 class bash_while_condition;
 class bash_if;
@@ -103,6 +102,8 @@ class bpp_code_entity : public bpp_entity {
 		virtual void add_code(const std::string& code, bool add_newline = true);
 		virtual void add_code_to_previous_line(const std::string& code);
 		virtual void add_code_to_next_line(const std::string& code);
+
+		bool add_object(std::shared_ptr<bpp_object> object) override;
 
 		virtual void flush_nextline_buffer();
 		virtual void flush_postline_buffer();
@@ -179,11 +180,6 @@ class bpp_string : public bpp_code_entity {
 		std::string get_post_code() const override;
 };
 
-class bpp_supershell : public bpp_string {
-	public:
-		bool add_object(std::shared_ptr<bpp_object> object) override;
-};
-
 class bash_while_loop : public bpp_code_entity {
 	private:
 		std::shared_ptr<bpp::bash_while_condition> while_condition;
@@ -235,8 +231,6 @@ class bash_if_branch : public bpp_code_entity {
 	public:
 		bash_if_branch();
 
-		bool add_object(std::shared_ptr<bpp_object> object) override;
-
 		void set_if_statement(std::shared_ptr<bpp::bash_if> if_statement);
 		std::shared_ptr<bpp::bash_if> get_if_statement() const;
 
@@ -265,6 +259,23 @@ class bash_case_pattern : public bpp_string {
 		void set_pattern(const std::string& pattern);
 
 		const std::string& get_pattern() const;
+};
+
+class bash_for : public bpp_code_entity {
+	private:
+		std::string header_pre_code = "";
+		std::string header_post_code = "";
+		std::string header_code = "";
+	public:
+		bash_for();
+
+		void set_header_pre_code(const std::string& pre_code);
+		void set_header_post_code(const std::string& post_code);
+		void set_header_code(const std::string& code);
+
+		const std::string& get_header_pre_code() const;
+		const std::string& get_header_post_code() const;
+		const std::string& get_header_code() const;
 };
 
 class bpp_delete_statement : public bpp_string {
@@ -374,7 +385,6 @@ class bpp_method : public bpp_code_entity {
 		bpp_method();
 		explicit bpp_method(const std::string& name);
 
-		bool add_object(std::shared_ptr<bpp_object> object) override;
 		bool add_object_as_parameter(std::shared_ptr<bpp_object> object);
 
 		virtual bool add_parameter(std::shared_ptr<bpp_method_parameter> parameter);
@@ -557,7 +567,6 @@ class bpp_program : public bpp_code_entity {
 		void set_output_stream(std::shared_ptr<std::ostream> output_stream);
 
 		bool add_class(std::shared_ptr<bpp_class> class_) override;
-		bool add_object(std::shared_ptr<bpp_object> object) override;
 
 		std::shared_ptr<bpp_class> get_primitive_class() const;
 

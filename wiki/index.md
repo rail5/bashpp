@@ -14,6 +14,7 @@
 
 ## Documentation
 
+ - [Beginner's Guide to Bash++](introduction.md)
  - [Programming in Bash++](language.md)
  - [Using the Bash++ compiler](compiler.md)
  - [Standard Library](stl/index.md)

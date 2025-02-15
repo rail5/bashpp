@@ -24,6 +24,6 @@ std::shared_ptr<bpp_class> bpp_method_parameter::get_type() const {
 	return type;
 }
 
-}
+} // namespace bpp
 
 #endif // SRC_BPP_INCLUDE_BPP_METHOD_PARAMETER_CPP

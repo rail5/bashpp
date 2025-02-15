@@ -1,3 +1,15 @@
+bpp (0.2.2) unstable; urgency=medium
+
+  * Override add_object within code_entity base class
+    Every code entity should be able to add object code, not only add a
+    reference to the object internally
+    This removes a lot of silly code duplication which took place in
+    classes derived from code_entity
+    And, incidentally, closes #3
+  * Properly parse 'for' loops
+
+ -- rail5 <andrew@rail5.org>  Sat, 15 Feb 2025 13:41:16 +0800
+
 bpp (0.2.1) unstable; urgency=medium
 
   * Fixed #4:

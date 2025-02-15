@@ -1,3 +1,11 @@
+bpp (0.2.3) unstable; urgency=medium
+
+  * Considerable speed increase
+    Attempting to slightly refactor the lexer/parser to remove ambiguity
+    and reduce our dependence on ANTLR's lookahead and backtracking
+
+ -- rail5 <andrew@rail5.org>  Sat, 15 Feb 2025 17:34:15 +0800
+
 bpp (0.2.2) unstable; urgency=medium
 
   * Override add_object within code_entity base class

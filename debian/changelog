@@ -1,3 +1,11 @@
+bpp (0.2.4) unstable; urgency=medium
+
+  * Patch: Properly evaluate supershells before & after while loops
+  * -t option should exit early if all we're doing is displaying the
+    tokens.
+
+ -- rail5 <andrew@rail5.org>  Sun, 16 Feb 2025 01:09:46 +0800
+
 bpp (0.2.3) unstable; urgency=medium
 
   * Considerable speed increase

@@ -231,6 +231,9 @@ int main(int argc, char* argv[]) {
 					  << ", Type: " << lexer.getVocabulary().getSymbolicName(token->getType()) 
 					  << std::endl;
 		}
+		if (!display_parse_tree) {
+			return bpp_exit_code;
+		}
 	}
 
 	BashppParser parser(&tokens);

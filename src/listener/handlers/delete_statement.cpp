@@ -55,13 +55,7 @@ void BashppListener::exitDelete_statement(BashppParser::Delete_statementContext 
 		current_code_entity = program;
 	}
 
-	std::string object_ref_name = "";
-
-	if (ctx->object_reference() != nullptr) {
-		object_ref_name = ctx->object_reference()->getText();
-	} else if (ctx->self_reference() != nullptr) {
-		object_ref_name = ctx->self_reference()->getText();
-	}
+	std::string object_ref_name = ctx->ref_rvalue()->getText();
 
 	if (delete_entity->get_object_to_delete() == nullptr) {
 		throw_syntax_error_from_exitRule(ctx->KEYWORD_DELETE(), "Object not found: " + object_ref_name);

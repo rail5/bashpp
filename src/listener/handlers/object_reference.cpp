@@ -43,6 +43,9 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 	skip_syntax_errors
 	skip_singlequote_string
 
+	BashppParser::Ref_rvalueContext* parent = dynamic_cast<BashppParser::Ref_rvalueContext*>(ctx->parent);
+	bool hasPoundKey = parent->POUNDKEY() != nullptr;
+
 	// Get the object reference entity
 	std::shared_ptr<bpp::bpp_object_reference> object_reference_entity = std::dynamic_pointer_cast<bpp::bpp_object_reference>(entity_stack.top());
 	entity_stack.pop();
@@ -187,7 +190,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 		if (ctx->array_index() != nullptr) {
 			// We're accessing an array index
 
-			std::string counting = ctx->POUNDKEY() != nullptr ? "#" : "";
+			std::string counting = hasPoundKey ? "#" : "";
 
 			/**
 			 * Suppose we have an 'object' with a datamember 'array' which is an array of primitives
@@ -243,7 +246,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 			// In the case that we're counting, that string has been modified to be "#object[\$value]",
 			// And so we need to set the temporary variable to be the result of evaluating that string -- but only after that string is
 			// Surrounded by ${} to make it a variable reference
-			if (ctx->POUNDKEY() != nullptr) {
+			if (hasPoundKey) {
 				temporary_variable_rvalue = "\\${" + temporary_variable_rvalue + "}";
 			}
 
@@ -257,7 +260,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 		}
 
 		if (last_reference_type == bpp::reference_type::ref_primitive || datamember_is_pointer) {
-			indirection = (created_second_temporary_variable && ctx->POUNDKEY() == nullptr) ? "!" : "";
+			indirection = (created_second_temporary_variable && !hasPoundKey) ? "!" : "";
 			object_reference_entity->add_code("${" + indirection + object_reference_code + "}");
 
 			std::shared_ptr<bpp::bpp_delete_statement> delete_entity = std::dynamic_pointer_cast<bpp::bpp_delete_statement>(entity_stack.top());

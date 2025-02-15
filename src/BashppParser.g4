@@ -25,10 +25,7 @@ general_statement: include_statement
 	| object_instantiation
 	| pointer_declaration
 	| object_assignment
-	| object_reference
-	| object_reference_as_lvalue
-	| self_reference
-	| self_reference_as_lvalue
+	| ref_general
 	| delete_statement
 	| supershell
 	| subshell
@@ -62,7 +59,7 @@ member_declaration: (KEYWORD_PUBLIC | KEYWORD_PRIVATE | KEYWORD_PROTECTED) WS* I
 	| (KEYWORD_PUBLIC | KEYWORD_PRIVATE | KEYWORD_PROTECTED) WS* (object_instantiation | pointer_declaration);
 
 // Method definitions
-method_definition: (KEYWORD_VIRTUAL WS*)? (KEYWORD_PUBLIC | KEYWORD_PRIVATE | KEYWORD_PROTECTED) WS* KEYWORD_METHOD WS* IDENTIFIER WS* parameter* WS* LBRACE (general_statement | class_body_statement)* RBRACE;
+method_definition: (KEYWORD_VIRTUAL WS*)? (KEYWORD_PUBLIC | KEYWORD_PRIVATE | KEYWORD_PROTECTED) WS* KEYWORD_METHOD WS* IDENTIFIER WS* parameter* WS* METHOD_START (class_body_statement | general_statement | extra_statement)* METHOD_END;
 
 // Constructor definitions
 constructor_definition: KEYWORD_CONSTRUCTOR WS* LBRACE general_statement* RBRACE;
@@ -77,8 +74,7 @@ value_assignment: PLUS? ASSIGN ((raw_rvalue
 	| subshell
 	| deprecated_subshell
 	| bash_arithmetic
-	| object_reference
-	| self_reference
+	| ref_rvalue
 	| nullptr_ref
 	| pointer_dereference
 	| object_address
@@ -95,30 +91,34 @@ pointer_declaration: AT IDENTIFIER_LVALUE ASTERISK WS* IDENTIFIER (value_assignm
 	| AT IDENTIFIER ASTERISK WS* IDENTIFIER (value_assignment)?;
 
 // Object assignment
-object_assignment: (object_reference_as_lvalue | self_reference_as_lvalue) value_assignment;
+object_assignment: ref_lvalue value_assignment;
 
 // Pointer dereference
-pointer_dereference: ASTERISK (object_reference | object_reference_as_lvalue | self_reference | self_reference_as_lvalue);
+pointer_dereference: ASTERISK ref_general;
 
 // Object address
-object_address: AMPERSAND (object_reference | self_reference);
+object_address: AMPERSAND ref_rvalue;
 
 // Object reference
-object_reference: AT IDENTIFIER (DOT IDENTIFIER)*
-	| AT (LBRACE | LBRACE_ROOTLEVEL) POUNDKEY? IDENTIFIER (DOT IDENTIFIER)* array_index? (RBRACE | RBRACE_ROOTLEVEL);
+ref_general: ref_lvalue | ref_rvalue;
 
-object_reference_as_lvalue: AT IDENTIFIER_LVALUE (DOT IDENTIFIER)*
-	| AT (LBRACE | LBRACE_ROOTLEVEL) POUNDKEY? IDENTIFIER_LVALUE (DOT IDENTIFIER)* array_index? (RBRACE | RBRACE_ROOTLEVEL);
+ref_lvalue: AT (object_reference_as_lvalue | self_reference_as_lvalue)
+	| AT (LBRACE | LBRACE_ROOTLEVEL) POUNDKEY? (object_reference_as_lvalue | self_reference_as_lvalue) (RBRACE | RBRACE_ROOTLEVEL);
+
+ref_rvalue: AT (object_reference | self_reference)
+	| AT (LBRACE | LBRACE_ROOTLEVEL) POUNDKEY? (object_reference | self_reference) (RBRACE | RBRACE_ROOTLEVEL);
+
+object_reference: IDENTIFIER (DOT IDENTIFIER)* array_index?;
+
+object_reference_as_lvalue: IDENTIFIER_LVALUE (DOT IDENTIFIER)* array_index?;
 
 // Self-reference from within a class
-self_reference: AT KEYWORD_THIS (DOT IDENTIFIER)*
-	| AT (LBRACE | LBRACE_ROOTLEVEL) POUNDKEY? KEYWORD_THIS (DOT IDENTIFIER)* array_index? (RBRACE | RBRACE_ROOTLEVEL);
+self_reference: KEYWORD_THIS (DOT IDENTIFIER)* array_index?;
 
-self_reference_as_lvalue: AT KEYWORD_THIS_LVALUE (DOT IDENTIFIER)*
-	| AT (LBRACE | LBRACE_ROOTLEVEL) POUNDKEY? KEYWORD_THIS_LVALUE (DOT IDENTIFIER)* array_index? (RBRACE | RBRACE_ROOTLEVEL);
+self_reference_as_lvalue: KEYWORD_THIS_LVALUE (DOT IDENTIFIER)* array_index?;
 
 // Delete statement
-delete_statement: KEYWORD_DELETE WS* (object_reference | self_reference);
+delete_statement: KEYWORD_DELETE WS* ref_rvalue;
 
 // Supershells
 supershell: SUPERSHELL_START statement* SUPERSHELL_END;
@@ -152,7 +152,7 @@ new_statement: KEYWORD_NEW WS* AT? IDENTIFIER;
 
 array_value: ARRAY_ASSIGN_START statement* ARRAY_ASSIGN_END;
 
-array_index: LBRACKET statement* RBRACKET;
+array_index: ARRAY_INDEX_START statement* ARRAY_INDEX_END;
 
 // Bash if statements
 bash_if_statement: bash_if_root_branch bash_if_else_branch* BASH_KEYWORD_FI;
@@ -186,12 +186,12 @@ bash_for_header: BASH_KEYWORD_FOR WS* (IDENTIFIER | INVALID_IDENTIFIER) WS* BASH
 
 // Other statement
 other_statement: ~(RBRACE | RBRACE_ROOTLEVEL
-	| RBRACKET | SUPERSHELL_END
+	| ARRAY_INDEX_END | SUPERSHELL_END
 	| QUOTE_END | SINGLEQUOTE_END
 	| NEWLINE | SUBSHELL_END
 	| DEPRECATED_SUBSHELL_END | BASH_ARITH_END
 	| ARRAY_ASSIGN_END | BASH_KEYWORD_DONE
-	| BASH_KEYWORD_DO
+	| BASH_KEYWORD_DO | METHOD_END
 	| BASH_KEYWORD_IF | BASH_KEYWORD_ELIF
 	| BASH_KEYWORD_THEN | BASH_KEYWORD_ELSE
 	| BASH_KEYWORD_FI | BASH_CASE_PATTERN_DELIM
@@ -202,4 +202,4 @@ raw_rvalue: IDENTIFIER | NUMBER | BASH_VAR;
 
 extra_statement: RBRACE;
 
-terminal_token: RBRACE_ROOTLEVEL | RBRACKET | BASH_KEYWORD_IF | BASH_KEYWORD_ELIF | BASH_KEYWORD_THEN | BASH_KEYWORD_ELSE | BASH_KEYWORD_FI | BASH_CASE_PATTERN_DELIM | BASH_KEYWORD_DONE | BASH_KEYWORD_DO | BASH_KEYWORD_DONE;
+terminal_token: RBRACE_ROOTLEVEL | ARRAY_INDEX_END | BASH_KEYWORD_IF | BASH_KEYWORD_ELIF | BASH_KEYWORD_THEN | BASH_KEYWORD_ELSE | BASH_KEYWORD_FI | BASH_CASE_PATTERN_DELIM | BASH_KEYWORD_DONE | BASH_KEYWORD_DONE;

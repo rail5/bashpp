@@ -25,10 +25,16 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 	 * There is no need to call the method in a supershell for lvalues. We can (and must) just call it directly
 	 */
 
+	BashppParser::Ref_lvalueContext* parent = dynamic_cast<BashppParser::Ref_lvalueContext*>(ctx->parent);
+	if (parent == nullptr) {
+		throw internal_error("Object reference as lvalue context has no parent");
+	}
+	bool hasPoundKey = parent->POUNDKEY() != nullptr;
+
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(ctx->AT(), "Object reference outside of code entity");
+		throw_syntax_error(ctx->IDENTIFIER_LVALUE(), "Object reference outside of code entity");
 	}
 
 	std::shared_ptr<bpp::bpp_class> current_class = current_code_entity->get_containing_class().lock();
@@ -43,7 +49,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 	std::shared_ptr<bpp::bpp_object> first_object = current_code_entity->get_object(first_object_name);
 	if (first_object == nullptr) {
 		entity_stack.pop();
-		throw_syntax_error(ctx->AT(), "Object not found: " + first_object_name);
+		throw_syntax_error(ctx->IDENTIFIER_LVALUE(), "Object not found: " + first_object_name);
 	}
 
 	bpp::reference_type last_reference_type = bpp::reference_type::ref_object;
@@ -157,7 +163,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 	if (last_reference_type == bpp::reference_type::ref_method) {
 		if (object_assignment != nullptr) {
 			entity_stack.pop();
-			throw_syntax_error(ctx->AT(), "Cannot assign to a method");
+			throw_syntax_error(ctx->IDENTIFIER_LVALUE(), "Cannot assign to a method");
 		}
 		// Call the method directly -- not in a supershell
 		std::string method_call = "bpp__" + class_containing_the_method->get_name() + "__" + method->get_name() + " ";
@@ -170,7 +176,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 
 	// Are we accessing an index of an array?
 	if (ctx->array_index() != nullptr) {
-		std::string counting = ctx->POUNDKEY() != nullptr ? "#" : "";
+		std::string counting = hasPoundKey ? "#" : "";
 
 		bool have_to_dereference_a_pointer = ctx->IDENTIFIER().size() > 1;
 
@@ -188,7 +194,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 
 		temporary_variable_rvalue = "${" + object_reference_code + "____arrayIndexString}";
 
-		if (ctx->POUNDKEY() != nullptr) {
+		if (hasPoundKey) {
 			temporary_variable_rvalue = "\\${" + temporary_variable_rvalue + "}";
 		}
 
@@ -206,7 +212,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 	std::shared_ptr<bpp::bpp_delete_statement> delete_entity = std::dynamic_pointer_cast<bpp::bpp_delete_statement>(current_code_entity);
 
 	if (last_reference_type == bpp::reference_type::ref_primitive || datamember_is_pointer) {
-		if (ctx->POUNDKEY() != nullptr) {
+		if (hasPoundKey) {
 			indirection = "";
 		}
 		object_reference_entity->add_code(encase_open + indirection + object_reference_code + encase_close);

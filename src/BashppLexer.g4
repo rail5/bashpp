@@ -28,6 +28,7 @@ bool inSubshell = false;
 bool inDeprecatedSubshell = false;
 bool waiting_for_heredoc_terminator = false;
 bool waiting_for_heredoc_content_start = false;
+bool parsing_method = false;
 
 int64_t metaTokenCount = 0;
 
@@ -46,6 +47,7 @@ enum lexer_special_mode_type {
 	mode_subshell,
 	mode_arith,
 	mode_reference,
+	mode_primitive_reference,
 	mode_array_assignment,
 	mode_quote,
 	mode_singlequote,
@@ -106,7 +108,27 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 	}
 
 	// Count meta-tokens
-	if (t->getType() != WS && t->getText() != "\n" && modeStack.top() != mode_comment) {
+	bool typeOk = false;
+	switch (t->getType()) {
+		case KEYWORD_CLASS:
+		case KEYWORD_PUBLIC:
+		case KEYWORD_PRIVATE:
+		case KEYWORD_PROTECTED:
+		case KEYWORD_VIRTUAL:
+		case KEYWORD_METHOD:
+		case KEYWORD_CONSTRUCTOR:
+		case KEYWORD_DESTRUCTOR:
+		case KEYWORD_NEW:
+		case KEYWORD_DELETE:
+		case KEYWORD_INCLUDE_ONCE:
+		case KEYWORD_INCLUDE:
+			can_increment_metatoken_counter = true;
+		case WS:
+			break;
+		default:
+			typeOk = true;
+	}
+	if (typeOk && t->getText() != "\n" && modeStack.top() != mode_comment) {
 		can_increment_metatoken_counter = true;
 	} else if (modeStack.top() == no_mode && can_increment_metatoken_counter) {
 		can_increment_metatoken_counter = false;
@@ -242,6 +264,7 @@ BASH_VAR: '$' IDENTIFIER
 COMMENT: '#' {
 	switch (modeStack.top()) {
 		case mode_reference:
+		case mode_primitive_reference:
 		case mode_quote:
 		case mode_singlequote:
 		case mode_heredoc:
@@ -263,6 +286,7 @@ HEREDOC_START: '<<' {
 	switch (modeStack.top()) {
 		case mode_arith:
 		case mode_reference:
+		case mode_primitive_reference:
 		case mode_array_assignment:
 		case mode_quote:
 		case mode_singlequote:
@@ -327,24 +351,30 @@ SINGLEQUOTE_END: '\''; // This is a dummy token to make the lexer happy
 SINGLEQUOTE_LITERAL: '\''; // Another dummy token
 
 // Keywords
-KEYWORD_CLASS: '@class';
-KEYWORD_PUBLIC: '@public';
-KEYWORD_PRIVATE: '@private';
-KEYWORD_PROTECTED: '@protected';
-KEYWORD_VIRTUAL: '@virtual';
-KEYWORD_METHOD: '@method';
-KEYWORD_CONSTRUCTOR: '@constructor';
-KEYWORD_DESTRUCTOR: '@destructor';
-KEYWORD_NEW: '@new';
-KEYWORD_DELETE: '@delete';
+KEYWORD_CLASS: '@class' WORD_BOUNDARY;
+KEYWORD_PUBLIC: '@public' WORD_BOUNDARY;
+KEYWORD_PRIVATE: '@private' WORD_BOUNDARY;
+KEYWORD_PROTECTED: '@protected' WORD_BOUNDARY;
+KEYWORD_VIRTUAL: '@virtual' WORD_BOUNDARY;
+
+KEYWORD_METHOD: '@method' WORD_BOUNDARY {
+	if (modeStack.top() == no_mode) {
+		parsing_method = true;
+	}
+};
+
+KEYWORD_CONSTRUCTOR: '@constructor' WORD_BOUNDARY;
+KEYWORD_DESTRUCTOR: '@destructor' WORD_BOUNDARY;
+KEYWORD_NEW: '@new' WORD_BOUNDARY;
+KEYWORD_DELETE: '@delete' WORD_BOUNDARY;
 KEYWORD_NULLPTR: '@nullptr';
 
-KEYWORD_INCLUDE_ONCE: '@include_once' {
+KEYWORD_INCLUDE_ONCE: '@include_once' WORD_BOUNDARY {
 	if (modeStack.top() == no_mode) {
 		pushMode(PARSE_INCLUDE_PATH);
 	}
 };
-KEYWORD_INCLUDE: '@include' {
+KEYWORD_INCLUDE: '@include' WORD_BOUNDARY {
 	if (modeStack.top() == no_mode) {
 		pushMode(PARSE_INCLUDE_PATH);
 	}
@@ -693,6 +723,7 @@ IDENTIFIER_LVALUE: [a-zA-Z_][a-zA-Z0-9_]*; // Yet another dummy token
 ASSIGN: '=' {
 	switch (modeStack.top()) {
 		case mode_reference:
+		case mode_primitive_reference:
 		case mode_quote:
 		case mode_heredoc:
 		case mode_singlequote:
@@ -711,9 +742,12 @@ DOT: '.';
 LBRACE: '{' {
 	switch (modeStack.top()) {
 		case mode_reference:
+		case mode_primitive_reference:
 		case no_mode:
 			if (braceDepth == 0) {
 				emit(LBRACE_ROOTLEVEL, getText());
+			} else if (parsing_method && braceDepth == 1) {
+				emit(METHOD_START, getText());
 			}
 			braceDepth++;
 			break;
@@ -724,12 +758,16 @@ LBRACE: '{' {
 RBRACE: '}' {
 	switch (modeStack.top()) {
 		case mode_reference:
+		case mode_primitive_reference:
 			modeStack.pop();
 			// Fall through
 		case no_mode:
 			braceDepth = std::max(braceDepth - 1, 0);
 			if (braceDepth == 0) {
 				emit(RBRACE_ROOTLEVEL, getText());
+			} else if (parsing_method && braceDepth == 1) {
+				emit(METHOD_END, getText());
+				parsing_method = false;
 			}
 			break;
 	}
@@ -737,6 +775,8 @@ RBRACE: '}' {
 
 LBRACE_ROOTLEVEL: '{'; // Another dummy token
 RBRACE_ROOTLEVEL: '}'; // Yet another dummy token
+METHOD_START: '{'; // Yet another dummy token
+METHOD_END: '}'; // Yet another dummy token
 
 BACKTICK: '`' {
 	switch (modeStack.top()) {
@@ -801,7 +841,7 @@ SUBSHELL_LITERAL: '$('; // Another dummy token
 
 DOLLAR: '$' {
 	if (_input->LA(1) == '{') {
-		modeStack.push(mode_reference);
+		modeStack.push(mode_primitive_reference);
 	}
 };
 
@@ -884,8 +924,19 @@ BASH_ARITH_END: ')'; // This is a dummy token to make the lexer happy
 ARRAY_ASSIGN_START: '('; // Another dummy token
 ARRAY_ASSIGN_END: ')'; // Yet another dummy token
 
-LBRACKET: '[';
-RBRACKET: ']';
+LBRACKET: '[' {
+	if (modeStack.top() == mode_reference) {
+		emit(ARRAY_INDEX_START, "[");
+	}
+};
+RBRACKET: ']' {
+	if (modeStack.top() == mode_reference) {
+		emit(ARRAY_INDEX_END, "]");
+	}
+};
+
+ARRAY_INDEX_START: '['; // Another dummy token
+ARRAY_INDEX_END: ']'; // Yet another dummy token
 
 ASTERISK: '*';
 AMPERSAND: '&';
@@ -909,6 +960,8 @@ LESSTHAN: '<';
 GREATERTHAN: '>';
 
 CATCHALL: .;
+
+WORD_BOUNDARY: EOF | ~[A-Za-z0-9_];
 
 mode PARSE_INCLUDE_PATH;
 

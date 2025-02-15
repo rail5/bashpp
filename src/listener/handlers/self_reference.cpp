@@ -46,6 +46,9 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 	skip_syntax_errors
 	skip_singlequote_string
 
+	BashppParser::Ref_rvalueContext* parent = dynamic_cast<BashppParser::Ref_rvalueContext*>(ctx->parent);
+	bool hasPoundKey = parent->POUNDKEY() != nullptr;
+
 	std::shared_ptr<bpp::bpp_object_reference> self_reference_entity = std::dynamic_pointer_cast<bpp::bpp_object_reference>(entity_stack.top());
 	if (self_reference_entity == nullptr) {
 		throw internal_error("Self reference context was not found in the entity stack");
@@ -172,7 +175,7 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 			self_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
 			self_reference_code = temporary_variable_lvalue;
 
-			if (ctx->POUNDKEY() != nullptr) {
+			if (hasPoundKey) {
 				// Getting the length
 				temporary_variable_lvalue = self_reference_code + "____arrayLengthString";
 				temporary_variable_rvalue = "\\${#${" + self_reference_code + "}}";
@@ -192,7 +195,7 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 			// If the last reference entity is a primitive, simply output the primitive
 			// If last_reference_entity == current_class, then the self-reference is a pointer to the object itself (simply @this)
 			// Which is also a primitive, so we follow the same procedure
-			indirection = (created_first_temporary_variable && ctx->POUNDKEY() == nullptr) ? "!" : "";
+			indirection = (created_first_temporary_variable && !hasPoundKey) ? "!" : "";
 
 			// Are we dereferencing a pointer?
 			std::shared_ptr<bpp::bpp_pointer_dereference> pointer_dereference = std::dynamic_pointer_cast<bpp::bpp_pointer_dereference>(current_code_entity);

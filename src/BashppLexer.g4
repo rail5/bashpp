@@ -327,17 +327,17 @@ SINGLEQUOTE_END: '\''; // This is a dummy token to make the lexer happy
 SINGLEQUOTE_LITERAL: '\''; // Another dummy token
 
 // Keywords
-KEYWORD_CLASS: 'class';
-KEYWORD_PUBLIC: 'public';
-KEYWORD_PRIVATE: 'private';
-KEYWORD_PROTECTED: 'protected';
-KEYWORD_VIRTUAL: 'virtual';
-KEYWORD_METHOD: 'method';
-KEYWORD_CONSTRUCTOR: 'constructor';
-KEYWORD_DESTRUCTOR: 'destructor';
-KEYWORD_NEW: 'new';
-KEYWORD_DELETE: 'delete';
-KEYWORD_NULLPTR: 'nullptr';
+KEYWORD_CLASS: '@class';
+KEYWORD_PUBLIC: '@public';
+KEYWORD_PRIVATE: '@private';
+KEYWORD_PROTECTED: '@protected';
+KEYWORD_VIRTUAL: '@virtual';
+KEYWORD_METHOD: '@method';
+KEYWORD_CONSTRUCTOR: '@constructor';
+KEYWORD_DESTRUCTOR: '@destructor';
+KEYWORD_NEW: '@new';
+KEYWORD_DELETE: '@delete';
+KEYWORD_NULLPTR: '@nullptr';
 
 KEYWORD_INCLUDE_ONCE: '@include_once' {
 	if (modeStack.top() == no_mode) {

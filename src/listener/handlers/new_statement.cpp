@@ -24,7 +24,7 @@ void BashppListener::enterNew_statement(BashppParser::New_statementContext *ctx)
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(ctx->AT(0), "New statement outside of code entity");
+		throw_syntax_error(ctx->KEYWORD_NEW(), "New statement outside of code entity");
 	}
 
 	// Verify that the class actually exists

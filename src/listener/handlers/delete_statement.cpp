@@ -64,7 +64,7 @@ void BashppListener::exitDelete_statement(BashppParser::Delete_statementContext 
 	}
 
 	if (delete_entity->get_object_to_delete() == nullptr) {
-		throw_syntax_error_from_exitRule(ctx->AT(), "Object not found: " + object_ref_name);
+		throw_syntax_error_from_exitRule(ctx->KEYWORD_DELETE(), "Object not found: " + object_ref_name);
 	}
 
 	// Generate the delete code

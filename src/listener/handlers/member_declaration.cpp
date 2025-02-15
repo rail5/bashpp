@@ -15,22 +15,28 @@ void BashppListener::enterMember_declaration(BashppParser::Member_declarationCon
 
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 
-	if (current_class == nullptr) {
-		throw_syntax_error(ctx->AT(), "Member declaration outside of class");
-	}
-
 	std::shared_ptr<bpp::bpp_datamember> new_datamember = std::make_shared<bpp::bpp_datamember>();
 	new_datamember->set_containing_class(current_class);
 	entity_stack.push(new_datamember);
+
+	antlr4::tree::TerminalNode* scope_keyword = nullptr;
 
 	// Get visibility
 	// One of KEYWORD_PUBLIC, KEYWORD_PRIVATE, KEYWORD_PROTECTED will be set
 	if (ctx->KEYWORD_PUBLIC() != nullptr) {
 		new_datamember->set_scope(bpp::SCOPE_PUBLIC);
+		scope_keyword = ctx->KEYWORD_PUBLIC();
 	} else if (ctx->KEYWORD_PRIVATE() != nullptr) {
 		new_datamember->set_scope(bpp::SCOPE_PRIVATE);
+		scope_keyword = ctx->KEYWORD_PRIVATE();
 	} else if (ctx->KEYWORD_PROTECTED() != nullptr) {
 		new_datamember->set_scope(bpp::SCOPE_PROTECTED);
+		scope_keyword = ctx->KEYWORD_PROTECTED();
+	}
+
+	if (current_class == nullptr) {
+		entity_stack.pop();
+		throw_syntax_error(scope_keyword, "Member declaration outside of class");
 	}
 
 	/**

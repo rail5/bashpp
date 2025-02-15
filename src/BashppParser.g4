@@ -55,20 +55,20 @@ general_statement: include_statement
 include_statement: (KEYWORD_INCLUDE | KEYWORD_INCLUDE_ONCE) (INCLUDE_PATH_START | LOCAL_INCLUDE_PATH_START) INCLUDE_PATH INCLUDE_PATH_END;
 
 // Class definition
-class_definition: AT KEYWORD_CLASS WS* IDENTIFIER WS* (COLON WS* IDENTIFIER WS*)? LBRACE_ROOTLEVEL (class_body_statement | general_statement | extra_statement)* RBRACE_ROOTLEVEL;
+class_definition: KEYWORD_CLASS WS* IDENTIFIER WS* (COLON WS* IDENTIFIER WS*)? LBRACE_ROOTLEVEL (class_body_statement | general_statement | extra_statement)* RBRACE_ROOTLEVEL;
 
 // Member declarations
-member_declaration: AT (KEYWORD_PUBLIC | KEYWORD_PRIVATE | KEYWORD_PROTECTED) WS* IDENTIFIER value_assignment?
-	| AT (KEYWORD_PUBLIC | KEYWORD_PRIVATE | KEYWORD_PROTECTED) WS* (object_instantiation | pointer_declaration);
+member_declaration: (KEYWORD_PUBLIC | KEYWORD_PRIVATE | KEYWORD_PROTECTED) WS* IDENTIFIER value_assignment?
+	| (KEYWORD_PUBLIC | KEYWORD_PRIVATE | KEYWORD_PROTECTED) WS* (object_instantiation | pointer_declaration);
 
 // Method definitions
-method_definition: (AT KEYWORD_VIRTUAL WS*)? AT (KEYWORD_PUBLIC | KEYWORD_PRIVATE | KEYWORD_PROTECTED) WS* AT KEYWORD_METHOD WS* IDENTIFIER WS* parameter* WS* LBRACE (general_statement | class_body_statement)* RBRACE;
+method_definition: (KEYWORD_VIRTUAL WS*)? (KEYWORD_PUBLIC | KEYWORD_PRIVATE | KEYWORD_PROTECTED) WS* KEYWORD_METHOD WS* IDENTIFIER WS* parameter* WS* LBRACE (general_statement | class_body_statement)* RBRACE;
 
 // Constructor definitions
-constructor_definition: AT KEYWORD_CONSTRUCTOR WS* LBRACE general_statement* RBRACE;
+constructor_definition: KEYWORD_CONSTRUCTOR WS* LBRACE general_statement* RBRACE;
 
 // Destructor definitions
-destructor_definition: AT KEYWORD_DESTRUCTOR WS* LBRACE general_statement* RBRACE;
+destructor_definition: KEYWORD_DESTRUCTOR WS* LBRACE general_statement* RBRACE;
 
 // Value assignment
 value_assignment: PLUS? ASSIGN ((raw_rvalue
@@ -118,7 +118,7 @@ self_reference_as_lvalue: AT KEYWORD_THIS_LVALUE (DOT IDENTIFIER)*
 	| AT (LBRACE | LBRACE_ROOTLEVEL) POUNDKEY? KEYWORD_THIS_LVALUE (DOT IDENTIFIER)* array_index? (RBRACE | RBRACE_ROOTLEVEL);
 
 // Delete statement
-delete_statement: AT KEYWORD_DELETE WS* (object_reference | self_reference);
+delete_statement: KEYWORD_DELETE WS* (object_reference | self_reference);
 
 // Supershells
 supershell: SUPERSHELL_START statement* SUPERSHELL_END;
@@ -146,9 +146,9 @@ comment: COMMENT (statement | terminal_token)* (NEWLINE | EOF);
 
 parameter: (IDENTIFIER | AT IDENTIFIER ASTERISK WS* IDENTIFIER) WS*;
 
-nullptr_ref: AT KEYWORD_NULLPTR;
+nullptr_ref: KEYWORD_NULLPTR;
 
-new_statement: AT KEYWORD_NEW WS* AT? IDENTIFIER;
+new_statement: KEYWORD_NEW WS* AT? IDENTIFIER;
 
 array_value: ARRAY_ASSIGN_START statement* ARRAY_ASSIGN_END;
 

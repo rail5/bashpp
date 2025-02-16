@@ -1,3 +1,17 @@
+bpp (0.2.5) unstable; urgency=medium
+
+  * Changed a few internal_errors to syntax_errors
+    An internal error should only be thrown if we encounter something
+    that shouldn't be possible
+  * More helpful internal errors
+    Provide the text of the parse tree where we hit the internal error
+  * Better syntax error reporting
+    In some cases, ANTLR mistakenly reports token positions as line 0
+    column -1 In those cases, we should say that the position is not
+    known to us instead of trying to display that portion of the file
+
+ -- rail5 <andrew@rail5.org>  Sun, 16 Feb 2025 18:01:29 +0800
+
 bpp (0.2.4) unstable; urgency=medium
 
   * Patch: Properly evaluate supershells before & after while loops

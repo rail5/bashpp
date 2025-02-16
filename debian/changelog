@@ -1,3 +1,17 @@
+bpp (0.2.6) unstable; urgency=medium
+
+  * Case patterns: Inherit directly from code entities
+  * Code entities: Return line buffers by default in get_pre_code
+    and get_post_code
+  * Make sure we place the pre- and post- code for case headers and case
+    rules in the right places
+    Pre/post code for case headers should go before/after the entire
+    case statement
+    Pre/post code inside case rules should go in the usual places
+  * Ensure each assignment temporary rvalue has a unique identifier
+
+ -- rail5 <andrew@rail5.org>  Mon, 17 Feb 2025 02:01:02 +0800
+
 bpp (0.2.5) unstable; urgency=medium
 
   * Changed a few internal_errors to syntax_errors

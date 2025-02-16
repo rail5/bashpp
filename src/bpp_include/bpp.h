@@ -253,12 +253,15 @@ class bash_case : public bpp_string {
 class bash_case_pattern : public bpp_string {
 	private:
 		std::string pattern = "";
+		std::shared_ptr<bpp::bash_case> containing_case;
 	public:
 		bash_case_pattern();
 
 		void set_pattern(const std::string& pattern);
+		void set_containing_case(std::shared_ptr<bpp::bash_case> containing_case);
 
 		const std::string& get_pattern() const;
+		std::shared_ptr<bpp::bash_case> get_containing_case() const;
 };
 
 class bash_for : public bpp_code_entity {

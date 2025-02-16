@@ -88,6 +88,8 @@ void BashppListener::enterBash_case_pattern(BashppParser::Bash_case_patternConte
 	case_pattern_entity->set_containing_class(case_statement_entity->get_containing_class());
 	case_pattern_entity->inherit(case_statement_entity);
 
+	case_pattern_entity->set_containing_case(case_statement_entity);
+
 	entity_stack.push(case_pattern_entity);
 }
 
@@ -110,10 +112,11 @@ void BashppListener::exitBash_case_pattern(BashppParser::Bash_case_patternContex
 		throw internal_error("Case statement entity not found in the entity stack", ctx);
 	}
 
-	case_statement_entity->add_code_to_previous_line(case_pattern_entity->get_pre_code());
-	case_statement_entity->add_code_to_next_line(case_pattern_entity->get_post_code());
-
-	case_statement_entity->add_case(case_pattern_entity->get_pattern() + ")\n" + case_pattern_entity->get_code() + "\n;;\n");
+	case_statement_entity->add_case(case_pattern_entity->get_pattern() + ")\n"
+		+ case_pattern_entity->get_pre_code()
+		+ case_pattern_entity->get_code() + "\n"
+		+ case_pattern_entity->get_post_code()
+		+ "\n;;\n");
 }
 
 void BashppListener::enterBash_case_pattern_header(BashppParser::Bash_case_pattern_headerContext *ctx) {
@@ -153,8 +156,8 @@ void BashppListener::exitBash_case_pattern_header(BashppParser::Bash_case_patter
 		throw internal_error("Case pattern entity not found in the entity stack", ctx);
 	}
 
-	case_pattern_entity->add_code_to_previous_line(case_pattern_header_entity->get_pre_code());
-	case_pattern_entity->add_code_to_next_line(case_pattern_header_entity->get_post_code());
+	case_pattern_entity->get_containing_case()->add_code_to_previous_line(case_pattern_header_entity->get_pre_code());
+	case_pattern_entity->get_containing_case()->add_code_to_next_line(case_pattern_header_entity->get_post_code());
 	case_pattern_entity->set_pattern(case_pattern_header_entity->get_code());
 }
 

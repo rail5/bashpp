@@ -176,6 +176,14 @@ uint64_t bpp_program::get_supershell_counter() const {
 	return supershell_counter;
 }
 
+void bpp_program::increment_assignment_counter() {
+	assignment_counter++;
+}
+
+uint64_t bpp_program::get_assignment_counter() const {
+	return assignment_counter;
+}
+
 } // namespace bpp
 
 #endif // SRC_BPP_INCLUDE_BPP_PROGRAM_CPP

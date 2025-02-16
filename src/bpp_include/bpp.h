@@ -560,6 +560,7 @@ class bpp_program : public bpp_code_entity {
 	private:
 		std::shared_ptr<bpp_class> primitive_class;
 		uint64_t supershell_counter = 0;
+		uint64_t assignment_counter = 0;
 	public:
 		bpp_program();
 
@@ -573,6 +574,9 @@ class bpp_program : public bpp_code_entity {
 		void set_supershell_counter(uint64_t value);
 		void increment_supershell_counter();
 		uint64_t get_supershell_counter() const;
+
+		void increment_assignment_counter();
+		uint64_t get_assignment_counter() const;
 };
 
 } // namespace bpp

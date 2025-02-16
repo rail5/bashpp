@@ -81,17 +81,20 @@ void BashppListener::exitObject_assignment(BashppParser::Object_assignmentContex
 	std::string pre_objectassignment_code = object_assignment->get_pre_code();
 	std::string post_objectassignment_code = object_assignment->get_post_code();
 
-	pre_objectassignment_code += "____assignmentRVal=" + object_assignment_rvalue + "\n";
-	post_objectassignment_code += "unset ____assignmentRVal\n";
+	std::string assignment_variable_name = "____assignment" + std::to_string(program->get_assignment_counter());
+	program->increment_assignment_counter();
+
+	pre_objectassignment_code += assignment_variable_name + "=" + object_assignment_rvalue + "\n";
+	post_objectassignment_code += "unset " + assignment_variable_name + "\n";
 
 	std::string assignment_operator = object_assignment->is_adding() ? "+=" : "=";
 
 	std::string object_assignment_code;
 
 	if (object_assignment->rvalue_is_array()) {
-		object_assignment_code = "eval \"" + object_assignment_lvalue + assignment_operator + "(\\\"\\$____assignmentRVal\\\")\"\n";
+		object_assignment_code = "eval \"" + object_assignment_lvalue + assignment_operator + "(\\\"\\$" + assignment_variable_name + "\\\")\"\n";
 	} else {
-		object_assignment_code = "eval " + object_assignment_lvalue + assignment_operator + "\\$____assignmentRVal\n";
+		object_assignment_code = "eval " + object_assignment_lvalue + assignment_operator + "\\$" + assignment_variable_name + "\n";
 	}
 
 	// If we're not in a broader context, simply add the object assignment code to the current code entity

@@ -250,7 +250,7 @@ class bash_case : public bpp_string {
 		const std::string& get_cases() const;
 };
 
-class bash_case_pattern : public bpp_string {
+class bash_case_pattern : public bpp_code_entity {
 	private:
 		std::string pattern = "";
 		std::shared_ptr<bpp::bash_case> containing_case;

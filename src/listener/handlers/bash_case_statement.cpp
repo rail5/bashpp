@@ -113,7 +113,7 @@ void BashppListener::exitBash_case_pattern(BashppParser::Bash_case_patternContex
 	}
 
 	case_statement_entity->add_case(case_pattern_entity->get_pattern() + ")\n"
-		+ case_pattern_entity->get_pre_code()
+		+ case_pattern_entity->get_pre_code() + "\n"
 		+ case_pattern_entity->get_code() + "\n"
 		+ case_pattern_entity->get_post_code()
 		+ "\n;;\n");

@@ -127,11 +127,11 @@ std::string bpp_code_entity::get_code() const {
 }
 
 std::string bpp_code_entity::get_pre_code() const {
-	return "";
+	return nextline_buffer;
 }
 
 std::string bpp_code_entity::get_post_code() const {
-	return "";
+	return postline_buffer;
 }
 
 } // namespace bpp

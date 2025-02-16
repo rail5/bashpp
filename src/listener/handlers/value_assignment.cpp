@@ -50,7 +50,7 @@ void BashppListener::exitValue_assignment(BashppParser::Value_assignmentContext 
 	entity_stack.pop();
 
 	if (value_assignment_entity == nullptr) {
-		throw internal_error("Value assignment context was not found in the entity stack");
+		throw internal_error("Value assignment context was not found in the entity stack", ctx);
 	}
 
 	// Check if we're in a member declaration
@@ -83,7 +83,7 @@ void BashppListener::exitValue_assignment(BashppParser::Value_assignmentContext 
 			std::string rvalue;
 			std::shared_ptr<bpp::bpp_object> rvalue_object = std::dynamic_pointer_cast<bpp::bpp_object>(value_assignment_entity->get_nonprimitive_object());
 			if (rvalue_object == nullptr) {
-				throw internal_error("Rvalue object not found for copy");
+				throw internal_error("Rvalue object not found for copy", ctx);
 			}
 			if (rvalue_object->is_pointer()) {
 				rvalue = "\"${" + rvalue_object->get_address() + "}\"";

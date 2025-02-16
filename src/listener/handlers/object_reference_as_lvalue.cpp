@@ -27,7 +27,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 
 	BashppParser::Ref_lvalueContext* parent = dynamic_cast<BashppParser::Ref_lvalueContext*>(ctx->parent);
 	if (parent == nullptr) {
-		throw internal_error("Object reference as lvalue context has no parent");
+		throw internal_error("Object reference as lvalue context has no parent", ctx);
 	}
 	bool hasPoundKey = parent->POUNDKEY() != nullptr;
 
@@ -96,7 +96,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 				error_string = "Unexpected identifier after method reference";
 				break;
 			default:
-				throw internal_error("Unknown reference type");
+				throw internal_error("Unknown reference type", ctx);
 		}
 
 		if (throw_error) {
@@ -226,7 +226,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 	}
 
 	if (last_reference_entity->get_class() == nullptr) {
-		throw internal_error("Last reference entity has no class");
+		throw internal_error("Last reference entity has no class", ctx);
 	}
 
 	// Are we dereferencing a pointer?
@@ -279,7 +279,7 @@ void BashppListener::exitObject_reference_as_lvalue(BashppParser::Object_referen
 	std::shared_ptr<bpp::bpp_object_reference> object_reference_entity = std::dynamic_pointer_cast<bpp::bpp_object_reference>(entity_stack.top());
 
 	if (object_reference_entity == nullptr) {
-		throw internal_error("Object reference entity not found on the entity stack");
+		throw internal_error("Object reference entity not found on the entity stack", ctx);
 	}
 
 	entity_stack.pop();
@@ -287,7 +287,7 @@ void BashppListener::exitObject_reference_as_lvalue(BashppParser::Object_referen
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	if (current_code_entity == nullptr) {
-		throw internal_error("Current code entity was not found on the entity stack");
+		throw internal_error("Current code entity was not found on the entity stack", ctx);
 	}
 
 	std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(current_code_entity);

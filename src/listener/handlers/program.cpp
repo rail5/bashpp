@@ -33,7 +33,7 @@ void BashppListener::exitProgram(BashppParser::ProgramContext *ctx) {
 
 	entity_stack.pop();
 	if (!entity_stack.empty()) {
-		throw internal_error("entity_stack is not empty after exiting program");
+		throw internal_error("entity_stack is not empty after exiting program", ctx);
 	}
 
 	if (included) {

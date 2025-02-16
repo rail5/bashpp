@@ -44,7 +44,7 @@ void BashppListener::exitBash_arithmetic(BashppParser::Bash_arithmeticContext *c
 	std::shared_ptr<bpp::bpp_string> arithmetic_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 
 	if (arithmetic_entity == nullptr) {
-		throw internal_error("Bash arithmetic context was not found in the entity stack");
+		throw internal_error("Bash arithmetic context was not found in the entity stack", ctx);
 	}
 
 	entity_stack.pop();

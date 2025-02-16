@@ -37,7 +37,7 @@ void BashppListener::exitDeprecated_subshell(BashppParser::Deprecated_subshellCo
 	std::shared_ptr<bpp::bpp_string> subshell_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 
 	if (subshell_entity == nullptr) {
-		throw internal_error("Subshell context was not found in the entity stack");
+		throw internal_error("Subshell context was not found in the entity stack", ctx);
 	}
 
 	entity_stack.pop();

@@ -33,7 +33,7 @@ void BashppListener::exitObject_assignment(BashppParser::Object_assignmentContex
 	entity_stack.pop();
 
 	if (object_assignment == nullptr) {
-		throw internal_error("Object assignment context was not found in the entity stack");
+		throw internal_error("Object assignment context was not found in the entity stack", ctx);
 	}
 
 	bool is_nonprimitive_copy = object_assignment->lvalue_is_nonprimitive() && object_assignment->rvalue_is_nonprimitive();
@@ -44,11 +44,11 @@ void BashppListener::exitObject_assignment(BashppParser::Object_assignmentContex
 		std::shared_ptr<bpp::bpp_entity> lvalue_object = object_assignment->get_lvalue_object();
 		std::shared_ptr<bpp::bpp_entity> rvalue_object = object_assignment->get_rvalue_object();
 		if (lvalue_object == nullptr || rvalue_object == nullptr) {
-			throw internal_error("Objects are null");
+			throw internal_error("Objects are null", ctx);
 		}
 
 		if (lvalue_object->get_class() == nullptr || rvalue_object->get_class() == nullptr) {
-			throw internal_error("Objects have no class");
+			throw internal_error("Objects have no class", ctx);
 		}
 
 		if (lvalue_object->get_class()->get_name() != rvalue_object->get_class()->get_name()) {

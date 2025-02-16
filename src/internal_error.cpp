@@ -9,8 +9,8 @@
 #include <stdexcept>
 
 struct internal_error : public std::runtime_error {
-	explicit internal_error(const std::string& msg)
-		: std::runtime_error(msg + "\nYou've found a bug! Please report it.") {}
+	internal_error(const std::string& msg, antlr4::tree::ParseTree* location)
+		: std::runtime_error(msg + "\nYou've found a bug! Please report it.\nContext: " + location->getText()) {}
 };
 
 #endif // SRC_INTERNAL_ERROR_CPP_

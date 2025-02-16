@@ -65,7 +65,7 @@ void BashppListener::exitMember_declaration(BashppParser::Member_declarationCont
 
 	std::shared_ptr<bpp::bpp_datamember> new_datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(entity_stack.top());
 	if (new_datamember == nullptr) {
-		throw internal_error("entity_stack top is not a bpp_datamember");
+		throw internal_error("entity_stack top is not a bpp_datamember", ctx);
 	}
 
 	entity_stack.pop();

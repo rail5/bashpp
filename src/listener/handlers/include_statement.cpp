@@ -55,7 +55,7 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 			if (source_file == "<stdin>") {
 				char current_working_directory[PATH_MAX];
 				if (getcwd(current_working_directory, PATH_MAX) == nullptr) {
-					throw internal_error("Could not get current working directory");
+					throw internal_error("Could not get current working directory", ctx);
 				}
 				current_directory = current_working_directory;
 			} else {

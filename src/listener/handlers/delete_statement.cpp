@@ -44,7 +44,7 @@ void BashppListener::exitDelete_statement(BashppParser::Delete_statementContext 
 	// Get the delete entity from the entity stack
 	std::shared_ptr<bpp::bpp_delete_statement> delete_entity = std::dynamic_pointer_cast<bpp::bpp_delete_statement>(entity_stack.top());
 	if (delete_entity == nullptr) {
-		throw internal_error("Delete statement not found on the entity stack");
+		throw internal_error("Delete statement not found on the entity stack", ctx);
 	}
 
 	entity_stack.pop();

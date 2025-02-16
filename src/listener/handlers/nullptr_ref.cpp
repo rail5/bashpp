@@ -22,7 +22,7 @@ void BashppListener::enterNullptr_ref(BashppParser::Nullptr_refContext *ctx) {
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw internal_error("Nullptr reference outside of code entity");
+		throw internal_error("Nullptr reference outside of code entity", ctx);
 	}
 
 	current_code_entity->add_code(bpp::bpp_nullptr);

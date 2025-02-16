@@ -73,7 +73,7 @@ void BashppListener::exitMethod_definition(BashppParser::Method_definitionContex
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 
 	if (current_class == nullptr) {
-		throw internal_error("Current class was not found in the entity stack");
+		throw internal_error("Current class was not found in the entity stack", ctx);
 	}
 
 	if (!current_class->add_method(method)) {

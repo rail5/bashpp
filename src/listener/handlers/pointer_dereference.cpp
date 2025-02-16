@@ -54,7 +54,7 @@ void BashppListener::exitPointer_dereference(BashppParser::Pointer_dereferenceCo
 	std::shared_ptr<bpp::bpp_pointer_dereference> pointer_dereference_entity = std::dynamic_pointer_cast<bpp::bpp_pointer_dereference>(entity_stack.top());
 
 	if (pointer_dereference_entity == nullptr) {
-		throw internal_error("Pointer dereference context not found in entity stack");
+		throw internal_error("Pointer dereference context not found in entity stack", ctx);
 	}
 
 	entity_stack.pop();
@@ -68,7 +68,7 @@ void BashppListener::exitPointer_dereference(BashppParser::Pointer_dereferenceCo
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw internal_error("Code entity not found on the entity stack");
+		throw internal_error("Code entity not found on the entity stack", ctx);
 	}
 
 	current_code_entity->add_code_to_previous_line(pointer_dereference_entity->get_pre_code());

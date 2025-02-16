@@ -38,14 +38,14 @@ void BashppListener::exitBash_for_loop(BashppParser::Bash_for_loopContext *ctx) 
 
 	std::shared_ptr<bpp::bash_for> for_loop = std::dynamic_pointer_cast<bpp::bash_for>(entity_stack.top());
 	if (for_loop == nullptr) {
-		throw internal_error("For loop entity not found in the entity stack");
+		throw internal_error("For loop entity not found in the entity stack", ctx);
 	}
 
 	entity_stack.pop();
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw internal_error("Current code entity not found in the entity stack");
+		throw internal_error("Current code entity not found in the entity stack", ctx);
 	}
 
 	current_code_entity->add_code_to_previous_line(for_loop->get_header_pre_code());
@@ -62,7 +62,7 @@ void BashppListener::enterBash_for_header(BashppParser::Bash_for_headerContext *
 
 	std::shared_ptr<bpp::bash_for> for_loop = std::dynamic_pointer_cast<bpp::bash_for>(entity_stack.top());
 	if (for_loop == nullptr) {
-		throw internal_error("For loop header outside of a for loop");
+		throw internal_error("For loop header outside of a for loop", ctx);
 	}
 
 	std::shared_ptr<bpp::bpp_string> for_header = std::make_shared<bpp::bpp_string>();
@@ -79,14 +79,14 @@ void BashppListener::exitBash_for_header(BashppParser::Bash_for_headerContext *c
 
 	std::shared_ptr<bpp::bpp_string> for_header = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 	if (for_header == nullptr) {
-		throw internal_error("For loop header entity not found in the entity stack");
+		throw internal_error("For loop header entity not found in the entity stack", ctx);
 	}
 
 	entity_stack.pop();
 
 	std::shared_ptr<bpp::bash_for> for_loop = std::dynamic_pointer_cast<bpp::bash_for>(entity_stack.top());
 	if (for_loop == nullptr) {
-		throw internal_error("For loop entity not found in the entity stack");
+		throw internal_error("For loop entity not found in the entity stack", ctx);
 	}
 
 	for_loop->set_header_pre_code(for_header->get_pre_code());

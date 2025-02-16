@@ -43,7 +43,7 @@ void BashppListener::exitDestructor_definition(BashppParser::Destructor_definiti
 
 	std::shared_ptr<bpp::bpp_destructor> destructor = std::dynamic_pointer_cast<bpp::bpp_destructor>(entity_stack.top());
 	if (destructor == nullptr) {
-		throw internal_error("Destructor definition not found on the entity stack");
+		throw internal_error("Destructor definition not found on the entity stack", ctx);
 	}
 
 	entity_stack.pop();
@@ -55,7 +55,7 @@ void BashppListener::exitDestructor_definition(BashppParser::Destructor_definiti
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 
 	if (current_class == nullptr) {
-		throw internal_error("Class not found on the entity stack");
+		throw internal_error("Class not found on the entity stack", ctx);
 	}
 
 	current_class->set_destructor(destructor);

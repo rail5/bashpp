@@ -39,7 +39,7 @@ void BashppListener::exitSupershell(BashppParser::SupershellContext *ctx) {
 
 	std::shared_ptr<bpp::bpp_string> supershell_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 	if (supershell_entity == nullptr) {
-		throw internal_error("Supershell context was not found in the entity stack");
+		throw internal_error("Supershell context was not found in the entity stack", ctx);
 	}
 
 	entity_stack.pop();
@@ -47,7 +47,7 @@ void BashppListener::exitSupershell(BashppParser::SupershellContext *ctx) {
 	// Carry objects, classes, etc from the supershell to the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw internal_error("Current code entity was not found in the entity stack");
+		throw internal_error("Current code entity was not found in the entity stack", ctx);
 	}
 	current_code_entity->inherit(supershell_entity);
 

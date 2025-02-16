@@ -81,7 +81,7 @@ void BashppListener::exitObject_instantiation(BashppParser::Object_instantiation
 
 	std::shared_ptr<bpp::bpp_object> new_object = std::dynamic_pointer_cast<bpp::bpp_object>(entity_stack.top());
 	if (new_object == nullptr) {
-		throw internal_error("entity_stack top is not a bpp_object");
+		throw internal_error("entity_stack top is not a bpp_object", ctx);
 	}
 
 	entity_stack.pop();

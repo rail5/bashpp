@@ -23,7 +23,7 @@ void BashppListener::enterArray_index(BashppParser::Array_indexContext *ctx) {
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw internal_error("Current code entity was not found in the entity stack");
+		throw internal_error("Current code entity was not found in the entity stack", ctx);
 	}
 
 	// Create a new code entity for the array index
@@ -44,7 +44,7 @@ void BashppListener::exitArray_index(BashppParser::Array_indexContext *ctx) {
 
 	std::shared_ptr<bpp::bpp_string> array_index_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 	if (array_index_entity == nullptr) {
-		throw internal_error("Array index context was not found in the entity stack");
+		throw internal_error("Array index context was not found in the entity stack", ctx);
 	}
 
 	entity_stack.pop();
@@ -53,7 +53,7 @@ void BashppListener::exitArray_index(BashppParser::Array_indexContext *ctx) {
 
 	std::shared_ptr<bpp::bpp_object_reference> object_reference_entity = std::dynamic_pointer_cast<bpp::bpp_object_reference>(entity_stack.top());
 	if (object_reference_entity == nullptr) {
-		throw internal_error("Object reference entity not found on the entity stack");
+		throw internal_error("Object reference entity not found on the entity stack", ctx);
 	}
 
 	// Add the array index to the object reference code if and only if the brace tokens are set
@@ -65,7 +65,7 @@ void BashppListener::exitArray_index(BashppParser::Array_indexContext *ctx) {
 	} else if (parent_of_parent_rvalue != nullptr) {
 		has_brace = (parent_of_parent_rvalue->LBRACE() != nullptr) || (parent_of_parent_rvalue->LBRACE_ROOTLEVEL() != nullptr);
 	} else {
-		throw internal_error("Array index context has no parent");
+		throw internal_error("Array index context has no parent", ctx);
 	}
 	if (has_brace) {
 		object_reference_entity->set_array_index(array_index_entity->get_code());

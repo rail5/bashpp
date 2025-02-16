@@ -50,7 +50,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 	std::shared_ptr<bpp::bpp_object_reference> object_reference_entity = std::dynamic_pointer_cast<bpp::bpp_object_reference>(entity_stack.top());
 	entity_stack.pop();
 	if (object_reference_entity == nullptr) {
-		throw internal_error("Object reference context was not found in the entity stack");
+		throw internal_error("Object reference context was not found in the entity stack", ctx);
 	}
 
 	// Get the current code entity
@@ -105,7 +105,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 				error_string = "Unexpected identifier after method reference";
 				break;
 			default:
-				throw internal_error("Unknown reference type");
+				throw internal_error("Unknown reference type", ctx);
 		}
 
 		if (throw_error) {
@@ -275,7 +275,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 
 	if (!ready_to_exit) {
 		if (last_reference_entity->get_class() == nullptr) {
-			throw internal_error("Last reference entity has no class");
+			throw internal_error("Last reference entity has no class", ctx);
 		}
 
 		// If we're here, the last reference entity is a non-primitive object

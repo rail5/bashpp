@@ -38,14 +38,14 @@ void BashppListener::exitHeredoc(BashppParser::HeredocContext *ctx) {
 
 	std::shared_ptr<bpp::bpp_string> heredoc_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 	if (heredoc_entity == nullptr) {
-		throw internal_error("Heredoc entity not found in the entity stack");
+		throw internal_error("Heredoc entity not found in the entity stack", ctx);
 	}
 
 	entity_stack.pop();
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw internal_error("Current code entity not found in the entity stack");
+		throw internal_error("Current code entity not found in the entity stack", ctx);
 	}
 
 	current_code_entity->add_code_to_previous_line(heredoc_entity->get_pre_code());
@@ -60,7 +60,7 @@ void BashppListener::enterHeredoc_header(BashppParser::Heredoc_headerContext *ct
 
 	std::shared_ptr<bpp::bpp_string> heredoc_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 	if (heredoc_entity == nullptr) {
-		throw internal_error("Heredoc entity not found in the entity stack");
+		throw internal_error("Heredoc entity not found in the entity stack", ctx);
 	}
 
 	std::shared_ptr<bpp::bpp_string> heredoc_header_entity = std::make_shared<bpp::bpp_string>();
@@ -77,14 +77,14 @@ void BashppListener::exitHeredoc_header(BashppParser::Heredoc_headerContext *ctx
 
 	std::shared_ptr<bpp::bpp_string> heredoc_header_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 	if (heredoc_header_entity == nullptr) {
-		throw internal_error("Heredoc header entity not found in the entity stack");
+		throw internal_error("Heredoc header entity not found in the entity stack", ctx);
 	}
 
 	entity_stack.pop();
 
 	std::shared_ptr<bpp::bpp_string> heredoc_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 	if (heredoc_entity == nullptr) {
-		throw internal_error("Heredoc entity not found in the entity stack");
+		throw internal_error("Heredoc entity not found in the entity stack", ctx);
 	}
 
 	heredoc_entity->add_code_to_previous_line(heredoc_header_entity->get_pre_code());

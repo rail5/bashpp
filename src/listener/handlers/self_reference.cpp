@@ -51,7 +51,7 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 
 	std::shared_ptr<bpp::bpp_object_reference> self_reference_entity = std::dynamic_pointer_cast<bpp::bpp_object_reference>(entity_stack.top());
 	if (self_reference_entity == nullptr) {
-		throw internal_error("Self reference context was not found in the entity stack");
+		throw internal_error("Self reference context was not found in the entity stack", ctx);
 	}
 	entity_stack.pop();
 
@@ -94,7 +94,7 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 				error_string = "Unexpected identifier after method reference";
 				break;
 			default:
-				throw internal_error("Unknown reference type");
+				throw internal_error("Unknown reference type", ctx);
 		}
 
 		if (throw_error) {
@@ -246,7 +246,7 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 
 	if (!ready_to_exit) {
 		if (last_reference_entity->get_class() == nullptr) {
-			throw internal_error("Last reference entity has no class");
+			throw internal_error("Last reference entity has no class", ctx);
 		}
 
 		// Are we otherwise in an object_address context?

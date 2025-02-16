@@ -24,7 +24,7 @@ void BashppListener::enterObject_address(BashppParser::Object_addressContext *ct
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw internal_error("Object address outside of code entity");
+		throw internal_error("Object address outside of code entity", ctx);
 	}
 
 	std::shared_ptr<bpp::bpp_object_address> object_address_entity = std::make_shared<bpp::bpp_object_address>();
@@ -40,7 +40,7 @@ void BashppListener::exitObject_address(BashppParser::Object_addressContext *ctx
 
 	std::shared_ptr<bpp::bpp_object_address> object_address_entity = std::dynamic_pointer_cast<bpp::bpp_object_address>(entity_stack.top());
 	if (object_address_entity == nullptr) {
-		throw internal_error("Object address context was not found in the entity stack");
+		throw internal_error("Object address context was not found in the entity stack", ctx);
 	}
 
 	entity_stack.pop();
@@ -48,7 +48,7 @@ void BashppListener::exitObject_address(BashppParser::Object_addressContext *ctx
 	// Add the object address to the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw internal_error("Object address outside of code entity");
+		throw internal_error("Object address outside of code entity", ctx);
 	}
 
 	current_code_entity->add_code_to_previous_line(object_address_entity->get_pre_code());

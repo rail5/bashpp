@@ -24,7 +24,7 @@ void BashppListener::enterArray_value(BashppParser::Array_valueContext *ctx) {
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	if (current_code_entity == nullptr) {
-		throw internal_error("Array value outside of code entity");
+		throw internal_error("Array value outside of code entity", ctx);
 	}
 
 	// Create a new code entity for the array value
@@ -44,7 +44,7 @@ void BashppListener::exitArray_value(BashppParser::Array_valueContext *ctx) {
 	std::shared_ptr<bpp::bpp_string> arrayvalue_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 
 	if (arrayvalue_entity == nullptr) {
-		throw internal_error("Array value context was not found in the entity stack");
+		throw internal_error("Array value context was not found in the entity stack", ctx);
 	}
 
 	entity_stack.pop();
@@ -65,7 +65,7 @@ void BashppListener::exitArray_value(BashppParser::Array_valueContext *ctx) {
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	if (current_code_entity == nullptr) {
-		throw internal_error("Array value outside of code entity");
+		throw internal_error("Array value outside of code entity", ctx);
 	}
 
 	current_code_entity->add_code_to_previous_line(arrayvalue_entity->get_pre_code());

@@ -100,7 +100,7 @@ void BashppListener::exitBash_if_statement(BashppParser::Bash_if_statementContex
 	std::shared_ptr<bpp::bash_if> if_statement_entity = std::dynamic_pointer_cast<bpp::bash_if>(entity_stack.top());
 
 	if (if_statement_entity == nullptr) {
-		throw internal_error("If statement context was not found in the entity stack");
+		throw internal_error("If statement context was not found in the entity stack", ctx);
 	}
 
 	entity_stack.pop();
@@ -109,7 +109,7 @@ void BashppListener::exitBash_if_statement(BashppParser::Bash_if_statementContex
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	if (current_code_entity == nullptr) {
-		throw internal_error("Code entity not found in the entity stack");
+		throw internal_error("Code entity not found in the entity stack", ctx);
 	}
 
 	current_code_entity->add_code_to_previous_line(if_statement_entity->get_conditional_branch_pre_code());
@@ -131,7 +131,7 @@ void BashppListener::enterBash_if_root_branch(BashppParser::Bash_if_root_branchC
 	// Get the if statement entity
 	std::shared_ptr<bpp::bash_if> if_statement_entity = std::dynamic_pointer_cast<bpp::bash_if>(entity_stack.top());
 	if (if_statement_entity == nullptr) {
-		throw internal_error("If statement entity not found in the entity stack");
+		throw internal_error("If statement entity not found in the entity stack", ctx);
 	}
 
 	if_statement_entity->new_branch();
@@ -152,14 +152,14 @@ void BashppListener::exitBash_if_root_branch(BashppParser::Bash_if_root_branchCo
 
 	std::shared_ptr<bpp::bash_if_branch> condition_entity = std::dynamic_pointer_cast<bpp::bash_if_branch>(entity_stack.top());
 	if (condition_entity == nullptr) {
-		throw internal_error("Condition entity not found in the entity stack");
+		throw internal_error("Condition entity not found in the entity stack", ctx);
 	}
 
 	entity_stack.pop();
 
 	std::shared_ptr<bpp::bash_if> if_statement_entity = condition_entity->get_if_statement();
 	if (if_statement_entity == nullptr) {
-		throw internal_error("If statement entity not found");
+		throw internal_error("If statement entity not found", ctx);
 	}
 
 	if_statement_entity->add_branch_code(condition_entity->get_pre_code());
@@ -175,7 +175,7 @@ void BashppListener::enterBash_if_else_branch(BashppParser::Bash_if_else_branchC
 	// Get the if statement entity
 	std::shared_ptr<bpp::bash_if> if_statement_entity = std::dynamic_pointer_cast<bpp::bash_if>(entity_stack.top());
 	if (if_statement_entity == nullptr) {
-		throw internal_error("If statement entity not found in the entity stack");
+		throw internal_error("If statement entity not found in the entity stack", ctx);
 	}
 
 	if_statement_entity->new_branch();
@@ -201,14 +201,14 @@ void BashppListener::exitBash_if_else_branch(BashppParser::Bash_if_else_branchCo
 
 	std::shared_ptr<bpp::bash_if_branch> condition_entity = std::dynamic_pointer_cast<bpp::bash_if_branch>(entity_stack.top());
 	if (condition_entity == nullptr) {
-		throw internal_error("Condition entity not found in the entity stack");
+		throw internal_error("Condition entity not found in the entity stack", ctx);
 	}
 
 	entity_stack.pop();
 
 	std::shared_ptr<bpp::bash_if> if_statement_entity = condition_entity->get_if_statement();
 	if (if_statement_entity == nullptr) {
-		throw internal_error("If statement entity not found");
+		throw internal_error("If statement entity not found", ctx);
 	}
 
 	if_statement_entity->add_branch_code(condition_entity->get_pre_code());
@@ -224,7 +224,7 @@ void BashppListener::enterBash_if_condition(BashppParser::Bash_if_conditionConte
 	// Get the if branch entity
 	std::shared_ptr<bpp::bash_if_branch> if_branch_entity = std::dynamic_pointer_cast<bpp::bash_if_branch>(entity_stack.top());
 	if (if_branch_entity == nullptr) {
-		throw internal_error("'If' branch entity not found in the entity stack");
+		throw internal_error("'If' branch entity not found in the entity stack", ctx);
 	}
 
 	// Create a new code entity for the condition
@@ -243,7 +243,7 @@ void BashppListener::exitBash_if_condition(BashppParser::Bash_if_conditionContex
 
 	std::shared_ptr<bpp::bpp_string> condition_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 	if (condition_entity == nullptr) {
-		throw internal_error("Condition entity not found in the entity stack");
+		throw internal_error("Condition entity not found in the entity stack", ctx);
 	}
 
 	entity_stack.pop();
@@ -251,13 +251,13 @@ void BashppListener::exitBash_if_condition(BashppParser::Bash_if_conditionContex
 	// Get the if branch entity
 	std::shared_ptr<bpp::bash_if_branch> if_branch_entity = std::dynamic_pointer_cast<bpp::bash_if_branch>(entity_stack.top());
 	if (if_branch_entity == nullptr) {
-		throw internal_error("'If' branch entity not found in the entity stack");
+		throw internal_error("'If' branch entity not found in the entity stack", ctx);
 	}
 
 	// Get the if statement entity
 	std::shared_ptr<bpp::bash_if> if_statement_entity = if_branch_entity->get_if_statement();
 	if (if_statement_entity == nullptr) {
-		throw internal_error("If statement entity not found");
+		throw internal_error("If statement entity not found", ctx);
 	}
 
 	if_statement_entity->add_conditional_branch_pre_code(condition_entity->get_pre_code());

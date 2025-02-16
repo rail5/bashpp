@@ -78,7 +78,7 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 				break;
 			default:
 				entity_stack.pop();
-				throw internal_error("Unknown reference type");
+				throw internal_error("Unknown reference type", ctx);
 		}
 
 		if (throw_error) {
@@ -185,7 +185,7 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 	}
 
 	if (last_reference_entity->get_class() == nullptr) {
-		throw internal_error("Last reference entity has no class");
+		throw internal_error("Last reference entity has no class", ctx);
 	}
 
 	// Are we otherwise in an object_address context?
@@ -223,7 +223,7 @@ void BashppListener::exitSelf_reference_as_lvalue(BashppParser::Self_reference_a
 	std::shared_ptr<bpp::bpp_object_reference> self_reference_entity = std::dynamic_pointer_cast<bpp::bpp_object_reference>(entity_stack.top());
 	entity_stack.pop();
 	if (self_reference_entity == nullptr) {
-		throw internal_error("Self reference context was not found in the entity stack");
+		throw internal_error("Self reference context was not found in the entity stack", ctx);
 	}
 
 	// If we're in an object assignment, set the lvalue to the object reference code

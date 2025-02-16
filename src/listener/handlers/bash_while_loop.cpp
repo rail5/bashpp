@@ -38,14 +38,14 @@ void BashppListener::exitBash_while_loop(BashppParser::Bash_while_loopContext *c
 
 	std::shared_ptr<bpp::bash_while_loop> while_statement = std::dynamic_pointer_cast<bpp::bash_while_loop>(entity_stack.top());
 	if (while_statement == nullptr) {
-		throw internal_error("While statement entity not found in the entity stack");
+		throw internal_error("While statement entity not found in the entity stack", ctx);
 	}
 
 	entity_stack.pop();
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw internal_error("Current code entity not found in the entity stack");
+		throw internal_error("Current code entity not found in the entity stack", ctx);
 	}
 
 	current_code_entity->add_code_to_previous_line(while_statement->get_while_condition()->get_pre_code());
@@ -74,7 +74,7 @@ void BashppListener::enterBash_while_condition(BashppParser::Bash_while_conditio
 
 	std::shared_ptr<bpp::bash_while_loop> while_statement = std::dynamic_pointer_cast<bpp::bash_while_loop>(entity_stack.top());
 	if (while_statement == nullptr) {
-		throw internal_error("While statement entity not found in the entity stack");
+		throw internal_error("While statement entity not found in the entity stack", ctx);
 	}
 
 	std::shared_ptr<bpp::bash_while_condition> while_condition = std::make_shared<bpp::bash_while_condition>();
@@ -96,7 +96,7 @@ void BashppListener::exitBash_while_condition(BashppParser::Bash_while_condition
 
 	std::shared_ptr<bpp::bash_while_condition> while_condition = std::dynamic_pointer_cast<bpp::bash_while_condition>(entity_stack.top());
 	if (while_condition == nullptr) {
-		throw internal_error("While condition entity not found in the entity stack");
+		throw internal_error("While condition entity not found in the entity stack", ctx);
 	}
 
 	entity_stack.pop();

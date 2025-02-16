@@ -42,7 +42,7 @@ void BashppListener::exitString(BashppParser::StringContext *ctx) {
 	entity_stack.pop();
 
 	if (string_code_entity == nullptr) {
-		throw internal_error("String context was not found in the entity stack");
+		throw internal_error("String context was not found in the entity stack", ctx);
 	}
 
 	// If we're not in a broader context, simply add the current string contents + a close quote to the current code entity

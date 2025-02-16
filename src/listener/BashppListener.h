@@ -98,7 +98,8 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 		#define output_syntax_error(symbol, msg) \
 			int line = symbol->getLine(); \
 			int column = symbol->getCharPositionInLine(); \
-			print_syntax_error(source_file, line, column, msg, get_include_stack()); \
+			std::string text = symbol->getText(); \
+			print_syntax_error(source_file, line, column, text, msg, get_include_stack()); \
 			program_has_errors = true;
 
 		#define throw_syntax_error_sym(symbol, msg) \

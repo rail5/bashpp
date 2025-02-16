@@ -119,7 +119,7 @@ void BashppListener::exitBash_if_statement(BashppParser::Bash_if_statementContex
 		current_code_entity->add_code(branch.second);
 	}
 
-	current_code_entity->add_code("fi");
+	current_code_entity->add_code("fi\n");
 	current_code_entity->add_code(if_statement_entity->get_conditional_branch_post_code());
 }
 

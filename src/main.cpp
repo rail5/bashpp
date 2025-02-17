@@ -268,9 +268,6 @@ int main(int argc, char* argv[]) {
 
 		if (display_parse_tree) {
 			std::cout << tree->toStringTree(&parser, true) << std::endl;
-		}
-
-		if (display_parse_tree || display_tokens) {
 			return bpp_exit_code;
 		}
 

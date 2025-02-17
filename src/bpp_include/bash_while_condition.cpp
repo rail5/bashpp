@@ -20,10 +20,6 @@ void bash_while_condition::add_supershell_function_call(const std::string& funct
 	supershell_function_calls.push_back(function_call);
 }
 
-int bash_while_condition::get_supershell_count() const {
-	return supershell_count;
-}
-
 std::vector<std::string> bash_while_condition::get_supershell_function_calls() const {
 	return supershell_function_calls;
 }

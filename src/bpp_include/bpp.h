@@ -81,8 +81,6 @@ class bpp_entity {
 		virtual void inherit(std::shared_ptr<bpp_entity> parent);
 		virtual void inherit(std::shared_ptr<bpp_class> parent);
 
-		bool is_child_of(std::shared_ptr<bpp_entity> parent);
-
 		virtual std::unordered_map<std::string, std::shared_ptr<bpp_class>> get_classes() const;
 		virtual std::unordered_map<std::string, std::shared_ptr<bpp_object>> get_objects() const;
 		virtual std::shared_ptr<bpp_class> get_class(const std::string& name);
@@ -203,7 +201,6 @@ class bash_while_condition : public bpp_string {
 
 		void increment_supershell_count();
 		void add_supershell_function_call(const std::string& function_call);
-		int get_supershell_count() const;
 		std::vector<std::string> get_supershell_function_calls() const;
 };
 
@@ -403,14 +400,11 @@ class bpp_method : public bpp_code_entity {
 		bool is_inherited() const;
 
 		void destruct_local_objects();
-
-		void destroy();
 };
 
 class bpp_constructor : public bpp_method {
 	public:
 		bpp_constructor();
-		explicit bpp_constructor(const std::string& name);
 
 		bool add_parameter(std::shared_ptr<bpp_method_parameter> parameter) override;
 };
@@ -418,7 +412,6 @@ class bpp_constructor : public bpp_method {
 class bpp_destructor : public bpp_method {
 	public:
 		bpp_destructor();
-		explicit bpp_destructor(const std::string& name);
 
 		bool add_parameter(std::shared_ptr<bpp_method_parameter> parameter) override;
 };
@@ -472,8 +465,6 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 		}
 	public:
 		bpp_class();
-		explicit bpp_class(const std::string& name);
-		bpp_class(const bpp_class& parent, std::string name);
 
 		std::weak_ptr<bpp_class> get_containing_class() const override;
 		bool set_containing_class(std::weak_ptr<bpp::bpp_class> containing_class) override;
@@ -498,8 +489,6 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 		std::shared_ptr<bpp_datamember> get_datamember(const std::string& name, std::shared_ptr<bpp_entity> context);
 
 		void inherit(std::shared_ptr<bpp_class> parent) override;
-
-		void destroy();
 };
 
 class bpp_object : public bpp_entity {
@@ -525,7 +514,6 @@ class bpp_object : public bpp_entity {
 		void set_pre_access_code(const std::string& pre_access_code);
 		void set_post_access_code(const std::string& post_access_code);
 		void set_nullptr();
-		void set_copy_from(std::shared_ptr<bpp::bpp_object> object);
 
 		std::string get_name() const;
 		virtual std::string get_address() const;
@@ -533,7 +521,6 @@ class bpp_object : public bpp_entity {
 		std::shared_ptr<bpp_class> get_class() const;
 		std::string get_pre_access_code() const;
 		std::string get_post_access_code() const;
-		bool is_nullptr() const;
 		std::shared_ptr<bpp::bpp_object> get_copy_from() const;
 
 		bool is_pointer() const;
@@ -555,8 +542,6 @@ class bpp_datamember : public bpp_object {
 		std::string get_default_value() const;
 		bpp_scope get_scope() const;
 		bool is_array() const;
-
-		void destroy();
 };
 
 class bpp_program : public bpp_code_entity {
@@ -574,7 +559,6 @@ class bpp_program : public bpp_code_entity {
 
 		std::shared_ptr<bpp_class> get_primitive_class() const;
 
-		void set_supershell_counter(uint64_t value);
 		void increment_supershell_counter();
 		uint64_t get_supershell_counter() const;
 

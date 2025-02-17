@@ -40,13 +40,6 @@ bool bpp_datamember::is_array() const {
 	return array;
 }
 
-void bpp_datamember::destroy() {
-	name.clear();
-	default_value.clear();
-	scope = SCOPE_PRIVATE;
-	type = nullptr;
-}
-
 } // namespace bpp
 
 #endif // SRC_BPP_INCLUDE_BPP_DATAMEMBER_CPP

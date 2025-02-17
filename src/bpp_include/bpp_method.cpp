@@ -106,19 +106,6 @@ void bpp_method::destruct_local_objects() {
 	local_objects.clear();
 }
 
-void bpp_method::destroy() {
-	name.clear();
-	parameters.clear();
-	std::shared_ptr<std::ostringstream> ss = std::dynamic_pointer_cast<std::ostringstream>(code);
-	if (ss != nullptr) {
-		ss->clear();
-	}
-	nextline_buffer.clear();
-	postline_buffer.clear();
-	scope = SCOPE_PRIVATE;
-	m_is_virtual = false;
-}
-
 } // namespace bpp
 
 #endif // SRC_BPP_INCLUDE_BPP_METHOD_CPP

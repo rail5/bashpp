@@ -74,15 +74,6 @@ void bpp_entity::inherit(std::shared_ptr<bpp_class> parent) {
 	inherit(std::dynamic_pointer_cast<bpp_entity>(parent));
 }
 
-bool bpp_entity::is_child_of(std::shared_ptr<bpp_entity> parent) {
-	for (auto& p : parents) {
-		if (p == parent) {
-			return true;
-		}
-	}
-	return false;
-}
-
 std::unordered_map<std::string, std::shared_ptr<bpp_class>> bpp_entity::get_classes() const {
 	return classes;
 }

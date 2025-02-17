@@ -12,22 +12,6 @@ namespace bpp {
 
 bpp_class::bpp_class() {}
 
-bpp_class::bpp_class(const std::string& name) : name(name) {
-	add_default_toPrimitive();
-}
-
-bpp_class::bpp_class(const bpp_class& other, std::string name) : name(name) {
-	// Handling inheritance
-	// Probably a sloppy way to do this -- we just duplicate the parent class
-	// TODO(@rail5): Is there a better way to handle inheritance?
-	methods = other.get_methods();
-	datamembers = other.get_datamembers();
-	constructor = other.get_constructor();
-	destructor = other.get_destructor();
-
-	add_default_toPrimitive();
-}
-
 std::weak_ptr<bpp::bpp_class> bpp_class::get_containing_class() const {
 	return std::const_pointer_cast<bpp::bpp_class>(this->shared_from_this());
 }
@@ -246,23 +230,6 @@ void bpp_class::inherit(std::shared_ptr<bpp_class> parent) {
 
 	// Mark the parent as a parent of this class
 	parents.push_back(parent);
-}
-
-void bpp_class::destroy() {
-	for (auto& m : methods) {
-		m->destroy();
-	}
-	for (auto& d : datamembers) {
-		d->destroy();
-	}
-	constructor->destroy();
-	destructor->destroy();
-
-	name.clear();
-	methods.clear();
-	datamembers.clear();
-	constructor_set = false;
-	destructor_set = false;
 }
 
 } // namespace bpp

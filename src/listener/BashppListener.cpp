@@ -100,10 +100,6 @@ std::shared_ptr<bpp::bpp_program> BashppListener::get_program() {
 	return program;
 }
 
-std::shared_ptr<std::vector<std::string>> BashppListener::get_include_paths() {
-	return include_paths;
-}
-
 std::set<std::string> BashppListener::get_included_files() {
 	return included_files;
 }

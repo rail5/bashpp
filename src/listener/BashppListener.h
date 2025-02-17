@@ -130,7 +130,6 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 	void set_arguments(std::vector<char*> arguments);
 
 	std::shared_ptr<bpp::bpp_program> get_program();
-	std::shared_ptr<std::vector<std::string>> get_include_paths();
 	std::set<std::string> get_included_files();
 	std::stack<std::string> get_include_stack();
 

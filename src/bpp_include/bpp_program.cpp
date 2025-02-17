@@ -159,10 +159,6 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	return true;
 }
 
-void bpp_program::set_supershell_counter(uint64_t value) {
-	supershell_counter = value;
-}
-
 void bpp_program::increment_supershell_counter() {
 	supershell_counter++;
 	if (supershell_counter == 1) {

@@ -27,8 +27,6 @@ volatile int bpp_exit_code = 0;
 
 #include "internal_error.cpp"
 
-using namespace antlr4;
-
 int main(int argc, char* argv[]) {
 	const char* program_name = "Bash++";
 	const char* copyright = "Copyright (C) 2024-"
@@ -219,9 +217,9 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	ANTLRInputStream input(*stream);
+	antlr4::ANTLRInputStream input(*stream);
 	BashppLexer lexer(&input);
-	CommonTokenStream tokens(&lexer);
+	antlr4::CommonTokenStream tokens(&lexer);
 
 	tokens.fill();
 
@@ -241,11 +239,11 @@ int main(int argc, char* argv[]) {
 	// Remove default error listeners
 	parser.removeErrorListeners();
 	// Add diagnostic error listener
-	std::unique_ptr<DiagnosticErrorListener> error_listener = std::make_unique<DiagnosticErrorListener>();
+	std::unique_ptr<antlr4::DiagnosticErrorListener> error_listener = std::make_unique<antlr4::DiagnosticErrorListener>();
 	parser.addErrorListener(error_listener.get());
 
 	// Enable the parser to use diagnostic messages
-	parser.setErrorHandler(std::make_shared<BailErrorStrategy>());
+	parser.setErrorHandler(std::make_shared<antlr4::BailErrorStrategy>());
 
 	if (run_on_exit) {
 		// Create a temporary file to store the program
@@ -262,7 +260,7 @@ int main(int argc, char* argv[]) {
 		output_file = std::string(temp_file);
 	}
 
-	tree::ParseTree* tree = nullptr;
+	antlr4::tree::ParseTree* tree = nullptr;
 	try {
 		tree = parser.program();
 
@@ -295,7 +293,7 @@ int main(int argc, char* argv[]) {
 
 	} catch (const antlr4::EmptyStackException& e) {
 		std::cerr << "EmptyStackException: " << e.what() << std::endl;
-	} catch (const RecognitionException& e) {
+	} catch (const antlr4::RecognitionException& e) {
 		std::cerr << "Recognition exception: " << e.what() << std::endl;
 	} catch (const internal_error& e) {
 		std::cerr << "Internal error: " << e.what() << std::endl;

@@ -51,7 +51,7 @@
 		fi
 
 		local output
-		IFS= read -r -d '' output < <(bin/bpp @this.sourceFile 2>&1; printf "\0")
+		IFS= read -r -d '' output < <(BPP="@compiler.full_path" bin/bpp @this.sourceFile 2>&1; printf "\0")
 		
 		# Split the output into lines and split the expected output into lines
 		mapfile -t outputLines < <(echo "$output")

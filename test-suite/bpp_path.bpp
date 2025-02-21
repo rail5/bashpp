@@ -1,5 +1,6 @@
 @class bpp {
 	@public path="bin/bpp"
+	@public full_path="@(realpath @this.path)"
 
 	@constructor {
 		if [[ ! -f "@this.path" ]]; then

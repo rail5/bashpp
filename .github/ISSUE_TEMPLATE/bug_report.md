@@ -29,7 +29,7 @@ A clear description of what you expected to happen. In some cases this isn't nec
 If applicable, add screenshots to help explain your problem.
 
 **Source code**
-If this is a problem with the compiler, please include the code that you were trying to compile. If you have it available, it would also be helpful to include the output from `BashppParser`. Please encase the code and parser output in triple backticks (```) to format it correctly.
+If this is a problem with the compiler, please include the code that you were trying to compile. If you have it available, it would also be helpful to include the output from `bpp -tp` (which gives the lexer output and parse tree). Please encase the code and parser output in triple backticks (```) to format it correctly.
 
 **Operating System**
 Which OS and which version are you running? If running a GNU/Linux distribution such as Debian, please include the name of the distribution.

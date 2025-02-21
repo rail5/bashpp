@@ -291,6 +291,20 @@ hij
 String && def \|\| def \| def && more string
 "
 
+@runner.addTest "Exit Codes" "test-suite/tests/exit-codes.bpp" "0
+1
+2
+3
+4
+8
+16
+32
+64
+128
+255
+0
+"
+
 # Standard Library tests
 @runner.addTest "STL Arrays" "test-suite/tests/stdlib-arrays.bpp" "0
 3

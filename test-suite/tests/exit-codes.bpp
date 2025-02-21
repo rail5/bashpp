@@ -1,0 +1,12 @@
+echo "exit 0" | $BPP; echo $? # 0
+echo "exit 1" | $BPP; echo $? # 1
+echo "exit 2" | $BPP; echo $? # 2
+echo "exit 3" | $BPP; echo $? # 3
+echo "exit 4" | $BPP; echo $? # 4
+echo "exit 8" | $BPP; echo $? # 8
+echo "exit 16" | $BPP; echo $? # 16
+echo "exit 32" | $BPP; echo $? # 32
+echo "exit 64" | $BPP; echo $? # 64
+echo "exit 128" | $BPP; echo $? # 128
+echo "exit 255" | $BPP; echo $? # 255
+echo "exit 256" | $BPP; echo $? # 0, wrap-around

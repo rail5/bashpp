@@ -63,11 +63,10 @@ void BashppListener::exitProgram(BashppParser::ProgramContext *ctx) {
 		std::string command = "bash " + output_file + arguments_string;
 
 		// Run the program and get its exit code
-		#ifndef __APPLE__
-		bpp_exit_code = WEXITSTATUS(system(command.c_str()));
-		#else
-		bpp_exit_code = system(command.c_str()) >> 8;
-		#endif
+		// Below is a small bit of code to compensate for the fact that WEXITSTATUS doesn't work the same on all systems
+		// This code will work on all systems
+		// The exit code is stored in the lower 8 bits of the return value of the system() function
+		bpp_exit_code = (system(command.c_str()) & 0xff00) >> 8;
 		unlink(output_file.c_str());
 	}
 }

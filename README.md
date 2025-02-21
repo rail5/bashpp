@@ -90,6 +90,8 @@ $ bpp -h # Display help
 $ bpp -v # Display version
 ```
 
+Any arguments given *after* the input file will be passed to the compiled program.
+
 It's strongly recommended to use the `-o` flag to specify an output file. If you don't, you'll be re-compiling your programs every time you run them, which could take some time, especially for larger programs. Using `-o` and running the compiled program is much faster for subsequent runs.
 
 ## Debugging

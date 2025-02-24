@@ -76,6 +76,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 
 	std::shared_ptr<bpp::bpp_object> object = nullptr;
 	bool object_is_pointer = false;
+	bool first_object_is_pointer = false;
 	std::shared_ptr<bpp::bpp_datamember> datamember = nullptr;
 	bool datamember_is_pointer = false;
 	std::shared_ptr<bpp::bpp_method> method = nullptr;
@@ -120,6 +121,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 			method = reference_class->get_method(identifier_text, current_class);
 		} else {
 			object = last_reference_entity->get_object(identifier_text);
+			first_object_is_pointer = (object == nullptr) ? false : object->is_pointer();
 		}
 
 		if (reference_class == nullptr && object == nullptr) {
@@ -219,12 +221,12 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 			 * To make this code less disgraceful, at some point, object references should be re-worked altogether
 			 * In the meantime, we can do a HACKY fix by checking the size of the IDENTIFIER list
 			 * If it's greater than 2, we're guaranteed to have to dereference a pointer
-			 * If it's not, we're guaranteed not to have to dereference a pointer
+			 * If it's not, we're guaranteed not to have to dereference a pointer (unless the very first identifier refers to a pointer)
 			 * 
 			 * TODO(@rail5): Fix this. Really just fix object references from the ground-up
 			 */
 
-			bool have_to_dereference_a_pointer = ctx->IDENTIFIER().size() > 2;
+			bool have_to_dereference_a_pointer = first_object_is_pointer || (ctx->IDENTIFIER().size() > 2);
 
 			std::string temporary_variable_lvalue = object_reference_code + "____arrayIndexString";
 			std::string temporary_variable_rvalue;

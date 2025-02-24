@@ -1,3 +1,21 @@
+bpp (0.2.7) unstable; urgency=medium
+
+  * Removed 'Array' class from STL
+    This functionality is really already served by Bash primitive arrays
+    Adding non-primitive object arrays would be nice however
+  * Bug fix: We'll always have to dereference a pointer if the first
+    object in a reference chain is a pointer
+    Object references should still be reworked altogether
+  * Added test to verify correct exit codes from run-on-exit
+  * Pass compiler path to tests in the test suite
+    If we want to run another instance of the compiler from within a test,
+    we can access it via the $BPP environment variable
+  * Portable solution to the problem with inconsistent WEXITSTATUS
+    behavior across different systems
+  * Portability: Do not assume the presence of /proc/self
+
+ -- rail5 <andrew@rail5.org>  Mon, 24 Feb 2025 15:24:22 +0800
+
 bpp (0.2.6) unstable; urgency=medium
 
   * Case patterns: Inherit directly from code entities

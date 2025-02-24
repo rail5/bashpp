@@ -1,14 +1,7 @@
 #AUTODOC#
 
-#CLASS QueueNode
-## A node in a queue.
 @class QueueNode {
-	##MEMBER public primitive data
-	### The data stored in the node.
 	@public data
-
-	##MEMBER public QueueNode* next
-	### A pointer to the next node in the queue.
 	@public @QueueNode* next
 }
 

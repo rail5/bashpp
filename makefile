@@ -1,5 +1,12 @@
-VERSION=$$(dpkg-parsechangelog -l debian/changelog --show-field version || echo "0.1")
-LASTUPDATEDYEAR=$$(date +%Y -d@$$(dpkg-parsechangelog -l debian/changelog --show-field timestamp || date +%Y) || echo "2025")
+PARSECHANGELOG := $(shell command -v dpkg-parsechangelog 2> /dev/null)
+
+ifdef PARSECHANGELOG
+	VERSION=$$(dpkg-parsechangelog -l debian/changelog --show-field version)
+	LASTUPDATEDYEAR=$$(date +%Y -d@$$(dpkg-parsechangelog -l debian/changelog --show-field timestamp))
+else
+	VERSION=$$(head -n1 debian/changelog | grep -o "[[:digit:].]*" || echo "0.1")
+	LASTUPDATEDYEAR=$$(grep "^ \-- " debian/changelog | head -n 1 | cut -d, -f2 | date -d - +%Y || date +%Y || echo "2025")
+endif
 
 all: compiler std
 

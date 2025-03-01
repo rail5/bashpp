@@ -1,11 +1,13 @@
 @include_once "bpp_path.bpp"
 @include_once "detect-tty.bpp"
+@include_once "TestStats.bpp"
 
 @class Test {
 	@protected name
 	@protected status="untested"
 	@protected sourceFile
 	@protected expectedOutput
+	@protected @TestStats* stats
 
 	@public @method setName name {
 		@this.name="$name"
@@ -22,6 +24,10 @@
 
 	@public @method setExpectedOutput expectedOutput {
 		@this.expectedOutput="$expectedOutput"
+	}
+
+	@public @method setStats stats {
+		@this.stats="$stats"
 	}
 
 	@public @method getName {
@@ -47,10 +53,14 @@
 		fi
 
 		if [[ ! -f "@this.sourceFile" ]]; then
+			if [[ @this.stats != @nullptr ]]; then
+				@this.stats.incrementUntestedTests
+			fi
+			@this.toPrimitive
 			return
 		fi
 
-		local output
+		local output="" outputLines="" expectedOutputLines=""
 		IFS= read -r -d '' output < <(BPP="@compiler.full_path" bin/bpp @this.sourceFile 2>&1; printf "\0")
 		
 		# Split the output into lines and split the expected output into lines
@@ -67,12 +77,27 @@
 		local i=0
 		@this.status="pass"
 		while [[ "$i" -lt "${#outputLines[@]}" ]]; do
-			if ! [[ "@(grep -o -P "${expectedOutputLines[$i]}" <<<"${outputLines[$i]}")" == "${outputLines[$i]}" ]]; then
+			if [[ "@(grep -o -P "^${expectedOutputLines[$i]}$" <<<"${outputLines[$i]}")" != "${outputLines[$i]}" ]]; then
 				@this.status="fail"
 				break
 			fi
 			i=$((i+1))
 		done
+
+		if [[ @this.stats != @nullptr ]]; then
+			case "@this.status" in
+				"untested")
+					@this.stats.incrementUntestedTests
+					;;
+				"pass")
+					@this.stats.incrementPassedTests
+					;;
+				"fail")
+					@this.stats.incrementFailedTests
+					;;
+			esac
+		fi
+		@this.toPrimitive
 	}
 
 	@public @method toPrimitive {
@@ -95,9 +120,6 @@
 			uncolorize=""
 		fi
 
-		echo -n "@this.name: "
-		echo -n -e "${colorize}"
-		echo -n "@this.status"
-		echo -e "${uncolorize}"
+		echo -n -e "@this.name: ${colorize}@this.status${uncolorize}\n"
 	}
 }

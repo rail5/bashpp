@@ -366,7 +366,7 @@ else
 fi
 
 echo "----------------"
-echo "@runner.stats"
+echo "@runner.stats.toPrimitive"
 
 if [[ "@runner.stats.getFailCount" -gt 0 ]]; then
 	exit 1

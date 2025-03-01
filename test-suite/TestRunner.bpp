@@ -1,7 +1,7 @@
 @include_once "TestStats.bpp"
 
 @class TestRunner {
-	@public @TestStats stats
+	@public @TestStats* stats=@new TestStats
 	@public tests=() # Hack. Array of pointers
 
 	@public @method updateStats test {
@@ -27,6 +27,7 @@
 		@test.setName "$name"
 		@test.setSourceFile "$sourceFile"
 		@test.setExpectedOutput "$expectedOutput"
+		@test.setStats @this.stats
 
 		@this.tests+=("@test")
 	}
@@ -35,9 +36,10 @@
 		# Run all the tests
 		for i in @(seq 0 $((@{#this.tests[@]} - 1))); do
 			@Test* test="@{this.tests[$i]}"
-			@test.run
-			@this.updateStats "@test"
+			@test.run &
 		done
+		# Wait for all tests to finish
+		wait
 	}
 
 	@public @method runTest name {
@@ -49,7 +51,6 @@
 			@Test* test="@{this.tests[$i]}"
 			if [[ "@test.getName" == "$name" ]]; then
 				@test.run
-				@this.updateStats "@test"
 				return
 			fi
 		done
@@ -62,5 +63,9 @@
 			@Test* test="@{this.tests[$i]}"
 			echo "@test.getName"
 		done
+	}
+
+	@constructor {
+		@this.stats.init
 	}
 }

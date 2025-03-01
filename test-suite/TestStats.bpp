@@ -1,27 +1,75 @@
 @class TestStats {
-	@private numberOfFailedTests=0
-	@private numberOfPassedTests=0
-	@private numberOfUntestedTests=0
+	@private passedFile="$(mktemp)"
+	@private failedFile="$(mktemp)"
+	@private untestedFile="$(mktemp)"
+
+	@public @method init {
+		echo 0 > "@this.passedFile"
+		echo 0 > "@this.failedFile"
+		echo 0 > "@this.untestedFile"
+	}
+
+	@public @method clean {
+		rm -f "@this.passedFile"
+		rm -f "@this.failedFile"
+		rm -f "@this.untestedFile"
+	}
 
 	@public @method incrementFailedTests {
-		@this.numberOfFailedTests=$((@this.numberOfFailedTests + 1))
+		# Thread-safe update
+		
+		# Lock the file
+		exec {lock_fd}<> "@this.failedFile"
+		flock -x "$lock_fd"
+		# Once the file is locked, read the current value, increment it, write it back, and unlock the file
+		local numberOfFailedTests=@(cat "@this.failedFile")
+		echo $((numberOfFailedTests + 1)) > "@this.failedFile"
+		flock -u "${lock_fd}"
+		exec {lock_fd}>&-
 	}
 
 	@public @method incrementPassedTests {
-		@this.numberOfPassedTests=$((@this.numberOfPassedTests + 1))
+		# Thread-safe update
+		
+		# Lock the file
+		exec {lock_fd}<> "@this.passedFile"
+		flock -x "$lock_fd"
+		# Once the file is locked, read the current value, increment it, write it back, and unlock the file
+		local numberOfPassedTests=@(cat "@this.passedFile")
+		echo $((numberOfPassedTests + 1)) > "@this.passedFile"
+		flock -u "${lock_fd}"
+		exec {lock_fd}>&-
 	}
 
 	@public @method incrementUntestedTests {
-		@this.numberOfUntestedTests=$((@this.numberOfUntestedTests + 1))
+		# Thread-safe update
+		
+		# Lock the file
+		exec {lock_fd}<> "@this.untestedFile"
+		flock -x "$lock_fd"
+		# Once the file is locked, read the current value, increment it, write it back, and unlock the file
+		local numberOfUntestedTests=@(cat "@this.untestedFile")
+		echo $((numberOfUntestedTests + 1)) > "@this.untestedFile"
+		flock -u "${lock_fd}"
+		exec {lock_fd}>&-
 	}
 
 	@public @method getFailCount {
-		echo "@this.numberOfFailedTests"
+		cat "@this.failedFile"
+	}
+
+	@public @method getPassCount {
+		cat "@this.passedFile"
+	}
+
+	@public @method getUntestedCount {
+		cat "@this.untestedFile"
 	}
 
 	@public @method toPrimitive {
-		echo "Tests Passed: @this.numberOfPassedTests"
-		echo "Tests Failed: @this.numberOfFailedTests"
-		echo "Tests Untested: @this.numberOfUntestedTests"
+		echo "Tests Passed: @this.getPassCount"
+		echo "Tests Failed: @this.getFailCount"
+		echo "Tests Untested: @this.getUntestedCount"
+		@this.clean
 	}
 }

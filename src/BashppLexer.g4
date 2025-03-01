@@ -41,6 +41,9 @@ bool can_increment_metatoken_counter = true;
 
 bool parsing_include_path = false;
 
+bool last_token_was_lvalue = false;
+bool in_variable_assignment_before_command = false;
+
 enum lexer_special_mode_type {
 	no_mode = 0,
 	mode_supershell,
@@ -70,12 +73,23 @@ inline bool contains_double_underscore(const std::string& s) {
 }
 
 void emit(std::unique_ptr<antlr4::Token> t) {
+	last_token_was_lvalue = false;
 	switch (t->getType()) {
 		case WS:
+			if (in_variable_assignment_before_command && modeStack.top() == no_mode) {
+				in_variable_assignment_before_command = false;
+				incoming_token_can_be_lvalue = true;
+				hit_at_in_current_command = false;
+				hit_lbrace_in_current_command = false;
+				hit_asterisk_in_current_command = false;
+			}
 			break;
 		case DELIM:
 		case NEWLINE:
 		case CONNECTIVE:
+			if (modeStack.top() == no_mode) {
+				in_variable_assignment_before_command = false;
+			}
 		case SUPERSHELL_START:
 		case SUBSHELL_START:
 		case DEPRECATED_SUBSHELL_START:
@@ -102,6 +116,9 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 			}
 			hit_asterisk_in_current_command = true;
 			break;
+		case IDENTIFIER_LVALUE:
+		case KEYWORD_THIS_LVALUE:
+			last_token_was_lvalue = true;
 		default:
 			incoming_token_can_be_lvalue = false;
 			break;
@@ -142,6 +159,128 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 #define emit(tokenType, text) emit(std::make_unique<CommonToken>(tokenType, text))
 
 }
+
+/*
+---------------------------------------------------------
+---------------------------------------------------------
+LVALUES AND RVALUES
+---------------------------------------------------------
+---------------------------------------------------------
+In Bash++, we have a concept of "lvalues" and "rvalues".
+	The way we use these two terms is not exactly the same as how they're used in some other languages
+
+The most simple case is an assignment statement:
+	@object.member=@otherObject.otherMember
+
+If you're familiar with these terms (lvalue and rvalue), then you'll know which is which here
+	@object.member is the lvalue in the assignment -- 'l' meaning 'left-hand side'
+	@otherObject.otherMember is the rvalue in the assignment -- 'r' meaning 'right-hand side'
+They serve different roles in the statement. And we have to handle those references differently
+	The 'lvalue' should be resolved as a *place* to put some data in
+	The 'rvalue' should be resolved to the data which is to be put in that place
+	We should take care to interpret these two parts of the statement correctly
+
+However, in Bash++ we have an additional meaning to the terms 'lvalue' and 'rvalue'
+	Consider a simple shell command:
+		program-name arg1 arg2 arg3
+	Here, 'program-name' is the lvalue
+		And 'arg1', 'arg2', and 'arg3' are the rvalues
+	So, 'lvalue' can also mean 'the command to run', as in, 'the left-hand side of the command string'
+	It's important for us to know which token is the command to run and which is the argument.
+
+	Suppose a case in which we call a non-primitive object's method:
+		1. @object.method arg1 arg2 arg3
+		2. program-name @object.method arg2 arg3
+	In the first case, '@object.method' is the lvalue and 'arg1', 'arg2', and 'arg3' are the rvalues
+	In the second case, 'program-name' is the lvalue and '@object.method', 'arg2', and 'arg3' are the rvalues
+		When the method is an rvalue:
+			We should call the method and substitute its output in place of the method call
+			Ie, pass the output of @object.method as an argument to program-name
+		When the method is an lvalue:
+			We just call it the same way we'd call any other command
+
+OK. How do we determine if a given token is an lvalue?
+	The naive approach is to say that the first token in a command is the lvalue
+		Ie, whenever we hit a newline, a semicolon, a pipe, or a logical connective,
+			We know that what's coming next can be an lvalue
+	But consider the following:
+		environmentVariable=value program-name arg1 arg2 arg3
+	Here, 'program-name' is *very clearly* an lvalue -- even though it's not the first token in the command
+	In fact, we can have an arbitrarily long list of shell variable assignments before the command
+		var1=val1 var2=val2 var3=val3 program-name arg1 arg2 arg3
+	Meanwhile, the left-hand sides of each assignment before 'command' are also lvalues
+		And it's important for us to *know* that they're lvalues
+
+Fortunately, these shell variable assignments prefacing a command are the only exceptional cases
+*/
+
+
+
+/*
+---------------------------------------------------------
+---------------------------------------------------------
+META-TOKENS
+---------------------------------------------------------
+---------------------------------------------------------
+How can we handle the *in* keyword in a 'case' (or 'for') statement?
+An ordinary case statement looks something like this:
+	case $var in
+		1)
+			echo "One"
+			;;
+		2)
+			echo "Two"
+			;;
+		*)
+			echo "Not one or two"
+			;;
+	esac
+
+Consider a slightly more obscure (but perfectly valid) case:
+	case in in
+		in)
+			in=in
+			./in in
+			;;
+	esac
+
+Here we have several 'in's. Which one is the keyword?
+	(Of course the second one is the keyword here)
+
+One obvious thought is that: maybe it's sufficient to check if 'in' is the *last* non-whitespace token of the current line
+Another potential approach is to check if 'in' is the second non-whitespace token after 'case'
+
+But consider the following (still perfectly valid) Bash code:
+	case "$(echo "a b c") d e f" #comment
+	in "a b c d e f")
+			echo "Match"
+			;;
+	esac
+
+In this case, the 'in' keyword is not the last non-whitespace token of the current line,
+nor is it the second non-whitespace token after 'case'
+
+We can define a new term: 'meta-token'. By our definition, 'in' must be the second "meta-token" after 'case'
+What is a meta-token?
+	Whitespace does not count as a meta-token
+	Comments do not count as meta-tokens
+	Constructs such as quotes, subshells, supershells, and arithmetic expressions are *single* meta-tokens
+		The parser for Bash++ actually considers strings to be sequences of statements
+		(This is because there may be object references etc inside strings which we need to resolve)
+		Therefore, a string is not a single token -- it is composed of many tokens.
+	But here we define a "meta-token" in a way such that, for example:
+		"$(echo "a b c") d e f"
+	Is a single meta-token
+		(And therefore, 'in' is the second meta-token after 'case' in the above example)
+	We take the highest-level of these multi-token constructs (strings, subshells, etc)
+		In the above case, the highest level is the outer string -- the quote marks surrounding the whole expression
+	And we wait for this construct to terminate before we consider the next "meta-token"
+
+Now that that's out of the way, we can say with complete accuracy,
+	That in a properly-written 'case' statement,
+	The 'in' keyword must be the second meta-token after 'case'.
+
+*/
 
 ESCAPE: '\\' . {
 	// Don't escape if we're in a single-quoted string
@@ -588,67 +727,6 @@ BASH_KEYWORD_FOR: 'for' {
 	}
 };
 
-/*
-How can we handle the *in* keyword in a 'case' (or 'for') statement?
-An ordinary case statement looks something like this:
-	case $var in
-		1)
-			echo "One"
-			;;
-		2)
-			echo "Two"
-			;;
-		*)
-			echo "Not one or two"
-			;;
-	esac
-
-Consider a slightly more obscure (but perfectly valid) case:
-	case in in
-		in)
-			in=in
-			./in in
-			;;
-	esac
-
-Here we have several 'in's. Which one is the keyword?
-	(Of course the second one is the keyword here)
-
-One obvious thought is that: maybe it's sufficient to check if 'in' is the *last* non-whitespace token of the current line
-Another potential approach is to check if 'in' is the second non-whitespace token after 'case'
-
-But consider the following (still perfectly valid) Bash code:
-	case "$(echo "a b c") d e f" #comment
-	in "a b c d e f")
-			echo "Match"
-			;;
-	esac
-
-In this case, the 'in' keyword is not the last non-whitespace token of the current line,
-nor is it the second non-whitespace token after 'case'
-
-We can define a new term: 'meta-token'. By our definition, 'in' must be the second "meta-token" after 'case'
-What is a meta-token?
-	Whitespace does not count as a meta-token
-	Comments do not count as meta-tokens
-	Constructs such as quotes, subshells, supershells, and arithmetic expressions are *single* meta-tokens
-		The parser for Bash++ actually considers strings to be sequences of statements
-		(This is because there may be object references etc inside strings which we need to resolve)
-		Therefore, a string is not a single token -- it is composed of many tokens.
-	But here we define a "meta-token" in a way such that, for example:
-		"$(echo "a b c") d e f"
-	Is a single meta-token
-		(And therefore, 'in' is the second meta-token after 'case' in the above example)
-	We take the highest-level of these multi-token constructs (strings, subshells, etc)
-		In the above case, the highest level is the outer string -- the quote marks surrounding the whole expression
-	And we wait for this construct to terminate before we consider the next "meta-token"
-
-Now that that's out of the way, we can say with complete accuracy,
-	That in a properly-written 'case' statement,
-	The 'in' keyword must be the second meta-token after 'case'.
-
-*/
-
 BASH_KEYWORD_IN: 'in' {
 	switch (modeStack.top()) {
 		case mode_quote:
@@ -733,6 +811,7 @@ ASSIGN: '=' {
 			if (_input->LA(1) == '(') {
 				modeStack.push(mode_array_assignment);
 			}
+			in_variable_assignment_before_command = last_token_was_lvalue;
 			break;
 	}
 };

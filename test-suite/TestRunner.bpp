@@ -3,8 +3,6 @@
 @class TestRunner {
 	@public @TestStats stats
 	@public tests=() # Hack. Array of pointers
-					# This will not work once type checking is implemented
-					# TODO(@rail5): Add object arrays to Bash++
 
 	@public @method updateStats test {
 		@Test* test="$test"

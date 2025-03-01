@@ -65,20 +65,14 @@
 
 		# Compare each line
 		local i=0
-		local pass=true
+		@this.status="pass"
 		while [[ "$i" -lt "${#outputLines[@]}" ]]; do
 			if ! [[ "@(grep -o -P "${expectedOutputLines[$i]}" <<<"${outputLines[$i]}")" == "${outputLines[$i]}" ]]; then
-				pass=false
+				@this.status="fail"
 				break
 			fi
 			i=$((i+1))
 		done
-
-		if [[ "$pass" == "true" ]]; then
-			@this.status="pass"
-		else
-			@this.status="fail"
-		fi
 	}
 
 	@public @method toPrimitive {

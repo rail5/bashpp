@@ -34,9 +34,20 @@
 
 	@public @method runAllTests {
 		# Run all the tests
+
+		# How many tests can we run concurrently?
+		local numberOfCores=@(nproc)
+		local concurrentTests=$((numberOfCores / 2))
+		if [[ $concurrentTests -eq 0 ]]; then
+			concurrentTests=1
+		fi
+
 		for i in @(seq 0 $((@{#this.tests[@]} - 1))); do
 			@Test* test="@{this.tests[$i]}"
 			@test.run &
+			if [[ $((i % concurrentTests)) -eq 0 ]]; then
+				wait
+			fi
 		done
 		# Wait for all tests to finish
 		wait

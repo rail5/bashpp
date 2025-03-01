@@ -1,3 +1,27 @@
+bpp (0.2.8) unstable; urgency=medium
+
+  * Test suite: run tests concurrently
+  * Major bug fix: Supershells
+    Stupid oversight in previous patch caused us to stop using shm and
+    file descriptors altogether
+    Using /dev/fd. This directory is not guaranteed by POSIX, but far
+    more portable than /proc/self/fd
+    This breaks compatibility with MacOS and Haiku
+  * Bug fix in pointer declarations: Verify current_datamember isn't
+    nullptr before accessing its method
+  * Build system: Compile and link separately for faster builds with
+    concurrency
+  * Bug fix: properly handle assignment prefixes before commands
+    The lexer should recognize that in a command like
+    'var=val command args'
+    'var' and 'command' are both lvalues (as per our unusual definition
+    of 'lvalue')
+  * Build system: Merged pull request #5 from wishdev/touchups
+    Common-sense repository touch-ups. Removing auto-generated header
+    file, adding gitignore, improved makefile workflow
+
+ -- rail5 <andrew@rail5.org>  Sat, 01 Mar 2025 14:52:08 +0800
+
 bpp (0.2.7) unstable; urgency=medium
 
   * Removed 'Array' class from STL

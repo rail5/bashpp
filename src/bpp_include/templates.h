@@ -20,11 +20,11 @@ function bpp____supershell() {
 	if [[ -z "${!__supershellFD}" ]]; then
 		bpp____initsupershell
 	else
-		__temporaryStorage=$(< ${!__supershellFD})
+		__temporaryStorage=$(< "/dev/fd/${!__supershellFD}")
 	fi
-	$__command 1>${!__supershellFD} 2>/dev/null
-	eval "$__outputVar=\$(< ${!__supershellFD})"
-	echo "${__temporaryStorage}">${!__supershellFD}
+	$__command 1>"/dev/fd/${!__supershellFD}" 2>/dev/null
+	eval "$__outputVar=\$(< "/dev/fd/${!__supershellFD}")"
+	echo "${__temporaryStorage}">"/dev/fd/${!__supershellFD}"
 }
 )EOF";
 

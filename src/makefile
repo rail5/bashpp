@@ -7,8 +7,17 @@ CXX = g++
 CXXFLAGS = -std=gnu++17 -O2 -s -Wall
 INCLUDEFLAGS = -I$(ANTLR4_HEADERS)
 
-all: antlr4
-	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -o bpp main.cpp antlr/BashppLexer.cpp antlr/BashppParser.cpp $(ANTLR4_RUNTIME_LIBRARY)
+all: lexer parser main
+	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -o bpp obj/lexer.o obj/parser.o obj/main.o $(ANTLR4_RUNTIME_LIBRARY)
+
+lexer: antlr4
+	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c -o obj/lexer.o antlr/BashppLexer.cpp
+
+parser: antlr4
+	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c -o obj/parser.o antlr/BashppParser.cpp
+
+main: antlr4
+	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c -o obj/main.o main.cpp
 
 antlr4:
 	$(ANTLR4) -Dlanguage=Cpp ./BashppLexer.g4 ./BashppParser.g4 -o ./antlr
@@ -17,7 +26,10 @@ clean-antlr4:
 	rm -rf antlr
 	rm -rf .antlr
 
+clean-objects:
+	rm -f obj/*.o
+
 clean-bpp:
 	rm -f bpp
 
-clean: clean-antlr4 clean-bpp
+clean: clean-antlr4 clean-objects clean-bpp

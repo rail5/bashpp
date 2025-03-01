@@ -11,7 +11,7 @@ endif
 all: compiler std
 
 compiler: clean-src clean-main update-version update-year
-	cd src && make
+	cd src && $(MAKE)
 	mv src/bpp bin/bpp
 
 std: clean-std compiler
@@ -64,7 +64,7 @@ update-year:
 	fi;
 
 clean-src:
-	cd src && make clean
+	cd src && $(MAKE) clean
 
 clean-main:
 	rm -f bin/bpp

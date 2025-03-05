@@ -8,7 +8,7 @@
 
 #include "BashppListener.h"
 
-BashppListener::code_segment BashppListener::generate_supershell_code(std::string code_to_run_in_supershell) {
+BashppListener::code_segment BashppListener::generate_supershell_code(const std::string& code_to_run_in_supershell) {
 	BashppListener::code_segment result;
 
 	uint64_t supershell_counter = program->get_supershell_counter();
@@ -50,6 +50,32 @@ BashppListener::code_segment BashppListener::generate_delete_code(std::shared_pt
 	}
 
 	result.pre_code += delete_function_name + " " + object_reference_string + " " + (is_pointer ? "1" : "0") + "\n";
+
+	return result;
+}
+
+BashppListener::code_segment BashppListener::generate_method_call_code(const std::string& reference_code, const std::string& method_name, std::shared_ptr<bpp::bpp_class> assumed_class) {
+	BashppListener::code_segment result;
+
+	if (assumed_class == nullptr) {
+		throw internal_error("Assumed class is null");
+	}
+
+	std::shared_ptr<bpp::bpp_method> assumed_method = assumed_class->get_method_UNSAFE(method_name);
+	if (assumed_method == nullptr) {
+		throw internal_error("Method " + method_name + " not found in class " + assumed_class->get_name());
+	}
+
+	// Is the method virtual?
+	if (assumed_method->is_virtual()) {
+		// Look up the method in the vTable
+		result.pre_code = "bpp____vTable__lookup \"" + reference_code + "\" \"" + method_name + "\" __func" + std::to_string(program->get_function_counter()) + "\n";
+		result.post_code = "unset __func" + std::to_string(program->get_function_counter()) + "\n";
+		result.code = "${!__func" + std::to_string(program->get_function_counter()) + "} " + reference_code + " 1";
+		program->increment_function_counter();
+	} else {
+		result.code = "bpp__" + assumed_class->get_name() + "__" + method_name + " " + reference_code + " 1";
+	}
 
 	return result;
 }

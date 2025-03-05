@@ -140,15 +140,14 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 			throw_syntax_error(ctx->IDENTIFIER().back(), "Cannot take the address of a method");
 		}
 
-		std::string method_call = "bpp__" + class_containing_the_method->get_name() + "__" + method->get_name() + " ";
-		// Append the containing object's address to the method call
 		std::string indirection = ctx->IDENTIFIER().size() > 1 ? "!" : "";
-		method_call += "${" + indirection + self_reference_code + "}";
-		// Tell the method that we *are* passing a pointer
-		method_call += " 1";
+
+		code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", method->get_name(), class_containing_the_method);
 
 		// Don't run the method in a supershell, just call it directly
-		self_reference_entity->add_code(method_call);
+		self_reference_entity->add_code_to_previous_line(method_call_code.pre_code);
+		self_reference_entity->add_code_to_next_line(method_call_code.post_code);
+		self_reference_entity->add_code(method_call_code.code);
 		return;
 	}
 
@@ -168,15 +167,13 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 		std::shared_ptr<bpp::bpp_pointer_dereference> pointer_dereference = std::dynamic_pointer_cast<bpp::bpp_pointer_dereference>(current_code_entity);
 		if (pointer_dereference != nullptr && last_reference_type != bpp::reference_type::ref_primitive) {
 			// Call .toPrimitive
-			std::string method_call = "bpp__" + last_reference_entity->get_class()->get_name() + "__toPrimitive ";
-			// Append the containing object's address to the method call
-			method_call += "${" + indirection + self_reference_code + "}";
-			// Tell the method that we *are* passing a pointer
-			method_call += " 1";
+			code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", "toPrimitive", last_reference_entity->get_class());
 
 			pointer_dereference->add_code_to_previous_line(self_reference_entity->get_pre_code());
+			pointer_dereference->add_code_to_previous_line(method_call_code.pre_code);
 			pointer_dereference->add_code_to_next_line(self_reference_entity->get_post_code());
-			pointer_dereference->add_code(method_call);
+			pointer_dereference->add_code_to_next_line(method_call_code.post_code);
+			pointer_dereference->add_code(method_call_code.code);
 
 			// Clear the self reference entity's code buffers
 			self_reference_entity->clear_all_buffers();
@@ -205,14 +202,12 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 	}
 
 	// We need to call the .toPrimitive method on the object
-	std::string method_call = "bpp__" + last_reference_entity->get_class()->get_name() + "__toPrimitive ";
-	// Append the containing object's address to the method call
-	method_call += "${" + self_reference_code + "}";
-	// Tell the method that we *are* passing a pointer
-	method_call += " 1";
+	code_segment method_call_code = generate_method_call_code("${!" + self_reference_code + "}", "toPrimitive", last_reference_entity->get_class());
 
 	// Don't run the method in a supershell, just call it directly
-	self_reference_entity->add_code(method_call);
+	self_reference_entity->add_code_to_previous_line(method_call_code.pre_code);
+	self_reference_entity->add_code_to_next_line(method_call_code.post_code);
+	self_reference_entity->add_code(method_call_code.code);
 }
 
 void BashppListener::exitSelf_reference_as_lvalue(BashppParser::Self_reference_as_lvalueContext *ctx) {

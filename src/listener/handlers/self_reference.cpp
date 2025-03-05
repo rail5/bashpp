@@ -207,10 +207,9 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 					return;
 				}
 				// Call .toPrimitive in a supershell and substitute the result
-				std::string method_call = "bpp__" + last_reference_entity->get_class()->get_name() + "__toPrimitive ";
-				method_call += "${" + indirection + self_reference_code + "} 1";
+				code_segment method_call_code = generate_method_call_code(self_reference_code, "toPrimitive", last_reference_entity->get_class());
 
-				code_segment method_code = generate_supershell_code(method_call);
+				code_segment method_code = generate_supershell_code(method_call_code.pre_code + "\n" + method_call_code.code + "\n" + method_call_code.post_code);
 				self_reference_entity->add_code_to_previous_line(method_code.pre_code);
 				self_reference_entity->add_code_to_next_line(method_code.post_code);
 				self_reference_entity->add_code(method_code.code);
@@ -288,13 +287,10 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 
 	if (!ready_to_exit) {
 		// We need to call the .toPrimitive method on the object
-		std::string method_call = "bpp__" + last_reference_entity->get_class()->get_name() + "__toPrimitive ";
-		// Append the containing object's address to the method call
-		method_call += "${" + self_reference_code + "}";
-		// Tell the method that we *are* passing a pointer
-		method_call += " 1";
+		indirection = (created_first_temporary_variable && !hasPoundKey) ? "!" : "";
+		code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", "toPrimitive", last_reference_entity->get_class());
 
-		code_segment method_code = generate_supershell_code(method_call);
+		code_segment method_code = generate_supershell_code(method_call_code.pre_code + "\n" + method_call_code.code + "\n" + method_call_code.post_code);
 		self_reference_entity->add_code_to_previous_line(method_code.pre_code);
 		self_reference_entity->add_code_to_next_line(method_code.post_code);
 		self_reference_entity->add_code(method_code.code);

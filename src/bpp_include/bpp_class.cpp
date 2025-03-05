@@ -12,6 +12,31 @@ namespace bpp {
 
 bpp_class::bpp_class() {}
 
+void bpp_class::remove_default_toPrimitive()  {
+	if (!has_custom_toPrimitive) {
+		// Remove the toPrimitive method from the methods vector
+		for (auto it = methods.begin(); it != methods.end(); it++) {
+			if ((*it)->get_name() == "toPrimitive") {
+				methods.erase(it);
+				break;
+			}
+		}
+	}
+}
+
+void bpp_class::add_default_toPrimitive()  {
+	if (!has_custom_toPrimitive) {
+		std::shared_ptr<bpp_method> toPrimitive = std::make_shared<bpp_method>();
+		toPrimitive->set_name("toPrimitive");
+		std::string default_toPrimitive_body = "	echo " + name + " Instance\n";
+		toPrimitive->add_code(default_toPrimitive_body);
+		toPrimitive->set_scope(bpp_scope::SCOPE_PUBLIC);
+		toPrimitive->set_virtual(true);
+		remove_default_toPrimitive();
+		methods.push_back(toPrimitive);
+	}
+}
+
 std::weak_ptr<bpp::bpp_class> bpp_class::get_containing_class() const {
 	return std::const_pointer_cast<bpp::bpp_class>(this->shared_from_this());
 }
@@ -38,6 +63,7 @@ bool bpp_class::add_method(std::shared_ptr<bpp_method> method) {
 		if (method->get_scope() != bpp_scope::SCOPE_PUBLIC) {
 			return false;
 		}
+		method->set_virtual(true);
 		remove_default_toPrimitive();
 		has_custom_toPrimitive = true;
 	}
@@ -46,6 +72,7 @@ bool bpp_class::add_method(std::shared_ptr<bpp_method> method) {
 		if ((*it)->get_name() == name) {
 			if ((*it)->is_inherited() && (*it)->is_virtual()) {
 				// Override the inherited virtual method
+				method->set_virtual(true);
 				methods.erase(it);
 				methods.push_back(method);
 				return true;
@@ -148,6 +175,15 @@ std::shared_ptr<bpp::bpp_method> bpp_class::get_method(const std::string& name, 
 			if (m->get_scope() == bpp_scope::SCOPE_INACCESSIBLE) {
 				return bpp::inaccessible_method;
 			}
+		}
+	}
+	return nullptr;
+}
+
+std::shared_ptr<bpp::bpp_method> bpp_class::get_method_UNSAFE(const std::string& name) {
+	for (auto& m : methods) {
+		if (m->get_name() == name) {
+			return m;
 		}
 	}
 	return nullptr;

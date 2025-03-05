@@ -176,11 +176,9 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 
 	if (last_reference_type == bpp::reference_type::ref_method) {
 		indirection = ctx->IDENTIFIER().size() > 3 ? "!" : "";
-		std::string method_call = "bpp__" + class_containing_the_method->get_name() + "__" + method->get_name() + " ";
-		method_call += encase_open + indirection + object_reference_code + encase_close;
-		method_call += " 1";
+		code_segment method_call_code = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, method->get_name(), class_containing_the_method);
 
-		code_segment method_code = generate_supershell_code(method_call);
+		code_segment method_code = generate_supershell_code(method_call_code.pre_code + "\n" + method_call_code.code + "\n" + method_call_code.post_code);
 		object_reference_entity->add_code_to_previous_line(method_code.pre_code);
 		object_reference_entity->add_code_to_next_line(method_code.post_code);
 		object_reference_entity->add_code(method_code.code);
@@ -261,7 +259,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 			object_reference_code = temporary_variable_lvalue;
 		}
 
-		if (last_reference_type == bpp::reference_type::ref_primitive || datamember_is_pointer) {
+		if (last_reference_type == bpp::reference_type::ref_primitive || (datamember_is_pointer && pointer_dereference == nullptr)) {
 			indirection = (created_second_temporary_variable && !hasPoundKey) ? "!" : "";
 			object_reference_entity->add_code("${" + indirection + object_reference_code + "}");
 
@@ -305,13 +303,11 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 					pointer_dereference->get_value_assignment()->set_nonprimitive_object(last_reference_object);
 				} else {
 					// Call .toPrimitive
-					std::string method_call = "bpp__" + last_reference_object->get_class()->get_name() + "__toPrimitive ";
-					// Append the containing object's address to the method call
-					method_call += "${" + object_reference_code + "}";
-					// Tell the method that we *are* passing a pointer
-					method_call += " 1";
+					indirection = (created_second_temporary_variable && !hasPoundKey) ? "!" : "";
 
-					code_segment method_code = generate_supershell_code(method_call);
+					code_segment method_call_code = generate_method_call_code("${" + indirection + object_reference_code + "}", "toPrimitive", last_reference_object->get_class());
+
+					code_segment method_code = generate_supershell_code(method_call_code.pre_code + "\n" + method_call_code.code + "\n" + method_call_code.post_code);
 					object_reference_entity->add_code_to_previous_line(method_code.pre_code);
 					object_reference_entity->add_code_to_next_line(method_code.post_code);
 					code_to_add = method_code.code;
@@ -347,16 +343,13 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 
 	if (!ready_to_exit) {
 		// We need to call the .toPrimitive method on the object
-		std::string method_call = "bpp__" + last_reference_entity->get_class()->get_name() + "__toPrimitive ";
-		// Append the containing object's address to the method call
 		encase_open = ctx->IDENTIFIER().size() > 1 ? "${" : "";
 		encase_close = ctx->IDENTIFIER().size() > 1 ? "}" : "";
 		indirection = ctx->IDENTIFIER().size() > 2 ? "!" : "";
-		method_call += encase_open + indirection + object_reference_code + encase_close;
-		// Tell the method that we *are* passing a pointer
-		method_call += " 1";
 
-		code_segment method_code = generate_supershell_code(method_call);
+		code_segment method_call_code = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, "toPrimitive", last_reference_entity->get_class());
+
+		code_segment method_code = generate_supershell_code(method_call_code.pre_code + "\n" + method_call_code.code + "\n" + method_call_code.post_code);
 		object_reference_entity->add_code_to_previous_line(method_code.pre_code);
 		object_reference_entity->add_code_to_next_line(method_code.post_code);
 		object_reference_entity->add_code(method_code.code);

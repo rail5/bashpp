@@ -134,13 +134,14 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 	std::stack<std::string> get_include_stack();
 
 	struct code_segment {
-		std::string pre_code;
-		std::string code;
-		std::string post_code;
+		std::string pre_code = "";
+		std::string code = "";
+		std::string post_code = "";
 	};
 
-	code_segment generate_supershell_code(std::string code_to_run_in_supershell);
+	code_segment generate_supershell_code(const std::string& code_to_run_in_supershell);
 	code_segment generate_delete_code(std::shared_ptr<bpp::bpp_object> object, const std::string& object_reference_string, bool force_pointer = false);
+	code_segment generate_method_call_code(const std::string& reference_code, const std::string& method_name, std::shared_ptr<bpp::bpp_class> assumed_class);
 
 	void enterProgram(BashppParser::ProgramContext *ctx) override;
 	void exitProgram(BashppParser::ProgramContext *ctx) override;

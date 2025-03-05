@@ -440,29 +440,8 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 		bool destructor_set = false;
 		bool has_custom_toPrimitive = false;
 
-		void remove_default_toPrimitive() {
-			if (!has_custom_toPrimitive) {
-				// Remove the toPrimitive method from the methods vector
-				for (auto it = methods.begin(); it != methods.end(); it++) {
-					if ((*it)->get_name() == "toPrimitive") {
-						methods.erase(it);
-						break;
-					}
-				}
-			}
-		}
-
-		void add_default_toPrimitive() {
-			if (!has_custom_toPrimitive) {
-				std::shared_ptr<bpp_method> toPrimitive = std::make_shared<bpp_method>();
-				toPrimitive->set_name("toPrimitive");
-				std::string default_toPrimitive_body = "	echo " + name + " Instance\n";
-				toPrimitive->add_code(default_toPrimitive_body);
-				toPrimitive->set_scope(bpp_scope::SCOPE_PUBLIC);
-				remove_default_toPrimitive();
-				methods.push_back(toPrimitive);
-			}
-		}
+		void remove_default_toPrimitive();
+		void add_default_toPrimitive();
 	public:
 		bpp_class();
 
@@ -486,6 +465,7 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 		bool has_destructor() const;
 
 		std::shared_ptr<bpp_method> get_method(const std::string& name, std::shared_ptr<bpp_entity> context);
+		std::shared_ptr<bpp_method> get_method_UNSAFE(const std::string& name);
 		std::shared_ptr<bpp_datamember> get_datamember(const std::string& name, std::shared_ptr<bpp_entity> context);
 
 		void inherit(std::shared_ptr<bpp_class> parent) override;
@@ -549,6 +529,7 @@ class bpp_program : public bpp_code_entity {
 		std::shared_ptr<bpp_class> primitive_class;
 		uint64_t supershell_counter = 0;
 		uint64_t assignment_counter = 0;
+		uint64_t function_counter = 0;
 	public:
 		bpp_program();
 
@@ -564,6 +545,9 @@ class bpp_program : public bpp_code_entity {
 
 		void increment_assignment_counter();
 		uint64_t get_assignment_counter() const;
+
+		void increment_function_counter();
+		uint64_t get_function_counter() const;
 };
 
 } // namespace bpp

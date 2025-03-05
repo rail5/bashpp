@@ -28,17 +28,31 @@ function bpp____supershell() {
 }
 )EOF";
 
+const char* bpp_vtable_lookup = R"EOF(function bpp____vTable__lookup() {
+	local __objectAddress="$1" __method="$2" __outputVar="$3"
+	([[ -z "${__objectAddress}" ]] || [[ -z "${__method}" ]] || [[ -z "${__outputVar}" ]]) && >&2 echo "Bash++: Error: Invalid vTable lookup" && exit 1
+	while [[ ! -z "${!__objectAddress}" ]]; do
+		__objectAddress="${!__objectAddress}"
+	done
+	local __vTable="${__objectAddress}____vPointer"
+	[[ -z "${!__vTable}" ]] && >&2 echo "Bash++:: Error: vTable not found for object '${__objectAddress}'" && exit 1
+	local __result="${!__vTable}[\"${__method}\"]"
+	[[ -z "${!__result}" ]] && >&2 echo "Bash++: Error: Method '${__method}' not found in vTable for object '${__objectAddress}'" && exit 1
+	eval "${__outputVar}=\$__result"
+}
+)EOF";
+
 const char* template_new_function = R"EOF(function bpp__%CLASS%____new() {
 	local __objectName="$1"
 	if [[ "${__objectName}" == "" ]]; then
 		while : ; do
 			__objectName="$RANDOM$RANDOM$RANDOM$RANDOM"
-			local __unusedVar="bpp__%CLASS%__${__objectName}____inUse"
+			local __unusedVar="bpp__%CLASS%__${__objectName}____vPointer"
 			[[ -z "${!__unusedVar+x}" ]] && break
 		done
 	fi
 	local __objectAddress="bpp__%CLASS%__${__objectName}"
-	eval "${__objectAddress}____inUse=1"
+	eval "${__objectAddress}____vPointer=bpp__%CLASS%____vTable"
 %ASSIGNMENTS%
 	echo "${__objectAddress}"
 }
@@ -50,13 +64,13 @@ const char* template_delete_function = R"EOF(function bpp__%CLASS%____delete() {
 	if [[ "${__objectIsPtr}" -ne 1 ]]; then
 		__objectAddress="bpp__%CLASS%__${__objectName}"
 	fi
-	local __inUseVar="${__objectAddress}____inUse"
-	if [[ "${__objectAddress}" == "0" ]] || [[ "${!__inUseVar}" -ne 1 ]]; then
+	local __vPointer="${__objectAddress}____vPointer"
+	if [[ "${__objectAddress}" == "0" ]] || [[ -z "${!__vPointer}" ]]; then
 		>&2 echo "Bash++: Error: %CLASS%: Attempted to delete null object"
 		return
 	fi
 %DELETIONS%
-	unset ${__objectAddress}____inUse
+	unset ${__objectAddress}____vPointer
 }
 )EOF";
 
@@ -69,17 +83,17 @@ const char* template_copy_function = R"EOF(function bpp__%CLASS%____copy() {
 	if [[ "${__copyToIsPtr}" -ne 1 ]]; then
 		__copyToAddress="bpp__%CLASS%__${__copyTo}"
 	fi
-	local __copyFromInUseVar="${__copyFromAddress}____inUse" __copyToInUseVar="${__copyToAddress}____inUse"
-	if [[ "${__copyFromAddress}" == "0" ]] || [[ "${!__copyFromInUseVar}" -ne 1 ]]; then
+	local __copyFromVPointer="${__copyFromAddress}____vPointer" __copyToVPointer="${__copyToAddress}____vPointer"
+	if [[ "${__copyFromAddress}" == "0" ]] || [[ -z "${!__copyFromVPointer}" ]]; then
 		>&2 echo "Bash++: Error: %CLASS%: Attempted to copy from null object"
 		return
 	fi
-	if [[ "${__copyToAddress}" == "0" ]] || [[ "${!__copyToInUseVar}" -ne 1 ]]; then
+	if [[ "${__copyToAddress}" == "0" ]] || [[ -z "${!__copyToVPointer}" ]]; then
 		>&2 echo "Bash++: Error: %CLASS%: Attempted to copy to null object"
 		return
 	fi
 %COPIES%
-	eval "${__copyToAddress}____inUse=1"
+	eval "${__copyToVPointer}=${!__copyFromVPointer}"
 }
 )EOF";
 
@@ -90,8 +104,8 @@ const char* template_method = R"EOF(function bpp__%CLASS%__%SIGNATURE%() {
 	if [[ "${__objectIsPtr}" -ne 1 ]]; then
 		__objectAddress="bpp__%CLASS%__${__objectName}"
 	fi
-	local __inUseVar="${__objectAddress}____inUse"
-	if [[ "${__objectAddress}" == "0" ]] || [[ "${!__inUseVar}" -ne 1 ]]; then
+	local __vPointer="${__objectAddress}____vPointer"
+	if [[ "${__objectAddress}" == "0" ]] || [[ -z "${!__vPointer}" ]]; then
 		>&2 echo "Bash++: Error: Attempted to call @%CLASS%.%SIGNATURE% on null object"
 		return
 	fi
@@ -105,8 +119,8 @@ const char* template_constructor = R"EOF(function bpp__%CLASS%____constructor() 
 	if [[ "${__objectIsPtr}" -ne 1 ]]; then
 		__objectAddress="bpp__%CLASS%__${__objectName}"
 	fi
-	local __inUseVar="${__objectAddress}____inUse"
-	if [[ "${__objectAddress}" == "0" ]] || [[ "${!__inUseVar}" -ne 1 ]]; then
+	local __vPointer="${__objectAddress}____vPointer"
+	if [[ "${__objectAddress}" == "0" ]] || [[ -z "${!__vPointer}" ]]; then
 		>&2 echo "Bash++: Error: %CLASS%: Attempted to construct null object"
 		return
 	fi
@@ -120,8 +134,8 @@ const char* template_destructor = R"EOF(function bpp__%CLASS%____destructor() {
 	if [[ "${__objectIsPtr}" -ne 1 ]]; then
 		__objectAddress="bpp__%CLASS%__${__objectName}"
 	fi
-	local __inUseVar="${__objectAddress}____inUse"
-	if [[ "${__objectAddress}" == "0" ]] || [[ "${!__inUseVar}" -ne 1 ]]; then
+	local __vPointer="${__objectAddress}____vPointer"
+	if [[ "${__objectAddress}" == "0" ]] || [[ -z "${!__vPointer}" ]]; then
 		>&2 echo "Bash++: Error: %CLASS%: Attempted to destruct null object"
 		return
 	fi

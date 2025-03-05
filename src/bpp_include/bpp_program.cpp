@@ -137,6 +137,7 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	class_code = replace_all(class_code, "%CLASS%", class_->get_name());
 
 	// Add the methods
+	std::string class_vTable = "declare -A bpp__" + name + "____vTable\n";
 	for (auto& method : class_->get_methods()) {
 		std::string method_code = template_method;
 		std::string method_name = method->get_name();
@@ -152,9 +153,14 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 		method_code = replace_all(method_code, "%PARAMS%", params);
 		method_code = replace_all(method_code, "%METHODBODY%", method->get_code());
 		class_code += method_code;
+
+		// Add the method to the vTable if it is virtual
+		if (method->is_virtual()) {
+			class_vTable += "bpp__" + name + "____vTable[\"" + method_name + "\"]=\"bpp__" + name + "__" + method_name + "\"\n";
+		}
 	}
 
-	*code << class_code << std::flush;
+	*code << class_code << class_vTable << std::flush;
 
 	return true;
 }
@@ -178,6 +184,20 @@ void bpp_program::increment_assignment_counter() {
 
 uint64_t bpp_program::get_assignment_counter() const {
 	return assignment_counter;
+}
+
+void bpp_program::increment_function_counter() {
+	function_counter++;
+
+	if (function_counter == 1) {
+		// This is the first function called
+		// Write the vTable_lookup code to the program
+		add_code_to_previous_line(bpp_vtable_lookup);
+	}
+}
+
+uint64_t bpp_program::get_function_counter() const {
+	return function_counter;
 }
 
 } // namespace bpp

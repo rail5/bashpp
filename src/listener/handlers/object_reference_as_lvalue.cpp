@@ -166,11 +166,11 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 			throw_syntax_error(ctx->IDENTIFIER_LVALUE(), "Cannot assign to a method");
 		}
 		// Call the method directly -- not in a supershell
-		std::string method_call = "bpp__" + class_containing_the_method->get_name() + "__" + method->get_name() + " ";
-		method_call += encase_open + indirection + object_reference_code + encase_close;
-		method_call += " 1";
+		BashppListener::code_segment method_call = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, method->get_name(), class_containing_the_method);
 
-		object_reference_entity->add_code(method_call);
+		object_reference_entity->add_code_to_previous_line(method_call.pre_code);
+		object_reference_entity->add_code_to_next_line(method_call.post_code);
+		object_reference_entity->add_code(method_call.code);
 		return;
 	}
 
@@ -242,10 +242,11 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 				object_reference_entity->add_code(encase_open + indirection + object_reference_code + encase_close);
 			} else {
 				// Call .toPrimitive
-				std::string method_call = "bpp__" + last_reference_object->get_class()->get_name() + "__toPrimitive ";
-				method_call += "${" + object_reference_code + "} 1";
+				code_segment method_call_code = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, "toPrimitive", last_reference_object->get_class());
 
-				object_reference_entity->add_code(method_call);
+				object_reference_entity->add_code_to_previous_line(method_call_code.pre_code);
+				object_reference_entity->add_code_to_next_line(method_call_code.post_code);
+				object_reference_entity->add_code(method_call_code.code);
 			}
 			return;
 		} else {
@@ -265,9 +266,11 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 
 	if (last_reference_object != nullptr) {
 		// Call .toPrimitive
-		std::string method_call = "bpp__" + last_reference_object->get_class()->get_name() + "__toPrimitive ";
-		method_call += encase_open + indirection + object_reference_code + encase_close + " 1";
-		object_reference_entity->add_code(method_call);
+		code_segment method_call_code = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, "toPrimitive", last_reference_object->get_class());
+
+		object_reference_entity->add_code_to_previous_line(method_call_code.pre_code);
+		object_reference_entity->add_code_to_next_line(method_call_code.post_code);
+		object_reference_entity->add_code(method_call_code.code);
 	}
 }
 

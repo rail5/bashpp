@@ -46,6 +46,23 @@
 		echo "@this.expectedOutput"
 	}
 
+	@public @method finishTest {
+		if [[ @this.stats != @nullptr ]]; then
+			case "@this.status" in
+				"untested")
+					@this.stats.incrementUntestedTests
+					;;
+				"pass")
+					@this.stats.incrementPassedTests
+					;;
+				"fail")
+					@this.stats.incrementFailedTests
+					;;
+			esac
+		fi
+		@this.toPrimitive
+	}
+
 	@public @method run {
 		if [[ -z "@this.name" ]] || [[ -z "@this.sourceFile" ]]; then
 			echo "Test name and source file must be set before running the test."
@@ -70,6 +87,7 @@
 		# If the output and expected output have different numbers of lines, the test fails immediately
 		if [[ "${#outputLines[@]}" -ne "${#expectedOutputLines[@]}" ]]; then
 			@this.status="fail"
+			@this.finishTest
 			return
 		fi
 
@@ -79,25 +97,13 @@
 		while [[ "$i" -lt "${#outputLines[@]}" ]]; do
 			if [[ "@(grep -o -P "^${expectedOutputLines[$i]}$" <<<"${outputLines[$i]}")" != "${outputLines[$i]}" ]]; then
 				@this.status="fail"
+				@this.finishTest
 				break
 			fi
 			i=$((i+1))
 		done
 
-		if [[ @this.stats != @nullptr ]]; then
-			case "@this.status" in
-				"untested")
-					@this.stats.incrementUntestedTests
-					;;
-				"pass")
-					@this.stats.incrementPassedTests
-					;;
-				"fail")
-					@this.stats.incrementFailedTests
-					;;
-			esac
-		fi
-		@this.toPrimitive
+		@this.finishTest
 	}
 
 	@public @method toPrimitive {

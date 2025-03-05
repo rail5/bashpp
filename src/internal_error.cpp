@@ -11,6 +11,8 @@
 struct internal_error : public std::runtime_error {
 	internal_error(const std::string& msg, antlr4::tree::ParseTree* location)
 		: std::runtime_error(msg + "\nYou've found a bug! Please report it.\nContext: " + location->getText()) {}
+	
+	explicit internal_error(const std::string& msg) : std::runtime_error(msg + "\nYou've found a bug! Please report it.") {}
 };
 
 #endif // SRC_INTERNAL_ERROR_CPP_

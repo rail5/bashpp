@@ -1,6 +1,6 @@
 <style>
 	.page-content {
-		padding: 0 0 !important;
+		padding: 55px 0 !important;
 	}
 </style>
 

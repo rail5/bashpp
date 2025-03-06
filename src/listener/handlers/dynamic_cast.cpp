@@ -62,7 +62,7 @@ void BashppListener::exitDynamic_cast_statement(BashppParser::Dynamic_cast_state
 	}
 
 	code_segment dynamic_cast_code;
-	dynamic_cast_code.pre_code = "bpp____dynamic__cast \"" + dynamic_cast_entity->get_code() + "\" \"" + dynamic_cast_entity->get_cast_to()->get_name() + "\" __dynamicCast" + std::to_string(program->get_dynamic_cast_counter()) + "\n";
+	dynamic_cast_code.pre_code = "bpp____dynamic__cast " + dynamic_cast_entity->get_code() + " " + dynamic_cast_entity->get_cast_to()->get_name() + " __dynamicCast" + std::to_string(program->get_dynamic_cast_counter()) + "\n";
 	dynamic_cast_code.code = "${__dynamicCast" + std::to_string(program->get_dynamic_cast_counter()) + "}";
 	dynamic_cast_code.post_code = "unset __dynamicCast" + std::to_string(program->get_dynamic_cast_counter()) + "\n";
 

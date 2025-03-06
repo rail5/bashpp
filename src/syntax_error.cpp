@@ -15,10 +15,11 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 
-void print_syntax_error(std::string source_file, int line, int column, const std::string& text, const std::string& msg, std::stack<std::string> include_chain) {
+void print_syntax_error_or_warning(std::string source_file, int line, int column, const std::string& text, const std::string& msg, std::stack<std::string> include_chain, bool is_warning = false) {
 	bool is_tty = isatty(fileno(stderr));
 	std::string color_red = is_tty ? "\033[0;31m" : "";
 	std::string color_purple = is_tty ? "\033[1;35m" : "";
+	std::string color_orange = is_tty ? "\033[0;33m" : "";
 	std::string color_reset = is_tty ? "\033[0m" : "";
 	if (!isatty(fileno(stderr))) {
 		color_red = "";
@@ -39,7 +40,11 @@ void print_syntax_error(std::string source_file, int line, int column, const std
 		std::cerr << "In file included from " << color_purple << include_chain.top() << color_reset << std::endl;
 		include_chain.pop();
 	}
-	std::cerr << color_red << "error: " << color_reset << msg << extra_info << std::endl;
+	if (is_warning) {
+		std::cerr << color_orange << "warning: " << color_reset << msg << extra_info << std::endl;
+	} else {
+		std::cerr << color_red << "error: " << color_reset << msg << extra_info << std::endl;
+	}
 
 	// If we do have position data, however, we can give a broader context:
 	// Show the contents of the line which has the error,

@@ -100,7 +100,7 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 			int line = symbol->getLine(); \
 			int column = symbol->getCharPositionInLine(); \
 			std::string text = symbol->getText(); \
-			print_syntax_error(source_file, line, column, text, msg, get_include_stack()); \
+			print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack()); \
 			program_has_errors = true;
 
 		#define throw_syntax_error_sym(symbol, msg) \
@@ -116,6 +116,15 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 		#define throw_syntax_error_from_exitRule(token, msg) antlr4::Token* symbol = token->getSymbol(); \
 			output_syntax_error(symbol, msg) \
 			return;
+		
+		#define show_warning_sym(symbol, msg) \
+			int line = symbol->getLine(); \
+			int column = symbol->getCharPositionInLine(); \
+			std::string text = symbol->getText(); \
+			print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), true);
+		
+		#define show_warning(token, msg) antlr4::Token* symbol = token->getSymbol(); \
+			show_warning_sym(symbol, msg)
 
 	public:
 

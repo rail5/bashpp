@@ -39,6 +39,8 @@ general_statement: include_statement
 	| object_address
 	| pointer_dereference
 	| nullptr_ref
+	| dynamic_cast_statement
+	| new_statement
 	| bash_while_loop
 	| bash_if_statement
 	| bash_case_statement
@@ -80,6 +82,7 @@ value_assignment: PLUS? ASSIGN ((raw_rvalue
 	| object_address
 	| supershell)+
 	| new_statement
+	| dynamic_cast_statement
 	| array_value)?;
 
 // Object instantiation
@@ -98,6 +101,9 @@ pointer_dereference: ASTERISK ref_general;
 
 // Object address
 object_address: AMPERSAND ref_rvalue;
+
+// Casting
+dynamic_cast_statement: KEYWORD_DYNAMIC_CAST WS* LESSTHAN WS* IDENTIFIER WS* GREATERTHAN WS* (object_address | ref_rvalue);
 
 // Object reference
 ref_general: ref_lvalue | ref_rvalue;

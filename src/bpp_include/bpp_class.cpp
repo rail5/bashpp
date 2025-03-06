@@ -268,6 +268,13 @@ void bpp_class::inherit(std::shared_ptr<bpp_class> parent) {
 	parents.push_back(parent);
 }
 
+std::shared_ptr<bpp::bpp_class> bpp_class::get_parent() {
+	if (parents.size() == 0) {
+		return nullptr;
+	}
+	return parents.back();
+}
+
 } // namespace bpp
 
 #endif // SRC_BPP_INCLUDE_BPP_CLASS_CPP

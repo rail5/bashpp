@@ -136,8 +136,15 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	// Replace all instances of %CLASS% with the class name
 	class_code = replace_all(class_code, "%CLASS%", class_->get_name());
 
-	// Add the methods
+	// Declare the vTable
 	std::string class_vTable = "declare -A bpp__" + name + "____vTable\n";
+
+	// Add the class's parent to the vTable
+	if (class_->get_parent() != nullptr) {
+		class_vTable += "bpp__" + name + "____vTable[\"__parent__\"]=\"bpp__" + class_->get_parent()->get_name() + "____vTable\"\n";
+	}
+
+	// Add the methods
 	for (auto& method : class_->get_methods()) {
 		std::string method_code = template_method;
 		std::string method_name = method->get_name();
@@ -198,6 +205,20 @@ void bpp_program::increment_function_counter() {
 
 uint64_t bpp_program::get_function_counter() const {
 	return function_counter;
+}
+
+void bpp_program::increment_dynamic_cast_counter() {
+	dynamic_cast_counter++;
+
+	if (dynamic_cast_counter == 1) {
+		// This is the first dynamic_cast called
+		// Write the dynamic_cast code to the program
+		add_code_to_previous_line(bpp_dynamic_cast);
+	}
+}
+
+uint64_t bpp_program::get_dynamic_cast_counter() const {
+	return dynamic_cast_counter;
 }
 
 } // namespace bpp

@@ -21,6 +21,7 @@
 #include "listener/handlers/new_statement.cpp"
 #include "listener/handlers/nullptr_ref.cpp"
 #include "listener/handlers/object_address.cpp"
+#include "listener/handlers/dynamic_cast.cpp"
 #include "listener/handlers/object_assignment.cpp"
 #include "listener/handlers/object_instantiation.cpp"
 #include "listener/handlers/object_reference_as_lvalue.cpp"

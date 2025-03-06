@@ -508,6 +508,8 @@ KEYWORD_NEW: '@new' WORD_BOUNDARY;
 KEYWORD_DELETE: '@delete' WORD_BOUNDARY;
 KEYWORD_NULLPTR: '@nullptr';
 
+KEYWORD_DYNAMIC_CAST: '@dynamic_cast';
+
 KEYWORD_INCLUDE_ONCE: '@include_once' WORD_BOUNDARY {
 	if (modeStack.top() == no_mode) {
 		pushMode(PARSE_INCLUDE_PATH);

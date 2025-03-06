@@ -31,14 +31,37 @@ function bpp____supershell() {
 const char* bpp_vtable_lookup = R"EOF(function bpp____vTable__lookup() {
 	local __objectAddress="$1" __method="$2" __outputVar="$3"
 	([[ -z "${__objectAddress}" ]] || [[ -z "${__method}" ]] || [[ -z "${__outputVar}" ]]) && >&2 echo "Bash++: Error: Invalid vTable lookup" && exit 1
-	while [[ ! -z "${!__objectAddress}" ]]; do
+	while : ; do
+		if ! eval "declare -p \"${__objectAddress}\"" &>/dev/null; then
+			break
+		fi
+		[[ -z "${!__objectAddress}" ]] && break
 		__objectAddress="${!__objectAddress}"
 	done
 	local __vTable="${__objectAddress}____vPointer"
-	[[ -z "${!__vTable}" ]] && >&2 echo "Bash++:: Error: vTable not found for object '${__objectAddress}'" && exit 1
+	if ! eval "declare -p \"${__vTable}\"" &>/dev/null; then
+		>&2 echo "Bash++: Error: vTable not found for object '${__objectAddress}'"
+		exit 1
+	fi
 	local __result="${!__vTable}[\"${__method}\"]"
 	[[ -z "${!__result}" ]] && >&2 echo "Bash++: Error: Method '${__method}' not found in vTable for object '${__objectAddress}'" && exit 1
 	eval "${__outputVar}=\$__result"
+}
+)EOF";
+
+const char* bpp_dynamic_cast = R"EOF(function bpp____dynamic__cast() {
+	local __objectAddress="$1" __type="$2" __outputVar="$3"
+	([[ -z "${__objectAddress}" ]] || [[ -z "${__type}" ]] || [[ -z "${__outputVar}" ]]) && >&2 echo "Bash++: Error: Invalid dynamic_cast" && exit 1
+	eval "${__outputVar}=0"
+	while [[ ! -z "${!__objectAddress}" ]] 2>/dev/null; do
+		__objectAddress="${!__objectAddress}"
+	done
+	local __vTable="${__objectAddress}____vPointer"
+	while [[ ! -z "${!__vTable}" ]] 2>/dev/null; do
+		[[ "${!__vTable}" == "bpp__${__type}____vTable" ]] && eval "${__outputVar}=\"${__objectAddress}\"" && return 0
+		__vTable="${!__vTable}[\"__parent__\"]"
+	done
+	return 1
 }
 )EOF";
 

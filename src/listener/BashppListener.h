@@ -29,6 +29,7 @@ class BashppListener;
 #include "../bpp_include/bash_case_pattern.cpp"
 #include "../bpp_include/bash_for.cpp"
 #include "../bpp_include/bpp_delete_statement.cpp"
+#include "../bpp_include/bpp_dynamic_cast_statement.cpp"
 #include "../bpp_include/bpp_value_assignment.cpp"
 #include "../bpp_include/bpp_object_reference.cpp"
 #include "../bpp_include/bpp_object_assignment.cpp"
@@ -212,6 +213,9 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 
 	void enterDelete_statement(BashppParser::Delete_statementContext *ctx) override;
 	void exitDelete_statement(BashppParser::Delete_statementContext *ctx) override;
+
+	void enterDynamic_cast_statement(BashppParser::Dynamic_cast_statementContext *ctx) override;
+	void exitDynamic_cast_statement(BashppParser::Dynamic_cast_statementContext *ctx) override;
 
 	void enterSupershell(BashppParser::SupershellContext *ctx) override;
 	void exitSupershell(BashppParser::SupershellContext *ctx) override;

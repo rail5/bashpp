@@ -118,6 +118,10 @@ void BashppListener::set_run_on_exit(bool run_on_exit) {
 	this->run_on_exit = run_on_exit;
 }
 
+void BashppListener::set_suppress_warnings(bool suppress_warnings) {
+	this->suppress_warnings = suppress_warnings;
+}
+
 void BashppListener::set_arguments(std::vector<char*> arguments) {
 	this->arguments = arguments;
 }

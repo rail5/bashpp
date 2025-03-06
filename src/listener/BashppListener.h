@@ -62,6 +62,7 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 		bool included = false;
 		std::shared_ptr<std::vector<std::string>> include_paths = nullptr;
 		bool dynamic_linking = false;
+		bool suppress_warnings = false;
 		std::set<std::string> included_files = {};
 		BashppListener* included_from = nullptr;
 		std::stack<std::string> include_stack;
@@ -118,10 +119,12 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 			return;
 		
 		#define show_warning_sym(symbol, msg) \
-			int line = symbol->getLine(); \
-			int column = symbol->getCharPositionInLine(); \
-			std::string text = symbol->getText(); \
-			print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), true);
+			if (!suppress_warnings) { \
+				int line = symbol->getLine(); \
+				int column = symbol->getCharPositionInLine(); \
+				std::string text = symbol->getText(); \
+				print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), true); \
+			}
 		
 		#define show_warning(token, msg) antlr4::Token* symbol = token->getSymbol(); \
 			show_warning_sym(symbol, msg)
@@ -136,7 +139,8 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 	void set_errors();
 	void set_output_stream(std::shared_ptr<std::ostream> output_stream);
 	void set_output_file(std::string output_file);
-	void set_run_on_exit(bool run_on_exit) ;
+	void set_run_on_exit(bool run_on_exit);
+	void set_suppress_warnings(bool suppress_warnings);
 	void set_arguments(std::vector<char*> arguments);
 
 	std::shared_ptr<bpp::bpp_program> get_program();

@@ -49,6 +49,7 @@ int main(int argc, char* argv[]) {
 		"  -o, --output <file>   Specify output file\n"
 		"                         If not specified, program will run on exit\n"
 		"                         If specified as '-', program will be written to stdout\n"
+		"  -s, --no-warnings	  Suppress warnings\n"
 		"  -I, --include <path>  Add directory to include path\n"
 		"  -D, --dynamic         Enable dynamic linking\n"
 		"                         (Default is static linking)\n"
@@ -66,6 +67,7 @@ int main(int argc, char* argv[]) {
 		{"dynamic", no_argument, 0, 'D'},
 		{"output", required_argument, 0, 'o'},
 		{"parse-tree", no_argument, 0, 'p'},
+		{"no-warnings", no_argument, 0, 's'},
 		{"tokens", no_argument, 0, 't'},
 		{"version", no_argument, 0, 'v'}
 	};
@@ -73,6 +75,7 @@ int main(int argc, char* argv[]) {
 	bool received_filename = false;
 	bool received_output_filename = false;
 	bool run_on_exit = true;
+	bool suppress_warnings = false;
 	std::string file_to_read = "";
 	std::string output_file = "";
 
@@ -108,7 +111,7 @@ int main(int argc, char* argv[]) {
 
 	struct stat statbuf;
 
-	while ((c = getopt_long(static_cast<int>(compiler_arguments.size()), compiler_arguments.data(), "DhI:o:ptv", long_options, &option_index)) != -1) {
+	while ((c = getopt_long(static_cast<int>(compiler_arguments.size()), compiler_arguments.data(), "DhI:o:pstv", long_options, &option_index)) != -1) {
 		switch(c) {
 			case 'D':
 				dynamic_linking = true;
@@ -170,6 +173,9 @@ int main(int argc, char* argv[]) {
 				break;
 			case 'p':
 				display_parse_tree = true;
+				break;
+			case 's':
+				suppress_warnings = true;
 				break;
 			case 't':
 				display_tokens = true;
@@ -288,6 +294,7 @@ int main(int argc, char* argv[]) {
 		listener->set_output_stream(output_stream);
 		listener->set_output_file(output_file);
 		listener->set_run_on_exit(run_on_exit);
+		listener->set_suppress_warnings(suppress_warnings);
 		listener->set_arguments(program_arguments);
 		walker.walk(listener.get(), tree);
 

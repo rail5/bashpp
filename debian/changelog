@@ -1,3 +1,16 @@
+bpp (0.3.0) unstable; urgency=medium
+
+  * Proper vTable implementation
+    This ensures that we call the correct versions of virtual methods
+    at runtime. This was planned, but previously unimplemented
+  * Added '@dynamic_cast' keyword for runtime type checking,
+    @dynamic_cast<Type> @pointer
+    Will perform a runtime check to verify the cast is valid, and will
+    return @nullptr if invalid.
+  * Added -s / --no-warnings option to suppress compiler warnings
+
+ -- rail5 <andrew@rail5.org>  Thu, 06 Mar 2025 17:50:17 +0800
+
 bpp (0.2.8) unstable; urgency=medium
 
   * Test suite: run tests concurrently

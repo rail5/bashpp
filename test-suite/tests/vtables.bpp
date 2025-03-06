@@ -25,3 +25,25 @@
 
 @Base* from_derived_to_base=&@derived_object
 @from_derived_to_base.A # "Derived class"
+
+@Derived* dyntest1=@dynamic_cast<Derived> &@base_object
+echo @dyntest1 # "0" (@nullptr)
+
+@Base* dyntest2=@dynamic_cast<Base> &@derived_object
+echo @dyntest2 # Valid pointer
+
+@class FurtherDerived : Derived {
+}
+
+@FurtherDerived further_derived_object
+@Base* dyntest3=@dynamic_cast<Base> &@further_derived_object
+echo @dyntest3 # Valid pointer
+@Derived* dyntest4=@dynamic_cast<Derived> &@further_derived_object
+echo @dyntest4 # Valid pointer
+@Derived* dyntest5=@dynamic_cast<Derived> @dyntest3
+echo @dyntest5 # Valid pointer
+@FurtherDerived* dyntest6=@dynamic_cast<FurtherDerived> @dyntest3
+echo @dyntest6 # Valid pointer
+
+@Base* nonsense=@dynamic_cast<Base> "This string is not a valid pointer."
+echo @nonsense # "0" (@nullptr)

@@ -18,6 +18,7 @@ $ bpp -v # Display version
 - `-o` or `--output` : Specify the output file
 	- If the output file is `-`, the program will be printed to stdout
 	- If the output file is not specified, the program will be executed immediately after compilation
+- `-s` or `--no-warnings` : Suppress warnings
 - `-I` or `--include` : Add a directory to the include path
 	- The default include path is `/usr/lib/bpp/stdlib`
 	- Files in the include paths can be included with `@include <file>`

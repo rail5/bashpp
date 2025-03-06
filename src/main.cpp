@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
 		"  -o, --output <file>   Specify output file\n"
 		"                         If not specified, program will run on exit\n"
 		"                         If specified as '-', program will be written to stdout\n"
-		"  -s, --no-warnings	  Suppress warnings\n"
+		"  -s, --no-warnings     Suppress warnings\n"
 		"  -I, --include <path>  Add directory to include path\n"
 		"  -D, --dynamic         Enable dynamic linking\n"
 		"                         (Default is static linking)\n"

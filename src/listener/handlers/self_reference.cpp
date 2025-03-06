@@ -217,6 +217,12 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 				current_code_entity->add_code_to_previous_line(self_reference_entity->get_pre_code());
 				current_code_entity->add_code_to_next_line(self_reference_entity->get_post_code());
 				current_code_entity->add_code(self_reference_entity->get_code());
+
+				// Show a warning if we're doing a dynamic_cast
+				std::shared_ptr<bpp::bpp_dynamic_cast_statement> dynamic_cast_entity = std::dynamic_pointer_cast<bpp::bpp_dynamic_cast_statement>(current_code_entity);
+				if (dynamic_cast_entity != nullptr) {
+					show_warning(ctx->KEYWORD_THIS(), "Dynamic casting the result of .toPrimitive may not be what you want\nDid you mean to take the address of the object?");
+				}
 				return;
 			}
 
@@ -294,6 +300,12 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 		self_reference_entity->add_code_to_previous_line(method_code.pre_code);
 		self_reference_entity->add_code_to_next_line(method_code.post_code);
 		self_reference_entity->add_code(method_code.code);
+
+		// Show a warning if we're doing a dynamic_cast
+		std::shared_ptr<bpp::bpp_dynamic_cast_statement> dynamic_cast_entity = std::dynamic_pointer_cast<bpp::bpp_dynamic_cast_statement>(current_code_entity);
+		if (dynamic_cast_entity != nullptr) {
+			show_warning(ctx->KEYWORD_THIS(), "Dynamic casting the result of .toPrimitive may not be what you want\nDid you mean to take the address of the object?");
+		}
 	}
 
 	// Ready to exit

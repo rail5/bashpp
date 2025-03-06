@@ -311,6 +311,12 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 					object_reference_entity->add_code_to_previous_line(method_code.pre_code);
 					object_reference_entity->add_code_to_next_line(method_code.post_code);
 					code_to_add = method_code.code;
+
+					// Show a warning if we're doing a dynamic_cast
+					std::shared_ptr<bpp::bpp_dynamic_cast_statement> dynamic_cast_entity = std::dynamic_pointer_cast<bpp::bpp_dynamic_cast_statement>(current_code_entity);
+					if (dynamic_cast_entity != nullptr) {
+						show_warning(ctx->IDENTIFIER(0), "Dynamic casting the result of .toPrimitive may not be what you want\nDid you mean to take the address of the object?");
+					}
 				}
 				ready_to_exit = true;
 			} else {
@@ -353,6 +359,12 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 		object_reference_entity->add_code_to_previous_line(method_code.pre_code);
 		object_reference_entity->add_code_to_next_line(method_code.post_code);
 		object_reference_entity->add_code(method_code.code);
+
+		// Show a warning if we're doing a dynamic_cast
+		std::shared_ptr<bpp::bpp_dynamic_cast_statement> dynamic_cast_entity = std::dynamic_pointer_cast<bpp::bpp_dynamic_cast_statement>(current_code_entity);
+		if (dynamic_cast_entity != nullptr) {
+			show_warning(ctx->IDENTIFIER(0), "Dynamic casting the result of .toPrimitive may not be what you want\nDid you mean to take the address of the object?");
+		}
 	}
 
 	// Ready to exit

@@ -269,6 +269,30 @@ If a pointer is set to `@nullptr`, attempting to access a data member or method 
 
 If a pointer is declared without being assigned a value, it is automatically set to `@nullptr`.
 
+# Casting and Dynamic Casting
+
+Pointers are primitives in Bash++ and can therefore be assigned any primitive value. For instance, the following is valid:
+
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/casting-example.html -%}
+</code></pre></div>
+
+However, absolutely useless. Far more useful is something like this:
+
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/casting-example-2.html -%}
+</code></pre></div>
+
+This simply tells the compiler to treat `myPointer` as a pointer to a `BaseClass` object, rather than a `DerivedClass` object.
+
+For some more careful casting, we can use the `@dynamic_cast` keyword. This will return `@nullptr` if the cast is invalid:
+
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/dynamic-casting-example.html -%}
+</code></pre></div>
+
+This performs a runtime check to ensure that the cast is valid. If the cast is not valid, `@dynamic_cast` will return `@nullptr`.
+
 # `@include` Directive
 
 The `@include` directive is used to include the contents of another Bash++ script in the current file. This is useful for splitting code into multiple files for better organization and reusability.

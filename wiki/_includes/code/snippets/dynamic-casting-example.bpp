@@ -1,0 +1,8 @@
+@DerivedClass derived_object
+@BaseClass* myPointer=@dynamic_cast<BaseClass> &@derived_object
+
+if [[ @myPointer == @nullptr ]]; then
+	echo "The cast is invalid"
+else
+	echo "All OK!"
+fi

@@ -1,0 +1,2 @@
+@DerivedClass derived_object
+@BaseClass* myPointer=&@derived_object

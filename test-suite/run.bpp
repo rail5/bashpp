@@ -151,6 +151,13 @@ You are devoured by the lion
 \\.\\.\\.Why did you try to pet a 200kg lion\\?
 "
 
+# Vtables
+@runner.addTest "Vtables" "test-suite/tests/vtables.bpp" "Base class
+Derived class
+Base class
+Derived class
+"
+
 # Arrays as Data Members
 @runner.addTest "Arrays as Data Members #1" "test-suite/tests/arrays-as-datamembers-1.bpp" "hello
 hello

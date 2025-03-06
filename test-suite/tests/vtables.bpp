@@ -1,0 +1,27 @@
+@class Base {
+	@virtual @public @method A {
+		echo "Base class"
+	}
+
+	@public @method B {
+		@this.A
+	}
+}
+
+@class Derived : Base {
+	@public @method A {
+		echo "Derived class"
+	}
+}
+
+@Base base_object
+@base_object.B # "Base class"
+
+@Derived derived_object
+@derived_object.B # "Derived class"
+
+@Derived* from_base_to_derived=&@base_object
+@from_base_to_derived.A # "Base class"
+
+@Base* from_derived_to_base=&@derived_object
+@from_derived_to_base.A # "Derived class"

@@ -865,6 +865,10 @@
 				{
 					"match": "(?<=^|\\s)(?:@class|@method|@constructor|@destructor)(?=\\s|$)",
 					"name": "storage.type.bashpp"
+				},
+				{
+					"match": "(?<!\\\\)(?:@dynamic_cast)(?=\\s|\\<|$)",
+					"name": "keyword.other.bashpp"
 				}
 			]
 		},
@@ -877,6 +881,10 @@
 				{
 					"match": "(?<=@class\\s([a-zA-Z_][a-zA-Z0-9_]*\\s:\\s))(?!.*__)[a-zA-Z_][a-zA-Z0-9_]*(?=\\s|$)",
 					"name": "entity.name.type.parentclass.bashpp"
+				},
+				{
+					"match": "(?<=@dynamic_cast(\\s)*\\<(\\s)*)(?!.*__)[a-zA-Z_][a-zA-Z0-9_]*(?=\\s|\\>|\\*|$)",
+					"name": "entity.name.type.class.bashpp"
 				}
 			]
 		},

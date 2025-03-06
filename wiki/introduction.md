@@ -29,4 +29,4 @@ link-title: Beginner's Guide to Bash++
 
 ## 7. Pointers
 
-<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/Hyn2OGNLjE8?si=XwLicze_VgOViSVr" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/VamY1aTYHr0?si=Qo61yPORyLlSQ0WK" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>

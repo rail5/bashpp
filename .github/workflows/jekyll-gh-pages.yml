@@ -96,7 +96,7 @@ jobs:
             fi
             echo "Found $link"
             echo "Downloading https://bpp.sh/stl/$(basename $link .html).source.txt --> wiki/stl/$(basename $link .html).md"
-            curl -o "wiki/stl/$(basename $link .html).source.txt" "https://bpp.sh/stl/$(basename $link .html).md"
+            curl -o "wiki/stl/$(basename $link .html).md" "https://bpp.sh/stl/$(basename $link .html).source.txt"
             for file in wiki/stl/*.md; do
             cp "$file" wiki/stl/$(basename $file .md).source.txt
           done

@@ -103,7 +103,7 @@ pointer_dereference: ASTERISK ref_general;
 object_address: AMPERSAND ref_rvalue;
 
 // Casting
-dynamic_cast_statement: KEYWORD_DYNAMIC_CAST WS* LESSTHAN WS* IDENTIFIER WS* GREATERTHAN WS* (object_address | ref_rvalue);
+dynamic_cast_statement: KEYWORD_DYNAMIC_CAST WS* LESSTHAN WS* IDENTIFIER WS* ASTERISK? WS* GREATERTHAN WS* (object_address | ref_rvalue);
 
 // Object reference
 ref_general: ref_lvalue | ref_rvalue;

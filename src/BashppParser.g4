@@ -70,7 +70,9 @@ constructor_definition: KEYWORD_CONSTRUCTOR WS* LBRACE general_statement* RBRACE
 destructor_definition: KEYWORD_DESTRUCTOR WS* LBRACE general_statement* RBRACE;
 
 // Value assignment
-value_assignment: PLUS? ASSIGN ((raw_rvalue
+value_assignment: PLUS? ASSIGN valid_rvalue;
+
+valid_rvalue: ((raw_rvalue
 	| string
 	| singlequote_string
 	| subshell
@@ -103,7 +105,7 @@ pointer_dereference: ASTERISK ref_general;
 object_address: AMPERSAND ref_rvalue;
 
 // Casting
-dynamic_cast_statement: KEYWORD_DYNAMIC_CAST WS* LESSTHAN WS* IDENTIFIER WS* ASTERISK? WS* GREATERTHAN WS* (object_address | ref_rvalue);
+dynamic_cast_statement: KEYWORD_DYNAMIC_CAST WS* LESSTHAN WS* IDENTIFIER WS* ASTERISK? WS* GREATERTHAN WS* valid_rvalue;
 
 // Object reference
 ref_general: ref_lvalue | ref_rvalue;

@@ -14,10 +14,16 @@
 
 ## Documentation
 
+#### Introductory
+
  - [Beginner's Guide to Bash++](introduction.md)
- - [Programming in Bash++](language.md)
  - [Using the Bash++ compiler](compiler.md)
+
+#### Language Reference
+ - [Programming in Bash++](language.md)
  - [Standard Library](stl/index.md)
+
+#### Other
  - [Development Logs](https://log.bpp.sh/)
 
 ## License

@@ -9,6 +9,7 @@ on:
       - "src/**"
       - "test-suite/**"
       - "makefile"
+      - "Doxyfile"
       - ".github/workflows/jekyll-gh-pages.yml"
 
   # Allows you to run this workflow manually from the Actions tab

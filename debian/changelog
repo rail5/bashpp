@@ -1,3 +1,15 @@
+bpp (0.3.1) unstable; urgency=medium
+
+  * Keep object counter in compiler
+    This closes #6, although the allocations are not randomized at
+    runtime. This decision may be revisited later
+    An incidentally necessary change for this fix is that the 'isPtr'
+    nonsense from templates.h had to be removed entirely, methods
+    internally must accept a pointer as the first argument and no extra
+    information, just as in C++ for example
+
+ -- rail5 <andrew@rail5.org>  Wed, 19 Mar 2025 11:46:23 +0800
+
 bpp (0.3.0) unstable; urgency=medium
 
   * Proper vTable implementation

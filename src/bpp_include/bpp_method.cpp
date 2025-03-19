@@ -14,6 +14,12 @@ bpp_method::bpp_method() {}
 
 bpp_method::bpp_method(const std::string& name) : name(name) {}
 
+/**
+ * @brief Add a non-primitive object as a parameter to the method
+ * 
+ * This function ensures that code within the scope of the method is able to access an object
+ * 	passed as an argument to the method, by adding the object to the local_objects map.
+ */
 bool bpp_method::add_object_as_parameter(std::shared_ptr<bpp_object> object) {
 	std::string name = object->get_name();
 	if (objects.find(name) != objects.end() || local_objects.find(name) != local_objects.end()) {
@@ -31,6 +37,11 @@ bool bpp_method::add_object_as_parameter(std::shared_ptr<bpp_object> object) {
 	return true;
 }
 
+/**
+ * @brief Add a parameter to the method
+ * 
+ * This function adds a parameter to the method
+ */
 bool bpp_method::add_parameter(std::shared_ptr<bpp_method_parameter> parameter) {
 	std::string name = parameter->get_name();
 	for (auto& p : parameters) {
@@ -90,6 +101,13 @@ bool bpp_method::is_inherited() const {
 	return inherited;
 }
 
+/**
+ * @brief Destruct all local objects
+ * 
+ * This function destructs all local objects in the method by calling their destructors and deleting them.
+ * 
+ * This is called as we exit the method, to ensure that all local objects are cleaned up.
+ */
 void bpp_method::destruct_local_objects() {
 	for (auto& o : local_objects) {
 		// If it's a pointer, don't delete it

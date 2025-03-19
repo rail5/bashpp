@@ -440,6 +440,11 @@ class bpp_object_address : public bpp_string {
 		bpp_object_address() = default;
 };
 
+/**
+ * @class bpp_method
+ * 
+ * @brief A method in a class
+ */
 class bpp_method : public bpp_code_entity {
 	private:
 		std::string name;

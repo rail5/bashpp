@@ -8,6 +8,23 @@
 
 #include "BashppListener.h"
 
+
+/**
+ * @brief Generates a supershell code segment for executing a bash command.
+ *
+ * This function constructs a code segment to run a specified command in a supershell.
+ * It creates a unique function name and output variable using a global counter. The generated code includes:
+ * - A bash function definition wrapping the given command.
+ * - A command to invoke the function and store its output, either appended to a while condition or added to the precode.
+ * - Cleanup commands that unset the dynamically created function and output variable.
+ *
+ * @param code_to_run_in_supershell The bash command to be executed within the supershell.
+ *
+ * @return A code_segment structure containing the complete supershell execution code:
+ *         - pre_code: The setup code including the function definition and invocation.
+ *         - post_code: The code for cleaning up the defined environment.
+ *         - code: An expression referencing the supershell output variable.
+ */
 BashppListener::code_segment BashppListener::generate_supershell_code(const std::string& code_to_run_in_supershell) {
 	BashppListener::code_segment result;
 
@@ -36,6 +53,22 @@ BashppListener::code_segment BashppListener::generate_supershell_code(const std:
 	return result;
 }
 
+/**
+ * @brief Generates a code segment for deleting an object.
+ *
+ * This function constructs a code segment to delete an object. The generated code includes:
+ * - A call to the object's destructor if it has one.
+ * - A call to the object's delete function.
+ *
+ * @param object The object to be deleted.
+ * @param object_reference_string The string representing the object's reference in the compiled code.
+ * @param force_pointer Whether to force the object to be treated as a pointer.
+ *
+ * @return A code_segment structure containing the complete deletion code:
+ *         - pre_code: The setup code including the destructor call.
+ *         - post_code: The code for cleaning up the object's reference.
+ *         - code: The expression to delete the object.
+ */
 BashppListener::code_segment BashppListener::generate_delete_code(std::shared_ptr<bpp::bpp_object> object, const std::string& object_reference_string, bool force_pointer) {
 	// The object_reference_string is how the compiled code should refer to the object
 	// Ie, if the object is a pointer, this should be the address of the object
@@ -52,6 +85,22 @@ BashppListener::code_segment BashppListener::generate_delete_code(std::shared_pt
 	return result;
 }
 
+/**
+ * @brief Generates a code segment for calling a method.
+ *
+ * This function constructs a code segment to call a method on an object. The generated code includes:
+ * - A lookup in the object's vTable if the method is virtual.
+ * - A call to the method.
+ *
+ * @param reference_code The code representing the object reference.
+ * @param method_name The name of the method to be called.
+ * @param assumed_class The class to which the object is assumed to belong at compile-time.
+ *
+ * @return A code_segment structure containing the complete method call code:
+ *         - pre_code: The setup code including the vTable lookup.
+ *         - post_code: The code for cleaning up the vTable lookup.
+ *         - code: The expression to call the method.
+ */
 BashppListener::code_segment BashppListener::generate_method_call_code(const std::string& reference_code, const std::string& method_name, std::shared_ptr<bpp::bpp_class> assumed_class) {
 	BashppListener::code_segment result;
 

@@ -15,6 +15,16 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 
+/**
+ * Print a syntax error or warning message to stderr
+ * @param source_file The source file which contains the error
+ * @param line The line number where the error occurred
+ * @param column The column number where the error occurred
+ * @param text The text of the token which caused the error
+ * @param msg The error message to display
+ * @param include_chain A stack of include files which led to the error
+ * @param is_warning Whether the message is a warning or an error
+ */
 void print_syntax_error_or_warning(std::string source_file, int line, int column, const std::string& text, const std::string& msg, std::stack<std::string> include_chain, bool is_warning = false) {
 	bool is_tty = isatty(fileno(stderr));
 	std::string color_red = is_tty ? "\033[0;31m" : "";

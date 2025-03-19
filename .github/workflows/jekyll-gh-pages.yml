@@ -110,7 +110,7 @@ jobs:
           doxygen Doxyfile
           # Copy the generated documentation to the wiki
           mkdir -p wiki/doxygen
-          cp -r doxygen/html/* wiki/doxygen/
+          cp -r docs/html/* wiki/doxygen/
       - name: Preserve old Doxygen internal technical documentation
         if: steps.code_changed.outputs.code == 'false'
         run: |

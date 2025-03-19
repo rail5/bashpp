@@ -58,11 +58,13 @@ jobs:
               - 'stdlib/**'
               - 'test-suite/**'
               - '.github/workflows/jekyll-gh-pages.yml'
+              - 'makefile'
+              - 'Doxyfile'
       - name: Install build dependencies
         if: steps.code_changed.outputs.code == 'true'
         run: |
           sudo apt-get update
-          sudo apt-get install build-essential antlr4 libantlr4-runtime-dev
+          sudo apt-get install build-essential antlr4 libantlr4-runtime-dev doxygen
       - name: Run tests and generate test stats SVG
         if: steps.code_changed.outputs.code == 'true'
         run: |
@@ -102,6 +104,21 @@ jobs:
             cp "$file" wiki/stl/$(basename $file .md).source.txt
           done
           done
+      - name: Generate Doxygen internal technical documentation
+        if: steps.code_changed.outputs.code == 'true'
+        run: |
+          doxygen Doxyfile
+          # Copy the generated documentation to the wiki
+          mkdir -p wiki/doxygen
+          cp -r doxygen/html/* wiki/doxygen/
+      - name: Preserve old Doxygen internal technical documentation
+        if: steps.code_changed.outputs.code == 'false'
+        run: |
+          # Download the old documentation from the website
+          sudo apt-get install wget
+          mkdir -p wiki/doxygen
+          wget -mpEk https://bpp.sh/doxygen/
+          cp -r bpp.sh/doxygen/* wiki/doxygen/
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Build with Jekyll

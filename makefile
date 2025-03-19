@@ -51,6 +51,9 @@ manual: clean-manual
 	pandoc --standalone --to man tmp/language.md -o debian/bpp.7
 	rm -rf tmp
 
+technical-docs: clean-technical-docs
+	doxygen Doxyfile
+
 update-version:
 	@ \
 	if [ ! -z "$(VERSION)" ]; then \
@@ -77,4 +80,7 @@ clean-manual:
 	rm -f debian/bpp.7
 	rm -rf tmp
 
-clean: clean-src clean-main clean-std clean-manual
+clean-technical-docs:
+	rm -rf docs
+
+clean: clean-src clean-main clean-std clean-manual clean-technical-docs

@@ -4,3 +4,4 @@ src/antlr
 src/updated_year.h
 src/version.h
 src/obj/*.o
+docs

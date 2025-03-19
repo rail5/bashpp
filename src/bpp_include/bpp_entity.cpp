@@ -10,6 +10,11 @@
 
 namespace bpp {
 
+/**
+ * @brief Add a class to this entity's list of classes
+ * @param class_ The class to add
+ * @return true if the class was added, false if the class already exists
+ */
 bool bpp_entity::add_class(std::shared_ptr<bpp_class> class_) {
 	std::string name = class_->get_name();
 	if (classes.find(name) != classes.end()) {
@@ -19,6 +24,11 @@ bool bpp_entity::add_class(std::shared_ptr<bpp_class> class_) {
 	return true;
 }
 
+/**
+ * @brief Add an object to this entity's list of objects
+ * @param object The object to add
+ * @return true if the object was added, false if the object already exists
+ */
 bool bpp_entity::add_object(std::shared_ptr<bpp_object> object) {
 	std::string name = object->get_name();
 	if (objects.find(name) != objects.end()) {
@@ -47,6 +57,11 @@ std::string bpp_entity::get_name() const {
 	return "";
 }
 
+/**
+ * @brief Get the class which contains this entity
+ * 
+ * Useful in many cases, for example in the event that this entity is a method of a particular class
+ */
 std::weak_ptr<bpp::bpp_class> bpp_entity::get_containing_class() const {
 	return containing_class;
 }
@@ -56,6 +71,13 @@ bool bpp_entity::set_containing_class(std::weak_ptr<bpp::bpp_class> containing_c
 	return true;
 }
 
+/**
+ * @brief Inherit from a parent entity
+ * 
+ * This function copies all classes and objects from the parent entity into this entity.
+ * 
+ * @param parent The parent entity to inherit from
+ */
 void bpp_entity::inherit(std::shared_ptr<bpp_entity> parent) {
 	for (auto& p : parent->parents) {
 		parents.push_back(p);

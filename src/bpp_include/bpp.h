@@ -58,12 +58,37 @@ static const std::shared_ptr<bpp_entity> inaccessible_entity = std::make_shared<
 static const std::shared_ptr<bpp_datamember> inaccessible_datamember = std::make_shared<bpp_datamember>();
 static const std::shared_ptr<bpp_method> inaccessible_method = std::make_shared<bpp_method>();
 
+/**
+ * @var bpp_nullptr
+ * @brief The secret internal value of '@nullptr' in Bash++
+ */
 static const char bpp_nullptr[] = "0";
 
+/**
+ * @class bpp_entity
+ * @brief The base class for all entities in the Bash++ compiler
+ * 
+ * An entity is a class, object, method, or other construct in the Bash++ compiler.
+ * This class provides the basic functionality for all entities.
+ */
 class bpp_entity {
 	protected:
+		/**
+		 * @var classes
+		 * @brief A map of class names to class objects within this entity
+		 */
 		std::unordered_map<std::string, std::shared_ptr<bpp_class>> classes;
+
+		/**
+		 * @var objects
+		 * @brief A map of object names to bpp_objects within this entity
+		 */
 		std::unordered_map<std::string, std::shared_ptr<bpp_object>> objects;
+
+		/**
+		 * @var local_objects
+		 * @brief Like objects, but only for objects whose scope is local to this entity
+		 */
 		std::unordered_map<std::string, std::shared_ptr<bpp_object>> local_objects;
 		std::shared_ptr<bpp_class> type = nullptr;
 		std::weak_ptr<bpp_class> containing_class;
@@ -88,6 +113,23 @@ class bpp_entity {
 		virtual std::shared_ptr<bpp_object> get_object(const std::string& name);
 };
 
+/**
+ * @class bpp_code_entity
+ * @brief An entity which can contain code
+ * 
+ * Such as a method, a supershell, or the program itself
+ * 
+ * This class provides the basic functionality for entities which can contain code
+ * Including 3 distinct code buffers:
+ * - pre_code: Code that should be executed before the main code
+ * - code: The main code
+ * - post_code: Code that should be executed after the main code
+ * 
+ * Generally, the pre_code and post_code are used to set up and clean up the environment
+ * 
+ * This class also provides the ability to add code to the pre_code, code, and post_code buffers
+ * And to flush those buffers when necessary
+ */
 class bpp_code_entity : public bpp_entity {
 	protected:
 		std::shared_ptr<std::ostream> code = std::make_shared<std::ostringstream>();

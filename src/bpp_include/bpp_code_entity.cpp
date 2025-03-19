@@ -12,6 +12,16 @@ namespace bpp {
 
 bpp_code_entity::bpp_code_entity() {}
 
+/**
+ * @brief Add code to the code entity
+ * 
+ * This function adds code to the code entity's primary buffer.
+ * If the code contains a newline character, all code buffers are flushed.
+ * This ensures that the pre- and post- code relevant to *each particular line* of code is placed before and after the relevant line of code.
+ * 
+ * @param code The code to add
+ * @param add_newline Whether to add a newline character after the code (default: true)
+ */
 void bpp_code_entity::add_code(const std::string& code, bool add_newline) {
 	if (buffers_flushed && code == "\n") {
 		return;
@@ -36,11 +46,17 @@ void bpp_code_entity::add_code(const std::string& code, bool add_newline) {
 	buffers_flushed = false;
 }
 
+/**
+ * @brief Add code to the code entity's pre-code buffer
+ */
 void bpp_code_entity::add_code_to_previous_line(const std::string& code) {
 	*this->code << code << std::flush;
 	buffers_flushed = false;
 }
 
+/**
+ * @brief Add code to the code entity's post-code buffer
+ */
 void bpp_code_entity::add_code_to_next_line(const std::string& code) {
 	postline_buffer += code;
 	buffers_flushed = false;
@@ -82,6 +98,16 @@ void bpp_code_entity::clear_all_buffers() {
 	buffers_flushed = false;
 }
 
+/**
+ * @brief Add an object to the code entity
+ * 
+ * Adding an object to a code entity involves adding the necessary code to create the object.
+ * Unlike in the case where we add an object to a non-code entity, where we only need to update the object map.
+ * 
+ * This function generates the code necessary to create the object, including calling its constructor if it exists.
+ * 
+ * @param object The object to add
+ */
 bool bpp_code_entity::add_object(std::shared_ptr<bpp_object> object) {
 	std::string name = object->get_name();
 	if (objects.find(name) != objects.end() || local_objects.find(name) != local_objects.end()) {
@@ -118,6 +144,9 @@ bool bpp_code_entity::add_object(std::shared_ptr<bpp_object> object) {
 	return true;
 }
 
+/**
+ * @brief Return the contents of the main code buffer as a string
+ */
 std::string bpp_code_entity::get_code() const {
 	std::shared_ptr<std::ostringstream> ss = std::dynamic_pointer_cast<std::ostringstream>(code);
 	if (ss == nullptr) {
@@ -126,10 +155,16 @@ std::string bpp_code_entity::get_code() const {
 	return ss->str();
 }
 
+/**
+ * @brief Return the contents of the pre-code buffer as a string
+ */
 std::string bpp_code_entity::get_pre_code() const {
 	return nextline_buffer;
 }
 
+/**
+ * @brief Return the contents of the post-code buffer as a string
+ */
 std::string bpp_code_entity::get_post_code() const {
 	return postline_buffer;
 }

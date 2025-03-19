@@ -115,7 +115,7 @@ hello
 bpp__MyClass__[0-9]+
 default value
 default value
-bpp__ContainingClass__containingObject
+bpp__[0-9]+__ContainingClass__containingObject
 ContainingClass Instance
 bpp__MyClass__[0-9]+
 MyClass Instance
@@ -127,13 +127,13 @@ Displaying default value
 Displaying default value
 .+line [0-9]+: bpp__MyClass__[0-9]+: command not found
 MyClass Instance
-.+line [0-9]+: bpp__ContainingClass__containingObject: command not found
+.+line [0-9]+: bpp__[0-9]+__ContainingClass__containingObject: command not found
 ContainingClass Instance
 hello again
 hello again
 hello
 hello
-bpp__ContainingClass__containingObject
+bpp__[0-9]+__ContainingClass__containingObject
 echo hello again
 echo hello again
 new value
@@ -317,6 +317,14 @@ String && def \|\| def \| def && more string
 128
 255
 0
+"
+
+@runner.addTest "Duplicate object names" "test-suite/tests/duplicate-object-names.bpp" "new value 1
+new value 2
+new value 1
+new value 3
+new value 4
+new value 3
 "
 
 # Standard Library tests

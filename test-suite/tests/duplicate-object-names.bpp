@@ -1,0 +1,37 @@
+@class Object {
+	@public member="default value"
+}
+
+@class ProblemExample {
+	@public @method A {
+		@Object object
+		@object.member="new value 2"
+		echo @object.member
+	}
+
+	@public @method B {
+		@Object object
+		@object.member="new value 1"
+		echo @object.member # "new value 1"
+		@this.A # "new value 2"
+		echo @object.member # "new value 1"
+	}
+
+	@public @method C {
+		@Object* object=@new Object
+		@object.member="new value 4"
+		echo @object.member
+	}
+
+	@public @method D {
+		@Object* object=@new Object
+		@object.member="new value 3"
+		echo @object.member # "new value 3"
+		@this.C # "new value 4"
+		echo @object.member # "new value 3"
+	}
+}
+
+@ProblemExample example
+@example.B
+@example.D

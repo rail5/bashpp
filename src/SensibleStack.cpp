@@ -10,7 +10,11 @@
 #include <type_traits>
 
 /**
-* A stack that returns zero if empty
+* @class SensibleStack
+*
+* @brief A stack that returns zero if empty
+*
+* This is used heavily in the lexer
 */
 template <typename T, typename = std::enable_if<std::is_arithmetic_v<T>>>
 class SensibleStack : public std::stack<T> {
@@ -33,7 +37,9 @@ class SensibleStack : public std::stack<T> {
 };
 
 /**
-* A stack that returns an empty string if empty
+* @class SensibleStringStack
+*
+* @brief A stack that returns an empty string if empty
 */
 class SensibleStringStack : public std::stack<std::string> {
 	public:

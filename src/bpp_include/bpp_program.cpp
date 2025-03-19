@@ -85,7 +85,7 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 			increment_supershell_counter();
 			// Call the constructor if it exists
 			if (dm->get_class()->has_constructor()) {
-				assignments += "	bpp__" + dm->get_class()->get_name() + "____constructor \"${__objectAddress}__" + dm->get_name() + "\" 1\n";
+				assignments += "	bpp__" + dm->get_class()->get_name() + "____constructor \"${__objectAddress}__" + dm->get_name() + "\"\n";
 			}
 		}
 		assignments += dm->get_post_access_code() + "\n";
@@ -100,7 +100,7 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 		if (dm->get_class()->get_name() == "primitive" || dm->is_pointer()) {
 			deletions += "	unset ${__objectAddress}__" + dm->get_name() + "\n";
 		} else {
-			deletions += "	bpp__" + dm->get_class()->get_name() + "____delete ${__objectAddress}__" + dm->get_name() + " 1\n";
+			deletions += "	bpp__" + dm->get_class()->get_name() + "____delete ${__objectAddress}__" + dm->get_name() + "\n";
 			deletions += "	unset ${__objectAddress}__" + dm->get_name() + "\n";
 		}
 		deletions += dm->get_post_access_code() + "\n";
@@ -116,7 +116,7 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 			copies += "	local __copyFrom__" + dm->get_name() + "=\"${__copyFromAddress}__" + dm->get_name() + "\"\n";
 			copies += "	eval \"${__copyToAddress}__" + dm->get_name() + "=\\${!__copyFrom__" + dm->get_name() + "}\"\n";
 		} else {
-			copies += "	bpp__" + dm->get_class()->get_name() + "____copy ${__copyFromAddress}__" + dm->get_name() + " ${__copyToAddress}__" + dm->get_name() + " 1 1\n";
+			copies += "	bpp__" + dm->get_class()->get_name() + "____copy ${__copyFromAddress}__" + dm->get_name() + " ${__copyToAddress}__" + dm->get_name() + "\n";
 		}
 		copies += dm->get_post_access_code() + "\n";
 	}
@@ -148,7 +148,7 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	for (auto& method : class_->get_methods()) {
 		std::string method_code = template_method;
 		std::string method_name = method->get_name();
-		std::string params = "";
+		std::string params = method->get_parameters().empty() ? "" : "local ";
 		for (size_t i = 0; i < method->get_parameters().size(); i++) {
 			params += method->get_parameters()[i]->get_name() + "=\"$" + std::to_string(i + 1) + "\"";
 			if (i < method->get_parameters().size() - 1) {
@@ -219,6 +219,14 @@ void bpp_program::increment_dynamic_cast_counter() {
 
 uint64_t bpp_program::get_dynamic_cast_counter() const {
 	return dynamic_cast_counter;
+}
+
+void bpp_program::increment_object_counter() {
+	object_counter++;
+}
+
+uint64_t bpp_program::get_object_counter() const {
+	return object_counter;
 }
 
 } // namespace bpp

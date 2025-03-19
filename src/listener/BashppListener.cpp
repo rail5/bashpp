@@ -43,13 +43,11 @@ BashppListener::code_segment BashppListener::generate_delete_code(std::shared_pt
 
 	std::string delete_function_name = "bpp__" + object->get_class()->get_name() + "____delete";
 
-	bool is_pointer = object->is_pointer() || force_pointer;
-
 	if (object->get_class()->has_destructor()) {
-		result.pre_code += "bpp__" + object->get_class()->get_name() + "____destructor " + object_reference_string + " " + (is_pointer ? "1" : "0") + "\n";
+		result.pre_code += "bpp__" + object->get_class()->get_name() + "____destructor " + object_reference_string + "\n";
 	}
 
-	result.pre_code += delete_function_name + " " + object_reference_string + " " + (is_pointer ? "1" : "0") + "\n";
+	result.pre_code += delete_function_name + " " + object_reference_string + "\n";
 
 	return result;
 }
@@ -71,10 +69,10 @@ BashppListener::code_segment BashppListener::generate_method_call_code(const std
 		// Look up the method in the vTable
 		result.pre_code = "bpp____vTable__lookup \"" + reference_code + "\" \"" + method_name + "\" __func" + std::to_string(program->get_function_counter()) + "\n";
 		result.post_code = "unset __func" + std::to_string(program->get_function_counter()) + "\n";
-		result.code = "${!__func" + std::to_string(program->get_function_counter()) + "} " + reference_code + " 1";
+		result.code = "${!__func" + std::to_string(program->get_function_counter()) + "} " + reference_code;
 		program->increment_function_counter();
 	} else {
-		result.code = "bpp__" + assumed_class->get_name() + "__" + method_name + " " + reference_code + " 1";
+		result.code = "bpp__" + assumed_class->get_name() + "__" + method_name + " " + reference_code;
 	}
 
 	return result;

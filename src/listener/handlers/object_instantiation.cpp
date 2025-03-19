@@ -52,6 +52,12 @@ void BashppListener::enterObject_instantiation(BashppParser::Object_instantiatio
 
 	new_object->set_class(current_code_entity->get_class(object_type_text));
 
+	// Note:
+	// Here, we're incrementing an internal object counter and determining the location of the object in memory AT COMPILE-TIME
+	// Should this be determined at run-time instead?
+	new_object->set_address("bpp__" + std::to_string(program->get_object_counter()) + "__" + new_object->get_class()->get_name() + "__" + new_object->get_name());
+	program->increment_object_counter();
+
 	// Verify that the object's class exists
 	if (new_object->get_class() == nullptr) {
 		entity_stack.pop();

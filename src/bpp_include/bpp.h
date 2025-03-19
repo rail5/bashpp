@@ -546,6 +546,7 @@ class bpp_program : public bpp_code_entity {
 		uint64_t assignment_counter = 0;
 		uint64_t function_counter = 0;
 		uint64_t dynamic_cast_counter = 0;
+		uint64_t object_counter = 0;
 	public:
 		bpp_program();
 
@@ -567,6 +568,9 @@ class bpp_program : public bpp_code_entity {
 
 		void increment_dynamic_cast_counter();
 		uint64_t get_dynamic_cast_counter() const;
+
+		void increment_object_counter();
+		uint64_t get_object_counter() const;
 };
 
 } // namespace bpp

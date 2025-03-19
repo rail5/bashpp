@@ -147,8 +147,6 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 		// Append the containing object's address to the method call
 		indirection = ctx->IDENTIFIER().size() > 1 ? "!" : "";
 		method_call += "${" + indirection + self_reference_code + "}";
-		// Tell the method that we *are* passing a pointer
-		method_call += " 1";
 
 		code_segment method_code = generate_supershell_code(method_call);
 		self_reference_entity->add_code_to_previous_line(method_code.pre_code);

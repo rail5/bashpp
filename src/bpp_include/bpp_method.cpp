@@ -98,10 +98,10 @@ void bpp_method::destruct_local_objects() {
 		}
 		// If it has a destructor, call it
 		if (o.second->get_class()->has_destructor()) {
-			*code << "bpp__" + o.second->get_class()->get_name() + "____destructor " + o.first + " 0\n" << std::flush;
+			*code << "bpp__" + o.second->get_class()->get_name() + "____destructor " + o.second->get_address() + "\n" << std::flush;
 		}
 		// Call delete
-		*code << "bpp__" + o.second->get_class()->get_name() + "____delete " + o.first + " 0\n" << std::flush;
+		*code << "bpp__" + o.second->get_class()->get_name() + "____delete " + o.second->get_address() + "\n" << std::flush;
 	}
 	local_objects.clear();
 }

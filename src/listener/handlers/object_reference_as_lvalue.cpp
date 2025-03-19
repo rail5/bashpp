@@ -75,10 +75,8 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 		created_first_temporary_variable = true;
 		encase_open = "${";
 		encase_close = "}";
-		object_reference_code = first_object->get_address();
-	} else {
-		object_reference_code = "bpp__" + first_object->get_class()->get_name() + "__" + first_object->get_name();
 	}
+	object_reference_code = first_object->get_address();
 
 	// Iterate over the list of identifiers
 	for (auto& identifier : ctx->IDENTIFIER()) {

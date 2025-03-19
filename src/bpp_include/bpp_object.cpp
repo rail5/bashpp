@@ -26,10 +26,6 @@ void bpp_object::set_pointer(bool is_pointer) {
 
 void bpp_object::set_name(const std::string& name) {
 	this->name = name;
-	if (!m_is_pointer) {
-		std::string type = this->type->get_name();
-		address = "bpp__" + type + "__" + name;
-	}
 }
 
 void bpp_object::set_address(const std::string& address) {

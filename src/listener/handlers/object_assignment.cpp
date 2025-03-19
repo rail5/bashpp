@@ -61,7 +61,7 @@ void BashppListener::exitObject_assignment(BashppParser::Object_assignmentContex
 		std::string method_call = "bpp__" + lvalue_object->get_class()->get_name() + "____copy ";
 
 		// Get the addresses of the objects
-		method_call += object_assignment->get_rvalue() + " " + object_assignment->get_lvalue() + " 1 1";
+		method_call += object_assignment->get_rvalue() + " " + object_assignment->get_lvalue();
 
 		std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 		if (current_code_entity != nullptr) {

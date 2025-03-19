@@ -136,14 +136,12 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 			last_reference_type = bpp::reference_type::ref_object;
 			last_reference_entity = object;
 			object_is_pointer = object->is_pointer();
-			if (!object_is_pointer) {
-				object_reference_code = "bpp__" + object->get_class()->get_name() + "__" + object->get_name();
-			} else {
-				object_reference_code = object->get_address();
+			if (object_is_pointer) {
 				created_first_temporary_variable = true;
 				encase_open = "${";
 				encase_close = "}";
 			}
+			object_reference_code = object->get_address();
 		} else if (method != nullptr) {
 			class_containing_the_method = last_reference_entity->get_class();
 			last_reference_type = bpp::reference_type::ref_method;

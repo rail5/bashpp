@@ -72,7 +72,8 @@ void BashppListener::enterPointer_declaration(BashppParser::Pointer_declarationC
 	entity_stack.push(new_object);
 
 	new_object->set_class(object_class);
-	new_object->set_address("bpp____ptr__" + new_object->get_class()->get_name() + "__" + new_object->get_name());
+	new_object->set_address("bpp____ptr__" + std::to_string(program->get_object_counter()) + "__" + new_object->get_class()->get_name() + "__" + new_object->get_name());
+	program->increment_object_counter();
 
 	// Verify that the object's name is not already in use (or a protected keyword)
 	if (protected_keywords.find(new_object->get_name()) != protected_keywords.end()) {

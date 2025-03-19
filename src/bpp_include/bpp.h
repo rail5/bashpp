@@ -500,6 +500,11 @@ class bpp_method_parameter : public bpp_entity {
 		std::shared_ptr<bpp_class> get_type() const;
 };
 
+/**
+ * @class bpp_class
+ * 
+ * @brief A class in Bash++
+ */
 class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_class> {
 	private:
 		std::string name;

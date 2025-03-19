@@ -12,6 +12,12 @@ namespace bpp {
 
 bpp_class::bpp_class() {}
 
+/**
+ * @brief Remove the default toPrimitive method
+ * 
+ * Each class has a default toPrimitive method which simply echoes the class name.
+ * This method is only added if the class does not have a custom toPrimitive method.
+ */
 void bpp_class::remove_default_toPrimitive()  {
 	if (!has_custom_toPrimitive) {
 		// Remove the toPrimitive method from the methods vector
@@ -24,6 +30,12 @@ void bpp_class::remove_default_toPrimitive()  {
 	}
 }
 
+/**
+ * @brief Add the default toPrimitive method
+ * 
+ * Each class has a default toPrimitive method which simply echoes the class name.
+ * This method is only added if the class does not have a custom toPrimitive method.
+ */
 void bpp_class::add_default_toPrimitive()  {
 	if (!has_custom_toPrimitive) {
 		std::shared_ptr<bpp_method> toPrimitive = std::make_shared<bpp_method>();
@@ -55,6 +67,9 @@ void bpp_class::set_name(const std::string& name) {
 	add_default_toPrimitive();
 }
 
+/**
+ * @brief Add a method to the class
+ */
 bool bpp_class::add_method(std::shared_ptr<bpp_method> method) {
 	std::string name = method->get_name();
 
@@ -92,6 +107,9 @@ bool bpp_class::add_method(std::shared_ptr<bpp_method> method) {
 	return true;
 }
 
+/**
+ * @brief Add a datamember to the class
+ */
 bool bpp_class::add_datamember(std::shared_ptr<bpp_datamember> datamember) {
 	std::string name = datamember->get_name();
 	for (auto& d : datamembers) {
@@ -157,6 +175,19 @@ bool bpp_class::has_destructor() const {
 	return destructor_set;
 }
 
+/**
+ * @brief Get a method by name
+ * 
+ * This function returns a method by name, taking into account the scope of the method.
+ * 
+ * If the method is public, it is returned.
+ * 
+ * If the method is private or protected, it is returned only if the context permits. Otherwise, we return bpp::inaccessible_method.
+ * 
+ * @param name The name of the method to get
+ * @param context The context in which the method is being accessed
+ * @return The method, bpp::inaccessible_method, or nullptr if it does not exist
+ */
 std::shared_ptr<bpp::bpp_method> bpp_class::get_method(const std::string& name, std::shared_ptr<bpp_entity> context) {
 	for (auto& m : methods) {
 		if (m->get_name() == name) {
@@ -180,6 +211,16 @@ std::shared_ptr<bpp::bpp_method> bpp_class::get_method(const std::string& name, 
 	return nullptr;
 }
 
+/**
+ * @brief Get a method by name without checking the context
+ * 
+ * This function returns a method by name without checking the context.
+ * 
+ * This function is UNSAFE and should only be used when the context is known to be correct or the consequences of an incorrect context are acceptable.
+ * 
+ * @param name The name of the method to get
+ * @return The method, or nullptr if it does not exist
+ */
 std::shared_ptr<bpp::bpp_method> bpp_class::get_method_UNSAFE(const std::string& name) {
 	for (auto& m : methods) {
 		if (m->get_name() == name) {
@@ -189,6 +230,19 @@ std::shared_ptr<bpp::bpp_method> bpp_class::get_method_UNSAFE(const std::string&
 	return nullptr;
 }
 
+/**
+ * @brief Get a datamember by name
+ * 
+ * This function returns a datamember by name, taking into account the scope of the datamember.
+ * 
+ * If the datamember is public, it is returned.
+ * 
+ * If the datamember is private or protected, it is returned only if the context permits. Otherwise, we return bpp::inaccessible_datamember.
+ * 
+ * @param name The name of the datamember to get
+ * @param context The context in which the datamember is being accessed
+ * @return The datamember, bpp::inaccessible_datamember, or nullptr if it does not exist
+ */
 std::shared_ptr<bpp::bpp_datamember> bpp_class::get_datamember(const std::string& name, std::shared_ptr<bpp_entity> context) {
 	for (auto& d : datamembers) {
 		if (d->get_name() == name) {
@@ -212,6 +266,13 @@ std::shared_ptr<bpp::bpp_datamember> bpp_class::get_datamember(const std::string
 	return nullptr;
 }
 
+/**
+ * @brief Inherit from a parent class
+ * 
+ * This function copies all methods and datamembers from the parent class into this class.
+ * 
+ * @param parent The parent class to inherit from
+ */
 void bpp_class::inherit(std::shared_ptr<bpp_class> parent) {
 	// Inherit methods
 	for (auto& m : parent->get_methods()) {

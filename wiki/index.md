@@ -14,18 +14,29 @@
 
 ## Documentation
 
-#### Introductory
-
- - [Beginner's Guide to Bash++](introduction.md)
- - [Using the Bash++ compiler](compiler.md)
-
-#### Language Reference
- - [Programming in Bash++](language.md)
- - [Standard Library](stl/index.md)
-
-#### Other
- - [Compiler Internals](https://bpp.sh/doxygen/)
- - [Development Logs](https://log.bpp.sh/)
+<div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+	<div style="flex: 1; min-width: 200px; margin-right: 1em;">
+		<h3>Introductory</h3>
+		<ul>
+			<li><a href="introduction.html">Beginner's Guide to Bash++</a></li>
+			<li><a href="compiler.html">Using the Bash++ compiler</a></li>
+		</ul>
+	</div>
+	<div style="flex: 1; min-width: 200px; margin-right: 1em;">
+		<h3>Language Reference</h3>
+		<ul>
+			<li><a href="language.html">Programming in Bash++</a></li>
+			<li><a href="stl/">Standard Library</a></li>
+		</ul>
+	</div>
+	<div style="flex: 1; min-width: 200px;">
+		<h3>Other</h3>
+		<ul>
+			<li><a href="doxygen/">Compiler Internals</a></li>
+			<li><a href="https://log.bpp.sh/">Development Logs</a></li>
+		</ul>
+	</div>
+</div>
 
 ## License
 

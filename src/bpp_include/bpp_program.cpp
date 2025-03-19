@@ -35,6 +35,11 @@ std::shared_ptr<bpp::bpp_class> bpp_program::get_primitive_class() const {
 	return primitive_class;
 }
 
+/**
+ * @brief Add a class to the program
+ * 
+ * This function adds a class to the program, including all necessary code for the class.
+ */
 bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	std::string name = class_->get_name();
 	if (classes.find(name) != classes.end()) {

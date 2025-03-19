@@ -548,6 +548,11 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 		std::shared_ptr<bpp::bpp_class> get_parent();
 };
 
+/**
+ * @class bpp_object
+ * 
+ * @brief An object in Bash++
+ */
 class bpp_object : public bpp_entity {
 	protected:
 		std::string name = "";
@@ -601,6 +606,11 @@ class bpp_datamember : public bpp_object {
 		bool is_array() const;
 };
 
+/**
+ * @class bpp_program
+ * 
+ * @brief The main program
+ */
 class bpp_program : public bpp_code_entity {
 	private:
 		std::shared_ptr<bpp_class> primitive_class;

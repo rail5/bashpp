@@ -648,6 +648,17 @@ class bash_for : public bpp_code_entity {
 		const std::string& get_header_code() const;
 };
 
+/**
+ * @class bpp_delete_statement
+ * 
+ * @brief A delete statement in Bash++
+ * 
+ * This entity gets pushed onto the entity stack when we encounter a '@delete' statement in Bash++ code.
+ * 
+ * It contains a pointer to the object that we intend to delete
+ * 
+ * The 'bpp_' prefix signifies that this is used to parse a statement type which is unique to Bash++
+ */
 class bpp_delete_statement : public bpp_string {
 	private:
 		std::shared_ptr<bpp::bpp_object> object_to_delete;
@@ -661,6 +672,17 @@ class bpp_delete_statement : public bpp_string {
 		bool force_pointer() const;
 };
 
+/**
+ * @class bpp_dynamic_cast_statement
+ * 
+ * @brief A dynamic_cast statement in Bash++
+ * 
+ * This entity gets pushed onto the entity stack when we encounter a `@dynamic_cast` statement in Bash++ code.
+ * 
+ * It contains a pointer to the class we're casting to, and the address we're casting
+ * 
+ * The 'bpp_' prefix signifies that this is used to parse a statement type which is unique to Bash++
+ */
 class bpp_dynamic_cast_statement : public bpp_string {
 	private:
 		std::shared_ptr<bpp::bpp_class> cast_to;
@@ -674,6 +696,13 @@ class bpp_dynamic_cast_statement : public bpp_string {
 		std::string get_cast_address() const;
 };
 
+/**
+ * @class bpp_pointer_dereference
+ * 
+ * @brief A pointer dereference in Bash++
+ * 
+ * The 'bpp_' prefix signifies that this is used to parse a statement type which is unique to Bash++
+ */
 class bpp_pointer_dereference : public bpp_string {
 	private:
 		std::shared_ptr<bpp::bpp_value_assignment> value_assignment;
@@ -684,6 +713,13 @@ class bpp_pointer_dereference : public bpp_string {
 		std::shared_ptr<bpp::bpp_value_assignment> get_value_assignment() const;
 };
 
+/**
+ * @class bpp_value_assignment
+ * 
+ * @brief A value assignment statement in Bash++
+ * 
+ * The 'bpp_' prefix signifies that this is used to parse a statement type which is unique to Bash++
+ */
 class bpp_value_assignment : public bpp_string {
 	private:
 		bool nonprimitive_assignment = false;
@@ -707,6 +743,13 @@ class bpp_value_assignment : public bpp_string {
 		bool is_adding() const;
 };
 
+/**
+ * @class bpp_object_assignment
+ * 
+ * @brief An object assignment statement in Bash++
+ * 
+ * The 'bpp_' prefix signifies that this is used to parse a statement type which is unique to Bash++
+ */
 class bpp_object_assignment : public bpp_string {
 	private:
 		std::string lvalue = "";
@@ -739,6 +782,13 @@ class bpp_object_assignment : public bpp_string {
 		bool rvalue_is_array() const;
 };
 
+/**
+ * @class bpp_object_reference
+ * 
+ * @brief An object reference in Bash++
+ * 
+ * The 'bpp_' prefix signifies that this is used to parse a statement type which is unique to Bash++
+ */
 class bpp_object_reference : public bpp_string {
 	private:
 		bpp::reference_type reference_type;
@@ -752,6 +802,13 @@ class bpp_object_reference : public bpp_string {
 		std::string get_array_index() const;
 };
 
+/**
+ * @class bpp_object_address
+ * 
+ * @brief A statement which takes the address of an object in Bash++
+ * 
+ * The 'bpp_' prefix signifies that this is used to parse a statement type which is unique to Bash++
+ */
 class bpp_object_address : public bpp_string {
 	public:
 		bpp_object_address() = default;

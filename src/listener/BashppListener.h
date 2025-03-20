@@ -78,17 +78,48 @@ class BashppListener;
  */
 class BashppListener : public BashppParserBaseListener, std::enable_shared_from_this<BashppListener> {
 	private:
+		/**
+		 * @var source_file
+		 * @brief Path to the source file being compiled (used for error reporting)
+		 */
 		std::string source_file;
+
 		bool included = false;
+
+		/**
+		 * @var include_paths
+		 * @brief A list of paths to search for included files
+		 */
 		std::shared_ptr<std::vector<std::string>> include_paths = nullptr;
+
 		bool dynamic_linking = false;
 		bool suppress_warnings = false;
+
+		/**
+		 * @var included_files
+		 * @brief A set of (unique) included files (used for '@include_once' directives)
+		 */
 		std::set<std::string> included_files = {};
 		BashppListener* included_from = nullptr;
+
+		/**
+		 * @var include_stack
+		 * @brief A chain of included files, from the main file to the current file (used for error reporting)
+		 */
 		std::stack<std::string> include_stack;
+
+		/**
+		 * @var output_stream
+		 * @brief Pointer to the output stream to write the compiled code to
+		 */
 		std::shared_ptr<std::ostream> output_stream;
 		std::string output_file;
 		bool run_on_exit = false;
+
+		/**
+		 * @var arguments
+		 * @brief Command-line arguments to pass to the compiled program if run_on_exit is true
+		 */
 		std::vector<char*> arguments = {};
 
 		std::shared_ptr<bpp::bpp_program> program = std::make_shared<bpp::bpp_program>();

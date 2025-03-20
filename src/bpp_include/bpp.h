@@ -29,9 +29,21 @@ enum reference_type {
 	ref_object
 };
 
+// Forward declarations
+
 class bpp_entity;
 class bpp_code_entity;
 class bpp_string;
+class bpp_method;
+class bpp_constructor;
+class bpp_destructor;
+class bpp_method_parameter;
+class bpp_class;
+class bpp_object;
+class bpp_datamember;
+class bpp_program;
+
+// Statement types
 class bash_while_loop;
 class bash_while_condition;
 class bash_if;
@@ -45,14 +57,6 @@ class bpp_value_assignment;
 class bpp_object_assignment;
 class bpp_object_reference;
 class bpp_object_address;
-class bpp_method;
-class bpp_constructor;
-class bpp_destructor;
-class bpp_method_parameter;
-class bpp_class;
-class bpp_object;
-class bpp_datamember;
-class bpp_program;
 
 static const std::shared_ptr<bpp_entity> inaccessible_entity = std::make_shared<bpp_entity>();
 static const std::shared_ptr<bpp_datamember> inaccessible_datamember = std::make_shared<bpp_datamember>();
@@ -229,215 +233,6 @@ class bpp_string : public bpp_code_entity {
 		std::string get_code() const override;
 		std::string get_pre_code() const override;
 		std::string get_post_code() const override;
-};
-
-class bash_while_loop : public bpp_code_entity {
-	private:
-		std::shared_ptr<bpp::bash_while_condition> while_condition;
-	public:
-		bash_while_loop();
-
-		void set_while_condition(std::shared_ptr<bpp::bash_while_condition> while_condition);
-		std::shared_ptr<bpp::bash_while_condition> get_while_condition() const;
-
-		std::string get_code() const override;
-		std::string get_pre_code() const override;
-		std::string get_post_code() const override;
-};
-
-class bash_while_condition : public bpp_string {
-	private:
-		int supershell_count = 0;
-		std::vector<std::string> supershell_function_calls = {};
-	public:
-		bash_while_condition();
-
-		void increment_supershell_count();
-		void add_supershell_function_call(const std::string& function_call);
-		std::vector<std::string> get_supershell_function_calls() const;
-};
-
-class bash_if : public bpp_string {
-	private:
-		std::string conditional_branch_pre_code = "";
-		std::string conditional_branch_post_code = "";
-		std::vector<std::pair<std::string, std::string>> conditional_branches = {};
-	public:
-		bash_if();
-
-		void add_conditional_branch_pre_code(const std::string& pre_code);
-		void add_conditional_branch_post_code(const std::string& post_code);
-		void new_branch();
-		void add_condition_code(const std::string& condition_code);
-		void add_branch_code(const std::string& branch_code);
-		std::string get_conditional_branch_pre_code() const;
-		std::string get_conditional_branch_post_code() const;
-		const std::vector<std::pair<std::string, std::string>>& get_conditional_branches() const;
-};
-
-class bash_if_branch : public bpp_code_entity {
-	private:
-		std::shared_ptr<bpp::bash_if> if_statement;
-	public:
-		bash_if_branch();
-
-		void set_if_statement(std::shared_ptr<bpp::bash_if> if_statement);
-		std::shared_ptr<bpp::bash_if> get_if_statement() const;
-
-		std::string get_code() const override;
-		std::string get_pre_code() const override;
-		std::string get_post_code() const override;
-};
-
-class bash_case : public bpp_string {
-	private:
-		std::string cases = "";
-	public:
-		bash_case();
-
-		void add_case(const std::string& case_);
-
-		const std::string& get_cases() const;
-};
-
-class bash_case_pattern : public bpp_code_entity {
-	private:
-		std::string pattern = "";
-		std::shared_ptr<bpp::bash_case> containing_case;
-	public:
-		bash_case_pattern();
-
-		void set_pattern(const std::string& pattern);
-		void set_containing_case(std::shared_ptr<bpp::bash_case> containing_case);
-
-		const std::string& get_pattern() const;
-		std::shared_ptr<bpp::bash_case> get_containing_case() const;
-};
-
-class bash_for : public bpp_code_entity {
-	private:
-		std::string header_pre_code = "";
-		std::string header_post_code = "";
-		std::string header_code = "";
-	public:
-		bash_for();
-
-		void set_header_pre_code(const std::string& pre_code);
-		void set_header_post_code(const std::string& post_code);
-		void set_header_code(const std::string& code);
-
-		const std::string& get_header_pre_code() const;
-		const std::string& get_header_post_code() const;
-		const std::string& get_header_code() const;
-};
-
-class bpp_delete_statement : public bpp_string {
-	private:
-		std::shared_ptr<bpp::bpp_object> object_to_delete;
-		bool force_ptr = false;
-	public:
-		bpp_delete_statement() = default;
-
-		void set_object_to_delete(std::shared_ptr<bpp::bpp_object> object);
-		void set_force_pointer(bool force_pointer);
-		std::shared_ptr<bpp::bpp_object> get_object_to_delete() const;
-		bool force_pointer() const;
-};
-
-class bpp_dynamic_cast_statement : public bpp_string {
-	private:
-		std::shared_ptr<bpp::bpp_class> cast_to;
-		std::string cast_address = "";
-	public:
-		bpp_dynamic_cast_statement();
-
-		void set_cast_to(std::shared_ptr<bpp::bpp_class> cast_to);
-		void set_cast_address(const std::string& cast_address);
-		std::shared_ptr<bpp::bpp_class> get_cast_to() const;
-		std::string get_cast_address() const;
-};
-
-class bpp_pointer_dereference : public bpp_string {
-	private:
-		std::shared_ptr<bpp::bpp_value_assignment> value_assignment;
-	public:
-		bpp_pointer_dereference();
-
-		void set_value_assignment(std::shared_ptr<bpp::bpp_value_assignment> value_assignment);
-		std::shared_ptr<bpp::bpp_value_assignment> get_value_assignment() const;
-};
-
-class bpp_value_assignment : public bpp_string {
-	private:
-		bool nonprimitive_assignment = false;
-		std::shared_ptr<bpp_entity> nonprimitive_object;
-		bool lvalue_nonprimitive = false;
-		bool array_assignment = false;
-		bool adding = false;
-	public:
-		bpp_value_assignment();
-
-		void set_nonprimitive_assignment(bool is_nonprimitive);
-		void set_nonprimitive_object(std::shared_ptr<bpp_entity> object);
-		void set_lvalue_nonprimitive(bool is_nonprimitive);
-		void set_array_assignment(bool is_array);
-		void set_adding(bool is_adding);
-
-		bool is_nonprimitive_assignment() const;
-		std::shared_ptr<bpp_entity> get_nonprimitive_object() const;
-		bool lvalue_is_nonprimitive() const;
-		bool is_array_assignment() const;
-		bool is_adding() const;
-};
-
-class bpp_object_assignment : public bpp_string {
-	private:
-		std::string lvalue = "";
-		std::string rvalue = "";
-		bool lvalue_nonprimitive = false;
-		bool rvalue_nonprimitive = false;
-		std::shared_ptr<bpp_entity> lvalue_object;
-		std::shared_ptr<bpp_entity> rvalue_object;
-		bool adding = false;
-		bool rvalue_array = false;
-	public:
-		bpp_object_assignment();
-
-		void set_lvalue(const std::string& lvalue);
-		void set_rvalue(const std::string& rvalue);
-		void set_lvalue_nonprimitive(bool is_nonprimitive);
-		void set_rvalue_nonprimitive(bool is_nonprimitive);
-		void set_lvalue_object(std::shared_ptr<bpp_entity> object);
-		void set_rvalue_object(std::shared_ptr<bpp_entity> object);
-		void set_adding(bool is_adding);
-		void set_rvalue_array(bool is_array);
-
-		std::string get_lvalue() const;
-		std::string get_rvalue() const;
-		bool lvalue_is_nonprimitive() const;
-		bool rvalue_is_nonprimitive() const;
-		std::shared_ptr<bpp_entity> get_lvalue_object() const;
-		std::shared_ptr<bpp_entity> get_rvalue_object() const;
-		bool is_adding() const;
-		bool rvalue_is_array() const;
-};
-
-class bpp_object_reference : public bpp_string {
-	private:
-		bpp::reference_type reference_type;
-		std::string array_index = "";
-	public:	
-		bpp_object_reference();
-
-		void set_reference_type(bpp::reference_type reference_type);
-		void set_array_index(const std::string& array_index);
-		bpp::reference_type get_reference_type() const;
-		std::string get_array_index() const;
-};
-
-class bpp_object_address : public bpp_string {
-	public:
-		bpp_object_address() = default;
 };
 
 /**
@@ -661,6 +456,215 @@ class bpp_program : public bpp_code_entity {
 
 		void increment_object_counter();
 		uint64_t get_object_counter() const;
+};
+
+class bash_while_loop : public bpp_code_entity {
+	private:
+		std::shared_ptr<bpp::bash_while_condition> while_condition;
+	public:
+		bash_while_loop();
+
+		void set_while_condition(std::shared_ptr<bpp::bash_while_condition> while_condition);
+		std::shared_ptr<bpp::bash_while_condition> get_while_condition() const;
+
+		std::string get_code() const override;
+		std::string get_pre_code() const override;
+		std::string get_post_code() const override;
+};
+
+class bash_while_condition : public bpp_string {
+	private:
+		int supershell_count = 0;
+		std::vector<std::string> supershell_function_calls = {};
+	public:
+		bash_while_condition();
+
+		void increment_supershell_count();
+		void add_supershell_function_call(const std::string& function_call);
+		std::vector<std::string> get_supershell_function_calls() const;
+};
+
+class bash_if : public bpp_string {
+	private:
+		std::string conditional_branch_pre_code = "";
+		std::string conditional_branch_post_code = "";
+		std::vector<std::pair<std::string, std::string>> conditional_branches = {};
+	public:
+		bash_if();
+
+		void add_conditional_branch_pre_code(const std::string& pre_code);
+		void add_conditional_branch_post_code(const std::string& post_code);
+		void new_branch();
+		void add_condition_code(const std::string& condition_code);
+		void add_branch_code(const std::string& branch_code);
+		std::string get_conditional_branch_pre_code() const;
+		std::string get_conditional_branch_post_code() const;
+		const std::vector<std::pair<std::string, std::string>>& get_conditional_branches() const;
+};
+
+class bash_if_branch : public bpp_code_entity {
+	private:
+		std::shared_ptr<bpp::bash_if> if_statement;
+	public:
+		bash_if_branch();
+
+		void set_if_statement(std::shared_ptr<bpp::bash_if> if_statement);
+		std::shared_ptr<bpp::bash_if> get_if_statement() const;
+
+		std::string get_code() const override;
+		std::string get_pre_code() const override;
+		std::string get_post_code() const override;
+};
+
+class bash_case : public bpp_string {
+	private:
+		std::string cases = "";
+	public:
+		bash_case();
+
+		void add_case(const std::string& case_);
+
+		const std::string& get_cases() const;
+};
+
+class bash_case_pattern : public bpp_code_entity {
+	private:
+		std::string pattern = "";
+		std::shared_ptr<bpp::bash_case> containing_case;
+	public:
+		bash_case_pattern();
+
+		void set_pattern(const std::string& pattern);
+		void set_containing_case(std::shared_ptr<bpp::bash_case> containing_case);
+
+		const std::string& get_pattern() const;
+		std::shared_ptr<bpp::bash_case> get_containing_case() const;
+};
+
+class bash_for : public bpp_code_entity {
+	private:
+		std::string header_pre_code = "";
+		std::string header_post_code = "";
+		std::string header_code = "";
+	public:
+		bash_for();
+
+		void set_header_pre_code(const std::string& pre_code);
+		void set_header_post_code(const std::string& post_code);
+		void set_header_code(const std::string& code);
+
+		const std::string& get_header_pre_code() const;
+		const std::string& get_header_post_code() const;
+		const std::string& get_header_code() const;
+};
+
+class bpp_delete_statement : public bpp_string {
+	private:
+		std::shared_ptr<bpp::bpp_object> object_to_delete;
+		bool force_ptr = false;
+	public:
+		bpp_delete_statement() = default;
+
+		void set_object_to_delete(std::shared_ptr<bpp::bpp_object> object);
+		void set_force_pointer(bool force_pointer);
+		std::shared_ptr<bpp::bpp_object> get_object_to_delete() const;
+		bool force_pointer() const;
+};
+
+class bpp_dynamic_cast_statement : public bpp_string {
+	private:
+		std::shared_ptr<bpp::bpp_class> cast_to;
+		std::string cast_address = "";
+	public:
+		bpp_dynamic_cast_statement();
+
+		void set_cast_to(std::shared_ptr<bpp::bpp_class> cast_to);
+		void set_cast_address(const std::string& cast_address);
+		std::shared_ptr<bpp::bpp_class> get_cast_to() const;
+		std::string get_cast_address() const;
+};
+
+class bpp_pointer_dereference : public bpp_string {
+	private:
+		std::shared_ptr<bpp::bpp_value_assignment> value_assignment;
+	public:
+		bpp_pointer_dereference();
+
+		void set_value_assignment(std::shared_ptr<bpp::bpp_value_assignment> value_assignment);
+		std::shared_ptr<bpp::bpp_value_assignment> get_value_assignment() const;
+};
+
+class bpp_value_assignment : public bpp_string {
+	private:
+		bool nonprimitive_assignment = false;
+		std::shared_ptr<bpp_entity> nonprimitive_object;
+		bool lvalue_nonprimitive = false;
+		bool array_assignment = false;
+		bool adding = false;
+	public:
+		bpp_value_assignment();
+
+		void set_nonprimitive_assignment(bool is_nonprimitive);
+		void set_nonprimitive_object(std::shared_ptr<bpp_entity> object);
+		void set_lvalue_nonprimitive(bool is_nonprimitive);
+		void set_array_assignment(bool is_array);
+		void set_adding(bool is_adding);
+
+		bool is_nonprimitive_assignment() const;
+		std::shared_ptr<bpp_entity> get_nonprimitive_object() const;
+		bool lvalue_is_nonprimitive() const;
+		bool is_array_assignment() const;
+		bool is_adding() const;
+};
+
+class bpp_object_assignment : public bpp_string {
+	private:
+		std::string lvalue = "";
+		std::string rvalue = "";
+		bool lvalue_nonprimitive = false;
+		bool rvalue_nonprimitive = false;
+		std::shared_ptr<bpp_entity> lvalue_object;
+		std::shared_ptr<bpp_entity> rvalue_object;
+		bool adding = false;
+		bool rvalue_array = false;
+	public:
+		bpp_object_assignment();
+
+		void set_lvalue(const std::string& lvalue);
+		void set_rvalue(const std::string& rvalue);
+		void set_lvalue_nonprimitive(bool is_nonprimitive);
+		void set_rvalue_nonprimitive(bool is_nonprimitive);
+		void set_lvalue_object(std::shared_ptr<bpp_entity> object);
+		void set_rvalue_object(std::shared_ptr<bpp_entity> object);
+		void set_adding(bool is_adding);
+		void set_rvalue_array(bool is_array);
+
+		std::string get_lvalue() const;
+		std::string get_rvalue() const;
+		bool lvalue_is_nonprimitive() const;
+		bool rvalue_is_nonprimitive() const;
+		std::shared_ptr<bpp_entity> get_lvalue_object() const;
+		std::shared_ptr<bpp_entity> get_rvalue_object() const;
+		bool is_adding() const;
+		bool rvalue_is_array() const;
+};
+
+class bpp_object_reference : public bpp_string {
+	private:
+		bpp::reference_type reference_type;
+		std::string array_index = "";
+	public:	
+		bpp_object_reference();
+
+		void set_reference_type(bpp::reference_type reference_type);
+		void set_array_index(const std::string& array_index);
+		bpp::reference_type get_reference_type() const;
+		std::string get_array_index() const;
+};
+
+class bpp_object_address : public bpp_string {
+	public:
+		bpp_object_address() = default;
 };
 
 } // namespace bpp

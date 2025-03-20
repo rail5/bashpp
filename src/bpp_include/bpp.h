@@ -472,6 +472,20 @@ class bpp_program : public bpp_code_entity {
 		uint64_t get_object_counter() const;
 };
 
+/**
+ * @class bash_while_loop
+ * 
+ * @brief A while loop in Bash++
+ * 
+ * This entity gets pushed onto the entity stack when a while loop is encountered in Bash++ code.
+ * It contains a bash_while_condition object which holds the condition for the while loop
+ * 
+ * The reason for this is that the condition for the while loop may contain references which need to be resolved
+ * And the pre- and post-code for those references need to be added in specific places in the compiled code.
+ * E.g., supershells must be re-evaluated for each iteration of the loop
+ * 
+ * The 'bash_' prefix signifies that this is used to parse ordinary Bash code, not anything specific to Bash++
+ */
 class bash_while_loop : public bpp_code_entity {
 	private:
 		std::shared_ptr<bpp::bash_while_condition> while_condition;
@@ -486,6 +500,13 @@ class bash_while_loop : public bpp_code_entity {
 		std::string get_post_code() const override;
 };
 
+/**
+ * @class bash_while_condition
+ * 
+ * @brief The condition for a while loop in Bash++
+ * 
+ * The 'bash_' prefix signifies that this is used to parse ordinary Bash code, not anything specific to Bash++
+ */
 class bash_while_condition : public bpp_string {
 	private:
 		int supershell_count = 0;
@@ -498,6 +519,24 @@ class bash_while_condition : public bpp_string {
 		std::vector<std::string> get_supershell_function_calls() const;
 };
 
+/**
+ * @class bash_if
+ * 
+ * @brief An if statement in Bash++
+ * 
+ * This entity gets pushed onto the entity stack when an if statement is encountered in Bash++ code.
+ * It contains a vector of conditional branches, each of which contains a condition and a branch of code
+ * 
+ * The reason this requires its own entity type is similar to the reason for bash_while_loop:
+ * The conditions for the if statement may contain references which need to be resolved,
+ * And the pre- and post-code for those references need to be added in specific places in the compiled code.
+ * 
+ * In the case of 'if' statements, the pre- and post-code is added before and after the entire if statement.
+ * If these were parsed without their own entity type (e.g., just using a bpp_code_entity), the pre- and post-code
+ * would be added before and after each individual conditional branch, which is incorrect.
+ * 
+ * The 'bash_' prefix signifies that this is used to parse ordinary Bash code, not anything specific to Bash++
+ */
 class bash_if : public bpp_string {
 	private:
 		std::string conditional_branch_pre_code = "";
@@ -516,6 +555,16 @@ class bash_if : public bpp_string {
 		const std::vector<std::pair<std::string, std::string>>& get_conditional_branches() const;
 };
 
+/**
+ * @class bash_if_branch
+ * 
+ * @brief A branch of an if statement in Bash++
+ * 
+ * This entity contains the *code* which is executed for a given branch of an if statement.
+ * It is not responsible for parsing the condition of the if statement.
+ * 
+ * The 'bash_' prefix signifies that this is used to parse ordinary Bash code, not anything specific to Bash++
+ */
 class bash_if_branch : public bpp_code_entity {
 	private:
 		std::shared_ptr<bpp::bash_if> if_statement;
@@ -530,6 +579,15 @@ class bash_if_branch : public bpp_code_entity {
 		std::string get_post_code() const override;
 };
 
+/**
+ * @class bash_case
+ * 
+ * @brief A case statement in Bash++
+ * 
+ * This entity gets pushed onto the entity stack when a case statement is encountered in Bash++ code.
+ * 
+ * The 'bash_' prefix signifies that this is used to parse ordinary Bash code, not anything specific to Bash++
+ */
 class bash_case : public bpp_string {
 	private:
 		std::string cases = "";
@@ -541,6 +599,15 @@ class bash_case : public bpp_string {
 		const std::string& get_cases() const;
 };
 
+/**
+ * @class bash_case_pattern
+ * 
+ * @brief A pattern for a case statement in Bash++
+ * 
+ * This entity contains a pattern to be matched in a case statement.
+ * 
+ * The 'bash_' prefix signifies that this is used to parse ordinary Bash code, not anything specific to Bash++
+ */
 class bash_case_pattern : public bpp_code_entity {
 	private:
 		std::string pattern = "";
@@ -555,6 +622,15 @@ class bash_case_pattern : public bpp_code_entity {
 		std::shared_ptr<bpp::bash_case> get_containing_case() const;
 };
 
+/**
+ * @class bash_for
+ * 
+ * @brief A for loop in Bash++
+ * 
+ * This entity gets pushed onto the entity stack when a for loop is encountered in Bash++ code.
+ * 
+ * The 'bash_' prefix signifies that this is used to parse ordinary Bash code, not anything specific to Bash++
+ */
 class bash_for : public bpp_code_entity {
 	private:
 		std::string header_pre_code = "";

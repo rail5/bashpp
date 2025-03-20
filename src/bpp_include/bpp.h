@@ -473,6 +473,10 @@ class bpp_method : public bpp_code_entity {
 		void destruct_local_objects();
 };
 
+/**
+ * @class bpp_constructor
+ * @brief A constructor in a class
+ */
 class bpp_constructor : public bpp_method {
 	public:
 		bpp_constructor();
@@ -480,6 +484,10 @@ class bpp_constructor : public bpp_method {
 		bool add_parameter(std::shared_ptr<bpp_method_parameter> parameter) override;
 };
 
+/**
+ * @class bpp_destructor
+ * @brief A destructor in a class
+ */
 class bpp_destructor : public bpp_method {
 	public:
 		bpp_destructor();
@@ -487,6 +495,11 @@ class bpp_destructor : public bpp_method {
 		bool add_parameter(std::shared_ptr<bpp_method_parameter> parameter) override;
 };
 
+/**
+ * @class bpp_method_parameter
+ * 
+ * @brief A parameter in a method
+ */
 class bpp_method_parameter : public bpp_entity {
 	private:
 		std::shared_ptr<bpp_class> type;

@@ -8,6 +8,12 @@
 #ifndef SRC_BPP_REPLACE_ALL_CPP_
 #define SRC_BPP_REPLACE_ALL_CPP_
 
+/**
+ * @brief Replace all occurences of a substring in a string
+ * @param str The string to search in
+ * @param from The substring to search for
+ * @param to The substring to replace with
+ */
 std::string replace_all(std::string str, const std::string& from, const std::string& to) {
 	if (from.empty())
 		return str;

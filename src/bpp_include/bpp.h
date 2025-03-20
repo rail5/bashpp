@@ -601,6 +601,11 @@ class bpp_object : public bpp_entity {
 		bool is_pointer() const;
 };
 
+/**
+ * @class bpp_datamember
+ * 
+ * @brief A data member in a class
+ */
 class bpp_datamember : public bpp_object {
 	private:
 		std::string default_value = "";

@@ -141,7 +141,6 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 		 * When we're done with the class, we pop it off the entity_stack, so that the program is now at the top of the stack.
 		 */
 		std::stack<std::shared_ptr<bpp::bpp_entity>> entity_stack;
-		// The entity_stack is used to keep track of the current entity being processed
 
 		std::set<std::string> protected_keywords = {
 			"class", "constructor", "delete", "destructor",

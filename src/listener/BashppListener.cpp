@@ -143,12 +143,20 @@ void BashppListener::set_included(bool included) {
 	this->included = included;
 }
 
+/**
+ * @brief Sets the included_from pointer to the given listener.
+ */
 void BashppListener::set_included_from(BashppListener* included_from) {
 	this->included_from = included_from;
 	include_stack = included_from->get_include_stack();
 	include_stack.push(included_from->source_file);
 }
 
+/**
+ * @brief Sets the program_has_errors flag to true.
+ * 
+ * This function is called when a syntax error is encountered during parsing.
+ */
 void BashppListener::set_errors() {
 	program_has_errors = true;
 }

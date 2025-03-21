@@ -19,7 +19,7 @@
 		<h3>Introductory</h3>
 		<ul>
 			<li><a href="introduction.html">Beginner's Guide to Bash++</a></li>
-			<li><a href="compiler.html">Using the Bash++ compiler</a></li>
+			<li><a href="compiler.html">Using the Bash++ Compiler</a></li>
 		</ul>
 	</div>
 	<div style="flex: 1; min-width: 200px; margin-right: 1em;">

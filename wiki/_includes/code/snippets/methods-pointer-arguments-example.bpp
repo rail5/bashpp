@@ -4,7 +4,10 @@
 
 @class MyClass {
 	@public @method myMethodWithObject @Object* obj {
-		echo "Hello from myMethodWithObject"
+		if [[ @obj == @nullptr ]]; then
+			echo "Invalid argument"
+			return
+		fi
 		echo "Object data member: @obj.dataMember"
 	}
 }

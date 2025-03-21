@@ -89,6 +89,8 @@ Methods cannot take non-primitive arguments. They can, however, take *pointers* 
 {%- include code/snippets/methods-pointer-arguments-example.html -%}
 </code></pre></div>
 
+Declaring a method to take a pointer to an object as an argument will result in an implicit runtime dynamic cast to the expected type. You can verify that the argument is valid by checking if the pointer is `@nullptr`.
+
 Like in ordinary Bash functions, these arguments can also be accessed using `$1`, `$2`, etc.:
 
 <div class="highlight"><pre class="highlight"><code>

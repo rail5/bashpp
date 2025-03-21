@@ -30,6 +30,13 @@ void BashppListener::enterParameter(BashppParser::ParameterContext *ctx) {
 			throw_syntax_error(ctx->IDENTIFIER(0), "Unknown class: " + type_name);
 		}
 		name = ctx->IDENTIFIER(1);
+
+		// Run an implicit dynamic cast in the event that the type is non-primitive
+		code_segment dynamic_cast_code = generate_dynamic_cast_code(name->getText(), type->get_name());
+		current_method->add_code_to_previous_line(dynamic_cast_code.pre_code);
+		current_method->add_code_to_next_line(dynamic_cast_code.post_code);
+		current_method->add_code(name->getText() + "=" + dynamic_cast_code.code);
+		program->increment_dynamic_cast_counter();
 	} else {
 		name = ctx->IDENTIFIER(0);
 	}

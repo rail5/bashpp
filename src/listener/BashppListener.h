@@ -230,6 +230,7 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 	code_segment generate_supershell_code(const std::string& code_to_run_in_supershell);
 	code_segment generate_delete_code(std::shared_ptr<bpp::bpp_object> object, const std::string& object_reference_string, bool force_pointer = false);
 	code_segment generate_method_call_code(const std::string& reference_code, const std::string& method_name, std::shared_ptr<bpp::bpp_class> assumed_class);
+	code_segment generate_dynamic_cast_code(const std::string& reference_code, const std::string& class_name);
 
 	void enterProgram(BashppParser::ProgramContext *ctx) override;
 	void exitProgram(BashppParser::ProgramContext *ctx) override;

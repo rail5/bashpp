@@ -127,6 +127,33 @@ BashppListener::code_segment BashppListener::generate_method_call_code(const std
 	return result;
 }
 
+/**
+ * @brief Generates a code segment for performing a dynamic cast.
+ * 
+ * This function constructs a code segment to perform a dynamic cast on an object. The generated code includes:
+ * - A runtime check to verify the cast is valid.
+ * - A substitution of either the address of the cast object or the nullptr value.
+ * 
+ * @param reference_code The code representing the object reference
+ * @param class_name The type to which we want to cast
+ * 
+ * @return A code segment structure containing the complete dynamic cast code:
+ * 	- pre_code: Call to the runtime dynamic cast function
+ * 	- post_code: Code for cleaning up the dynamic cast's temporary variable
+ * 	- code: The temporary variable containing the result of the dynamic cast (either the address or the @nullptr value)
+ */
+BashppListener::code_segment BashppListener::generate_dynamic_cast_code(const std::string& reference_code, const std::string& class_name) {
+	BashppListener::code_segment result;
+
+	result.pre_code = "bpp____dynamic__cast " + reference_code + " " + class_name + " __dynamicCast" + std::to_string(program->get_dynamic_cast_counter()) + "\n";
+	result.code = "${__dynamicCast" + std::to_string(program->get_dynamic_cast_counter()) + "}";
+	result.post_code = "unset __dynamicCast" + std::to_string(program->get_dynamic_cast_counter()) + "\n";
+
+	program->increment_dynamic_cast_counter();
+
+	return result;
+}
+
 void BashppListener::set_source_file(std::string source_file) {
 	this->source_file = source_file;
 }

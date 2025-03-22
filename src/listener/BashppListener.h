@@ -144,9 +144,9 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 
 		std::set<std::string> protected_keywords = {
 			"class", "constructor", "delete", "destructor",
-			"include", "include_once", "method", "new",
-			"nullptr", "primitive", "private", "protected",
-			"public", "this", "virtual"
+			"dynamic_cast", "include", "include_once", "method",
+			"new", "nullptr", "primitive", "private",
+			"protected", "public", "this", "virtual"
 		};
 
 		std::shared_ptr<bpp::bpp_class> primitive;

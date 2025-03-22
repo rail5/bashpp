@@ -1,3 +1,12 @@
+bpp (0.3.2) unstable; urgency=medium
+
+  * Builds: Only search for dynamic libs if static libs can't be found
+  * Run an implicit dynamic cast when a method takes a non-primitive
+    argument
+  * Abstracted dynamic cast code generation to its own function
+
+ -- rail5 <andrew@rail5.org>  Sat, 22 Mar 2025 15:11:17 +0800
+
 bpp (0.3.1) unstable; urgency=medium
 
   * Keep object counter in compiler

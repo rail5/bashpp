@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.3.1]
+
+- Compatible with VSCode versions at least as old as 1.75.0
+
 ## [0.3.0]
 
 - Brought syntax rules up to speed with Bash++ v0.3.0 by adding recognition of the `@dynamic_cast` keyword

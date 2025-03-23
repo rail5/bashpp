@@ -2,7 +2,7 @@
   "name": "bashpp",
   "displayName": "Bash++",
   "description": "Syntax highlighting for Bash++",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "homepage": "https://bpp.sh",
   "publisher": "rail5",
   "repository": {
@@ -10,7 +10,7 @@
     "url": "https://github.com/rail5/bashpp.git"
     },
   "engines": {
-    "vscode": "^1.96.0"
+    "vscode": "^1.75.0"
   },
   "categories": [
     "Programming Languages"

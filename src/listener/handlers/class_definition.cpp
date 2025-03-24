@@ -20,7 +20,7 @@ void BashppListener::enterClass_definition(BashppParser::Class_definitionContext
 	std::string class_name = ctx->IDENTIFIER(0)->getText();
 
 	// Verify that the class name is not already in use (or a protected keyword)
-	if (protected_keywords.find(class_name) != protected_keywords.end()) {
+	if (is_protected_keyword(class_name)) {
 		entity_stack.pop();
 		throw_syntax_error(ctx->IDENTIFIER(0), "Invalid class name: " + class_name);
 	}

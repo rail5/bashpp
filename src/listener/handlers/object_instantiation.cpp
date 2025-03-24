@@ -65,7 +65,7 @@ void BashppListener::enterObject_instantiation(BashppParser::Object_instantiatio
 	}
 
 	// Verify that the object's name is not already in use (or a protected keyword)
-	if (protected_keywords.find(new_object->get_name()) != protected_keywords.end()) {
+	if (is_protected_keyword(new_object->get_name())) {
 		entity_stack.pop();
 		throw_syntax_error(object_name, "Invalid object name: " + new_object->get_name());
 	}

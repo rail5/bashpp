@@ -142,12 +142,21 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 		 */
 		std::stack<std::shared_ptr<bpp::bpp_entity>> entity_stack;
 
-		std::set<std::string> protected_keywords = {
+		static constexpr const char* protected_keywords[] = {
 			"class", "constructor", "delete", "destructor",
 			"dynamic_cast", "include", "include_once", "method",
 			"new", "nullptr", "primitive", "private",
 			"protected", "public", "this", "virtual"
 		};
+
+		inline bool is_protected_keyword(const std::string& keyword) {
+			for (const char* protected_keyword : protected_keywords) {
+				if (keyword == protected_keyword) {
+					return true;
+				}
+			}
+			return false;
+		}
 
 		std::shared_ptr<bpp::bpp_class> primitive;
 

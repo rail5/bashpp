@@ -12,14 +12,26 @@ namespace bpp {
 
 bpp_string::bpp_string() {}
 
+/**
+ * @brief Add code to the primary buffer
+ * 
+ * @param code The code to add
+ * @param add_newline Ignored in the case of bpp_string
+ */
 void bpp_string::add_code(const std::string& code, bool add_newline) {
 	nextline_buffer += code;
 }
 
+/**
+ * @brief Add code to the pre-code buffer
+ */
 void bpp_string::add_code_to_previous_line(const std::string& code) {
 	*this->code << code << std::flush;
 }
 
+/**
+ * @brief Add code to the post-code buffer
+ */
 void bpp_string::add_code_to_next_line(const std::string& code) {
 	postline_buffer += code;
 }

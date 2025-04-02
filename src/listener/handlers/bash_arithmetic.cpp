@@ -9,7 +9,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterBash_arithmetic(BashppParser::Bash_arithmeticContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -37,7 +36,6 @@ void BashppListener::enterBash_arithmetic(BashppParser::Bash_arithmeticContext *
 }
 
 void BashppListener::exitBash_arithmetic(BashppParser::Bash_arithmeticContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 

@@ -9,7 +9,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_reference_as_lvalueContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -273,7 +272,6 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 }
 
 void BashppListener::exitObject_reference_as_lvalue(BashppParser::Object_reference_as_lvalueContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 

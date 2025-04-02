@@ -9,7 +9,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterSupershell(BashppParser::SupershellContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -33,7 +32,6 @@ void BashppListener::enterSupershell(BashppParser::SupershellContext *ctx) {
 }
 
 void BashppListener::exitSupershell(BashppParser::SupershellContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 

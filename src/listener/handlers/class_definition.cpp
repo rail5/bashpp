@@ -9,7 +9,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterClass_definition(BashppParser::Class_definitionContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -50,7 +49,6 @@ void BashppListener::enterClass_definition(BashppParser::Class_definitionContext
 }
 
 void BashppListener::exitClass_definition(BashppParser::Class_definitionContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 

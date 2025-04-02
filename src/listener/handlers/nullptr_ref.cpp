@@ -9,7 +9,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterNullptr_ref(BashppParser::Nullptr_refContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -29,7 +28,6 @@ void BashppListener::enterNullptr_ref(BashppParser::Nullptr_refContext *ctx) {
 }
 
 void BashppListener::exitNullptr_ref(BashppParser::Nullptr_refContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 }

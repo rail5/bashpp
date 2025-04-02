@@ -9,7 +9,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_as_lvalueContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -211,7 +210,6 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 }
 
 void BashppListener::exitSelf_reference_as_lvalue(BashppParser::Self_reference_as_lvalueContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 

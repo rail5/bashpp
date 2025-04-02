@@ -35,7 +35,6 @@ general_statement: include_statement
 	| bash_arithmetic
 	| string
 	| singlequote_string
-	| comment
 	| object_address
 	| pointer_dereference
 	| nullptr_ref
@@ -148,9 +147,6 @@ singlequote_string: SINGLEQUOTE (statement | terminal_token)* SINGLEQUOTE_END;
 heredoc: heredoc_header (statement | terminal_token)* HEREDOC_END;
 
 heredoc_header: HEREDOC_START statement* HEREDOC_CONTENT_START;
-
-// Comments (skipped)
-comment: COMMENT (statement | terminal_token)* (NEWLINE | EOF);
 
 parameter: (IDENTIFIER | AT IDENTIFIER ASTERISK WS* IDENTIFIER) WS*;
 

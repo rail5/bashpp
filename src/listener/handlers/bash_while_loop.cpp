@@ -15,7 +15,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterBash_while_loop(BashppParser::Bash_while_loopContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -32,7 +31,6 @@ void BashppListener::enterBash_while_loop(BashppParser::Bash_while_loopContext *
 }
 
 void BashppListener::exitBash_while_loop(BashppParser::Bash_while_loopContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -68,7 +66,6 @@ void BashppListener::exitBash_while_loop(BashppParser::Bash_while_loopContext *c
 }
 
 void BashppListener::enterBash_while_condition(BashppParser::Bash_while_conditionContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -90,7 +87,6 @@ void BashppListener::enterBash_while_condition(BashppParser::Bash_while_conditio
 }
 
 void BashppListener::exitBash_while_condition(BashppParser::Bash_while_conditionContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 

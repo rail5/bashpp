@@ -9,7 +9,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterOther_statement(BashppParser::Other_statementContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -29,7 +28,6 @@ void BashppListener::enterOther_statement(BashppParser::Other_statementContext *
 }
 
 void BashppListener::exitOther_statement(BashppParser::Other_statementContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 }

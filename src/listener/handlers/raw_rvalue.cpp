@@ -9,7 +9,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterRaw_rvalue(BashppParser::Raw_rvalueContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -21,7 +20,6 @@ void BashppListener::enterRaw_rvalue(BashppParser::Raw_rvalueContext *ctx) {
 }
 
 void BashppListener::exitRaw_rvalue(BashppParser::Raw_rvalueContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 }

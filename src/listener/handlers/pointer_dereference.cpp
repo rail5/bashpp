@@ -9,7 +9,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterPointer_dereference(BashppParser::Pointer_dereferenceContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -47,7 +46,6 @@ void BashppListener::enterPointer_dereference(BashppParser::Pointer_dereferenceC
 }
 
 void BashppListener::exitPointer_dereference(BashppParser::Pointer_dereferenceContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 

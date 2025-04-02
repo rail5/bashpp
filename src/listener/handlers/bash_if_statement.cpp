@@ -17,7 +17,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterBash_if_statement(BashppParser::Bash_if_statementContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -93,7 +92,6 @@ void BashppListener::enterBash_if_statement(BashppParser::Bash_if_statementConte
 }
 
 void BashppListener::exitBash_if_statement(BashppParser::Bash_if_statementContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -124,7 +122,6 @@ void BashppListener::exitBash_if_statement(BashppParser::Bash_if_statementContex
 }
 
 void BashppListener::enterBash_if_root_branch(BashppParser::Bash_if_root_branchContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -146,7 +143,6 @@ void BashppListener::enterBash_if_root_branch(BashppParser::Bash_if_root_branchC
 }
 
 void BashppListener::exitBash_if_root_branch(BashppParser::Bash_if_root_branchContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -168,7 +164,6 @@ void BashppListener::exitBash_if_root_branch(BashppParser::Bash_if_root_branchCo
 }
 
 void BashppListener::enterBash_if_else_branch(BashppParser::Bash_if_else_branchContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -195,7 +190,6 @@ void BashppListener::enterBash_if_else_branch(BashppParser::Bash_if_else_branchC
 }
 
 void BashppListener::exitBash_if_else_branch(BashppParser::Bash_if_else_branchContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -217,7 +211,6 @@ void BashppListener::exitBash_if_else_branch(BashppParser::Bash_if_else_branchCo
 }
 
 void BashppListener::enterBash_if_condition(BashppParser::Bash_if_conditionContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -237,7 +230,6 @@ void BashppListener::enterBash_if_condition(BashppParser::Bash_if_conditionConte
 }
 
 void BashppListener::exitBash_if_condition(BashppParser::Bash_if_conditionContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 

@@ -9,7 +9,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterDestructor_definition(BashppParser::Destructor_definitionContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -37,7 +36,6 @@ void BashppListener::enterDestructor_definition(BashppParser::Destructor_definit
 }
 
 void BashppListener::exitDestructor_definition(BashppParser::Destructor_definitionContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 

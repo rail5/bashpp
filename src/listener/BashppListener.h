@@ -46,7 +46,6 @@ class BashppListener;
 #include "../syntax_error.cpp"
 #include "../internal_error.cpp"
 
-#define skip_comment if (in_comment) return;
 #define skip_singlequote_string if (in_singlequote_string) return;
 #define skip_syntax_errors if (error_thrown) { \
 		if (error_context == ctx) { \
@@ -331,9 +330,6 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 
 	void enterSinglequote_string(BashppParser::Singlequote_stringContext *ctx) override;
 	void exitSinglequote_string(BashppParser::Singlequote_stringContext *ctx) override;
-
-	void enterComment(BashppParser::CommentContext *ctx) override;
-	void exitComment(BashppParser::CommentContext *ctx) override;
 
 	void enterParameter(BashppParser::ParameterContext *ctx) override;
 	void exitParameter(BashppParser::ParameterContext *ctx) override;

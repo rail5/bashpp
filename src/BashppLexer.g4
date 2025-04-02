@@ -411,7 +411,11 @@ COMMENT: '#' {
 			emit(POUNDKEY, "#");
 			break;
 		default:
-			modeStack.push(mode_comment);
+			// Consume characters until the next newline or EOF, then skip the token.
+			while (_input->LA(1) != '\n' && _input->LA(1) != EOF) {
+				_input->consume();
+			}
+			skip();
 			break;
 	}
 };

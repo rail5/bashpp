@@ -9,7 +9,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterArray_value(BashppParser::Array_valueContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -37,7 +36,6 @@ void BashppListener::enterArray_value(BashppParser::Array_valueContext *ctx) {
 }
 
 void BashppListener::exitArray_value(BashppParser::Array_valueContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 

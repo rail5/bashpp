@@ -9,7 +9,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterArray_index(BashppParser::Array_indexContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -38,7 +37,6 @@ void BashppListener::enterArray_index(BashppParser::Array_indexContext *ctx) {
 }
 
 void BashppListener::exitArray_index(BashppParser::Array_indexContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 

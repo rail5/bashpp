@@ -15,7 +15,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterHeredoc(BashppParser::HeredocContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -32,7 +31,6 @@ void BashppListener::enterHeredoc(BashppParser::HeredocContext *ctx) {
 }
 
 void BashppListener::exitHeredoc(BashppParser::HeredocContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -54,7 +52,6 @@ void BashppListener::exitHeredoc(BashppParser::HeredocContext *ctx) {
 }
 
 void BashppListener::enterHeredoc_header(BashppParser::Heredoc_headerContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -71,7 +68,6 @@ void BashppListener::enterHeredoc_header(BashppParser::Heredoc_headerContext *ct
 }
 
 void BashppListener::exitHeredoc_header(BashppParser::Heredoc_headerContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 

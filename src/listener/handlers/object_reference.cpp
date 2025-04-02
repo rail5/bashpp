@@ -9,7 +9,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterObject_reference(BashppParser::Object_referenceContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -39,7 +38,6 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 }
 
 void BashppListener::exitObject_reference(BashppParser::Object_referenceContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 

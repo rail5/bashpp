@@ -8,7 +8,6 @@
 
 #include "listener/handlers/class_body_statement.cpp"
 #include "listener/handlers/class_definition.cpp"
-#include "listener/handlers/comment.cpp"
 #include "listener/handlers/constructor_definition.cpp"
 #include "listener/handlers/delete_statement.cpp"
 #include "listener/handlers/deprecated_subshell.cpp"

@@ -9,7 +9,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterSinglequote_string(BashppParser::Singlequote_stringContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 	in_singlequote_string = true;
@@ -23,7 +22,6 @@ void BashppListener::enterSinglequote_string(BashppParser::Singlequote_stringCon
 }
 
 void BashppListener::exitSinglequote_string(BashppParser::Singlequote_stringContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	in_singlequote_string = false;
 }

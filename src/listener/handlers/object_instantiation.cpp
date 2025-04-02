@@ -9,7 +9,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterObject_instantiation(BashppParser::Object_instantiationContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -81,7 +80,6 @@ void BashppListener::enterObject_instantiation(BashppParser::Object_instantiatio
 }
 
 void BashppListener::exitObject_instantiation(BashppParser::Object_instantiationContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 

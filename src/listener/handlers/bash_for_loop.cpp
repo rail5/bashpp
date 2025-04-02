@@ -15,7 +15,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterBash_for_loop(BashppParser::Bash_for_loopContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -32,7 +31,6 @@ void BashppListener::enterBash_for_loop(BashppParser::Bash_for_loopContext *ctx)
 }
 
 void BashppListener::exitBash_for_loop(BashppParser::Bash_for_loopContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -56,7 +54,6 @@ void BashppListener::exitBash_for_loop(BashppParser::Bash_for_loopContext *ctx) 
 }
 
 void BashppListener::enterBash_for_header(BashppParser::Bash_for_headerContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -73,7 +70,6 @@ void BashppListener::enterBash_for_header(BashppParser::Bash_for_headerContext *
 }
 
 void BashppListener::exitBash_for_header(BashppParser::Bash_for_headerContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 

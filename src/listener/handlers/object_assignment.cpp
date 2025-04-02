@@ -9,7 +9,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterObject_assignment(BashppParser::Object_assignmentContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -25,7 +24,6 @@ void BashppListener::enterObject_assignment(BashppParser::Object_assignmentConte
 }
 
 void BashppListener::exitObject_assignment(BashppParser::Object_assignmentContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 

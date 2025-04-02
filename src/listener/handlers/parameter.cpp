@@ -9,7 +9,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterParameter(BashppParser::ParameterContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -50,7 +49,6 @@ void BashppListener::enterParameter(BashppParser::ParameterContext *ctx) {
 }
 
 void BashppListener::exitParameter(BashppParser::ParameterContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 }

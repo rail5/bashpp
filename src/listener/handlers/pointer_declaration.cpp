@@ -9,7 +9,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterPointer_declaration(BashppParser::Pointer_declarationContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -91,7 +90,6 @@ void BashppListener::enterPointer_declaration(BashppParser::Pointer_declarationC
 }
 
 void BashppListener::exitPointer_declaration(BashppParser::Pointer_declarationContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 

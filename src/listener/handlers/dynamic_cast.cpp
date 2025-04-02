@@ -9,7 +9,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterDynamic_cast_statement(BashppParser::Dynamic_cast_statementContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -45,7 +44,6 @@ void BashppListener::enterDynamic_cast_statement(BashppParser::Dynamic_cast_stat
 }
 
 void BashppListener::exitDynamic_cast_statement(BashppParser::Dynamic_cast_statementContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 

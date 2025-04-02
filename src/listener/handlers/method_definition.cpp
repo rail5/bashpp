@@ -9,7 +9,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterMethod_definition(BashppParser::Method_definitionContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -44,7 +43,6 @@ void BashppListener::enterMethod_definition(BashppParser::Method_definitionConte
 }
 
 void BashppListener::exitMethod_definition(BashppParser::Method_definitionContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 

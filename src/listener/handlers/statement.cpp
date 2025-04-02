@@ -9,13 +9,11 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterStatement(BashppParser::StatementContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 }
 
 void BashppListener::exitStatement(BashppParser::StatementContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 

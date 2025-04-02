@@ -9,7 +9,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterMember_declaration(BashppParser::Member_declarationContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -59,7 +58,6 @@ void BashppListener::enterMember_declaration(BashppParser::Member_declarationCon
 }
 
 void BashppListener::exitMember_declaration(BashppParser::Member_declarationContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 

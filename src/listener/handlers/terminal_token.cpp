@@ -9,7 +9,6 @@
 #include "../BashppListener.h"
 
 void BashppListener::enterTerminal_token(BashppParser::Terminal_tokenContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 
@@ -22,7 +21,6 @@ void BashppListener::enterTerminal_token(BashppParser::Terminal_tokenContext *ct
 }
 
 void BashppListener::exitTerminal_token(BashppParser::Terminal_tokenContext *ctx) {
-	skip_comment
 	skip_syntax_errors
 	skip_singlequote_string
 }

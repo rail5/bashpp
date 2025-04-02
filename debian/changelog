@@ -1,3 +1,13 @@
+bpp (0.3.3) unstable; urgency=medium
+
+  * Skip comments directly in the lexer
+    Significant overall speedup.
+    Heavily considering a total rewrite of the ANTLR lexer/parser
+  * Made list of protected keywords constexpr
+    Improves performance, list doesn't have to be initialized at runtime 
+
+ -- rail5 <andrew@rail5.org>  Wed, 02 Apr 2025 15:28:59 +0800
+
 bpp (0.3.2) unstable; urgency=medium
 
   * Builds: Only search for dynamic libs if static libs can't be found

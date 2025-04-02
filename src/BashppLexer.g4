@@ -55,7 +55,6 @@ enum lexer_special_mode_type {
 	mode_quote,
 	mode_singlequote,
 	mode_heredoc,
-	mode_comment
 };
 
 SensibleStack<lexer_special_mode_type> modeStack;
@@ -145,7 +144,7 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 		default:
 			typeOk = true;
 	}
-	if (typeOk && t->getText() != "\n" && modeStack.top() != mode_comment) {
+	if (typeOk && t->getText() != "\n") {
 		can_increment_metatoken_counter = true;
 	} else if (modeStack.top() == no_mode && can_increment_metatoken_counter) {
 		can_increment_metatoken_counter = false;
@@ -335,24 +334,16 @@ WS: [ \t\r]+;
 
 // Delimiters (newlines and semicolons, as in Bash)
 NEWLINE: '\n' {
-	switch (modeStack.top()) {
-		case mode_comment:
-			modeStack.pop();
-			break;
-		default:
-			emit(DELIM, "\n");
-			if (waiting_for_heredoc_content_start) {
-				emit(HEREDOC_CONTENT_START, "\n");
-				waiting_for_heredoc_content_start = false;
-				modeStack.push(mode_heredoc);
-			}
-			break;
+	emit(DELIM, "\n");
+	if (waiting_for_heredoc_content_start) {
+		emit(HEREDOC_CONTENT_START, "\n");
+		waiting_for_heredoc_content_start = false;
+		modeStack.push(mode_heredoc);
 	}
 };
 
 DOUBLEAMPERSAND: '&&' {
 	switch (modeStack.top()) {
-		case mode_comment:
 		case mode_quote:
 		case mode_singlequote:
 		case mode_heredoc:
@@ -365,7 +356,6 @@ DOUBLEAMPERSAND: '&&' {
 };
 DOUBLEPIPE: '||' {
 	switch (modeStack.top()) {
-		case mode_comment:
 		case mode_quote:
 		case mode_singlequote:
 		case mode_heredoc:
@@ -378,7 +368,6 @@ DOUBLEPIPE: '||' {
 };
 PIPE: '|' {
 	switch (modeStack.top()) {
-		case mode_comment:
 		case mode_quote:
 		case mode_singlequote:
 		case mode_heredoc:
@@ -400,15 +389,13 @@ BASH_VAR: '$' IDENTIFIER
 		| '$#';
 
 // Comments
-COMMENT: '#' {
+POUNDKEY: '#' {
 	switch (modeStack.top()) {
 		case mode_reference:
 		case mode_primitive_reference:
 		case mode_quote:
 		case mode_singlequote:
 		case mode_heredoc:
-		case mode_comment:
-			emit(POUNDKEY, "#");
 			break;
 		default:
 			// Consume characters until the next newline or EOF, then skip the token.
@@ -419,8 +406,6 @@ COMMENT: '#' {
 			break;
 	}
 };
-
-POUNDKEY: '#'; // Yet another dummy token
 
 // Heredocs
 HERESTRING_START: '<<<';
@@ -433,7 +418,6 @@ HEREDOC_START: '<<' {
 		case mode_array_assignment:
 		case mode_quote:
 		case mode_singlequote:
-		case mode_comment:
 		case mode_heredoc:
 			emit(HEREDOC_LITERAL, "<<");
 			break;
@@ -454,7 +438,6 @@ QUOTE: '"' {
 			emit(QUOTE_END, "\"");
 			modeStack.pop();
 			break;
-		case mode_comment:
 		case mode_heredoc:
 		case mode_singlequote:
 			emit(QUOTE_LITERAL, "\"");
@@ -479,7 +462,6 @@ SINGLEQUOTE: '\'' {
 			break;
 		case mode_quote:
 		case mode_heredoc:
-		case mode_comment:
 			emit(SINGLEQUOTE_LITERAL, "'");
 			break;
 		default:
@@ -539,7 +521,6 @@ BASH_KEYWORD_IF: 'if' {
 		case mode_quote:
 		case mode_singlequote:
 		case mode_heredoc:
-		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
 			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
@@ -559,7 +540,6 @@ BASH_KEYWORD_ELIF: 'elif' {
 		case mode_quote:
 		case mode_singlequote:
 		case mode_heredoc:
-		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
 			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
@@ -577,7 +557,6 @@ BASH_KEYWORD_THEN: 'then' {
 		case mode_quote:
 		case mode_singlequote:
 		case mode_heredoc:
-		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
 			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
@@ -595,7 +574,6 @@ BASH_KEYWORD_ELSE: 'else' {
 		case mode_quote:
 		case mode_singlequote:
 		case mode_heredoc:
-		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
 			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
@@ -613,7 +591,6 @@ BASH_KEYWORD_FI: 'fi' {
 		case mode_quote:
 		case mode_singlequote:
 		case mode_heredoc:
-		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
 			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
@@ -633,7 +610,6 @@ BASH_KEYWORD_WHILE: 'while' {
 		case mode_quote:
 		case mode_singlequote:
 		case mode_heredoc:
-		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
 			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
@@ -654,7 +630,6 @@ BASH_KEYWORD_DO: 'do' {
 		case mode_quote:
 		case mode_singlequote:
 		case mode_heredoc:
-		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
 			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
@@ -672,7 +647,6 @@ BASH_KEYWORD_DONE: 'done' {
 		case mode_quote:
 		case mode_singlequote:
 		case mode_heredoc:
-		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
 			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
@@ -697,7 +671,6 @@ BASH_KEYWORD_CASE: 'case' {
 		case mode_quote:
 		case mode_singlequote:
 		case mode_heredoc:
-		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
 			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
@@ -717,7 +690,6 @@ BASH_KEYWORD_FOR: 'for' {
 		case mode_quote:
 		case mode_singlequote:
 		case mode_heredoc:
-		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
 			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
@@ -738,7 +710,6 @@ BASH_KEYWORD_IN: 'in' {
 		case mode_quote:
 		case mode_singlequote:
 		case mode_heredoc:
-		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
 			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
@@ -756,7 +727,6 @@ BASH_KEYWORD_ESAC: 'esac' {
 		case mode_quote:
 		case mode_singlequote:
 		case mode_heredoc:
-		case mode_comment:
 		case mode_arith:
 		case mode_array_assignment:
 			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
@@ -811,7 +781,6 @@ ASSIGN: '=' {
 		case mode_quote:
 		case mode_heredoc:
 		case mode_singlequote:
-		case mode_comment:
 			break;
 		default:
 			if (_input->LA(1) == '(') {
@@ -866,7 +835,6 @@ METHOD_END: '}'; // Yet another dummy token
 BACKTICK: '`' {
 	switch (modeStack.top()) {
 		case mode_singlequote:
-		case mode_comment:
 			// Just emit the BACKTICK token
 			break;
 		default:
@@ -887,7 +855,6 @@ DEPRECATED_SUBSHELL_END: '`'; // Yet another dummy token
 BASH_ARITH_START: '$((' {
 	switch (modeStack.top()) {
 		case mode_singlequote:
-		case mode_comment:
 			// Emit a dummy token
 			emit(BASH_ARITH_LITERAL, "$((");
 			break;
@@ -905,7 +872,6 @@ BASH_ARITH_LITERAL: '$(('; // Another dummy token
 SUBSHELL_START: '$(' {
 	switch (modeStack.top()) {
 		case mode_singlequote:
-		case mode_comment:
 			// Emit a dummy token
 			emit(SUBSHELL_LITERAL, "$(");
 			break;
@@ -935,7 +901,6 @@ LPAREN: '(' {
 		case mode_quote:
 		case mode_singlequote:
 		case mode_heredoc:
-		case mode_comment:
 			// Just emit the LPAREN token
 			break;
 		case mode_array_assignment:
@@ -964,7 +929,6 @@ RPAREN: ')' {
 		case mode_quote:
 		case mode_singlequote:
 		case mode_heredoc:
-		case mode_comment:
 			// Just emit the RPAREN token
 			break;
 		case mode_arith:

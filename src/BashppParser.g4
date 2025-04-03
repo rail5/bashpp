@@ -14,8 +14,7 @@ statement: (class_definition
 	| general_statement
 	| extra_statement) DELIM?;
 
-class_body_statement: member_declaration
-	| method_definition
+class_body_statement: class_member_or_method
 	| constructor_definition
 	| destructor_definition
 	| DELIM
@@ -55,12 +54,15 @@ include_statement: (KEYWORD_INCLUDE | KEYWORD_INCLUDE_ONCE) (INCLUDE_PATH_START 
 // Class definition
 class_definition: KEYWORD_CLASS WS* IDENTIFIER WS* (COLON WS* IDENTIFIER WS*)? LBRACE_ROOTLEVEL (class_body_statement | general_statement | extra_statement)* RBRACE_ROOTLEVEL;
 
+class_member_or_method: (KEYWORD_VIRTUAL WS*)? (KEYWORD_PUBLIC | KEYWORD_PRIVATE | KEYWORD_PROTECTED) WS* (member_declaration | method_definition);
+
 // Member declarations
-member_declaration: (KEYWORD_PUBLIC | KEYWORD_PRIVATE | KEYWORD_PROTECTED) WS* IDENTIFIER value_assignment?
-	| (KEYWORD_PUBLIC | KEYWORD_PRIVATE | KEYWORD_PROTECTED) WS* (object_instantiation | pointer_declaration);
+member_declaration: IDENTIFIER value_assignment?
+	| object_instantiation
+	| pointer_declaration;
 
 // Method definitions
-method_definition: (KEYWORD_VIRTUAL WS*)? (KEYWORD_PUBLIC | KEYWORD_PRIVATE | KEYWORD_PROTECTED) WS* KEYWORD_METHOD WS* IDENTIFIER WS* parameter* WS* METHOD_START (class_body_statement | general_statement | extra_statement)* METHOD_END;
+method_definition: KEYWORD_METHOD WS* IDENTIFIER WS* parameter* WS* METHOD_START (class_body_statement | general_statement | extra_statement)* METHOD_END;
 
 // Constructor definitions
 constructor_definition: KEYWORD_CONSTRUCTOR WS* LBRACE general_statement* RBRACE;

@@ -21,16 +21,20 @@ void BashppListener::enterMember_declaration(BashppParser::Member_declarationCon
 	antlr4::tree::TerminalNode* scope_keyword = nullptr;
 
 	// Get visibility
+	BashppParser::Class_member_or_methodContext* parent = dynamic_cast<BashppParser::Class_member_or_methodContext*>(ctx->parent);
+	if (parent == nullptr) {
+		throw internal_error("Parent context is not a Class_member_or_methodContext", ctx);
+	}
 	// One of KEYWORD_PUBLIC, KEYWORD_PRIVATE, KEYWORD_PROTECTED will be set
-	if (ctx->KEYWORD_PUBLIC() != nullptr) {
+	if (parent->KEYWORD_PUBLIC() != nullptr) {
 		new_datamember->set_scope(bpp::SCOPE_PUBLIC);
-		scope_keyword = ctx->KEYWORD_PUBLIC();
-	} else if (ctx->KEYWORD_PRIVATE() != nullptr) {
+		scope_keyword = parent->KEYWORD_PUBLIC();
+	} else if (parent->KEYWORD_PRIVATE() != nullptr) {
 		new_datamember->set_scope(bpp::SCOPE_PRIVATE);
-		scope_keyword = ctx->KEYWORD_PRIVATE();
-	} else if (ctx->KEYWORD_PROTECTED() != nullptr) {
+		scope_keyword = parent->KEYWORD_PRIVATE();
+	} else if (parent->KEYWORD_PROTECTED() != nullptr) {
 		new_datamember->set_scope(bpp::SCOPE_PROTECTED);
-		scope_keyword = ctx->KEYWORD_PROTECTED();
+		scope_keyword = parent->KEYWORD_PROTECTED();
 	}
 
 	if (current_class == nullptr) {

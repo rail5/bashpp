@@ -26,16 +26,20 @@ void BashppListener::enterMethod_definition(BashppParser::Method_definitionConte
 	method->set_containing_class(current_class);
 
 	// Set the method's scope
-	if (ctx->KEYWORD_PUBLIC() != nullptr) {
+	BashppParser::Class_member_or_methodContext* parent = dynamic_cast<BashppParser::Class_member_or_methodContext*>(ctx->parent);
+	if (parent == nullptr) {
+		throw internal_error("Parent context is not a Class_member_or_methodContext", ctx);
+	}
+	if (parent->KEYWORD_PUBLIC() != nullptr) {
 		method->set_scope(bpp::bpp_scope::SCOPE_PUBLIC);
-	} else if (ctx->KEYWORD_PROTECTED() != nullptr) {
+	} else if (parent->KEYWORD_PROTECTED() != nullptr) {
 		method->set_scope(bpp::bpp_scope::SCOPE_PROTECTED);
 	} else {
 		method->set_scope(bpp::bpp_scope::SCOPE_PRIVATE);
 	}
 
 	// Virtual?
-	if (ctx->KEYWORD_VIRTUAL() != nullptr) {
+	if (parent->KEYWORD_VIRTUAL() != nullptr) {
 		method->set_virtual(true);
 	}
 
@@ -55,15 +59,7 @@ void BashppListener::exitMethod_definition(BashppParser::Method_definitionContex
 
 	// If the method is toPrimitive, verify that the scope is public
 	if (method->get_name() == "toPrimitive" && method->get_scope() != bpp::bpp_scope::SCOPE_PUBLIC) {
-		antlr4::tree::TerminalNode* scope_keyword;
-		if (ctx->KEYWORD_PUBLIC() != nullptr) {
-			scope_keyword = ctx->KEYWORD_PUBLIC();
-		} else if (ctx->KEYWORD_PROTECTED() != nullptr) {
-			scope_keyword = ctx->KEYWORD_PROTECTED();
-		} else {
-			scope_keyword = ctx->KEYWORD_PRIVATE();
-		}
-		throw_syntax_error_from_exitRule(scope_keyword, "toPrimitive method must be public");
+		throw_syntax_error_from_exitRule(ctx->IDENTIFIER(), "toPrimitive method must be public");
 		return;
 	}
 

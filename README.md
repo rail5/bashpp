@@ -2,7 +2,7 @@
 
 <img title="" src="./wiki/banner.png" alt="Bash++: Bash with classes" width="319" data-align="center">
 
-```perl
+```javascript
 @class Bashpp {
   @public author="Andrew S. Rightenburg"
   @public source="https://github.com/rail5/bashpp"

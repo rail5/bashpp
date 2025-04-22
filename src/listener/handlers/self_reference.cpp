@@ -139,17 +139,20 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 	bool ready_to_exit = false;
 
 	if (last_reference_type == bpp::reference_type::ref_method) {
-		// Call the method in a supershell, and substitute the result in place of the self-reference
+		code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", method->get_name(), class_containing_the_method);
 
-		std::string method_call = "bpp__" + class_containing_the_method->get_name() + "__" + method->get_name() + " ";
-		// Append the containing object's address to the method call
-		indirection = ctx->IDENTIFIER().size() > 1 ? "!" : "";
-		method_call += "${" + indirection + self_reference_code + "}";
-
-		code_segment method_code = generate_supershell_code(method_call);
-		self_reference_entity->add_code_to_previous_line(method_code.pre_code);
-		self_reference_entity->add_code_to_next_line(method_code.post_code);
-		self_reference_entity->add_code(method_code.code);
+		// Are we taking the address of the method, or calling it?
+		if (object_address_entity != nullptr) {
+			self_reference_entity->add_code_to_previous_line(method_call_code.pre_code);
+			self_reference_entity->add_code_to_next_line(method_call_code.post_code);
+			self_reference_entity->add_code(method_call_code.code);
+		} else {
+			// Call the method in a supershell, and substitute the result in place of the self-reference
+			code_segment method_code = generate_supershell_code(method_call_code.pre_code + "\n" + method_call_code.code + "\n" + method_call_code.post_code);
+			self_reference_entity->add_code_to_previous_line(method_code.pre_code);
+			self_reference_entity->add_code_to_next_line(method_code.post_code);
+			self_reference_entity->add_code(method_code.code);
+		}
 		ready_to_exit = true;
 	}
 
@@ -308,18 +311,17 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 
 	// Are we in an object_address context?
 	if (object_address_entity != nullptr) {
-		if (self_reference_entity->get_reference_type() == bpp::reference_type::ref_method) {
-			throw_syntax_error_from_exitRule(ctx->IDENTIFIER().back(), "Cannot get the address of a method");
-		}
 		std::string address = self_reference_entity->get_code();
 		// Some hacky string manipulation to work backwards
 		// If it starts with '${!', we'll change that to '${'
 		// If it doesn't have the indirection exclamation point, but starts with '${', we'll remove the '${' and the closing '}'
 		// TODO(@rail5): This is a hacky way to do this, and should be replaced with a more robust solution
-		if (address.substr(0, 3) == "${!") {
-			address = "${" + address.substr(3);
-		} else if (address.substr(0, 2) == "${") {
-			address = address.substr(2, address.size() - 3);
+		if (last_reference_type != bpp::reference_type::ref_method) {
+			if (address.substr(0, 3) == "${!") {
+				address = "${" + address.substr(3);
+			} else if (address.substr(0, 2) == "${") {
+				address = address.substr(2, address.size() - 3);
+			}
 		}
 
 		object_address_entity->add_code_to_previous_line(self_reference_entity->get_pre_code());

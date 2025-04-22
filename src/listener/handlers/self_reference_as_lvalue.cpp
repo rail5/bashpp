@@ -132,13 +132,6 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 			throw_syntax_error(ctx->IDENTIFIER().back(), "Cannot assign to a method");
 		}
 
-		// Check if we're in an object address context
-		// If so, throw a syntax error
-		if (object_address_entity != nullptr) {
-			entity_stack.pop();
-			throw_syntax_error(ctx->IDENTIFIER().back(), "Cannot take the address of a method");
-		}
-
 		std::string indirection = ctx->IDENTIFIER().size() > 1 ? "!" : "";
 
 		code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", method->get_name(), class_containing_the_method);

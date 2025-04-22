@@ -173,11 +173,31 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 	if (last_reference_type == bpp::reference_type::ref_method) {
 		indirection = ctx->IDENTIFIER().size() > 3 ? "!" : "";
 		code_segment method_call_code = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, method->get_name(), class_containing_the_method);
-
-		code_segment method_code = generate_supershell_code(method_call_code.pre_code + "\n" + method_call_code.code + "\n" + method_call_code.post_code);
-		object_reference_entity->add_code_to_previous_line(method_code.pre_code);
-		object_reference_entity->add_code_to_next_line(method_code.post_code);
-		object_reference_entity->add_code(method_code.code);
+		// Are we taking the *address* of the method or are we calling it?
+		if (object_address_entity != nullptr) {
+			/**
+			 * If we're taking the address of the method, return the method_call_code
+			 * This will be in the format:
+			 * 		{function_name} {object_pointer}
+			 * E.g, if we have a method called 'foo' in class 'bar', and we're taking the address "&@object.foo"
+			 * 		Say for example:
+			 * 			echo &@object.foo
+			 * Then it will return:
+			 * 		bpp__bar__foo address__of__object
+			 */
+			object_reference_entity->add_code_to_previous_line(method_call_code.pre_code);
+			object_reference_entity->add_code_to_next_line(method_call_code.post_code);
+			object_reference_entity->add_code(method_call_code.code);
+		} else {
+			/**
+			 * If we're not taking the address (most cases), then we need to run the method in a supershell
+			 * And substitute the result of the supershell in place of the reference
+			 */
+			code_segment method_code = generate_supershell_code(method_call_code.pre_code + "\n" + method_call_code.code + "\n" + method_call_code.post_code);
+			object_reference_entity->add_code_to_previous_line(method_code.pre_code);
+			object_reference_entity->add_code_to_next_line(method_code.post_code);
+			object_reference_entity->add_code(method_code.code);
+		}
 		ready_to_exit = true;
 	}
 
@@ -384,18 +404,17 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 
 	// Are we in an object_address context?
 	if (object_address_entity != nullptr) {
-		if (object_reference_entity->get_reference_type() == bpp::reference_type::ref_method) {
-			throw_syntax_error_from_exitRule(ctx->IDENTIFIER().back(), "Cannot get the address of a method");
-		}
 		std::string address = object_reference_entity->get_code();
 		// Some hacky string manipulation to work backwards
 		// If it starts with '${!', we'll change that to '${'
 		// If it doesn't have the indirection exclamation point, but starts with '${', we'll remove the '${' and the closing '}'
 		// TODO(@rail5): This is a hacky way to do this, and should be replaced with a more robust solution
-		if (address.substr(0, 3) == "${!") {
-			address = "${" + address.substr(3);
-		} else if (address.substr(0, 2) == "${") {
-			address = address.substr(2, address.size() - 3);
+		if (last_reference_type != bpp::reference_type::ref_method) {
+			if (address.substr(0, 3) == "${!") {
+				address = "${" + address.substr(3);
+			} else if (address.substr(0, 2) == "${") {
+				address = address.substr(2, address.size() - 3);
+			}
 		}
 
 		object_address_entity->add_code_to_previous_line(object_reference_entity->get_pre_code());

@@ -6,6 +6,7 @@ plugins:
 - jekyll-titles-from-headings
 minima:
   skin: dark
+  show_feed: false
 titles_from_headings:
   enabled:     true
   strip_title: true

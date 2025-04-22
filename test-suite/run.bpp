@@ -327,6 +327,22 @@ new value 4
 new value 3
 "
 
+@runner.addTest "Address of method #1" "test-suite/tests/address-of-method-1.bpp" "Hello, World!
+"
+
+@runner.addTest "Address of method #2" "test-suite/tests/address-of-method-2.bpp" "Hello, World!
+"
+
+@runner.addTest "Address of method #3" "test-suite/tests/address-of-method-3.bpp" "Hello, World!
+Hello, World!
+"
+
+@runner.addTest "Address of method #4" "test-suite/tests/address-of-method-4.bpp" "Hello, World!
+"
+
+@runner.addTest "Address of method #5" "test-suite/tests/address-of-method-5.bpp" "Hello, World!
+"
+
 # Standard Library tests
 @runner.addTest "STL Stacks" "test-suite/tests/stdlib-stacks.bpp" "0
 3

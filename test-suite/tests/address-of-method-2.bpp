@@ -1,0 +1,11 @@
+# Test case: Getting the address of a method via object_reference (rvalue)
+
+@class Test {
+	@public @method something {
+		echo "Hello, World!"
+		exit
+	}
+}
+
+@Test object
+trap "&@object.something" EXIT # Should output "Hello, World!" on exit if we've successfully taken the address of "@object.something"

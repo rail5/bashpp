@@ -1,0 +1,14 @@
+# Test case: Getting the address of a method via self_reference (rvalue)
+
+@class Test {
+	@public @method something {
+		echo "Hello, World!"
+		exit
+	}
+
+	@constructor {
+		trap "&@this.something" EXIT
+	}
+}
+
+@Test object # Should output "Hello, World!" on exit if we've successfully taken the address of "@this.something"

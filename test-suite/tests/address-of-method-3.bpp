@@ -1,0 +1,17 @@
+# Test case: Getting the address of a method via:
+# 1. object_reference_as_lvalue
+# 2. self_reference_as_lvalue
+
+@class Test {
+	@public @method something {
+		echo "Hello, World!"
+	}
+
+	@public @method something_else {
+		&@this.something
+	}
+}
+
+@Test object
+&@object.something # "Hello, World!"
+@object.something_else # "Hello, World!"

@@ -261,11 +261,10 @@ class bpp_method : public bpp_code_entity {
 		bpp_scope scope = SCOPE_PRIVATE;
 		bool m_is_virtual = false;
 		bool inherited = false;
+		bool add_object_as_parameter(std::shared_ptr<bpp_object> object);
 	public:
 		bpp_method();
 		explicit bpp_method(const std::string& name);
-
-		bool add_object_as_parameter(std::shared_ptr<bpp_object> object);
 
 		virtual bool add_parameter(std::shared_ptr<bpp_method_parameter> parameter);
 		void set_name(const std::string& name);

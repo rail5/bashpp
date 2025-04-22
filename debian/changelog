@@ -1,3 +1,23 @@
+bpp (0.3.4) unstable; urgency=medium
+
+  * Allow taking the address of an object's method
+    Return value of &@object.method should be:
+    - A function pointer to the method
+    - Plus the object pointer as the method's implicit first parameter
+    E.g, 'echo &@object.method' should echo something like
+    'bpp__Class__method address__of__object'
+  * Incidental bug fix: vTable lookups in rvalue self references.
+    Patched by properly using the abstracted generate_method_call_code
+    function rather than duplicating its functionality. The duplicate
+    code was a relic from before that abstracted function existed and
+    should've been noticed and patched out sooner
+  * Parser speedup
+    Removed left-side ambiguity between member declarations and method
+    definitions by enclosing them in a shared parent rule
+    A total rewrite of the lexer/parser is almost definitely incoming
+
+ -- rail5 <andrew@rail5.org>  Tue, 22 Apr 2025 14:14:53 +0800
+
 bpp (0.3.3) unstable; urgency=medium
 
   * Skip comments directly in the lexer

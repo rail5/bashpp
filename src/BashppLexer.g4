@@ -791,6 +791,8 @@ ASSIGN: '=' {
 	}
 };
 
+BASH_NUMBER_RANGE: '{' INTEGER+ '..' INTEGER+ ('..' INTEGER+)? '}';
+
 DOT: '.';
 
 LBRACE: '{' {

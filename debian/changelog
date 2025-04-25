@@ -1,3 +1,15 @@
+bpp (0.3.5) unstable; urgency=medium
+
+  * Proper support for c-style arithmetic Bash for loops
+  * More sane handling of bash arithmetic statements
+  * Proper support for bash number ranges '{#..#[..#]}' 
+  * Compiler source code cleanup:
+    Made bpp_method's 'add_object_as_parameter' private
+    Externally we should only ever call add_parameter, which should
+    determine whether the parameter is nonprimitive on its own
+
+ -- rail5 <andrew@rail5.org>  Fri, 25 Apr 2025 22:41:37 +0800
+
 bpp (0.3.4) unstable; urgency=medium
 
   * Allow taking the address of an object's method

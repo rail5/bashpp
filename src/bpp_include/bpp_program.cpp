@@ -60,9 +60,7 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 		class_code += template_destructor;
 	}
 
-	/**
-	 * Each of these templates has placeholders that need to be replaced, in the format %PLACEHOLDER-NAME%
-	 * */
+	// Each of these templates has placeholders that need to be replaced, in the format %PLACEHOLDER-NAME%
 
 	// Replace all instances of %ASSIGNMENTS% with the assignments for the __new function
 	std::string assignments = "";

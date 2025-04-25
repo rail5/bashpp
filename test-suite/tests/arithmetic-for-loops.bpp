@@ -1,0 +1,20 @@
+for ((i=0;i<5;i++)); do
+	echo -n "$i"
+done
+echo ""
+
+# Should output: 01234
+
+@class Object {
+	@public lowerbound=5
+	@public upperbound=10
+}
+
+@Object object
+
+for ((i=@object.lowerbound;i<@object.upperbound;i++)); do
+	echo -n "$i"
+done
+echo ""
+
+# Should output: 56789

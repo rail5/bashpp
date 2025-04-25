@@ -1,0 +1,8 @@
+for i in {1..5}; do
+	  echo -n "$i"
+done
+echo ""
+
+# Should output: 12345
+
+echo {1..10..2} # Should output: 1 3 5 7 9

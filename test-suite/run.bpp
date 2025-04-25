@@ -343,6 +343,14 @@ Hello, World!
 @runner.addTest "Address of method #5" "test-suite/tests/address-of-method-5.bpp" "Hello, World!
 "
 
+@runner.addTest "Arithmetic for loops" "test-suite/tests/arithmetic-for-loops.bpp" "01234
+56789
+"
+
+@runner.addTest "Number ranges" "test-suite/tests/number-ranges.bpp" "12345
+1 3 5 7 9
+"
+
 # Standard Library tests
 @runner.addTest "STL Stacks" "test-suite/tests/stdlib-stacks.bpp" "0
 3

@@ -50,6 +50,7 @@ class bash_if;
 class bash_if_branch;
 class bash_case;
 class bash_case_pattern;
+class bash_for;
 class bpp_delete_statement;
 class bpp_dynamic_cast_statement;
 class bpp_pointer_dereference;

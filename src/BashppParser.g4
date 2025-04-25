@@ -188,7 +188,10 @@ bash_case_pattern_header: statement* RPAREN;
 // Bash for statements
 bash_for_loop: bash_for_header statement* BASH_KEYWORD_DONE;
 
-bash_for_header: BASH_KEYWORD_FOR (WS | DELIM)* (IDENTIFIER | INVALID_IDENTIFIER) (WS | DELIM)* BASH_KEYWORD_IN statement* DELIM WS* BASH_KEYWORD_DO;
+bash_for_header: BASH_KEYWORD_FOR (WS | DELIM)* (
+	((IDENTIFIER | INVALID_IDENTIFIER) (WS | DELIM)* BASH_KEYWORD_IN statement*)
+	| bash_arithmetic)
+	DELIM WS* BASH_KEYWORD_DO;
 
 // Other statement
 other_statement: ~(RBRACE | RBRACE_ROOTLEVEL

@@ -89,14 +89,20 @@ void BashppListener::exitBash_for_header(BashppParser::Bash_for_headerContext *c
 	for_loop->set_header_post_code(for_header->get_post_code());
 
 	// Generate the header
-	antlr4::tree::TerminalNode* id = nullptr;
+	// Standard case:
+	//		for identifier in expression; do
+	// Arithmetic case:
+	//		for ((expression)); do
+	std::string for_header_code = "for ";
 	if (ctx->IDENTIFIER() != nullptr) {
-		id = ctx->IDENTIFIER();
-	} else {
-		id = ctx->INVALID_IDENTIFIER();
+		for_header_code += ctx->IDENTIFIER()->getText() + " in ";
+	} else if (ctx->INVALID_IDENTIFIER() != nullptr) {
+		for_header_code += ctx->INVALID_IDENTIFIER()->getText() + " in ";
 	}
 
-	for_loop->set_header_code("for " + id->getText() + " in " + for_header->get_code() + "; do\n");
+	for_header_code += for_header->get_code() + "; do\n";
+
+	for_loop->set_header_code(for_header_code);
 }
 
 

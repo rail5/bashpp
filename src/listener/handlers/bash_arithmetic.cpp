@@ -51,7 +51,7 @@ void BashppListener::exitBash_arithmetic(BashppParser::Bash_arithmeticContext *c
 
 	current_code_entity->add_code_to_previous_line(arithmetic_entity->get_pre_code());
 	current_code_entity->add_code_to_next_line(arithmetic_entity->get_post_code());
-	current_code_entity->add_code("$((" + arithmetic_entity->get_code() + "))");
+	current_code_entity->add_code(ctx->BASH_ARITH_START()->getText() + arithmetic_entity->get_code() + "))");
 }
 
 #endif // SRC_LISTENER_HANDLERS_BASH_ARITHMETIC_CPP_

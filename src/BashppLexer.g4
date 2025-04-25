@@ -869,7 +869,15 @@ BASH_ARITH_START: '$((' {
 	parenDepth += 2;
 };
 
-BASH_ARITH_LITERAL: '$(('; // Another dummy token
+BASH_ARITH_LITERAL: '((' {
+	if (modeStack.top() == no_mode) {
+		modeStack.push(mode_arith);
+		nestedArithStack.push(parenDepth);
+		emit(BASH_ARITH_START, "((");
+	}
+	parenDepth += 2;
+};
+
 
 SUBSHELL_START: '$(' {
 	switch (modeStack.top()) {
@@ -938,9 +946,11 @@ RPAREN: ')' {
 				// Translation:
 				// If the current token is a right parenthesis and the next token is also a right parenthesis,
 				// And these two match the top of the nestedArithStack, then we're at the end of the arithmetic expression
+				_input->consume();
+				parenDepth--;
 				nestedArithStack.pop();
 				modeStack.pop();
-				emit(BASH_ARITH_END, ")");
+				emit(BASH_ARITH_END, "))");
 			}
 			break;
 		case mode_subshell:

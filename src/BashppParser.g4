@@ -138,7 +138,7 @@ subshell: SUBSHELL_START statement* SUBSHELL_END;
 deprecated_subshell: DEPRECATED_SUBSHELL_START statement* DEPRECATED_SUBSHELL_END;
 
 // Bash arithmetic
-bash_arithmetic: BASH_ARITH_START statement* BASH_ARITH_END RPAREN;
+bash_arithmetic: BASH_ARITH_START statement* BASH_ARITH_END;
 
 // Strings
 string: QUOTE (statement | terminal_token)* QUOTE_END;

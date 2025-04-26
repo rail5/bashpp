@@ -38,9 +38,19 @@ void BashppListener::enterMethod_definition(BashppParser::Method_definitionConte
 		method->set_scope(bpp::bpp_scope::SCOPE_PRIVATE);
 	}
 
+	// If the method is toPrimitive, verify that the scope is public
+	if (method->get_name() == "toPrimitive" && method->get_scope() != bpp::bpp_scope::SCOPE_PUBLIC) {
+		throw_syntax_error(ctx->IDENTIFIER(), "toPrimitive method must be public");
+		return;
+	}
+
 	// Virtual?
 	if (parent->KEYWORD_VIRTUAL() != nullptr) {
 		method->set_virtual(true);
+	}
+
+	if (!current_class->add_method(method)) {
+		throw_syntax_error(ctx->IDENTIFIER(), "Method redefinition: " + method->get_name());
 	}
 
 	entity_stack.push(method);
@@ -56,23 +66,6 @@ void BashppListener::exitMethod_definition(BashppParser::Method_definitionContex
 
 	// Call destructors for any objects created in the method before we exit it
 	method->destruct_local_objects();
-
-	// If the method is toPrimitive, verify that the scope is public
-	if (method->get_name() == "toPrimitive" && method->get_scope() != bpp::bpp_scope::SCOPE_PUBLIC) {
-		throw_syntax_error_from_exitRule(ctx->IDENTIFIER(), "toPrimitive method must be public");
-		return;
-	}
-
-	// Add the method to the class
-	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
-
-	if (current_class == nullptr) {
-		throw internal_error("Current class was not found in the entity stack", ctx);
-	}
-
-	if (!current_class->add_method(method)) {
-		throw_syntax_error_from_exitRule(ctx->IDENTIFIER(), "Method redefinition: " + method->get_name());
-	}
 }
 
 #endif // SRC_LISTENER_HANDLERS_METHOD_DEFINITION_CPP_

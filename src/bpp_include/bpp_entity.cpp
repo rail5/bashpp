@@ -29,7 +29,7 @@ bool bpp_entity::add_class(std::shared_ptr<bpp_class> class_) {
  * @param object The object to add
  * @return true if the object was added, false if the object already exists
  */
-bool bpp_entity::add_object(std::shared_ptr<bpp_object> object) {
+bool bpp_entity::add_object(std::shared_ptr<bpp_object> object, bool make_local) {
 	std::string name = object->get_name();
 	if (objects.find(name) != objects.end()) {
 		return false;

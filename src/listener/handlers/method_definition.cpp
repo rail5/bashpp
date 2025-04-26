@@ -54,6 +54,7 @@ void BashppListener::enterMethod_definition(BashppParser::Method_definitionConte
 	}
 
 	entity_stack.push(method);
+	in_method = true;
 }
 
 void BashppListener::exitMethod_definition(BashppParser::Method_definitionContext *ctx) {
@@ -66,6 +67,7 @@ void BashppListener::exitMethod_definition(BashppParser::Method_definitionContex
 
 	// Call destructors for any objects created in the method before we exit it
 	method->destruct_local_objects();
+	in_method = false;
 }
 
 #endif // SRC_LISTENER_HANDLERS_METHOD_DEFINITION_CPP_

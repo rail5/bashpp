@@ -115,7 +115,7 @@ class bpp_entity {
 	public:
 		virtual ~bpp_entity() = default;
 		virtual bool add_class(std::shared_ptr<bpp_class> class_);
-		virtual bool add_object(std::shared_ptr<bpp_object> object);
+		virtual bool add_object(std::shared_ptr<bpp_object> object, bool make_local = false);
 
 		virtual std::shared_ptr<bpp_class> get_class() const;
 		virtual std::string get_address() const;
@@ -163,7 +163,7 @@ class bpp_code_entity : public bpp_entity {
 		virtual void add_code_to_previous_line(const std::string& code);
 		virtual void add_code_to_next_line(const std::string& code);
 
-		bool add_object(std::shared_ptr<bpp_object> object) override;
+		bool add_object(std::shared_ptr<bpp_object> object, bool make_local = false) override;
 
 		virtual void flush_nextline_buffer();
 		virtual void flush_postline_buffer();

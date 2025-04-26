@@ -1,3 +1,15 @@
+bpp (0.3.6) unstable; urgency=medium
+
+  * Method handler: Move sanity checks to entry rule
+    This allows us to skip parsing invalid methods
+    (non-public toPrimitive, or duplicate method definitions),
+    saving time
+    Adding the method to the class before parsing its contents
+    also allows methods to refer to themselves, which is necessary
+    for recursive methods
+
+ -- rail5 <andrew@rail5.org>  Sat, 26 Apr 2025 13:53:57 +0800
+
 bpp (0.3.5) unstable; urgency=medium
 
   * Proper support for c-style arithmetic Bash for loops

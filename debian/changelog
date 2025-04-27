@@ -1,3 +1,14 @@
+bpp (0.3.7) unstable; urgency=medium
+
+  * Test-suite: Added test for nonprimitive copies
+  * value_assignment: always get address directly from rvalue_object,
+    do not infer (fixes bug with nonprimitive copies)
+  * Dereference pointers at runtime
+    Has strong potential to reduce compiler complexity
+  * Make pointer declarations within methods local by default
+
+ -- rail5 <andrew@rail5.org>  Sun, 27 Apr 2025 17:03:09 +0800
+
 bpp (0.3.6) unstable; urgency=medium
 
   * Method handler: Move sanity checks to entry rule

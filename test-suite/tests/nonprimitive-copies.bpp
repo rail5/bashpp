@@ -1,0 +1,16 @@
+@class Object {
+	@public member="default value"
+}
+
+@Object object1
+@Object object2
+@object1.member="new value"
+
+@object2=@object1
+echo @object2.member # "new value"
+
+@Object* objectPtr=@new Object
+@objectPtr.member="pointer value"
+
+@object2=*@objectPtr
+echo @object2.member # "pointer value"

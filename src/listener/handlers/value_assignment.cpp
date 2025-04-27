@@ -83,12 +83,7 @@ void BashppListener::exitValue_assignment(BashppParser::Value_assignmentContext 
 			if (rvalue_object == nullptr) {
 				throw internal_error("Rvalue object not found for copy", ctx);
 			}
-			if (rvalue_object->is_pointer()) {
-				rvalue = "\"${" + rvalue_object->get_address() + "}\"";
-			} else {
-				rvalue = "bpp__" + rvalue_object->get_class()->get_name() + "__" + rvalue_object->get_name();
-			}
-			current_object_assignment->set_rvalue(rvalue);
+			current_object_assignment->set_rvalue(rvalue_object->get_address());
 		}
 		return;
 	}

@@ -82,6 +82,13 @@ const char* template_new_function = R"EOF(function bpp__%CLASS%____new() {
 
 const char* template_delete_function = R"EOF(function bpp__%CLASS%____delete() {
 	local __objectAddress="$1"
+	while : ; do
+		if ! eval "declare -p \"${__objectAddress}\"" &>/dev/null; then
+			break
+		fi
+		[[ -z "${!__objectAddress}" ]] && break
+		__objectAddress="${!__objectAddress}"
+	done
 	local __vPointer="${__objectAddress}____vPointer"
 	if [[ "${__objectAddress}" == "0" ]] || [[ -z "${!__vPointer}" ]]; then
 		>&2 echo "Bash++: Error: %CLASS%: Attempted to delete null object"
@@ -94,6 +101,20 @@ const char* template_delete_function = R"EOF(function bpp__%CLASS%____delete() {
 
 const char* template_copy_function = R"EOF(function bpp__%CLASS%____copy() {
 	local __copyFromAddress="$1" __copyToAddress="$2"
+	while : ; do
+		if ! eval "declare -p \"${__copyFromAddress}\"" &>/dev/null; then
+			break
+		fi
+		[[ -z "${!__copyFromAddress}" ]] && break
+		__copyFromAddress="${!__copyFromAddress}"
+	done
+	while : ; do
+		if ! eval "declare -p \"${__copyToAddress}\"" &>/dev/null; then
+			break
+		fi
+		[[ -z "${!__copyToAddress}" ]] && break
+		__copyToAddress="${!__copyToAddress}"
+	done
 	local __copyFromVPointer="${__copyFromAddress}____vPointer" __copyToVPointer="${__copyToAddress}____vPointer"
 	if [[ "${__copyFromAddress}" == "0" ]] || [[ -z "${!__copyFromVPointer}" ]]; then
 		>&2 echo "Bash++: Error: %CLASS%: Attempted to copy from null object"
@@ -112,6 +133,13 @@ const char* template_method = R"EOF(function bpp__%CLASS%__%SIGNATURE%() {
 	local __objectAddress="$1"
 	shift 1
 	%PARAMS%
+	while : ; do
+		if ! eval "declare -p \"${__objectAddress}\"" &>/dev/null; then
+			break
+		fi
+		[[ -z "${!__objectAddress}" ]] && break
+		__objectAddress="${!__objectAddress}"
+	done
 	local __vPointer="${__objectAddress}____vPointer"
 	if [[ "${__objectAddress}" == "0" ]] || [[ -z "${!__vPointer}" ]]; then
 		>&2 echo "Bash++: Error: Attempted to call @%CLASS%.%SIGNATURE% on null object"
@@ -123,6 +151,13 @@ const char* template_method = R"EOF(function bpp__%CLASS%__%SIGNATURE%() {
 
 const char* template_constructor = R"EOF(function bpp__%CLASS%____constructor() {
 	local __objectAddress="$1"
+	while : ; do
+		if ! eval "declare -p \"${__objectAddress}\"" &>/dev/null; then
+			break
+		fi
+		[[ -z "${!__objectAddress}" ]] && break
+		__objectAddress="${!__objectAddress}"
+	done
 	local __vPointer="${__objectAddress}____vPointer"
 	if [[ "${__objectAddress}" == "0" ]] || [[ -z "${!__vPointer}" ]]; then
 		>&2 echo "Bash++: Error: %CLASS%: Attempted to construct null object"
@@ -134,6 +169,13 @@ const char* template_constructor = R"EOF(function bpp__%CLASS%____constructor() 
 
 const char* template_destructor = R"EOF(function bpp__%CLASS%____destructor() {
 	local __objectAddress="$1"
+	while : ; do
+		if ! eval "declare -p \"${__objectAddress}\"" &>/dev/null; then
+			break
+		fi
+		[[ -z "${!__objectAddress}" ]] && break
+		__objectAddress="${!__objectAddress}"
+	done
 	local __vPointer="${__objectAddress}____vPointer"
 	if [[ "${__objectAddress}" == "0" ]] || [[ -z "${!__vPointer}" ]]; then
 		>&2 echo "Bash++: Error: %CLASS%: Attempted to destruct null object"

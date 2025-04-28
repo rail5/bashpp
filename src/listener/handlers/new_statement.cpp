@@ -39,6 +39,16 @@ void BashppListener::enterNew_statement(BashppParser::New_statementContext *ctx)
 
 	code_segment new_code = generate_supershell_code(new_method_call);
 	current_code_entity->add_code_to_previous_line(new_code.pre_code);
+
+	// Call the constructor if it exists
+	if (new_class->has_constructor()) {
+		// The 'new' function was called in a supershell, and its output was stored in the variable given in new_code.code
+		// This output is the pointer to the new object
+		// Call the constructor with this pointer as the argument
+		std::string constructor_call = "bpp__" + class_name + "____constructor " + new_code.code + "\n";
+		current_code_entity->add_code_to_next_line(constructor_call);
+	}
+
 	current_code_entity->add_code_to_next_line(new_code.post_code);
 	current_code_entity->add_code(new_code.code);
 }

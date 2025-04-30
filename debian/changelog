@@ -1,3 +1,33 @@
+bpp (0.3.8) unstable; urgency=medium
+
+  * Treat constructors and destructors as ordinary methods
+    Prior to this, constructors and destructors were treated specially
+    Now, they're treated as ordinary methods which are always VIRTUAL
+    and PUBLIC. This simplifies things and fixes a few bugs, namely:
+    Before this change, instantiating an object of class A, and copying
+    its address to a pointer of class B (which is allowed in Bash++),
+    and then later calling @delete on the B pointer, would have called
+    B's destructor if it had one. This is clearly incorrect behavior
+    Ensuring that the destructor is virtual forces this to do a vtable
+    lookup, guaranteeing that we call the correct destructor regardless
+    of the compile-time inferred type.
+    Further, before this change, defining a constructor or destructor
+    within a base class would preclude the possibility of implementing a
+    separate constructor or destructor in a derived class.
+    Now that constructors and destructors follow the rules for ordinary
+    methods (and are virtual), no special logic is necessary in order to
+    override them in derived classes.
+    Base class constructors and destructors are still inherited in
+    derived classes by default.
+  * Object instantiations:
+    Verify that the desired class exists earlier rather than later
+    Fixes a segfaulting bug
+  * New statements: call constructors before returning the pointer
+    Ensure that objects which have not yet been constructed are not
+    processed too early
+
+ -- rail5 <andrew@rail5.org>  Wed, 30 Apr 2025 18:44:52 +0800
+
 bpp (0.3.7) unstable; urgency=medium
 
   * Test-suite: Added test for nonprimitive copies

@@ -41,7 +41,7 @@ void BashppListener::enterNew_statement(BashppParser::New_statementContext *ctx)
 	current_code_entity->add_code_to_previous_line(new_code.pre_code);
 
 	// Call the constructor if it exists
-	if (new_class->has_constructor()) {
+	if (new_class->get_method_UNSAFE("__constructor") != nullptr) {
 		// The 'new' function was called in a supershell, and its output was stored in the variable given in new_code.code
 		// This output is the pointer to the new object
 		// Call the constructor with this pointer as the argument

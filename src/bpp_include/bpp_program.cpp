@@ -53,13 +53,6 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	class_code += template_delete_function;
 	class_code += template_copy_function;
 
-	if (class_->has_constructor()) {
-		class_code += template_constructor;
-	}
-	if (class_->has_destructor()) {
-		class_code += template_destructor;
-	}
-
 	// Each of these templates has placeholders that need to be replaced, in the format %PLACEHOLDER-NAME%
 
 	// Replace all instances of %ASSIGNMENTS% with the assignments for the __new function
@@ -87,7 +80,7 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 			assignments += "	bpp____supershell \"${__objectAddress}__" + dm->get_name() + "\" \"bpp__" + dm->get_class()->get_name() + "____new\"\n";
 			increment_supershell_counter();
 			// Call the constructor if it exists
-			if (dm->get_class()->has_constructor()) {
+			if (dm->get_class()->get_method_UNSAFE("__constructor") != nullptr) {
 				assignments += "	bpp__" + dm->get_class()->get_name() + "____constructor \"${__objectAddress}__" + dm->get_name() + "\"\n";
 			}
 		}
@@ -103,6 +96,10 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 		if (dm->get_class()->get_name() == "primitive" || dm->is_pointer()) {
 			deletions += "	unset ${__objectAddress}__" + dm->get_name() + "\n";
 		} else {
+			// Call the destructor if it exists
+			if (dm->get_class()->get_method_UNSAFE("__destructor") != nullptr) {
+				deletions += "	bpp__" + dm->get_class()->get_name() + "____destructor ${__objectAddress}__" + dm->get_name() + "\n";
+			}
 			deletions += "	bpp__" + dm->get_class()->get_name() + "____delete ${__objectAddress}__" + dm->get_name() + "\n";
 			deletions += "	unset ${__objectAddress}__" + dm->get_name() + "\n";
 		}
@@ -125,16 +122,6 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	}
 	class_code = replace_all(class_code, "%COPIES%", copies);
 	copies = "";
-
-	// Replace %CONSTRUCTORBODY% with the constructor body
-	if (class_->has_constructor()) {
-		class_code = replace_all(class_code, "%CONSTRUCTORBODY%", class_->get_constructor()->get_code());
-	}
-
-	// Replace %DESTRUCTORBODY% with the destructor body
-	if (class_->has_destructor()) {
-		class_code = replace_all(class_code, "%DESTRUCTORBODY%", class_->get_destructor()->get_code());
-	}
 
 	// Replace all instances of %CLASS% with the class name
 	class_code = replace_all(class_code, "%CLASS%", class_->get_name());

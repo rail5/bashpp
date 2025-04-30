@@ -40,11 +40,10 @@ const char* bpp_vtable_lookup = R"EOF(function bpp____vTable__lookup() {
 	done
 	local __vTable="${__objectAddress}____vPointer"
 	if ! eval "declare -p \"${__vTable}\"" &>/dev/null; then
-		>&2 echo "Bash++: Error: vTable not found for object '${__objectAddress}'"
-		exit 1
+		return 1
 	fi
 	local __result="${!__vTable}[\"${__method}\"]"
-	[[ -z "${!__result}" ]] && >&2 echo "Bash++: Error: Method '${__method}' not found in vTable for object '${__objectAddress}'" && exit 1
+	[[ -z "${!__result}" ]] && >&2 echo "Bash++: Error: Method '${__method}' not found in vTable for object '${__objectAddress}'" && return 1
 	eval "${__outputVar}=\$__result"
 }
 )EOF";
@@ -146,42 +145,6 @@ const char* template_method = R"EOF(function bpp__%CLASS%__%SIGNATURE%() {
 		return
 	fi
 %METHODBODY%
-}
-)EOF";
-
-const char* template_constructor = R"EOF(function bpp__%CLASS%____constructor() {
-	local __objectAddress="$1"
-	while : ; do
-		if ! eval "declare -p \"${__objectAddress}\"" &>/dev/null; then
-			break
-		fi
-		[[ -z "${!__objectAddress}" ]] && break
-		__objectAddress="${!__objectAddress}"
-	done
-	local __vPointer="${__objectAddress}____vPointer"
-	if [[ "${__objectAddress}" == "0" ]] || [[ -z "${!__vPointer}" ]]; then
-		>&2 echo "Bash++: Error: %CLASS%: Attempted to construct null object"
-		return
-	fi
-%CONSTRUCTORBODY%
-}
-)EOF";
-
-const char* template_destructor = R"EOF(function bpp__%CLASS%____destructor() {
-	local __objectAddress="$1"
-	while : ; do
-		if ! eval "declare -p \"${__objectAddress}\"" &>/dev/null; then
-			break
-		fi
-		[[ -z "${!__objectAddress}" ]] && break
-		__objectAddress="${!__objectAddress}"
-	done
-	local __vPointer="${__objectAddress}____vPointer"
-	if [[ "${__objectAddress}" == "0" ]] || [[ -z "${!__vPointer}" ]]; then
-		>&2 echo "Bash++: Error: %CLASS%: Attempted to destruct null object"
-		return
-	fi
-%DESTRUCTORBODY%
 }
 )EOF";
 

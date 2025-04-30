@@ -35,8 +35,6 @@ class bpp_entity;
 class bpp_code_entity;
 class bpp_string;
 class bpp_method;
-class bpp_constructor;
-class bpp_destructor;
 class bpp_method_parameter;
 class bpp_class;
 class bpp_object;
@@ -259,13 +257,14 @@ class bpp_method : public bpp_code_entity {
 	private:
 		std::string name;
 		std::vector<std::shared_ptr<bpp_method_parameter>> parameters;
-		bpp_scope scope = SCOPE_PRIVATE;
+		bpp_scope scope = SCOPE_PUBLIC;
 		bool m_is_virtual = false;
 		bool inherited = false;
 		bool add_object_as_parameter(std::shared_ptr<bpp_object> object);
 	public:
 		bpp_method();
 		explicit bpp_method(const std::string& name);
+		bpp_method(const std::string& name, bool is_virtual);
 
 		virtual bool add_parameter(std::shared_ptr<bpp_method_parameter> parameter);
 		void set_name(const std::string& name);
@@ -280,28 +279,6 @@ class bpp_method : public bpp_code_entity {
 		bool is_inherited() const;
 
 		void destruct_local_objects();
-};
-
-/**
- * @class bpp_constructor
- * @brief A constructor in a class
- */
-class bpp_constructor : public bpp_method {
-	public:
-		bpp_constructor();
-
-		bool add_parameter(std::shared_ptr<bpp_method_parameter> parameter) override;
-};
-
-/**
- * @class bpp_destructor
- * @brief A destructor in a class
- */
-class bpp_destructor : public bpp_method {
-	public:
-		bpp_destructor();
-
-		bool add_parameter(std::shared_ptr<bpp_method_parameter> parameter) override;
 };
 
 /**
@@ -332,14 +309,13 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 		std::string name;
 		std::vector<std::shared_ptr<bpp_method>> methods;
 		std::vector<std::shared_ptr<bpp_datamember>> datamembers;
-		std::shared_ptr<bpp_constructor> constructor;
-		std::shared_ptr<bpp_destructor> destructor;
-		bool constructor_set = false;
-		bool destructor_set = false;
 		bool has_custom_toPrimitive = false;
+		bool has_custom_destructor = false;
 
 		void remove_default_toPrimitive();
 		void add_default_toPrimitive();
+		void remove_default_destructor();
+		void add_default_destructor();
 	public:
 		bpp_class();
 
@@ -351,16 +327,10 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 		void set_name(const std::string& name);
 		bool add_method(std::shared_ptr<bpp_method> method);
 		bool add_datamember(std::shared_ptr<bpp_datamember> datamember);
-		bool set_constructor(std::shared_ptr<bpp_constructor> constructor);
-		bool set_destructor(std::shared_ptr<bpp_destructor> destructor);
 
 		std::string get_name() const;
 		std::vector<std::shared_ptr<bpp_method>> get_methods() const;
 		std::vector<std::shared_ptr<bpp_datamember>> get_datamembers() const;
-		std::shared_ptr<bpp_constructor> get_constructor() const;
-		std::shared_ptr<bpp_destructor> get_destructor() const;
-		bool has_constructor() const;
-		bool has_destructor() const;
 
 		std::shared_ptr<bpp_method> get_method(const std::string& name, std::shared_ptr<bpp_entity> context);
 		std::shared_ptr<bpp_method> get_method_UNSAFE(const std::string& name);

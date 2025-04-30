@@ -10,7 +10,9 @@
 
 namespace bpp {
 
-bpp_class::bpp_class() {}
+bpp_class::bpp_class() {
+	add_default_destructor();
+}
 
 /**
  * @brief Remove the default toPrimitive method
@@ -49,6 +51,39 @@ void bpp_class::add_default_toPrimitive()  {
 	}
 }
 
+/**
+ * @brief Remove the default destructor method.
+ */
+void bpp_class::remove_default_destructor()  {
+	if (!has_custom_destructor) {
+		// Remove the destructor method from the methods vector
+		for (auto it = methods.begin(); it != methods.end(); it++) {
+			if ((*it)->get_name() == "__destructor") {
+				methods.erase(it);
+				break;
+			}
+		}
+	}
+}
+
+/**
+ * @brief Add the default destructor method.
+ * 
+ * The default destructor does nothing.
+ * The reason we add it is to ensure that a destructor is always present, even if the user does not define one.
+ * This is important because destructors are called automatically in some cases, such as when an object goes out of scope.
+ */
+void bpp_class::add_default_destructor()  {
+	if (!has_custom_destructor) {
+		std::shared_ptr<bpp_method> destructor = std::make_shared<bpp_method>();
+		destructor->set_name("__destructor");
+		destructor->set_scope(bpp_scope::SCOPE_PUBLIC);
+		destructor->set_virtual(true);
+		remove_default_destructor();
+		methods.push_back(destructor);
+	}
+}
+
 std::weak_ptr<bpp::bpp_class> bpp_class::get_containing_class() const {
 	return std::const_pointer_cast<bpp::bpp_class>(this->shared_from_this());
 }
@@ -81,6 +116,12 @@ bool bpp_class::add_method(std::shared_ptr<bpp_method> method) {
 		method->set_virtual(true);
 		remove_default_toPrimitive();
 		has_custom_toPrimitive = true;
+	}
+
+	if (name == "__destructor" && !has_custom_destructor) {
+		method->set_virtual(true);
+		remove_default_destructor();
+		has_custom_destructor = true;
 	}
 
 	for (auto it = methods.begin(); it != methods.end(); it++) {
@@ -129,24 +170,6 @@ bool bpp_class::add_datamember(std::shared_ptr<bpp_datamember> datamember) {
 	return true;
 }
 
-bool bpp_class::set_constructor(std::shared_ptr<bpp_constructor> constructor) {
-	if (constructor_set) {
-		return false;
-	}
-	this->constructor = constructor;
-	constructor_set = true;
-	return true;
-}
-
-bool bpp_class::set_destructor(std::shared_ptr<bpp_destructor> destructor) {
-	if (destructor_set) {
-		return false;
-	}
-	this->destructor = destructor;
-	destructor_set = true;
-	return true;
-}
-
 std::string bpp_class::get_name() const {
 	return name;
 }
@@ -157,22 +180,6 @@ std::vector<std::shared_ptr<bpp_method>> bpp_class::get_methods() const {
 
 std::vector<std::shared_ptr<bpp_datamember>> bpp_class::get_datamembers() const {
 	return datamembers;
-}
-
-std::shared_ptr<bpp_constructor> bpp_class::get_constructor() const {
-	return constructor;
-}
-
-std::shared_ptr<bpp_destructor> bpp_class::get_destructor() const {
-	return destructor;
-}
-
-bool bpp_class::has_constructor() const {
-	return constructor_set;
-}
-
-bool bpp_class::has_destructor() const {
-	return destructor_set;
 }
 
 /**
@@ -306,18 +313,6 @@ void bpp_class::inherit(std::shared_ptr<bpp_class> parent) {
 		if (d->get_scope() == bpp_scope::SCOPE_PRIVATE) {
 			datamembers.back()->set_scope(bpp_scope::SCOPE_INACCESSIBLE);
 		}
-	}
-
-	// Inherit constructor
-	if (parent->has_constructor()) {
-		constructor = parent->get_constructor();
-		constructor_set = true;
-	}
-
-	// Inherit destructor
-	if (parent->has_destructor()) {
-		destructor = parent->get_destructor();
-		destructor_set = true;
 	}
 
 	// Inherit parents

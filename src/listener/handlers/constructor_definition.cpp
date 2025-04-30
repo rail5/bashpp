@@ -24,12 +24,10 @@ void BashppListener::enterConstructor_definition(BashppParser::Constructor_defin
 		throw_syntax_error(ctx->KEYWORD_CONSTRUCTOR(), "Constructor definition outside of class");
 	}
 
-	// Verify that the constructor hasn't already been set
-	if (current_class->has_constructor()) {
-		throw_syntax_error(ctx->KEYWORD_CONSTRUCTOR(), "Constructor already defined");
-	}
-
-	std::shared_ptr<bpp::bpp_constructor> constructor = std::make_shared<bpp::bpp_constructor>();
+	std::shared_ptr<bpp::bpp_method> constructor = std::make_shared<bpp::bpp_method>();
+	constructor->set_name("__constructor");
+	constructor->set_scope(bpp::bpp_scope::SCOPE_PUBLIC);
+	constructor->set_virtual(true);
 	constructor->set_containing_class(current_class);
 	constructor->inherit(program);
 	entity_stack.push(constructor);
@@ -39,7 +37,7 @@ void BashppListener::exitConstructor_definition(BashppParser::Constructor_defini
 	skip_syntax_errors
 	skip_singlequote_string
 
-	std::shared_ptr<bpp::bpp_constructor> constructor = std::dynamic_pointer_cast<bpp::bpp_constructor>(entity_stack.top());
+	std::shared_ptr<bpp::bpp_method> constructor = std::dynamic_pointer_cast<bpp::bpp_method>(entity_stack.top());
 	if (constructor == nullptr) {
 		throw internal_error("Constructor definition not found on the entity stack", ctx);
 	}
@@ -56,7 +54,9 @@ void BashppListener::exitConstructor_definition(BashppParser::Constructor_defini
 		throw internal_error("Class not found on the entity stack", ctx);
 	}
 
-	current_class->set_constructor(constructor);
+	if (!current_class->add_method(constructor)) {
+		throw_syntax_error_from_exitRule(ctx->KEYWORD_CONSTRUCTOR(), "Constructor already defined");
+	}
 }
 
 #endif // SRC_LISTENER_HANDLERS_CONSTRUCTOR_DEFINITION_CPP_

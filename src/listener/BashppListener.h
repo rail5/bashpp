@@ -36,8 +36,6 @@ class BashppListener;
 #include "../bpp_include/bpp_pointer_dereference.cpp"
 #include "../bpp_include/bpp_program.cpp"
 #include "../bpp_include/bpp_class.cpp"
-#include "../bpp_include/bpp_constructor.cpp"
-#include "../bpp_include/bpp_destructor.cpp"
 #include "../bpp_include/bpp_datamember.cpp"
 #include "../bpp_include/bpp_method.cpp"
 #include "../bpp_include/bpp_method_parameter.cpp"

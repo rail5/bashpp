@@ -117,7 +117,7 @@ void bpp_method::destruct_local_objects() {
 			continue;
 		}
 		// If it has a destructor, call it
-		if (o.second->get_class()->has_destructor()) {
+		if (o.second->get_class()->get_method_UNSAFE("__destructor") != nullptr) {
 			*code << "bpp__" + o.second->get_class()->get_name() + "____destructor " + o.second->get_address() + "\n" << std::flush;
 		}
 		// Call delete

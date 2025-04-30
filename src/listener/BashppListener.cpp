@@ -66,8 +66,8 @@ BashppListener::code_segment BashppListener::generate_supershell_code(const std:
  *
  * @return A code_segment structure containing the complete deletion code:
  *         - pre_code: The setup code including the destructor call.
- *         - post_code: The code for cleaning up the object's reference.
- *         - code: The expression to delete the object.
+ *         - post_code: Empty
+ *         - code: Empty
  */
 BashppListener::code_segment BashppListener::generate_delete_code(std::shared_ptr<bpp::bpp_object> object, const std::string& object_reference_string, bool force_pointer) {
 	// The object_reference_string is how the compiled code should refer to the object
@@ -76,9 +76,10 @@ BashppListener::code_segment BashppListener::generate_delete_code(std::shared_pt
 
 	std::string delete_function_name = "bpp__" + object->get_class()->get_name() + "____delete";
 
-	if (object->get_class()->has_destructor()) {
-		result.pre_code += "bpp__" + object->get_class()->get_name() + "____destructor " + object_reference_string + "\n";
-	}
+	code_segment destructor_code = generate_method_call_code(object_reference_string, "__destructor", object->get_class());
+	result.pre_code += destructor_code.pre_code;
+	result.pre_code += destructor_code.code + "\n";
+	result.pre_code += destructor_code.post_code;
 
 	result.pre_code += delete_function_name + " " + object_reference_string + "\n";
 
@@ -116,9 +117,9 @@ BashppListener::code_segment BashppListener::generate_method_call_code(const std
 	// Is the method virtual?
 	if (assumed_method->is_virtual()) {
 		// Look up the method in the vTable
-		result.pre_code = "bpp____vTable__lookup \"" + reference_code + "\" \"" + method_name + "\" __func" + std::to_string(program->get_function_counter()) + "\n";
-		result.post_code = "unset __func" + std::to_string(program->get_function_counter()) + "\n";
-		result.code = "${!__func" + std::to_string(program->get_function_counter()) + "} " + reference_code;
+		result.pre_code = "if bpp____vTable__lookup \"" + reference_code + "\" \"" + method_name + "\" __func" + std::to_string(program->get_function_counter()) + "; then\n";
+		result.post_code = "	unset __func" + std::to_string(program->get_function_counter()) + "\nfi\n";
+		result.code = "	${!__func" + std::to_string(program->get_function_counter()) + "} " + reference_code;
 		program->increment_function_counter();
 	} else {
 		result.code = "bpp__" + assumed_class->get_name() + "__" + method_name + " " + reference_code;

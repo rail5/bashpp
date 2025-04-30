@@ -24,12 +24,10 @@ void BashppListener::enterDestructor_definition(BashppParser::Destructor_definit
 		throw_syntax_error(ctx->KEYWORD_DESTRUCTOR(), "Destructor definition outside of class");
 	}
 
-	// Verify that the destructor hasn't already been set
-	if (current_class->has_destructor()) {
-		throw_syntax_error(ctx->KEYWORD_DESTRUCTOR(), "Destructor already defined");
-	}
-
-	std::shared_ptr<bpp::bpp_destructor> destructor = std::make_shared<bpp::bpp_destructor>();
+	std::shared_ptr<bpp::bpp_method> destructor = std::make_shared<bpp::bpp_method>();
+	destructor->set_name("__destructor");
+	destructor->set_scope(bpp::bpp_scope::SCOPE_PUBLIC);
+	destructor->set_virtual(true);
 	destructor->set_containing_class(current_class);
 	destructor->inherit(program);
 	entity_stack.push(destructor);
@@ -39,7 +37,7 @@ void BashppListener::exitDestructor_definition(BashppParser::Destructor_definiti
 	skip_syntax_errors
 	skip_singlequote_string
 
-	std::shared_ptr<bpp::bpp_destructor> destructor = std::dynamic_pointer_cast<bpp::bpp_destructor>(entity_stack.top());
+	std::shared_ptr<bpp::bpp_method> destructor = std::dynamic_pointer_cast<bpp::bpp_method>(entity_stack.top());
 	if (destructor == nullptr) {
 		throw internal_error("Destructor definition not found on the entity stack", ctx);
 	}
@@ -56,7 +54,9 @@ void BashppListener::exitDestructor_definition(BashppParser::Destructor_definiti
 		throw internal_error("Class not found on the entity stack", ctx);
 	}
 
-	current_class->set_destructor(destructor);
+	if (!current_class->add_method(destructor)) {
+		throw_syntax_error_from_exitRule(ctx->KEYWORD_DESTRUCTOR(), "Destructor already defined");
+	}
 }
 
 #endif // SRC_LISTENER_HANDLERS_DESTRUCTOR_DEFINITION_CPP_

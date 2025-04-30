@@ -303,7 +303,7 @@ void bpp_class::inherit(std::shared_ptr<bpp_class> parent) {
 		proxy_method_code += "\n";
 		proxy->add_code(proxy_method_code);
 
-		methods.push_back(proxy);
+		add_method(proxy);
 	}
 
 	// Inherit datamembers

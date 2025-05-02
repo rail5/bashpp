@@ -30,38 +30,45 @@ ANTLR4_OBJS = $(patsubst $(ANTLR4DIR)/%.cpp,$(ANTLR4_OBJDIR)/%.o,$(ANTLR4_SRCS))
 MAIN = main.cpp
 MAIN_OBJ = obj/$(MAIN:.cpp=.o)
 
-all: bpp
+all: $(ANTLR4DIR)/BashppParser.cpp
+	$(MAKE) bpp
 
 # Rule to link all object files into the final executable
 ## Prerequisites:
 ## - All .cpp files in the bpp_include directory
 ## - All .cpp files in the antlr directory
 ## - The main.cpp file
-bpp: $(BPP_OBJS) $(ANTLR4_OBJS) $(MAIN_OBJ)
+bpp: $(BPP_OBJS) $(ANTLR4_OBJS) $(MAIN_OBJ) $(ANTLR4DIR)/BashppParser.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -o $@ $(BPP_OBJS) $(ANTLR4_OBJS) $(MAIN_OBJ) $(ANTLR4_RUNTIME_LIBRARY)
 
 # Rule to compile all .cpp files in the bpp_include directory
 ## Antlr4 objects are a prerequisite for this
-$(BPP_OBJDIR)/%.o: $(BPP_INCLUDEDIR)/%.cpp $(ANTLR4_OBJS)
+$(BPP_OBJDIR)/%.o: $(BPP_INCLUDEDIR)/%.cpp $(ANTLR4_OBJS) $(ANTLR4DIR)/BashppParser.cpp
 	@mkdir -p $(BPP_OBJDIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
 
 # Rule to compile all .cpp files in the antlr directory
 ## The Antlr4-generated files are a prerequisite for this
-$(ANTLR4_OBJDIR)/%.o: $(ANTLR4DIR)/%.cpp
+$(ANTLR4_OBJDIR)/%.o: $(ANTLR4DIR)/%.cpp $(ANTLR4DIR)/BashppParser.cpp
 	@mkdir -p $(ANTLR4_OBJDIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
 
 # Rule to compile the main.cpp file
 ## The Antlr4 objects are a prerequisite for this
-obj/$(MAIN:.cpp=.o): $(MAIN) $(ANTLR4_OBJS)
+obj/$(MAIN:.cpp=.o): $(MAIN) $(ANTLR4_OBJS) $(ANTLR4DIR)/BashppParser.cpp
 	@mkdir -p obj
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
+
+$(ANTLR4DIR)/%.cpp: BashppLexer.g4 BashppParser.g4
+	@mkdir -p $(ANTLR4DIR)
+	$(ANTLR4) -Dlanguage=Cpp ./BashppLexer.g4 ./BashppParser.g4 -o ./antlr
 
 clean:
 	@rm -rf obj
 	@rm -f $(BPP_OBJDIR)/*.o
 	@rm -f $(ANTLR4_OBJDIR)/*.o
+	@rm -rf antlr
+	@rm -rf .antlr
 	@rm -f obj/*.o
 	@rm -f bpp
 	@echo "Cleaned up build artifacts."

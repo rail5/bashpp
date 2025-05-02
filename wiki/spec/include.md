@@ -1,3 +1,6 @@
+---
+layout: custom
+---
 # NAME
 
 @include - Include a file in the current script

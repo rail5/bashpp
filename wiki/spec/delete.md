@@ -1,3 +1,6 @@
+---
+layout: custom
+---
 # NAME
 
 @delete - Delete an object

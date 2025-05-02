@@ -20,7 +20,6 @@
 		<ul>
 			<li><a href="introduction.html">Beginner's Guide to Bash++</a></li>
 			<li><a href="compiler.html">Using the Bash++ Compiler</a></li>
-			<li><a href="download.html">Download Bash++</a></li>
 		</ul>
 	</div>
 	<div style="flex: 1; min-width: 200px; margin-right: 1em;">
@@ -36,7 +35,6 @@
 		<ul>
 			<li><a href="doxygen/">Compiler Internals</a></li>
 			<li><a href="https://log.bpp.sh/">Development Logs</a></li>
-			<li><a href="images.html">Images</a></li>
 		</ul>
 	</div>
 </div>

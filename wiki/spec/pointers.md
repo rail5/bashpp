@@ -1,3 +1,6 @@
+---
+layout: custom
+---
 # NAME
 
 Pointer - A pointer to an object

@@ -1,3 +1,6 @@
+---
+layout: custom
+---
 # NAME
 
 @method - Define a method for a class

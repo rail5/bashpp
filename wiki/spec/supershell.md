@@ -1,3 +1,6 @@
+---
+layout: custom
+---
 # NAME
 
 Supershell - Capture the output of a command while allowing it to modify the environment

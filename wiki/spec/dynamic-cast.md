@@ -1,3 +1,6 @@
+---
+layout: custom
+---
 # NAME
 
 @dynamic_cast - Safely cast an object to a different type at runtime

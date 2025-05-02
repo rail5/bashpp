@@ -1,3 +1,6 @@
+---
+layout: custom
+---
 # NAME
 
 @class - Define a class

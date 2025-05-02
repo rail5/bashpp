@@ -1,3 +1,6 @@
+---
+layout: custom
+---
 # NAME
 
 toPrimitive - Convert an object to a primitive type

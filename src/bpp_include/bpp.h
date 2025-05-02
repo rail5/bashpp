@@ -408,7 +408,7 @@ class bpp_datamember : public bpp_object {
  * 
  * @brief The main program
  */
-class bpp_program : public bpp_code_entity {
+class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<bpp_program> {
 	private:
 		std::shared_ptr<bpp_class> primitive_class;
 		uint64_t supershell_counter = 0;

@@ -7,6 +7,7 @@
 #define SRC_BPP_INCLUDE_BPP_PROGRAM_CPP_
 
 #include "bpp.h"
+#include "bpp_codegen.h"
 #include "templates.h"
 
 namespace bpp {
@@ -96,11 +97,8 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 		if (dm->get_class()->get_name() == "primitive" || dm->is_pointer()) {
 			deletions += "	unset ${__objectAddress}__" + dm->get_name() + "\n";
 		} else {
-			// Call the destructor if it exists
-			if (dm->get_class()->get_method_UNSAFE("__destructor") != nullptr) {
-				deletions += "	bpp__" + dm->get_class()->get_name() + "____destructor ${__objectAddress}__" + dm->get_name() + "\n";
-			}
-			deletions += "	bpp__" + dm->get_class()->get_name() + "____delete ${__objectAddress}__" + dm->get_name() + "\n";
+			code_segment delete_code = generate_delete_code(dm, "${__objectAddress}__" + dm->get_name(), shared_from_this());
+			deletions += delete_code.pre_code + "\n";
 			deletions += "	unset ${__objectAddress}__" + dm->get_name() + "\n";
 		}
 		deletions += dm->get_post_access_code() + "\n";

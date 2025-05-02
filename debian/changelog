@@ -1,3 +1,25 @@
+bpp (0.3.9) unstable; urgency=medium
+
+  * Updated include syntax
+    Includes now allow you specify whether each include should be linked
+    dynamically or statically, and if dynamically, allows you to
+    optionally specify where the compiled library will be found at runtime
+    The syntax is still backwards- compatible and the new features are
+    optional.
+  * Made system __delete function virtual
+    This ensures that we'll always call the correct __delete function
+    regardless of the compile-time inferred type of the object
+  * Rely on generate_delete_code when deleting non-primitive data
+    members in classes
+    Less code duplication, more reliable, only one place to change things
+  * destruct_local_objects: rely on generate_delete_code for
+    implementation
+  * Better build system
+    More idiomatic GNU Makefile, faster re-builds on changes
+  * Decoupled code generation functions from the listener class
+
+ -- rail5 <andrew@rail5.org>  Fri, 02 May 2025 20:36:34 +0800
+
 bpp (0.3.8) unstable; urgency=medium
 
   * Treat constructors and destructors as ordinary methods

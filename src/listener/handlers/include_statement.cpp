@@ -8,6 +8,23 @@
 
 #include "../BashppListener.h"
 
+/**
+ * @brief Handles @include and @include_once statements
+ * 
+ * This function is called when the parser enters an @include or @include_once statement.
+ * 
+ * The syntax of an include is:
+ * 
+ * @include [static | dynamic] {PATH} [as "{PATH}"]
+ * 
+ * For example:
+ * 
+ * @include_once dynamic <Stack> as "/usr/lib/Stack.sh"
+ * 
+ * Or:
+ * 
+ * @include "Stack.bpp"
+ */
 void BashppListener::enterInclude_statement(BashppParser::Include_statementContext *ctx) {
 	skip_syntax_errors
 	skip_singlequote_string
@@ -16,6 +33,11 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 	std::shared_ptr<bpp::bpp_program> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_program>(entity_stack.top());
 
 	antlr4::tree::TerminalNode* initial_node = nullptr;
+	antlr4::tree::TerminalNode* sourcePath_node = nullptr;
+	antlr4::tree::TerminalNode* asPath_node = nullptr;
+
+	bool local_include = false;
+	bool dynamic_linking = ctx->INCLUDE_DYNAMIC() != nullptr;
 
 	if (ctx->KEYWORD_INCLUDE() != nullptr) {
 		initial_node = ctx->KEYWORD_INCLUDE();
@@ -27,27 +49,42 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 		throw_syntax_error(initial_node, "Include statements can only be used at the top level of a program");
 	}
 
-	std::string filename = ctx->INCLUDE_PATH()->getText();
+	if (ctx->SYSTEM_INCLUDE_PATH() != nullptr) {
+		sourcePath_node = ctx->SYSTEM_INCLUDE_PATH();
+		if (ctx->LOCAL_INCLUDE_PATH(0) != nullptr) {
+			asPath_node = ctx->LOCAL_INCLUDE_PATH(0);
+		}
+	} else {
+		sourcePath_node = ctx->LOCAL_INCLUDE_PATH(0);
+		local_include = true;
+		if (ctx->LOCAL_INCLUDE_PATH(1) != nullptr) {
+			asPath_node = ctx->LOCAL_INCLUDE_PATH(1);
+		}
+	}
 
-	if (ctx->LOCAL_INCLUDE_PATH_START() == nullptr) {
+	// Trim the first and last characters (either quote-marks or '<' and '>') from the path
+	std::string source_filename = sourcePath_node->getText();
+	source_filename = source_filename.substr(1, source_filename.length() - 2);
+
+	if (!local_include) {
 		// Search for the file in the include paths
 		bool found = false;
 		for (const std::string& include_path : *include_paths) {
-			std::string full_path = include_path + "/" + filename;
+			std::string full_path = include_path + "/" + source_filename;
 			if (access(full_path.c_str(), F_OK) == 0) {
-				filename = full_path;
+				source_filename = full_path;
 				found = true;
 				break;
 			}
 		}
 		if (!found) {
-			throw_syntax_error(initial_node, "File not found: " + filename);
+			throw_syntax_error(initial_node, "File not found: " + source_filename);
 		}
 	} else {
 		// This is a "local" include -- meaning we should start scanning from the same directory as the current source file
 		// Unless the path given is an absolute path (starting with '/')
 		// NOT NECESSARILY the same as the current working directory
-		if (filename[0] != '/') {
+		if (source_filename[0] != '/') {
 			// Get the directory of the current source file
 			// If the program is being read from stdin, we should use the current working directory
 			std::string current_directory;
@@ -61,14 +98,14 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 				current_directory = source_file.substr(0, source_file.find_last_of('/'));
 			}
 
-			// Append the filename to the directory
-			filename = current_directory + "/" + filename;
+			// Append the source_filename to the directory
+			source_filename = current_directory + "/" + source_filename;
 		}
 	}
 	// Get the full path of the file
 	char full_path[PATH_MAX];
-	if (realpath(filename.c_str(), full_path) == nullptr) {
-		throw_syntax_error(initial_node, "File not found: " + filename);
+	if (realpath(source_filename.c_str(), full_path) == nullptr) {
+		throw_syntax_error(initial_node, "File not found: " + source_filename);
 	}
 
 	if (ctx->KEYWORD_INCLUDE_ONCE() != nullptr && included_files.find(full_path) != included_files.end()) {
@@ -148,24 +185,31 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 	// If we're linking statically, the code was also added
 	// If we're linking dynamically, we need to add a little source directive here
 	if (dynamic_linking) {
-		// If the 'full path' has an extension, we should remove it
-		std::string full_path_str = full_path;
-		// Get the file basename
-		std::string basename = full_path_str.substr(full_path_str.find_last_of('/') + 1);
-		std::string directory = full_path_str.substr(0, full_path_str.find_last_of('/'));
-		// Get the file extension
-		std::string extension = basename.substr(basename.find_last_of('.') + 1);
+		if (asPath_node == nullptr) {
+			// If the 'full path' has an extension, we should remove it
+			std::string full_path_str = full_path;
+			// Get the file basename
+			std::string basename = full_path_str.substr(full_path_str.find_last_of('/') + 1);
+			std::string directory = full_path_str.substr(0, full_path_str.find_last_of('/'));
+			// Get the file extension
+			std::string extension = basename.substr(basename.find_last_of('.') + 1);
 
-		// If the extension exists, remove it
-		if (extension.length() > 0) {
-			basename = basename.substr(0, basename.find_last_of('.'));
+			// If the extension exists, remove it
+			if (extension.length() > 0) {
+				basename = basename.substr(0, basename.find_last_of('.'));
+			}
+
+			// Append a '.sh' extension
+			basename += ".sh";
+			
+			// Add a source directive
+			current_code_entity->add_code("source \"" + directory + "/" + basename + "\"\n");
+		} else {
+			// If the 'as' path is given, we should use that instead
+			std::string asPath = asPath_node->getText();
+			asPath = asPath.substr(1, asPath.length() - 2);
+			current_code_entity->add_code("source \"" + asPath + "\"\n");
 		}
-
-		// Append a '.sh' extension
-		basename += ".sh";
-		
-		// Add a source directive
-		current_code_entity->add_code("source \"" + directory + "/" + basename + "\"\n");
 	}
 }
 

@@ -16,10 +16,6 @@ void BashppListener::set_include_paths(std::shared_ptr<std::vector<std::string>>
 	this->include_paths = include_paths;
 }
 
-void BashppListener::set_dynamic_linking(bool dynamic_linking) {
-	this->dynamic_linking = dynamic_linking;
-}
-
 void BashppListener::set_included(bool included) {
 	this->included = included;
 }

@@ -1028,17 +1028,11 @@ mode PARSE_INCLUDE_PATH;
 
 INCLUDE_PATH_WS: [ \t\r]+ -> skip;
 
-INCLUDE_PATH_START: '<';
-INCLUDE_PATH_END: '>' -> popMode;
+INCLUDE_END: '\n' -> popMode;
 
-LOCAL_INCLUDE_PATH_START: '"' {
-	if (parsing_include_path) {
-		parsing_include_path = false;
-		emit(INCLUDE_PATH_END, "\"");
-		popMode();
-	} else {
-		parsing_include_path = true;
-	}
-};
+SYSTEM_INCLUDE_PATH: '<' ( '\\' . | ~[<>\\\r\n] )* '>';
+LOCAL_INCLUDE_PATH: '"' ( '\\' . | ~["\\\r\n] )* '"';
 
-INCLUDE_PATH: ~["<>\n]+;
+INCLUDE_STATIC: 'static';
+INCLUDE_DYNAMIC: 'dynamic';
+INCLUDE_AS: 'as';

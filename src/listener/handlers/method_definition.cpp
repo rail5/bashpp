@@ -66,7 +66,7 @@ void BashppListener::exitMethod_definition(BashppParser::Method_definitionContex
 	entity_stack.pop();
 
 	// Call destructors for any objects created in the method before we exit it
-	method->destruct_local_objects();
+	method->destruct_local_objects(program);
 	in_method = false;
 }
 

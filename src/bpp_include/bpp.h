@@ -278,7 +278,7 @@ class bpp_method : public bpp_code_entity {
 		bool is_virtual() const;
 		bool is_inherited() const;
 
-		void destruct_local_objects();
+		void destruct_local_objects(std::shared_ptr<bpp_program> program);
 };
 
 /**

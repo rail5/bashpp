@@ -7,6 +7,7 @@
 #define SRC_BPP_INCLUDE_BPP_METHOD_CPP_
 
 #include "bpp.h"
+#include "bpp_codegen.h"
 
 namespace bpp {
 
@@ -110,18 +111,16 @@ bool bpp_method::is_inherited() const {
  * 
  * This is called as we exit the method, to ensure that all local objects are cleaned up.
  */
-void bpp_method::destruct_local_objects() {
+void bpp_method::destruct_local_objects(std::shared_ptr<bpp_program> program) {
 	for (auto& o : local_objects) {
 		// If it's a pointer, don't delete it
 		if (o.second->is_pointer()) {
 			continue;
 		}
-		// If it has a destructor, call it
-		if (o.second->get_class()->get_method_UNSAFE("__destructor") != nullptr) {
-			*code << "bpp__" + o.second->get_class()->get_name() + "____destructor " + o.second->get_address() + "\n" << std::flush;
-		}
-		// Call delete
-		*code << "bpp__" + o.second->get_class()->get_name() + "____delete " + o.second->get_address() + "\n" << std::flush;
+
+		code_segment delete_code = generate_delete_code(o.second, o.second->get_address(), program);
+
+		*code << delete_code.pre_code << "\n" << std::flush;
 	}
 	local_objects.clear();
 }

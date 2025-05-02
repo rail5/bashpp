@@ -45,7 +45,7 @@ void BashppListener::exitDestructor_definition(BashppParser::Destructor_definiti
 	entity_stack.pop();
 
 	// Call destructors for any objects created in the destructor before we exit it
-	destructor->destruct_local_objects();
+	destructor->destruct_local_objects(program);
 
 	// Add the destructor to the class
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());

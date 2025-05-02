@@ -24,7 +24,7 @@ std: clean-std compiler
 test:
 	bin/bpp test-suite/run.bpp
 
-manual: clean-manual
+manual: clean-manual detailed-manuals
 	@mkdir tmp
 	@tail -n +6 wiki/language.md > tmp/language.md
 	@cp wiki/compiler.md tmp/
@@ -51,6 +51,23 @@ manual: clean-manual
 	pandoc --standalone --to man tmp/language.md -o debian/bpp.7
 	@rm -rf tmp
 
+detailed-manuals: clean-detailed-manuals
+	@mkdir detailed-manuals
+	@for file in "wiki/spec/"*.md; do \
+		if [ "$$(basename "$$file")" = "index.md" ]; then \
+			continue; \
+		fi; \
+		base=$$(basename "$$file" .md); \
+		cp "$$file" "detailed-manuals/bpp-$$base.md"; \
+		sed -i '1s/^/% bpp-'"$$base"'(3) Version '"$(VERSION)"' | Manual for the Bash++ language\n/' "detailed-manuals/bpp-$$base.md"; \
+	done
+	# Generate
+	@for file in "detailed-manuals/"*.md; do \
+		base=$$(basename "$$file" .md); \
+		pandoc --standalone --to man "$$file" -o "debian/$$base.3"; \
+	done
+	@rm -rf detailed-manuals
+
 technical-docs: clean-technical-docs
 	doxygen Doxyfile
 
@@ -75,10 +92,14 @@ clean-main:
 clean-std:
 	@rm -f stdlib/*.sh
 
-clean-manual:
+clean-manual: clean-detailed-manuals
 	@rm -f debian/bpp.1
 	@rm -f debian/bpp.7
 	@rm -rf tmp
+
+clean-detailed-manuals:
+	@rm -f debian/bpp-*.3
+	@rm -rf detailed-manuals
 
 clean-technical-docs:
 	@rm -rf docs

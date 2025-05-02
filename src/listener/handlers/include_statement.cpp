@@ -29,6 +29,10 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 	skip_syntax_errors
 	skip_singlequote_string
 
+	if (ctx->JUNK().size() > 0) {
+		throw_syntax_error(ctx->JUNK(0), "Include statement not understood");
+	}
+
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_program> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_program>(entity_stack.top());
 

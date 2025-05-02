@@ -1036,3 +1036,5 @@ LOCAL_INCLUDE_PATH: '"' ( '\\' . | ~["\\\r\n] )* '"';
 INCLUDE_STATIC: 'static';
 INCLUDE_DYNAMIC: 'dynamic';
 INCLUDE_AS: 'as';
+
+JUNK: .+?;

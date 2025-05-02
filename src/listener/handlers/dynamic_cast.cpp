@@ -59,7 +59,7 @@ void BashppListener::exitDynamic_cast_statement(BashppParser::Dynamic_cast_state
 		throw internal_error("Current code entity was not found in the entity stack", ctx);
 	}
 
-	code_segment dynamic_cast_code = generate_dynamic_cast_code(dynamic_cast_entity->get_code(), dynamic_cast_entity->get_cast_to()->get_name());
+	code_segment dynamic_cast_code = generate_dynamic_cast_code(dynamic_cast_entity->get_code(), dynamic_cast_entity->get_cast_to()->get_name(), program);
 
 	current_code_entity->add_code_to_previous_line(dynamic_cast_entity->get_pre_code());
 	current_code_entity->add_code_to_previous_line(dynamic_cast_code.pre_code);

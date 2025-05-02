@@ -37,7 +37,7 @@ void BashppListener::enterNew_statement(BashppParser::New_statementContext *ctx)
 	// Call the class's "new" method in a supershell and substitute the result
 	std::string new_method_call = "bpp__" + class_name + "____new";
 
-	code_segment new_code = generate_supershell_code(new_method_call);
+	code_segment new_code = generate_supershell_code(new_method_call, in_while_condition, current_while_condition, program);
 	current_code_entity->add_code_to_previous_line(new_code.pre_code);
 
 	// Call the constructor if it exists

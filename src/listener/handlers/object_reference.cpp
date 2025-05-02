@@ -172,7 +172,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 
 	if (last_reference_type == bpp::reference_type::ref_method) {
 		indirection = ctx->IDENTIFIER().size() > 3 ? "!" : "";
-		code_segment method_call_code = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, method->get_name(), class_containing_the_method);
+		code_segment method_call_code = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, method->get_name(), class_containing_the_method, program);
 		// Are we taking the *address* of the method or are we calling it?
 		if (object_address_entity != nullptr) {
 			/**
@@ -193,7 +193,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 			 * If we're not taking the address (most cases), then we need to run the method in a supershell
 			 * And substitute the result of the supershell in place of the reference
 			 */
-			code_segment method_code = generate_supershell_code(method_call_code.pre_code + "\n" + method_call_code.code + "\n" + method_call_code.post_code);
+			code_segment method_code = generate_supershell_code(method_call_code.pre_code + "\n" + method_call_code.code + "\n" + method_call_code.post_code, in_while_condition, current_while_condition, program);
 			object_reference_entity->add_code_to_previous_line(method_code.pre_code);
 			object_reference_entity->add_code_to_next_line(method_code.post_code);
 			object_reference_entity->add_code(method_code.code);
@@ -321,9 +321,9 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 					// Call .toPrimitive
 					indirection = (created_second_temporary_variable && !hasPoundKey) ? "!" : "";
 
-					code_segment method_call_code = generate_method_call_code("${" + indirection + object_reference_code + "}", "toPrimitive", last_reference_object->get_class());
+					code_segment method_call_code = generate_method_call_code("${" + indirection + object_reference_code + "}", "toPrimitive", last_reference_object->get_class(), program);
 
-					code_segment method_code = generate_supershell_code(method_call_code.pre_code + "\n" + method_call_code.code + "\n" + method_call_code.post_code);
+					code_segment method_code = generate_supershell_code(method_call_code.pre_code + "\n" + method_call_code.code + "\n" + method_call_code.post_code, in_while_condition, current_while_condition, program);
 					object_reference_entity->add_code_to_previous_line(method_code.pre_code);
 					object_reference_entity->add_code_to_next_line(method_code.post_code);
 					code_to_add = method_code.code;
@@ -369,9 +369,9 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 		encase_close = ctx->IDENTIFIER().size() > 1 ? "}" : "";
 		indirection = ctx->IDENTIFIER().size() > 2 ? "!" : "";
 
-		code_segment method_call_code = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, "toPrimitive", last_reference_entity->get_class());
+		code_segment method_call_code = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, "toPrimitive", last_reference_entity->get_class(), program);
 
-		code_segment method_code = generate_supershell_code(method_call_code.pre_code + "\n" + method_call_code.code + "\n" + method_call_code.post_code);
+		code_segment method_code = generate_supershell_code(method_call_code.pre_code + "\n" + method_call_code.code + "\n" + method_call_code.post_code, in_while_condition, current_while_condition, program);
 		object_reference_entity->add_code_to_previous_line(method_code.pre_code);
 		object_reference_entity->add_code_to_next_line(method_code.post_code);
 		object_reference_entity->add_code(method_code.code);

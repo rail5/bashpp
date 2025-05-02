@@ -163,7 +163,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 			throw_syntax_error(ctx->IDENTIFIER_LVALUE(), "Cannot assign to a method");
 		}
 		// Call the method directly -- not in a supershell
-		BashppListener::code_segment method_call = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, method->get_name(), class_containing_the_method);
+		code_segment method_call = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, method->get_name(), class_containing_the_method, program);
 
 		object_reference_entity->add_code_to_previous_line(method_call.pre_code);
 		object_reference_entity->add_code_to_next_line(method_call.post_code);
@@ -239,7 +239,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 				object_reference_entity->add_code(encase_open + indirection + object_reference_code + encase_close);
 			} else {
 				// Call .toPrimitive
-				code_segment method_call_code = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, "toPrimitive", last_reference_object->get_class());
+				code_segment method_call_code = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, "toPrimitive", last_reference_object->get_class(), program);
 
 				object_reference_entity->add_code_to_previous_line(method_call_code.pre_code);
 				object_reference_entity->add_code_to_next_line(method_call_code.post_code);
@@ -263,7 +263,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 
 	if (last_reference_object != nullptr) {
 		// Call .toPrimitive
-		code_segment method_call_code = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, "toPrimitive", last_reference_object->get_class());
+		code_segment method_call_code = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, "toPrimitive", last_reference_object->get_class(), program);
 
 		object_reference_entity->add_code_to_previous_line(method_call_code.pre_code);
 		object_reference_entity->add_code_to_next_line(method_call_code.post_code);

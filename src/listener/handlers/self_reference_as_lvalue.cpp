@@ -134,7 +134,7 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 
 		std::string indirection = ctx->IDENTIFIER().size() > 1 ? "!" : "";
 
-		code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", method->get_name(), class_containing_the_method);
+		code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", method->get_name(), class_containing_the_method, program);
 
 		// Don't run the method in a supershell, just call it directly
 		self_reference_entity->add_code_to_previous_line(method_call_code.pre_code);
@@ -159,7 +159,7 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 		std::shared_ptr<bpp::bpp_pointer_dereference> pointer_dereference = std::dynamic_pointer_cast<bpp::bpp_pointer_dereference>(current_code_entity);
 		if (pointer_dereference != nullptr && last_reference_type != bpp::reference_type::ref_primitive) {
 			// Call .toPrimitive
-			code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", "toPrimitive", last_reference_entity->get_class());
+			code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", "toPrimitive", last_reference_entity->get_class(), program);
 
 			pointer_dereference->add_code_to_previous_line(self_reference_entity->get_pre_code());
 			pointer_dereference->add_code_to_previous_line(method_call_code.pre_code);
@@ -194,7 +194,7 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 	}
 
 	// We need to call the .toPrimitive method on the object
-	code_segment method_call_code = generate_method_call_code("${!" + self_reference_code + "}", "toPrimitive", last_reference_entity->get_class());
+	code_segment method_call_code = generate_method_call_code("${!" + self_reference_code + "}", "toPrimitive", last_reference_entity->get_class(), program);
 
 	// Don't run the method in a supershell, just call it directly
 	self_reference_entity->add_code_to_previous_line(method_call_code.pre_code);

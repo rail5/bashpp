@@ -139,7 +139,7 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 	bool ready_to_exit = false;
 
 	if (last_reference_type == bpp::reference_type::ref_method) {
-		code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", method->get_name(), class_containing_the_method);
+		code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", method->get_name(), class_containing_the_method, program);
 
 		// Are we taking the address of the method, or calling it?
 		if (object_address_entity != nullptr) {
@@ -148,7 +148,7 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 			self_reference_entity->add_code(method_call_code.code);
 		} else {
 			// Call the method in a supershell, and substitute the result in place of the self-reference
-			code_segment method_code = generate_supershell_code(method_call_code.pre_code + "\n" + method_call_code.code + "\n" + method_call_code.post_code);
+			code_segment method_code = generate_supershell_code(method_call_code.pre_code + "\n" + method_call_code.code + "\n" + method_call_code.post_code, in_while_condition, current_while_condition, program);
 			self_reference_entity->add_code_to_previous_line(method_code.pre_code);
 			self_reference_entity->add_code_to_next_line(method_code.post_code);
 			self_reference_entity->add_code(method_code.code);
@@ -206,9 +206,9 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 					return;
 				}
 				// Call .toPrimitive in a supershell and substitute the result
-				code_segment method_call_code = generate_method_call_code(self_reference_code, "toPrimitive", last_reference_entity->get_class());
+				code_segment method_call_code = generate_method_call_code(self_reference_code, "toPrimitive", last_reference_entity->get_class(), program);
 
-				code_segment method_code = generate_supershell_code(method_call_code.pre_code + "\n" + method_call_code.code + "\n" + method_call_code.post_code);
+				code_segment method_code = generate_supershell_code(method_call_code.pre_code + "\n" + method_call_code.code + "\n" + method_call_code.post_code, in_while_condition, current_while_condition, program);
 				self_reference_entity->add_code_to_previous_line(method_code.pre_code);
 				self_reference_entity->add_code_to_next_line(method_code.post_code);
 				self_reference_entity->add_code(method_code.code);
@@ -293,9 +293,9 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 	if (!ready_to_exit) {
 		// We need to call the .toPrimitive method on the object
 		indirection = (created_first_temporary_variable && !hasPoundKey) ? "!" : "";
-		code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", "toPrimitive", last_reference_entity->get_class());
+		code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", "toPrimitive", last_reference_entity->get_class(), program);
 
-		code_segment method_code = generate_supershell_code(method_call_code.pre_code + "\n" + method_call_code.code + "\n" + method_call_code.post_code);
+		code_segment method_code = generate_supershell_code(method_call_code.pre_code + "\n" + method_call_code.code + "\n" + method_call_code.post_code, in_while_condition, current_while_condition, program);
 		self_reference_entity->add_code_to_previous_line(method_code.pre_code);
 		self_reference_entity->add_code_to_next_line(method_code.post_code);
 		self_reference_entity->add_code(method_code.code);

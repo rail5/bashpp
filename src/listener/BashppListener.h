@@ -18,6 +18,13 @@
 
 class BashppListener;
 
+#include "../bpp_include/bpp_codegen.cpp"
+using code_segment = bpp::code_segment;
+using bpp::generate_supershell_code;
+using bpp::generate_delete_code;
+using bpp::generate_method_call_code;
+using bpp::generate_dynamic_cast_code;
+
 #include "../bpp_include/bpp_entity.cpp"
 #include "../bpp_include/bpp_code_entity.cpp"
 #include "../bpp_include/bpp_string.cpp"
@@ -214,30 +221,6 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 	std::shared_ptr<bpp::bpp_program> get_program();
 	std::set<std::string> get_included_files();
 	std::stack<std::string> get_include_stack();
-
-	/**
-	 * @struct code_segment
-	 * @brief A struct to hold (compiled) code segments
-	 * 
-	 * Much of the code generation in the compiler is done using code segments.
-	 * A code segment consists of three parts:
-	 * - pre_code: Code that should be executed before the main code
-	 * - code: The main code
-	 * - post_code: Code that should be executed after the main code
-	 * 
-	 * Generally, the pre_code and post_code are used to set up and clean up the environment
-	 * in which the main code will run.
-	 */
-	struct code_segment {
-		std::string pre_code = "";
-		std::string code = "";
-		std::string post_code = "";
-	};
-
-	code_segment generate_supershell_code(const std::string& code_to_run_in_supershell);
-	code_segment generate_delete_code(std::shared_ptr<bpp::bpp_object> object, const std::string& object_reference_string, bool force_pointer = false);
-	code_segment generate_method_call_code(const std::string& reference_code, const std::string& method_name, std::shared_ptr<bpp::bpp_class> assumed_class);
-	code_segment generate_dynamic_cast_code(const std::string& reference_code, const std::string& class_name);
 
 	void enterProgram(BashppParser::ProgramContext *ctx) override;
 	void exitProgram(BashppParser::ProgramContext *ctx) override;

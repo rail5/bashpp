@@ -1,0 +1,2 @@
+@include dynamic <Stack>
+@include_once static "/path/to/Foo.bpp"

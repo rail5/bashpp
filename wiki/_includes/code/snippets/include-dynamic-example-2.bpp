@@ -1,0 +1,2 @@
+@include dynamic <Stack> as "/usr/lib/bpp/stdlib/Stack.sh"
+@include_once dynamic "/path/to/Foo.bpp" as "/runtime/path/to/Foo.sh"

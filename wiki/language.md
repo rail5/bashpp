@@ -321,6 +321,20 @@ You can also use the `@include_once` directive to ensure that a file is included
 {%- include code/snippets/include-once-example.html -%}
 </code></pre></div>
 
+Each include can optionally specify whether the file should be linked dynamically or statically. By default, includes are linked statically. This means that the included file is copied into the compiled program. If a file is linked dynamically, it is not copied into the compiled program, and the compiled version of the included file must be available at runtime.
+
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/include-dynamic-example-1.html -%}
+</code></pre></div>
+
+If linking dynamically, you can also *optionally* specify a path to find the compiled version of the included file at runtime.
+
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/include-dynamic-example-2.html -%}
+</code></pre></div>
+
+If unspecified, we assume that the compiled version of the included file will be in the same directory its source was originally in, but with a `.sh` extension. For example, if the source file was included as `/usr/lib/Foo.bpp`, **by default** we would expect the compiled version to be in `/usr/lib/Foo.sh`. If you want to specify a different path, you can do so with the `as` keyword as shown above.
+
 # Supershells
 
 Ordinary Bash supports a construct called a "subshell," which is created by enclosing a command in parentheses. A subshell is a separate instance of the shell that runs the commands within it. When the subshell exits, any changes to the environment made within it are lost.

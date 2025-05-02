@@ -357,6 +357,8 @@ void bpp_class::finalize(std::shared_ptr<bpp_program> program) {
 
 	// Add the delete method to the class
 	add_method(delete_method);
+
+	finalized = true;
 }
 
 } // namespace bpp

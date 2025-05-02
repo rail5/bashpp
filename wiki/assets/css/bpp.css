@@ -26,7 +26,7 @@
 	color: #9CDCFE;
 }
 
-.support\.function\.builtin\.shell {
+.support\.function\.builtin\.shell, .support\.function\.builtin\.bashpp {
 	color: #DCDCAA;
 }
 

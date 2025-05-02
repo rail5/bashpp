@@ -332,6 +332,14 @@ std::shared_ptr<bpp::bpp_class> bpp_class::get_parent() {
 	return parents.back();
 }
 
+/**
+ * @brief Finalize the class
+ * 
+ * This function is called when the class is complete and no more methods or datamembers will be added.
+ * It generates the system __delete method and marks the class as finalized.
+ * 
+ * @param program A pointer to the program we're compiling (needed for code generation)
+ */
 void bpp_class::finalize(std::shared_ptr<bpp_program> program) {
 	if (finalized) {
 		return;
@@ -361,6 +369,7 @@ void bpp_class::finalize(std::shared_ptr<bpp_program> program) {
 	// Add the delete method to the class
 	add_method(delete_method);
 
+	// Mark the class as finalized
 	finalized = true;
 }
 

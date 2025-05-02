@@ -355,6 +355,9 @@ void bpp_class::finalize(std::shared_ptr<bpp_program> program) {
 		delete_method->add_code(dm->get_post_access_code() + "\n");
 	}
 
+	// Unset the vPointer
+	delete_method->add_code("	unset ${__objectAddress}____vPointer\n");
+
 	// Add the delete method to the class
 	add_method(delete_method);
 

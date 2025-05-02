@@ -91,9 +91,6 @@ new value for object number 3
 new value for object number 3
 default value for primitive data member
 default value for primitive data member
-Bash\\+\\+: Error: Object: Attempted to delete null object
-Bash\\+\\+: Error: Object: Attempted to delete null object
-Bash\\+\\+: Error: Object: Attempted to delete null object
 "
 
 @runner.addTest "Pointer Arguments" "test-suite/tests/pointer-arguments.bpp" "Hello from myMethodWithObject

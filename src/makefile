@@ -7,29 +7,44 @@ CXX = g++
 CXXFLAGS = -std=gnu++17 -O2 -s -Wall
 INCLUDEFLAGS = -I$(ANTLR4_HEADERS)
 
-all: lexer parser main
-	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -o bpp obj/lexer.o obj/parser.o obj/main.o $(ANTLR4_RUNTIME_LIBRARY)
+BPP_OBJDIR = obj/bpp
+ANTLR4_OBJDIR = obj/antlr4
 
-lexer: antlr4
-	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c -o obj/lexer.o antlr/BashppLexer.cpp
+BPP_INCLUDEDIR = bpp_include
 
-parser: antlr4
-	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c -o obj/parser.o antlr/BashppParser.cpp
+BPP_SRCS = $(wildcard $(BPP_INCLUDEDIR)/*.cpp)
+BPP_OBJS = $(patsubst $(BPP_INCLUDEDIR)/%.cpp,$(BPP_OBJDIR)/%.o,$(BPP_SRCS))
 
-main: antlr4
-	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c -o obj/main.o main.cpp
+ANTLR4DIR = antlr
 
-antlr4:
-	$(ANTLR4) -Dlanguage=Cpp ./BashppLexer.g4 ./BashppParser.g4 -o ./antlr
+ANTLR4_SRCS = $(wildcard $(ANTLR4DIR)/*.cpp)
+ANTLR4_OBJS = $(patsubst $(ANTLR4DIR)/%.cpp,$(ANTLR4_OBJDIR)/%.o,$(ANTLR4_SRCS))
 
-clean-antlr4:
-	rm -rf antlr
-	rm -rf .antlr
+MAIN = main.cpp
+MAIN_OBJ = obj/$(MAIN:.cpp=.o)
 
-clean-objects:
-	rm -f obj/*.o
+all: bpp
 
-clean-bpp:
-	rm -f bpp
+bpp: $(BPP_OBJS) $(ANTLR4_OBJS) $(MAIN_OBJ)
+	@mkdir -p bin
+	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -o $@ $(BPP_OBJS) $(ANTLR4_OBJS) $(MAIN_OBJ) $(ANTLR4_RUNTIME_LIBRARY)
 
-clean: clean-antlr4 clean-objects clean-bpp
+$(BPP_OBJDIR)/%.o: $(BPP_INCLUDEDIR)/%.cpp $(ANTLR4_OBJS)
+	@mkdir -p $(BPP_OBJDIR)
+	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
+
+$(ANTLR4_OBJDIR)/%.o: $(ANTLR4DIR)/%.cpp
+	@mkdir -p $(ANTLR4_OBJDIR)
+	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
+
+obj/$(MAIN:.cpp=.o): $(MAIN) $(ANTLR4_OBJS)
+	@mkdir -p obj
+	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
+
+clean:
+	@rm -rf obj
+	@rm -f $(BPP_OBJDIR)/*.o
+	@rm -f $(ANTLR4_OBJDIR)/*.o
+	@rm -f obj/*.o
+	@rm -f bpp
+	@echo "Cleaned up build artifacts."

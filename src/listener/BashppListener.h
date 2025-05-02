@@ -18,35 +18,14 @@
 
 class BashppListener;
 
-#include "../bpp_include/bpp_codegen.cpp"
+#include "../bpp_include/bpp_codegen.h"
 using code_segment = bpp::code_segment;
 using bpp::generate_supershell_code;
 using bpp::generate_delete_code;
 using bpp::generate_method_call_code;
 using bpp::generate_dynamic_cast_code;
 
-#include "../bpp_include/bpp_entity.cpp"
-#include "../bpp_include/bpp_code_entity.cpp"
-#include "../bpp_include/bpp_string.cpp"
-#include "../bpp_include/bash_while_loop.cpp"
-#include "../bpp_include/bash_while_condition.cpp"
-#include "../bpp_include/bash_if.cpp"
-#include "../bpp_include/bash_if_branch.cpp"
-#include "../bpp_include/bash_case.cpp"
-#include "../bpp_include/bash_case_pattern.cpp"
-#include "../bpp_include/bash_for.cpp"
-#include "../bpp_include/bpp_delete_statement.cpp"
-#include "../bpp_include/bpp_dynamic_cast_statement.cpp"
-#include "../bpp_include/bpp_value_assignment.cpp"
-#include "../bpp_include/bpp_object_reference.cpp"
-#include "../bpp_include/bpp_object_assignment.cpp"
-#include "../bpp_include/bpp_pointer_dereference.cpp"
-#include "../bpp_include/bpp_program.cpp"
-#include "../bpp_include/bpp_class.cpp"
-#include "../bpp_include/bpp_datamember.cpp"
-#include "../bpp_include/bpp_method.cpp"
-#include "../bpp_include/bpp_method_parameter.cpp"
-#include "../bpp_include/bpp_object.cpp"
+#include "../bpp_include/bpp.h"
 
 #include "../syntax_error.cpp"
 #include "../internal_error.cpp"

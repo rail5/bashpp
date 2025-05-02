@@ -12,7 +12,7 @@
 #include <unordered_map>
 #include <memory>
 
-#include "replace_all.cpp"
+#include "replace_all.h"
 
 namespace bpp {
 

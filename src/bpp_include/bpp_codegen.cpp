@@ -84,14 +84,15 @@ code_segment generate_delete_code(
 	// Ie, if the object is a pointer, this should be the address of the object
 	code_segment result;
 
-	std::string delete_function_name = "bpp__" + object->get_class()->get_name() + "____delete";
-
 	code_segment destructor_code = generate_method_call_code(object_ref, "__destructor", object->get_class(), program);
 	result.pre_code += destructor_code.pre_code;
 	result.pre_code += destructor_code.code + "\n";
 	result.pre_code += destructor_code.post_code;
 
-	result.pre_code += delete_function_name + " " + object_ref + "\n";
+	code_segment delete_code = generate_method_call_code(object_ref, "__delete", object->get_class(), program);
+	result.pre_code += delete_code.pre_code;
+	result.pre_code += delete_code.code + "\n";
+	result.pre_code += delete_code.post_code;
 
 	return result;
 }

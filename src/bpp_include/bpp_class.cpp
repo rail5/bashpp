@@ -7,6 +7,7 @@
 #define SRC_BPP_INCLUDE_BPP_CLASS_CPP_
 
 #include "bpp.h"
+#include "bpp_codegen.h"
 
 namespace bpp {
 
@@ -283,8 +284,8 @@ std::shared_ptr<bpp::bpp_datamember> bpp_class::get_datamember(const std::string
 void bpp_class::inherit(std::shared_ptr<bpp_class> parent) {
 	// Inherit methods
 	for (auto& m : parent->get_methods()) {
-		if (m->get_name() == "toPrimitive") {
-			continue; // Don't inherit toPrimitive
+		if (m->get_name() == "toPrimitive" || m->get_name() == "__delete") {
+			continue; // Don't inherit toPrimitive or system methods
 		}
 		// Write a proxy method to the base class's method
 		std::shared_ptr<bpp_method> proxy = std::make_shared<bpp_method>();
@@ -329,6 +330,33 @@ std::shared_ptr<bpp::bpp_class> bpp_class::get_parent() {
 		return nullptr;
 	}
 	return parents.back();
+}
+
+void bpp_class::finalize(std::shared_ptr<bpp_program> program) {
+	if (finalized) {
+		return;
+	}
+
+	// Now that we're certain there won't be any more methods or data members added
+	// Generate the system __delete method
+	std::shared_ptr<bpp_method> delete_method = std::make_shared<bpp_method>();
+	delete_method->set_name("__delete");
+	delete_method->set_scope(bpp_scope::SCOPE_PUBLIC);
+	delete_method->set_virtual(true);
+	
+	for (auto& dm : datamembers) {
+		if (dm->get_class()->get_name() == "primitive" || dm->is_pointer()) {
+			delete_method->add_code("	unset ${__objectAddress}__" + dm->get_name() + "\n");
+		} else {
+			code_segment delete_code = generate_delete_code(dm, "${__objectAddress}__" + dm->get_name(), program);
+			delete_method->add_code(delete_code.pre_code + "\n");
+			delete_method->add_code("	unset ${__objectAddress}__" + dm->get_name() + "\n");
+		}
+		delete_method->add_code(dm->get_post_access_code() + "\n");
+	}
+
+	// Add the delete method to the class
+	add_method(delete_method);
 }
 
 } // namespace bpp

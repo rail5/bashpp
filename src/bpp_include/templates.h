@@ -79,25 +79,6 @@ const char* template_new_function = R"EOF(function bpp__%CLASS%____new() {
 }
 )EOF";
 
-const char* template_delete_function = R"EOF(function bpp__%CLASS%____delete() {
-	local __objectAddress="$1"
-	while : ; do
-		if ! eval "declare -p \"${__objectAddress}\"" &>/dev/null; then
-			break
-		fi
-		[[ -z "${!__objectAddress}" ]] && break
-		__objectAddress="${!__objectAddress}"
-	done
-	local __vPointer="${__objectAddress}____vPointer"
-	if [[ "${__objectAddress}" == "0" ]] || [[ -z "${!__vPointer}" ]]; then
-		>&2 echo "Bash++: Error: %CLASS%: Attempted to delete null object"
-		return
-	fi
-%DELETIONS%
-	unset ${__objectAddress}____vPointer
-}
-)EOF";
-
 const char* template_copy_function = R"EOF(function bpp__%CLASS%____copy() {
 	local __copyFromAddress="$1" __copyToAddress="$2"
 	while : ; do

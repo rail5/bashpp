@@ -316,6 +316,8 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 		void add_default_toPrimitive();
 		void remove_default_destructor();
 		void add_default_destructor();
+
+		bool finalized = false;
 	public:
 		bpp_class();
 
@@ -338,6 +340,8 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 
 		void inherit(std::shared_ptr<bpp_class> parent) override;
 		std::shared_ptr<bpp::bpp_class> get_parent();
+
+		void finalize(std::shared_ptr<bpp_program> program);
 };
 
 /**

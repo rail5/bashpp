@@ -51,7 +51,6 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	// Add the code for the class
 	std::string class_code = "";
 	class_code += template_new_function;
-	class_code += template_delete_function;
 	class_code += template_copy_function;
 
 	// Each of these templates has placeholders that need to be replaced, in the format %PLACEHOLDER-NAME%
@@ -89,22 +88,6 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	}
 	class_code = replace_all(class_code, "%ASSIGNMENTS%", assignments);
 	assignments = "";
-
-	// Replace all instances of %DELETIONS% with the deletions for the __delete function
-	std::string deletions = "";
-	for (auto& dm : class_->get_datamembers()) {
-		deletions += dm->get_pre_access_code() + "\n";
-		if (dm->get_class()->get_name() == "primitive" || dm->is_pointer()) {
-			deletions += "	unset ${__objectAddress}__" + dm->get_name() + "\n";
-		} else {
-			code_segment delete_code = generate_delete_code(dm, "${__objectAddress}__" + dm->get_name(), shared_from_this());
-			deletions += delete_code.pre_code + "\n";
-			deletions += "	unset ${__objectAddress}__" + dm->get_name() + "\n";
-		}
-		deletions += dm->get_post_access_code() + "\n";
-	}
-	class_code = replace_all(class_code, "%DELETIONS%", deletions);
-	deletions = "";
 
 	// Replace all instances of %COPIES% with the copies for the __copy function
 	std::string copies = "";

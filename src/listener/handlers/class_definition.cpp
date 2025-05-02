@@ -60,6 +60,8 @@ void BashppListener::exitClass_definition(BashppParser::Class_definitionContext 
 
 	entity_stack.pop();
 
+	new_class->finalize(program);
+
 	// Add the class to the program
 	program->add_class(new_class);
 }

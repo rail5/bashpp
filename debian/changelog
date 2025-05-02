@@ -1,4 +1,4 @@
-bpp (0.3.9) unstable; urgency=medium
+bpp (0.4.0) unstable; urgency=medium
 
   * Updated include syntax
     Includes now allow you specify whether each include should be linked

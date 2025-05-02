@@ -1,6 +1,9 @@
-ANTLR4 = antlr4 # Path to the antlr4 executable
+# Path to the antlr4 executable
+ANTLR4 = antlr4
+# Path to the antlr4-runtime headers
 ANTLR4_HEADERS = /usr/include/antlr4-runtime # Path to the antlr4-runtime headers
-
+# Location of the antlr4-runtime library
+## This prefers the static library if available, otherwise it falls back to the shared library
 ANTLR4_RUNTIME_LIBRARY = $(shell (find /usr -name libantlr4-runtime.a || find /usr -name libantlr4-runtime.so) | head -n 1)
 
 CXX = g++
@@ -12,11 +15,15 @@ ANTLR4_OBJDIR = obj/antlr4
 
 BPP_INCLUDEDIR = bpp_include
 
+# List of all .cpp files in the bpp_include directory
+# This will be used to generate the object files
 BPP_SRCS = $(wildcard $(BPP_INCLUDEDIR)/*.cpp)
 BPP_OBJS = $(patsubst $(BPP_INCLUDEDIR)/%.cpp,$(BPP_OBJDIR)/%.o,$(BPP_SRCS))
 
 ANTLR4DIR = antlr
 
+# List of all .cpp files in the antlr directory
+# This will be used to generate the object files
 ANTLR4_SRCS = $(wildcard $(ANTLR4DIR)/*.cpp)
 ANTLR4_OBJS = $(patsubst $(ANTLR4DIR)/%.cpp,$(ANTLR4_OBJDIR)/%.o,$(ANTLR4_SRCS))
 
@@ -25,18 +32,28 @@ MAIN_OBJ = obj/$(MAIN:.cpp=.o)
 
 all: bpp
 
+# Rule to link all object files into the final executable
+## Prerequisites:
+## - All .cpp files in the bpp_include directory
+## - All .cpp files in the antlr directory
+## - The main.cpp file
 bpp: $(BPP_OBJS) $(ANTLR4_OBJS) $(MAIN_OBJ)
-	@mkdir -p bin
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -o $@ $(BPP_OBJS) $(ANTLR4_OBJS) $(MAIN_OBJ) $(ANTLR4_RUNTIME_LIBRARY)
 
+# Rule to compile all .cpp files in the bpp_include directory
+## Antlr4 objects are a prerequisite for this
 $(BPP_OBJDIR)/%.o: $(BPP_INCLUDEDIR)/%.cpp $(ANTLR4_OBJS)
 	@mkdir -p $(BPP_OBJDIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
 
+# Rule to compile all .cpp files in the antlr directory
+## The Antlr4-generated files are a prerequisite for this
 $(ANTLR4_OBJDIR)/%.o: $(ANTLR4DIR)/%.cpp
 	@mkdir -p $(ANTLR4_OBJDIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
 
+# Rule to compile the main.cpp file
+## The Antlr4 objects are a prerequisite for this
 obj/$(MAIN:.cpp=.o): $(MAIN) $(ANTLR4_OBJS)
 	@mkdir -p obj
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@

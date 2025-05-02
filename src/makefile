@@ -33,6 +33,8 @@ MAIN_OBJ = obj/$(MAIN:.cpp=.o)
 HEADERS = $(wildcard $(BPP_INCLUDEDIR)/*.h) \
 		  listener/BashppListener.h
 
+LISTENERS = $(wildcard listener/handlers/*.cpp)
+
 all: $(ANTLR4DIR)/BashppParser.cpp
 	$(MAKE) bpp
 
@@ -58,7 +60,7 @@ $(ANTLR4_OBJDIR)/%.o: $(ANTLR4DIR)/%.cpp $(ANTLR4DIR)/BashppParser.cpp $(HEADERS
 
 # Rule to compile the main.cpp file
 ## The Antlr4 objects are a prerequisite for this
-obj/$(MAIN:.cpp=.o): $(MAIN) $(ANTLR4_OBJS) $(ANTLR4DIR)/BashppParser.cpp $(HEADERS)
+obj/$(MAIN:.cpp=.o): $(MAIN) $(ANTLR4_OBJS) $(ANTLR4DIR)/BashppParser.cpp $(HEADERS) $(LISTENERS)
 	@mkdir -p obj
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
 

@@ -1,5 +1,13 @@
 # Change Log
 
+## [0.4.0]
+
+- Brought syntax rules up to speed with Bash++ v0.4.0 by adding support for the `@include` directive's new syntax
+  - The `@include` (or `@include_once`) directives can now optionally specify whether the file should be linked dynamically or statically.
+  - If linked dynamically, you can also optionally specify where the compiled library will be found at runtime.
+  - The syntax is now: `@include [dynamic|static] {PATH} [as "{PATH}"]`
+  - This syntax is backwards-compatible with the old syntax, so `@include {PATH}` will still work as before.
+
 ## [0.3.1]
 
 - Compatible with VSCode versions at least as old as 1.75.0

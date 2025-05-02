@@ -843,12 +843,20 @@
 		"bashpp-includepath": {
 			"patterns": [
 				{
-					"match": "(?<=@include\\s)<[^\\s]+>",
+					"match": "(?<=@include\\s([a-zA-Z0-9_]+\\s)?)<[^\\s]+>",
 					"name": "string.quoted.includepath.bashpp"
 				},
 				{
-					"match": "(?<=@include_once\\s)<[^\\s]+>",
+					"match": "(?<=@include_once\\s([a-zA-Z0-9_]\\s)?)<[^\\s]+>",
 					"name": "string.quoted.includepath.bashpp"
+				},
+				{
+					"match": "(?<=((@include)|(@include_once)))\\s((dynamic)|(static))",
+					"name": "support.function.builtin.bashpp"
+				},
+				{
+					"match": "(?<=((@include)|(@include_once))\\s(((dynamic)|(static))\\s)?((\".+\")|(<.+>)))\\s(as)",
+					"name": "support.function.builtin.bashpp"
 				}
 			]
 		},

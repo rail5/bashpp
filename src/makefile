@@ -30,6 +30,9 @@ ANTLR4_OBJS = $(patsubst $(ANTLR4DIR)/%.cpp,$(ANTLR4_OBJDIR)/%.o,$(ANTLR4_SRCS))
 MAIN = main.cpp
 MAIN_OBJ = obj/$(MAIN:.cpp=.o)
 
+HEADERS = $(wildcard $(BPP_INCLUDEDIR)/*.h) \
+		  listener/BashppListener.h
+
 all: $(ANTLR4DIR)/BashppParser.cpp
 	$(MAKE) bpp
 
@@ -38,24 +41,24 @@ all: $(ANTLR4DIR)/BashppParser.cpp
 ## - All .cpp files in the bpp_include directory
 ## - All .cpp files in the antlr directory
 ## - The main.cpp file
-bpp: $(BPP_OBJS) $(ANTLR4_OBJS) $(MAIN_OBJ) $(ANTLR4DIR)/BashppParser.cpp
+bpp: $(BPP_OBJS) $(ANTLR4_OBJS) $(MAIN_OBJ) $(ANTLR4DIR)/BashppParser.cpp $(HEADERS)
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -o $@ $(BPP_OBJS) $(ANTLR4_OBJS) $(MAIN_OBJ) $(ANTLR4_RUNTIME_LIBRARY)
 
 # Rule to compile all .cpp files in the bpp_include directory
 ## Antlr4 objects are a prerequisite for this
-$(BPP_OBJDIR)/%.o: $(BPP_INCLUDEDIR)/%.cpp $(ANTLR4_OBJS) $(ANTLR4DIR)/BashppParser.cpp
+$(BPP_OBJDIR)/%.o: $(BPP_INCLUDEDIR)/%.cpp $(ANTLR4_OBJS) $(ANTLR4DIR)/BashppParser.cpp $(HEADERS)
 	@mkdir -p $(BPP_OBJDIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
 
 # Rule to compile all .cpp files in the antlr directory
 ## The Antlr4-generated files are a prerequisite for this
-$(ANTLR4_OBJDIR)/%.o: $(ANTLR4DIR)/%.cpp $(ANTLR4DIR)/BashppParser.cpp
+$(ANTLR4_OBJDIR)/%.o: $(ANTLR4DIR)/%.cpp $(ANTLR4DIR)/BashppParser.cpp $(HEADERS)
 	@mkdir -p $(ANTLR4_OBJDIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
 
 # Rule to compile the main.cpp file
 ## The Antlr4 objects are a prerequisite for this
-obj/$(MAIN:.cpp=.o): $(MAIN) $(ANTLR4_OBJS) $(ANTLR4DIR)/BashppParser.cpp
+obj/$(MAIN:.cpp=.o): $(MAIN) $(ANTLR4_OBJS) $(ANTLR4DIR)/BashppParser.cpp $(HEADERS)
 	@mkdir -p obj
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
 

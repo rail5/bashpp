@@ -5,3 +5,6 @@ src/updated_year.h
 src/version.h
 src/obj
 docs
+debian/*.3
+debian/*.1
+debian/*.7

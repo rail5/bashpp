@@ -1,5 +1,6 @@
 ---
 layout: custom
+title: Dynamic Cast
 ---
 # NAME
 

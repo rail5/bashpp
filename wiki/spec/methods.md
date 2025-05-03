@@ -1,5 +1,6 @@
 ---
 layout: custom
+title: Methods
 ---
 # NAME
 

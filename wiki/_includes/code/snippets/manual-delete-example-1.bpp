@@ -1,0 +1,5 @@
+@Object obj
+@Object* objPtr=@new Object
+
+@delete @obj
+@delete @objPtr

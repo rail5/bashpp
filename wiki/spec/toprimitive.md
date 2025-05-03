@@ -23,26 +23,9 @@ A custom implementation can be provided in a class, but is not required. The def
 
 # EXAMPLE
 
-```bash
-
-@class FileSystemDirectory {
-	@private path="~/"
-
-	@public @method setPath path {
-		@this.path="$path"
-	}
-
-	@public @method toPrimitive {
-		ls "@this.path"
-	}
-}
-
-@FileSystemDirectory logDirectory
-@logDirectory.setPath "/var/log"
-
-echo @logDirectory # Implicitly calls the `toPrimitive` method
-echo @logDirectory.toPrimitive # Equivalent
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/manual-toprimitive-example-1.html -%}
+</code></pre></div>
 
 # NOTES
 

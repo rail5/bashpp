@@ -1,0 +1,5 @@
+@Object obj
+
+@UnrelatedClass* wrongPtrType=&@obj
+
+@delete @wrongPtrType # This will call the destructor of Object, not UnrelatedClass

@@ -1,0 +1,11 @@
+@Object obj
+
+@Object* castedObj=@dynamic_cast<Object> &@obj # Successful cast of obj to Object pointer
+
+@castedObj=@dynamic_cast<Object> "Hello, world!" # Failed cast, returns @nullptr
+
+shell_variable=@dynamic_cast<Object*> &@obj # Successful cast, pointer stored in $shell_variable
+
+@UnrelatedObject unrelatedObj
+
+echo @dynamic_cast<Object> &@unrelatedObj # Failed cast, echoes @nullptr

@@ -50,25 +50,9 @@ The class can contain the following:
 
 # EXAMPLE
 
-```bash
-@class DerivedClass : BaseClass {
-	@private dataMember="Default value"
-	@private @Object* objectMember=@new Object
-
-	@public @method setDataMember data {
-		@this.dataMember="$data"
-	}
-
-	@constructor {
-		echo "DerivedClass constructor called"
-	}
-}
-@DerivedClass derivedObject
-@DerivedClass* derivedPointer=@new DerivedClass
-
-@derivedObject.setDataMember "New value"
-@derivedPointer.setDataMember "New value"
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/manual-class-example-1.html -%}
+</code></pre></div>
 
 # NOTES
 

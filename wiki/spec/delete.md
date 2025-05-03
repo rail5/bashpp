@@ -23,25 +23,17 @@ The `@delete` directive gives no output unless there is an error. If the input t
 
 # EXAMPLE
 
-```bash
-@Object obj
-@Object* objPtr=@new Object
-
-@delete @obj
-@delete @objPtr
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/manual-delete-example-1.html -%}
+</code></pre></div>
 
 # NOTES
 
 All constructors and destructors are virtual. This means that calling `@delete` will always call the destructor of the correct type for the object, even if given a pointer of the wrong type. For example:
 
-```bash
-@Object obj
-
-@UnrelatedClass* wrongPtrType=&@obj
-
-@delete @wrongPtrType # This will call the destructor of Object, not UnrelatedClass
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/manual-delete-example-2.html -%}
+</code></pre></div>
 
 # SEE ALSO
 

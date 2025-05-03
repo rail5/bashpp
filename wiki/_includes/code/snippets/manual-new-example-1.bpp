@@ -1,0 +1,5 @@
+@MyClass* myObject=@new MyClass
+
+shell_variable=@new MyClass
+
+echo @new MyClass

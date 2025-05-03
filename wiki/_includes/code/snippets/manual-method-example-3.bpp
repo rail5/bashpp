@@ -1,0 +1,15 @@
+@virtual @public @method myMethod argument1 @Object* myObject argument3 {
+	if [[ @myObject != @nullptr ]]; then
+		echo "$argument1 @myObject.dataMember $argument3"
+	fi
+
+	if [[ "$argument1" == "$1" ]]; then
+		echo "\$argument1 is equal to \$1"
+	fi
+
+	if [[ "@myObject" == "$2" ]]; then
+		echo "The pointer passed is equal to \$2"
+	fi
+
+	# Etc
+}

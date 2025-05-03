@@ -24,31 +24,33 @@ std: clean-std compiler
 test:
 	bin/bpp test-suite/run.bpp
 
+process-manual-code-snippets:
+	@if [ -z "$(FILE)" ]; then \
+		echo "Error: FILE variable is not set. Please provide a file to process."; \
+		exit 1; \
+	fi
+	@echo "Processing included code snippets in $(FILE)..."
+	@while grep -oq '{%- include' $(FILE); do \
+		file=$$(grep -o '{%- include \(.*\) -%}' $(FILE) | head -n 1 | sed 's/{%- include \(.*\) -%}/\1/'); \
+		bppFile=$$(echo $$file | sed 's/.html/.bpp/'); \
+		content=$$(cat wiki/_includes/$$bppFile); \
+		perl -pe 'BEGIN {undef $$/; $$file = q{\{%- include '"$$file"' -%\}}; $$content = q{'"$$content"'};} s/\Q$$file\E/$$content/g' $(FILE) > $(FILE).tmp && mv $(FILE).tmp $(FILE); \
+	done
+	@sed -i 's/<div class="highlight"><pre class="highlight"><code>/```bash/g' $(FILE)
+	@sed -i 's/<\/code><\/pre><\/div>/```/g' $(FILE)
+
 manual: clean-manual detailed-manuals
 	@mkdir tmp
 	@tail -n +6 wiki/language.md > tmp/language.md
 	@cp wiki/compiler.md tmp/
-	#
 	@sed -i '1s/^/% bpp(1) Version '"$(VERSION)"' | Manual for the Bash++ compiler\n/' tmp/compiler.md
 	@sed -i 's/Using the Bash++ compiler/NAME\nbpp - Compiler for the Bash++ language/g' tmp/compiler.md
 	@sed -i 's/# Basic usage/ SYNOPSIS/g' tmp/compiler.md
-	#
 	@sed -i '1s/^/% bpp(7) Version '"$(VERSION)"' | Manual for the Bash++ language\n/' tmp/language.md
 	@sed -i 's/Programming in Bash++/NAME\nbpp - The Bash++ language/g' tmp/language.md
-	#
-	# Regex replace all Jekyll {%- include -%} tags with the actual code snippets we're including
-	@while grep -oq '{%- include' tmp/language.md; do \
-		file=$$(grep -o '{%- include \(.*\) -%}' tmp/language.md | head -n 1 | sed 's/{%- include \(.*\) -%}/\1/'); \
-		bppFile=$$(echo $$file | sed 's/.html/.bpp/'); \
-		content=$$(cat wiki/_includes/$$bppFile); \
-		perl -pe 'BEGIN {undef $$/; $$file = q{\{%- include '"$$file"' -%\}}; $$content = q{'"$$content"'};} s/\Q$$file\E/$$content/g' tmp/language.md > tmp/language.md.tmp && mv tmp/language.md.tmp tmp/language.md; \
-	done
-	# Replace HTML with Markdown code snippet '```' syntax: <div class="highlight"><pre class="highlight"><code> and </code></pre></div>
-	@sed -i 's/<div class="highlight"><pre class="highlight"><code>/```bash/g' tmp/language.md
-	@sed -i 's/<\/code><\/pre><\/div>/```/g' tmp/language.md
-	#
-	pandoc --standalone --to man tmp/compiler.md -o debian/bpp.1
-	pandoc --standalone --to man tmp/language.md -o debian/bpp.7
+	$(MAKE) process-manual-code-snippets FILE=tmp/language.md
+	@pandoc --standalone --to man tmp/compiler.md -o debian/bpp.1
+	@pandoc --standalone --to man tmp/language.md -o debian/bpp.7
 	@rm -rf tmp
 
 detailed-manuals: clean-detailed-manuals
@@ -60,8 +62,8 @@ detailed-manuals: clean-detailed-manuals
 		base=$$(basename "$$file" .md); \
 		tail -n +4 "$$file" > "detailed-manuals/bpp-$$base.md"; \
 		sed -i '1s/^/% bpp-'"$$base"'(3) Version '"$(VERSION)"' | Manual for the Bash++ language\n/' "detailed-manuals/bpp-$$base.md"; \
+		$(MAKE) process-manual-code-snippets FILE="detailed-manuals/bpp-$$base.md"; \
 	done
-	# Generate
 	@for file in "detailed-manuals/"*.md; do \
 		base=$$(basename "$$file" .md); \
 		pandoc --standalone --to man "$$file" -o "debian/$$base.3"; \

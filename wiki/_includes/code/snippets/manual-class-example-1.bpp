@@ -1,0 +1,17 @@
+@class DerivedClass : BaseClass {
+	@private dataMember="Default value"
+	@private @Object* objectMember=@new Object
+
+	@public @method setDataMember data {
+		@this.dataMember="$data"
+	}
+
+	@constructor {
+		echo "DerivedClass constructor called"
+	}
+}
+@DerivedClass derivedObject
+@DerivedClass* derivedPointer=@new DerivedClass
+
+@derivedObject.setDataMember "New value"
+@derivedPointer.setDataMember "New value"

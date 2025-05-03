@@ -1,0 +1,5 @@
+@public @method myMethod @MyClass* myObject {
+	if [[ @myObject != @nullptr ]]; then
+		echo "@myObject.dataMember"
+	fi
+}

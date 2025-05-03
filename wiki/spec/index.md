@@ -2,11 +2,7 @@
 
 Manuals for various features of the Bash++ language are provided in this section. The language specification is a work in progress, and is not yet complete. If you have any questions or suggestions, please feel free to open an issue on the [GitHub repository](https://github.com/rail5/bashpp).
 
-These manuals are also available as part of the Bash++ compiler and can be accessed via `man` commands. For example, to view the manual for the `@include` directive, run:
-
-```bash
-man bpp-include
-```
+These manuals are also available as part of the Bash++ compiler and can be accessed via `man` commands. For example, to view the manual for the `@include` directive, run: `man bpp-include`.
 
 ## Contents
 

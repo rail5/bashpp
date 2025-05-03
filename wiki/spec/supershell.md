@@ -19,13 +19,9 @@ The output of the supershell is the output of the command sequence. The commands
 
 # EXAMPLE
 
-```bash
-echo @(someFunction)
-
-shell_variable=@object.someMethod # Implicitly runs 'someMethod' in a supershell and substitutes the result
-
-@object.dataMember="@(command1 && command2 || command3; command4)"
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/manual-supershell-example-1.html -%}
+</code></pre></div>
 
 # NOTES
 

@@ -1,0 +1,3 @@
+@include_once dynamic "IncludedClass.bpp"
+@include <Stack>
+@include_once dynamic "/path/to/IncludedClass.bpp" as "/path/to/IncludedClass.sh"

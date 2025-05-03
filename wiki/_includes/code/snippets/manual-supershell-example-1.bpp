@@ -1,0 +1,5 @@
+echo @(someFunction)
+
+shell_variable=@object.someMethod # Implicitly runs 'someMethod' in a supershell and substitutes the result
+
+@object.dataMember="@(command1 && command2 || command3; command4)"

@@ -30,11 +30,9 @@ The FILE can be any Bash++ script. If you give the file in **quotes** (`"FILE"`)
 
 # EXAMPLE
 
-```bash
-@include_once dynamic "IncludedClass.bpp"
-@include <Stack>
-@include_once dynamic "/path/to/IncludedClass.bpp" as "/path/to/IncludedClass.sh"
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/manual-include-example-1.html -%}
+</code></pre></div>
 
 # NOTES
 

@@ -1,0 +1,3 @@
+@MyClass* myPointer=@new MyClass
+@myPointer.dataMember="Hello, world!"
+echo @myPointer.dataMember

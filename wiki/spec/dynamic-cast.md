@@ -22,19 +22,9 @@ The **output** of the `@dynamic_cast` directive will be either:
 
 # EXAMPLE
 
-```bash
-@Object obj
-
-@Object* castedObj=@dynamic_cast<Object> &@obj # Successful cast of obj to Object pointer
-
-@castedObj=@dynamic_cast<Object> "Hello, world!" # Failed cast, returns @nullptr
-
-shell_variable=@dynamic_cast<Object*> &@obj # Successful cast, pointer stored in $shell_variable
-
-@UnrelatedObject unrelatedObj
-
-echo @dynamic_cast<Object> &@unrelatedObj # Failed cast, echoes @nullptr
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/manual-dynamic-cast-example-1.html -%}
+</code></pre></div>
 
 # NOTES
 
@@ -44,15 +34,9 @@ The `@dynamic_cast` directive is most useful when the type of the object is not 
 
 You can safely verify that a cast was successful by checking if the result is `@nullptr`. If it is not, you can safely use the result as a pointer to the specified type.
 
-```bash
-@Object* obj=@dynamic_cast<Object> &@obj
-
-if [[ @obj == @nullptr ]]; then
-	echo "Cast failed"
-else
-	echo "Cast succeeded"
-fi
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/dynamic-casting-example.html -%}
+</code></pre></div>
 
 # SEE ALSO
 

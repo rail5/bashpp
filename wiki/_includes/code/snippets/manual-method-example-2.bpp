@@ -1,0 +1,3 @@
+@public @method myMethod argument1 argument2 {
+	echo "$argument1 $argument2"
+}

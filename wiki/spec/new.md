@@ -21,13 +21,9 @@ The output of the `@new` directive is a pointer to the newly created object.
 
 # EXAMPLE
 
-```bash
-@MyClass* myObject=@new MyClass
-
-shell_variable=@new MyClass
-
-echo @new MyClass
-```
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/manual-new-example-1.html -%}
+</code></pre></div>
 
 # NOTES
 

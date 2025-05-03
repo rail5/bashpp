@@ -1,3 +1,15 @@
+bpp (0.4.1) unstable; urgency=medium
+
+  * Added language spec manuals to section 3
+    You'll find manpages describing the functionality of the language
+    such as bpp-new(3) and bpp-dynamic-cast(3), which describe the
+    functionality of '@new' and '@dynamic_cast' respectively, or
+    bpp-classes(3), which describes the structure of a class in Bash++,
+    etc.
+    This documentation is also available on the website
+
+ -- rail5 <andrew@rail5.org>  Sat, 03 May 2025 10:01:41 +0800
+
 bpp (0.4.0) unstable; urgency=medium
 
   * Updated include syntax

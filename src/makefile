@@ -1,3 +1,4 @@
+MAKEFLAGS += -j$(shell nproc) # One job per CPU core
 # Path to the antlr4 executable
 ANTLR4 = antlr4
 # Path to the antlr4-runtime headers

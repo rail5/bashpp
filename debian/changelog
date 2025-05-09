@@ -1,3 +1,23 @@
+bpp (0.4.2) unstable; urgency=medium
+
+  * Error reporting: Report an error when a user tries to declare a non-
+    primitive object as a parameter to a method
+    In the parser, by making the ASTERISK token optional for parameters,
+    this allows us to properly identify mistaken attempts to define
+    methods. In the code generator, when we encounter the parameter, once
+    we determine it's non-primitive we can verify that the ASTERISK token
+    is present. If not, we throw a syntax error, informing the user that
+    methods can only accept pointers as parameters, not objects
+  * Error reporting: Catch invalid identifiers in the code generator, not
+    in the lexer
+    By allowing identifiers which contain double-underscores in the lexer,
+    we simplify the parse tree, and give ourselves the ability to report
+    these errors from the code generator rather than failing to, for
+    exmaple, identify an attempt at a class definition as such to begin
+    with
+
+ -- rail5 <andrew@rail5.org>  Fri, 09 May 2025 17:13:51 +0800
+
 bpp (0.4.1) unstable; urgency=medium
 
   * Added language spec manuals to section 3

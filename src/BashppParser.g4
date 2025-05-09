@@ -153,7 +153,7 @@ heredoc: heredoc_header (statement | terminal_token)* HEREDOC_END;
 
 heredoc_header: HEREDOC_START statement* HEREDOC_CONTENT_START;
 
-parameter: (IDENTIFIER | AT IDENTIFIER ASTERISK WS* IDENTIFIER) WS*;
+parameter: (IDENTIFIER | AT IDENTIFIER ASTERISK? WS* IDENTIFIER) WS*;
 
 nullptr_ref: KEYWORD_NULLPTR;
 

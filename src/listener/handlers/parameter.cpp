@@ -30,6 +30,10 @@ void BashppListener::enterParameter(BashppParser::ParameterContext *ctx) {
 		}
 		name = ctx->IDENTIFIER(1);
 
+		if (ctx->ASTERISK() == nullptr) {
+			throw_syntax_error(ctx->IDENTIFIER(0), "Methods can only accept pointers as parameters, not objects");
+		}
+
 		// Verify the parameter name is not a protected keyword
 		if (is_protected_keyword(name->getText())) {
 			throw_syntax_error(name, "Invalid parameter name: " + name->getText());

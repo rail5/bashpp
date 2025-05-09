@@ -67,10 +67,6 @@ enum for_or_while {
 
 SensibleStack<for_or_while> forWhileStack;
 
-inline bool contains_double_underscore(const std::string& s) {
-	return s.find("__") != std::string::npos;
-}
-
 void emit(std::unique_ptr<antlr4::Token> t) {
 	last_token_was_lvalue = false;
 	switch (t->getType()) {
@@ -748,9 +744,7 @@ SEMICOLON: ';' {
 
 // Identifiers
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]* {
-	if (contains_double_underscore(getText())) {
-		emit(INVALID_IDENTIFIER, getText());
-	} else if (incoming_token_can_be_lvalue) {
+	if (incoming_token_can_be_lvalue) {
 		emit(IDENTIFIER_LVALUE, getText());
 	}
 
@@ -768,8 +762,6 @@ IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]* {
 };
 
 HEREDOC_END: [a-zA-Z_][a-zA-Z0-9_]*; // Another dummy token
-
-INVALID_IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*; // Another dummy token
 
 IDENTIFIER_LVALUE: [a-zA-Z_][a-zA-Z0-9_]*; // Yet another dummy token
 

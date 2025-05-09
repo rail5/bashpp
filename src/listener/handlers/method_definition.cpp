@@ -44,6 +44,11 @@ void BashppListener::enterMethod_definition(BashppParser::Method_definitionConte
 		return;
 	}
 
+	// Verify that the method name does not contain a double underscore
+	if (method_name.find("__") != std::string::npos) {
+		throw_syntax_error(ctx->IDENTIFIER(), "Invalid method name: " + method_name + "\nBash++ identifiers cannot contain double underscores");
+	}
+
 	// Virtual?
 	if (parent->KEYWORD_VIRTUAL() != nullptr) {
 		method->set_virtual(true);

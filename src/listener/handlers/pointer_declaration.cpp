@@ -79,6 +79,13 @@ void BashppListener::enterPointer_declaration(BashppParser::Pointer_declarationC
 		entity_stack.pop();
 		throw_syntax_error(object_name, "Invalid object name: " + new_object->get_name());
 	}
+
+	// Verify that the object's name does not contain a double underscore
+	if (new_object->get_name().find("__") != std::string::npos) {
+		entity_stack.pop();
+		throw_syntax_error(object_name, "Invalid object name: " + new_object->get_name() + "\nBash++ identifiers cannot contain double underscores");
+	}
+
 	if (current_code_entity->get_class(new_object->get_name()) != nullptr) {
 		entity_stack.pop();
 		throw_syntax_error(object_name, "Class already exists: " + new_object->get_name());

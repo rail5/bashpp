@@ -24,6 +24,12 @@ void BashppListener::enterClass_definition(BashppParser::Class_definitionContext
 		throw_syntax_error(ctx->IDENTIFIER(0), "Invalid class name: " + class_name);
 	}
 
+	// Verify that the class name does not contain a double underscore
+	if (class_name.find("__") != std::string::npos) {
+		entity_stack.pop();
+		throw_syntax_error(ctx->IDENTIFIER(0), "Invalid class name: " + class_name + "\nBash++ identifiers cannot contain double underscores");
+	}
+
 	if (program->get_class(class_name) != nullptr) {
 		entity_stack.pop();
 		throw_syntax_error(ctx->IDENTIFIER(0), "Class already exists: " + class_name);

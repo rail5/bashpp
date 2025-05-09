@@ -30,6 +30,15 @@ void BashppListener::enterParameter(BashppParser::ParameterContext *ctx) {
 		}
 		name = ctx->IDENTIFIER(1);
 
+		// Verify the parameter name is not a protected keyword
+		if (is_protected_keyword(name->getText())) {
+			throw_syntax_error(name, "Invalid parameter name: " + name->getText());
+		}
+		// Verify that the parameter name does not contain a double underscore
+		if (name->getText().find("__") != std::string::npos) {
+			throw_syntax_error(name, "Invalid parameter name: " + name->getText() + "\nBash++ identifiers cannot contain double underscores");
+		}
+
 		// Run an implicit dynamic cast in the event that the type is non-primitive
 		code_segment dynamic_cast_code = generate_dynamic_cast_code(name->getText(), type->get_name(), program);
 		current_method->add_code_to_previous_line(dynamic_cast_code.pre_code);

@@ -58,6 +58,12 @@ void BashppListener::enterMember_declaration(BashppParser::Member_declarationCon
 		// It's a primitive
 		std::string member_name = ctx->IDENTIFIER()->getText();
 		new_datamember->set_name(member_name);
+
+		// Verify the name doesn't contain a double underscore
+		if (member_name.find("__") != std::string::npos) {
+			entity_stack.pop();
+			throw_syntax_error(ctx->IDENTIFIER(), "Invalid member name: " + member_name + "\nBash++ identifiers cannot contain double underscores");
+		}
 	}
 }
 

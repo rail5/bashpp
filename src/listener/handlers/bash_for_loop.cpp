@@ -96,8 +96,6 @@ void BashppListener::exitBash_for_header(BashppParser::Bash_for_headerContext *c
 	std::string for_header_code = "for ";
 	if (ctx->IDENTIFIER() != nullptr) {
 		for_header_code += ctx->IDENTIFIER()->getText() + " in ";
-	} else if (ctx->INVALID_IDENTIFIER() != nullptr) {
-		for_header_code += ctx->INVALID_IDENTIFIER()->getText() + " in ";
 	}
 
 	for_header_code += for_header->get_code() + "; do\n";

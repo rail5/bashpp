@@ -13,7 +13,7 @@ bpp (0.4.2) unstable; urgency=medium
     By allowing identifiers which contain double-underscores in the lexer,
     we simplify the parse tree, and give ourselves the ability to report
     these errors from the code generator rather than failing to, for
-    exmaple, identify an attempt at a class definition as such to begin
+    example, identify an attempt at a class definition as such to begin
     with
 
  -- rail5 <andrew@rail5.org>  Fri, 09 May 2025 17:13:51 +0800

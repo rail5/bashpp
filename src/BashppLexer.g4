@@ -381,8 +381,45 @@ DELIM: '\n'; // Another dummy token
 
 // Bash variables
 BASH_VAR: '$' IDENTIFIER
-		| '$' '{' IDENTIFIER '}'
-		| '$#';
+		| '$#'
+		| '$' INTEGER
+		| '$$'
+		| '$?'
+		| '$!'
+		| '$@'
+		| '$*'
+		| '$-';
+
+/**
+* The following rule matches any text in the form of ${...}
+* And emits it as a BASH_VAR token
+* This captures valid bash variables and variable expansions such as:
+* ${var}
+* ${var[0]}
+* ${var:1:2}
+* It also, however, catches invalid expansions, variables, etc such as:
+* ${var@}
+* In general this is fine. We let Bash catch any Bash errors, and we focus on catching Bash++-specific errors
+*/
+BASH_VAR_BRACKETS: '${' {
+	{
+	uint64_t internalBraceDepth = 1;
+	while (internalBraceDepth > 0) {
+		switch (_input->LA(1)) {
+			case '{':
+				internalBraceDepth++;
+				break;
+			case '}':
+				internalBraceDepth--;
+				break;
+			default:
+				break;
+		}
+		_input->consume();
+	}
+	emit(BASH_VAR, getText());
+	}
+};
 
 // Comments
 POUNDKEY: '#' {

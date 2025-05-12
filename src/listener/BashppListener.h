@@ -105,7 +105,6 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 
 		std::shared_ptr<bpp::bpp_program> program = std::make_shared<bpp::bpp_program>();
 
-		bool in_comment = false;
 		bool in_while_condition = false;
 		std::shared_ptr<bpp::bash_while_condition> current_while_condition = nullptr;
 		bool in_method = false;

@@ -53,7 +53,6 @@ enum lexer_special_mode_type {
 	mode_primitive_reference,
 	mode_array_assignment,
 	mode_quote,
-	mode_singlequote,
 	mode_heredoc,
 };
 
@@ -278,15 +277,7 @@ Now that that's out of the way, we can say with complete accuracy,
 */
 
 ESCAPE: '\\' . {
-	// Don't escape if we're in a single-quoted string
-	if (modeStack.top() == mode_singlequote) {
-		if (getText() == "\\'") {
-			emit(SINGLEQUOTE_END, "\\'");
-			modeStack.pop();
-		} else {
-			emit(ESCAPE_LITERAL, getText());
-		}
-	} else if (getText() == "\\@") {
+	if (getText() == "\\@") {
 		emit(AT_LITERAL, "@");
 	}
 };
@@ -295,23 +286,14 @@ ESCAPE_LITERAL: '\\' .; // Dummy token
 
 // Supershells
 SUPERSHELL_START: '@(' {
-	// Per Bash conventions, no expansion takes place within a single-quoted string
-	// So don't start a supershell if we're in a single-quoted string
-	switch (modeStack.top()) {
-		case mode_singlequote:
-			emit(AT_LITERAL, "@(");
-			break;
-		default:
-			modeStack.push(mode_supershell);
-			nestedSupershellStack.push(parenDepth);
-			if (!inSupershell) {
-				initialSupershellDepth = parenDepth;
-			}
-			inSupershell = true;
-			parenDepth++;
-			emit(SUPERSHELL_START, "@(");
-			break;
+	modeStack.push(mode_supershell);
+	nestedSupershellStack.push(parenDepth);
+	if (!inSupershell) {
+		initialSupershellDepth = parenDepth;
 	}
+	inSupershell = true;
+	parenDepth++;
+	emit(SUPERSHELL_START, "@(");
 };
 
 SUPERSHELL_END: '@('; // This is a dummy token to make the lexer happy
@@ -341,7 +323,6 @@ NEWLINE: '\n' {
 DOUBLEAMPERSAND: '&&' {
 	switch (modeStack.top()) {
 		case mode_quote:
-		case mode_singlequote:
 		case mode_heredoc:
 			emit(CATCHALL, "&&");
 			break;
@@ -353,7 +334,6 @@ DOUBLEAMPERSAND: '&&' {
 DOUBLEPIPE: '||' {
 	switch (modeStack.top()) {
 		case mode_quote:
-		case mode_singlequote:
 		case mode_heredoc:
 			emit(CATCHALL, "||");
 			break;
@@ -365,7 +345,6 @@ DOUBLEPIPE: '||' {
 PIPE: '|' {
 	switch (modeStack.top()) {
 		case mode_quote:
-		case mode_singlequote:
 		case mode_heredoc:
 			emit(CATCHALL, "|");
 			break;
@@ -427,7 +406,6 @@ POUNDKEY: '#' {
 		case mode_reference:
 		case mode_primitive_reference:
 		case mode_quote:
-		case mode_singlequote:
 		case mode_heredoc:
 			break;
 		default:
@@ -450,7 +428,6 @@ HEREDOC_START: '<<' {
 		case mode_primitive_reference:
 		case mode_array_assignment:
 		case mode_quote:
-		case mode_singlequote:
 		case mode_heredoc:
 			emit(HEREDOC_LITERAL, "<<");
 			break;
@@ -472,7 +449,6 @@ QUOTE: '"' {
 			modeStack.pop();
 			break;
 		case mode_heredoc:
-		case mode_singlequote:
 			emit(QUOTE_LITERAL, "\"");
 			break;
 		default:
@@ -488,25 +464,12 @@ QUOTE_LITERAL: '"'; // Another dummy token
 
 // Single-quoted strings
 SINGLEQUOTE: '\'' {
-	switch (modeStack.top()) {
-		case mode_singlequote:
-			emit(SINGLEQUOTE_END, "'");
-			modeStack.pop();
-			break;
-		case mode_quote:
-		case mode_heredoc:
-			emit(SINGLEQUOTE_LITERAL, "'");
-			break;
-		default:
-			modeStack.push(mode_singlequote);
-			break;
+	while (_input->LA(1) != '\'' && _input->LA(1) != EOF) {
+		_input->consume();
 	}
+	// Consume the closing single quote
+	_input->consume();
 };
-
-SINGLEQUOTE_END: '\''; // This is a dummy token to make the lexer happy
-						// The actual end of a singlequote is detected by the SINGLEQUOTE rule
-
-SINGLEQUOTE_LITERAL: '\''; // Another dummy token
 
 // Keywords
 KEYWORD_CLASS: '@class' WORD_BOUNDARY;
@@ -552,7 +515,6 @@ KEYWORD_THIS_LVALUE: 'this'; // Another dummy token
 BASH_KEYWORD_IF: 'if' {
 	switch (modeStack.top()) {
 		case mode_quote:
-		case mode_singlequote:
 		case mode_heredoc:
 		case mode_arith:
 		case mode_array_assignment:
@@ -571,7 +533,6 @@ BASH_KEYWORD_IF: 'if' {
 BASH_KEYWORD_ELIF: 'elif' {
 	switch (modeStack.top()) {
 		case mode_quote:
-		case mode_singlequote:
 		case mode_heredoc:
 		case mode_arith:
 		case mode_array_assignment:
@@ -588,7 +549,6 @@ BASH_KEYWORD_ELIF: 'elif' {
 BASH_KEYWORD_THEN: 'then' {
 	switch (modeStack.top()) {
 		case mode_quote:
-		case mode_singlequote:
 		case mode_heredoc:
 		case mode_arith:
 		case mode_array_assignment:
@@ -605,7 +565,6 @@ BASH_KEYWORD_THEN: 'then' {
 BASH_KEYWORD_ELSE: 'else' {
 	switch (modeStack.top()) {
 		case mode_quote:
-		case mode_singlequote:
 		case mode_heredoc:
 		case mode_arith:
 		case mode_array_assignment:
@@ -622,7 +581,6 @@ BASH_KEYWORD_ELSE: 'else' {
 BASH_KEYWORD_FI: 'fi' {
 	switch (modeStack.top()) {
 		case mode_quote:
-		case mode_singlequote:
 		case mode_heredoc:
 		case mode_arith:
 		case mode_array_assignment:
@@ -641,7 +599,6 @@ BASH_KEYWORD_FI: 'fi' {
 BASH_KEYWORD_WHILE: 'while' {
 	switch (modeStack.top()) {
 		case mode_quote:
-		case mode_singlequote:
 		case mode_heredoc:
 		case mode_arith:
 		case mode_array_assignment:
@@ -661,7 +618,6 @@ BASH_KEYWORD_WHILE: 'while' {
 BASH_KEYWORD_DO: 'do' {
 	switch (modeStack.top()) {
 		case mode_quote:
-		case mode_singlequote:
 		case mode_heredoc:
 		case mode_arith:
 		case mode_array_assignment:
@@ -678,7 +634,6 @@ BASH_KEYWORD_DO: 'do' {
 BASH_KEYWORD_DONE: 'done' {
 	switch (modeStack.top()) {
 		case mode_quote:
-		case mode_singlequote:
 		case mode_heredoc:
 		case mode_arith:
 		case mode_array_assignment:
@@ -702,7 +657,6 @@ BASH_KEYWORD_DONE: 'done' {
 BASH_KEYWORD_CASE: 'case' {
 	switch (modeStack.top()) {
 		case mode_quote:
-		case mode_singlequote:
 		case mode_heredoc:
 		case mode_arith:
 		case mode_array_assignment:
@@ -721,7 +675,6 @@ BASH_KEYWORD_CASE: 'case' {
 BASH_KEYWORD_FOR: 'for' {
 	switch (modeStack.top()) {
 		case mode_quote:
-		case mode_singlequote:
 		case mode_heredoc:
 		case mode_arith:
 		case mode_array_assignment:
@@ -741,7 +694,6 @@ BASH_KEYWORD_FOR: 'for' {
 BASH_KEYWORD_IN: 'in' {
 	switch (modeStack.top()) {
 		case mode_quote:
-		case mode_singlequote:
 		case mode_heredoc:
 		case mode_arith:
 		case mode_array_assignment:
@@ -758,7 +710,6 @@ BASH_KEYWORD_IN: 'in' {
 BASH_KEYWORD_ESAC: 'esac' {
 	switch (modeStack.top()) {
 		case mode_quote:
-		case mode_singlequote:
 		case mode_heredoc:
 		case mode_arith:
 		case mode_array_assignment:
@@ -809,7 +760,6 @@ ASSIGN: '=' {
 		case mode_primitive_reference:
 		case mode_quote:
 		case mode_heredoc:
-		case mode_singlequote:
 			break;
 		default:
 			if (_input->LA(1) == '(') {
@@ -864,19 +814,12 @@ METHOD_START: '{'; // Yet another dummy token
 METHOD_END: '}'; // Yet another dummy token
 
 BACKTICK: '`' {
-	switch (modeStack.top()) {
-		case mode_singlequote:
-			// Just emit the BACKTICK token
-			break;
-		default:
-			if (!inDeprecatedSubshell) {
-				emit(DEPRECATED_SUBSHELL_START, "`");
-				inDeprecatedSubshell = true;
-			} else {
-				emit(DEPRECATED_SUBSHELL_END, "`");
-				inDeprecatedSubshell = false;
-			}
-			break;
+	if (!inDeprecatedSubshell) {
+		emit(DEPRECATED_SUBSHELL_START, "`");
+		inDeprecatedSubshell = true;
+	} else {
+		emit(DEPRECATED_SUBSHELL_END, "`");
+		inDeprecatedSubshell = false;
 	}
 };
 
@@ -884,17 +827,9 @@ DEPRECATED_SUBSHELL_START: '`'; // Another dummy token
 DEPRECATED_SUBSHELL_END: '`'; // Yet another dummy token
 
 BASH_ARITH_START: '$((' {
-	switch (modeStack.top()) {
-		case mode_singlequote:
-			// Emit a dummy token
-			emit(BASH_ARITH_LITERAL, "$((");
-			break;
-		default:
-			modeStack.push(mode_arith);
-			nestedArithStack.push(parenDepth);
-			emit(BASH_ARITH_START, "$((");
-			break;
-	}
+	modeStack.push(mode_arith);
+	nestedArithStack.push(parenDepth);
+	emit(BASH_ARITH_START, "$((");
 	parenDepth += 2;
 };
 
@@ -909,21 +844,13 @@ BASH_ARITH_LITERAL: '((' {
 
 
 SUBSHELL_START: '$(' {
-	switch (modeStack.top()) {
-		case mode_singlequote:
-			// Emit a dummy token
-			emit(SUBSHELL_LITERAL, "$(");
-			break;
-		default:
-			modeStack.push(mode_subshell);
-			nestedSubshellStack.push(parenDepth);
-			if (!inSubshell) {
-				initialSubshellDepth = parenDepth;
-			}
-			inSubshell = true;
-			emit(SUBSHELL_START, "$(");
-			break;
+	modeStack.push(mode_subshell);
+	nestedSubshellStack.push(parenDepth);
+	if (!inSubshell) {
+		initialSubshellDepth = parenDepth;
 	}
+	inSubshell = true;
+	emit(SUBSHELL_START, "$(");
 	parenDepth++;
 };
 
@@ -938,7 +865,6 @@ DOLLAR: '$' {
 LPAREN: '(' {
 	switch (modeStack.top()) {
 		case mode_quote:
-		case mode_singlequote:
 		case mode_heredoc:
 			// Just emit the LPAREN token
 			break;
@@ -966,7 +892,6 @@ RPAREN: ')' {
 			modeStack.pop();
 			break;
 		case mode_quote:
-		case mode_singlequote:
 		case mode_heredoc:
 			// Just emit the RPAREN token
 			break;

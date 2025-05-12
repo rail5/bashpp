@@ -10,8 +10,6 @@
 
 void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_reference_as_lvalueContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	/**
 	 * Lvalue object references take the form
 	 * 	@IDENTIFIER_LVALUE.IDENTIFIER.IDENTIFIER...
@@ -273,8 +271,6 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 
 void BashppListener::exitObject_reference_as_lvalue(BashppParser::Object_reference_as_lvalueContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_object_reference> object_reference_entity = std::dynamic_pointer_cast<bpp::bpp_object_reference>(entity_stack.top());
 
 	if (object_reference_entity == nullptr) {

@@ -16,8 +16,6 @@
 
 void BashppListener::enterHeredoc(BashppParser::HeredocContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
 		throw_syntax_error_sym(ctx->start, "Heredoc outside of a code entity");
@@ -32,8 +30,6 @@ void BashppListener::enterHeredoc(BashppParser::HeredocContext *ctx) {
 
 void BashppListener::exitHeredoc(BashppParser::HeredocContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_string> heredoc_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 	if (heredoc_entity == nullptr) {
 		throw internal_error("Heredoc entity not found in the entity stack", ctx);
@@ -53,8 +49,6 @@ void BashppListener::exitHeredoc(BashppParser::HeredocContext *ctx) {
 
 void BashppListener::enterHeredoc_header(BashppParser::Heredoc_headerContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_string> heredoc_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 	if (heredoc_entity == nullptr) {
 		throw internal_error("Heredoc entity not found in the entity stack", ctx);
@@ -69,8 +63,6 @@ void BashppListener::enterHeredoc_header(BashppParser::Heredoc_headerContext *ct
 
 void BashppListener::exitHeredoc_header(BashppParser::Heredoc_headerContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_string> heredoc_header_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 	if (heredoc_header_entity == nullptr) {
 		throw internal_error("Heredoc header entity not found in the entity stack", ctx);

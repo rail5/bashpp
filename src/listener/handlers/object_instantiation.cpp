@@ -10,8 +10,6 @@
 
 void BashppListener::enterObject_instantiation(BashppParser::Object_instantiationContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	/**
 	 * The object type will be stored in one of either IDENTIFIER_LVALUE or IDENTIFIER(0)
 	 * If IDENTIFIER_LVALUE, then the object name will be in IDENTIFIER(0)
@@ -88,8 +86,6 @@ void BashppListener::enterObject_instantiation(BashppParser::Object_instantiatio
 
 void BashppListener::exitObject_instantiation(BashppParser::Object_instantiationContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_object> new_object = std::dynamic_pointer_cast<bpp::bpp_object>(entity_stack.top());
 	if (new_object == nullptr) {
 		throw internal_error("entity_stack top is not a bpp_object", ctx);

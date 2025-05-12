@@ -10,8 +10,6 @@
 
 void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_as_lvalueContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	/**
 	 * Self references take the form
 	 * 	@this.IDENTIFIER.IDENTIFIER...
@@ -204,8 +202,6 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 
 void BashppListener::exitSelf_reference_as_lvalue(BashppParser::Self_reference_as_lvalueContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_object_reference> self_reference_entity = std::dynamic_pointer_cast<bpp::bpp_object_reference>(entity_stack.top());
 	entity_stack.pop();
 	if (self_reference_entity == nullptr) {

@@ -146,7 +146,7 @@ bash_arithmetic: BASH_ARITH_START statement* BASH_ARITH_END;
 // Strings
 string: QUOTE (statement | terminal_token)* QUOTE_END;
 
-singlequote_string: SINGLEQUOTE (statement | terminal_token)* SINGLEQUOTE_END;
+singlequote_string: SINGLEQUOTE;
 
 // Heredocs
 heredoc: heredoc_header (statement | terminal_token)* HEREDOC_END;
@@ -199,15 +199,14 @@ bash_for_header: BASH_KEYWORD_FOR (WS | DELIM)* (
 // Other statement
 other_statement: ~(RBRACE | RBRACE_ROOTLEVEL
 	| ARRAY_INDEX_END | SUPERSHELL_END
-	| QUOTE_END | SINGLEQUOTE_END
-	| NEWLINE | SUBSHELL_END
-	| DEPRECATED_SUBSHELL_END | BASH_ARITH_END
-	| ARRAY_ASSIGN_END | BASH_KEYWORD_DONE
-	| BASH_KEYWORD_DO | METHOD_END
-	| BASH_KEYWORD_IF | BASH_KEYWORD_ELIF
-	| BASH_KEYWORD_THEN | BASH_KEYWORD_ELSE
-	| BASH_KEYWORD_FI | BASH_CASE_PATTERN_DELIM
-	| HEREDOC_END)+?;
+	| QUOTE_END | NEWLINE
+	| SUBSHELL_END | DEPRECATED_SUBSHELL_END
+	| BASH_ARITH_END | ARRAY_ASSIGN_END
+	| BASH_KEYWORD_DONE | BASH_KEYWORD_DO
+	| METHOD_END | BASH_KEYWORD_IF
+	| BASH_KEYWORD_ELIF | BASH_KEYWORD_THEN
+	| BASH_KEYWORD_ELSE | BASH_KEYWORD_FI
+	| BASH_CASE_PATTERN_DELIM | HEREDOC_END)+?;
 
 // This rule will *only* ever be matched as part a value_assignment
 raw_rvalue: IDENTIFIER | NUMBER | BASH_VAR;

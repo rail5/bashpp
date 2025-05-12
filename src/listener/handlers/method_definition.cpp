@@ -10,8 +10,6 @@
 
 void BashppListener::enterMethod_definition(BashppParser::Method_definitionContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	// Verify we're in a class
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 	if (current_class == nullptr) {
@@ -64,8 +62,6 @@ void BashppListener::enterMethod_definition(BashppParser::Method_definitionConte
 
 void BashppListener::exitMethod_definition(BashppParser::Method_definitionContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	// Get the method from the entity stack
 	std::shared_ptr<bpp::bpp_method> method = std::dynamic_pointer_cast<bpp::bpp_method>(entity_stack.top());
 	entity_stack.pop();

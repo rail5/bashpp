@@ -10,8 +10,6 @@
 
 void BashppListener::enterString(BashppParser::StringContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_class> current_class = entity_stack.top()->get_containing_class().lock();
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
@@ -34,8 +32,6 @@ void BashppListener::enterString(BashppParser::StringContext *ctx) {
 
 void BashppListener::exitString(BashppParser::StringContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_code_entity> string_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	entity_stack.pop();
 

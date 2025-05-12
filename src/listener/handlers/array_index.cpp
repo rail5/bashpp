@@ -10,8 +10,6 @@
 
 void BashppListener::enterArray_index(BashppParser::Array_indexContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	/**
 	 * Array indices take the form:
 	 * 	[...]
@@ -38,8 +36,6 @@ void BashppListener::enterArray_index(BashppParser::Array_indexContext *ctx) {
 
 void BashppListener::exitArray_index(BashppParser::Array_indexContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_string> array_index_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 	if (array_index_entity == nullptr) {
 		throw internal_error("Array index context was not found in the entity stack", ctx);

@@ -10,8 +10,6 @@
 
 void BashppListener::enterNew_statement(BashppParser::New_statementContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	/**
 	 * New statements take the form
 	 * 	@new ClassName
@@ -55,7 +53,6 @@ void BashppListener::enterNew_statement(BashppParser::New_statementContext *ctx)
 
 void BashppListener::exitNew_statement(BashppParser::New_statementContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
 }
 
 #endif // SRC_LISTENER_HANDLERS_NEW_STATEMENT_CPP_

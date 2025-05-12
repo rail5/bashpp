@@ -10,8 +10,6 @@
 
 void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	/**
 	 * Self references take the form
 	 * 	@this.IDENTIFIER.IDENTIFIER...
@@ -42,8 +40,6 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 
 void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	BashppParser::Ref_rvalueContext* parent = dynamic_cast<BashppParser::Ref_rvalueContext*>(ctx->parent);
 	bool hasPoundKey = parent->POUNDKEY() != nullptr;
 

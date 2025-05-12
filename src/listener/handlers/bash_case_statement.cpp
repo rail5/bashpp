@@ -17,8 +17,6 @@
 
 void BashppListener::enterBash_case_statement(BashppParser::Bash_case_statementContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	/**
 	 * Bash case statements take the form
 	 * 		case (something) in
@@ -50,8 +48,6 @@ void BashppListener::enterBash_case_statement(BashppParser::Bash_case_statementC
 
 void BashppListener::exitBash_case_statement(BashppParser::Bash_case_statementContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bash_case> case_statement_entity = std::dynamic_pointer_cast<bpp::bash_case>(entity_stack.top());
 
 	if (case_statement_entity == nullptr) {
@@ -73,8 +69,6 @@ void BashppListener::exitBash_case_statement(BashppParser::Bash_case_statementCo
 
 void BashppListener::enterBash_case_pattern(BashppParser::Bash_case_patternContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bash_case> case_statement_entity = std::dynamic_pointer_cast<bpp::bash_case>(entity_stack.top());
 
 	if (case_statement_entity == nullptr) {
@@ -92,8 +86,6 @@ void BashppListener::enterBash_case_pattern(BashppParser::Bash_case_patternConte
 
 void BashppListener::exitBash_case_pattern(BashppParser::Bash_case_patternContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bash_case_pattern> case_pattern_entity = std::dynamic_pointer_cast<bpp::bash_case_pattern>(entity_stack.top());
 
 	if (case_pattern_entity == nullptr) {
@@ -117,8 +109,6 @@ void BashppListener::exitBash_case_pattern(BashppParser::Bash_case_patternContex
 
 void BashppListener::enterBash_case_pattern_header(BashppParser::Bash_case_pattern_headerContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bash_case_pattern> case_pattern_entity = std::dynamic_pointer_cast<bpp::bash_case_pattern>(entity_stack.top());
 
 	if (case_pattern_entity == nullptr) {
@@ -134,8 +124,6 @@ void BashppListener::enterBash_case_pattern_header(BashppParser::Bash_case_patte
 
 void BashppListener::exitBash_case_pattern_header(BashppParser::Bash_case_pattern_headerContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_string> case_pattern_header_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 
 	if (case_pattern_header_entity == nullptr) {

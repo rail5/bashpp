@@ -10,8 +10,6 @@
 
 void BashppListener::enterClass_body_statement(BashppParser::Class_body_statementContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	// If this is merely a DELIM or WS token,
 	// Simply that DELIM or WS to wherever we are
 
@@ -43,7 +41,6 @@ void BashppListener::enterClass_body_statement(BashppParser::Class_body_statemen
 
 void BashppListener::exitClass_body_statement(BashppParser::Class_body_statementContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-}
+	}
 
 #endif // SRC_LISTENER_HANDLERS_CLASS_BODY_STATEMENT_CPP_

@@ -10,8 +10,6 @@
 
 void BashppListener::enterObject_address(BashppParser::Object_addressContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	/**
 	 * Object addresses take the form
 	 * 	&@IDENTIFIER.IDENTIFIER...
@@ -34,8 +32,6 @@ void BashppListener::enterObject_address(BashppParser::Object_addressContext *ct
 
 void BashppListener::exitObject_address(BashppParser::Object_addressContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_object_address> object_address_entity = std::dynamic_pointer_cast<bpp::bpp_object_address>(entity_stack.top());
 	if (object_address_entity == nullptr) {
 		throw internal_error("Object address context was not found in the entity stack", ctx);

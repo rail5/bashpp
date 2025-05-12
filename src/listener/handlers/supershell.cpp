@@ -10,8 +10,6 @@
 
 void BashppListener::enterSupershell(BashppParser::SupershellContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	/**
 	 * Supershells take the form
 	 * 	@(...)
@@ -33,8 +31,6 @@ void BashppListener::enterSupershell(BashppParser::SupershellContext *ctx) {
 
 void BashppListener::exitSupershell(BashppParser::SupershellContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_string> supershell_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 	if (supershell_entity == nullptr) {
 		throw internal_error("Supershell context was not found in the entity stack", ctx);

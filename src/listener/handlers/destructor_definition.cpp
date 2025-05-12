@@ -10,8 +10,6 @@
 
 void BashppListener::enterDestructor_definition(BashppParser::Destructor_definitionContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	/**
 	 * Destructor definitions take the form
 	 * 	@destructor { ... }
@@ -35,8 +33,6 @@ void BashppListener::enterDestructor_definition(BashppParser::Destructor_definit
 
 void BashppListener::exitDestructor_definition(BashppParser::Destructor_definitionContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_method> destructor = std::dynamic_pointer_cast<bpp::bpp_method>(entity_stack.top());
 	if (destructor == nullptr) {
 		throw internal_error("Destructor definition not found on the entity stack", ctx);

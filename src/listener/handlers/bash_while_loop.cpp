@@ -16,8 +16,6 @@
 
 void BashppListener::enterBash_while_loop(BashppParser::Bash_while_loopContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
 		throw_syntax_error_sym(ctx->start, "While loop outside of a code entity");
@@ -32,8 +30,6 @@ void BashppListener::enterBash_while_loop(BashppParser::Bash_while_loopContext *
 
 void BashppListener::exitBash_while_loop(BashppParser::Bash_while_loopContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bash_while_loop> while_statement = std::dynamic_pointer_cast<bpp::bash_while_loop>(entity_stack.top());
 	if (while_statement == nullptr) {
 		throw internal_error("While statement entity not found in the entity stack", ctx);
@@ -67,8 +63,6 @@ void BashppListener::exitBash_while_loop(BashppParser::Bash_while_loopContext *c
 
 void BashppListener::enterBash_while_condition(BashppParser::Bash_while_conditionContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bash_while_loop> while_statement = std::dynamic_pointer_cast<bpp::bash_while_loop>(entity_stack.top());
 	if (while_statement == nullptr) {
 		throw internal_error("While statement entity not found in the entity stack", ctx);
@@ -88,8 +82,6 @@ void BashppListener::enterBash_while_condition(BashppParser::Bash_while_conditio
 
 void BashppListener::exitBash_while_condition(BashppParser::Bash_while_conditionContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bash_while_condition> while_condition = std::dynamic_pointer_cast<bpp::bash_while_condition>(entity_stack.top());
 	if (while_condition == nullptr) {
 		throw internal_error("While condition entity not found in the entity stack", ctx);

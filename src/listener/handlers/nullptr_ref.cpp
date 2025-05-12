@@ -10,8 +10,6 @@
 
 void BashppListener::enterNullptr_ref(BashppParser::Nullptr_refContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	/**
 	 * Nullptr references take the form
 	 * 	@nullptr
@@ -29,7 +27,6 @@ void BashppListener::enterNullptr_ref(BashppParser::Nullptr_refContext *ctx) {
 
 void BashppListener::exitNullptr_ref(BashppParser::Nullptr_refContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
 }
 
 #endif // SRC_LISTENER_HANDLERS_NULLPTR_REF_CPP_

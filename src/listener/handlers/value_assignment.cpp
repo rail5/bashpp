@@ -10,8 +10,6 @@
 
 void BashppListener::enterValue_assignment(BashppParser::Value_assignmentContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
 		current_code_entity = program;
@@ -34,8 +32,6 @@ void BashppListener::enterValue_assignment(BashppParser::Value_assignmentContext
 
 void BashppListener::exitValue_assignment(BashppParser::Value_assignmentContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	/**
 	 * Value assignments will appear in the following contexts:
 	 * 	1. Member declarations

@@ -10,8 +10,6 @@
 
 void BashppListener::enterObject_reference(BashppParser::Object_referenceContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	/**
 	 * Object references take the form
 	 * 	@IDENTIFIER.IDENTIFIER.IDENTIFIER...
@@ -39,8 +37,6 @@ void BashppListener::enterObject_reference(BashppParser::Object_referenceContext
 
 void BashppListener::exitObject_reference(BashppParser::Object_referenceContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	BashppParser::Ref_rvalueContext* parent = dynamic_cast<BashppParser::Ref_rvalueContext*>(ctx->parent);
 	bool hasPoundKey = parent->POUNDKEY() != nullptr;
 

@@ -10,8 +10,6 @@
 
 void BashppListener::enterDynamic_cast_statement(BashppParser::Dynamic_cast_statementContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	/**
 	 * Dynamic cast statements take the form
 	 * 	@dynamic_cast<ClassName> Object
@@ -45,8 +43,6 @@ void BashppListener::enterDynamic_cast_statement(BashppParser::Dynamic_cast_stat
 
 void BashppListener::exitDynamic_cast_statement(BashppParser::Dynamic_cast_statementContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_dynamic_cast_statement> dynamic_cast_entity = std::dynamic_pointer_cast<bpp::bpp_dynamic_cast_statement>(entity_stack.top());
 	if (dynamic_cast_entity == nullptr) {
 		throw internal_error("Dynamic cast context was not found in the entity stack", ctx);

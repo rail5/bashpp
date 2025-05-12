@@ -10,8 +10,6 @@
 
 void BashppListener::enterClass_definition(BashppParser::Class_definitionContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_class> new_class = std::make_shared<bpp::bpp_class>();
 	entity_stack.push(new_class);
 
@@ -56,8 +54,6 @@ void BashppListener::enterClass_definition(BashppParser::Class_definitionContext
 
 void BashppListener::exitClass_definition(BashppParser::Class_definitionContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_class> new_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 
 	if (new_class == nullptr) {

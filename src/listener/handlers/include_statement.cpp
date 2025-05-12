@@ -27,8 +27,6 @@
  */
 void BashppListener::enterInclude_statement(BashppParser::Include_statementContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	if (ctx->JUNK().size() > 0) {
 		throw_syntax_error(ctx->JUNK(0), "Include statement not understood");
 	}
@@ -219,7 +217,6 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 
 void BashppListener::exitInclude_statement(BashppParser::Include_statementContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
 }
 
 #endif // SRC_LISTENER_HANDLERS_INCLUDE_STATEMENT_CPP_

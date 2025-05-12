@@ -10,8 +10,6 @@
 
 void BashppListener::enterPointer_dereference(BashppParser::Pointer_dereferenceContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	/**
 	 * Pointer dereferences take the form
 	 * 	*@IDENTIFIER.IDENTIFIER...
@@ -47,8 +45,6 @@ void BashppListener::enterPointer_dereference(BashppParser::Pointer_dereferenceC
 
 void BashppListener::exitPointer_dereference(BashppParser::Pointer_dereferenceContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_pointer_dereference> pointer_dereference_entity = std::dynamic_pointer_cast<bpp::bpp_pointer_dereference>(entity_stack.top());
 
 	if (pointer_dereference_entity == nullptr) {

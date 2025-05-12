@@ -10,8 +10,6 @@
 
 void BashppListener::enterDelete_statement(BashppParser::Delete_statementContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	/**
 	 * Delete statements take the form
 	 * 	@delete @object
@@ -37,8 +35,6 @@ void BashppListener::enterDelete_statement(BashppParser::Delete_statementContext
 
 void BashppListener::exitDelete_statement(BashppParser::Delete_statementContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	// Get the delete entity from the entity stack
 	std::shared_ptr<bpp::bpp_delete_statement> delete_entity = std::dynamic_pointer_cast<bpp::bpp_delete_statement>(entity_stack.top());
 	if (delete_entity == nullptr) {

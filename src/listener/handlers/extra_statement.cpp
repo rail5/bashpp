@@ -10,8 +10,6 @@
 
 void BashppListener::enterExtra_statement(BashppParser::Extra_statementContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	// If we're not in any broader context, simply add the statement to the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity != nullptr) {
@@ -22,7 +20,6 @@ void BashppListener::enterExtra_statement(BashppParser::Extra_statementContext *
 
 void BashppListener::exitExtra_statement(BashppParser::Extra_statementContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-}
+	}
 
 #endif // SRC_LISTENER_HANDLERS_EXTRA_STATEMENT_CPP_

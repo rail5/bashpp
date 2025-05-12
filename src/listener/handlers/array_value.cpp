@@ -10,8 +10,6 @@
 
 void BashppListener::enterArray_value(BashppParser::Array_valueContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	/**
 	 * Array values are rvalues in assignment operations which take the form
 	 * (...)
@@ -37,8 +35,6 @@ void BashppListener::enterArray_value(BashppParser::Array_valueContext *ctx) {
 
 void BashppListener::exitArray_value(BashppParser::Array_valueContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_string> arrayvalue_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 
 	if (arrayvalue_entity == nullptr) {

@@ -16,8 +16,6 @@
 
 void BashppListener::enterBash_for_loop(BashppParser::Bash_for_loopContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
 		throw_syntax_error_sym(ctx->start, "For loop outside of a code entity");
@@ -32,8 +30,6 @@ void BashppListener::enterBash_for_loop(BashppParser::Bash_for_loopContext *ctx)
 
 void BashppListener::exitBash_for_loop(BashppParser::Bash_for_loopContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bash_for> for_loop = std::dynamic_pointer_cast<bpp::bash_for>(entity_stack.top());
 	if (for_loop == nullptr) {
 		throw internal_error("For loop entity not found in the entity stack", ctx);
@@ -55,8 +51,6 @@ void BashppListener::exitBash_for_loop(BashppParser::Bash_for_loopContext *ctx) 
 
 void BashppListener::enterBash_for_header(BashppParser::Bash_for_headerContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bash_for> for_loop = std::dynamic_pointer_cast<bpp::bash_for>(entity_stack.top());
 	if (for_loop == nullptr) {
 		throw internal_error("For loop header outside of a for loop", ctx);
@@ -71,8 +65,6 @@ void BashppListener::enterBash_for_header(BashppParser::Bash_for_headerContext *
 
 void BashppListener::exitBash_for_header(BashppParser::Bash_for_headerContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_string> for_header = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 	if (for_header == nullptr) {
 		throw internal_error("For loop header entity not found in the entity stack", ctx);

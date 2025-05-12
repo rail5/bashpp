@@ -10,8 +10,6 @@
 
 void BashppListener::enterParameter(BashppParser::ParameterContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	// Verify we're in a method
 	std::shared_ptr<bpp::bpp_method> current_method = std::dynamic_pointer_cast<bpp::bpp_method>(entity_stack.top());
 	if (current_method == nullptr) {
@@ -63,7 +61,6 @@ void BashppListener::enterParameter(BashppParser::ParameterContext *ctx) {
 
 void BashppListener::exitParameter(BashppParser::ParameterContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
 }
 
 #endif // SRC_LISTENER_HANDLERS_PARAMETER_CPP_

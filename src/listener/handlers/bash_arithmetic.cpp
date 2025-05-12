@@ -10,8 +10,6 @@
 
 void BashppListener::enterBash_arithmetic(BashppParser::Bash_arithmeticContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	/**
 	 * Bash arithmetic is a series of arithmetic operations
 	 * that are enclosed in $((...))
@@ -37,8 +35,6 @@ void BashppListener::enterBash_arithmetic(BashppParser::Bash_arithmeticContext *
 
 void BashppListener::exitBash_arithmetic(BashppParser::Bash_arithmeticContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_string> arithmetic_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 
 	if (arithmetic_entity == nullptr) {

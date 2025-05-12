@@ -10,8 +10,6 @@
 
 void BashppListener::enterConstructor_definition(BashppParser::Constructor_definitionContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	/**
 	 * Constructor definitions take the form
 	 * 	@constructor { ... }
@@ -35,8 +33,6 @@ void BashppListener::enterConstructor_definition(BashppParser::Constructor_defin
 
 void BashppListener::exitConstructor_definition(BashppParser::Constructor_definitionContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_method> constructor = std::dynamic_pointer_cast<bpp::bpp_method>(entity_stack.top());
 	if (constructor == nullptr) {
 		throw internal_error("Constructor definition not found on the entity stack", ctx);

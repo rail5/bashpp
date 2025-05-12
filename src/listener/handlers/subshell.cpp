@@ -10,8 +10,6 @@
 
 void BashppListener::enterSubshell(BashppParser::SubshellContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
@@ -30,8 +28,6 @@ void BashppListener::enterSubshell(BashppParser::SubshellContext *ctx) {
 
 void BashppListener::exitSubshell(BashppParser::SubshellContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_string> subshell_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 
 	if (subshell_entity == nullptr) {

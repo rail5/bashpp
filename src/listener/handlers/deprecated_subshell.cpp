@@ -10,8 +10,6 @@
 
 void BashppListener::enterDeprecated_subshell(BashppParser::Deprecated_subshellContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
@@ -30,8 +28,6 @@ void BashppListener::enterDeprecated_subshell(BashppParser::Deprecated_subshellC
 
 void BashppListener::exitDeprecated_subshell(BashppParser::Deprecated_subshellContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_string> subshell_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 
 	if (subshell_entity == nullptr) {

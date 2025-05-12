@@ -30,7 +30,6 @@ using bpp::generate_dynamic_cast_code;
 #include "../syntax_error.cpp"
 #include "../internal_error.cpp"
 
-#define skip_singlequote_string if (in_singlequote_string) return;
 #define skip_syntax_errors if (error_thrown) { \
 		if (error_context == ctx) { \
 			error_thrown = false; \
@@ -107,7 +106,6 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 		std::shared_ptr<bpp::bpp_program> program = std::make_shared<bpp::bpp_program>();
 
 		bool in_comment = false;
-		bool in_singlequote_string = false;
 		bool in_while_condition = false;
 		std::shared_ptr<bpp::bash_while_condition> current_while_condition = nullptr;
 		bool in_method = false;

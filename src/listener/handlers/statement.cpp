@@ -10,13 +10,10 @@
 
 void BashppListener::enterStatement(BashppParser::StatementContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
 }
 
 void BashppListener::exitStatement(BashppParser::StatementContext *ctx) {
 	skip_syntax_errors
-	skip_singlequote_string
-
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity != nullptr) {
 		// Make sure we add terminal tokens to the program

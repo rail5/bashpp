@@ -352,6 +352,13 @@ Hello, World!
 pointer value
 "
 
+@runner.addTest "Basic Recursion" "test-suite/tests/basic-recursion.bpp" "4
+3
+2
+1
+0
+"
+
 # Standard Library tests
 @runner.addTest "STL Stacks" "test-suite/tests/stdlib-stacks.bpp" "0
 3

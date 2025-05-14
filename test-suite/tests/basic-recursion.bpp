@@ -1,0 +1,25 @@
+@class Inner {
+	@public data="default"
+}
+
+@class Object {
+	@public @method run counter {
+		if [[ $counter -ge 5 ]]; then
+			return
+		fi
+		@Inner object
+		@object.data="$counter"
+		local secondCount=$((counter + 1))
+		@this.run $secondCount
+		echo "@object.data"
+	}
+}
+
+@Object object
+@object.run 0
+# Should output:
+# 4
+# 3
+# 2
+# 1
+# 0

@@ -271,6 +271,7 @@ class bpp_method : public bpp_code_entity {
 		void set_scope(bpp_scope scope);
 		void set_virtual(bool is_virtual);
 		void set_inherited(bool is_inherited);
+		bool add_object(std::shared_ptr<bpp_object> object, bool make_local) override;
 
 		std::string get_name() const;
 		std::vector<std::shared_ptr<bpp_method_parameter>> get_parameters() const;

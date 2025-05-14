@@ -63,6 +63,12 @@ code_segment generate_dynamic_cast_code(
 	const std::string&					class_name,
 	std::shared_ptr<bpp::bpp_program>	program
 	);
-}
+
+code_segment inline_new(
+	const std::string&					new_address,
+	std::shared_ptr<bpp::bpp_class>		new_class
+	);
+
+} // namespace bpp
 
 #endif // SRC_BPP_INCLUDE_BPP_CODEGEN_H_

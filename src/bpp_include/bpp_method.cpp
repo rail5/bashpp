@@ -125,6 +125,45 @@ void bpp_method::destruct_local_objects(std::shared_ptr<bpp_program> program) {
 	local_objects.clear();
 }
 
+bool bpp_method::add_object(std::shared_ptr<bpp_object> object, bool make_local) {
+	std::string name = object->get_name();
+	if (objects.find(name) != objects.end() || local_objects.find(name) != local_objects.end()) {
+		return false;
+	}
+
+	// Verify that the type of the object is a valid class
+	std::string type = object->get_class()->get_name();
+	if (classes.find(type) == classes.end()) {
+		return false;
+	}
+
+	local_objects[name] = object;
+
+	// Add the code for the object
+	std::string object_code = "";
+
+	// Is it a pointer?
+	if (object->is_pointer()) {
+		if (make_local) {
+			object_code += "local ";
+		}
+		object_code += object->get_address() + "=\"" + object->get_assignment_value() + "\"\n";
+	} else {
+		if (object->get_copy_from() != nullptr) {
+			object_code += "bpp__" + type + "____copy " + object->get_copy_from()->get_address() + " " + object->get_address() + "\n";
+		} else {
+			object_code += inline_new(object->get_address(), object->get_class()).pre_code;
+			// Call the constructor if it exists
+			if (object->get_class()->get_method_UNSAFE("__constructor") != nullptr) {
+				object_code += "bpp__" + type + "____constructor " + object->get_address() + "\n";
+			}
+		}
+	}
+
+	*code << object_code << std::flush;
+	return true;
+}
+
 } // namespace bpp
 
 #endif // SRC_BPP_INCLUDE_BPP_METHOD_CPP

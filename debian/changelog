@@ -1,3 +1,25 @@
+bpp (0.4.3) unstable; urgency=medium
+
+  * Bug fix: Inline object instantiations within methods for scope safety
+    When instantiating an object inside of a method, rather than calling
+    the class's 'new' function externally, we can inline the contents of
+    that 'new' function in order to ensure that the created object exists
+    purely within a local scope 
+    This fixes a bug with recursive method calls in Bash++, where an
+    instantiated object which was not declared as a pointer (and
+    therefore did not receive a runtime-randomized allocation from
+    'new', but received a deterministic allocation determined at compile-
+    time) would be overwritten by subsequent calls to the same method
+    which would use the same compile-time-determined address
+    It may be better in the long-run to ensure that all created objects
+    receive runtime-randomized allocations from 'new' (see #6)
+  * Combine single-quoted strings directly in the lexer
+    This simplifies the parse tree, and makes for faster parsing by
+    taking advantage of the speed of the lexer
+  * Updated (and corrected) BASH_VAR token in the lexer
+
+ -- rail5 <andrew@rail5.org>  Wed, 14 May 2025 18:21:18 +0800
+
 bpp (0.4.2) unstable; urgency=medium
 
   * Error reporting: Report an error when a user tries to declare a non-

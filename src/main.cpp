@@ -3,6 +3,18 @@
 * Bash++: Bash with classes
 */
 
+/*! \mainpage
+ * \section intro_sec Introduction
+ *
+ * src/main.cpp is not necessarily the best introduction to the compiler's code.
+ * 
+ * Here is an article which gives an overview of the compiler:
+ * 
+ * [How Does the Bash++ Compiler Work?](https://log.bpp.sh/2025/05/16/how-does-the-bashpp-compiler-work.html)
+ *
+ * As for the rest, the Doxygen documentation will provide details on the compiler's different classes and functions.
+*/
+
 volatile int bpp_exit_code = 0;
 
 #include <iostream>

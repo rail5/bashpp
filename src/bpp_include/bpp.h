@@ -155,7 +155,6 @@ class bpp_code_entity : public bpp_entity {
 		bool buffers_flushed = false;
 	public:
 		bpp_code_entity();
-		virtual ~bpp_code_entity() = default;
 
 		virtual void add_code(const std::string& code, bool add_newline = true);
 		virtual void add_code_to_previous_line(const std::string& code);
@@ -289,7 +288,6 @@ class bpp_method : public bpp_code_entity {
  */
 class bpp_method_parameter : public bpp_entity {
 	private:
-		std::shared_ptr<bpp_class> type;
 		std::string name;
 	public:
 		explicit bpp_method_parameter(const std::string& name);
@@ -357,7 +355,6 @@ class bpp_object : public bpp_entity {
 		std::string assignment_value = "";
 		std::string pre_access_code = "";
 		std::string post_access_code = "";
-		std::shared_ptr<bpp_class> type;
 		bool m_is_pointer = false;
 		std::shared_ptr<bpp::bpp_object> copy_from = nullptr;
 	public:

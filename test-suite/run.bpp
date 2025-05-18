@@ -359,6 +359,11 @@ pointer value
 0
 "
 
+@runner.addTest "Function Isolation" "test-suite/tests/function-isolation.bpp" "default value
+new value
+default value
+"
+
 # Standard Library tests
 @runner.addTest "STL Stacks" "test-suite/tests/stdlib-stacks.bpp" "0
 3

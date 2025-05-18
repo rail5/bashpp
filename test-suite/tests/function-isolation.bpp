@@ -1,0 +1,14 @@
+@class Object {
+	@public member="default value"
+}
+
+function shell_function() {
+	@Object obj
+	@obj.member="new value"
+	echo @obj.member
+}
+
+@Object obj
+echo @obj.member # "default value"
+shell_function # "new value"
+echo @obj.member # "default value"

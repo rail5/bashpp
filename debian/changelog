@@ -1,3 +1,15 @@
+bpp (0.4.4) unstable; urgency=medium
+
+  * Properly isolate objects declared within shell functions (scope handling)
+    By having the parser recognize shell function declarations, we can create
+    a code_entity for them. All code entities have their scope handled
+    automatically in the compiler. Ie, an object declared within a code
+    entity will no longer be accessible once that code entity has been
+    popped off the entity stack (only accessible from within), as is
+    proper
+
+ -- rail5 <andrew@rail5.org>  Sun, 18 May 2025 15:29:31 +0800
+
 bpp (0.4.3) unstable; urgency=medium
 
   * Bug fix: Inline object instantiations within methods for scope safety

@@ -66,7 +66,16 @@ void BashppListener::exitBash_function(BashppParser::Bash_functionContext *ctx) 
 	// Add the function to the current code entity
 	current_code_entity->add_code_to_previous_line("function " + function_entity->get_name() + " {");
 	current_code_entity->add_code_to_next_line("}");
-	current_code_entity->add_code(function_entity->get_pre_code() + "\n" + function_entity->get_code() + "\n" + function_entity->get_post_code());
+	
+	std::string code_to_add = function_entity->get_pre_code();
+	if (!code_to_add.empty()) {
+		code_to_add += "\n";
+	}
+	code_to_add += function_entity->get_code();
+	if (!function_entity->get_post_code().empty()) {
+		code_to_add += "\n" + function_entity->get_post_code();
+	}
+	current_code_entity->add_code(code_to_add);
 }
 
 #endif // SRC_LISTENER_HANDLERS_BASH_FUNCTION_CPP_

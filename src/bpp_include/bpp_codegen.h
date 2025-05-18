@@ -36,6 +36,10 @@ struct code_segment {
 	std::string pre_code;
 	std::string code;
 	std::string post_code;
+
+	std::string full_code() const {
+		return pre_code + (pre_code.empty() ? "" : "\n") + code + (post_code.empty() ? "" : "\n") + post_code;
+	}
 };
 
 code_segment generate_supershell_code(

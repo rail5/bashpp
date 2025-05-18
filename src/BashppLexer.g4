@@ -724,6 +724,23 @@ BASH_KEYWORD_ESAC: 'esac' {
 	}
 };
 
+BASH_KEYWORD_FUNCTION: 'function' {
+	switch (modeStack.top()) {
+		case no_mode:
+		case mode_supershell:
+		case mode_subshell:
+			// 'function' is only a keyword in a top-level context
+			if (!incoming_token_can_be_lvalue) {
+				// And it's only a keyword if it's an lvalue
+				emit(IDENTIFIER, getText());
+			}
+			break;
+		default:
+			emit(incoming_token_can_be_lvalue ? IDENTIFIER_LVALUE : IDENTIFIER, getText());
+			break;
+	}
+};
+
 BASH_CASE_PATTERN_DELIM: ';;';
 
 SEMICOLON: ';' {

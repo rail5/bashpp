@@ -46,6 +46,7 @@
 #include "listener/handlers/bash_for_loop.cpp"
 #include "listener/handlers/bash_if_statement.cpp"
 #include "listener/handlers/bash_case_statement.cpp"
+#include "listener/handlers/bash_function.cpp"
 #include "listener/handlers/extra_statement.cpp"
 #include "listener/handlers/terminal_token.cpp"
 

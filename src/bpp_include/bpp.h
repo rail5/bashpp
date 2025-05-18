@@ -49,6 +49,7 @@ class bash_if_branch;
 class bash_case;
 class bash_case_pattern;
 class bash_for;
+class bash_function;
 class bpp_delete_statement;
 class bpp_dynamic_cast_statement;
 class bpp_pointer_dereference;
@@ -618,6 +619,16 @@ class bash_for : public bpp_code_entity {
 		const std::string& get_header_pre_code() const;
 		const std::string& get_header_post_code() const;
 		const std::string& get_header_code() const;
+};
+
+class bash_function : public bpp_code_entity {
+	private:
+		std::string name = "";
+	public:
+		bash_function();
+
+		void set_name(const std::string& name);
+		std::string get_name() const override;
 };
 
 /**

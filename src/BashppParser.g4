@@ -43,6 +43,7 @@ general_statement: include_statement
 	| bash_if_statement
 	| bash_case_statement
 	| bash_for_loop
+	| bash_function
 	| heredoc
 	| other_statement
 	| DELIM
@@ -190,6 +191,10 @@ bash_case_pattern_header: statement* RPAREN;
 
 // Bash for statements
 bash_for_loop: bash_for_header statement* BASH_KEYWORD_DONE;
+
+// Shell functions
+bash_function: BASH_KEYWORD_FUNCTION WS* IDENTIFIER WS* (SUBSHELL_START WS* SUBSHELL_END)? (WS | DELIM)* (LBRACE | LBRACE_ROOTLEVEL) (statement | terminal_token)* (RBRACE | RBRACE_ROOTLEVEL)
+	| IDENTIFIER_LVALUE WS* SUBSHELL_START WS* SUBSHELL_END (WS | DELIM)* (LBRACE | LBRACE_ROOTLEVEL) (statement | terminal_token)* (RBRACE | RBRACE_ROOTLEVEL);
 
 bash_for_header: BASH_KEYWORD_FOR (WS | DELIM)* (
 	(IDENTIFIER (WS | DELIM)* BASH_KEYWORD_IN statement*)

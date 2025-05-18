@@ -335,6 +335,9 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 	void enterBash_for_header(BashppParser::Bash_for_headerContext *ctx) override;
 	void exitBash_for_header(BashppParser::Bash_for_headerContext *ctx) override;
 
+	void enterBash_function(BashppParser::Bash_functionContext *ctx) override;
+	void exitBash_function(BashppParser::Bash_functionContext *ctx) override;
+
 	void enterHeredoc(BashppParser::HeredocContext *ctx) override;
 	void exitHeredoc(BashppParser::HeredocContext *ctx) override;
 

@@ -37,6 +37,11 @@ struct code_segment {
 	std::string code;
 	std::string post_code;
 
+	/**
+	 * @brief Return the full code segment as a single string
+	 * 
+	 * This function concatenates the pre_code, code, and post_code, and adds separating newlines only if necessary.
+	 */
 	std::string full_code() const {
 		return pre_code + (pre_code.empty() ? "" : "\n") + code + (post_code.empty() ? "" : "\n") + post_code;
 	}

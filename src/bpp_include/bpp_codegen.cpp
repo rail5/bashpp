@@ -197,8 +197,8 @@ code_segment generate_dynamic_cast_code(
  * 
  * @return A code segment structure containing the complete new code:
  * 	- pre_code: All of the code necessary to create the object
- *  - post_code: Empty
- *  - code: Empty
+ * 	- post_code: Empty
+ * 	- code: Empty
  */
 code_segment inline_new(
 	const std::string&					new_address,

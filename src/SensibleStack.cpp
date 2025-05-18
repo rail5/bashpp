@@ -7,6 +7,7 @@
 #define SRC_SENSIBLESTACK_CPP_
 
 #include <stack>
+#include <string>
 #include <type_traits>
 
 /**

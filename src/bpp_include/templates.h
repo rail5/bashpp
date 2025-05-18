@@ -6,7 +6,7 @@
 #ifndef SRC_BPP_INCLUDE_TEMPLATES_H_
 #define SRC_BPP_INCLUDE_TEMPLATES_H_
 
-const char* bpp_supershell_function = R"EOF(function bpp____initsupershell() {
+static const char* bpp_supershell_function = R"EOF(function bpp____initsupershell() {
 	local bpp____supershellDirectory="/dev/shm/"
 	if [[ ! -d "${bpp____supershellDirectory}" ]]; then
 		bpp____supershellDirectory="${TMPDIR:-/tmp/}"
@@ -28,7 +28,7 @@ function bpp____supershell() {
 }
 )EOF";
 
-const char* bpp_vtable_lookup = R"EOF(function bpp____vTable__lookup() {
+static const char* bpp_vtable_lookup = R"EOF(function bpp____vTable__lookup() {
 	local __objectAddress="$1" __method="$2" __outputVar="$3"
 	([[ -z "${__objectAddress}" ]] || [[ -z "${__method}" ]] || [[ -z "${__outputVar}" ]]) && >&2 echo "Bash++: Error: Invalid vTable lookup" && exit 1
 	while : ; do
@@ -48,7 +48,7 @@ const char* bpp_vtable_lookup = R"EOF(function bpp____vTable__lookup() {
 }
 )EOF";
 
-const char* bpp_dynamic_cast = R"EOF(function bpp____dynamic__cast() {
+static const char* bpp_dynamic_cast = R"EOF(function bpp____dynamic__cast() {
 	local __objectAddress="$1" __type="$2" __outputVar="$3"
 	([[ -z "${__objectAddress}" ]] || [[ -z "${__type}" ]] || [[ -z "${__outputVar}" ]]) && >&2 echo "Bash++: Error: Invalid dynamic_cast" && exit 1
 	eval "${__outputVar}=0"
@@ -64,7 +64,7 @@ const char* bpp_dynamic_cast = R"EOF(function bpp____dynamic__cast() {
 }
 )EOF";
 
-const char* template_new_function = R"EOF(function bpp__%CLASS%____new() {
+static const char* template_new_function = R"EOF(function bpp__%CLASS%____new() {
 	local __objectAddress="$1"
 	if [[ "${__objectAddress}" == "" ]]; then
 		while : ; do
@@ -79,7 +79,7 @@ const char* template_new_function = R"EOF(function bpp__%CLASS%____new() {
 }
 )EOF";
 
-const char* template_copy_function = R"EOF(function bpp__%CLASS%____copy() {
+static const char* template_copy_function = R"EOF(function bpp__%CLASS%____copy() {
 	local __copyFromAddress="$1" __copyToAddress="$2"
 	while : ; do
 		if ! eval "declare -p \"${__copyFromAddress}\"" &>/dev/null; then
@@ -109,7 +109,7 @@ const char* template_copy_function = R"EOF(function bpp__%CLASS%____copy() {
 }
 )EOF";
 
-const char* template_method = R"EOF(function bpp__%CLASS%__%SIGNATURE%() {
+static const char* template_method = R"EOF(function bpp__%CLASS%__%SIGNATURE%() {
 	local __objectAddress="$1"
 	shift 1
 	%PARAMS%

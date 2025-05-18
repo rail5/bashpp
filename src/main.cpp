@@ -15,13 +15,14 @@
  * As for the rest, the Doxygen documentation will provide details on the compiler's different classes and functions.
 */
 
-volatile int bpp_exit_code = 0;
+static volatile int bpp_exit_code = 0;
 
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <set>
 #include <unordered_map>
+#include <filesystem>
 #include <antlr4-runtime.h>
 #include <getopt.h>
 

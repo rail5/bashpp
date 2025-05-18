@@ -148,8 +148,8 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 		#define set_error_context error_thrown = true; error_context = ctx;
 
 		#define output_syntax_error(symbol, msg) \
-			int line = symbol->getLine(); \
-			int column = symbol->getCharPositionInLine(); \
+			int line = static_cast<int>(symbol->getLine()); \
+			int column = static_cast<int>(symbol->getCharPositionInLine()); \
 			std::string text = symbol->getText(); \
 			print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack()); \
 			program_has_errors = true;
@@ -170,8 +170,8 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 		
 		#define show_warning_sym(symbol, msg) \
 			if (!suppress_warnings) { \
-				int line = symbol->getLine(); \
-				int column = symbol->getCharPositionInLine(); \
+				int line = static_cast<int>(symbol->getLine()); \
+				int column = static_cast<int>(symbol->getCharPositionInLine()); \
 				std::string text = symbol->getText(); \
 				print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), true); \
 			}

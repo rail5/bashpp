@@ -83,7 +83,7 @@ void print_syntax_error_or_warning(std::string source_file, int line, int column
 		// Get the current terminal width
 		struct winsize w;
 		ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-		int terminal_width = w.ws_col - firstline_padding.length() - 1;
+		uint64_t terminal_width = w.ws_col - firstline_padding.length() - 1;
 
 		// Get the line with the error
 		std::string line_contents;
@@ -91,21 +91,21 @@ void print_syntax_error_or_warning(std::string source_file, int line, int column
 			std::getline(file, line_contents);
 		}
 
-		if (static_cast<int>(line_contents.length()) >= terminal_width) {
+		if (static_cast<uint64_t>(line_contents.length()) >= terminal_width) {
 			// Cut out just enough to show where the error is
-			int start = column - (terminal_width / 2);
+			int start = column - static_cast<int>((terminal_width / 2));
 			if (start < 0) {
 				start = 0;
 			}
-			int end = start + terminal_width;
+			int end = start + static_cast<int>(terminal_width);
 			if (end > static_cast<int>(line_contents.length())) {
-				end = line_contents.length();
-				start = end - terminal_width;
+				end = static_cast<int>(line_contents.length());
+				start = end - static_cast<int>(terminal_width);
 			}
 			if (start < 0) {
 				start = 0;
 			}
-			line_contents = line_contents.substr(start, end - start);
+			line_contents = line_contents.substr(static_cast<size_t>(start), static_cast<size_t>(end - start));
 			column = column - start;
 		}
 		std::cerr << firstline_padding << line_contents << std::endl;

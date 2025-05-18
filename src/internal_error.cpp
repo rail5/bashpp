@@ -7,6 +7,7 @@
 #define SRC_INTERNAL_ERROR_CPP_
 
 #include <stdexcept>
+#include <antlr4-runtime.h>
 
 /**
  * @struct internal_error

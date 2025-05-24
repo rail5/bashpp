@@ -1,4 +1,9 @@
-MAKEFLAGS += -j$(shell nproc) # One job per CPU core
+# Default to using all available CPU cores for parallel builds
+# unless the user specifies a different number of jobs with -jN
+ifeq ($(filter -j%,$(MAKEFLAGS)),)
+MAKEFLAGS += -j$(shell nproc)
+endif
+
 # Path to the antlr4 executable
 ANTLR4 = antlr4
 # Path to the antlr4-runtime headers

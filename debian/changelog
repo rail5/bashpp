@@ -1,3 +1,15 @@
+bpp (0.4.5) unstable; urgency=medium
+
+  * Bugfix: do not consume tokens in single quotes if we're in
+    mode_quote or mode_heredoc
+  * Makefile: respect user's choice if they specify -j on the command line,
+    but default to using all available CPU cores if unspecified 
+  * Added full_code() function to code_segment struct
+    With the hope of preventing the compiler from adding a bunch of extra
+    newlines to compiled code
+
+ -- rail5 <andrew@rail5.org>  Sun, 01 Jun 2025 22:18:49 +0800
+
 bpp (0.4.4) unstable; urgency=medium
 
   * Properly isolate objects declared within shell functions (scope handling)

@@ -464,11 +464,19 @@ QUOTE_LITERAL: '"'; // Another dummy token
 
 // Single-quoted strings
 SINGLEQUOTE: '\'' {
-	while (_input->LA(1) != '\'' && _input->LA(1) != EOF) {
-		_input->consume();
+	switch (modeStack.top()) {
+		case mode_quote:
+		case mode_heredoc:
+			emit(QUOTE_LITERAL, "'");
+			break;
+		default:
+			while (_input->LA(1) != '\'' && _input->LA(1) != EOF) {
+				_input->consume();
+			}
+			// Consume the closing single quote
+			_input->consume();
+			break;
 	}
-	// Consume the closing single quote
-	_input->consume();
 };
 
 // Keywords

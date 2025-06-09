@@ -15,7 +15,7 @@
  * As for the rest, the Doxygen documentation will provide details on the compiler's different classes and functions.
 */
 
-static volatile int bpp_exit_code = 0;
+volatile int bpp_exit_code = 0;
 
 #include <iostream>
 #include <fstream>

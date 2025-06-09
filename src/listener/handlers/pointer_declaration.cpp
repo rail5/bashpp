@@ -54,13 +54,7 @@ void BashppListener::enterPointer_declaration(BashppParser::Pointer_declarationC
 
 	// Verify that the object's class exists
 	if (object_class == nullptr) {
-		// Is it the current class?
-		std::shared_ptr<bpp::bpp_class> containing_class = (current_datamember == nullptr) ? nullptr : current_datamember->get_containing_class().lock();
-		if (containing_class != nullptr && containing_class->get_name() == object_type_text) {
-			object_class = containing_class;
-		} else {
-			throw_syntax_error(ctx->AT(), "Class not found: " + object_type_text);
-		}
+		throw_syntax_error(ctx->AT(), "Class not found: " + object_type_text);
 	}
 
 	std::shared_ptr<bpp::bpp_object> new_object = std::make_shared<bpp::bpp_object>(object_name_text);

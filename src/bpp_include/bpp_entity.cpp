@@ -45,7 +45,7 @@ bool bpp_entity::add_object(std::shared_ptr<bpp_object> object, bool make_local)
 	return true;
 }
 
-std::shared_ptr<bpp_class> bpp_entity::get_class() const {
+std::shared_ptr<bpp_class> bpp_entity::get_class() {
 	return type;
 }
 
@@ -62,7 +62,7 @@ std::string bpp_entity::get_name() const {
  * 
  * Useful in many cases, for example in the event that this entity is a method of a particular class
  */
-std::weak_ptr<bpp::bpp_class> bpp_entity::get_containing_class() const {
+std::weak_ptr<bpp::bpp_class> bpp_entity::get_containing_class() {
 	return containing_class;
 }
 
@@ -109,10 +109,17 @@ std::unordered_map<std::string, std::shared_ptr<bpp_object>> bpp_entity::get_obj
 }
 
 std::shared_ptr<bpp::bpp_class> bpp_entity::get_class(const std::string& name) {
-	if (classes.find(name) == classes.end()) {
-		return nullptr;
+	auto it = classes.find(name);
+	if (it != classes.end()) {
+		return it->second;
 	}
-	return classes[name];
+
+	auto this_class = containing_class.lock();
+	if (this_class && this_class->get_name() == name) {
+		return this_class;
+	}
+
+	return nullptr;
 }
 
 std::shared_ptr<bpp::bpp_object> bpp_entity::get_object(const std::string& name) {

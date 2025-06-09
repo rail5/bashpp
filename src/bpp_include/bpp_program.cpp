@@ -37,16 +37,36 @@ std::shared_ptr<bpp::bpp_class> bpp_program::get_primitive_class() const {
 }
 
 /**
+ * @brief Prepare a class for addition to the program by adding it to the classes map
+ * 
+ * This means that the class will be accessible for use in the program,
+ * but it does not add any code for the class yet.
+ * 
+ * That is handled by add_class().
+ * 
+ * @return true if the class was prepared successfully, false if the class already exists
+ */
+bool bpp_program::prepare_class(std::shared_ptr<bpp_class> class_) {
+	std::string name = class_->get_name();
+	if (classes.find(name) != classes.end()) {
+		return false; // Class already exists
+	}
+	classes[name] = class_;
+	return true;
+}
+
+/**
  * @brief Add a class to the program
  * 
  * This function adds a class to the program, including all necessary code for the class.
  */
 bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	std::string name = class_->get_name();
-	if (classes.find(name) != classes.end()) {
+
+	// Verify that the class has been prepared
+	if (classes.find(name) == classes.end()) {
 		return false;
 	}
-	classes[name] = class_;
 
 	// Add the code for the class
 	std::string class_code = "";

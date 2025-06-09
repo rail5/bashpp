@@ -116,10 +116,10 @@ class bpp_entity {
 		virtual bool add_class(std::shared_ptr<bpp_class> class_);
 		virtual bool add_object(std::shared_ptr<bpp_object> object, bool make_local = false);
 
-		virtual std::shared_ptr<bpp_class> get_class() const;
+		virtual std::shared_ptr<bpp_class> get_class();
 		virtual std::string get_address() const;
 		virtual std::string get_name() const;
-		virtual std::weak_ptr<bpp::bpp_class> get_containing_class() const;
+		virtual std::weak_ptr<bpp::bpp_class> get_containing_class();
 		virtual bool set_containing_class(std::weak_ptr<bpp::bpp_class> containing_class);
 
 		virtual void inherit(std::shared_ptr<bpp_entity> parent);
@@ -321,10 +321,10 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 	public:
 		bpp_class();
 
-		std::weak_ptr<bpp_class> get_containing_class() const override;
+		std::weak_ptr<bpp_class> get_containing_class() override;
 		bool set_containing_class(std::weak_ptr<bpp::bpp_class> containing_class) override;
 
-		std::shared_ptr<bpp_class> get_class() const override;
+		std::shared_ptr<bpp_class> get_class() override;
 
 		void set_name(const std::string& name);
 		bool add_method(std::shared_ptr<bpp_method> method);
@@ -375,7 +375,7 @@ class bpp_object : public bpp_entity {
 		std::string get_name() const override;
 		std::string get_address() const override;
 		std::string get_assignment_value() const;
-		std::shared_ptr<bpp_class> get_class() const override;
+		std::shared_ptr<bpp_class> get_class() override;
 		std::string get_pre_access_code() const;
 		std::string get_post_access_code() const;
 		std::shared_ptr<bpp::bpp_object> get_copy_from() const;
@@ -425,6 +425,7 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 		bool set_containing_class(std::weak_ptr<bpp_class> containing_class) override;
 		void set_output_stream(std::shared_ptr<std::ostream> output_stream);
 
+		bool prepare_class(std::shared_ptr<bpp_class> class_);
 		bool add_class(std::shared_ptr<bpp_class> class_) override;
 
 		std::shared_ptr<bpp_class> get_primitive_class() const;

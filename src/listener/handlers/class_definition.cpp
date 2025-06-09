@@ -39,6 +39,7 @@ void BashppListener::enterClass_definition(BashppParser::Class_definitionContext
 	}
 
 	new_class->set_name(class_name);
+	program->prepare_class(new_class);
 
 	// Inherit from a parent class if specified
 	if (ctx->IDENTIFIER().size() > 1) {

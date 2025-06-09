@@ -62,7 +62,7 @@ std::string bpp_object::get_assignment_value() const {
 	return assignment_value;
 }
 
-std::shared_ptr<bpp_class> bpp_object::get_class() const {
+std::shared_ptr<bpp_class> bpp_object::get_class() {
 	return type;
 }
 

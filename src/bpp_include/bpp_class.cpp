@@ -85,12 +85,12 @@ void bpp_class::add_default_destructor()  {
 	}
 }
 
-std::weak_ptr<bpp::bpp_class> bpp_class::get_containing_class() const {
-	return std::const_pointer_cast<bpp::bpp_class>(this->shared_from_this());
+std::weak_ptr<bpp::bpp_class> bpp_class::get_containing_class() {
+	return weak_from_this();
 }
 
-std::shared_ptr<bpp_class> bpp_class::get_class() const {
-	return std::const_pointer_cast<bpp::bpp_class>(this->shared_from_this());
+std::shared_ptr<bpp_class> bpp_class::get_class() {
+	return shared_from_this();
 }
 
 bool bpp_class::set_containing_class(std::weak_ptr<bpp::bpp_class> containing_class) {

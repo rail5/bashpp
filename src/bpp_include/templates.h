@@ -104,6 +104,10 @@ static const char* template_copy_function = R"EOF(function bpp__%CLASS%____copy(
 		>&2 echo "Bash++: Error: %CLASS%: Attempted to copy to null object"
 		return
 	fi
+	if [[ "${!__copyFromVPointer}" != "${!__copyToVPointer}" ]]; then
+		>&2 echo "Bash++: Error: %CLASS%: Attempted to copy between different types"
+		return
+	fi
 %COPIES%
 	eval "${__copyToVPointer}=${!__copyFromVPointer}"
 }

@@ -1,3 +1,15 @@
+bpp (0.4.6) unstable; urgency=medium
+
+  * Bug fix: Allow accessing the class from within the class
+    Constructs inside of a class are now capable of referencing that
+    class itself in all contexts.
+  * Performance: bpp_entity function that are never overridden do
+    need to be virtual
+  * Runtime: guard against copies between objects of different types
+  * Set non-zero exit code if there were compilation errors
+
+ -- rail5 <andrew@rail5.org>  Tue, 10 Jun 2025 01:25:25 +0800
+
 bpp (0.4.5) unstable; urgency=medium
 
   * Bugfix: do not consume tokens in single quotes if we're in

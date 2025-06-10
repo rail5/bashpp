@@ -110,12 +110,12 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 		throw_syntax_error(initial_node, "File not found: " + source_filename);
 	}
 
-	if (ctx->KEYWORD_INCLUDE_ONCE() != nullptr && included_files.find(full_path) != included_files.end()) {
+	auto result = included_files->insert(full_path);
+	if (result.second == false && ctx->KEYWORD_INCLUDE_ONCE() != nullptr) {
+		// If the file was already included and this is an @include_once, skip it
 		ctx->children.clear();
 		return;
 	}
-
-	included_files.insert(full_path);
 
 	// Create a new listener
 	BashppListener listener;

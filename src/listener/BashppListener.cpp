@@ -30,6 +30,13 @@ void BashppListener::set_included_from(BashppListener* included_from) {
 }
 
 /**
+ * @brief Sets the included_files pointer to the given set of included files.
+ */
+void BashppListener::set_included_files(std::shared_ptr<std::set<std::string>> included_files) {
+	this->included_files = included_files;
+}
+
+/**
  * @brief Sets the program_has_errors flag to true.
  * 
  * This function is called when a syntax error is encountered during parsing.
@@ -62,7 +69,7 @@ std::shared_ptr<bpp::bpp_program> BashppListener::get_program() {
 	return program;
 }
 
-std::set<std::string> BashppListener::get_included_files() {
+std::shared_ptr<std::set<std::string>> BashppListener::get_included_files() {
 	return included_files;
 }
 

@@ -80,7 +80,7 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 		 * @var included_files
 		 * @brief A set of (unique) included files (used for '@include_once' directives)
 		 */
-		std::set<std::string> included_files = {};
+		std::shared_ptr<std::set<std::string>> included_files = std::make_shared<std::set<std::string>>();
 		BashppListener* included_from = nullptr;
 
 		/**
@@ -185,6 +185,7 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 	void set_include_paths(std::shared_ptr<std::vector<std::string>> include_paths);
 	void set_included(bool included);
 	void set_included_from(BashppListener* included_from);
+	void set_included_files(std::shared_ptr<std::set<std::string>> included_files);
 	void set_errors();
 	void set_output_stream(std::shared_ptr<std::ostream> output_stream);
 	void set_output_file(std::string output_file);
@@ -193,7 +194,7 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 	void set_arguments(std::vector<char*> arguments);
 
 	std::shared_ptr<bpp::bpp_program> get_program();
-	std::set<std::string> get_included_files();
+	std::shared_ptr<std::set<std::string>> get_included_files();
 	std::stack<std::string> get_include_stack();
 
 	void enterProgram(BashppParser::ProgramContext *ctx) override;

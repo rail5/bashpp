@@ -670,14 +670,11 @@ class bpp_delete_statement : public bpp_string {
 class bpp_dynamic_cast_statement : public bpp_string {
 	private:
 		std::shared_ptr<bpp::bpp_class> cast_to;
-		std::string cast_address = "";
 	public:
 		bpp_dynamic_cast_statement();
 
 		void set_cast_to(std::shared_ptr<bpp::bpp_class> cast_to);
-		void set_cast_address(const std::string& cast_address);
 		std::shared_ptr<bpp::bpp_class> get_cast_to() const;
-		std::string get_cast_address() const;
 };
 
 /**

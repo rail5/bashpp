@@ -16,16 +16,8 @@ void bpp_dynamic_cast_statement::set_cast_to(std::shared_ptr<bpp::bpp_class> cas
 	this->cast_to = cast_to;
 }
 
-void bpp_dynamic_cast_statement::set_cast_address(const std::string& cast_address) {
-	this->cast_address = cast_address;
-}
-
 std::shared_ptr<bpp::bpp_class> bpp_dynamic_cast_statement::get_cast_to() const {
 	return cast_to;
-}
-
-std::string bpp_dynamic_cast_statement::get_cast_address() const {
-	return cast_address;
 }
 
 } // namespace bpp

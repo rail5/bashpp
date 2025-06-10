@@ -38,14 +38,9 @@ void BashppListener::exitSubshell(BashppParser::SubshellContext *ctx) {
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
-	current_code_entity->add_code(ctx->SUBSHELL_START()->getText());
-	current_code_entity->add_code(subshell_entity->get_pre_code());
-	current_code_entity->add_code(subshell_entity->get_code());
-	if (!subshell_entity->get_post_code().empty()) {
-		current_code_entity->add_code("\n");
-	}
-	current_code_entity->add_code(subshell_entity->get_post_code());
-	current_code_entity->add_code(ctx->SUBSHELL_END()->getText());
+	current_code_entity->add_code_to_previous_line(subshell_entity->get_pre_code());
+	current_code_entity->add_code_to_next_line("\n" + subshell_entity->get_post_code());
+	current_code_entity->add_code(ctx->SUBSHELL_START()->getText() + subshell_entity->get_code() + ctx->SUBSHELL_END()->getText());
 }
 
 #endif // SRC_LISTENER_HANDLERS_SUBSHELL_CPP_

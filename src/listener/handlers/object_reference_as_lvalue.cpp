@@ -101,6 +101,11 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 
 		std::string identifier_text = identifier->getText();
 
+		if (identifier_text.find("__") != std::string::npos) {
+			entity_stack.pop();
+			throw_syntax_error(identifier, "Invalid identifier: " + identifier_text + "\nBash++ identifiers cannot contain double underscores");
+		}
+
 		std::shared_ptr<bpp::bpp_class> reference_class = last_reference_entity->get_class();
 
 		object = nullptr;

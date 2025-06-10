@@ -85,6 +85,11 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 
 		std::string identifier_text = identifier->getText();
 
+		if (identifier_text.find("__") != std::string::npos) {
+			entity_stack.pop();
+			throw_syntax_error(identifier, "Invalid identifier: " + identifier_text + "\nBash++ identifiers cannot contain double underscores");
+		}
+
 		// Verify that the given identifier is a member of the last reference entity
 		datamember = last_reference_entity->get_class()->get_datamember(identifier_text, current_class);
 		method = last_reference_entity->get_class()->get_method(identifier_text, current_class);

@@ -97,6 +97,10 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 
 		std::string identifier_text = identifier->getText();
 
+		if (identifier_text.find("__") != std::string::npos) {
+			throw_syntax_error_from_exitRule(identifier, "Invalid identifier: " + identifier_text + "\nBash++ identifiers cannot contain double underscores");
+		}
+
 		// Verify that the given identifier is a member of the last reference entity
 		datamember = last_reference_entity->get_class()->get_datamember(identifier_text, current_class);
 		method = last_reference_entity->get_class()->get_method(identifier_text, current_class);

@@ -108,6 +108,10 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 		}
 		std::string identifier_text = identifier->getText();
 
+		if (identifier_text.find("__") != std::string::npos) {
+			throw_syntax_error_from_exitRule(identifier, "Invalid identifier: " + identifier_text + "\nBash++ identifiers cannot contain double underscores");
+		}
+
 		std::shared_ptr<bpp::bpp_class> reference_class = last_reference_entity->get_class();
 		if (reference_class != nullptr) {
 			object = nullptr;

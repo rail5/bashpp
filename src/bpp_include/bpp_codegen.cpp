@@ -130,6 +130,7 @@ code_segment generate_method_call_code(
 		if (method_name.rfind("__", 0) == 0) {
 			// If the method is a system method, we assume it exists
 			// This is a hack to allow system methods to be called without being defined
+			// TODO(@rail5): Replace this hack with proper system method registry
 			assumed_method = std::make_shared<bpp::bpp_method>();
 			assumed_method->set_name(method_name);
 			assumed_method->set_scope(bpp_scope::SCOPE_PUBLIC);

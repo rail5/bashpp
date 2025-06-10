@@ -29,6 +29,8 @@ bool inDeprecatedSubshell = false;
 bool waiting_for_heredoc_terminator = false;
 bool waiting_for_heredoc_content_start = false;
 bool parsing_method = false;
+bool in_twotoken_bpp_command = false;
+int dynamic_cast_stage = 0;
 
 int64_t metaTokenCount = 0;
 
@@ -70,7 +72,7 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 	last_token_was_lvalue = false;
 	switch (t->getType()) {
 		case WS:
-			if (in_variable_assignment_before_command && modeStack.top() == no_mode) {
+			if (in_variable_assignment_before_command && modeStack.top() == no_mode && dynamic_cast_stage == 0 && !in_twotoken_bpp_command) {
 				in_variable_assignment_before_command = false;
 				incoming_token_can_be_lvalue = true;
 				hit_at_in_current_command = false;
@@ -110,12 +112,40 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 			}
 			hit_asterisk_in_current_command = true;
 			break;
+		case KEYWORD_DYNAMIC_CAST:
+			dynamic_cast_stage = 1;
+		case KEYWORD_NEW:
+			in_twotoken_bpp_command = true;
+			incoming_token_can_be_lvalue = false;
+			break;
+		case LESSTHAN:
+			if (dynamic_cast_stage == 1) {
+				dynamic_cast_stage = 2;
+			}
+			incoming_token_can_be_lvalue = false;
+			break;
+		case GREATERTHAN:
+			if (dynamic_cast_stage == 2) {
+				dynamic_cast_stage = 3;
+			}
+			incoming_token_can_be_lvalue = false;
+			break;
 		case IDENTIFIER_LVALUE:
 		case KEYWORD_THIS_LVALUE:
 			last_token_was_lvalue = true;
 		default:
 			incoming_token_can_be_lvalue = false;
+			if (dynamic_cast_stage == 3) {
+				dynamic_cast_stage = 0;
+				in_twotoken_bpp_command = false;
+			} else if (dynamic_cast_stage == 0) {
+				in_twotoken_bpp_command = false;
+			}
 			break;
+	}
+
+	if (in_twotoken_bpp_command) {
+		incoming_token_can_be_lvalue = false;
 	}
 
 	// Count meta-tokens
@@ -145,7 +175,6 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 		can_increment_metatoken_counter = false;
 		metaTokenCount++;
 	}
-
 
 	antlr4::Lexer::emit(std::move(t));
 }

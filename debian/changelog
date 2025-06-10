@@ -1,3 +1,31 @@
+bpp (0.4.7) unstable; urgency=medium
+
+  * Safer dynamic casting
+  * Lexer: Properly determine lvalues v. rvalues in the context of
+    two-token bpp commands like dynamic_cast and new
+  * Removed dead code
+  * Bug fix: Properly handle subshell pre-code and post-code
+  * Bug fix: Properly scan the entity stack for the latest code entity
+    Now we have a function: BashppListener::latest_code_entity() which
+    traverses the entity stack until it finds the most recent code entity
+    and returns it.
+  * Bug fix: Maintain one global list of includes
+    This fixes a particular bug, where, for example:
+    File A includes File B using include_once
+    File B includes File C using include_once
+    We return from parsing File B
+    File A includes File C using include_once
+    With each file having its own include list, 'C' would've been added
+    to B's includes but not A's. So A wouldn't have known not to try
+    including it again. Now we have a single global include list, and
+    each parse holds a pointer to it
+  * Bug fix: Protect against direct system method access
+    Object reference rules should block ids with double underscores
+  * Bug fix: Allow system methods to be referenced before they're fully
+    defined
+
+ -- rail5 <andrew@rail5.org>  Tue, 10 Jun 2025 15:45:53 +0800
+
 bpp (0.4.6) unstable; urgency=medium
 
   * Bug fix: Allow accessing the class from within the class

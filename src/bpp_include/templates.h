@@ -52,10 +52,17 @@ static const char* bpp_dynamic_cast = R"EOF(function bpp____dynamic__cast() {
 	local __objectAddress="$1" __type="$2" __outputVar="$3"
 	([[ -z "${__objectAddress}" ]] || [[ -z "${__type}" ]] || [[ -z "${__outputVar}" ]]) && >&2 echo "Bash++: Error: Invalid dynamic_cast" && exit 1
 	eval "${__outputVar}=0"
-	while [[ ! -z "${!__objectAddress}" ]] 2>/dev/null; do
+	while : ; do
+		if ! eval "declare -p \"${__objectAddress}\"" &>/dev/null; then
+			break
+		fi
+		[[ -z "${!__objectAddress}" ]] && break
 		__objectAddress="${!__objectAddress}"
 	done
 	local __vTable="${__objectAddress}____vPointer"
+	if ! eval "declare -p \"${__vTable}\"" &>/dev/null; then
+		return
+	fi
 	while [[ ! -z "${!__vTable}" ]] 2>/dev/null; do
 		[[ "${!__vTable}" == "bpp__${__type}____vTable" ]] && eval "${__outputVar}=\"${__objectAddress}\"" && return 0
 		__vTable="${!__vTable}[\"__parent__\"]"

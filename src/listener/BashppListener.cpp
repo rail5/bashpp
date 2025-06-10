@@ -77,4 +77,27 @@ std::stack<std::string> BashppListener::get_include_stack() {
 	return include_stack;
 }
 
+std::shared_ptr<bpp::bpp_code_entity> BashppListener::latest_code_entity() {
+	// Traverse the entity stack to find the most recent code entity
+	std::stack<std::shared_ptr<bpp::bpp_entity>> temp_stack;
+	std::shared_ptr<bpp::bpp_code_entity> latest_entity = nullptr;
+	while (!entity_stack.empty()) {
+		auto entity = entity_stack.top();
+		entity_stack.pop();
+		temp_stack.push(entity);
+
+		if (std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity) != nullptr) {
+			latest_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity);
+			break;
+		}
+	}
+
+	while (!temp_stack.empty()) {
+		entity_stack.push(temp_stack.top());
+		temp_stack.pop();
+	}
+
+	return latest_entity;
+}
+
 #endif // SRC_LISTENER_BASHPPLISTENER_CPP_

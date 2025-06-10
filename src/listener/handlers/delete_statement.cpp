@@ -21,15 +21,11 @@ void BashppListener::enterDelete_statement(BashppParser::Delete_statementContext
 	 */
 
 	// Get the current code entity
-	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	if (current_code_entity == nullptr) {
-		current_code_entity = program;
-	}
 
 	// Create a new bpp_string for the delete statement
 	std::shared_ptr<bpp::bpp_delete_statement> delete_entity = std::make_shared<bpp::bpp_delete_statement>();
-	delete_entity->set_containing_class(current_code_entity->get_containing_class());
-	delete_entity->inherit(current_code_entity);
+	delete_entity->set_containing_class(entity_stack.top()->get_containing_class());
+	delete_entity->inherit(latest_code_entity());
 	entity_stack.push(delete_entity);
 }
 
@@ -44,10 +40,7 @@ void BashppListener::exitDelete_statement(BashppParser::Delete_statementContext 
 	entity_stack.pop();
 
 	// Get the current code entity
-	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	if (current_code_entity == nullptr) {
-		current_code_entity = program;
-	}
+	std::shared_ptr<bpp::bpp_code_entity> code_entity = latest_code_entity();
 
 	std::string object_ref_name = ctx->ref_rvalue()->getText();
 
@@ -59,14 +52,14 @@ void BashppListener::exitDelete_statement(BashppParser::Delete_statementContext 
 	code_segment delete_code = generate_delete_code(delete_entity->get_object_to_delete(), delete_entity->get_code(), program);
 
 	// Add any necessary access code to the code entity
-	current_code_entity->add_code_to_previous_line(delete_entity->get_pre_code());
-	current_code_entity->add_code_to_next_line(delete_entity->get_post_code());
+	code_entity->add_code_to_previous_line(delete_entity->get_pre_code());
+	code_entity->add_code_to_next_line(delete_entity->get_post_code());
 
 	// Add the delete code to the code entity
-	current_code_entity->add_code_to_previous_line(delete_code.pre_code);
-	current_code_entity->add_code_to_next_line(delete_code.post_code);
+	code_entity->add_code_to_previous_line(delete_code.pre_code);
+	code_entity->add_code_to_next_line(delete_code.post_code);
 
-	current_code_entity->add_code(delete_code.code);
+	code_entity->add_code(delete_code.code);
 }
 
 #endif // SRC_LISTENER_HANDLERS_DELETE_STATEMENT_CPP_

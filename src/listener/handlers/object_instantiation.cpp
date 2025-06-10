@@ -39,10 +39,7 @@ void BashppListener::enterObject_instantiation(BashppParser::Object_instantiatio
 	std::string object_name_text = object_name->getText();
 
 	// Get the current code entity
-	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	if (current_code_entity == nullptr) {
-		current_code_entity = program;
-	}
+	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = latest_code_entity();
 
 	std::shared_ptr<bpp::bpp_object> new_object = std::make_shared<bpp::bpp_object>(object_name_text);
 	entity_stack.push(new_object);

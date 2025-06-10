@@ -42,10 +42,7 @@ void BashppListener::enterPointer_declaration(BashppParser::Pointer_declarationC
 	std::string object_name_text = object_name->getText();
 
 	// Get the current code entity
-	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	if (current_code_entity == nullptr) {
-		current_code_entity = program;
-	}
+	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = latest_code_entity();
 
 	// Are we in a data member declaration?
 	std::shared_ptr<bpp::bpp_datamember> current_datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(entity_stack.top());

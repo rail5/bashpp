@@ -197,6 +197,8 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 	std::shared_ptr<std::set<std::string>> get_included_files();
 	std::stack<std::string> get_include_stack();
 
+	std::shared_ptr<bpp::bpp_code_entity> latest_code_entity();
+
 	void enterProgram(BashppParser::ProgramContext *ctx) override;
 	void exitProgram(BashppParser::ProgramContext *ctx) override;
 

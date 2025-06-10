@@ -127,7 +127,16 @@ code_segment generate_method_call_code(
 
 	std::shared_ptr<bpp::bpp_method> assumed_method = assumed_class->get_method_UNSAFE(method_name);
 	if (assumed_method == nullptr) {
-		throw internal_error("Method " + method_name + " not found in class " + assumed_class->get_name());
+		if (method_name.rfind("__", 0) == 0) {
+			// If the method is a system method, we assume it exists
+			// This is a hack to allow system methods to be called without being defined
+			assumed_method = std::make_shared<bpp::bpp_method>();
+			assumed_method->set_name(method_name);
+			assumed_method->set_scope(bpp_scope::SCOPE_PUBLIC);
+			assumed_method->set_virtual(true);
+		} else {
+			throw internal_error("Method " + method_name + " not found in class " + assumed_class->get_name());
+		}
 	}
 
 	// Is the method virtual?

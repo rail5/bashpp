@@ -114,11 +114,6 @@ std::shared_ptr<bpp::bpp_class> bpp_entity::get_class(const std::string& name) {
 		return it->second;
 	}
 
-	auto this_class = containing_class.lock();
-	if (this_class && this_class->get_name() == name) {
-		return this_class;
-	}
-
 	return nullptr;
 }
 

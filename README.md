@@ -74,9 +74,8 @@ $ sudo apt install build-essential antlr4 libantlr4-runtime-dev pandoc perl debh
 
 ```bash
 $ make        # Build the Bash++ compiler, which can then be found at bin/bpp
-$ make manual # Build the manpages, which can then be found at debian/bpp.1 and debian/bpp.7
-$ make test   # Run the test suite. The test suite is itself written in Bash++.
-$ debuild -us -uc # Build the Debian .deb package for installation
+$ make manual # Build the manpages, which can then be found under debian/
+$ make test   # Run the test suite to verify the compiler works correctly
 ```
 
 ## Using the compiler

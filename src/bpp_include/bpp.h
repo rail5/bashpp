@@ -62,19 +62,19 @@ class bpp_object_address;
  * @var inaccessible_entity
  * @brief A placeholder for an inaccessible entity (scope handling)
  */
-static const std::shared_ptr<bpp_entity> inaccessible_entity = std::make_shared<bpp_entity>();
+inline const std::shared_ptr<bpp_entity> inaccessible_entity = std::make_shared<bpp_entity>();
 
 /**
  * @var inaccessible_datamember
  * @brief A placeholder for an inaccessible data member of a class (scope handling)
  */
-static const std::shared_ptr<bpp_datamember> inaccessible_datamember = std::make_shared<bpp_datamember>();
+inline const std::shared_ptr<bpp_datamember> inaccessible_datamember = std::make_shared<bpp_datamember>();
 
 /**
  * @var inaccessible_method
  * @brief A placeholder for an inaccessible method of a class (scope handling)
  */
-static const std::shared_ptr<bpp_method> inaccessible_method = std::make_shared<bpp_method>();
+inline const std::shared_ptr<bpp_method> inaccessible_method = std::make_shared<bpp_method>();
 
 /**
  * @var bpp_nullptr

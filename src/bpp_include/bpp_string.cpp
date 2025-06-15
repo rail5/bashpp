@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_BPP_INCLUDE_BPP_STRING_CPP_
-#define SRC_BPP_INCLUDE_BPP_STRING_CPP_
-
 #include "bpp.h"
 
 namespace bpp {
@@ -53,5 +50,3 @@ std::string bpp_string::get_post_code() const {
 }
 
 } // namespace bpp
-
-#endif // SRC_BPP_INCLUDE_BPP_STRING_CPP_

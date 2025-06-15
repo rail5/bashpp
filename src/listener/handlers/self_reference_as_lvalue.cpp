@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_SELF_REFERENCE_AS_LVALUE_CPP_
-#define SRC_LISTENER_HANDLERS_SELF_REFERENCE_AS_LVALUE_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_as_lvalueContext *ctx) {
@@ -231,5 +228,3 @@ void BashppListener::exitSelf_reference_as_lvalue(BashppParser::Self_reference_a
 		return;
 	}
 }
-
-#endif // SRC_LISTENER_HANDLERS_SELF_REFERENCE_AS_LVALUE_CPP_

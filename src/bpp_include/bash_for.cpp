@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_BPP_INCLUDE_BASH_FOR_CPP_
-#define SRC_BPP_INCLUDE_BASH_FOR_CPP_
-
 #include "bpp.h"
 
 namespace bpp {
@@ -37,5 +34,3 @@ const std::string& bash_for::get_header_code() const {
 }
 
 } // namespace bpp
-
-#endif // SRC_BPP_INCLUDE_BASH_FOR_CPP_

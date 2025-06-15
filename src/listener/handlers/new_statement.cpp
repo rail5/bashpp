@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_NEW_STATEMENT_CPP_
-#define SRC_LISTENER_HANDLERS_NEW_STATEMENT_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterNew_statement(BashppParser::New_statementContext *ctx) {
@@ -54,5 +51,3 @@ void BashppListener::enterNew_statement(BashppParser::New_statementContext *ctx)
 void BashppListener::exitNew_statement(BashppParser::New_statementContext *ctx) {
 	skip_syntax_errors
 }
-
-#endif // SRC_LISTENER_HANDLERS_NEW_STATEMENT_CPP_

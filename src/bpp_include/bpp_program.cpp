@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_BPP_INCLUDE_BPP_PROGRAM_CPP_
-#define SRC_BPP_INCLUDE_BPP_PROGRAM_CPP_
-
 #include "bpp.h"
 #include "bpp_codegen.h"
 #include "templates.h"
@@ -221,5 +218,3 @@ uint64_t bpp_program::get_object_counter() const {
 }
 
 } // namespace bpp
-
-#endif // SRC_BPP_INCLUDE_BPP_PROGRAM_CPP

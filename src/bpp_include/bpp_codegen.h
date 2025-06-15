@@ -10,7 +10,7 @@
 #include <memory>
 #include <antlr4-runtime.h>
 
-#include "../internal_error.cpp"
+#include "../internal_error.h"
 
 namespace bpp {
 // Minimal forward declarations

@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_BASHPPLISTENER_CPP_
-#define SRC_LISTENER_BASHPPLISTENER_CPP_
-
 #include "BashppListener.h"
 
 void BashppListener::set_source_file(std::string source_file) {
@@ -100,4 +97,11 @@ std::shared_ptr<bpp::bpp_code_entity> BashppListener::latest_code_entity() {
 	return latest_entity;
 }
 
-#endif // SRC_LISTENER_BASHPPLISTENER_CPP_
+bool BashppListener::is_protected_keyword(const std::string& keyword) {
+	for (const char* protected_keyword : protected_keywords) {
+		if (keyword == protected_keyword) {
+			return true;
+		}
+	}
+	return false;
+}

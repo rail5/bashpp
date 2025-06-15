@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_CONSTRUCTOR_DEFINITION_CPP_
-#define SRC_LISTENER_HANDLERS_CONSTRUCTOR_DEFINITION_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterConstructor_definition(BashppParser::Constructor_definitionContext *ctx) {
@@ -54,5 +51,3 @@ void BashppListener::exitConstructor_definition(BashppParser::Constructor_defini
 		throw_syntax_error_from_exitRule(ctx->KEYWORD_CONSTRUCTOR(), "Constructor already defined");
 	}
 }
-
-#endif // SRC_LISTENER_HANDLERS_CONSTRUCTOR_DEFINITION_CPP_

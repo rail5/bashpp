@@ -15,6 +15,7 @@
  * As for the rest, the Doxygen documentation will provide details on the compiler's different classes and functions.
 */
 
+#include "exit_code.h"
 volatile int bpp_exit_code = 0;
 
 #include <iostream>
@@ -23,22 +24,24 @@ volatile int bpp_exit_code = 0;
 #include <set>
 #include <unordered_map>
 #include <filesystem>
+#include <cstring>
+#include <memory>
 #include <antlr4-runtime.h>
 #include <getopt.h>
+#include <unistd.h>
+#include <sys/stat.h>
 
 #include "version.h"
 #include "updated_year.h"
 
-#include "syntax_error.cpp"
+#include "syntax_error.h"
 
 #include "antlr/BashppLexer.h"
 #include "antlr/BashppParser.h"
 
-#include "listener/BashppListener.cpp"
+#include "listener/BashppListener.h"
 
-#include "handlers.h"
-
-#include "internal_error.cpp"
+#include "internal_error.h"
 
 int main(int argc, char* argv[]) {
 	const char* program_name = "Bash++";

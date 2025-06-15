@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_BPP_INCLUDE_BPP_CLASS_CPP_
-#define SRC_BPP_INCLUDE_BPP_CLASS_CPP_
-
 #include "bpp.h"
 #include "bpp_codegen.h"
 
@@ -374,5 +371,3 @@ void bpp_class::finalize(std::shared_ptr<bpp_program> program) {
 }
 
 } // namespace bpp
-
-#endif // SRC_BPP_INCLUDE_BPP_CLASS_CPP

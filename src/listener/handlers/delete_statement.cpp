@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_DELETE_STATEMENT_CPP_
-#define SRC_LISTENER_HANDLERS_DELETE_STATEMENT_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterDelete_statement(BashppParser::Delete_statementContext *ctx) {
@@ -61,5 +58,3 @@ void BashppListener::exitDelete_statement(BashppParser::Delete_statementContext 
 
 	code_entity->add_code(delete_code.code);
 }
-
-#endif // SRC_LISTENER_HANDLERS_DELETE_STATEMENT_CPP_

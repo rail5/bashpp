@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_OBJECT_REFERENCE_AS_LVALUE_CPP_
-#define SRC_LISTENER_HANDLERS_OBJECT_REFERENCE_AS_LVALUE_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_reference_as_lvalueContext *ctx) {
@@ -305,5 +302,3 @@ void BashppListener::exitObject_reference_as_lvalue(BashppParser::Object_referen
 	current_code_entity->add_code_to_next_line(object_reference_entity->get_post_code());
 	current_code_entity->add_code(object_reference_entity->get_code());
 }
-
-#endif // SRC_LISTENER_HANDLERS_OBJECT_REFERENCE_AS_LVALUE_CPP_

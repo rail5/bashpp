@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_BASH_FUNCTION_CPP_
-#define SRC_LISTENER_HANDLERS_BASH_FUNCTION_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterBash_function(BashppParser::Bash_functionContext *ctx) {
@@ -77,5 +74,3 @@ void BashppListener::exitBash_function(BashppParser::Bash_functionContext *ctx) 
 	}
 	current_code_entity->add_code(code_to_add);
 }
-
-#endif // SRC_LISTENER_HANDLERS_BASH_FUNCTION_CPP_

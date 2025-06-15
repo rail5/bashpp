@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_BPP_INCLUDE_BASH_FUNCTION_CPP_
-#define SRC_BPP_INCLUDE_BASH_FUNCTION_CPP_
-
 #include "bpp.h"
 
 namespace bpp {
@@ -21,5 +18,3 @@ std::string bash_function::get_name() const {
 }
 
 } // namespace bpp
-
-#endif // SRC_BPP_INCLUDE_BASH_FUNCTION_CPP_

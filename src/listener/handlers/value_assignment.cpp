@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_VALUE_ASSIGNMENT_CPP_
-#define SRC_LISTENER_HANDLERS_VALUE_ASSIGNMENT_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterValue_assignment(BashppParser::Value_assignmentContext *ctx) {
@@ -90,5 +87,3 @@ void BashppListener::exitValue_assignment(BashppParser::Value_assignmentContext 
 		}
 	}
 }
-
-#endif // SRC_LISTENER_HANDLERS_VALUE_ASSIGNMENT_CPP_

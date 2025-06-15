@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_DEPRECATED_SUBSHELL_CPP_
-#define SRC_LISTENER_HANDLERS_DEPRECATED_SUBSHELL_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterDeprecated_subshell(BashppParser::Deprecated_subshellContext *ctx) {
@@ -47,5 +44,3 @@ void BashppListener::exitDeprecated_subshell(BashppParser::Deprecated_subshellCo
 	current_code_entity->add_code(subshell_entity->get_post_code());
 	current_code_entity->add_code(ctx->DEPRECATED_SUBSHELL_END()->getText());
 }
-
-#endif // SRC_LISTENER_HANDLERS_DEPRECATED_SUBSHELL_CPP_

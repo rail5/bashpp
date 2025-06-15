@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_BPP_INCLUDE_BASH_WHILE_LOOP_CPP_
-#define SRC_BPP_INCLUDE_BASH_WHILE_LOOP_CPP_
-
 #include "bpp.h"
 
 namespace bpp {
@@ -37,5 +34,3 @@ std::string bash_while_loop::get_post_code() const {
 }
 
 } // namespace bpp
-
-#endif // SRC_BPP_INCLUDE_BASH_WHILE_LOOP_CPP_

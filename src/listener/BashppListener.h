@@ -27,8 +27,8 @@ using bpp::generate_dynamic_cast_code;
 
 #include "../bpp_include/bpp.h"
 
-#include "../syntax_error.cpp"
-#include "../internal_error.cpp"
+#include "../syntax_error.h"
+#include "../internal_error.h"
 
 #define skip_syntax_errors if (error_thrown) { \
 		if (error_context == ctx) { \
@@ -129,14 +129,7 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 			"protected", "public", "this", "virtual"
 		};
 
-		inline bool is_protected_keyword(const std::string& keyword) {
-			for (const char* protected_keyword : protected_keywords) {
-				if (keyword == protected_keyword) {
-					return true;
-				}
-			}
-			return false;
-		}
+		bool is_protected_keyword(const std::string& keyword);
 
 		std::shared_ptr<bpp::bpp_class> primitive;
 

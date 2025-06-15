@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_OBJECT_ADDRESS_CPP_
-#define SRC_LISTENER_HANDLERS_OBJECT_ADDRESS_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterObject_address(BashppParser::Object_addressContext *ctx) {
@@ -49,5 +46,3 @@ void BashppListener::exitObject_address(BashppParser::Object_addressContext *ctx
 	current_code_entity->add_code_to_next_line(object_address_entity->get_post_code());
 	current_code_entity->add_code(object_address_entity->get_code());
 }
-
-#endif // SRC_LISTENER_HANDLERS_OBJECT_ADDRESS_CPP_

@@ -9,9 +9,6 @@
 * 		2. Bash_for_header
 */
 
-#ifndef SRC_LISTENER_HANDLERS_BASH_FOR_LOOP_CPP_
-#define SRC_LISTENER_HANDLERS_BASH_FOR_LOOP_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterBash_for_loop(BashppParser::Bash_for_loopContext *ctx) {
@@ -95,5 +92,3 @@ void BashppListener::exitBash_for_header(BashppParser::Bash_for_headerContext *c
 	for_loop->set_header_code(for_header_code);
 }
 
-
-#endif // SRC_LISTENER_HANDLERS_BASH_FOR_LOOP_CPP_

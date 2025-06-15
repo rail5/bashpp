@@ -10,9 +10,6 @@
 * 		3. Bash_case_pattern_header
 */
 
-#ifndef SRC_LISTENER_HANDLERS_BASH_CASE_STATEMENT_CPP_
-#define SRC_LISTENER_HANDLERS_BASH_CASE_STATEMENT_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterBash_case_statement(BashppParser::Bash_case_statementContext *ctx) {
@@ -142,5 +139,3 @@ void BashppListener::exitBash_case_pattern_header(BashppParser::Bash_case_patter
 	case_pattern_entity->get_containing_case()->add_code_to_next_line(case_pattern_header_entity->get_post_code());
 	case_pattern_entity->set_pattern(case_pattern_header_entity->get_code());
 }
-
-#endif // SRC_LISTENER_HANDLERS_BASH_CASE_STATEMENT_CPP_

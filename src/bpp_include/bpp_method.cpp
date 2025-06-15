@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_BPP_INCLUDE_BPP_METHOD_CPP_
-#define SRC_BPP_INCLUDE_BPP_METHOD_CPP_
-
 #include "bpp.h"
 #include "bpp_codegen.h"
 
@@ -165,5 +162,3 @@ bool bpp_method::add_object(std::shared_ptr<bpp_object> object, bool make_local)
 }
 
 } // namespace bpp
-
-#endif // SRC_BPP_INCLUDE_BPP_METHOD_CPP

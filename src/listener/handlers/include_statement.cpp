@@ -3,10 +3,11 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_INCLUDE_STATEMENT_CPP_
-#define SRC_LISTENER_HANDLERS_INCLUDE_STATEMENT_CPP_
-
 #include "../BashppListener.h"
+#include "../../antlr/BashppLexer.h"
+#include "../../antlr/BashppParser.h"
+
+#include <unistd.h>
 
 /**
  * @brief Handles @include and @include_once statements
@@ -218,5 +219,3 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 void BashppListener::exitInclude_statement(BashppParser::Include_statementContext *ctx) {
 	skip_syntax_errors
 }
-
-#endif // SRC_LISTENER_HANDLERS_INCLUDE_STATEMENT_CPP_

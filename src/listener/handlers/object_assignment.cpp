@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_OBJECT_ASSIGNMENT_CPP_
-#define SRC_LISTENER_HANDLERS_OBJECT_ASSIGNMENT_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterObject_assignment(BashppParser::Object_assignmentContext *ctx) {
@@ -96,5 +93,3 @@ void BashppListener::exitObject_assignment(BashppParser::Object_assignmentContex
 		return;
 	}
 }
-
-#endif // SRC_LISTENER_HANDLERS_OBJECT_ASSIGNMENT_CPP_

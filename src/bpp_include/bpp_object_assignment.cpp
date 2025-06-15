@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_BPP_INCLUDE_BPP_OBJECT_ASSIGNMENT_CPP_
-#define SRC_BPP_INCLUDE_BPP_OBJECT_ASSIGNMENT_CPP_
-
 #include "bpp.h"
 
 namespace bpp {
@@ -77,5 +74,3 @@ bool bpp_object_assignment::rvalue_is_array() const {
 }
 
 } // namespace bpp
-
-#endif // SRC_BPP_INCLUDE_BPP_OBJECT_ASSIGNMENT_CPP_

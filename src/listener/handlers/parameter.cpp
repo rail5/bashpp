@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_PARAMETER_CPP_
-#define SRC_LISTENER_HANDLERS_PARAMETER_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterParameter(BashppParser::ParameterContext *ctx) {
@@ -62,5 +59,3 @@ void BashppListener::enterParameter(BashppParser::ParameterContext *ctx) {
 void BashppListener::exitParameter(BashppParser::ParameterContext *ctx) {
 	skip_syntax_errors
 }
-
-#endif // SRC_LISTENER_HANDLERS_PARAMETER_CPP_

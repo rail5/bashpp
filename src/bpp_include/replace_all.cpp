@@ -5,9 +5,6 @@
 
 #include <string>
 
-#ifndef SRC_BPP_INCLUDE_REPLACE_ALL_CPP_
-#define SRC_BPP_INCLUDE_REPLACE_ALL_CPP_
-
 /**
  * @brief Replace all occurences of a substring in a string
  * @param str The string to search in
@@ -24,5 +21,3 @@ std::string replace_all(std::string str, const std::string& from, const std::str
 	}
 	return str;
 }
-
-#endif // SRC_BPP_INCLUDE_REPLACE_ALL_CPP_

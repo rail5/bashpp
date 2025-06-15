@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_SUPERSHELL_CPP_
-#define SRC_LISTENER_HANDLERS_SUPERSHELL_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterSupershell(BashppParser::SupershellContext *ctx) {
@@ -64,5 +61,3 @@ void BashppListener::exitSupershell(BashppParser::SupershellContext *ctx) {
 		return;
 	}
 }
-
-#endif // SRC_LISTENER_HANDLERS_SUPERSHELL_CPP_

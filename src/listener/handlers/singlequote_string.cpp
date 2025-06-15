@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_SINGLEQUOTE_STRING_CPP_
-#define SRC_LISTENER_HANDLERS_SINGLEQUOTE_STRING_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterSinglequote_string(BashppParser::Singlequote_stringContext *ctx) {
@@ -22,5 +19,3 @@ void BashppListener::enterSinglequote_string(BashppParser::Singlequote_stringCon
 void BashppListener::exitSinglequote_string(BashppParser::Singlequote_stringContext *ctx) {
 	skip_syntax_errors
 }
-
-#endif // SRC_LISTENER_HANDLERS_SINGLEQUOTE_STRING_CPP_

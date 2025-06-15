@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_OBJECT_REFERENCE_CPP_
-#define SRC_LISTENER_HANDLERS_OBJECT_REFERENCE_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterObject_reference(BashppParser::Object_referenceContext *ctx) {
@@ -431,5 +428,3 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 		return;
 	}
 }
-
-#endif // SRC_LISTENER_HANDLERS_OBJECT_REFERENCE_CPP_

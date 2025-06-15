@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_DESTRUCTOR_DEFINITION_CPP_
-#define SRC_LISTENER_HANDLERS_DESTRUCTOR_DEFINITION_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterDestructor_definition(BashppParser::Destructor_definitionContext *ctx) {
@@ -54,5 +51,3 @@ void BashppListener::exitDestructor_definition(BashppParser::Destructor_definiti
 		throw_syntax_error_from_exitRule(ctx->KEYWORD_DESTRUCTOR(), "Destructor already defined");
 	}
 }
-
-#endif // SRC_LISTENER_HANDLERS_DESTRUCTOR_DEFINITION_CPP_

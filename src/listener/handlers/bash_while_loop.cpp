@@ -9,9 +9,6 @@
 * 		2. Bash_while_condition
 */
 
-#ifndef SRC_LISTENER_HANDLERS_BASH_WHILE_LOOP_CPP_
-#define SRC_LISTENER_HANDLERS_BASH_WHILE_LOOP_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterBash_while_loop(BashppParser::Bash_while_loopContext *ctx) {
@@ -93,5 +90,3 @@ void BashppListener::exitBash_while_condition(BashppParser::Bash_while_condition
 	current_while_condition = nullptr;
 }
 
-
-#endif // SRC_LISTENER_HANDLERS_BASH_WHILE_LOOP_CPP_

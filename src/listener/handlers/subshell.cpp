@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_SUBSHELL_CPP_
-#define SRC_LISTENER_HANDLERS_SUBSHELL_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterSubshell(BashppParser::SubshellContext *ctx) {
@@ -42,5 +39,3 @@ void BashppListener::exitSubshell(BashppParser::SubshellContext *ctx) {
 	current_code_entity->add_code_to_next_line("\n" + subshell_entity->get_post_code());
 	current_code_entity->add_code(ctx->SUBSHELL_START()->getText() + subshell_entity->get_code() + ctx->SUBSHELL_END()->getText());
 }
-
-#endif // SRC_LISTENER_HANDLERS_SUBSHELL_CPP_

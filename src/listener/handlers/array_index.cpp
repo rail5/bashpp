@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_ARRAY_INDEX_CPP_
-#define SRC_LISTENER_HANDLERS_ARRAY_INDEX_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterArray_index(BashppParser::Array_indexContext *ctx) {
@@ -68,5 +65,3 @@ void BashppListener::exitArray_index(BashppParser::Array_indexContext *ctx) {
 		return;
 	}
 }
-
-#endif // SRC_LISTENER_HANDLERS_ARRAY_INDEX_CPP_

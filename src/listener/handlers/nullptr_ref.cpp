@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_NULLPTR_REF_CPP_
-#define SRC_LISTENER_HANDLERS_NULLPTR_REF_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterNullptr_ref(BashppParser::Nullptr_refContext *ctx) {
@@ -28,5 +25,3 @@ void BashppListener::enterNullptr_ref(BashppParser::Nullptr_refContext *ctx) {
 void BashppListener::exitNullptr_ref(BashppParser::Nullptr_refContext *ctx) {
 	skip_syntax_errors
 }
-
-#endif // SRC_LISTENER_HANDLERS_NULLPTR_REF_CPP_

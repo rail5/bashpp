@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_BPP_INCLUDE_BASH_IF_BRANCH_CPP_
-#define SRC_BPP_INCLUDE_BASH_IF_BRANCH_CPP_
-
 #include "bpp.h"
 
 namespace bpp {
@@ -37,5 +34,3 @@ std::string bash_if_branch::get_post_code() const {
 }
 
 } // namespace bpp
-
-#endif // SRC_BPP_INCLUDE_BASH_IF_BRANCH_CPP_

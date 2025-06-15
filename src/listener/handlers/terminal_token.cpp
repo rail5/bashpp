@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_TERMINAL_TOKEN_CPP_
-#define SRC_LISTENER_HANDLERS_TERMINAL_TOKEN_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterTerminal_token(BashppParser::Terminal_tokenContext *ctx) {
@@ -21,5 +18,3 @@ void BashppListener::enterTerminal_token(BashppParser::Terminal_tokenContext *ct
 void BashppListener::exitTerminal_token(BashppParser::Terminal_tokenContext *ctx) {
 	skip_syntax_errors
 }
-
-#endif // SRC_LISTENER_HANDLERS_TERMINAL_TOKEN_CPP_

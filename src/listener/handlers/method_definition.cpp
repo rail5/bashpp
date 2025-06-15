@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_METHOD_DEFINITION_CPP_
-#define SRC_LISTENER_HANDLERS_METHOD_DEFINITION_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterMethod_definition(BashppParser::Method_definitionContext *ctx) {
@@ -70,5 +67,3 @@ void BashppListener::exitMethod_definition(BashppParser::Method_definitionContex
 	method->destruct_local_objects(program);
 	in_method = false;
 }
-
-#endif // SRC_LISTENER_HANDLERS_METHOD_DEFINITION_CPP_

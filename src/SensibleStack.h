@@ -3,8 +3,8 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_SENSIBLESTACK_CPP_
-#define SRC_SENSIBLESTACK_CPP_
+#ifndef SRC_SENSIBLESTACK_H_
+#define SRC_SENSIBLESTACK_H_
 
 #include <stack>
 #include <string>
@@ -60,4 +60,4 @@ class SensibleStringStack : public std::stack<std::string> {
 		}
 };
 
-#endif // SRC_SENSIBLESTACK_CPP_
+#endif // SRC_SENSIBLESTACK_H_

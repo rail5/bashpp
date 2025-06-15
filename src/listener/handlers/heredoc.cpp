@@ -9,9 +9,6 @@
 * 		2. Heredoc_header
 */
 
-#ifndef SRC_LISTENER_HANDLERS_HEREDOC_CPP_
-#define SRC_LISTENER_HANDLERS_HEREDOC_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterHeredoc(BashppParser::HeredocContext *ctx) {
@@ -79,5 +76,3 @@ void BashppListener::exitHeredoc_header(BashppParser::Heredoc_headerContext *ctx
 	heredoc_entity->add_code_to_next_line(heredoc_header_entity->get_post_code());
 	heredoc_entity->add_code(ctx->HEREDOC_START()->getText() + heredoc_header_entity->get_code() + ctx->HEREDOC_CONTENT_START()->getText());
 }
-
-#endif // SRC_LISTENER_HANDLERS_HEREDOC_CPP_

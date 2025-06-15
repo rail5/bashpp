@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_BPP_INCLUDE_BASH_IF_CPP_
-#define SRC_BPP_INCLUDE_BASH_IF_CPP_
-
 #include "bpp.h"
 
 namespace bpp {
@@ -45,5 +42,3 @@ const std::vector<std::pair<std::string, std::string>>& bash_if::get_conditional
 }
 
 } // namespace bpp
-
-#endif // SRC_BPP_INCLUDE_BASH_IF_CPP_

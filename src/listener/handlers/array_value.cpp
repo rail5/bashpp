@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_ARRAY_VALUE_CPP_
-#define SRC_LISTENER_HANDLERS_ARRAY_VALUE_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterArray_value(BashppParser::Array_valueContext *ctx) {
@@ -66,5 +63,3 @@ void BashppListener::exitArray_value(BashppParser::Array_valueContext *ctx) {
 	current_code_entity->add_code_to_next_line(arrayvalue_entity->get_post_code());
 	current_code_entity->add_code("(" + arrayvalue_entity->get_code() + ")");
 }
-
-#endif // SRC_LISTENER_HANDLERS_ARRAY_VALUE_CPP_

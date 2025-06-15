@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_POINTER_DEREFERENCE_CPP_
-#define SRC_LISTENER_HANDLERS_POINTER_DEREFERENCE_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterPointer_dereference(BashppParser::Pointer_dereferenceContext *ctx) {
@@ -69,5 +66,3 @@ void BashppListener::exitPointer_dereference(BashppParser::Pointer_dereferenceCo
 	current_code_entity->add_code_to_next_line(pointer_dereference_entity->get_post_code());
 	current_code_entity->add_code(pointer_dereference_entity->get_code());
 }
-
-#endif // SRC_LISTENER_HANDLERS_POINTER_DEREFERENCE_CPP_

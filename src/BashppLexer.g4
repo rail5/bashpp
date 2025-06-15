@@ -5,7 +5,7 @@ lexer grammar BashppLexer;
 #include <string>
 #include <cstdint>
 
-#include "../SensibleStack.cpp"
+#include "../SensibleStack.h"
 }
 
 @lexer::members {

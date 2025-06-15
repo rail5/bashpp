@@ -11,9 +11,6 @@
 * 		4. Bash_if_condition
 */
 
-#ifndef SRC_LISTENER_HANDLERS_BASH_IF_STATEMENT_CPP_
-#define SRC_LISTENER_HANDLERS_BASH_IF_STATEMENT_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterBash_if_statement(BashppParser::Bash_if_statementContext *ctx) {
@@ -240,5 +237,3 @@ void BashppListener::exitBash_if_condition(BashppParser::Bash_if_conditionContex
 	if_statement_entity->add_conditional_branch_post_code(condition_entity->get_post_code());
 	if_statement_entity->add_condition_code(condition_entity->get_code() + "; then\n");
 }
-
-#endif // SRC_LISTENER_HANDLERS_BASH_IF_STATEMENT_CPP_

@@ -3,13 +3,12 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_PROGRAM_CPP_
-#define SRC_LISTENER_HANDLERS_PROGRAM_CPP_
-
 #include <filesystem>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include "../BashppListener.h"
+#include "../../exit_code.h"
 
 void BashppListener::enterProgram(BashppParser::ProgramContext *ctx) {
 	program->set_output_stream(output_stream);
@@ -71,5 +70,3 @@ void BashppListener::exitProgram(BashppParser::ProgramContext *ctx) {
 		unlink(output_file.c_str());
 	}
 }
-
-#endif // SRC_LISTENER_HANDLERS_PROGRAM_CPP_

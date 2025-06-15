@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_DYNAMIC_CAST_CPP_
-#define SRC_LISTENER_HANDLERS_DYNAMIC_CAST_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterDynamic_cast_statement(BashppParser::Dynamic_cast_statementContext *ctx) {
@@ -65,5 +62,3 @@ void BashppListener::exitDynamic_cast_statement(BashppParser::Dynamic_cast_state
 
 	current_code_entity->add_code(dynamic_cast_code.code);
 }
-
-#endif // SRC_LISTENER_HANDLERS_DYNAMIC_CAST_CPP_

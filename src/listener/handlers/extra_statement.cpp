@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_HANDLERS_EXTRA_STATEMENT_CPP_
-#define SRC_LISTENER_HANDLERS_EXTRA_STATEMENT_CPP_
-
 #include "../BashppListener.h"
 
 void BashppListener::enterExtra_statement(BashppParser::Extra_statementContext *ctx) {
@@ -21,5 +18,3 @@ void BashppListener::enterExtra_statement(BashppParser::Extra_statementContext *
 void BashppListener::exitExtra_statement(BashppParser::Extra_statementContext *ctx) {
 	skip_syntax_errors
 	}
-
-#endif // SRC_LISTENER_HANDLERS_EXTRA_STATEMENT_CPP_

@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_BPP_INCLUDE_BASH_WHILE_CONDITION_CPP_
-#define SRC_BPP_INCLUDE_BASH_WHILE_CONDITION_CPP_
-
 #include "bpp.h"
 
 namespace bpp {
@@ -25,5 +22,3 @@ std::vector<std::string> bash_while_condition::get_supershell_function_calls() c
 }
 
 } // namespace bpp
-
-#endif // SRC_BPP_INCLUDE_BASH_WHILE_CONDITION_CPP_

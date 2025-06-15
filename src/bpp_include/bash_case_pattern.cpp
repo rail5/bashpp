@@ -3,9 +3,6 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_BPP_INCLUDE_BASH_CASE_PATTERN_CPP_
-#define SRC_BPP_INCLUDE_BASH_CASE_PATTERN_CPP_
-
 #include "bpp.h"
 
 namespace bpp {
@@ -29,5 +26,3 @@ std::shared_ptr<bpp::bash_case> bash_case_pattern::get_containing_case() const {
 }
 
 } // namespace bpp
-
-#endif // SRC_BPP_INCLUDE_BASH_CASE_PATTERN_CPP_

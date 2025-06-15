@@ -1,3 +1,13 @@
+bpp (0.4.8) unstable; urgency=medium
+
+  * Bug fix: Identify lvalues after case patterns
+    Again, the lexer and parser still need to be rewritten from
+    scratch
+  * Build system improvement:
+    Absolutely every unit compiled independently 
+
+ -- rail5 <andrew@rail5.org>  Sun, 15 Jun 2025 15:18:36 +0800
+
 bpp (0.4.7) unstable; urgency=medium
 
   * Safer dynamic casting

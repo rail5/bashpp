@@ -1,3 +1,14 @@
+bpp (0.4.9) unstable; urgency=medium
+
+  * Bug fix: Make static 'inaccessible entity' placeholders inline so
+    that each unit shares the same definition
+    Note also that this is (AFAIK) a C++17-and-later feature, that
+    inlining the definition should result in there being only one
+    definition across multiple units
+    If we don't do this, scope checks will *always* fail
+
+ -- rail5 <andrew@rail5.org>  Sun, 15 Jun 2025 23:33:01 +0800
+
 bpp (0.4.8) unstable; urgency=medium
 
   * Bug fix: Identify lvalues after case patterns

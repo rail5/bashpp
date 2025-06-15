@@ -1,0 +1,31 @@
+@class Object {
+	@private var="private"
+	@protected var2="protected"
+	@public var3="public"
+	
+	@virtual @public @method run {
+		# No errors should be generated from this method
+		echo @this.var
+		echo @this.var2
+		echo @this.var3
+	}
+}
+
+@class Derived : Object {
+	@public @method run {
+		# One error should be generated from this method ('var' is inaccessible in this context)
+		echo @this.var
+		echo @this.var2
+		echo @this.var3
+	}
+}
+
+@Object obj
+echo @obj.var # Error: 'var' is inaccessible in this context
+echo @obj.var2 # Error: 'var2' is inaccessible in this context
+echo @obj.var3 # No error: 'var3' is public
+
+@Derived derived
+echo @derived.var # Error: 'var' is inaccessible in this context
+echo @derived.var2 # Error: 'var2' is inaccessible in this context
+echo @derived.var3 # No error: 'var3' is public

@@ -364,6 +364,28 @@ new value
 default value
 "
 
+@runner.addTest "Scope Checking" "test-suite/tests/scope.bpp" ".+
+error: var is inaccessible in this context
+.+
+.+
+.+
+error: var is inaccessible in this context
+.+
+.+
+.+
+error: var2 is inaccessible in this context
+.+
+.+
+.+
+error: var is inaccessible in this context
+.+
+.+
+.+
+error: var2 is inaccessible in this context
+.+
+.+
+"
+
 # Standard Library tests
 @runner.addTest "STL Stacks" "test-suite/tests/stdlib-stacks.bpp" "0
 3

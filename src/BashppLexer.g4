@@ -130,6 +130,16 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 			}
 			incoming_token_can_be_lvalue = false;
 			break;
+		case RPAREN:
+			if (CaseDepth > 0 && modeStack.top() == no_mode) {
+				// The next token can be an lvalue if we're in a case statement
+				in_variable_assignment_before_command = false;
+				incoming_token_can_be_lvalue = true;
+				hit_at_in_current_command = false;
+				hit_lbrace_in_current_command = false;
+				hit_asterisk_in_current_command = false;
+			}
+			break;
 		case IDENTIFIER_LVALUE:
 		case KEYWORD_THIS_LVALUE:
 			last_token_was_lvalue = true;

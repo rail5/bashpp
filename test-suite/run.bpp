@@ -419,6 +419,48 @@ true
 true
 "
 
+@runner.addTest "STL Shared Stacks" "test-suite/tests/stdlib-sharedstacks.bpp" "0
+3
+false
+c
+c
+2
+b
+a
+0
+true
+0
+3
+false
+c
+c
+2
+b
+a
+0
+true
+6
+false
+0
+true
+a
+b
+c
+d
+e
+f
+6
+false
+0
+true
+a
+b
+c
+d
+e
+f
+"
+
 while getopts "lh" opt; do
 	case $opt in
 		l)

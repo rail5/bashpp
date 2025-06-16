@@ -1,0 +1,98 @@
+@include "../../stdlib/SharedStack.bpp"
+
+# SINGLE-PROCESS, UNENCRYPTED STACK TEST
+@SharedStack stack
+@stack.setEncrypted 0
+
+@stack.size # 0
+@stack.push a
+@stack.push b
+@stack.push c
+@stack.size # 3
+@stack.empty # false
+@stack.top # c
+@stack.pop # c
+@stack.size # 2
+@stack.pop # b
+@stack.pop # a
+@stack.size # 0
+@stack.empty # true
+
+@delete @stack
+
+# SINGLE-PROCESS, ENCRYPTED STACK TEST
+@SharedStack stack2
+@stack2.setEncrypted 1
+@stack2.size # 0
+@stack2.push a
+@stack2.push b
+@stack2.push c
+@stack2.size # 3
+@stack2.empty # false
+@stack2.top # c
+@stack2.pop # c
+@stack2.size # 2
+@stack2.pop # b
+@stack2.pop # a
+@stack2.size # 0
+@stack2.empty # true
+
+@delete @stack2
+
+# MULTI-PROCESS, UNENCRYPTED STACK TEST
+@SharedStack stack3
+@stack3.setEncrypted 0
+
+{
+	@stack3.push d
+	@stack3.push e
+	@stack3.push f
+} &
+
+{
+	@stack3.push a
+	@stack3.push b
+	@stack3.push c
+} &
+
+wait
+@stack3.size # 6
+@stack3.empty # false
+
+elements=()
+while [[ @stack3.empty == "false" ]]; do
+	elements+=(@stack3.pop)
+done
+@stack3.size # 0
+@stack3.empty # true
+sort <<< $(tr ' ' '\n' <<< "${elements[@]}") # a b c d e f (each on a new line)
+@delete @stack3
+
+# MULTI-PROCESS, ENCRYPTED STACK TEST
+@SharedStack stack4
+@stack4.setEncrypted 1
+
+{
+	@stack4.push d
+	@stack4.push e
+	@stack4.push f
+} &
+
+{
+	@stack4.push a
+	@stack4.push b
+	@stack4.push c
+} &
+
+wait
+@stack4.size # 6
+@stack4.empty # false
+
+elements=()
+while [[ @stack4.empty == "false" ]]; do
+	elements+=(@stack4.pop)
+done
+@stack4.size # 0
+@stack4.empty # true
+sort <<< $(tr ' ' '\n' <<< "${elements[@]}") # a b c d e f (each on a new line)
+@delete @stack4

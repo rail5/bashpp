@@ -406,7 +406,8 @@ BASH_VAR: '$' IDENTIFIER
 		| '$!'
 		| '$@'
 		| '$*'
-		| '$-';
+		| '$-'
+		| '{' [a-zA-Z_][a-zA-Z0-9_]* '}';
 
 /**
 * The following rule matches any text in the form of ${...}

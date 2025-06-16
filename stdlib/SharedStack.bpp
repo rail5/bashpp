@@ -1,0 +1,186 @@
+#AUTODOC#
+
+if ! command -v mktemp &> /dev/null; then
+	>&2 echo "Bash++: SharedStack requires the 'mktemp' command to be available."
+	exit 1
+fi
+
+if ! command -v wc &> /dev/null; then
+	>&2 echo "Bash++: SharedStack requires the 'wc' command to be available."
+	exit 1
+fi
+
+if ! command -v head &> /dev/null; then
+	>&2 echo "Bash++: SharedStack requires the 'head' command to be available."
+	exit 1
+fi
+
+if ! command -v base64 &> /dev/null; then
+	>&2 echo "Bash++: SharedStack requires the 'base64' command to be available."
+	exit 1
+fi
+
+if ! command -v flock &> /dev/null; then
+	>&2 echo "Bash++: SharedStack requires the 'flock' command to be available."
+	exit 1
+fi
+
+if ! command -v sed &> /dev/null; then
+	>&2 echo "Bash++: SharedStack requires the 'sed' command to be available."
+	exit 1
+fi
+
+if ! command -v chmod &> /dev/null; then
+	>&2 echo "Bash++: SharedStack requires the 'chmod' command to be available."
+	exit 1
+fi
+
+#CLASS SharedStack
+## The SharedStack class provides a stack implementation that shares its state across multiple instances.
+## This class is useful for scenarios in which we're forking processes and need a shared stack between them.
+## Reads and writes are atomic and concurrency-safe.
+## The stack can be encrypted for security.
+## Internally, it uses the file system to store the stack state.
+@class SharedStack {
+	@protected stack_file
+	@protected encrypted=0
+	@protected encryption_key
+	@protected used=0
+
+	##METHOD public setEncrypted
+	### Sets whether the stack should be encrypted.
+	### Encrypting the stack can mitigate unauthorized reads by other processes.
+	### This cannot be changed after the stack has been used.
+	###PARAM primitive value
+	#### '1' or 'true' enables encryption, any other value disables it.
+	@public @method setEncrypted value {
+		if [[ @this.used -ne 0 ]]; then
+			>&2 echo "Error: SharedStack: Cannot change encryption setting after the stack has been used."
+			return 1
+		fi
+
+		if [[ "$value" == "1" || "$value" == "true" ]]; then
+			@this.encrypted=1
+			if ! command -v openssl &> /dev/null; then
+				>&2 echo "Bash++: SharedStack requires the 'openssl' command to be available for encryption."
+				return 1
+			fi
+		else
+			@this.encrypted=0
+		fi
+	}
+
+	##METHOD public size
+	### Echoes the number of elements in the stack.
+	@public @method size {
+		wc -l < @this.stack_file
+	}
+
+	##METHOD public push
+	### Pushes a value onto the top of the stack.
+	###PARAM primitive value
+	#### The value to push onto the top of the stack.
+	@public @method push value {
+		@this.used=1
+		exec {BPP__SHAREDSTACK__LOCKFD}<>"@this.stack_file"
+		flock -x "${BPP__SHAREDSTACK__LOCKFD}"
+		if [[ @this.encrypted -eq 1 ]]; then
+			value="$(openssl enc -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A <<<"$value")"
+		fi
+		printf "%s" "$value" | base64 -w0 >> "@this.stack_file"
+		echo >> "@this.stack_file"
+		flock -u "${BPP__SHAREDSTACK__LOCKFD}"
+		exec {BPP__SHAREDSTACK__LOCKFD}>&-
+	}
+
+	@private @method _get_top {
+		local last_line=@(tail -n 1 "@this.stack_file" | base64 -d)
+		if [[ -z "$last_line" ]]; then
+			return 1
+		fi
+		
+		if [[ @this.encrypted -eq 1 ]]; then
+			printf "%s" "$last_line" | openssl enc -d -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A
+		else
+			echo "$last_line"
+		fi
+	}
+
+	##METHOD public pop
+	### Pops the top element off the stack and echoes it.
+	@public @method pop {
+		@this.used=1
+		exec {BPP__SHAREDSTACK__LOCKFD}<>"@this.stack_file"
+		flock -x "${BPP__SHAREDSTACK__LOCKFD}"
+
+		@this._get_top
+		if [[ $? -ne 0 ]]; then
+			flock -u "${BPP__SHAREDSTACK__LOCKFD}"
+			exec {BPP__SHAREDSTACK__LOCKFD}>&-
+			return 1
+		fi
+		
+		sed -i.tmp '$ d' "@{this.stack_file}" && rm -f "@{this.stack_file}.tmp"
+		flock -u "${BPP__SHAREDSTACK__LOCKFD}"
+		exec {BPP__SHAREDSTACK__LOCKFD}>&-
+	}
+
+	##METHOD public top
+	### Echoes the top element of the stack without removing it.
+	@public @method top {
+		@this.used=1
+		exec {BPP__SHAREDSTACK__LOCKFD}<>"@this.stack_file"
+		flock -x "${BPP__SHAREDSTACK__LOCKFD}"
+
+		@this._get_top
+		if [[ $? -ne 0 ]]; then
+			flock -u "${BPP__SHAREDSTACK__LOCKFD}"
+			exec {BPP__SHAREDSTACK__LOCKFD}>&-
+			return 1
+		fi
+		
+		flock -u "${BPP__SHAREDSTACK__LOCKFD}"
+		exec {BPP__SHAREDSTACK__LOCKFD}>&-
+	}
+
+	##METHOD public clear
+	### Removes all elements from the stack.
+	@public @method clear {
+		exec {BPP__SHAREDSTACK__LOCKFD}<>"@this.stack_file"
+		flock -x "${BPP__SHAREDSTACK__LOCKFD}"
+		> "@this.stack_file"
+		flock -u "${BPP__SHAREDSTACK__LOCKFD}"
+		exec {BPP__SHAREDSTACK__LOCKFD}>&-
+	}
+
+	##METHOD public empty
+	### Echoes "true" if the stack is empty, "false" otherwise.
+	@public @method empty {
+		exec {BPP__SHAREDSTACK__LOCKFD}<>"@this.stack_file"
+		flock -x "${BPP__SHAREDSTACK__LOCKFD}"
+		if [[ -z $(head -n 1 "@this.stack_file") ]]; then
+			echo "true"
+		else
+			echo "false"
+		fi
+		flock -u "${BPP__SHAREDSTACK__LOCKFD}"
+	}
+
+	@constructor {
+		@this.stack_file=@(mktemp)
+		chmod 600 "@this.stack_file"
+		@this.encryption_key=@(head -c 32 /dev/urandom | base64 -w0)
+	}
+
+	@destructor {
+		if [[ -f "@this.stack_file" ]]; then
+			exec {BPP__SHAREDSTACK__LOCKFD}<>"@this.stack_file"
+			flock -x "${BPP__SHAREDSTACK__LOCKFD}"
+			rm -f "@this.stack_file" 2>/dev/null
+			flock -u "${BPP__SHAREDSTACK__LOCKFD}"
+			exec {BPP__SHAREDSTACK__LOCKFD}>&-
+		fi
+	}
+}
+
+#ENDAUTODOC#

@@ -32,6 +32,13 @@ fi
 
 #CLASS SharedQueue
 ## The SharedQueue class provides a queue implementation that shares its state across multiple instances.
+## This class is useful for scenarios in which we're forking processes and need a shared queue between them.
+## 
+## Reads and writes are atomic and concurrency-safe.
+## 
+## The queue can be encrypted for security.
+## 
+## Internally, it uses the file system to store the queue state.
 @class SharedQueue {
 	@protected queue_file
 	@protected encrypted=0
@@ -51,11 +58,11 @@ fi
 		fi
 
 		if [[ "$value" == "1" || "$value" == "true" ]]; then
-			@this.encrypted=1
 			if ! command -v openssl &> /dev/null; then
 				>&2 echo "Bash++: SharedQueue requires the 'openssl' command to be available for encryption."
 				return 1
 			fi
+			@this.encrypted=1
 		else
 			@this.encrypted=0
 		fi

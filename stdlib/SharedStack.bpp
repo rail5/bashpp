@@ -33,8 +33,11 @@ fi
 #CLASS SharedStack
 ## The SharedStack class provides a stack implementation that shares its state across multiple instances.
 ## This class is useful for scenarios in which we're forking processes and need a shared stack between them.
+## 
 ## Reads and writes are atomic and concurrency-safe.
+## 
 ## The stack can be encrypted for security.
+## 
 ## Internally, it uses the file system to store the stack state.
 @class SharedStack {
 	@protected stack_file
@@ -55,11 +58,11 @@ fi
 		fi
 
 		if [[ "$value" == "1" || "$value" == "true" ]]; then
-			@this.encrypted=1
 			if ! command -v openssl &> /dev/null; then
 				>&2 echo "Bash++: SharedStack requires the 'openssl' command to be available for encryption."
 				return 1
 			fi
+			@this.encrypted=1
 		else
 			@this.encrypted=0
 		fi

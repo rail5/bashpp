@@ -3,8 +3,6 @@
 #CLASS Stack
 ## The Stack class provides a simple stack implementation in Bash++.
 @class Stack {
-	##MEMBER protected primitive stack
-	### An internal array which stores the elements of the stack.
 	@protected stack=()
 
 	##METHOD public size

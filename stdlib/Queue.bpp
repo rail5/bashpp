@@ -8,16 +8,8 @@
 #CLASS Queue
 ## The Queue class provides a simple queue implementation in Bash++.
 @class Queue {
-	##MEMBER protected QueueNode* head
-	### A pointer to the head of the queue.
 	@protected @QueueNode* head
-
-	##MEMBER protected QueueNode* tail
-	### A pointer to the tail of the queue.
 	@protected @QueueNode* tail
-
-	##MEMBER protected primitive queueSize
-	### The number of elements in the queue.
 	@protected queueSize=0
 
 	##METHOD public size

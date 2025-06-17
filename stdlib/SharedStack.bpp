@@ -1,10 +1,5 @@
 #AUTODOC#
 
-if ! command -v mktemp &> /dev/null; then
-	>&2 echo "Bash++: SharedStack requires the 'mktemp' command to be available."
-	exit 1
-fi
-
 if ! command -v wc &> /dev/null; then
 	>&2 echo "Bash++: SharedStack requires the 'wc' command to be available."
 	exit 1
@@ -73,7 +68,7 @@ fi
 	##METHOD public size
 	### Echoes the number of elements in the stack.
 	@public @method size {
-		wc -l < @this.stack_file
+		wc -l 2>/dev/null < @this.stack_file || echo 0
 	}
 
 	##METHOD public push

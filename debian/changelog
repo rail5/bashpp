@@ -1,3 +1,20 @@
+bpp (0.4.10) unstable; urgency=medium
+
+  * Additions to the standard library:
+    Added SharedQueue class for concurrent multi-process access to the
+    same queue.
+    Added SharedStack class for concurrent multi-process access to the
+    same stack
+    SharedQueue and SharedStack are data structures that are safe to use
+    among multiple forked processes concurrently. They use the
+    filesystem as a back-end for the stored data.
+    Reads and writes are atomic and concurrency-safe.
+    The data can be encrypted for security.
+    Here is an article about this addition:
+    https://log.bpp.sh/2025/06/17/multiprocess-concurrency-shared-data-structures.html
+
+ -- rail5 <andrew@rail5.org>  Tue, 17 Jun 2025 12:03:39 +0800
+
 bpp (0.4.9) unstable; urgency=medium
 
   * Bug fix: Make static 'inaccessible entity' placeholders inline so

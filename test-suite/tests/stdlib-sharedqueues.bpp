@@ -1,0 +1,119 @@
+@include "../../stdlib/SharedQueue.bpp"
+
+# SINGLE-PROCESS, UNENCRYPTED QUEUE TEST
+
+@SharedQueue queue
+@queue.setEncrypted 0
+@queue.size # 0
+@queue.enqueue a
+@queue.enqueue b
+@queue.enqueue c
+@queue.size # 3
+@queue.empty # false
+@queue.front # a
+@queue.back # c
+@queue.dequeue # a
+@queue.front # b
+@queue.back # c
+@queue.size # 2
+@queue.dequeue # b
+@queue.front # c
+@queue.back # c
+@queue.size # 1
+@queue.dequeue # c
+@queue.size # 0
+@queue.empty # true
+@queue.front # No output
+@queue.back # No output
+
+@delete @queue
+
+# SINGLE-PROCESS, ENCRYPTED QUEUE TEST
+
+@SharedQueue queue2
+@queue2.setEncrypted 1
+@queue2.size # 0
+@queue2.enqueue a
+@queue2.enqueue b
+@queue2.enqueue c
+@queue2.size # 3
+@queue2.empty # false
+@queue2.front # a
+@queue2.back # c
+@queue2.dequeue # a
+@queue2.front # b
+@queue2.back # c
+@queue2.size # 2
+@queue2.dequeue # b
+@queue2.front # c
+@queue2.back # c
+@queue2.size # 1
+@queue2.dequeue # c
+@queue2.size # 0
+@queue2.empty # true
+@queue2.front # No output
+@queue2.back # No output
+
+@delete @queue2
+
+# MULTI-PROCESS, UNENCRYPTED QUEUE TEST
+
+@SharedQueue queue3
+@queue3.setEncrypted 0
+
+{
+	@queue3.enqueue d
+	@queue3.enqueue e
+	@queue3.enqueue f
+} &
+
+{
+	@queue3.enqueue a
+	@queue3.enqueue b
+	@queue3.enqueue c
+} &
+wait
+@queue3.size # 6
+@queue3.empty # false
+
+elements=()
+while [[ @queue3.size -gt 0 ]]; do
+	elements+=(@queue3.dequeue)
+done
+
+@queue3.size # 0
+@queue3.empty # true
+
+sort <<< $(tr ' ' '\n' <<< "${elements[@]}") # a b c d e f (each on a new line)
+@delete @queue3
+
+# MULTI-PROCESS, ENCRYPTED QUEUE TEST
+
+@SharedQueue queue4
+@queue4.setEncrypted 0
+
+{
+	@queue4.enqueue d
+	@queue4.enqueue e
+	@queue4.enqueue f
+} &
+
+{
+	@queue4.enqueue a
+	@queue4.enqueue b
+	@queue4.enqueue c
+} &
+wait
+@queue4.size # 6
+@queue4.empty # false
+
+elements=()
+while [[ @queue4.size -gt 0 ]]; do
+	elements+=(@queue4.dequeue)
+done
+
+@queue4.size # 0
+@queue4.empty # true
+
+sort <<< $(tr ' ' '\n' <<< "${elements[@]}") # a b c d e f (each on a new line)
+@delete @queue4

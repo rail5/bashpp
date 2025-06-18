@@ -34,8 +34,14 @@ if ! command -v chmod &> /dev/null; then
 fi
 
 #CLASS SharedArray
-## The SharedArray class provides a simple array implementation that shares its state across multiple instances.
+## The SharedArray class provides an array implementation that shares its state across multiple instances.
 ## This class is useful for scenarios in which we're forking processes and need a shared array between them.
+## 
+## Reads and writes are atomic and concurrency-safe.
+## 
+## The array can be encrypted for security.
+## 
+## Internally, it uses the file system to store the array state.
 @class SharedArray {
 	@protected array_file
 	@protected encrypted=0

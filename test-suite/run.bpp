@@ -558,6 +558,104 @@ e
 f
 "
 
+@runner.addTest "STL Shared Arrays" "test-suite/tests/stdlib-sharedarrays.bpp" "3
+a
+b
+c
+4
+a
+d
+b
+c
+3
+a
+d
+c
+c
+2
+a
+d
+3
+e
+a
+d
+2
+a
+d
+a d
+d
+7
+a
+g
+f
+d
+x
+y
+z
+d x y
+g f d x y z
+z
+g f d x y
+g
+y
+0
+3
+a
+b
+c
+4
+a
+d
+b
+c
+3
+a
+d
+c
+c
+2
+a
+d
+3
+e
+a
+d
+2
+a
+d
+a d
+d
+7
+a
+g
+f
+d
+x
+y
+z
+d x y
+g f d x y z
+z
+g f d x y
+g
+y
+0
+6
+a
+b
+c
+d
+e
+f
+6
+a
+b
+c
+d
+e
+f
+"
+
 while getopts "lh" opt; do
 	case $opt in
 		l)

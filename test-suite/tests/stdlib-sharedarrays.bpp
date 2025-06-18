@@ -1,0 +1,167 @@
+@include "../../stdlib/SharedArray.bpp"
+
+# SINGLE-PROCESS, UNENCRYPTED ARRAY TEST
+
+@SharedArray array
+@array.setEncrypted 0
+@array.push a
+@array.push b
+@array.push c
+@array.size # 3
+@array.at 0 # a
+@array.at 1 # b
+@array.at 2 # c
+@array.insert 1 d
+@array.size # 4
+@array.at 0 # a
+@array.at 1 # d
+@array.at 2 # b
+@array.at 3 # c
+@array.remove 2
+@array.size # 3
+@array.at 0 # a
+@array.at 1 # d
+@array.at 2 # c
+@array.pop # c
+@array.size # 2
+@array.at 0 # a
+@array.at 1 # d
+@array.insert 0 e
+@array.size # 3
+@array.at 0 # e
+@array.at 1 # a
+@array.at 2 # d
+@array.remove 0
+@array.size # 2
+@array.at 0 # a
+@array.at 1 # d
+@array.slice 0 1 # a d
+@array.slice 1 2 # d
+@array.insert 1 f
+@array.insert 1 g
+@array.push x
+@array.push y
+@array.push z
+@array.size # 7
+@array.at 0 # a
+@array.at 1 # g
+@array.at 2 # f
+@array.at 3 # d
+@array.at 4 # x
+@array.at 5 # y
+@array.at 6 # z
+@array.slice 3 5 # d x y
+@array.remove 0
+@array.all # g f d x y z
+@array.pop # z
+@array.all # g f d x y
+@array.front # g
+@array.back # y
+@array.clear
+@array.size # 0
+
+@delete @array
+
+# SINGLE-PROCESS, ENCRYPTED ARRAY TEST
+
+@SharedArray array2
+@array2.setEncrypted 1
+@array2.push a
+@array2.push b
+@array2.push c
+@array2.size # 3
+@array2.at 0 # a
+@array2.at 1 # b
+@array2.at 2 # c
+@array2.insert 1 d
+@array2.size # 4
+@array2.at 0 # a
+@array2.at 1 # d
+@array2.at 2 # b
+@array2.at 3 # c
+@array2.remove 2
+@array2.size # 3
+@array2.at 0 # a
+@array2.at 1 # d
+@array2.at 2 # c
+@array2.pop # c
+@array2.size # 2
+@array2.at 0 # a
+@array2.at 1 # d
+@array2.insert 0 e
+@array2.size # 3
+@array2.at 0 # e
+@array2.at 1 # a
+@array2.at 2 # d
+@array2.remove 0
+@array2.size # 2
+@array2.at 0 # a
+@array2.at 1 # d
+@array2.slice 0 1 # a d
+@array2.slice 1 2 # d
+@array2.insert 1 f
+@array2.insert 1 g
+@array2.push x
+@array2.push y
+@array2.push z
+@array2.size # 7
+@array2.at 0 # a
+@array2.at 1 # g
+@array2.at 2 # f
+@array2.at 3 # d
+@array2.at 4 # x
+@array2.at 5 # y
+@array2.at 6 # z
+@array2.slice 3 5 # d x y
+@array2.remove 0
+@array2.all # g f d x y z
+@array2.pop # z
+@array2.all # g f d x y
+@array2.front # g
+@array2.back # y
+@array2.clear
+@array2.size # 0
+
+@delete @array2
+
+# MULTI-PROCESS, UNENCRYPTED ARRAY TEST
+@SharedArray array3
+@array3.setEncrypted 0
+
+{
+	@array3.push d
+	@array3.push e
+	@array3.push f
+} &
+
+{
+	@array3.push a
+	@array3.push b
+	@array3.push c
+} &
+wait
+@array3.size # 6
+elements=(@array3.all)
+sort <<< $(tr ' ' '\n' <<< "${elements[@]}") # a b c d e f (each on a new line)
+@delete @array3
+
+# MULTI-PROCESS, ENCRYPTED ARRAY TEST
+@SharedArray array4
+@array4.setEncrypted 1
+
+{
+	@array4.push d
+	@array4.push e
+	@array4.push f
+} &
+
+{
+	@array4.push a
+	@array4.push b
+	@array4.push c
+} &
+wait
+@array4.size # 6
+elements=(@array4.all)
+sort <<< $(tr ' ' '\n' <<< "${elements[@]}") # a b c d e f (each on a new line)
+@delete @array4

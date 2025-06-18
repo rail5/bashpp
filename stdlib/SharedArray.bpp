@@ -1,0 +1,329 @@
+#AUTODOC#
+
+# Copyright (C) 2025 Andrew S. Rightenburg
+# GNU General Public License v3.0
+# This file is part of the Bash++ Standard Library.
+
+if ! command -v wc &> /dev/null; then
+	>&2 echo "Bash++: SharedArray requires the 'wc' command to be available."
+	exit 1
+fi
+if ! command -v head &> /dev/null; then
+	>&2 echo "Bash++: SharedArray requires the 'head' command to be available."
+	exit 1
+fi
+if ! command -v tail &> /dev/null; then
+	>&2 echo "Bash++: SharedArray requires the 'tail' command to be available."
+	exit 1
+fi
+if ! command -v base64 &> /dev/null; then
+	>&2 echo "Bash++: SharedArray requires the 'base64' command to be available."
+	exit 1
+fi
+if ! command -v flock &> /dev/null; then
+	>&2 echo "Bash++: SharedArray requires the 'flock' command to be available."
+	exit 1
+fi
+if ! command -v sed &> /dev/null; then
+	>&2 echo "Bash++: SharedArray requires the 'sed' command to be available."
+	exit 1
+fi
+if ! command -v chmod &> /dev/null; then
+	>&2 echo "Bash++: SharedArray requires the 'chmod' command to be available."
+	exit 1
+fi
+
+#CLASS SharedArray
+## The SharedArray class provides a simple array implementation that shares its state across multiple instances.
+## This class is useful for scenarios in which we're forking processes and need a shared array between them.
+@class SharedArray {
+	@protected array_file
+	@protected encrypted=0
+	@protected encryption_key
+	@protected used=0
+
+	##METHOD public setEncrypted
+	### Sets whether the array should be encrypted.
+	### Encrypting the array can mitigate unauthorized reads by other processes.
+	### This cannot be changed after the array has been used.
+	###PARAM primitive value
+	#### '1' or 'true' enables encryption, any other value disables it.
+	@public @method setEncrypted value {
+		if [[ @this.used -ne 0 ]]; then
+			>&2 echo "Error: SharedArray: Cannot change encryption setting after the array has been used."
+			return 1
+		fi
+		if [[ "$value" == "1" || "$value" == "true" ]]; then
+			if ! command -v openssl &> /dev/null; then
+				>&2 echo "Bash++: SharedArray encryption requires the 'openssl' command to be available."
+				exit 1
+			fi
+			@this.encrypted=1
+		else
+			@this.encrypted=0
+		fi
+	}
+
+	##METHOD public size
+	### Echoes the number of elements in the shared array.
+	@public @method size {
+		wc -l 2>/dev/null < @this.array_file || echo 0
+	}
+
+	##METHOD public push
+	### Adds a value to the end of the shared array.
+	###PARAM primitive value
+	#### The value to add to the shared array.
+	@public @method push value {
+		@this.used=1
+		exec {BPP__SHAREDARRAY__LOCKFD}<>"@this.array_file"
+		flock -x "${BPP__SHAREDARRAY__LOCKFD}"
+		if [[ @this.encrypted -eq 1 ]]; then
+			value="$(openssl enc -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A <<<"$value")"
+		fi
+		printf "%s" "$value" | base64 -w0 >> "@this.array_file"
+		echo >> "@this.array_file"
+		flock -u "${BPP__SHAREDARRAY__LOCKFD}"
+		exec {BPP__SHAREDARRAY__LOCKFD}>&-
+	}
+
+	@private @method _get_front {
+		local first_line=@(head -n 1 "@this.array_file" | base64 -d)
+		if [[ -z "$first_line" ]]; then
+			return 1
+		fi
+		if [[ @this.encrypted -eq 1 ]]; then
+			printf "%s" "$first_line" | openssl enc -d -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A
+		else
+			echo "$first_line"
+		fi
+	}
+
+	@private @method _get_back {
+		local last_line=@(tail -n 1 "@this.array_file" | base64 -d)
+		if [[ -z "$last_line" ]]; then
+			return 1
+		fi
+		if [[ @this.encrypted -eq 1 ]]; then
+			printf "%s" "$last_line" | openssl enc -d -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A
+		else
+			echo "$last_line"
+		fi
+	}
+
+	##METHOD public pop
+	### Removes and echoes the last element of the shared array.
+	@public @method pop {
+		@this.used=1
+		exec {BPP__SHAREDARRAY__LOCKFD}<>"@this.array_file"
+		flock -x "${BPP__SHAREDARRAY__LOCKFD}"
+
+		@this._get_back
+		if [[ $? -ne 0 ]]; then
+			flock -u "${BPP__SHAREDARRAY__LOCKFD}"
+			exec {BPP__SHAREDARRAY__LOCKFD}>&-
+			return 1
+		fi
+
+		sed -i.tmp '$d' "@this.array_file" && rm -f "@{this.array_file}.tmp"
+		flock -u "${BPP__SHAREDARRAY__LOCKFD}"
+		exec {BPP__SHAREDARRAY__LOCKFD}>&-
+	}
+
+	##METHOD public insert
+	### Inserts a value at a specific index in the shared array.
+	###PARAM primitive index
+	### The index at which to insert the value.
+	###PARAM primitive value
+	### The value to insert into the shared array.
+	@public @method insert index value {
+		@this.used=1
+		if [[ $index -lt 0 || $index -gt @this.size ]]; then
+			>&2 echo "Error: SharedArray: Index out of bounds."
+			return 1
+		fi
+		exec {BPP__SHAREDARRAY__LOCKFD}<>"@this.array_file"
+		flock -x "${BPP__SHAREDARRAY__LOCKFD}"
+		if [[ @this.encrypted -eq 1 ]]; then
+			value="$(openssl enc -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A <<<"$value")"
+		fi
+
+		if [[ $index -eq @this.size ]]; then
+			printf "%s" "$value" | base64 -w0 >> "@this.array_file"
+			echo >> "@this.array_file"
+			return 0
+		fi
+
+		local array_copy=(@(cat "@this.array_file"))
+		>@this.array_file # Clear the file
+		for ((i=0; i<index; i++)); do
+			printf "%s" "${array_copy[i]}" >> "@this.array_file"
+			echo >> "@this.array_file"
+		done
+		printf "%s" "$value" | base64 -w0 >> "@this.array_file"
+		echo >> "@this.array_file"
+		for ((i=index; i<${#array_copy[@]}; i++)); do
+			printf "%s" "${array_copy[i]}" >> "@this.array_file"
+			echo >> "@this.array_file"
+		done
+		flock -u "${BPP__SHAREDARRAY__LOCKFD}"
+		exec {BPP__SHAREDARRAY__LOCKFD}>&-
+	}
+
+	##METHOD public remove
+	### Removes the value at a specific index from the shared array.
+	###PARAM primitive index
+	### The index of the value to remove.
+	@public @method remove index {
+		@this.used=1
+		if [[ $index -lt 0 || $index -ge @this.size ]]; then
+			>&2 echo "Error: SharedArray: Index out of bounds."
+			return 1
+		fi
+		exec {BPP__SHAREDARRAY__LOCKFD}<>"@this.array_file"
+		flock -x "${BPP__SHAREDARRAY__LOCKFD}"
+
+		# Use sed to efficiently remove the line at the specified index
+		sed -i.tmp "$((index + 1))d" "@this.array_file" && rm -f "@{this.array_file}.tmp"
+
+		flock -u "${BPP__SHAREDARRAY__LOCKFD}"
+		exec {BPP__SHAREDARRAY__LOCKFD}>&-
+	}
+
+	##METHOD public at
+	### Gets the value at a specific index in the shared array.
+	###PARAM primitive index
+	### The index of the value to retrieve.
+	@public @method at index {
+		if [[ $index -lt 0 || $index -ge @this.size ]]; then
+			>&2 echo "Error: SharedArray: Index out of bounds."
+			return 1
+		fi
+		exec {BPP__SHAREDARRAY__LOCKFD}<>"@this.array_file"
+		flock -x "${BPP__SHAREDARRAY__LOCKFD}"
+		local value=$(sed -n "$((index + 1))p" "@this.array_file" | base64 -d)
+		if [[ @this.encrypted -eq 1 ]]; then
+			value=$(printf "%s" "$value" | openssl enc -d -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A)
+		fi
+		echo "$value"
+		flock -u "${BPP__SHAREDARRAY__LOCKFD}"
+		exec {BPP__SHAREDARRAY__LOCKFD}>&-
+	}
+
+	##METHOD public front
+	### Echoes the first element of the shared array.
+	@public @method front {
+		exec {BPP__SHAREDARRAY__LOCKFD}<>"@this.array_file"
+		flock -x "${BPP__SHAREDARRAY__LOCKFD}"
+		@this._get_front
+		if [[ $? -ne 0 ]]; then
+			flock -u "${BPP__SHAREDARRAY__LOCKFD}"
+			exec {BPP__SHAREDARRAY__LOCKFD}>&-
+			return 1
+		fi
+		flock -u "${BPP__SHAREDARRAY__LOCKFD}"
+		exec {BPP__SHAREDARRAY__LOCKFD}>&-
+	}
+
+	##METHOD public back
+	### Echoes the last element of the shared array.
+	@public @method back {
+		exec {BPP__SHAREDARRAY__LOCKFD}<>"@this.array_file"
+		flock -x "${BPP__SHAREDARRAY__LOCKFD}"
+		@this._get_back
+		if [[ $? -ne 0 ]]; then
+			flock -u "${BPP__SHAREDARRAY__LOCKFD}"
+			exec {BPP__SHAREDARRAY__LOCKFD}>&-
+			return 1
+		fi
+		flock -u "${BPP__SHAREDARRAY__LOCKFD}"
+		exec {BPP__SHAREDARRAY__LOCKFD}>&-
+	}
+
+	##METHOD public all
+	### Echoes all elements of the shared array.
+	@public @method all {
+		exec {BPP__SHAREDARRAY__LOCKFD}<>"@this.array_file"
+		flock -x "${BPP__SHAREDARRAY__LOCKFD}"
+		local array_copy=()
+		while IFS= read -r line; do
+			if [[ @this.encrypted -eq 1 ]]; then
+				array_copy+=("$(printf "%s" "$line" | base64 -d | openssl enc -d -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A)")
+			else
+				array_copy+=("$(printf "%s" "$line" | base64 -d)")
+			fi
+		done < "@this.array_file"
+		echo "${array_copy[@]}"
+		flock -u "${BPP__SHAREDARRAY__LOCKFD}"
+		exec {BPP__SHAREDARRAY__LOCKFD}>&-
+	}
+
+	##METHOD public empty
+	### Echoes "true" if the shared array is empty, "false" otherwise.
+	@public @method empty {
+		if [[ @this.size -eq 0 ]]; then
+			echo "true"
+		else
+			echo "false"
+		fi
+	}
+
+	##METHOD public slice
+	### Returns a slice of the shared array from start to end indices.
+	###PARAM primitive start
+	### The starting index of the slice (inclusive).
+	###PARAM primitive end
+	### The ending index of the slice (inclusive).
+	@public @method slice start end {
+		if [[ $start -gt $end || @this.size -eq 0 ]]; then
+			return 1
+		fi
+		if [[ $start -lt 0 ]]; then
+			start=0
+		fi
+		if [[ $end -ge @this.size ]]; then
+			end=$(( @this.size - 1 ))
+		fi
+		exec {BPP__SHAREDARRAY__LOCKFD}<>"@this.array_file"
+		flock -x "${BPP__SHAREDARRAY__LOCKFD}"
+		local array_copy=()
+		while IFS= read -r line; do
+			if [[ @this.encrypted -eq 1 ]]; then
+				array_copy+=("$(printf "%s" "$line" | base64 -d | openssl enc -d -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A)")
+			else
+				array_copy+=("$(printf "%s" "$line" | base64 -d)")
+			fi
+		done < "@this.array_file"
+		echo "${array_copy[@]:$start:$((end - start + 1))}"
+		flock -u "${BPP__SHAREDARRAY__LOCKFD}"
+		exec {BPP__SHAREDARRAY__LOCKFD}>&-
+	}
+
+	##METHOD public clear
+	### Removes all elements from the shared array.
+	@public @method clear {
+		exec {BPP__SHAREDARRAY__LOCKFD}<>"@this.array_file"
+		flock -x "${BPP__SHAREDARRAY__LOCKFD}"
+		> "@this.array_file" # Clear the file
+		flock -u "${BPP__SHAREDARRAY__LOCKFD}"
+		exec {BPP__SHAREDARRAY__LOCKFD}>&-
+	}
+
+	@constructor {
+		@this.array_file=@(mktemp)
+		chmod 600 "@this.array_file"
+		@this.encryption_key=@(head -c 32 /dev/urandom | base64 -w0)
+	}
+
+	@destructor {
+		if [[ -f "@this.array_file" ]]; then
+			exec {BPP__SHAREDARRAY__LOCKFD}<>"@this.array_file"
+			flock -x "${BPP__SHAREDARRAY__LOCKFD}"
+			rm -f "@this.array_file" 2>/dev/null
+			flock -u "${BPP__SHAREDARRAY__LOCKFD}"
+			exec {BPP__SHAREDARRAY__LOCKFD}>&-
+		fi
+	}
+}
+
+#ENDAUTODOC#

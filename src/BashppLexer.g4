@@ -17,6 +17,7 @@ int IfDepth = 0;
 int CaseDepth = 0;
 int ForDepth = 0;
 int WhileDepth = 0;
+int testConditionDepth = 0;
 int64_t most_recent_case_keyword_metatoken_position = INT64_MIN;
 int64_t most_recent_for_keyword_metatoken_position = INT64_MIN;
 SensibleStack<int> nestedSupershellStack;
@@ -366,7 +367,9 @@ DOUBLEAMPERSAND: '&&' {
 			emit(CATCHALL, "&&");
 			break;
 		default:
-			emit(CONNECTIVE, "&&");
+			if (testConditionDepth == 0) {
+				emit(CONNECTIVE, "&&");
+			}
 			break;
 	}
 };
@@ -377,7 +380,9 @@ DOUBLEPIPE: '||' {
 			emit(CATCHALL, "||");
 			break;
 		default:
-			emit(CONNECTIVE, "||");
+			if (testConditionDepth == 0) {
+				emit(CONNECTIVE, "||");
+			}
 			break;
 	}
 };
@@ -1007,11 +1012,15 @@ ARRAY_ASSIGN_END: ')'; // Yet another dummy token
 LBRACKET: '[' {
 	if (modeStack.top() == mode_reference) {
 		emit(ARRAY_INDEX_START, "[");
+	} else if (modeStack.top() == no_mode) {
+		testConditionDepth++;
 	}
 };
 RBRACKET: ']' {
 	if (modeStack.top() == mode_reference) {
 		emit(ARRAY_INDEX_END, "]");
+	} else if (modeStack.top() == no_mode) {
+		testConditionDepth = std::max(testConditionDepth - 1, 0);
 	}
 };
 

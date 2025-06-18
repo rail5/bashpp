@@ -1,0 +1,19 @@
+@ClassName objectName
+@ClassName* objectPointer=@new ClassName
+
+@objectName.methodName argument1 argument2 ...
+@objectPointer.methodName argument1 argument2 ...
+
+echo @objectName.variableName
+echo @objectPointer.variableName
+
+echo @objectName.methodName # Calls the method in a supershell and substitutes the result
+
+@objectName.variableName=value
+
+echo &@objectName # Echoes the address of the object
+echo @objectName # Calls the toPrimitive method
+echo *@objectPointer # Dereferences the pointer and calls the toPrimitive method
+
+@delete @objectName
+@delete @objectPointer

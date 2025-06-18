@@ -1,0 +1,119 @@
+#AUTODOC#
+
+# Copyright (C) 2025 Andrew S. Rightenburg
+# GNU General Public License v3.0
+# This file is part of the Bash++ Standard Library.
+
+#CLASS Array
+## The Array class provides a simple array implementation in Bash++.
+@class Array {
+	@protected array=()
+
+	##METHOD public size
+	### Echoes the number of elements in the array.
+	@public @method size {
+		echo "@{#this.array[@]}"
+	}
+
+	##METHOD public push
+	### Adds a value to the end of the array.
+	###PARAM primitive value
+	#### The value to add to the array.
+	@public @method push value {
+		@this.array+=("$value")
+	}
+
+	##METHOD public pop
+	### Removes and echoes the last element of the array.
+	@public @method pop {
+		if [[ @{#this.array[@]} -gt 0 ]]; then
+			echo "@{this.array[-1]}"
+			unset &@this.array[-1]
+		else
+			return 1
+		fi
+	}
+
+	##METHOD public insert
+	### Inserts a value at a specific index in the array.
+	###PARAM primitive index
+	#### The index at which to insert the value.
+	###PARAM primitive value
+	#### The value to insert into the array.
+	@public @method insert index value {
+		if [[ $index -lt 0 || $index -gt @{#this.array[@]} ]]; then
+			return 1
+		fi
+		# TODO:
+		# This is a hack because Bash++ references do not yet have 100% support for parameter expansion
+		# Therefore we need to copy the array to a primitive first before doing the
+		# Parameter expansion with Bash alone
+		# This should be removed once we have full support for parameter expansion on Bash++ [@] references
+		local array_copy=("@{this.array[@]}")
+		@this.array=("${array_copy[@]:0:$index}" "$value" "${array_copy[@]:$index}")
+	}
+
+	##METHOD public remove
+	### Removes the specified index from the array.
+	###PARAM primitive index
+	#### The index of the value to remove.
+	@public @method remove index {
+		if [[ $index -lt 0 || $index -ge @{#this.array[@]} ]]; then
+			return 1
+		fi
+		local array_copy=("@{this.array[@]}")
+		@this.array=("${array_copy[@]:0:$index}" "${array_copy[@]:$((index + 1))}")
+	}
+
+	##METHOD public get
+	### Gets the value at a specific index.
+	###PARAM primitive index
+	#### The index of the value to retrieve.
+	@public @method at index {
+		echo "@{this.array[$index]}"
+	}
+
+	##METHOD public all
+	### Echoes all elements of the array.
+	@public @method all {
+		if [[ @{#this.array[@]} -gt 0 ]]; then
+			echo "@{this.array[@]}"
+		else
+			return 1
+		fi
+	}
+
+	##METHOD public empty
+	### Echoes "true" if the array is empty, "false" otherwise.
+	@public @method empty {
+		[[ @{#this.array[@]} -eq 0 ]] && echo "true" || echo "false"
+	}
+
+	##METHOD public slice
+	### Returns a slice of the array from start to end indices.
+	###PARAM primitive start
+	#### The starting index of the slice (inclusive).
+	###PARAM primitive end
+	#### The ending index of the slice (inclusive).
+	@public @method slice start end {
+		if [[ $start -gt $end || @{#this.array[@]} -eq 0 ]]; then
+			return 1
+		fi
+		if [[ $start -lt 0 ]]; then
+			start=0
+		fi
+		if [[ $end -ge @{#this.array[@]} ]]; then
+			end=$(( @{#this.array[@]} - 1 ))
+		fi
+		local array_copy=("@{this.array[@]}")
+		echo "${array_copy[@]:$start:$((end - start + 1))}"
+	}
+
+	##METHOD public clear
+	### Removes all elements from the array.
+	@public @method clear {
+		unset &@this.array
+	}
+}
+
+#ENDAUTODOC#

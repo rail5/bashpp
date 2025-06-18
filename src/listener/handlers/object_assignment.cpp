@@ -79,7 +79,7 @@ void BashppListener::exitObject_assignment(BashppParser::Object_assignmentContex
 	std::string object_assignment_code;
 
 	if (object_assignment->rvalue_is_array()) {
-		object_assignment_code = "eval \"" + object_assignment_lvalue + assignment_operator + "(\\\"\\$" + assignment_variable_name + "\\\")\"\n";
+		object_assignment_code = "eval \"" + object_assignment_lvalue + assignment_operator + "(\\\"\\${" + assignment_variable_name + "[@]}\\\")\"\n";
 	} else {
 		object_assignment_code = "eval " + object_assignment_lvalue + assignment_operator + "\\$" + assignment_variable_name + "\n";
 	}

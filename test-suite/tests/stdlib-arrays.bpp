@@ -52,3 +52,7 @@
 @array.all # g f d x y z
 @array.pop # z
 @array.all # g f d x y
+@array.front # g
+@array.back # y
+@array.clear
+@array.size # 0

@@ -457,6 +457,9 @@ d x y
 g f d x y z
 z
 g f d x y
+g
+y
+0
 "
 
 @runner.addTest "STL Shared Stacks" "test-suite/tests/stdlib-sharedstacks.bpp" "0

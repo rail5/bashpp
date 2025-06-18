@@ -65,12 +65,32 @@
 		@this.array=("${array_copy[@]:0:$index}" "${array_copy[@]:$((index + 1))}")
 	}
 
-	##METHOD public get
+	##METHOD public at
 	### Gets the value at a specific index.
 	###PARAM primitive index
 	#### The index of the value to retrieve.
 	@public @method at index {
 		echo "@{this.array[$index]}"
+	}
+
+	##METHOD public front
+	### Echoes the first element of the array.
+	@public @method front {
+		if [[ @{#this.array[@]} -gt 0 ]]; then
+			echo "@{this.array[0]}"
+		else
+			return 1
+		fi
+	}
+
+	##METHOD public back
+	### Echoes the last element of the array.
+	@public @method back {
+		if [[ @{#this.array[@]} -gt 0 ]]; then
+			echo "@{this.array[-1]}"
+		else
+			return 1
+		fi
 	}
 
 	##METHOD public all

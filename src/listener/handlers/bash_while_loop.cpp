@@ -52,10 +52,11 @@ void BashppListener::exitBash_while_loop(BashppParser::Bash_while_loopContext *c
 	current_code_entity->add_code_to_previous_line("while " + while_statement->get_while_condition()->get_code() + "; do\n");
 
 	current_code_entity->add_code_to_previous_line(while_statement->get_pre_code());
+	current_code_entity->add_code_to_previous_line(while_statement->get_code());
 	current_code_entity->add_code_to_next_line(while_statement->get_post_code());
 
 	// Re-evaluate the supershell at the end of the while loop (before the next iteration)
-	current_code_entity->add_code(while_statement->get_code() + "\n" + supershell_evaluation + "done\n");
+	current_code_entity->add_code(supershell_evaluation + "done");
 }
 
 void BashppListener::enterBash_while_condition(BashppParser::Bash_while_conditionContext *ctx) {

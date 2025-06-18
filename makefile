@@ -1,3 +1,9 @@
+# Default to using all available CPU cores for parallel builds
+# unless the user specifies a different number of jobs with -jN
+ifeq ($(filter -j%,$(MAKEFLAGS)),)
+MAKEFLAGS += -j$(shell nproc)
+endif
+
 PARSECHANGELOG := $(shell command -v dpkg-parsechangelog 2> /dev/null)
 
 ifdef PARSECHANGELOG
@@ -8,6 +14,8 @@ else
 	LASTUPDATEDYEAR=$$(grep "^ \-- " debian/changelog | head -n 1 | cut -d, -f2 | date -d - +%Y || date +%Y || echo "2025")
 endif
 
+STDLIB_FILES := $(patsubst %.bpp,%.sh,$(shell find stdlib -name "*.bpp"))
+
 all: compiler std
 
 compiler: clean-main update-version update-year
@@ -15,11 +23,12 @@ compiler: clean-main update-version update-year
 	@mv src/bpp bin/bpp
 
 std: clean-std compiler
-	@for file in "stdlib/"*.bpp; do \
-		echo "Compiling stdlib: $$file"; \
-		base=$$(basename $$file .bpp); \
-		bin/bpp -o stdlib/$$base.sh $$file; \
-	done
+	@echo $(STDLIB_FILES)
+	$(MAKE) $(STDLIB_FILES)
+
+stdlib/%.sh: stdlib/%.bpp
+	@echo "Compiling stdlib: $<"
+	@bin/bpp -o $@ $<
 
 test:
 	bin/bpp test-suite/run.bpp
@@ -107,3 +116,5 @@ clean-technical-docs:
 	@rm -rf docs
 
 clean: clean-src clean-main clean-std clean-manual clean-technical-docs
+
+.PHONY: all compiler std test process-manual-code-snippets clean-src clean-main clean-std clean-manual clean-detailed-manuals clean-technical-docs clean update-version update-year detailed-manuals manual technical-docs stdlib/%.sh

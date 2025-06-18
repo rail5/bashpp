@@ -1,3 +1,23 @@
+bpp (0.4.11) unstable; urgency=medium
+
+  * STL: Added SharedArray class for use by multi-process concurrent
+    applications
+  * Bug fix: lvalue vs. rvalue identification inside test conditions
+    If we see what would ordinarily be a connective (such as || or &&)
+    inside a test condition (ie, [[ condition ]] or [ condition ] ),
+    then, unlike in the ordinary case for a connective, the next token
+    cannot be an lvalue
+  * Build system: parallel STL builds
+  * Bug fix: Input redirection in bash while loops 
+  * STL: Re-added Array class 
+  * Bug fix: Multi-value array assignments
+    Object assignments in which the rvalue was a decently-populated
+    array previously failed and only inserted the first element of
+    said array. Obvious oversight, now fixed, and arrays are copied
+    in full
+
+ -- rail5 <andrew@rail5.org>  Wed, 18 Jun 2025 16:55:54 +0800
+
 bpp (0.4.10) unstable; urgency=medium
 
   * Additions to the standard library:

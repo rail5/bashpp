@@ -1,5 +1,9 @@
 #AUTODOC#
 
+# Copyright (C) 2025 Andrew S. Rightenburg
+# GNU General Public License v3.0
+# This file is part of the Bash++ Standard Library.
+
 #CLASS Stack
 ## The Stack class provides a simple stack implementation in Bash++.
 @class Stack {

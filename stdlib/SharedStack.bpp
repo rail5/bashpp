@@ -1,5 +1,9 @@
 #AUTODOC#
 
+# Copyright (C) 2025 Andrew S. Rightenburg
+# GNU General Public License v3.0
+# This file is part of the Bash++ Standard Library.
+
 if ! command -v wc &> /dev/null; then
 	>&2 echo "Bash++: SharedStack requires the 'wc' command to be available."
 	exit 1

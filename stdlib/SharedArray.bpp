@@ -56,7 +56,7 @@ fi
 		if [[ "$value" == "1" || "$value" == "true" ]]; then
 			if ! command -v openssl &> /dev/null; then
 				>&2 echo "Bash++: SharedArray encryption requires the 'openssl' command to be available."
-				exit 1
+				return 1
 			fi
 			@this.encrypted=1
 		else

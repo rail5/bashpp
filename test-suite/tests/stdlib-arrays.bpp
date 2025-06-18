@@ -56,3 +56,5 @@
 @array.back # y
 @array.clear
 @array.size # 0
+
+@delete @array

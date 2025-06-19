@@ -1,4 +1,4 @@
-@include "../../stdlib/Stack.bpp"
+@include "../../../stdlib/Stack.bpp"
 
 @Stack stack
 

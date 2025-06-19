@@ -22,14 +22,25 @@
 		echo @test.toPrimitive
 	}
 
-	@public @method addTest name sourceFile expectedOutput {
+	@public @method addTest name {
 		@Test* test=@new Test
 		@test.setName "$name"
-		@test.setSourceFile "$sourceFile"
-		@test.setExpectedOutput "$expectedOutput"
+		@test.setSourceFile "test-suite/tests/sources/$name.bpp"
+		@test.setExpectedOutput "@(cat test-suite/tests/expected/$name)"
 		@test.setStats @this.stats
 
 		@this.tests+=("@test")
+	}
+
+	@public @method addAllTests {
+		for source in test-suite/tests/sources/*.bpp; do
+			@Test* test=@new Test
+			@test.setSourceFile "$source"
+			@test.setExpectedOutput "@(cat test-suite/tests/expected/@(basename "$source" .bpp))"
+			@test.setStats @this.stats
+			@test.setName "@(basename "$source" .bpp)"
+			@this.tests+=("@test")
+		done
 	}
 
 	@public @method runAllTests {

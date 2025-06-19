@@ -1,0 +1,8 @@
+default
+case1
+case2
+case3
+\@this\.member is case1
+\@this\.othermember is case1
+\@this\.anothermember is case1
+default

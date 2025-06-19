@@ -1,0 +1,40 @@
+bpp__MyClass__[0-9]+
+MyClass Instance
+default value
+default value
+Displaying default value
+Displaying default value
+Displaying default value
+Displaying default value
+.+line [0-9]+: bpp__MyClass__[0-9]+: command not found
+MyClass Instance
+hello
+hello
+bpp__MyClass__[0-9]+
+default value
+default value
+bpp__[0-9]+__ContainingClass__containingObject
+ContainingClass Instance
+bpp__MyClass__[0-9]+
+MyClass Instance
+default value
+default value
+Displaying default value
+Displaying default value
+Displaying default value
+Displaying default value
+.+line [0-9]+: bpp__MyClass__[0-9]+: command not found
+MyClass Instance
+.+line [0-9]+: bpp__[0-9]+__ContainingClass__containingObject: command not found
+ContainingClass Instance
+hello again
+hello again
+hello
+hello
+bpp__[0-9]+__ContainingClass__containingObject
+echo hello again
+echo hello again
+new value
+default value
+new value
+default value

@@ -82,10 +82,12 @@
 		
 		# Split the output into lines and split the expected output into lines
 		mapfile -t outputLines < <(echo "$output")
-		mapfile -t expectedOutputLines < <(echo "@this.expectedOutput")
+		mapfile -t expectedOutputLines < <(printf "%s\n\n" "@this.expectedOutput")
 
 		# If the output and expected output have different numbers of lines, the test fails immediately
 		if [[ "${#outputLines[@]}" -ne "${#expectedOutputLines[@]}" ]]; then
+			echo "Output and expected output have different number of lines. Test name: @this.name"
+			echo "Output lines: ${#outputLines[@]}, Expected output lines: ${#expectedOutputLines[@]}"
 			@this.status="fail"
 			@this.finishTest
 			return

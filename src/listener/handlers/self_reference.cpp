@@ -31,8 +31,6 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 		throw_syntax_error(ctx->KEYWORD_THIS(), "Self reference outside of class");
 	}
 
-	self_reference_entity->add_code_to_previous_line("local __this=${__objectAddress}\n");
-	self_reference_entity->add_code_to_next_line("unset __this\n");
 }
 
 void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx) {
@@ -203,7 +201,7 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 					return;
 				}
 				// Call .toPrimitive in a supershell and substitute the result
-				code_segment method_call_code = generate_method_call_code(self_reference_code, "toPrimitive", last_reference_entity->get_class(), program);
+				code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", "toPrimitive", last_reference_entity->get_class(), program);
 
 				code_segment method_code = generate_supershell_code(method_call_code.full_code(), in_while_condition, current_while_condition, program);
 				self_reference_entity->add_code_to_previous_line(method_code.pre_code);

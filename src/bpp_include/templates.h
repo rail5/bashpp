@@ -29,42 +29,42 @@ function bpp____supershell() {
 )EOF";
 
 static const char* bpp_vtable_lookup = R"EOF(function bpp____vTable__lookup() {
-	local __objectAddress="$1" __method="$2" __outputVar="$3"
-	([[ -z "${__objectAddress}" ]] || [[ -z "${__method}" ]] || [[ -z "${__outputVar}" ]]) && >&2 echo "Bash++: Error: Invalid vTable lookup" && exit 1
+	local __this="$1" __method="$2" __outputVar="$3"
+	([[ -z "${__this}" ]] || [[ -z "${__method}" ]] || [[ -z "${__outputVar}" ]]) && >&2 echo "Bash++: Error: Invalid vTable lookup" && exit 1
 	while : ; do
-		if ! eval "declare -p \"${__objectAddress}\"" &>/dev/null; then
+		if ! eval "declare -p \"${__this}\"" &>/dev/null; then
 			break
 		fi
-		[[ -z "${!__objectAddress}" ]] && break
-		__objectAddress="${!__objectAddress}"
+		[[ -z "${!__this}" ]] && break
+		__this="${!__this}"
 	done
-	local __vTable="${__objectAddress}____vPointer"
+	local __vTable="${__this}____vPointer"
 	if ! eval "declare -p \"${__vTable}\"" &>/dev/null; then
 		return 1
 	fi
 	local __result="${!__vTable}[\"${__method}\"]"
-	[[ -z "${!__result}" ]] && >&2 echo "Bash++: Error: Method '${__method}' not found in vTable for object '${__objectAddress}'" && return 1
+	[[ -z "${!__result}" ]] && >&2 echo "Bash++: Error: Method '${__method}' not found in vTable for object '${__this}'" && return 1
 	eval "${__outputVar}=\$__result"
 }
 )EOF";
 
 static const char* bpp_dynamic_cast = R"EOF(function bpp____dynamic__cast() {
-	local __objectAddress="$1" __type="$2" __outputVar="$3"
-	([[ -z "${__objectAddress}" ]] || [[ -z "${__type}" ]] || [[ -z "${__outputVar}" ]]) && >&2 echo "Bash++: Error: Invalid dynamic_cast" && exit 1
+	local __this="$1" __type="$2" __outputVar="$3"
+	([[ -z "${__this}" ]] || [[ -z "${__type}" ]] || [[ -z "${__outputVar}" ]]) && >&2 echo "Bash++: Error: Invalid dynamic_cast" && exit 1
 	eval "${__outputVar}=0"
 	while : ; do
-		if ! eval "declare -p \"${__objectAddress}\"" &>/dev/null; then
+		if ! eval "declare -p \"${__this}\"" &>/dev/null; then
 			break
 		fi
-		[[ -z "${!__objectAddress}" ]] && break
-		__objectAddress="${!__objectAddress}"
+		[[ -z "${!__this}" ]] && break
+		__this="${!__this}"
 	done
-	local __vTable="${__objectAddress}____vPointer"
+	local __vTable="${__this}____vPointer"
 	if ! eval "declare -p \"${__vTable}\"" &>/dev/null; then
 		return
 	fi
 	while [[ ! -z "${!__vTable}" ]] 2>/dev/null; do
-		[[ "${!__vTable}" == "bpp__${__type}____vTable" ]] && eval "${__outputVar}=\"${__objectAddress}\"" && return 0
+		[[ "${!__vTable}" == "bpp__${__type}____vTable" ]] && eval "${__outputVar}=\"${__this}\"" && return 0
 		__vTable="${!__vTable}[\"__parent__\"]"
 	done
 	return 1
@@ -72,17 +72,17 @@ static const char* bpp_dynamic_cast = R"EOF(function bpp____dynamic__cast() {
 )EOF";
 
 static const char* template_new_function = R"EOF(function bpp__%CLASS%____new() {
-	local __objectAddress="$1"
-	if [[ "${__objectAddress}" == "" ]]; then
+	local __this="$1"
+	if [[ "${__this}" == "" ]]; then
 		while : ; do
-			__objectAddress="bpp__%CLASS%__$RANDOM$RANDOM$RANDOM$RANDOM"
-			local __unusedVar="${__objectAddress}____vPointer"
+			__this="bpp__%CLASS%__$RANDOM$RANDOM$RANDOM$RANDOM"
+			local __unusedVar="${__this}____vPointer"
 			[[ -z "${!__unusedVar+x}" ]] && break
 		done
 	fi
-	eval "${__objectAddress}____vPointer=bpp__%CLASS%____vTable"
+	eval "${__this}____vPointer=bpp__%CLASS%____vTable"
 %ASSIGNMENTS%
-	echo "${__objectAddress}"
+	echo "${__this}"
 }
 )EOF";
 
@@ -121,18 +121,18 @@ static const char* template_copy_function = R"EOF(function bpp__%CLASS%____copy(
 )EOF";
 
 static const char* template_method = R"EOF(function bpp__%CLASS%__%SIGNATURE%() {
-	local __objectAddress="$1"
+	local __this="$1"
 	shift 1
 	%PARAMS%
 	while : ; do
-		if ! eval "declare -p \"${__objectAddress}\"" &>/dev/null; then
+		if ! eval "declare -p \"${__this}\"" &>/dev/null; then
 			break
 		fi
-		[[ -z "${!__objectAddress}" ]] && break
-		__objectAddress="${!__objectAddress}"
+		[[ -z "${!__this}" ]] && break
+		__this="${!__this}"
 	done
-	local __vPointer="${__objectAddress}____vPointer"
-	if [[ "${__objectAddress}" == "0" ]] || [[ -z "${!__vPointer}" ]]; then
+	local __vPointer="${__this}____vPointer"
+	if [[ "${__this}" == "0" ]] || [[ -z "${!__vPointer}" ]]; then
 		>&2 echo "Bash++: Error: Attempted to call @%CLASS%.%SIGNATURE% on null object"
 		return
 	fi

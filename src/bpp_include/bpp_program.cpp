@@ -79,10 +79,10 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 		if (dm->get_class()->get_name() == "primitive") {
 			// Is it an array?
 			if (dm->is_array()) {
-				assignments += "	eval \"${__objectAddress}__" + dm->get_name() + "=" + dm->get_default_value() + "\"\n";
+				assignments += "	eval \"${__this}__" + dm->get_name() + "=" + dm->get_default_value() + "\"\n";
 			} else {
 				assignments += "	local __objAssignment=" + dm->get_default_value() + "\n";
-				assignments += "	eval \"${__objectAddress}__" + dm->get_name() + "=\\$__objAssignment\"\n";
+				assignments += "	eval \"${__this}__" + dm->get_name() + "=\\$__objAssignment\"\n";
 				assignments += "	unset __objAssignment\n";
 			}
 		} else if (dm->is_pointer()) {
@@ -91,14 +91,14 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 			if (!default_value.empty() && default_value[0] == '$') {
 				default_value_preface = "\\";
 			}
-			assignments += "	eval \"${__objectAddress}__" + dm->get_name() + "=" + default_value_preface + default_value + "\"\n";
+			assignments += "	eval \"${__this}__" + dm->get_name() + "=" + default_value_preface + default_value + "\"\n";
 		} else {
 			// Call 'new' in a supershell and assign its output
-			assignments += "	bpp____supershell \"${__objectAddress}__" + dm->get_name() + "\" \"bpp__" + dm->get_class()->get_name() + "____new\"\n";
+			assignments += "	bpp____supershell \"${__this}__" + dm->get_name() + "\" \"bpp__" + dm->get_class()->get_name() + "____new\"\n";
 			increment_supershell_counter();
 			// Call the constructor if it exists
 			if (dm->get_class()->get_method_UNSAFE("__constructor") != nullptr) {
-				assignments += "	bpp__" + dm->get_class()->get_name() + "____constructor \"${__objectAddress}__" + dm->get_name() + "\"\n";
+				assignments += "	bpp__" + dm->get_class()->get_name() + "____constructor \"${__this}__" + dm->get_name() + "\"\n";
 			}
 		}
 		assignments += dm->get_post_access_code() + "\n";

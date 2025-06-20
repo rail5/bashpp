@@ -292,7 +292,7 @@ void bpp_class::inherit(std::shared_ptr<bpp_class> parent) {
 		proxy->set_inherited(true);
 
 		std::string proxy_method_code = "bpp__" + parent->get_name() + "__" + m->get_name()
-			+ " ${__objectAddress}";
+			+ " ${__this}";
 		// Add the parameters
 		for (auto& p : m->get_parameters()) {
 			proxy->add_parameter(p);
@@ -351,17 +351,17 @@ void bpp_class::finalize(std::shared_ptr<bpp_program> program) {
 	
 	for (auto& dm : datamembers) {
 		if (dm->get_class()->get_name() == "primitive" || dm->is_pointer()) {
-			delete_method->add_code("	unset ${__objectAddress}__" + dm->get_name() + "\n");
+			delete_method->add_code("	unset ${__this}__" + dm->get_name() + "\n");
 		} else {
-			code_segment delete_code = generate_delete_code(dm, "${__objectAddress}__" + dm->get_name(), program);
+			code_segment delete_code = generate_delete_code(dm, "${__this}__" + dm->get_name(), program);
 			delete_method->add_code(delete_code.pre_code + "\n");
-			delete_method->add_code("	unset ${__objectAddress}__" + dm->get_name() + "\n");
+			delete_method->add_code("	unset ${__this}__" + dm->get_name() + "\n");
 		}
 		delete_method->add_code(dm->get_post_access_code() + "\n");
 	}
 
 	// Unset the vPointer
-	delete_method->add_code("	unset ${__objectAddress}____vPointer\n");
+	delete_method->add_code("	unset ${__this}____vPointer\n");
 
 	// Add the delete method to the class
 	add_method(delete_method);

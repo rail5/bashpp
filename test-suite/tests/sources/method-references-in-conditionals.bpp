@@ -1,0 +1,103 @@
+@class Example {
+	@private numberOfTimesXHasBeenCalled=0
+
+	@public @method returnTrue {
+		return 0
+	}
+
+	@public @method returnFalse {
+		return 1
+	}
+
+	@public @method returnFalseTwice {
+		if [[ @this.numberOfTimesXHasBeenCalled -lt 2 ]]; then
+			@this.numberOfTimesXHasBeenCalled=$(( @this.numberOfTimesXHasBeenCalled + 1 ))
+			return 1
+		else
+			return 0
+		fi
+	}
+
+	@public @method returnTrueTwice {
+		if [[ @this.numberOfTimesXHasBeenCalled -lt 2 ]]; then
+			@this.numberOfTimesXHasBeenCalled=$(( @this.numberOfTimesXHasBeenCalled + 1 ))
+			return 0
+		else
+			return 1
+		fi
+	}
+
+	@public @method resetX {
+		@this.numberOfTimesXHasBeenCalled=0
+	}
+
+	@public @method selfReferenceTest {
+		if @this.returnTrue; then
+			echo "Correct"
+		else
+			echo "Incorrect"
+		fi
+		if ! @this.returnTrue; then
+			echo "Incorrect"
+		else
+			echo "Correct"
+		fi
+		if @this.returnFalse; then
+			echo "Incorrect"
+		else
+			echo "Correct"
+		fi
+		if ! @this.returnFalse; then
+			echo "Correct"
+		else
+			echo "Incorrect"
+		fi
+
+		while ! @this.returnFalseTwice; do
+			echo "Hit"
+		done
+		echo "Escaped"
+
+		@this.resetX
+		while @this.returnTrueTwice; do
+			echo "Hit"
+		done
+		echo "Escaped"
+		@this.resetX
+	}
+}
+
+@Example ex
+@ex.selfReferenceTest
+
+if @ex.returnTrue; then
+	echo "Correct"
+else
+	echo "Incorrect"
+fi
+if ! @ex.returnTrue; then
+	echo "Incorrect"
+else
+	echo "Correct"
+fi
+if @ex.returnFalse; then
+	echo "Incorrect"
+else
+	echo "Correct"
+fi
+if ! @ex.returnFalse; then
+	echo "Correct"
+else
+	echo "Incorrect"
+fi
+
+while ! @ex.returnFalseTwice; do
+	echo "Hit"
+done
+echo "Escaped"
+
+@ex.resetX
+while @ex.returnTrueTwice; do
+	echo "Hit"
+done
+echo "Escaped"

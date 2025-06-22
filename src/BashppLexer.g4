@@ -31,6 +31,7 @@ bool waiting_for_heredoc_terminator = false;
 bool waiting_for_heredoc_content_start = false;
 bool parsing_method = false;
 bool in_twotoken_bpp_command = false;
+bool anticipating_exclam = false;
 int dynamic_cast_stage = 0;
 
 int64_t metaTokenCount = 0;
@@ -81,6 +82,18 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 				hit_asterisk_in_current_command = false;
 			}
 			break;
+		case EXCLAM:
+			if (!anticipating_exclam) {
+				break;
+			} else {
+				anticipating_exclam = false;
+			}
+		case BASH_KEYWORD_IF:
+		case BASH_KEYWORD_ELIF:
+		case BASH_KEYWORD_WHILE:
+			anticipating_exclam = true;
+		case BASH_KEYWORD_THEN:
+		case BASH_KEYWORD_ELSE:
 		case DELIM:
 		case NEWLINE:
 		case CONNECTIVE:
@@ -94,42 +107,49 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 			hit_at_in_current_command = false;
 			hit_lbrace_in_current_command = false;
 			hit_asterisk_in_current_command = false;
+			anticipating_exclam = false;
 			break;
 		case AT:
 			if (hit_at_in_current_command) {
 				incoming_token_can_be_lvalue = false;
 			}
 			hit_at_in_current_command = true;
+			anticipating_exclam = false;
 			break;
 		case LBRACE:
 			if (hit_lbrace_in_current_command) {
 				incoming_token_can_be_lvalue = false;
 			}
 			hit_lbrace_in_current_command = true;
+			anticipating_exclam = false;
 			break;
 		case ASTERISK:
 			if (hit_asterisk_in_current_command) {
 				incoming_token_can_be_lvalue = false;
 			}
 			hit_asterisk_in_current_command = true;
+			anticipating_exclam = false;
 			break;
 		case KEYWORD_DYNAMIC_CAST:
 			dynamic_cast_stage = 1;
 		case KEYWORD_NEW:
 			in_twotoken_bpp_command = true;
 			incoming_token_can_be_lvalue = false;
+			anticipating_exclam = false;
 			break;
 		case LESSTHAN:
 			if (dynamic_cast_stage == 1) {
 				dynamic_cast_stage = 2;
 			}
 			incoming_token_can_be_lvalue = false;
+			anticipating_exclam = false;
 			break;
 		case GREATERTHAN:
 			if (dynamic_cast_stage == 2) {
 				dynamic_cast_stage = 3;
 			}
 			incoming_token_can_be_lvalue = false;
+			anticipating_exclam = false;
 			break;
 		case RPAREN:
 			if (CaseDepth > 0 && modeStack.top() == no_mode) {
@@ -139,6 +159,7 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 				hit_at_in_current_command = false;
 				hit_lbrace_in_current_command = false;
 				hit_asterisk_in_current_command = false;
+				anticipating_exclam = false;
 			}
 			break;
 		case IDENTIFIER_LVALUE:
@@ -152,6 +173,7 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 			} else if (dynamic_cast_stage == 0) {
 				in_twotoken_bpp_command = false;
 			}
+			anticipating_exclam = false;
 			break;
 	}
 

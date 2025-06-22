@@ -1,3 +1,14 @@
+bpp (0.4.12) unstable; urgency=medium
+
+  * Lexer: Properly identify lvalues in conditionals
+    Again, a full rewrite of the lexer is sorely needed.
+  * Code generation optimization: Auto assign 'this' pointer once and
+    only once per method
+  * Added spec page on interoperability
+  * Added spec page on objects
+
+ -- rail5 <andrew@rail5.org>  Sun, 22 Jun 2025 16:34:05 +0800
+
 bpp (0.4.11) unstable; urgency=medium
 
   * STL: Added SharedArray class for use by multi-process concurrent

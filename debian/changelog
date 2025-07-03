@@ -1,3 +1,23 @@
+bpp (0.4.13) unstable; urgency=medium
+
+  * STL: Shared data structures now all inherit from SharedObject base
+    class
+    SharedObject base class now also provides extended locking
+    mechanisms to allow a single process's lock to persist across
+    several distinct read-write operations, before being unlocked again
+    for other processes to use.
+    Calling the .lock method and the .unlock method respectively will
+    accomplish this.
+  * Behavior change: allow dynamic cast rvalues to be empty/unset
+    without throwing an error
+    Simply return nullptr in that case
+  * Bug fix: Properly identify lvalues within supershells within dynamic
+    casts
+    Again, the lexer needs to be fully overhauled.
+    Work has at least nominally began on this but will take time
+
+ -- rail5 <andrew@rail5.org>  Fri, 04 Jul 2025 03:06:36 +0800
+
 bpp (0.4.12) unstable; urgency=medium
 
   * Lexer: Properly identify lvalues in conditionals

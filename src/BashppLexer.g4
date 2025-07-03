@@ -108,6 +108,7 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 			hit_lbrace_in_current_command = false;
 			hit_asterisk_in_current_command = false;
 			anticipating_exclam = false;
+			in_twotoken_bpp_command = false;
 			break;
 		case AT:
 			if (hit_at_in_current_command) {
@@ -355,7 +356,6 @@ SUPERSHELL_START: '@(' {
 	}
 	inSupershell = true;
 	parenDepth++;
-	emit(SUPERSHELL_START, "@(");
 };
 
 SUPERSHELL_END: '@('; // This is a dummy token to make the lexer happy

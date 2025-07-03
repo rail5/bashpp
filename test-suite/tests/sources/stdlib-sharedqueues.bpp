@@ -1,4 +1,4 @@
-@include "../../../stdlib/SharedQueue.bpp"
+@include "../../../stdlib/SharedQueue"
 
 # SINGLE-PROCESS, UNENCRYPTED QUEUE TEST
 

@@ -1,4 +1,4 @@
-@include "../../../stdlib/SharedStack.bpp"
+@include "../../../stdlib/SharedStack"
 
 # SINGLE-PROCESS, UNENCRYPTED STACK TEST
 @SharedStack stack

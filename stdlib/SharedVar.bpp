@@ -1,0 +1,70 @@
+#AUTODOC#
+
+# Copyright (C) 2025 Andrew S. Rightenburg
+# GNU General Public License v3.0
+# This file is part of the Bash++ Standard Library.
+
+if ! command -v base64 &> /dev/null; then
+	>&2 echo "Bash++: SharedVar requires the 'base64' command to be available."
+	exit 1
+fi
+if ! command -v flock &> /dev/null; then
+	>&2 echo "Bash++: SharedVar requires the 'flock' command to be available."
+	exit 1
+fi
+if ! command -v chmod &> /dev/null; then
+	>&2 echo "Bash++: SharedVar requires the 'chmod' command to be available."
+	exit 1
+fi
+
+#CLASS SharedVar
+## The SharedVar class provides a way to create and manage shared primitive variables across multiple processes.
+## This class is useful for scenarios in which we're forking processes and need a shared variable between them.
+##
+## Reads and writes are atomic and concurrency-safe.
+##
+## The variable can be encrypted for security.
+##
+## Internally, it uses the file system to store the variable.
+@class SharedVar {
+	@protected var_file
+	@protected encrypted=0
+	@protected encryption_key
+	@protected used=0
+
+	##METHOD public setEncrypted
+	### Sets whether the variable should be encrypted.
+	### Encrypting the variable can mitigate unauthorized reads by other processes.
+	### This cannot be changed after the variable has been used.
+	###PARAM primitive value
+	#### '1' or 'true' enables encryption, any other value disables it.
+	@public @method setEncrypted value {
+		if [[ @this.used -ne 0 ]]; then
+			>&2 echo "Error: SharedVar: Cannot change encryption setting after the array has been used."
+			return 1
+		fi
+		if [[ "$value" == "1" || "$value" == "true" ]]; then
+			if ! command -v openssl &> /dev/null; then
+				>&2 echo "Bash++: SharedVar encryption requires the 'openssl' command to be available."
+				return 1
+			fi
+			@this.encrypted=1
+		else
+			@this.encrypted=0
+		fi
+	}
+
+	##METHOD public get
+	### Gets the value of the shared variable.
+	@public @method get {
+		exec {BPP__SHAREDAVAR__LOCKFD}<>"@this.var_file"
+		flock -x "${BPP__SHAREDAVAR__LOCKFD}"
+		if [[ @this.encrypted -eq 1 ]]; then
+			value="$(openssl enc -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A <<<"$value")"
+		fi
+		printf "%s" "$value" | base64 -w0 >> "@this.array_file"
+		echo >> "@this.array_file"
+		flock -u "${BPP__SHAREDARRAY__LOCKFD}"
+		exec {BPP__SHAREDARRAY__LOCKFD}>&-
+	}
+}

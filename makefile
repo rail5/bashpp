@@ -4,6 +4,8 @@ ifeq ($(filter -j%,$(MAKEFLAGS)),)
 MAKEFLAGS += -j$(shell nproc)
 endif
 
+.SUFFIXES:
+
 PARSECHANGELOG := $(shell command -v dpkg-parsechangelog 2> /dev/null)
 
 ifdef PARSECHANGELOG
@@ -14,7 +16,10 @@ else
 	LASTUPDATEDYEAR=$$(grep "^ \-- " debian/changelog | head -n 1 | cut -d, -f2 | date -d - +%Y || date +%Y || echo "2025")
 endif
 
-STDLIB_FILES := $(patsubst %.bpp,%.sh,$(shell find stdlib -name "*.bpp"))
+# STDLIB_FILES:
+# Find all files without extensions in the stdlib directory
+# And append ".sh" to each file name
+STDLIB_FILES := $(shell find stdlib -type f -not -name '*.*' -exec basename {} \; | sed 's/^/stdlib\//; s/$$/.sh/')
 
 all: compiler std
 
@@ -26,7 +31,7 @@ std: clean-std compiler
 	@echo $(STDLIB_FILES)
 	$(MAKE) $(STDLIB_FILES)
 
-stdlib/%.sh: stdlib/%.bpp
+stdlib/%.sh: stdlib/%
 	@echo "Compiling stdlib: $<"
 	@bin/bpp -o $@ $<
 

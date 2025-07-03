@@ -1,4 +1,4 @@
-@include "../../../stdlib/Queue.bpp"
+@include "../../../stdlib/Queue"
 
 @Queue queue
 

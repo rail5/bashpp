@@ -1,10 +1,11 @@
+#!/usr/bin/env bpp
 #AUTODOC#
 
 # Copyright (C) 2025 Andrew S. Rightenburg
 # GNU General Public License v3.0
 # This file is part of the Bash++ Standard Library.
 
-@include_once "SharedObject.bpp"
+@include_once "SharedObject"
 
 if ! command -v wc &> /dev/null; then
 	>&2 echo "Bash++: SharedQueue requires the 'wc' command to be available."

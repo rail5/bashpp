@@ -1,4 +1,4 @@
-@include "../../../stdlib/SharedArray.bpp"
+@include "../../../stdlib/SharedArray"
 
 # SINGLE-PROCESS, UNENCRYPTED ARRAY TEST
 

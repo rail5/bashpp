@@ -1,4 +1,4 @@
-@include "../../../stdlib/Array.bpp"
+@include "../../../stdlib/Array"
 
 @Array array
 @array.push a

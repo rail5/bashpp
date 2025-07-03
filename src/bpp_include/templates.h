@@ -49,8 +49,8 @@ static const char* bpp_vtable_lookup = R"EOF(function bpp____vTable__lookup() {
 )EOF";
 
 static const char* bpp_dynamic_cast = R"EOF(function bpp____dynamic__cast() {
-	local __this="$1" __type="$2" __outputVar="$3"
-	([[ -z "${__this}" ]] || [[ -z "${__type}" ]] || [[ -z "${__outputVar}" ]]) && >&2 echo "Bash++: Error: Invalid dynamic_cast" && exit 1
+	local __type="$1" __outputVar="$2" __this="$3"
+	([[ -z "${__type}" ]] || [[ -z "${__outputVar}" ]]) && >&2 echo "Bash++: Error: Invalid dynamic_cast" && exit 1
 	eval "${__outputVar}=0"
 	while : ; do
 		if ! eval "declare -p \"${__this}\"" &>/dev/null; then

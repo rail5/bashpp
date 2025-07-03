@@ -1,0 +1,137 @@
+#AUTODOC#
+
+# Copyright (C) 2025 Andrew S. Rightenburg
+# GNU General Public License v3.0
+# This file is part of the Bash++ Standard Library.
+
+# INTERNAL: Base class for all shared objects (SharedArray, SharedStack, SharedQueue, etc.)
+
+if ! command -v flock &> /dev/null; then
+	>&2 echo "Bash++: SharedArray requires the 'flock' command to be available."
+	exit 1
+fi
+if ! command -v chmod &> /dev/null; then
+	>&2 echo "Bash++: SharedArray requires the 'chmod' command to be available."
+	exit 1
+fi
+
+#CLASS SharedObject
+## The SharedObject class provides a base implementation for shared objects that can be used across multiple processes
+##
+## This is an abstract class and should not be instantiated directly.
+## It provides methods for locking, unlocking, and setting encryption.
+## Subclasses should implement their own methods for reading and writing data.
+##
+## Internally, it uses the file system to store the shared object state.
+## The file is created with permissions that allow only the owner to read and write.
+@class SharedObject {
+	@protected object_file
+	@protected encrypted=0
+	@protected encryption_key
+	@protected extended_lock=0
+	@protected used=0
+	@protected fd_variable_name
+
+	##METHOD public setEncrypted
+	### Sets whether the object should be encrypted.
+	### Encrypting the object can mitigate unauthorized reads by other processes.
+	###
+	### This cannot be changed after the object has been used.
+	###PARAM primitive value
+	#### '1' or 'true' enables encryption, any other value disables it.
+	@public @method setEncrypted value {
+		if [[ @this.used -ne 0 ]]; then
+			>&2 echo "Error: SharedObject: Cannot change encryption setting after the array has been used."
+			return 1
+		fi
+		if [[ "$value" == "1" || "$value" == "true" ]]; then
+			if ! command -v openssl &> /dev/null; then
+				>&2 echo "Bash++: SharedObject encryption requires the 'openssl' command to be available."
+				return 1
+			fi
+			@this.encrypted=1
+		else
+			@this.encrypted=0
+		fi
+	}
+
+	# This is an internal method for locking the shared object.
+	# It should not be called directly by users of the class.
+	# Use the `lock` method to lock the object for exclusive access.
+	@protected @method _lock {
+		local fd=@{this.fd_variable_name}
+		if [[ ! -v ${fd} ]]; then
+			eval "exec {${fd}}<>\"@this.object_file\""
+			eval "flock -x \"${!fd}\""
+		else
+			return 1 # Return 1 to indicate that the object is already locked by us
+		fi
+	}
+
+	@protected @method _unlock {
+		local fd=@{this.fd_variable_name}
+		if [[ -v ${fd} ]] && [[ @this.extended_lock -eq 0 ]]; then
+			eval "flock -u \"${!fd}\""
+			eval "exec {${fd}}>&-"
+			eval "unset ${fd}"
+		else
+			return 1 # Return 1 to indicate that either:
+				# 1. The lock was not acquired by this instance, or
+				# 2. The lock is still extended and should not be released yet.
+				# In either case, we do not want to release the lock.
+		fi
+	}
+
+	##METHOD public lock
+	### Locks the shared object for exclusive access.
+	###
+	### Once locked, only the process which locked it can access the object until it is unlocked.
+	###
+	### Attempts by other processes access the object while it is locked will block until it is unlocked.
+	###
+	### Using this method (as opposed to the internal `_lock` method) sets the `extended_lock` flag to 1,
+	### indicating that the lock should not be dropped until explicitly unlocked.
+	### I.e., subsequent calls to `_unlock` (internal) will not release the lock until `unlock` (public) is called.
+	@public @method lock {
+		if @this._lock; then
+			@this.extended_lock=1 # Setting extended_lock to 1 indicates that the lock should not be dropped until explicitly unlocked
+		else
+			return 1
+		fi
+	}
+
+	##METHOD public unlock
+	### Unlocks the shared object, allowing other processes to access it.
+	###
+	### This also resets the `extended_lock` flag to 0.
+	@public @method unlock {
+		if [[ @this.extended_lock -eq 1 ]]; then
+			@this.extended_lock=0
+			@this._unlock
+		else
+			return 1
+		fi
+	}
+
+	@constructor {
+		@this.object_file=@(mktemp)
+		chmod 600 "@this.object_file"
+		@this.encryption_key=@(head -c 32 /dev/urandom | base64 -w0)
+		local fdvar
+		while : ; do
+			fdvar="BPP__SHAREDOBJECT__LOCKFD__$RANDOM$RANDOM$RANDOM$RANDOM"
+			[[ ! -v ${fdvar} ]] && break
+		done
+		@this.fd_variable_name="$fdvar"
+	}
+
+	@destructor {
+		if [[ -f "@this.object_file" ]]; then
+			@this._lock
+			rm -f "@this.object_file" 2>/dev/null
+			@this._unlock
+		fi
+	}
+}
+
+#ENDAUTODOC#

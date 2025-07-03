@@ -1,3 +1,9 @@
+bpp (0.4.14) unstable; urgency=medium
+
+  * Distribution bug fix: Store STL files without extensions in source
+
+ -- rail5 <andrew@rail5.org>  Fri, 04 Jul 2025 04:16:31 +0800
+
 bpp (0.4.13) unstable; urgency=medium
 
   * STL: Shared data structures now all inherit from SharedObject base

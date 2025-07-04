@@ -1,0 +1,53 @@
+@include "../../../stdlib/SharedVar"
+
+@SharedVar shared_var
+@shared_var.set "Hello, World!"
+@shared_var.get # Hello, World!
+@shared_var.set "Goodbye, World!"
+@shared_var.get # Goodbye, World!
+
+{
+	@shared_var.lock
+	@shared_var.set "Initial value from fork 1"
+	@shared_var.unlock
+} &
+
+{
+	sleep 0.5
+	@shared_var.lock
+	@shared_var.set "@(@shared_var.get) appended from fork 2"
+	@shared_var.unlock
+} &
+
+wait
+
+@shared_var.get # Initial value from fork 1 appended from fork 2
+
+@delete @shared_var
+
+# Test encryption
+@SharedVar encrypted_var
+@encrypted_var.setEncrypted 1
+@encrypted_var.set "Hello, World!"
+@encrypted_var.get # Hello, World!
+@encrypted_var.set "Goodbye, World!"
+@encrypted_var.get # Goodbye, World!
+
+{
+	@encrypted_var.lock
+	@encrypted_var.set "Initial value from fork 1"
+	@encrypted_var.unlock
+} &
+
+{
+	sleep 0.5
+	@encrypted_var.lock
+	@encrypted_var.set "@(@encrypted_var.get) appended from fork 2"
+	@encrypted_var.unlock
+} &
+
+wait
+
+@encrypted_var.get # Initial value from fork 1 appended from fork 2
+
+@delete @encrypted_var

@@ -1,3 +1,11 @@
+bpp (0.4.16) unstable; urgency=medium
+
+  * STL: Added 'SharedVar' class
+    Adds support for singular shared (primitive) shell variables between
+    multiple concurrent processes
+
+ -- rail5 <andrew@rail5.org>  Fri, 04 Jul 2025 17:01:54 +0800
+
 bpp (0.4.15) unstable; urgency=medium
 
   * Spec: Fixed whatis entry

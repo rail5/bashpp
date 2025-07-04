@@ -1,69 +1,49 @@
+@include_once "../stdlib/SharedVar"
 @class TestStats {
-	@private passedFile="$(mktemp)"
-	@private failedFile="$(mktemp)"
-	@private untestedFile="$(mktemp)"
+	@private @SharedVar* passedTests=@new SharedVar
+	@private @SharedVar* failedTests=@new SharedVar
+	@private @SharedVar* untestedTests=@new SharedVar
 
 	@public @method init {
-		echo 0 > "@this.passedFile"
-		echo 0 > "@this.failedFile"
-		echo 0 > "@this.untestedFile"
+		@this.passedTests.set 0
+		@this.failedTests.set 0
+		@this.untestedTests.set 0
 	}
 
 	@public @method clean {
-		rm -f "@this.passedFile"
-		rm -f "@this.failedFile"
-		rm -f "@this.untestedFile"
+		@delete @this.passedTests
+		@delete @this.failedTests
+		@delete @this.untestedTests
 	}
 
 	@public @method incrementFailedTests {
-		# Thread-safe update
-		
-		# Lock the file
-		exec {lock_fd}<> "@this.failedFile"
-		flock -x "$lock_fd"
-		# Once the file is locked, read the current value, increment it, write it back, and unlock the file
-		local numberOfFailedTests=@(cat "@this.failedFile")
-		echo $((numberOfFailedTests + 1)) > "@this.failedFile"
-		flock -u "${lock_fd}"
-		exec {lock_fd}>&-
+		@this.failedTests.lock
+		@this.failedTests.set $((@this.failedTests.get + 1)) # Increment failed tests
+		@this.failedTests.unlock
 	}
 
 	@public @method incrementPassedTests {
-		# Thread-safe update
-		
-		# Lock the file
-		exec {lock_fd}<> "@this.passedFile"
-		flock -x "$lock_fd"
-		# Once the file is locked, read the current value, increment it, write it back, and unlock the file
-		local numberOfPassedTests=@(cat "@this.passedFile")
-		echo $((numberOfPassedTests + 1)) > "@this.passedFile"
-		flock -u "${lock_fd}"
-		exec {lock_fd}>&-
+		@this.passedTests.lock
+		@this.passedTests.set $((@this.passedTests.get + 1)) # Increment passed tests
+		@this.passedTests.unlock
 	}
 
 	@public @method incrementUntestedTests {
-		# Thread-safe update
-		
-		# Lock the file
-		exec {lock_fd}<> "@this.untestedFile"
-		flock -x "$lock_fd"
-		# Once the file is locked, read the current value, increment it, write it back, and unlock the file
-		local numberOfUntestedTests=@(cat "@this.untestedFile")
-		echo $((numberOfUntestedTests + 1)) > "@this.untestedFile"
-		flock -u "${lock_fd}"
-		exec {lock_fd}>&-
+		@this.untestedTests.lock
+		@this.untestedTests.set $((@this.untestedTests.get + 1)) # Increment untested tests
+		@this.untestedTests.unlock
 	}
 
 	@public @method getFailCount {
-		cat "@this.failedFile"
+		@this.failedTests.get
 	}
 
 	@public @method getPassCount {
-		cat "@this.passedFile"
+		@this.passedTests.get
 	}
 
 	@public @method getUntestedCount {
-		cat "@this.untestedFile"
+		@this.untestedTests.get
 	}
 
 	@public @method toPrimitive {

@@ -4,7 +4,7 @@ title: Objects
 ---
 # NAME
 
-Bash++ Objects - Object-Oriented Programming in Bash++
+Objects - Object-Oriented Programming in Bash++
 
 # SYNOPSIS
 

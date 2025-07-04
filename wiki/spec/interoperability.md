@@ -4,7 +4,7 @@ title: Language Interoperability
 ---
 # NAME
 
-Bash++ Interoperability Notes - Interoperability with Bash Features
+Interoperability - Interoperability with Bash Features
 
 # DESCRIPTION
 

@@ -6,11 +6,7 @@ override_dh_auto_install:
 	make manual
 	install -D -m 0755 bin/bpp "$$(pwd)/debian/bpp/usr/bin/bpp"
 	@mkdir -p "$$(pwd)/debian/libstd-bpp/usr/lib/bpp/stdlib"
-	@for file in "stdlib/"*.bpp; do \
-	  base=$$(basename $$file .bpp); \
-	  install -D -m 0644 $$file "$$(pwd)/debian/libstd-bpp/usr/lib/bpp/stdlib/$$base"; \
-	done
-	install -D -m 0644 "stdlib/"*.sh "$$(pwd)/debian/libstd-bpp/usr/lib/bpp/stdlib/"
+	install -D -m 0755 stdlib/* "$$(pwd)/debian/libstd-bpp/usr/lib/bpp/stdlib/"
 
 override_dh_strip:
 	dh_strip --no-automatic-dbgsym

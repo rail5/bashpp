@@ -1,0 +1,59 @@
+#!/usr/bin/env bpp
+#AUTODOC#
+
+# Copyright (C) 2025 Andrew S. Rightenburg
+# GNU General Public License v3.0
+# This file is part of the Bash++ Standard Library.
+
+@include_once "SharedObject"
+
+if ! command -v base64 &> /dev/null; then
+	>&2 echo "Bash++: SharedVar requires the 'base64' command to be available."
+	exit 1
+fi
+
+#CLASS SharedVar : SharedObject
+## The SharedVar class provides a way to create and manage shared primitive variables across multiple processes.
+## This class is useful for scenarios in which we're forking processes and need a shared variable between them.
+##
+## Reads and writes are atomic and concurrency-safe.
+##
+## The variable can be encrypted for security.
+##
+## Internally, it uses the file system to store the variable.
+@class SharedVar : SharedObject {
+	@protected var_file
+	@protected encrypted=0
+	@protected encryption_key
+	@protected used=0
+
+	##METHOD public get
+	### Gets the value of the shared variable.
+	@public @method get {
+		@this._lock
+		local value=$(< "@this.object_file")
+		value=@(base64 -d <<<"$value")
+		if [[ @this.encrypted -eq 1 ]]; then
+			value="$(openssl enc -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -d -a -A <<<"$value")"
+		fi
+		echo "$value"
+		@this._unlock
+	}
+
+	##METHOD public set
+	### Sets the value of the shared variable.
+	###PARAM primitive value
+	#### The value to set for the shared variable.
+	@public @method set value {
+		@this.used=1
+		@this._lock
+		if [[ @this.encrypted -eq 1 ]]; then
+			value="$(openssl enc -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A <<<"$value")"
+		fi
+		printf "%s" "$value" | base64 -w0 > "@this.object_file"
+		echo >> "@this.object_file"
+		@this._unlock
+	}
+}
+
+#ENDAUTODOC#

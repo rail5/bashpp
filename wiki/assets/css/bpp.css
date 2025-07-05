@@ -6,8 +6,12 @@
 	color: #6A9955;
 }
 
-.storage\.type\.bashpp, .storage\.modifier\.bashpp, .keyword\.other\.bashpp, .punctuation\.definition\.logical-expression\.shell {
+.storage\.type\.bashpp, .storage\.modifier\.bashpp, .punctuation\.definition\.logical-expression\.shell {
 	color: #569CD6;
+}
+
+.keyword\.other\.bashpp {
+	color: #569CD6 !important; /* Highlight keywords even within other contexts such as strings */
 }
 
 .entity\.name\.type\.class\.bashpp, .entity\.name\.type\.parentclass\.bashpp {

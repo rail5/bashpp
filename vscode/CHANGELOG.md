@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.5.1]
+
+- Specially-highlight the `@this` and `@super` keywords even when followed by a "dot chain"
+  - I.e., `@this.innerObject.method` should show `@this` highlighted *as a keyword*, and `.innerObject.method` highlighted *as an object reference*
+  - Previously, the entire string was simply highlighted as an object reference
+
 ## [0.5.0]
 
 - Brought syntax rules up to speed with Bash++ v0.5.0 by adding support for the `@super` keyword

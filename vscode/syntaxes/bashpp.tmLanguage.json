@@ -863,8 +863,23 @@
 		"bashpp-keyword": {
 			"patterns": [
 				{
-					"match": "(?<!\\\\)(?:@new|@delete|@nullptr|@include_once|@include|@this|@super)(?=\\s|\\(|$)",
+					"match": "(?<!\\\\)(?:@new|@delete|@nullptr|@include_once|@include)(?=\\s|\\(|$)",
 					"name": "keyword.other.bashpp"
+				},
+				{
+					"comment": "Capture entire self-reference strings while still specially-highlighting the @this or @super keyword",
+					"match": "(?<!\\\\)(@this|@super)((?!__)\\.[a-zA-Z_]([a-zA-Z0-9_]*\\.?)*)",
+					"captures": 
+					{ 
+						"1": 
+						{ 
+							"name": "keyword.other.bashpp"
+						}, 
+						"2": 
+						{ 
+							"name": "variable.other.normal.bashpp"
+						}
+					} 
 				},
 				{
 					"match": "(?<=^|\\s)(?:@public|@private|@protected|@virtual)(?=\\s|$)",

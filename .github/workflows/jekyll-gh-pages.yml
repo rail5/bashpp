@@ -8,6 +8,7 @@ on:
       - "wiki/**"
       - "src/**"
       - "test-suite/**"
+      - "vscode/syntaxes/**"
       - "makefile"
       - "Doxyfile"
       - ".github/workflows/jekyll-gh-pages.yml"

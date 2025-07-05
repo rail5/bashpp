@@ -64,6 +64,7 @@ code_segment generate_method_call_code(
 	const std::string&					reference_code,
 	const std::string&					method_name,
 	std::shared_ptr<bpp_class>			assumed_class,
+	bool force_static_reference,
 	std::shared_ptr<bpp::bpp_program>	program
 	);
 

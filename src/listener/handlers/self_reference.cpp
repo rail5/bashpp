@@ -26,9 +26,11 @@ void BashppListener::enterSelf_reference(BashppParser::Self_referenceContext *ct
 	self_reference_entity->inherit(current_code_entity);
 	entity_stack.push(self_reference_entity);
 
+	antlr4::tree::TerminalNode* this_keyword = ctx->KEYWORD_THIS() != nullptr ? ctx->KEYWORD_THIS() : ctx->KEYWORD_SUPER();
+
 	if (current_class == nullptr) {
 		entity_stack.pop();
-		throw_syntax_error(ctx->KEYWORD_THIS(), "Self reference outside of class");
+		throw_syntax_error(this_keyword, "Self reference outside of class");
 	}
 
 }
@@ -47,6 +49,20 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 	std::shared_ptr<bpp::bpp_class> current_class = entity_stack.top()->get_containing_class().lock();
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
+
+	bool force_static_reference = false; // Whether to skip vtable lookups and resolve methods statically
+			// This flag is only tripped if we're calling @super.someMethod
+			// In that case, we resolve the method statically
+
+	antlr4::tree::TerminalNode* this_keyword = ctx->KEYWORD_THIS() != nullptr ? ctx->KEYWORD_THIS() : ctx->KEYWORD_SUPER();
+	if (this_keyword == ctx->KEYWORD_SUPER()) {
+		std::string derived_class_name = current_class->get_name();
+		current_class = std::dynamic_pointer_cast<bpp::bpp_class>(current_class->get_parent());
+		force_static_reference = true; // We want to resolve methods statically when using @super
+		if (current_class == nullptr) {
+			throw_syntax_error_from_exitRule(this_keyword, derived_class_name + " has no parent class to reference with @super");
+		}
+	}
 
 	// Check if we're in an object_address context
 	// This will be important later -- we'll have to return differently if we are
@@ -134,7 +150,7 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 	bool ready_to_exit = false;
 
 	if (last_reference_type == bpp::reference_type::ref_method) {
-		code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", method->get_name(), class_containing_the_method, program);
+		code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", method->get_name(), class_containing_the_method, force_static_reference, program);
 
 		// Are we taking the address of the method, or calling it?
 		if (object_address_entity != nullptr) {
@@ -201,7 +217,7 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 					return;
 				}
 				// Call .toPrimitive in a supershell and substitute the result
-				code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", "toPrimitive", last_reference_entity->get_class(), program);
+				code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", "toPrimitive", last_reference_entity->get_class(), force_static_reference, program);
 
 				code_segment method_code = generate_supershell_code(method_call_code.full_code(), in_while_condition, current_while_condition, program);
 				self_reference_entity->add_code_to_previous_line(method_code.pre_code);
@@ -215,7 +231,7 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 				// Show a warning if we're doing a dynamic_cast
 				std::shared_ptr<bpp::bpp_dynamic_cast_statement> dynamic_cast_entity = std::dynamic_pointer_cast<bpp::bpp_dynamic_cast_statement>(current_code_entity);
 				if (dynamic_cast_entity != nullptr) {
-					show_warning(ctx->KEYWORD_THIS(), "Dynamic casting the result of .toPrimitive may not be what you want\nDid you mean to take the address of the object?");
+					show_warning(this_keyword, "Dynamic casting the result of .toPrimitive may not be what you want\nDid you mean to take the address of the object?");
 				}
 				return;
 			}
@@ -230,7 +246,7 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 					throw_syntax_error_from_exitRule(ctx->IDENTIFIER().back(), "Cannot call @delete on a primitive");
 				}
 				if (last_reference_entity == current_class) {
-					throw_syntax_error_from_exitRule(ctx->KEYWORD_THIS(), "Cannot call @delete on '@this'");
+					throw_syntax_error_from_exitRule(this_keyword, "Cannot call @delete on '@this'");
 				}
 
 				delete_entity->set_object_to_delete(std::dynamic_pointer_cast<bpp::bpp_object>(last_reference_entity));
@@ -288,7 +304,7 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 	if (!ready_to_exit) {
 		// We need to call the .toPrimitive method on the object
 		indirection = (created_first_temporary_variable && !hasPoundKey) ? "!" : "";
-		code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", "toPrimitive", last_reference_entity->get_class(), program);
+		code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", "toPrimitive", last_reference_entity->get_class(), false, program);
 
 		code_segment method_code = generate_supershell_code(method_call_code.full_code(), in_while_condition, current_while_condition, program);
 		self_reference_entity->add_code_to_previous_line(method_code.pre_code);
@@ -298,7 +314,7 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 		// Show a warning if we're doing a dynamic_cast
 		std::shared_ptr<bpp::bpp_dynamic_cast_statement> dynamic_cast_entity = std::dynamic_pointer_cast<bpp::bpp_dynamic_cast_statement>(current_code_entity);
 		if (dynamic_cast_entity != nullptr) {
-			show_warning(ctx->KEYWORD_THIS(), "Dynamic casting the result of .toPrimitive may not be what you want\nDid you mean to take the address of the object?");
+			show_warning(this_keyword, "Dynamic casting the result of .toPrimitive may not be what you want\nDid you mean to take the address of the object?");
 		}
 	}
 

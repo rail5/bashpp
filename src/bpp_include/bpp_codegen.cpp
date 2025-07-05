@@ -81,12 +81,12 @@ code_segment generate_delete_code(
 	// Ie, if the object is a pointer, this should be the address of the object
 	code_segment result;
 
-	code_segment destructor_code = generate_method_call_code(object_ref, "__destructor", object->get_class(), program);
+	code_segment destructor_code = generate_method_call_code(object_ref, "__destructor", object->get_class(), false, program);
 	result.pre_code += destructor_code.pre_code;
 	result.pre_code += destructor_code.code + "\n";
 	result.pre_code += destructor_code.post_code;
 
-	code_segment delete_code = generate_method_call_code(object_ref, "__delete", object->get_class(), program);
+	code_segment delete_code = generate_method_call_code(object_ref, "__delete", object->get_class(), false, program);
 	result.pre_code += delete_code.pre_code;
 	result.pre_code += delete_code.code + "\n";
 	result.pre_code += delete_code.post_code;
@@ -114,6 +114,7 @@ code_segment generate_method_call_code(
 	const std::string& reference_code,
 	const std::string& method_name,
 	std::shared_ptr<bpp::bpp_class> assumed_class,
+	bool force_static_reference,
 	std::shared_ptr<bpp::bpp_program> program
 ) {
 	code_segment result;
@@ -138,7 +139,7 @@ code_segment generate_method_call_code(
 	}
 
 	// Is the method virtual?
-	if (assumed_method->is_virtual()) {
+	if (assumed_method->is_virtual() && !force_static_reference) {
 		// Look up the method in the vTable
 		result.pre_code = "if bpp____vTable__lookup \"" + reference_code + "\" \"" + method_name + "\" __func" + std::to_string(program->get_function_counter()) + "; then\n";
 		result.post_code = "	unset __func" + std::to_string(program->get_function_counter()) + "\nfi\n";

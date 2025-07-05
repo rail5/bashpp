@@ -126,7 +126,7 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 			"class", "constructor", "delete", "destructor",
 			"dynamic_cast", "include", "include_once", "method",
 			"new", "nullptr", "primitive", "private",
-			"protected", "public", "this", "virtual"
+			"protected", "public", "super", "this", "virtual"
 		};
 
 		bool is_protected_keyword(const std::string& keyword);

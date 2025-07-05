@@ -19,15 +19,30 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 	 * There is no need to call the method in a supershell for lvalues. We can (and must) just call it directly
 	 */
 
+	antlr4::tree::TerminalNode* this_keyword = ctx->KEYWORD_THIS_LVALUE() != nullptr ? ctx->KEYWORD_THIS_LVALUE() : ctx->KEYWORD_SUPER_LVALUE();
+
+	bool force_static_reference = false; // Whether to skip vtable lookups and resolve methods statically
+			// This flag is only tripped if we're calling @super.someMethod
+			// In that case, we resolve the method statically
+
 	std::shared_ptr<bpp::bpp_class> current_class = entity_stack.top()->get_containing_class().lock();
 	if (current_class == nullptr) {
-		throw_syntax_error(ctx->KEYWORD_THIS_LVALUE(), "Self reference outside of class");
+		throw_syntax_error(this_keyword, "Self reference outside of class");
 	}
 
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(ctx->KEYWORD_THIS_LVALUE(), "Object reference outside of code entity");
+		throw_syntax_error(this_keyword, "Object reference outside of code entity");
+	}
+
+	if (this_keyword == ctx->KEYWORD_SUPER_LVALUE()) {
+		std::string derived_class_name = current_class->get_name();
+		current_class = std::dynamic_pointer_cast<bpp::bpp_class>(current_class->get_parent());
+		force_static_reference = true; // We want to resolve methods statically when using @super
+		if (current_class == nullptr) {
+			throw_syntax_error(this_keyword, derived_class_name + " has no parent class to reference with @super");
+		}
 	}
 
 	// Are we in an object_assignment context?
@@ -131,7 +146,7 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 
 		std::string indirection = ctx->IDENTIFIER().size() > 1 ? "!" : "";
 
-		code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", method->get_name(), class_containing_the_method, program);
+		code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", method->get_name(), class_containing_the_method, force_static_reference, program);
 
 		// Don't run the method in a supershell, just call it directly
 		self_reference_entity->add_code_to_previous_line(method_call_code.pre_code);
@@ -156,7 +171,7 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 		std::shared_ptr<bpp::bpp_pointer_dereference> pointer_dereference = std::dynamic_pointer_cast<bpp::bpp_pointer_dereference>(current_code_entity);
 		if (pointer_dereference != nullptr && last_reference_type != bpp::reference_type::ref_primitive) {
 			// Call .toPrimitive
-			code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", "toPrimitive", last_reference_entity->get_class(), program);
+			code_segment method_call_code = generate_method_call_code("${" + indirection + self_reference_code + "}", "toPrimitive", last_reference_entity->get_class(), force_static_reference, program);
 
 			pointer_dereference->add_code_to_previous_line(self_reference_entity->get_pre_code());
 			pointer_dereference->add_code_to_previous_line(method_call_code.pre_code);
@@ -191,7 +206,7 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 	}
 
 	// We need to call the .toPrimitive method on the object
-	code_segment method_call_code = generate_method_call_code("${!" + self_reference_code + "}", "toPrimitive", last_reference_entity->get_class(), program);
+	code_segment method_call_code = generate_method_call_code("${!" + self_reference_code + "}", "toPrimitive", last_reference_entity->get_class(), force_static_reference, program);
 
 	// Don't run the method in a supershell, just call it directly
 	self_reference_entity->add_code_to_previous_line(method_call_code.pre_code);

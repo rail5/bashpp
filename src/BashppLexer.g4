@@ -165,6 +165,7 @@ void emit(std::unique_ptr<antlr4::Token> t) {
 			break;
 		case IDENTIFIER_LVALUE:
 		case KEYWORD_THIS_LVALUE:
+		case KEYWORD_SUPER_LVALUE:
 			last_token_was_lvalue = true;
 		default:
 			incoming_token_can_be_lvalue = false;
@@ -585,6 +586,14 @@ KEYWORD_THIS: 'this' {
 };
 
 KEYWORD_THIS_LVALUE: 'this'; // Another dummy token
+
+KEYWORD_SUPER: 'super' {
+	if (incoming_token_can_be_lvalue) {
+		emit(KEYWORD_SUPER_LVALUE, getText());
+	}
+};
+
+KEYWORD_SUPER_LVALUE: 'super'; // Yet another dummy token
 
 // Bash keywords
 BASH_KEYWORD_IF: 'if' {

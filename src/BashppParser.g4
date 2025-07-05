@@ -126,9 +126,9 @@ object_reference: IDENTIFIER (DOT IDENTIFIER)* array_index?;
 object_reference_as_lvalue: IDENTIFIER_LVALUE (DOT IDENTIFIER)* array_index?;
 
 // Self-reference from within a class
-self_reference: KEYWORD_THIS (DOT IDENTIFIER)* array_index?;
+self_reference: (KEYWORD_THIS | KEYWORD_SUPER) (DOT IDENTIFIER)* array_index?;
 
-self_reference_as_lvalue: KEYWORD_THIS_LVALUE (DOT IDENTIFIER)* array_index?;
+self_reference_as_lvalue: (KEYWORD_THIS_LVALUE | KEYWORD_SUPER_LVALUE) (DOT IDENTIFIER)* array_index?;
 
 // Delete statement
 delete_statement: KEYWORD_DELETE WS* ref_rvalue;

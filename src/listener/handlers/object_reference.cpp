@@ -169,7 +169,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 
 	if (last_reference_type == bpp::reference_type::ref_method) {
 		indirection = ctx->IDENTIFIER().size() > 3 ? "!" : "";
-		code_segment method_call_code = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, method->get_name(), class_containing_the_method, program);
+		code_segment method_call_code = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, method->get_name(), class_containing_the_method, false, program);
 		// Are we taking the *address* of the method or are we calling it?
 		if (object_address_entity != nullptr) {
 			/**
@@ -318,7 +318,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 					// Call .toPrimitive
 					indirection = (created_second_temporary_variable && !hasPoundKey) ? "!" : "";
 
-					code_segment method_call_code = generate_method_call_code("${" + indirection + object_reference_code + "}", "toPrimitive", last_reference_object->get_class(), program);
+					code_segment method_call_code = generate_method_call_code("${" + indirection + object_reference_code + "}", "toPrimitive", last_reference_object->get_class(), false, program);
 
 					code_segment method_code = generate_supershell_code(method_call_code.full_code(), in_while_condition, current_while_condition, program);
 					object_reference_entity->add_code_to_previous_line(method_code.pre_code);
@@ -366,7 +366,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 		encase_close = ctx->IDENTIFIER().size() > 1 ? "}" : "";
 		indirection = ctx->IDENTIFIER().size() > 2 ? "!" : "";
 
-		code_segment method_call_code = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, "toPrimitive", last_reference_entity->get_class(), program);
+		code_segment method_call_code = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, "toPrimitive", last_reference_entity->get_class(), false, program);
 
 		code_segment method_code = generate_supershell_code(method_call_code.full_code(), in_while_condition, current_while_condition, program);
 		object_reference_entity->add_code_to_previous_line(method_code.pre_code);

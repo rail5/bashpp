@@ -1,3 +1,12 @@
+bpp (0.5.0) unstable; urgency=medium
+
+  * Added support for 'super' keyword
+    Temporarily switches reference context to the immediate parent class
+    of the current object
+  * Test suite: Use new SharedVar class from STL for statistics
+
+ -- rail5 <andrew@rail5.org>  Sat, 05 Jul 2025 20:11:19 +0800
+
 bpp (0.4.16) unstable; urgency=medium
 
   * STL: Added 'SharedVar' class

@@ -36,6 +36,7 @@ Using `@super` only accesses the **immediate parent class**. It cannot traverse 
 
 # SEE ALSO
 
-- [bpp-objects(3)](objects.md) for deleting an object
+- [bpp-objects(3)](objects.md) for more information on objects
+- [bpp-methods(3)](methods.md) for more information on methods
 - [bpp-classes(3)](classes.md) for more information on classes
 - [bpp-pointers(3)](pointers.md) for more information on pointers

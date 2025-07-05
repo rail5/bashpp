@@ -863,7 +863,7 @@
 		"bashpp-keyword": {
 			"patterns": [
 				{
-					"match": "(?<!\\\\)(?:@new|@delete|@nullptr|@include_once|@include)(?=\\s|\\(|$)",
+					"match": "(?<!\\\\)(?:@new|@delete|@nullptr|@include_once|@include|@this|@super)(?=\\s|\\(|$)",
 					"name": "keyword.other.bashpp"
 				},
 				{
@@ -1237,6 +1237,9 @@
 							"name": "constant.character.escape.shell"
 						},
 						{
+							"include": "#bashpp-keyword"
+						},
+						{
 							"include": "#variable"
 						},
 						{
@@ -1378,6 +1381,10 @@
 						{
 							"match": "!|:[-=?+]?|\\*|@|#{1,2}|%{1,2}|/",
 							"name": "keyword.operator.expansion.bashpp"
+						},
+						{
+							"match": "(?<=@\\{)(this|super)",
+							"name": "keyword.other.bashpp"
 						},
 						{
 							"captures": {

@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.5.2]
+
+- Bug fix: properly highlight `@this` and `@super` as *keywords* within double-quoted strings
+ - Also properly highlight `@{this}` and `@{super}` as keywords
+
 ## [0.5.1]
 
 - Specially-highlight the `@this` and `@super` keywords even when followed by a "dot chain"

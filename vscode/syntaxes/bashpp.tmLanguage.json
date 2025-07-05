@@ -863,7 +863,7 @@
 		"bashpp-keyword": {
 			"patterns": [
 				{
-					"match": "(?<!\\\\)(?:@new|@delete|@nullptr|@include_once|@include|@this)(?=\\s|\\(|$)",
+					"match": "(?<!\\\\)(?:@new|@delete|@nullptr|@include_once|@include|@this|@super)(?=\\s|\\(|$)",
 					"name": "keyword.other.bashpp"
 				},
 				{

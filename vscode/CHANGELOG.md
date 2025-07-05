@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.5.0]
+
+- Brought syntax rules up to speed with Bash++ v0.5.0 by adding support for the `@super` keyword
+
 ## [0.4.0]
 
 - Brought syntax rules up to speed with Bash++ v0.4.0 by adding support for the `@include` directive's new syntax

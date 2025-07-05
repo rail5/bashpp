@@ -1,0 +1,44 @@
+@class Example {
+	@public member="default value"
+	@virtual @public @method something {
+		echo "Base class"
+	}
+	
+	@public @method nonVirtual {
+		echo "Non-virtual method in base class"
+	}
+}
+
+@class Derived : Example {
+	@public @method something {
+		echo "Derived class" # "Derived class"
+		@super.something # "Base class"
+
+		@super.nonVirtual # "Non-virtual method in base class"
+
+		echo @super.member # "default value"
+		echo @this.member # "default value"
+
+		echo @super # address of the current object
+		echo @this # address of the current object
+
+		echo &@super # "__this" (variable holding the 'this' pointer)
+		echo &@this # "__this" (variable holding the 'this' pointer)
+
+		echo *@super # "Example Instance" (call to @super.toPrimitive)
+		echo *@this # "Derived Instance" (call to @this.toPrimitive)
+
+		echo &@super.something # Address of the base class method
+		echo &@this.something # Address of the derived class method
+		echo &@super.nonVirtual # Address of the base class non-virtual
+		echo &@this.nonVirtual # Address of the derived class non-virtual
+		echo &@super.member # Address of this object's member
+		echo &@this.member # Address of this object's member
+
+		*@super # "Example Instance" (call to @super.toPrimitive)
+		*@this # "Derived Instance" (call to @this.toPrimitive)
+	}
+}
+
+@Derived d
+@d.something

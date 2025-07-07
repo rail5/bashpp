@@ -42,6 +42,10 @@ void BashppListener::set_errors() {
 	program_has_errors = true;
 }
 
+void BashppListener::set_code_buffer(std::shared_ptr<std::ostream> code_buffer) {
+	this->code_buffer = code_buffer;
+}
+
 void BashppListener::set_output_stream(std::shared_ptr<std::ostream> output_stream) {
 	this->output_stream = output_stream;
 }

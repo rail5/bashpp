@@ -96,6 +96,7 @@ int main(int argc, char* argv[]) {
 	bool display_tokens = false;
 
 	std::shared_ptr<std::ostream> output_stream(&std::cout, [](std::ostream*){});
+	std::shared_ptr<std::ostringstream> code_buffer = std::make_shared<std::ostringstream>();
 
 	std::shared_ptr<std::vector<std::string>> include_paths = std::make_shared<std::vector<std::string>>();
 	include_paths->push_back("/usr/lib/bpp/stdlib/");
@@ -298,6 +299,7 @@ int main(int argc, char* argv[]) {
 		}
 		listener->set_source_file(full_path);
 		listener->set_include_paths(include_paths);
+		listener->set_code_buffer(code_buffer);
 		listener->set_output_stream(output_stream);
 		listener->set_output_file(output_file);
 		listener->set_run_on_exit(run_on_exit);

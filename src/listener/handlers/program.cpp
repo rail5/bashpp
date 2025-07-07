@@ -44,6 +44,9 @@ void BashppListener::exitProgram(BashppParser::ProgramContext *ctx) {
 
 	if (program_has_errors) {
 		bpp_exit_code = EXIT_FAILURE;
+		if (!included) {
+			unlink(output_file.c_str());
+		}
 		return;
 	}
 

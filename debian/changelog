@@ -1,3 +1,22 @@
+bpp (0.5.1) unstable; urgency=medium
+
+  * Error reporting:
+    Cast tokens to CommonToken before throwing an error or warning
+    This should at least *mostly* eliminate 'Position Unknown' errors
+    in our error reporting.
+    Manually override ANTLR4's broken token position tracking
+    ANTLR4's system routinely returns incorrect values for
+    token->getLine() and token->getCharPositionInLine(). This is
+    screwing with our error reporting. So we'll just track it ourselves
+    in our emit() override.
+  * Store an intermediary code buffer between the compiler and the
+    output stream
+    Do not immediately write code to the output stream.
+    In the case of '-o -', this clutters the output when errors are
+    present.
+
+ -- rail5 <andrew@rail5.org>  Tue, 08 Jul 2025 01:15:29 +0800
+
 bpp (0.5.0) unstable; urgency=medium
 
   * Added support for 'super' keyword

@@ -11,11 +11,11 @@
 #include "../../exit_code.h"
 
 void BashppListener::enterProgram(BashppParser::ProgramContext *ctx) {
-	program->set_output_stream(output_stream);
+	program->set_output_stream(code_buffer);
 
 	if (included) {
 		program = included_from->get_program();
-		program->set_output_stream(output_stream);
+		program->set_output_stream(code_buffer);
 
 		// Inherit all of the parent program's included files
 		included_files = included_from->get_included_files();
@@ -44,11 +44,16 @@ void BashppListener::exitProgram(BashppParser::ProgramContext *ctx) {
 
 	if (program_has_errors) {
 		bpp_exit_code = EXIT_FAILURE;
-		if (!included) {
-			unlink(output_file.c_str());
-		}
 		return;
 	}
+
+	// Copy the contents of the code stream to the output stream
+	std::shared_ptr<std::ostringstream> cd = std::dynamic_pointer_cast<std::ostringstream>(code_buffer);
+	if (cd == nullptr) {
+		throw internal_error("code_buffer is not a stringstream", ctx);
+	}
+	*output_stream << cd->str() << std::flush;
+	cd->clear();
 
 	if (!run_on_exit) {
 		if (output_file != "") {

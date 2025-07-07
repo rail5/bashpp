@@ -129,11 +129,11 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 
 	if (!dynamic_linking) {
 		// If we're linking statically, copy the compiled code from the included file to the current program
-		listener.set_output_stream(output_stream);
+		listener.set_code_buffer(code_buffer);
 	} else {
 		// Otherwise, throw its output in the garbage
 		std::shared_ptr<std::ofstream> garbage_stream = std::make_shared<std::ofstream>("/dev/null");
-		listener.set_output_stream(garbage_stream);
+		listener.set_code_buffer(garbage_stream);
 	}
 	listener.set_output_file("");
 
@@ -183,7 +183,7 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 	ctx->children.clear();
 
 	// Recover our original output stream
-	program->set_output_stream(output_stream);
+	program->set_output_stream(code_buffer);
 
 	// If we're linking statically, the code was also added
 	// If we're linking dynamically, we need to add a little source directive here

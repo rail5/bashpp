@@ -93,6 +93,7 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 		 * @var output_stream
 		 * @brief Pointer to the output stream to write the compiled code to
 		 */
+		std::shared_ptr<std::ostream> code_buffer;
 		std::shared_ptr<std::ostream> output_stream;
 		std::string output_file;
 		bool run_on_exit = false;
@@ -180,6 +181,7 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 	void set_included_from(BashppListener* included_from);
 	void set_included_files(std::shared_ptr<std::set<std::string>> included_files);
 	void set_errors();
+	void set_code_buffer(std::shared_ptr<std::ostream> code_buffer);
 	void set_output_stream(std::shared_ptr<std::ostream> output_stream);
 	void set_output_file(std::string output_file);
 	void set_run_on_exit(bool run_on_exit);

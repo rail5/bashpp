@@ -142,9 +142,19 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 		#define set_error_context error_thrown = true; error_context = ctx;
 
 		#define output_syntax_error(symbol, msg) \
-			int line = static_cast<int>(symbol->getLine()); \
-			int column = static_cast<int>(symbol->getCharPositionInLine()); \
-			std::string text = symbol->getText(); \
+			antlr4::CommonToken* token = dynamic_cast<antlr4::CommonToken*>(symbol); \
+			int line; \
+			int column; \
+			std::string text; \
+			if (token == nullptr) { \
+				line = static_cast<int>(symbol->getLine()); \
+				column = static_cast<int>(symbol->getCharPositionInLine()); \
+				text = symbol->getText(); \
+			} else { \
+				line = static_cast<int>(token->getLine()); \
+				column = static_cast<int>(token->getCharPositionInLine()); \
+				text = token->getText(); \
+			} \
 			print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack()); \
 			program_has_errors = true;
 

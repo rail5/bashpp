@@ -46,6 +46,12 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 		throw_syntax_error(ctx->IDENTIFIER_LVALUE(), "Object not found: " + first_object_name);
 	}
 
+	first_object->add_reference(
+		source_file,
+		ctx->IDENTIFIER_LVALUE()->getSymbol()->getLine(),
+		ctx->IDENTIFIER_LVALUE()->getSymbol()->getCharPositionInLine() + 1
+	);
+
 	bpp::reference_type last_reference_type = bpp::reference_type::ref_object;
 	std::shared_ptr<bpp::bpp_entity> last_reference_entity = first_object;
 
@@ -118,6 +124,11 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 			class_containing_the_method = last_reference_entity->get_class();
 			last_reference_type = bpp::reference_type::ref_method;
 			last_reference_entity = method;
+			method->add_reference(
+				source_file,
+				identifier->getSymbol()->getLine(),
+				identifier->getSymbol()->getCharPositionInLine() + 1
+			);
 		} else if (datamember != nullptr) {
 			last_reference_type = (datamember->get_class() == primitive) ? bpp::reference_type::ref_primitive : bpp::reference_type::ref_object;
 			last_reference_entity = datamember;
@@ -134,6 +145,11 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 
 			object_reference_code = temporary_variable_lvalue;
 			created_first_temporary_variable = true;
+			datamember->add_reference(
+				source_file,
+				identifier->getSymbol()->getLine(),
+				identifier->getSymbol()->getCharPositionInLine() + 1
+			);
 		} else {
 			entity_stack.pop();
 			throw_syntax_error(identifier, last_reference_entity->get_name() + " has no member named " + identifier_text);

@@ -10,6 +10,7 @@
 #include <sstream>
 #include <vector>
 #include <unordered_map>
+#include <list>
 #include <memory>
 
 #include "replace_all.h"
@@ -82,6 +83,16 @@ inline const std::shared_ptr<bpp_method> inaccessible_method = std::make_shared<
  */
 static const char bpp_nullptr[] = "0";
 
+struct SymbolPosition {
+	std::string file;
+	uint64_t line;
+	uint64_t column;
+
+	SymbolPosition() {}
+	SymbolPosition(const std::string& file, uint64_t line, uint64_t column)
+		: file(file), line(line), column(column) {}
+};
+
 /**
  * @class bpp_entity
  * @brief The base class for all entities in the Bash++ compiler
@@ -111,6 +122,8 @@ class bpp_entity {
 		std::shared_ptr<bpp_class> type = nullptr;
 		std::weak_ptr<bpp_class> containing_class;
 		std::vector<std::shared_ptr<bpp_class>> parents;
+		bpp::SymbolPosition initial_definition;
+		std::list<bpp::SymbolPosition> references;
 	public:
 		virtual ~bpp_entity() = default;
 		virtual bool add_class(std::shared_ptr<bpp_class> class_);
@@ -124,6 +137,12 @@ class bpp_entity {
 
 		virtual void inherit(std::shared_ptr<bpp_entity> parent);
 		virtual void inherit(std::shared_ptr<bpp_class> parent);
+
+		void set_definition_position(const std::string& file, uint64_t line, uint64_t column);
+		void add_reference(const std::string& file, uint64_t line, uint64_t column);
+
+		bpp::SymbolPosition get_initial_definition() const;
+		std::list<bpp::SymbolPosition> get_references() const;
 
 		std::unordered_map<std::string, std::shared_ptr<bpp_class>> get_classes() const;
 		std::unordered_map<std::string, std::shared_ptr<bpp_object>> get_objects() const;

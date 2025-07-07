@@ -114,6 +114,11 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 			// Update the last reference entity and type
 			last_reference_type = bpp::reference_type::ref_method;
 			last_reference_entity = method;
+			method->add_reference(
+				source_file,
+				identifier->getSymbol()->getLine(),
+				identifier->getSymbol()->getCharPositionInLine() + 1
+			);
 		} else if (datamember != nullptr) {
 			bool is_primitive = datamember->get_class() == primitive;
 			datamember_is_pointer = datamember->is_pointer();
@@ -128,6 +133,11 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 			self_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
 			self_reference_code = temporary_variable_lvalue;
 			created_first_temporary_variable = true;
+			datamember->add_reference(
+				source_file,
+				identifier->getSymbol()->getLine(),
+				identifier->getSymbol()->getCharPositionInLine() + 1
+			);
 		} else {
 			entity_stack.pop();
 			throw_syntax_error(identifier, last_reference_entity->get_name() + " has no member named " + identifier_text);

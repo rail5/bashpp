@@ -10,6 +10,12 @@ void BashppListener::enterClass_definition(BashppParser::Class_definitionContext
 	std::shared_ptr<bpp::bpp_class> new_class = std::make_shared<bpp::bpp_class>();
 	entity_stack.push(new_class);
 
+	new_class->set_definition_position(
+		source_file,
+		ctx->IDENTIFIER(0)->getSymbol()->getLine(),
+		ctx->IDENTIFIER(0)->getSymbol()->getCharPositionInLine() + 1
+	);
+
 	// Get the class name
 	std::string class_name = ctx->IDENTIFIER(0)->getText();
 

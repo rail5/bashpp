@@ -41,6 +41,12 @@ void BashppListener::enterObject_instantiation(BashppParser::Object_instantiatio
 	std::shared_ptr<bpp::bpp_object> new_object = std::make_shared<bpp::bpp_object>(object_name_text);
 	entity_stack.push(new_object);
 
+	new_object->set_definition_position(
+		source_file,
+		object_name->getSymbol()->getLine(),
+		object_name->getSymbol()->getCharPositionInLine() + 1
+	);
+
 	// Verify that the object's class exists
 	if (current_code_entity->get_class(object_type_text) == nullptr) {
 		entity_stack.pop();
@@ -93,6 +99,11 @@ void BashppListener::exitObject_instantiation(BashppParser::Object_instantiation
 		// The data for this object should be moved to the datamember
 		current_datamember->set_class(new_object->get_class());
 		current_datamember->set_name(new_object->get_name());
+		current_datamember->set_definition_position(
+			source_file,
+			new_object->get_initial_definition().line,
+			new_object->get_initial_definition().column
+		);
 		return;
 	}
 

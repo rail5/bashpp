@@ -20,6 +20,12 @@ void BashppListener::enterMethod_definition(BashppParser::Method_definitionConte
 	method->inherit(program);
 	method->set_containing_class(current_class);
 
+	method->set_definition_position(
+		source_file,
+		ctx->IDENTIFIER()->getSymbol()->getLine(),
+		ctx->IDENTIFIER()->getSymbol()->getCharPositionInLine() + 1
+	);
+
 	// Set the method's scope
 	BashppParser::Class_member_or_methodContext* parent = dynamic_cast<BashppParser::Class_member_or_methodContext*>(ctx->parent);
 	if (parent == nullptr) {

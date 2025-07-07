@@ -68,6 +68,22 @@ bool bpp_entity::set_containing_class(std::weak_ptr<bpp::bpp_class> containing_c
 	return true;
 }
 
+void bpp_entity::set_definition_position(const std::string& file, uint64_t line, uint64_t column) {
+	initial_definition = bpp::SymbolPosition(file, line, column);
+}
+
+bpp::SymbolPosition bpp_entity::get_initial_definition() const {
+	return initial_definition;
+}
+
+void bpp_entity::add_reference(const std::string& file, uint64_t line, uint64_t column) {
+	references.emplace_back(file, line, column);
+}
+
+std::list<bpp::SymbolPosition> bpp_entity::get_references() const {
+	return references;
+}
+
 /**
  * @brief Inherit from a parent entity
  * 

@@ -137,10 +137,20 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 				encase_close = "}";
 			}
 			object_reference_code = object->get_address();
+			object->add_reference(
+				source_file,
+				identifier->getSymbol()->getLine(),
+				identifier->getSymbol()->getCharPositionInLine() + 1
+			);
 		} else if (method != nullptr) {
 			class_containing_the_method = last_reference_entity->get_class();
 			last_reference_type = bpp::reference_type::ref_method;
 			last_reference_entity = method;
+			method->add_reference(
+				source_file,
+				identifier->getSymbol()->getLine(),
+				identifier->getSymbol()->getCharPositionInLine() + 1
+			);
 		} else if (datamember != nullptr) {
 			bool is_primitive = datamember->get_class() == primitive;
 			datamember_is_pointer = datamember->is_pointer();
@@ -158,6 +168,11 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 			}
 			object_reference_code = temporary_variable_lvalue;
 			created_first_temporary_variable = true;
+			datamember->add_reference(
+				source_file,
+				identifier->getSymbol()->getLine(),
+				identifier->getSymbol()->getCharPositionInLine() + 1
+			);
 		} else {
 			throw_syntax_error_from_exitRule(identifier, last_reference_entity->get_name() + " has no member named " + identifier_text);
 		}

@@ -54,6 +54,12 @@ void BashppListener::enterMember_declaration(BashppParser::Member_declarationCon
 		std::string member_name = ctx->IDENTIFIER()->getText();
 		new_datamember->set_name(member_name);
 
+		new_datamember->set_definition_position(
+			source_file,
+			ctx->IDENTIFIER()->getSymbol()->getLine(),
+			ctx->IDENTIFIER()->getSymbol()->getCharPositionInLine() + 1
+		);
+
 		// Verify the name doesn't contain a double underscore
 		if (member_name.find("__") != std::string::npos) {
 			entity_stack.pop();

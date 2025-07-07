@@ -29,6 +29,12 @@ void BashppListener::enterNew_statement(BashppParser::New_statementContext *ctx)
 		throw_syntax_error(ctx->IDENTIFIER(), "Class not found: " + class_name);
 	}
 
+	new_class->add_reference(
+		source_file,
+		ctx->IDENTIFIER()->getSymbol()->getLine(),
+		ctx->IDENTIFIER()->getSymbol()->getCharPositionInLine() + 1
+	);
+
 	// Call the class's "new" method in a supershell and substitute the result
 	std::string new_method_call = "bpp__" + class_name + "____new";
 

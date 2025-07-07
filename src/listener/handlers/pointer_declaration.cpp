@@ -56,6 +56,12 @@ void BashppListener::enterPointer_declaration(BashppParser::Pointer_declarationC
 	new_object->set_containing_class(current_class);
 	entity_stack.push(new_object);
 
+	new_object->set_definition_position(
+		source_file,
+		object_name->getSymbol()->getLine(),
+		object_name->getSymbol()->getCharPositionInLine() + 1
+	);
+
 	new_object->set_class(object_class);
 	new_object->set_address("bpp____ptr__" + std::to_string(program->get_object_counter()) + "__" + new_object->get_class()->get_name() + "__" + new_object->get_name());
 	program->increment_object_counter();
@@ -106,6 +112,11 @@ void BashppListener::exitPointer_declaration(BashppParser::Pointer_declarationCo
 		current_datamember->set_pre_access_code(new_object->get_pre_access_code());
 		current_datamember->set_post_access_code(new_object->get_post_access_code());
 		current_datamember->set_default_value(new_object->get_assignment_value());
+		current_datamember->set_definition_position(
+			source_file,
+			new_object->get_initial_definition().line,
+			new_object->get_initial_definition().column
+		);
 		return;
 	}
 

@@ -9,6 +9,8 @@ lexer grammar BashppLexer;
 }
 
 @lexer::members {
+uint64_t charCount = 0;
+uint64_t lineCount = 1;
 int parenDepth = 0;
 int braceDepth = 0;
 int initialSupershellDepth = 0;
@@ -70,7 +72,19 @@ enum for_or_while {
 
 SensibleStack<for_or_while> forWhileStack;
 
-void emit(std::unique_ptr<antlr4::Token> t) {
+void emit(std::unique_ptr<antlr4::Token> token) {
+	/**
+	* The following nonsense (casting it to CommonToken, and manually tracking the line/char position)
+	* **shouldn't** be necessary, but **is** since ANTLR4's built-in position tracking simply does not work.
+	**/
+	std::unique_ptr<antlr4::CommonToken> t = std::unique_ptr<antlr4::CommonToken>(dynamic_cast<antlr4::CommonToken*>(token.release()));
+	t->setLine(lineCount);
+	t->setCharPositionInLine(charCount);
+	charCount += t->getText().length();
+	if (t->getText() == "\n") {
+		lineCount++;
+		charCount = 0;
+	}
 	last_token_was_lvalue = false;
 	switch (t->getType()) {
 		case WS:

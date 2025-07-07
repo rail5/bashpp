@@ -72,6 +72,16 @@ enum for_or_while {
 
 SensibleStack<for_or_while> forWhileStack;
 
+size_t utf8_char_count(const std::string& s) {
+	size_t count = 0;
+	for (unsigned char c : s) {
+		if ((c & 0xC0) != 0x80) {
+			count++; // Skip UTF-8 continuation bytes
+		}
+	}
+	return count;
+}
+
 void emit(std::unique_ptr<antlr4::Token> token) {
 	/**
 	* The following nonsense (casting it to CommonToken, and manually tracking the line/char position)
@@ -80,7 +90,7 @@ void emit(std::unique_ptr<antlr4::Token> token) {
 	std::unique_ptr<antlr4::CommonToken> t = std::unique_ptr<antlr4::CommonToken>(dynamic_cast<antlr4::CommonToken*>(token.release()));
 	t->setLine(lineCount);
 	t->setCharPositionInLine(charCount);
-	charCount += t->getText().length();
+	charCount += utf8_char_count(t->getText());
 	if (t->getText() == "\n") {
 		lineCount++;
 		charCount = 0;

@@ -168,6 +168,35 @@ std::string TypeRegistry::resolve_tuple_type(const nlohmann::json& type_def, std
 
 void TypeRegistry::generate_all_types() const {
 	fs::create_directory("generated");
+
+	std::ofstream required_file("generated/Required.h");
+	required_file << R"(#pragma once
+
+template <typename T>
+class Required {
+	private:
+		T value_;
+	public:
+		Required() = delete;
+
+		Required(const T& value) : value_(value) {}
+		Required(T&& value) : value_(std::move(value)) {}
+
+		const T& get() const noexcept { return value_; }
+		operator const T&() const noexcept { return value_; }
+
+		template <typename BasicJsonType>
+		friend void to_json(BasicJsonType& j, const Required& r) {
+			j = r.value_;
+		}
+
+		template <typename BasicJsonType>
+		friend void from_json(const BasicJsonType& j, Required& r) {
+			r.value_ = j.template get<T>();
+		}
+};
+)";
+	required_file.close();
 	
 	// Generate special types first
 	generate_LSP_types();
@@ -288,6 +317,7 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 	std::ofstream file("generated/" + name + ".h");
 	file << "#pragma once\n";
 	file << "#include <nlohmann/json.hpp>\n";
+	file << "#include \"Required.h\"\n"; // Include Required for non-nullable fields
 	file << "#include \"LSPAny.h\"\n"; // Include LSPAny for compatibility
 	file << "#include \"LSPArray.h\"\n"; // Include LSPArray for compatibility
 
@@ -328,7 +358,14 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 		const std::string prop_name = prop["name"].get<std::string>();
 		const auto& type_def = prop["type"];
 		const std::string kind = type_def["kind"].get<std::string>();
-		const std::string type_str = resolve_type(type_def);
+		const bool is_optional = prop.value("optional", false);
+		std::string type_str = resolve_type(type_def);
+
+		if (!is_optional) {
+			type_str = "Required<" + type_str + ">";
+		}
+
+
 		file << "    " << type_str << " " << prop_name;
 		
 		// Add default values for literal types

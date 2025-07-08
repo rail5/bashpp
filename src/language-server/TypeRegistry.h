@@ -1,0 +1,34 @@
+/**
+ * Copyright (C) 2025 Andrew S. Rightenburg
+ * Bash++: Bash with classes
+ */
+#pragma once
+#include <string>
+#include <vector>
+#include <set>
+#include <unordered_map>
+#include <nlohmann/json.hpp>
+
+class TypeRegistry {
+	private:
+		std::unordered_map<std::string, nlohmann::json> structs;
+		std::unordered_map<std::string, nlohmann::json> enums;
+		std::unordered_map<std::string, nlohmann::json> type_aliases;
+
+		std::string resolve_base_type(const std::string& name) const;
+		std::string resolve_reference_type(const std::string& name, std::set<std::string> visited) const;
+		std::string resolve_array_type(const nlohmann::json& type_def, std::set<std::string> visited) const;
+		std::string resolve_or_type(const nlohmann::json& type_def, std::set<std::string> visited) const;
+		std::string resolve_map_type(const nlohmann::json& type_def, std::set<std::string> visited) const;
+		std::string resolve_literal_type(const nlohmann::json& type_def, std::set<std::string> visited) const;
+		std::string resolve_tuple_type(const nlohmann::json& type_def, std::set<std::string> visited) const;
+		std::set<std::string> get_referenced_types(const nlohmann::json& type_def) const;
+		void generate_LSP_types() const;
+		void generate_struct(const std::string& name, const nlohmann::json& def) const;
+		void generate_enum(const std::string& name, const nlohmann::json& def) const;
+	public:
+		void load_meta_model(const nlohmann::json& meta_model);
+		std::string resolve_type(const nlohmann::json& type_def) const;
+		std::string resolve_type(const nlohmann::json& type_def, std::set<std::string> visited) const;
+		void generate_all_types() const;
+};

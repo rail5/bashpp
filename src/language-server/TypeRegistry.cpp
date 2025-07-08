@@ -295,19 +295,6 @@ void TypeRegistry::generate_serialization(std::ofstream& file,
 
 				get_to_str += "		}"; // Close the if block
 			}
-			/*get_to_str = "		if (j[\"" + prop_name + "\"].is_number_integer()) {\n"
-				+ "			obj." + prop_name + " = j[\"" + prop_name + "\"].get<int>();\n"
-				+ "		} else if (j[\"" + prop_name + "\"].is_string()) {\n"
-				+ "			obj." + prop_name + " = j[\"" + prop_name + "\"].get<std::string>();\n"
-				+ "		} else if (j[\"" + prop_name + "\"].is_boolean()) {\n"
-				+ "			obj." + prop_name + " = j[\"" + prop_name + "\"].get<bool>();\n"
-				+ "		} else if (j[\"" + prop_name + "\"].is_null()) {\n"
-				+ "			obj." + prop_name + " = nullptr;\n"
-				+ "		} else if (j[\"" + prop_name + "\"].is_array()) {\n"
-				+ "			obj." + prop_name + " = j[\"" + prop_name + "\"].get<std::vector<LSPAny>>();\n"
-				+ "		} else if (j[\"" + prop_name + "\"].is_object()) {\n"
-				+ "			obj." + prop_name + " = j[\"" + prop_name + "\"].get<std::unordered_map<std::string, LSPAny>>();\n"
-				+ "		}\n";*/
 		} else {
 			get_to_str = "j[\"" + prop_name + "\"].get_to(obj." + prop_name + ");\n";
 		}
@@ -455,6 +442,16 @@ struct adl_serializer<LSPAny> {
 
 NLOHMANN_JSON_NAMESPACE_END
 )";
+
+	std::ofstream file_any(output_directory + "/LSPAny.h");
+	file_any << "#pragma once\n";
+	file_any << "#include \"LSPTypes.h\"\n" << std::flush;
+	file_any.close();
+
+	std::ofstream file_array(output_directory + "/LSPArray.h");
+	file_array << "#pragma once\n";
+	file_array << "#include \"LSPTypes.h\"\n" << std::flush;
+	file_array.close();
 }
 
 void TypeRegistry::generate_enum(const std::string& name, const nlohmann::json& def) const {

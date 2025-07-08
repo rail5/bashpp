@@ -196,6 +196,109 @@ void TypeRegistry::generate_inheritance(std::ofstream& file, const std::vector<s
 	}
 }
 
+std::string TypeRegistry::get_variant_deserialization_code(
+	const std::string& prop_name, 
+	const std::string& variant_type,
+	bool is_optional
+) const {
+	// Extract types between < and >
+	size_t start = variant_type.find('<');
+	size_t end = variant_type.rfind('>');
+	if (start == std::string::npos || end == std::string::npos) {
+		return "// Error: malformed variant type\n";
+	}
+
+	std::string inner = variant_type.substr(start + 1, end - start - 1);
+	std::vector<std::string> types;
+	std::string current;
+	int depth = 0;
+
+	// Parse types considering nested templates
+	for (char c : inner) {
+		if (c == '<') depth++;
+		if (c == '>') depth--;
+		
+		if (c == ',' && depth == 0) {
+			if (!current.empty()) {
+				types.push_back(current);
+				current.clear();
+			}
+		} else {
+			current += c;
+		}
+	}
+	if (!current.empty()) types.push_back(current);
+
+	// Generate deserialization code
+	std::string code;
+	std::set<std::string> conditions_used;
+
+	for (const auto& type : types) {
+		std::string condition;
+		std::string getter;
+		
+		// Trim whitespace
+		std::string clean_type = type;
+		clean_type.erase(0, clean_type.find_first_not_of(" \t"));
+		clean_type.erase(clean_type.find_last_not_of(" \t") + 1);
+		
+		// Map types to JSON conditions
+		if (clean_type == "std::string") {
+			condition = "is_string()";
+		} else if (clean_type == "int") {
+			condition = "is_number_integer()";
+		} else if (clean_type == "uint32_t") {
+			condition = "is_number_unsigned()";
+		} else if (clean_type == "double") {
+			condition = "is_number_float()";
+		} else if (clean_type == "bool") {
+			condition = "is_boolean()";
+		} else if (clean_type == "std::nullptr_t") {
+			condition = "is_null()";
+		} else if (clean_type == "LSPArray" || 
+					clean_type.find("std::vector") != std::string::npos) {
+			condition = "is_array()";
+		} else if (clean_type == "LSPObject" || 
+					clean_type.find("std::unordered_map") != std::string::npos) {
+			condition = "is_object()";
+		} else {
+			// Assume other types are objects
+			condition = "is_object()";
+		}
+		
+		// Only add condition if not already used
+		if (conditions_used.find(condition) == conditions_used.end()) {
+			conditions_used.insert(condition);
+			
+			if (clean_type == "std::nullptr_t") {
+				getter = "obj." + prop_name + " = nullptr;";
+			} else {
+				getter = "obj." + prop_name + " = j[\"" + prop_name + "\"].get<" + clean_type + ">();";
+			}
+			
+			if (code.empty()) {
+				code = "if (j[\"" + prop_name + "\"]." + condition + ") {\n";
+			} else {
+				code += "} else if (j[\"" + prop_name + "\"]." + condition + ") {\n";
+			}
+			code += "    " + getter + "\n";
+		}
+	}
+
+	if (!code.empty()) {
+		code += "} else {\n";
+		code += "    throw std::runtime_error(\"Unexpected type for property " + prop_name + "\");\n";
+		code += "}";
+		
+		if (is_optional) {
+			return "if (j.contains(\"" + prop_name + "\")) {\n" + code + "\n}\n";
+		}
+		return code + "\n";
+	}
+
+	return "// Could not generate variant deserialization\n";
+}
+
 void TypeRegistry::generate_serialization(std::ofstream& file, 
 		const std::string& name,
 		const std::vector<std::string>& base_classes,
@@ -246,65 +349,14 @@ void TypeRegistry::generate_serialization(std::ofstream& file,
 
 		// Is it a std::variant?
 		std::string type_str = resolve_type(prop["type"]);
-		if (prop.contains("type") && type_str.find("std::variant") != std::string::npos) {
-			// A variant of which types?
-			// Remove the std::variant< and >
-			std::string variant_types = type_str.substr(13, type_str.size() - 14);
-			// Split by comma
-			std::vector<std::string> types;
-			size_t start = 0;
-			size_t end = variant_types.find(',');
-			while (end != std::string::npos) {
-				types.push_back(variant_types.substr(start, end - start));
-				start = end + 1;
-				end = variant_types.find(',', start);
-			}
-			types.push_back(variant_types.substr(start));
-
-			for (auto& type : types) {
-				// Remove any spaces
-				type.erase(remove(type.begin(), type.end(), ' '), type.end());
-				if (!get_to_str.empty()) {
-					get_to_str += " else ";
-				}
-				if (type == "std::string") {
-					get_to_str += "if (j[\"" + prop_name + "\"].is_string()) {\n"
-						+ "			obj." + prop_name + " = j[\"" + prop_name + "\"].get<std::string>();\n";
-				} else if (type == "int") {
-					get_to_str += "if (j[\"" + prop_name + "\"].is_number_integer()) {\n"
-						+ "			obj." + prop_name + " = j[\"" + prop_name + "\"].get<int>();\n";
-				} else if (type == "bool") {
-					get_to_str += "if (j[\"" + prop_name + "\"].is_boolean()) {\n"
-						+ "			obj." + prop_name + " = j[\"" + prop_name + "\"].get<bool>();\n";
-				} else if (type == "double") {
-					get_to_str += "if (j[\"" + prop_name + "\"].is_number_float()) {\n"
-						+ "			obj." + prop_name + " = j[\"" + prop_name + "\"].get<double>();\n";
-				} else if (type == "std::nullptr_t") {
-					get_to_str += "if (j[\"" + prop_name + "\"].is_null()) {\n"
-						+ "			obj." + prop_name + " = nullptr;\n";
-				} else if (type == "LSPArray") {
-					get_to_str += "if (j[\"" + prop_name + "\"].is_array()) {\n"
-						+ "			obj." + prop_name + " = j[\"" + prop_name + "\"].get<LSPArray>();\n";
-				} else if (type == "LSPObject") {
-					get_to_str += "if (j[\"" + prop_name + "\"].is_object()) {\n"
-						+ "			obj." + prop_name + " = j[\"" + prop_name <+ "\"].get<std::unordered_map<std::string, LSPAny>>();\n";
-				} else {
-					get_to_str += "if (j[\"" + prop_name + "\"].is_object()) {\n"
-						+ "			obj." + prop_name + " = j[\"" + prop_name + "\"].get<" + type + ">();\n";
-				}
-
-				get_to_str += "		}"; // Close the if block
-			}
+		if (type_str.find("std::variant") != std::string::npos) {
+			file << get_variant_deserialization_code(prop_name, type_str, is_optional);
 		} else {
-			get_to_str = "j[\"" + prop_name + "\"].get_to(obj." + prop_name + ");\n";
-		}
-		
-		if (is_optional) {
-			file << "		if (j.contains(\"" << prop_name << "\")) {\n";
-			file << get_to_str;
-			file << "		}\n";
-		} else {
-			file << get_to_str;
+			// Normal property handling
+			if (is_optional) {
+				file << "if (j.contains(\"" << prop_name << "\")) ";
+			}
+			file << "j[\"" << prop_name << "\"].get_to(obj." << prop_name << ");\n";
 		}
 	}
 

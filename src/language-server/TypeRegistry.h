@@ -27,6 +27,10 @@ class TypeRegistry {
 		std::vector<std::string> get_base_classes(const nlohmann::json& def) const;
 		void generate_inheritance(std::ofstream& file, const std::vector<std::string>& base_classes) const;
 		std::set<std::string> get_referenced_types(const nlohmann::json& type_def) const;
+		std::string get_variant_deserialization_code(
+			const std::string& prop_name, 
+			const std::string& variant_type,
+			bool is_optional) const;
 		void generate_serialization(std::ofstream& file, 
 			const std::string& name,
 			const std::vector<std::string>& base_classes,

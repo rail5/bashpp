@@ -166,37 +166,87 @@ std::string TypeRegistry::resolve_tuple_type(const nlohmann::json& type_def, std
 	return tuple_type;
 }
 
+std::vector<std::string> TypeRegistry::get_base_classes(const nlohmann::json& def) const {
+	std::vector<std::string> bases;
+
+	// Handle extends
+	if (def.contains("extends")) {
+		for (const auto& base : def["extends"]) {
+			bases.push_back(resolve_type(base));
+		}
+	}
+
+	// Handle mixins
+	if (def.contains("mixins")) {
+		for (const auto& mixin : def["mixins"]) {
+			bases.push_back(resolve_type(mixin));
+		}
+	}
+
+	return bases;
+}
+
+void TypeRegistry::generate_inheritance(std::ofstream& file, const std::vector<std::string>& base_classes) const {
+	if (!base_classes.empty()) {
+		file << " : ";
+		for (size_t i = 0; i < base_classes.size(); ++i) {
+			if (i > 0) file << ", ";
+			file << "public " << base_classes[i];
+		}
+	}
+}
+
+void TypeRegistry::generate_serialization(std::ofstream& file, 
+		const std::string& name,
+		const std::vector<std::string>& base_classes,
+		const nlohmann::json& properties) const {
+	file << "	friend void to_json(nlohmann::json& j, const " << name << "& obj) {\n";
+	file << "		j = nlohmann::json::object();\n";
+
+	// Serialize base classes
+	for (const auto& base : base_classes) {
+		file << "		nlohmann::json base_json = static_cast<const " << base << "&>(obj);\n";
+		file << "		j.update(base_json);\n";
+	}
+
+	// Serialize direct properties
+	for (const auto& prop : properties) {
+		const std::string prop_name = prop["name"].get<std::string>();
+		file << "		j[\"" << prop_name << "\"] = obj." << prop_name << ";\n";
+	}
+
+	file << "	}\n\n";
+
+	file << "	friend void from_json(const nlohmann::json& j, " << name << "& obj) {\n";
+
+	// Deserialize base classes
+	for (const auto& base : base_classes) {
+		file << "		{\n";
+		file << "			" << base << " base_obj;\n";
+		file << "			j.get_to(base_obj);\n";
+		file << "			static_cast<" << base << "&>(obj) = base_obj;\n";
+		file << "		}\n";
+	}
+
+	// Deserialize direct properties
+	for (const auto& prop : properties) {
+		const std::string prop_name = prop["name"].get<std::string>();
+		const bool is_optional = prop.value("optional", false);
+		
+		if (is_optional) {
+			file << "		if (j.contains(\"" << prop_name << "\")) {\n";
+			file << "			j[\"" << prop_name << "\"].get_to(obj." << prop_name << ");\n";
+			file << "		}\n";
+		} else {
+			file << "		j.at(\"" << prop_name << "\").get_to(obj." << prop_name << ");\n";
+		}
+	}
+
+	file << "	}\n";
+}
+
 void TypeRegistry::generate_all_types() const {
 	fs::create_directory("generated");
-
-	std::ofstream required_file("generated/Required.h");
-	required_file << R"(#pragma once
-
-template <typename T>
-class Required {
-	private:
-		T value_;
-	public:
-		Required() = delete;
-
-		Required(const T& value) : value_(value) {}
-		Required(T&& value) : value_(std::move(value)) {}
-
-		const T& get() const noexcept { return value_; }
-		operator const T&() const noexcept { return value_; }
-
-		template <typename BasicJsonType>
-		friend void to_json(BasicJsonType& j, const Required& r) {
-			j = r.value_;
-		}
-
-		template <typename BasicJsonType>
-		friend void from_json(const BasicJsonType& j, Required& r) {
-			r.value_ = j.template get<T>();
-		}
-};
-)";
-	required_file.close();
 	
 	// Generate special types first
 	generate_LSP_types();
@@ -227,60 +277,103 @@ class Required {
 }
 
 void TypeRegistry::generate_LSP_types() const {
-	// Create LSPAny.h
-	std::ofstream any_file("generated/LSPAny.h");
-	any_file << R"(
-#pragma once
+	std::ofstream file("generated/LSPTypes.h");
+	file << R"(#pragma once
 #include <vector>
 #include <variant>
 #include <string>
 #include <unordered_map>
+#include <memory>
 #include <cstdint>
 #include <nlohmann/json.hpp>
 
-struct LSPArray;
-
-using LSPAny = std::variant<
-	std::unordered_map<std::string, LSPAny>,  // LSPObject
-	LSPArray,
-	std::string,
-	int,
-	uint32_t,
-	double,
-	bool,
-	std::nullptr_t
->;
-
-NLOHMANN_JSON_NAMESPACE_BEGIN
-template <>
-struct adl_serializer<LSPAny> {
-	static void to_json(json& j, const LSPAny& any);
-	static void from_json(const json& j, LSPAny& any);
-};
-NLOHMANN_JSON_NAMESPACE_END
-)";
-
-	// Create LSPArray.h
-	std::ofstream array_file("generated/LSPArray.h");
-	array_file << R"(
-#pragma once
-#include "LSPAny.h"
-
-struct LSPArray : public std::vector<LSPAny> {
-	using vector::vector;
+// Recursive wrapper for variant types
+template <typename T>
+struct RecursiveWrapper {
+	T value;
+	
+	RecursiveWrapper() = default;
+	RecursiveWrapper(const T& v) : value(v) {}
+	RecursiveWrapper(T&& v) : value(std::move(v)) {}
+	
+	operator T&() { return value; }
+	operator const T&() const { return value; }
 };
 
+// Forward declarations
+struct LSPAny;
+using LSPArray = std::vector<LSPAny>;
+
+// LSPAny definition
+struct LSPAny {
+	using ValueType = std::variant<
+		std::unordered_map<std::string, LSPAny>,
+		RecursiveWrapper<LSPArray>,
+		std::string,
+		int,
+		uint32_t,
+		double,
+		bool,
+		std::nullptr_t
+	>;
+	
+	ValueType value;
+
+	// Constructors
+	LSPAny() : value(nullptr) {}
+	template <typename T>
+	LSPAny(T&& val) : value(std::forward<T>(val)) {}
+	
+	// Accessor
+	template <typename T>
+	const T* get_if() const {
+		return std::get_if<T>(&value);
+	}
+};
+
+// Serialization support
 NLOHMANN_JSON_NAMESPACE_BEGIN
-template <>
-struct adl_serializer<LSPArray> {
-	static void to_json(json& j, const LSPArray& arr) {
-		j = static_cast<const std::vector<LSPAny>&>(arr);
+
+template <typename T>
+struct adl_serializer<RecursiveWrapper<T>> {
+	static void to_json(json& j, const RecursiveWrapper<T>& wrapper) {
+		j = wrapper.value;
 	}
 	
-	static void from_json(const json& j, LSPArray& arr) {
-		arr = j.get<std::vector<LSPAny>>();
+	static void from_json(const json& j, RecursiveWrapper<T>& wrapper) {
+		wrapper.value = j.get<T>();
 	}
 };
+
+template <>
+struct adl_serializer<LSPAny> {
+	static void to_json(json& j, const LSPAny& any) {
+		std::visit([&](auto&& arg) {
+			j = arg;
+		}, any.value);
+	}
+	
+	static void from_json(const json& j, LSPAny& any) {
+		if (j.is_object()) {
+			any.value = j.get<std::unordered_map<std::string, LSPAny>>();
+		} else if (j.is_array()) {
+			any.value = RecursiveWrapper<LSPArray>(j.get<LSPArray>());
+		} else if (j.is_string()) {
+			any.value = j.get<std::string>();
+		} else if (j.is_number_integer()) {
+			any.value = j.get<int>();
+		} else if (j.is_number_unsigned()) {
+			any.value = j.get<uint32_t>();
+		} else if (j.is_number_float()) {
+			any.value = j.get<double>();
+		} else if (j.is_boolean()) {
+			any.value = j.get<bool>();
+		} else if (j.is_null()) {
+			any.value = nullptr;
+		}
+	}
+};
+
 NLOHMANN_JSON_NAMESPACE_END
 )";
 }
@@ -293,8 +386,7 @@ void TypeRegistry::generate_enum(const std::string& name, const nlohmann::json& 
 	file << "#include <vector>\n";
 	file << "#include <cstdint>\n";
 	file << "#include <nlohmann/json.hpp>\n";
-	file << "#include \"LSPAny.h\"\n"; // Include LSPAny for compatibility
-	file << "#include \"LSPArray.h\"\n\n"; // Include LSPArray for compatibility
+	file << "#include \"LSPTypes.h\"\n"; // Include LSPTypes for compatibility
 	file << "enum class " << name << " {\n";
 
 	for (const auto& member : def["values"]) {
@@ -317,9 +409,7 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 	std::ofstream file("generated/" + name + ".h");
 	file << "#pragma once\n";
 	file << "#include <nlohmann/json.hpp>\n";
-	file << "#include \"Required.h\"\n"; // Include Required for non-nullable fields
-	file << "#include \"LSPAny.h\"\n"; // Include LSPAny for compatibility
-	file << "#include \"LSPArray.h\"\n"; // Include LSPArray for compatibility
+	file << "#include \"LSPTypes.h\"\n"; // Include LSPTypes for compatibility
 
 	// Special cases for variant/vector types
 	if (name == "LSPAny" || name == "LSPArray") {
@@ -328,6 +418,11 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 		file << "#include <string>\n";
 		file << "#include <unordered_map>\n";
 		file << "#include <cstdint>\n";
+	}
+
+	auto base_classes = get_base_classes(def);
+	for (const auto& base : base_classes) {
+		file << "#include \"" << base << ".h\"\n";
 	}
 
 	// Collect all referenced types
@@ -351,22 +446,18 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 		file << inc << "\n";
 	}
 
-	file << "\nstruct " << name << " {\n";
+	file << "\nstruct " << name;
+	generate_inheritance(file, base_classes);
+	file << " {\n";
 
 	// Generate fields
 	for (const auto& prop : def["properties"]) {
 		const std::string prop_name = prop["name"].get<std::string>();
 		const auto& type_def = prop["type"];
 		const std::string kind = type_def["kind"].get<std::string>();
-		const bool is_optional = prop.value("optional", false);
 		std::string type_str = resolve_type(type_def);
 
-		if (!is_optional) {
-			type_str = "Required<" + type_str + ">";
-		}
-
-
-		file << "    " << type_str << " " << prop_name;
+		file << "	" << type_str << " " << prop_name;
 		
 		// Add default values for literal types
 		if (kind == "stringLiteral") {
@@ -380,15 +471,7 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 		file << ";\n";
 	}
 
-	file << "\n    NLOHMANN_DEFINE_TYPE_INTRUSIVE(" << name << ",\n";
+	generate_serialization(file, name, base_classes, def["properties"]);
 
-	// Generate serialization list
-	bool first = true;
-	for (const auto& prop : def["properties"]) {
-		if (!first) file << ",\n";
-		file << "        " << prop["name"].get<std::string>();
-		first = false;
-	}
-
-	file << ")\n};\n" << std::flush;
+	file << "};\n" << std::flush;
 }

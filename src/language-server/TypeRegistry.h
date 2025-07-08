@@ -22,7 +22,13 @@ class TypeRegistry {
 		std::string resolve_map_type(const nlohmann::json& type_def, std::set<std::string> visited) const;
 		std::string resolve_literal_type(const nlohmann::json& type_def, std::set<std::string> visited) const;
 		std::string resolve_tuple_type(const nlohmann::json& type_def, std::set<std::string> visited) const;
+		std::vector<std::string> get_base_classes(const nlohmann::json& def) const;
+		void generate_inheritance(std::ofstream& file, const std::vector<std::string>& base_classes) const;
 		std::set<std::string> get_referenced_types(const nlohmann::json& type_def) const;
+		void generate_serialization(std::ofstream& file, 
+			const std::string& name,
+			const std::vector<std::string>& base_classes,
+			const nlohmann::json& properties) const;
 		void generate_LSP_types() const;
 		void generate_struct(const std::string& name, const nlohmann::json& def) const;
 		void generate_enum(const std::string& name, const nlohmann::json& def) const;

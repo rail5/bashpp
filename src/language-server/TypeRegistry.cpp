@@ -212,7 +212,16 @@ void TypeRegistry::generate_serialization(std::ofstream& file,
 	// Serialize direct properties
 	for (const auto& prop : properties) {
 		const std::string prop_name = prop["name"].get<std::string>();
-		file << "		j[\"" << prop_name << "\"] = obj." << prop_name << ";\n";
+		// It might be a std::variant
+		// Is it a std::variant?
+
+		if (prop.contains("type") && resolve_type(prop["type"]).find("std::variant") != std::string::npos) {
+			file << "		std::visit([&j](auto&& value) {\n"
+				<< "			j[\"" << prop_name << "\"] = value;\n"
+				<< "		}, obj." << prop_name << ");\n";
+		} else {
+			file << "		j[\"" << prop_name << "\"] = obj." << prop_name << ";\n";
+		}
 	}
 
 	file << "	}\n\n";
@@ -232,13 +241,83 @@ void TypeRegistry::generate_serialization(std::ofstream& file,
 	for (const auto& prop : properties) {
 		const std::string prop_name = prop["name"].get<std::string>();
 		const bool is_optional = prop.value("optional", false);
+
+		std::string get_to_str;
+
+		// Is it a std::variant?
+		std::string type_str = resolve_type(prop["type"]);
+		if (prop.contains("type") && type_str.find("std::variant") != std::string::npos) {
+			// A variant of which types?
+			// Remove the std::variant< and >
+			std::string variant_types = type_str.substr(13, type_str.size() - 14);
+			// Split by comma
+			std::vector<std::string> types;
+			size_t start = 0;
+			size_t end = variant_types.find(',');
+			while (end != std::string::npos) {
+				types.push_back(variant_types.substr(start, end - start));
+				start = end + 1;
+				end = variant_types.find(',', start);
+			}
+			types.push_back(variant_types.substr(start));
+
+			for (auto& type : types) {
+				// Remove any spaces
+				type.erase(remove(type.begin(), type.end(), ' '), type.end());
+				if (!get_to_str.empty()) {
+					get_to_str += " else ";
+				}
+				if (type == "std::string") {
+					get_to_str += "if (j[\"" + prop_name + "\"].is_string()) {\n"
+						+ "			obj." + prop_name + " = j[\"" + prop_name + "\"].get<std::string>();\n";
+				} else if (type == "int") {
+					get_to_str += "if (j[\"" + prop_name + "\"].is_number_integer()) {\n"
+						+ "			obj." + prop_name + " = j[\"" + prop_name + "\"].get<int>();\n";
+				} else if (type == "bool") {
+					get_to_str += "if (j[\"" + prop_name + "\"].is_boolean()) {\n"
+						+ "			obj." + prop_name + " = j[\"" + prop_name + "\"].get<bool>();\n";
+				} else if (type == "double") {
+					get_to_str += "if (j[\"" + prop_name + "\"].is_number_float()) {\n"
+						+ "			obj." + prop_name + " = j[\"" + prop_name + "\"].get<double>();\n";
+				} else if (type == "std::nullptr_t") {
+					get_to_str += "if (j[\"" + prop_name + "\"].is_null()) {\n"
+						+ "			obj." + prop_name + " = nullptr;\n";
+				} else if (type == "LSPArray") {
+					get_to_str += "if (j[\"" + prop_name + "\"].is_array()) {\n"
+						+ "			obj." + prop_name + " = j[\"" + prop_name + "\"].get<LSPArray>();\n";
+				} else if (type == "LSPObject") {
+					get_to_str += "if (j[\"" + prop_name + "\"].is_object()) {\n"
+						+ "			obj." + prop_name + " = j[\"" + prop_name <+ "\"].get<std::unordered_map<std::string, LSPAny>>();\n";
+				} else {
+					get_to_str += "if (j[\"" + prop_name + "\"].is_object()) {\n"
+						+ "			obj." + prop_name + " = j[\"" + prop_name + "\"].get<" + type + ">();\n";
+				}
+
+				get_to_str += "		}"; // Close the if block
+			}
+			/*get_to_str = "		if (j[\"" + prop_name + "\"].is_number_integer()) {\n"
+				+ "			obj." + prop_name + " = j[\"" + prop_name + "\"].get<int>();\n"
+				+ "		} else if (j[\"" + prop_name + "\"].is_string()) {\n"
+				+ "			obj." + prop_name + " = j[\"" + prop_name + "\"].get<std::string>();\n"
+				+ "		} else if (j[\"" + prop_name + "\"].is_boolean()) {\n"
+				+ "			obj." + prop_name + " = j[\"" + prop_name + "\"].get<bool>();\n"
+				+ "		} else if (j[\"" + prop_name + "\"].is_null()) {\n"
+				+ "			obj." + prop_name + " = nullptr;\n"
+				+ "		} else if (j[\"" + prop_name + "\"].is_array()) {\n"
+				+ "			obj." + prop_name + " = j[\"" + prop_name + "\"].get<std::vector<LSPAny>>();\n"
+				+ "		} else if (j[\"" + prop_name + "\"].is_object()) {\n"
+				+ "			obj." + prop_name + " = j[\"" + prop_name + "\"].get<std::unordered_map<std::string, LSPAny>>();\n"
+				+ "		}\n";*/
+		} else {
+			get_to_str = "j[\"" + prop_name + "\"].get_to(obj." + prop_name + ");\n";
+		}
 		
 		if (is_optional) {
 			file << "		if (j.contains(\"" << prop_name << "\")) {\n";
-			file << "			j[\"" << prop_name << "\"].get_to(obj." << prop_name << ");\n";
+			file << get_to_str;
 			file << "		}\n";
 		} else {
-			file << "		j.at(\"" << prop_name << "\").get_to(obj." << prop_name << ");\n";
+			file << get_to_str;
 		}
 	}
 

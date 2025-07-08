@@ -5,6 +5,11 @@
 
 #include "BashppServer.h"
 
+#include "generated/DefinitionParams.h"
+#include "generated/Position.h"
+#include "generated/TextDocumentIdentifier.h"
+#include "generated/Location.h"
+
 std::mutex BashppServer::cout_mutex;
 
 BashppServer::BashppServer() {}
@@ -53,7 +58,7 @@ void BashppServer::processMessage(const std::string& message) {
 	nlohmann::json response = {
 		{"jsonrpc", "2.0"},
 		{"id", data["id"]},
-		{"result", result}
+		result
 	};
 	// Convert the response to a string and send it
 	std::string response_str = response.dump();
@@ -78,7 +83,7 @@ json BashppServer::shutdown(const json& params) {
 
 json BashppServer::handleInitialize(const json& params) {
 	json result;
-	result = {
+	result = {"result", {
 		{"capabilities", {
 			{"textDocumentSync", 1}, // Full sync mode
 			{"hoverProvider", true},
@@ -92,25 +97,52 @@ json BashppServer::handleInitialize(const json& params) {
 			{"documentSymbolProvider", true},
 			{"workspaceSymbolProvider", true}
 		}}
-	};
+	}};
 	return result;
 }
 
 json BashppServer::handleGotoDefinition(const json& params) {
 	// Placeholder for actual implementation
-	json result = {
+/*	json result = {"result", {
 		{"uri", "file:///usr/lib/bpp/stdlib/SharedStack"},
 		{"range", {
 			{"start", {{"line", 72}, {"character", 1}}},
 			{"end", {{"line", 72}, {"character", 8}}}
 		}}
-	};
-	return result;
+	}};
+	return result;*/
+
+	try {
+		DefinitionParams definitionParams = params.get<DefinitionParams>();
+		std::string uri = definitionParams.textDocument.uri;
+		Position position = definitionParams.position;
+	
+		log_file << "Received GotoDefinition request for URI: " << uri << ", Position: (" 
+			<< position.line << ", " << position.character << ")" << std::endl;
+
+		Location definition;
+		definition.uri = "file:///usr/lib/bpp/stdlib/SharedStack";
+		definition.range.start.line = 72;
+		definition.range.start.character = 1;
+		definition.range.end.line = 72;
+		definition.range.end.character = 8;
+
+		return {"result", {
+			definition
+		}};
+	} catch (const std::exception& e) {
+		log_file << "Error handling GotoDefinition: " << e.what() << std::endl;
+		return {"error", {
+			{"code", -32603}, // Internal error code
+			{"message", "Internal error"},
+			{"data", e.what()}
+		}};
+	}
 }
 
 json BashppServer::handleCompletion(const json& params) {
 	// Placeholder for actual implementation
-	json result = {
+	json result = {"result", {
 		{"isIncomplete", false},
 		{"items", {
 			{
@@ -120,24 +152,24 @@ json BashppServer::handleCompletion(const json& params) {
 				{"documentation", "This is an example completion item."}
 			}
 		}}
-	};
+	}};
 	return result;
 }
 
 json BashppServer::handleHover(const json& params) {
 	// Placeholder for actual implementation
-	json result = {
+	json result = {"result", {
 		{"contents", {
 			{"kind", "markdown"},
 			{"value", "This is a hover message."}
 		}}
-	};
+	}};
 	return result;
 }
 
 json BashppServer::handleDocumentSymbol(const json& params) {
 	// Placeholder for actual implementation
-	json result = {
+	json result = {"result", {
 		{"symbols", {
 			{
 				{"name", "ExampleClass"},
@@ -152,34 +184,34 @@ json BashppServer::handleDocumentSymbol(const json& params) {
 				{"children", {}}
 			}
 		}}
-	};
+	}};
 	return result;
 }
 
 json BashppServer::handleDidOpen(const json& params) {
 	// Placeholder for actual implementation
-	json result = {
+	json result = {"result", {
 		{"uri", params["textDocument"]["uri"]},
 		{"languageId", "bashpp"},
 		{"version", 1},
 		{"text", params["textDocument"]["text"]}
-	};
+	}};
 	return result;
 }
 
 json BashppServer::handleDidChange(const json& params) {
 	// Placeholder for actual implementation
-	json result = {
+	json result = {"result", {
 		{"uri", params["textDocument"]["uri"]},
 		{"version", params["textDocument"]["version"]},
 		{"contentChanges", params["contentChanges"]}
-	};
+	}};
 	return result;
 }
 
 json BashppServer::handleRename(const json& params) {
 	// Placeholder for actual implementation
-	json result = {
+	json result = {"result", {
 		{"changes", {
 			{ params["textDocument"]["uri"], json::array({
 				{
@@ -191,6 +223,6 @@ json BashppServer::handleRename(const json& params) {
 				}
 			})}
 		}}
-	};
+	}};
 	return result;
 }

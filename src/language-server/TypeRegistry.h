@@ -11,6 +11,8 @@
 
 class TypeRegistry {
 	private:
+		std::string output_directory = "generated";
+
 		std::unordered_map<std::string, nlohmann::json> structs;
 		std::unordered_map<std::string, nlohmann::json> enums;
 		std::unordered_map<std::string, nlohmann::json> type_aliases;
@@ -37,4 +39,8 @@ class TypeRegistry {
 		std::string resolve_type(const nlohmann::json& type_def) const;
 		std::string resolve_type(const nlohmann::json& type_def, std::set<std::string> visited) const;
 		void generate_all_types() const;
+
+		void set_output_directory(const std::string& dir) {
+			output_directory = dir;
+		}
 };

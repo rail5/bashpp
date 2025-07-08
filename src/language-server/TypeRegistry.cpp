@@ -325,7 +325,7 @@ void TypeRegistry::generate_serialization(std::ofstream& file,
 }
 
 void TypeRegistry::generate_all_types() const {
-	fs::create_directory("generated");
+	fs::create_directory(output_directory);
 	
 	// Generate special types first
 	generate_LSP_types();
@@ -347,7 +347,7 @@ void TypeRegistry::generate_all_types() const {
 	// Generate type aliases
 	for (const auto& [name, def] : type_aliases) {
 		if(name != "LSPAny" && name != "LSPArray") {
-			std::ofstream file("generated/" + name + ".h");
+			std::ofstream file(output_directory + "/" + name + ".h");
 			file << "#pragma once\n";
 			file << "using " << name << " = " 
 				 << resolve_type(def["type"]) << ";\n";
@@ -356,7 +356,7 @@ void TypeRegistry::generate_all_types() const {
 }
 
 void TypeRegistry::generate_LSP_types() const {
-	std::ofstream file("generated/LSPTypes.h");
+	std::ofstream file(output_directory + "/LSPTypes.h");
 	file << R"(#pragma once
 #include <vector>
 #include <variant>
@@ -458,7 +458,7 @@ NLOHMANN_JSON_NAMESPACE_END
 }
 
 void TypeRegistry::generate_enum(const std::string& name, const nlohmann::json& def) const {
-	std::ofstream file("generated/" + name + ".h");
+	std::ofstream file(output_directory + "/" + name + ".h");
 	file << "#pragma once\n";
 	file << "#include <string>\n";
 	file << "#include <variant>\n";
@@ -485,7 +485,7 @@ void TypeRegistry::generate_enum(const std::string& name, const nlohmann::json& 
 }
 
 void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json& def) const {
-	std::ofstream file("generated/" + name + ".h");
+	std::ofstream file(output_directory + "/" + name + ".h");
 	file << "#pragma once\n";
 	file << "#include <nlohmann/json.hpp>\n";
 	file << "#include \"LSPTypes.h\"\n"; // Include LSPTypes for compatibility

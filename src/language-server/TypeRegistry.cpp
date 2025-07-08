@@ -205,8 +205,8 @@ void TypeRegistry::generate_serialization(std::ofstream& file,
 
 	// Serialize base classes
 	for (const auto& base : base_classes) {
-		file << "		nlohmann::json base_json = static_cast<const " << base << "&>(obj);\n";
-		file << "		j.update(base_json);\n";
+		file << "		nlohmann::json " << base << "_json = static_cast<const " << base << "&>(obj);\n";
+		file << "		j.update(" << base << "_json);\n";
 	}
 
 	// Serialize direct properties

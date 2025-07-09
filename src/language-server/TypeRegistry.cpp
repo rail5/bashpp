@@ -521,6 +521,20 @@ struct adl_serializer<std::variant<Args...>> {
 	}
 };
 
+// Serializer for std::monostate
+template <>
+struct adl_serializer<std::monostate> {
+	static void to_json(json& j, const std::monostate&) {
+		j = nullptr; // Represent std::monostate as null in JSON
+	}
+	static void from_json(const json& j, std::monostate&) {
+		if (!j.is_null()) {
+			throw std::runtime_error("Expected null for std::monostate");
+		}
+		// No action needed, std::monostate is already default constructed
+	}
+};
+
 NLOHMANN_JSON_NAMESPACE_END
 )";
 

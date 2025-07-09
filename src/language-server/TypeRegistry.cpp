@@ -544,6 +544,40 @@ void TypeRegistry::generate_enum(const std::string& name, const nlohmann::json& 
 	file << "#include <cstdint>\n";
 	file << "#include <nlohmann/json.hpp>\n";
 	file << "#include \"LSPTypes.h\"\n"; // Include LSPTypes for compatibility
+
+	// LSP MetaModel lists static string constants as "enumerations"
+	// Obviously these are not representable as enums in C++
+	if (def.contains("type") && def["type"]["name"] == "string") {
+		file << "class " << name << " {\n";
+		file << "private:\n";
+		file << "	std::string value_;\n";
+		file << "public:\n";
+		for (const auto& member : def["values"]) {
+			file << "	static const " << name << " "
+				<< member["name"].get<std::string>() << ";\n";
+		}
+		file << "\n	" << name << "() = default;\n";
+		file << "	explicit " << name << "(const std::string& value) : value_(value) {}\n";
+		file << "	const std::string& value() const { return value_; }\n";
+		file << "	bool operator==(const " << name << "& other) const { return value_ == other.value_; }\n";
+		file << "	bool operator!=(const " << name << "& other) const { return !(*this == other); }\n";
+		file << "};\n\n";
+
+		for (const auto& member : def["values"]) {
+			file << "const " << name << " " << name << "::"
+				 << member["name"].get<std::string>() << " = "
+				 << name << "(\"" << member["name"].get<std::string>() << "\");\n";
+		}
+
+		file << "\ninline void to_json(nlohmann::json& j, const " << name << "& obj) {\n";
+		file << "	j = obj.value();\n";
+		file << "}\n\n";
+		file << "inline void from_json(const nlohmann::json& j, " << name << "& obj) {\n";
+		file << "	obj = " << name << "(j.get<std::string>());\n";
+		file << "}\n\n";
+		return; // Special case handled
+	}
+
 	file << "enum class " << name << " {\n";
 
 	for (const auto& member : def["values"]) {

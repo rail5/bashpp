@@ -28,7 +28,7 @@ std::set<std::string> TypeRegistry::get_referenced_types(const nlohmann::json& t
 	const std::string kind = type_def["kind"].get<std::string>();
 
 	if (kind == "reference") {
-		const std::string name = type_def["name"].get<std::string>();
+		const std::string name = get_sanitized_name(type_def["name"].get<std::string>());
 		referenced.insert(name);
 	} else if (kind == "array") {
 		auto nested = get_referenced_types(type_def["element"]);
@@ -56,9 +56,9 @@ std::string TypeRegistry::resolve_type(const nlohmann::json& type_def, std::set<
 	const std::string kind = type_def["kind"].get<std::string>();
 
 	if (kind == "base") {
-		return resolve_base_type(type_def["name"].get<std::string>());
+		return resolve_base_type(get_sanitized_name(type_def["name"].get<std::string>()));
 	} else if (kind == "reference") {
-		const std::string name = type_def["name"].get<std::string>();
+		const std::string name = get_sanitized_name(type_def["name"].get<std::string>());
 		if (visited.find(name) != visited.end()) {
 			return name; // Return name for forward declaration
 		}
@@ -314,7 +314,7 @@ void TypeRegistry::generate_serialization(std::ofstream& file,
 
 	// Serialize direct properties
 	for (const auto& prop : properties) {
-		const std::string prop_name = prop["name"].get<std::string>();
+		const std::string prop_name = get_sanitized_name(prop["name"].get<std::string>());
 		// It might be a std::variant
 		// Is it a std::variant?
 
@@ -342,7 +342,7 @@ void TypeRegistry::generate_serialization(std::ofstream& file,
 
 	// Deserialize direct properties
 	for (const auto& prop : properties) {
-		const std::string prop_name = prop["name"].get<std::string>();
+		const std::string prop_name = get_sanitized_name(prop["name"].get<std::string>());
 		const bool is_optional = prop.value("optional", false);
 
 		std::string get_to_str;
@@ -549,6 +549,22 @@ NLOHMANN_JSON_NAMESPACE_END
 	file_array.close();
 }
 
+std::string TypeRegistry::get_sanitized_name(const std::string& name) const {
+	static const std::set<std::string> reserved_keywords = {
+		"int", "float", "double", "char", "void", "bool", "if", "else",
+		"for", "while", "return", "class", "struct", "enum", "export",
+		"static", "public", "private", "protected", "virtual",
+		"override", "const", "constexpr", "inline", "namespace", "using",
+		"template", "typename", "this", "new", "delete", "try", "catch",
+		"throw", "switch", "case", "default", "break", "continue",
+		"operator"
+	};
+	if (reserved_keywords.find(name) != reserved_keywords.end()) {
+		return name + "_"; // Append underscore to avoid conflicts with keywords
+	}
+	return name;
+}
+
 void TypeRegistry::generate_enum(const std::string& name, const nlohmann::json& def) const {
 	std::ofstream file(output_directory + "/" + name + ".h");
 	file << "#pragma once\n";
@@ -568,7 +584,7 @@ void TypeRegistry::generate_enum(const std::string& name, const nlohmann::json& 
 		file << "public:\n";
 		for (const auto& member : def["values"]) {
 			file << "	static const " << name << " "
-				<< member["name"].get<std::string>() << ";\n";
+				<< get_sanitized_name(member["name"].get<std::string>()) << ";\n";
 		}
 		file << "\n	" << name << "() = default;\n";
 		file << "	explicit " << name << "(const std::string& value) : value_(value) {}\n";
@@ -579,8 +595,8 @@ void TypeRegistry::generate_enum(const std::string& name, const nlohmann::json& 
 
 		for (const auto& member : def["values"]) {
 			file << "const " << name << " " << name << "::"
-				 << member["name"].get<std::string>() << " = "
-				 << name << "(\"" << member["name"].get<std::string>() << "\");\n";
+				 << get_sanitized_name(member["name"].get<std::string>()) << " = "
+				 << name << "(\"" << get_sanitized_name(member["name"].get<std::string>()) << "\");\n";
 		}
 
 		file << "\ninline void to_json(nlohmann::json& j, const " << name << "& obj) {\n";
@@ -595,7 +611,7 @@ void TypeRegistry::generate_enum(const std::string& name, const nlohmann::json& 
 	file << "enum class " << name << " {\n";
 
 	for (const auto& member : def["values"]) {
-		file << "	" << member["name"].get<std::string>() << " = "
+		file << "	" << get_sanitized_name(member["name"].get<std::string>()) << " = "
 			 << member["value"] << ",\n";
 	}
 
@@ -603,8 +619,8 @@ void TypeRegistry::generate_enum(const std::string& name, const nlohmann::json& 
 	file << "NLOHMANN_JSON_SERIALIZE_ENUM(" << name << ", {\n";
 
 	for (const auto& member : def["values"]) {
-		file << "	{" << name << "::" << member["name"].get<std::string>()
-			 << ", \"" << member["name"].get<std::string>() << "\"},\n";
+		file << "	{" << name << "::" << get_sanitized_name(member["name"].get<std::string>())
+			 << ", \"" << get_sanitized_name(member["name"].get<std::string>()) << "\"},\n";
 	}
 
 	file << "})\n";
@@ -684,7 +700,7 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 
 	// Generate fields
 	for (const auto& prop : def["properties"]) {
-		const std::string prop_name = prop["name"].get<std::string>();
+		const std::string prop_name = get_sanitized_name(prop["name"].get<std::string>());
 		const auto& type_def = prop["type"];
 		const std::string kind = type_def["kind"].get<std::string>();
 		std::string type_str = resolve_type(type_def);

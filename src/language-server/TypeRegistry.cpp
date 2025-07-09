@@ -705,6 +705,12 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 		const std::string kind = type_def["kind"].get<std::string>();
 		std::string type_str = resolve_type(type_def);
 
+		// Check if the type is the same as the containing struct
+		// E.g.: SelectionRange, per the spec, has a property 'parent' of type SelectionRange
+		if (type_str == name) {
+			type_str = name + "&"; // Use reference to avoid infinite recursion
+		}
+
 		file << "	" << type_str << " " << prop_name;
 		
 		// Add default values for literal types

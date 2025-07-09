@@ -386,10 +386,7 @@ void TypeRegistry::generate_all_types() const {
 	// Generate type aliases
 	for (const auto& [name, def] : type_aliases) {
 		if(name != "LSPAny" && name != "LSPArray") {
-			std::ofstream file(output_directory + "/" + name + ".h");
-			file << "#pragma once\n";
-			file << "using " << name << " = " 
-				 << resolve_type(def["type"]) << ";\n";
+			generate_type_alias(name, def);
 		}
 	}
 }
@@ -531,6 +528,33 @@ void TypeRegistry::generate_enum(const std::string& name, const nlohmann::json& 
 	}
 
 	file << "})\n";
+}
+
+void TypeRegistry::generate_type_alias(const std::string& name, const nlohmann::json& def) const {
+	std::ofstream file(output_directory + "/" + name + ".h");
+	file << "#pragma once\n";
+	file << "#include <nlohmann/json.hpp>\n";
+	file << "#include \"LSPTypes.h\"\n"; // Include LSPTypes for compatibility
+	
+	std::set<std::string> includes;
+	auto refs = get_referenced_types(def["type"]);
+	for (const auto& ref : refs) {
+		// Skip base types
+		static const std::set<std::string> base_types = {
+			"string", "integer", "uinteger", "decimal", "boolean", "null"
+		};
+
+		if (base_types.find(ref) == base_types.end()) {
+			includes.insert("#include \"" + ref + ".h\"");
+		}
+	}
+
+	// Write includes
+	for (const auto& inc : includes) {
+		file << inc << "\n";
+	}
+
+	file << "using " << name << " = " << resolve_type(def["type"]) << ";\n";
 }
 
 void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json& def) const {

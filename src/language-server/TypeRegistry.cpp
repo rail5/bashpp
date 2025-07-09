@@ -318,7 +318,7 @@ void TypeRegistry::generate_serialization(std::ofstream& file,
 		// It might be a std::variant
 		// Is it a std::variant?
 
-		if (prop.contains("type") && resolve_type(prop["type"]).find("std::variant") != std::string::npos) {
+		if (prop.contains("type") && resolve_type(prop["type"]).find("std::variant") == 0) {
 			file << "		std::visit([&j](auto&& value) {\n"
 				<< "			j[\"" << prop_name << "\"] = value;\n"
 				<< "		}, obj." << prop_name << ");\n";
@@ -349,7 +349,7 @@ void TypeRegistry::generate_serialization(std::ofstream& file,
 
 		// Is it a std::variant?
 		std::string type_str = resolve_type(prop["type"]);
-		if (type_str.find("std::variant") != std::string::npos) {
+		if (type_str.find("std::variant") == 0) {
 			file << get_variant_deserialization_code(prop_name, type_str, is_optional);
 		} else {
 			// Normal property handling
@@ -485,6 +485,38 @@ struct adl_serializer<LSPAny> {
 			any.value = j.get<bool>();
 		} else if (j.is_null()) {
 			any.value = nullptr;
+		}
+	}
+};
+
+// Generic serializer for std::variant
+template <typename... Args>
+struct adl_serializer<std::variant<Args...>> {
+	static void to_json(json& j, const std::variant<Args...>& v) {
+		std::visit([&j](const auto& value) {
+			j = value;
+		}, v);
+	}
+
+	static void from_json(const json& j, std::variant<Args...>& v) {
+		bool found = false;
+		// Iterate over all types in the variant using a fold expression
+		( ( [&] {
+			// If a valid type has already been found, skip further checks
+			if (found) return;
+			try {
+				// Attempt to deserialize the JSON object into the current type
+				v = j.get<Args>();
+				// Mark as found if successful
+				found = true;
+			} catch (...) {
+				// Ignore exceptions and continue checking other types
+			}
+		})(), ... );
+		
+		// If no valid type was found, throw an error indicating deserialization failure
+		if (!found) {
+			throw std::runtime_error("Could not deserialize variant");
 		}
 	}
 };

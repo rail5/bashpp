@@ -436,7 +436,7 @@ struct LSPAny {
 
 	// Constructors
 	LSPAny() : value(nullptr) {}
-	template <typename T>
+	template <typename T, typename = std::enable_if_t<!std::is_same_v<std::decay_t<T>, LSPAny>>>
 	LSPAny(T&& val) : value(std::forward<T>(val)) {}
 	
 	// Accessor

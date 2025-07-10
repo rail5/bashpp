@@ -35,12 +35,13 @@ struct Message {
 	std::string jsonrpc = "2.0";
 };
 
-struct RequestMessage : public Message {
+template<typename ParamsType>
+struct RequestMessageT : public Message {
 	std::variant<int, std::string> id;
 	std::string method;
-	nlohmann::json params;
+	ParamsType params;
 
-	friend void to_json(nlohmann::json& j, const RequestMessage& msg) {
+	friend void to_json(nlohmann::json& j, const RequestMessageT<ParamsType>& msg) {
 		j = nlohmann::json::object();
 		j["jsonrpc"] = msg.jsonrpc;
 		j["id"] = msg.id;
@@ -48,17 +49,21 @@ struct RequestMessage : public Message {
 		j["params"] = msg.params;
 	}
 
-	friend void from_json(const nlohmann::json& j, RequestMessage& msg) {
+	friend void from_json(const nlohmann::json& j, RequestMessageT<ParamsType>& msg) {
 		j.at("jsonrpc").get_to(msg.jsonrpc);
 		j.at("id").get_to(msg.id);
 		j.at("method").get_to(msg.method);
 		if (j.contains("params")) {
-			msg.params = j.at("params");
+			msg.params = j.at("params").get<ParamsType>();
 		} else {
-			msg.params = nlohmann::json::object(); // Default to empty object if not present
+			msg.params = ParamsType(); // Default to empty object if not present
 		}
 	}
 };
+
+using RequestMessage = RequestMessageT<LSPAny>; // Not strictly correct according to the spec
+	// According to the spec, params should be either an array or an object
+	// LSPAny covers these but also includes primitive types, which are not allowed
 
 template<typename ResultType>
 struct ResponseMessageT : public Message {

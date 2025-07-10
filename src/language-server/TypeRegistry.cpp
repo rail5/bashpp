@@ -603,6 +603,13 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 		file << inc << "\n";
 	}
 
+	// Generate Doxygen-style comments
+	file << "/**\n";
+	file << " * @file " << name << ".h\n";
+	file << " * @struct " << name << "\n";
+	file << " * @brief " << def.value("documentation", "No description provided.") << "\n";
+	file << " **/\n";
+
 	file << "\nstruct " << name;
 	generate_inheritance(file, base_classes);
 	file << " {\n";
@@ -625,6 +632,12 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 		} else if (type_str == "std::optional<" + name + ">") {
 			type_str = "std::optional<std::shared_ptr<" + name + ">>"; // Use pointer for optional, unions cannot contain reference types
 		}
+
+		file << "	/**\n";
+		file << "	 * @brief (";
+		file << (prop.contains("optional") && prop["optional"].get<bool>() ? "Optional" : "Required") << ") ";
+		file << prop.value("documentation", "No description provided.") << "\n";
+		file << "	 **/\n";
 
 		file << "	" << type_str << " " << prop_name;
 		

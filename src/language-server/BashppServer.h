@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include "static/Message.h"
 
 using json = nlohmann::json;
 
@@ -21,7 +22,7 @@ class BashppServer {
 		static std::mutex cout_mutex; // Mutex for thread-safe output
 		
 
-		const std::unordered_map<std::string, std::function<json(const json&)>> handlers = {
+		const std::unordered_map<std::string, std::function<GenericResponseMessage(const GenericRequestMessage& )>> handlers = {
 			{"initialize", std::bind(&BashppServer::handleInitialize, this, std::placeholders::_1)},
 			{"textDocument/definition", std::bind(&BashppServer::handleGotoDefinition, this, std::placeholders::_1)},
 			{"textDocument/completion", std::bind(&BashppServer::handleCompletion, this, std::placeholders::_1)},
@@ -37,18 +38,18 @@ class BashppServer {
 		BashppServer();
 		~BashppServer();
 
-		json shutdown(const json& params);
+		GenericResponseMessage shutdown(const GenericRequestMessage& request);
 
 		void processMessage(const std::string& message);
 
-		json handleInitialize(const json& params);
-		json handleGotoDefinition(const json& params);
-		json handleCompletion(const json& params);
-		json handleHover(const json& params);
-		json handleDocumentSymbol(const json& params);
-		json handleDidOpen(const json& params);
-		json handleDidChange(const json& params);
-		json handleRename(const json& params);
+		GenericResponseMessage handleInitialize(const GenericRequestMessage& request);
+		GenericResponseMessage handleGotoDefinition(const GenericRequestMessage& request);
+		GenericResponseMessage handleCompletion(const GenericRequestMessage& request);
+		GenericResponseMessage handleHover(const GenericRequestMessage& request);
+		GenericResponseMessage handleDocumentSymbol(const GenericRequestMessage& request);
+		GenericResponseMessage handleDidOpen(const GenericRequestMessage& request);
+		GenericResponseMessage handleDidChange(const GenericRequestMessage& request);
+		GenericResponseMessage handleRename(const GenericRequestMessage& request);
 
 };
 

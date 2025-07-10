@@ -1,4 +1,18 @@
-# LSP Spec
+# Bash++ Language Server Protocol (LSP) Implementation
+
+## Overview
+
+This is a work-in-progress implementation of a Bash++ language server.
+
+It is designed to provide language server protocol (LSP) features such as code completion, go-to definition, and hover information for Bash++ scripts.
+
+The files `generateLSPClasses.cpp`, `TypeRegistry.cpp`, and `TypeRegistry.h` are responsible for automatically generating the necessary C++ classes based on the LSP specification defined in `metaModel.json`.
+
+The generated classes are then used to handle LSP requests and responses in the Bash++ language server.
+
+## Copyright and License
+
+Note that, as is also the case for the rest of the Bash++ project, the LSP implementation is licensed under the [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
 The files `metaModel.json` and `metaModel.schema.json` which define the LSP model are pulled from Microsoft's [Language server protocol implementation for VSCode](https://github.com/microsoft/vscode-languageserver-node) and are licensed under the MIT License.
 

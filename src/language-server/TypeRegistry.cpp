@@ -321,12 +321,29 @@ void TypeRegistry::generate_serialization(std::ofstream& file,
 		// It might be a std::variant
 		// Is it a std::variant?
 
+		// Do not serialize optional properties if they are not present
+		bool is_optional = prop.value("optional", false);
+
 		if (prop.contains("type") && resolve_type(prop["type"]).find("std::variant") == 0) {
-			file << "		std::visit([&j](auto&& value) {\n"
-				<< "			j[\"" << prop_name << "\"] = value;\n"
-				<< "		}, obj." << prop_name << ");\n";
+			if (is_optional) {
+				file << "		if (obj." << prop_name << ".has_value()) {\n";
+				file << "			std::visit([&j](auto&& value) {\n";
+				file << "				j[\"" << prop_name << "\"] = value;\n";
+				file << "			}, *obj." << prop_name << ");\n";
+				file << "		}\n";
+			} else {
+				file << "		std::visit([&j](auto&& value) {\n"
+					<< "			j[\"" << prop_name << "\"] = value;\n"
+					<< "		}, obj." << prop_name << ");\n";
+			}
 		} else {
-			file << "		j[\"" << prop_name << "\"] = obj." << prop_name << ";\n";
+			if (is_optional) {
+				file << "		if (obj." << prop_name << " != std::nullopt) {\n";
+				file << "			j[\"" << prop_name << "\"] = *obj." << prop_name << ";\n";
+				file << "		}\n";
+			} else {
+				file << "		j[\"" << prop_name << "\"] = obj." << prop_name << ";\n";
+			}
 		}
 	}
 
@@ -357,9 +374,18 @@ void TypeRegistry::generate_serialization(std::ofstream& file,
 		} else {
 			// Normal property handling
 			if (is_optional) {
-				file << "if (j.contains(\"" << prop_name << "\")) ";
+				file << "		if (j.contains(\"" << prop_name << "\")) {\n";
+				file << "			if (j[\"" << prop_name << "\"].is_null()) {\n";
+				file << "				obj." << prop_name << " = std::nullopt;\n";
+				file << "			} else {\n";
+				file << "				obj." << prop_name << " = j[\"" << prop_name << "\"].get<" << type_str << ">();\n";
+				file << "			}\n";
+				file << "		} else {\n";
+				file << "			obj." << prop_name << " = std::nullopt;\n";
+				file << "		}\n";
+			} else {
+				file << "		j[\"" << prop_name << "\"].get_to(obj." << prop_name << ");\n";
 			}
-			file << "j[\"" << prop_name << "\"].get_to(obj." << prop_name << ");\n";
 		}
 	}
 
@@ -434,6 +460,7 @@ void TypeRegistry::generate_enum(const std::string& name, const nlohmann::json& 
 	file << "#include <variant>\n";
 	file << "#include <vector>\n";
 	file << "#include <cstdint>\n";
+	file << "#include <optional>\n";
 	file << "#include <nlohmann/json.hpp>\n";
 	file << "#include \"../static/LSPTypes.h\"\n"; // Include LSPTypes for compatibility
 
@@ -458,7 +485,7 @@ void TypeRegistry::generate_enum(const std::string& name, const nlohmann::json& 
 		for (const auto& member : def["values"]) {
 			file << "const " << name << " " << name << "::"
 				 << get_sanitized_name(member["name"].get<std::string>()) << " = "
-				 << name << "(\"" << get_sanitized_name(member["name"].get<std::string>()) << "\");\n";
+				 << name << "(\"" << get_sanitized_name(member["value"].get<std::string>()) << "\");\n";
 		}
 
 		file << "\ninline void to_json(nlohmann::json& j, const " << name << "& obj) {\n";
@@ -492,6 +519,7 @@ void TypeRegistry::generate_type_alias(const std::string& name, const nlohmann::
 	std::ofstream file(output_directory + "/" + name + ".h");
 	file << "#pragma once\n";
 	file << "#include <nlohmann/json.hpp>\n";
+	file << "#include <optional>\n";
 	file << "#include \"../static/LSPTypes.h\"\n"; // Include LSPTypes for compatibility
 	
 	std::set<std::string> includes;
@@ -528,6 +556,7 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 		file << "#include <string>\n";
 		file << "#include <unordered_map>\n";
 		file << "#include <cstdint>\n";
+		file << "#include <optional>\n";
 	}
 
 	auto base_classes = get_base_classes(def);
@@ -566,6 +595,10 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 		const auto& type_def = prop["type"];
 		const std::string kind = type_def["kind"].get<std::string>();
 		std::string type_str = resolve_type(type_def);
+		bool is_optional = prop.value("optional", false);
+		if (is_optional) {
+			type_str = "std::optional<" + type_str + ">";
+		}
 
 		// Check if the type is the same as the containing struct
 		// E.g.: SelectionRange, per the spec, has a property 'parent' of type SelectionRange
@@ -600,6 +633,7 @@ void TypeRegistry::generate_request(const std::string& name, const nlohmann::jso
 	file << "#include <vector>\n";
 	file << "#include <unordered_map>\n";
 	file << "#include <cstdint>\n";
+	file << "#include <optional>\n";
 	file << "#include <nlohmann/json.hpp>\n";
 	file << "#include \"../static/LSPTypes.h\"\n"; // Include LSPTypes for compatibility
 	file << "#include \"../static/Message.h\"\n"; // Include Message for base classes
@@ -642,19 +676,14 @@ void TypeRegistry::generate_request(const std::string& name, const nlohmann::jso
 	 */
 	if (def.contains("params")) {
 		std::string params_type = resolve_type(def["params"]);
-
-		file << "struct " << name << " : public RequestMessageT<" << params_type << "> {\n";
-		file << "	static constexpr const char* method = \"" << def["method"].get<std::string>() << "\";\n";
-		file << "};\n\n";
+		file << "using " << name << " = RequestMessage<" << params_type << ">;\n";
 	}
 
 	// Handle the response type
 	// Same deal, essentially
 	if (def.contains("result")) {
 		std::string response_type = resolve_type(def["result"]);
-		file << "struct " << name << "Response : public ResponseMessageT<" << response_type << "> {\n";
-		file << "	static constexpr const char* method = \"" << def["method"].get<std::string>() << "\";\n";
-		file << "};\n\n";
+		file << "using " << name << "Response = ResponseMessage<" << response_type << ">;\n";
 	}
 
 	// The serialization is handled in the template base classes

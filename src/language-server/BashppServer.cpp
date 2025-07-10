@@ -255,13 +255,13 @@ GenericResponseMessage BashppServer::handleDocumentSymbol(const GenericRequestMe
 		DocumentSymbol symbol;
 		symbol.name = "ExampleClass";
 		symbol.kind = SymbolKind::Class;
-		symbol.range.start.line = 1;
-		symbol.range.start.character = 1;
-		symbol.range.end.line = 1;
+		symbol.range.start.line = 0;
+		symbol.range.start.character = 0;
+		symbol.range.end.line = 0;
 		symbol.range.end.character = 10;
-		symbol.selectionRange.start.line = 1;
-		symbol.selectionRange.start.character = 1;
-		symbol.selectionRange.end.line = 1;
+		symbol.selectionRange.start.line = 0;
+		symbol.selectionRange.start.character = 0;
+		symbol.selectionRange.end.line = 0;
 		symbol.selectionRange.end.character = 10;
 
 		response.result = std::vector<DocumentSymbol>{symbol};

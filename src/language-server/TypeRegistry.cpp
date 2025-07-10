@@ -607,7 +607,10 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 	file << "/**\n";
 	file << " * @file " << name << ".h\n";
 	file << " * @struct " << name << "\n";
-	file << " * @brief " << def.value("documentation", "No description provided.") << "\n";
+	std::string brief = def.value("documentation", "No description provided.");
+	// Remove any '@' symbols from the brief
+	brief.erase(std::remove(brief.begin(), brief.end(), '@'), brief.end());
+	file << " * @brief " << brief << "\n";
 	file << " **/\n";
 
 	file << "\nstruct " << name;
@@ -635,8 +638,11 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 
 		file << "	/**\n";
 		file << "	 * @brief (";
+		std::string type_description = type_def.value("documentation", "No description provided.");
+		// Remove any '@' symbols from the description
+		type_description.erase(std::remove(type_description.begin(), type_description.end(), '@'), type_description.end());
 		file << (prop.contains("optional") && prop["optional"].get<bool>() ? "Optional" : "Required") << ") ";
-		file << prop.value("documentation", "No description provided.") << "\n";
+		file << type_description << "\n";
 		file << "	 **/\n";
 
 		file << "	" << type_str << " " << prop_name;
@@ -708,6 +714,16 @@ void TypeRegistry::generate_request(const std::string& name, const nlohmann::jso
 	 * 
 	 * Each listing in the spec has *only one* entry in "params"
 	 */
+	file << "/**\n";
+	file << " * @file " << name << ".h\n";
+	file << " * @struct " << name << "\n";
+
+	std::string brief = def.value("documentation", "No description provided.");
+	// Remove any '@' symbols from the brief
+	brief.erase(std::remove(brief.begin(), brief.end(), '@'), brief.end());
+	file << " * @brief " << brief << "\n";
+	file << " **/\n";
+	
 	if (def.contains("params")) {
 		std::string params_type = resolve_type(def["params"]);
 		file << "using " << name << " = RequestMessage<" << params_type << ">;\n";

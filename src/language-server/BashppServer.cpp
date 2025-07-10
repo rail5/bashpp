@@ -118,7 +118,7 @@ GenericResponseMessage BashppServer::handleInitialize(const GenericRequestMessag
 
 	response.result = result;
 
-	return response.toGeneric();
+	return response;
 }
 
 GenericResponseMessage BashppServer::handleGotoDefinition(const GenericRequestMessage& request) {

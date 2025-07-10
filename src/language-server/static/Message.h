@@ -53,11 +53,20 @@ struct ResponseMessageBase : Message {
 	virtual ~ResponseMessageBase() = default;
 };
 
+struct NotificationMessageBase : Message {
+	std::string method;
+	// Notifications do not have an ID
+	virtual ~NotificationMessageBase() = default;
+};
+
 template<typename ParamsType>
 struct RequestMessage;
 
 template <typename ResultType>
 struct ResponseMessage;
+
+template<typename ParamsType>
+struct NotificationMessage;
 
 struct GenericRequestMessage : public RequestMessageBase {
 	LSPAny params;
@@ -165,6 +174,60 @@ struct GenericResponseMessage : public ResponseMessageBase {
 	}
 };
 
+struct GenericNotificationMessage : public NotificationMessageBase {
+	LSPAny params;
+
+	GenericNotificationMessage() = default;
+
+	template<typename ParamsType>
+	GenericNotificationMessage(const NotificationMessage<ParamsType>& msg) {
+		jsonrpc = msg.jsonrpc;
+		method = msg.method;
+		nlohmann::json j;
+		nlohmann::adl_serializer<ParamsType>::to_json(j, msg.params);
+		params = j.get<LSPAny>(); // Store params as LSPAny
+	}
+
+	friend void to_json(nlohmann::json& j, const GenericNotificationMessage& msg) {
+		j = nlohmann::json::object();
+		j["jsonrpc"] = msg.jsonrpc;
+		j["method"] = msg.method;
+		j["params"] = msg.params; // Serialize params as LSPAny
+	}
+
+	friend void from_json(const nlohmann::json& j, GenericNotificationMessage& msg) {
+		j.at("jsonrpc").get_to(msg.jsonrpc);
+		j.at("method").get_to(msg.method);
+		if (j.contains("params")) {
+			msg.params = j.at("params").get<LSPAny>();
+		} else {
+			msg.params = nullptr; // Default to null if not present
+		}
+	}
+
+	template <typename ParamsType>
+	NotificationMessage<ParamsType> toSpecific() const {
+		NotificationMessage<ParamsType> specific;
+		specific.jsonrpc = jsonrpc;
+		specific.method = method;
+		nlohmann::json j;
+		nlohmann::adl_serializer<LSPAny>::to_json(j, params);
+		specific.params = j.get<ParamsType>(); // Convert JSON to ParamsType
+		return specific;
+	}
+
+	template <typename ParamsType>
+	static GenericNotificationMessage fromSpecific(const NotificationMessage<ParamsType>& specific) {
+		GenericNotificationMessage generic;
+		generic.jsonrpc = specific.jsonrpc;
+		generic.method = specific.method;
+		nlohmann::json j;
+		nlohmann::adl_serializer<ParamsType>::to_json(j, specific.params);
+		generic.params = j.get<LSPAny>(); // Store params as LSPAny
+		return generic;
+	}
+};
+
 template<typename ParamsType>
 struct RequestMessage : public RequestMessageBase {
 	ParamsType params;
@@ -233,24 +296,34 @@ struct ResponseMessage : public ResponseMessageBase {
 	}
 };
 
-struct NotificationMessage : public Message {
-	std::string method;
-	nlohmann::json params;
+template<typename ParamsType>
+struct NotificationMessage : public NotificationMessageBase {
+	ParamsType params;
 
-	friend void to_json(nlohmann::json& j, const NotificationMessage& msg) {
+	friend void to_json(nlohmann::json& j, const NotificationMessage<ParamsType>& msg) {
 		j = nlohmann::json::object();
 		j["jsonrpc"] = msg.jsonrpc;
 		j["method"] = msg.method;
 		j["params"] = msg.params;
 	}
 
-	friend void from_json(const nlohmann::json& j, NotificationMessage& msg) {
+	friend void from_json(const nlohmann::json& j, NotificationMessage<ParamsType>& msg) {
 		j.at("jsonrpc").get_to(msg.jsonrpc);
 		j.at("method").get_to(msg.method);
 		if (j.contains("params")) {
-			msg.params = j.at("params");
+			msg.params = j.at("params").get<ParamsType>();
 		} else {
-			msg.params = nlohmann::json::object(); // Default to empty object if not present
+			msg.params = ParamsType(); // Default to empty object if not present
 		}
+	}
+
+	GenericNotificationMessage toGeneric() const {
+		GenericNotificationMessage generic;
+		generic.jsonrpc = jsonrpc;
+		generic.method = method;
+		nlohmann::json j;
+		nlohmann::adl_serializer<ParamsType>::to_json(j, params);
+		generic.params = j.get<LSPAny>(); // Store params as LSPAny
+		return generic;
 	}
 };

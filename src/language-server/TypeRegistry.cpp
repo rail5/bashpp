@@ -691,7 +691,7 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 
 	file << "};\n" << std::flush;
 }
-#include <iostream>
+
 void TypeRegistry::generate_request(const std::string& name, const nlohmann::json& def) const {
 	std::ofstream file(output_directory + "/" + name + ".h");
 	file << "#pragma once\n";

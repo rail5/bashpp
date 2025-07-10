@@ -49,6 +49,11 @@ struct LSPAny {
 	const T* get_if() const {
 		return std::get_if<T>(&value);
 	}
+
+	template <typename T>
+	bool is() const {
+		return std::holds_alternative<T>(value);
+	}
 };
 
 // Serialization support

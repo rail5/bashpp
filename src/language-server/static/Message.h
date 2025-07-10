@@ -54,28 +54,7 @@ struct ResponseMessageBase : Message {
 };
 
 template<typename ParamsType>
-struct RequestMessage : public RequestMessageBase {
-	ParamsType params;
-
-	friend void to_json(nlohmann::json& j, const RequestMessage<ParamsType>& msg) {
-		j = nlohmann::json::object();
-		j["jsonrpc"] = msg.jsonrpc;
-		j["id"] = msg.id;
-		j["method"] = msg.method;
-		j["params"] = msg.params;
-	}
-
-	friend void from_json(const nlohmann::json& j, RequestMessage<ParamsType>& msg) {
-		j.at("jsonrpc").get_to(msg.jsonrpc);
-		j.at("id").get_to(msg.id);
-		j.at("method").get_to(msg.method);
-		if (j.contains("params")) {
-			msg.params = j.at("params").get<ParamsType>();
-		} else {
-			msg.params = ParamsType(); // Default to empty object if not present
-		}
-	}
-};
+struct RequestMessage;
 
 template <typename ResultType>
 struct ResponseMessage;
@@ -183,6 +162,30 @@ struct GenericResponseMessage : public ResponseMessageBase {
 		}
 
 		return generic;
+	}
+};
+
+template<typename ParamsType>
+struct RequestMessage : public RequestMessageBase {
+	ParamsType params;
+
+	friend void to_json(nlohmann::json& j, const RequestMessage<ParamsType>& msg) {
+		j = nlohmann::json::object();
+		j["jsonrpc"] = msg.jsonrpc;
+		j["id"] = msg.id;
+		j["method"] = msg.method;
+		j["params"] = msg.params;
+	}
+
+	friend void from_json(const nlohmann::json& j, RequestMessage<ParamsType>& msg) {
+		j.at("jsonrpc").get_to(msg.jsonrpc);
+		j.at("id").get_to(msg.id);
+		j.at("method").get_to(msg.method);
+		if (j.contains("params")) {
+			msg.params = j.at("params").get<ParamsType>();
+		} else {
+			msg.params = ParamsType(); // Default to empty object if not present
+		}
 	}
 };
 

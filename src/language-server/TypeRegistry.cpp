@@ -21,6 +21,9 @@ void TypeRegistry::load_meta_model(const nlohmann::json& meta_model) {
 	for (const auto& item : meta_model["typeAliases"]) {
 		type_aliases[item["name"]] = item;
 	}
+	for (const auto& item : meta_model["requests"]) {
+		requests[item["typeName"]] = item;
+	}
 }
 
 std::set<std::string> TypeRegistry::get_referenced_types(const nlohmann::json& type_def) const {
@@ -389,6 +392,11 @@ void TypeRegistry::generate_all_types() const {
 			generate_type_alias(name, def);
 		}
 	}
+
+	// Generate requests
+	for (const auto& [name, def] : requests) {
+		generate_request(name, def);
+	}
 }
 
 void TypeRegistry::generate_LSP_types() const {
@@ -582,4 +590,75 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 	generate_serialization(file, name, base_classes, def["properties"]);
 
 	file << "};\n" << std::flush;
+}
+#include <iostream>
+void TypeRegistry::generate_request(const std::string& name, const nlohmann::json& def) const {
+	std::ofstream file(output_directory + "/" + name + ".h");
+	file << "#pragma once\n";
+	file << "#include <string>\n";
+	file << "#include <variant>\n";
+	file << "#include <vector>\n";
+	file << "#include <unordered_map>\n";
+	file << "#include <cstdint>\n";
+	file << "#include <nlohmann/json.hpp>\n";
+	file << "#include \"../static/LSPTypes.h\"\n"; // Include LSPTypes for compatibility
+	file << "#include \"../static/Message.h\"\n"; // Include Message for base classes
+
+	// Include any necessary headers for referenced types in params and response
+	std::set<std::string> includes;
+	if (def.contains("params")) {
+		includes = get_referenced_types(def["params"]);
+	}
+
+	if (def.contains("result")) {
+		auto response_refs = get_referenced_types(def["result"]);
+		includes.insert(response_refs.begin(), response_refs.end());
+	}
+
+	// Write includes
+	for (const auto& inc : includes) {
+		// Skip base types
+		static const std::set<std::string> base_types = {
+			"string", "integer", "uinteger", "decimal", "boolean", "null"
+		};
+
+		if (base_types.find(inc) == base_types.end()) {
+			file << "#include \"" << inc << ".h\"\n";
+		}
+	}
+
+	// We have to generate both the Request and Response types
+
+	// Handle the request type
+	// What kind of params are permissible?
+	/**
+	 * The JSON format for these is:
+	 * 		"params": {
+	 * 			"kind": "reference",
+	 * 			"name": "SelectionRange"
+	 * 		}
+	 * 
+	 * Each listing in the spec has *only one* entry in "params"
+	 */
+	if (def.contains("params")) {
+		std::string params_type = resolve_type(def["params"]);
+
+		file << "struct " << name << " : public RequestMessageT<" << params_type << "> {\n";
+		file << "	static constexpr const char* method = \"" << def["method"].get<std::string>() << "\";\n";
+		file << "};\n\n";
+	}
+
+	// Handle the response type
+	// Same deal, essentially
+	if (def.contains("result")) {
+		std::string response_type = resolve_type(def["result"]);
+		file << "struct " << name << "Response : public ResponseMessageT<" << response_type << "> {\n";
+		file << "	static constexpr const char* method = \"" << def["method"].get<std::string>() << "\";\n";
+		file << "};\n\n";
+	}
+
+	// The serialization is handled in the template base classes
+
+	file << std::flush;
+	file.close();
 }

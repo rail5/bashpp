@@ -75,14 +75,6 @@ struct RequestMessage : public RequestMessageBase {
 			msg.params = ParamsType(); // Default to empty object if not present
 		}
 	}
-
-	operator RequestMessageBase() const {
-		RequestMessageBase base;
-		base.jsonrpc = jsonrpc;
-		base.id = id;
-		base.method = method;
-		return base;
-	}
 };
 
 template <typename ResultType>
@@ -219,14 +211,6 @@ struct ResponseMessage : public ResponseMessageBase {
 			msg.result = j.at("result").get<ResultType>();
 			msg.error = {0, "", nullptr}; // Default error if not present
 		}
-	}
-
-	operator ResponseMessageBase() const {
-		ResponseMessageBase base;
-		base.jsonrpc = jsonrpc;
-		base.id = id;
-		base.error = error;
-		return base;
 	}
 
 	GenericResponseMessage toGeneric() const {

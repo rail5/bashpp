@@ -5,7 +5,7 @@
 #include "LSPTypes.h"
 
 struct ResponseError {
-	int code;
+	int code = 0; // Error code, 0 means no error
 	std::string message;
 	LSPAny data; // Optional additional data
 
@@ -37,7 +37,7 @@ struct Message {
 
 template<typename ParamsType>
 struct RequestMessageT : public Message {
-	std::variant<int, std::string> id;
+	std::variant<int, std::string, std::nullptr_t> id;
 	std::string method;
 	ParamsType params;
 

@@ -483,6 +483,16 @@ void TypeRegistry::generate_enum(const std::string& name, const nlohmann::json& 
 	// LSP MetaModel lists static string constants as "enumerations"
 	// Obviously these are not representable as enums in C++
 	if (def.contains("type") && def["type"]["name"] == "string") {
+
+		// Doxygen comments
+		file << "/**\n";
+		file << " * @class " << name << "\n";
+		std::string brief = def.value("documentation", "No description provided.");
+		// Remove any '@' symbols from the brief
+		brief.erase(std::remove(brief.begin(), brief.end(), '@'), brief.end());
+		file << " * @brief " << brief << "\n";
+		file << " **/\n";
+
 		file << "class " << name << " {\n";
 		file << "private:\n";
 		file << "	std::string value_;\n";
@@ -512,6 +522,15 @@ void TypeRegistry::generate_enum(const std::string& name, const nlohmann::json& 
 		file << "}\n\n";
 		return; // Special case handled
 	}
+
+	// Doxygen comments
+	file << "/**\n";
+	file << " * @enum " << name << "\n";
+	std::string brief = def.value("documentation", "No description provided.");
+	// Remove any '@' symbols from the brief
+	brief.erase(std::remove(brief.begin(), brief.end(), '@'), brief.end());
+	file << " * @brief " << brief << "\n";
+	file << " **/\n";
 
 	file << "enum class " << name << " {\n";
 
@@ -556,6 +575,15 @@ void TypeRegistry::generate_type_alias(const std::string& name, const nlohmann::
 	for (const auto& inc : includes) {
 		file << inc << "\n";
 	}
+
+	// Doxygen comments
+	file << "/**\n";
+	file << " * @struct " << name << "\n";
+	std::string brief = def.value("documentation", "No description provided.");
+	// Remove any '@' symbols from the brief
+	brief.erase(std::remove(brief.begin(), brief.end(), '@'), brief.end());
+	file << " * @brief " << brief << "\n";
+	file << " **/\n";
 
 	file << "using " << name << " = " << resolve_type(def["type"]) << ";\n";
 }
@@ -613,7 +641,7 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 	file << " * @brief " << brief << "\n";
 	file << " **/\n";
 
-	file << "\nstruct " << name;
+	file << "struct " << name;
 	generate_inheritance(file, base_classes);
 	file << " {\n";
 

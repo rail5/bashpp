@@ -339,10 +339,21 @@ void TypeRegistry::generate_serialization(std::ofstream& file,
 		} else {
 			if (is_optional) {
 				file << "		if (obj." << prop_name << " != std::nullopt) {\n";
-				file << "			j[\"" << prop_name << "\"] = *obj." << prop_name << ";\n";
-				file << "		}\n";
+				file << "			j[\"" << prop_name << "\"] = *";
 			} else {
-				file << "		j[\"" << prop_name << "\"] = obj." << prop_name << ";\n";
+				file << "		j[\"" << prop_name << "\"] = ";
+			}
+
+			if (prop.contains("type") && resolve_type(prop["type"]) == name) {
+				// de-reference,
+				// Since if the struct contains an instance of itself,
+				// We'll have used a shared_ptr
+				file << "*";
+			}
+			file << "obj." << prop_name << ";\n";
+
+			if (is_optional) {
+				file << "		}\n";
 			}
 		}
 	}
@@ -378,7 +389,11 @@ void TypeRegistry::generate_serialization(std::ofstream& file,
 				file << "			if (j[\"" << prop_name << "\"].is_null()) {\n";
 				file << "				obj." << prop_name << " = std::nullopt;\n";
 				file << "			} else {\n";
-				file << "				obj." << prop_name << " = j[\"" << prop_name << "\"].get<" << type_str << ">();\n";
+				if (type_str == name) {
+					file << "				obj." << prop_name << " = std::make_shared<" << name << ">(j[\"" << prop_name << "\"].get<" << type_str << ">());\n";
+				} else {
+					file << "				obj." << prop_name << " = j[\"" << prop_name << "\"].get<" << type_str << ">();\n";
+				}
 				file << "			}\n";
 				file << "		} else {\n";
 				file << "			obj." << prop_name << " = std::nullopt;\n";
@@ -461,6 +476,7 @@ void TypeRegistry::generate_enum(const std::string& name, const nlohmann::json& 
 	file << "#include <vector>\n";
 	file << "#include <cstdint>\n";
 	file << "#include <optional>\n";
+	file << "#include <memory>\n";
 	file << "#include <nlohmann/json.hpp>\n";
 	file << "#include \"../static/LSPTypes.h\"\n"; // Include LSPTypes for compatibility
 
@@ -520,6 +536,7 @@ void TypeRegistry::generate_type_alias(const std::string& name, const nlohmann::
 	file << "#pragma once\n";
 	file << "#include <nlohmann/json.hpp>\n";
 	file << "#include <optional>\n";
+	file << "#include <memory>\n";
 	file << "#include \"../static/LSPTypes.h\"\n"; // Include LSPTypes for compatibility
 	
 	std::set<std::string> includes;
@@ -557,6 +574,7 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 		file << "#include <unordered_map>\n";
 		file << "#include <cstdint>\n";
 		file << "#include <optional>\n";
+		file << "#include <memory>\n";
 	}
 
 	auto base_classes = get_base_classes(def);
@@ -604,6 +622,8 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 		// E.g.: SelectionRange, per the spec, has a property 'parent' of type SelectionRange
 		if (type_str == name) {
 			type_str = name + "&"; // Use reference to avoid infinite recursion
+		} else if (type_str == "std::optional<" + name + ">") {
+			type_str = "std::optional<std::shared_ptr<" + name + ">>"; // Use pointer for optional, unions cannot contain reference types
 		}
 
 		file << "	" << type_str << " " << prop_name;
@@ -634,6 +654,7 @@ void TypeRegistry::generate_request(const std::string& name, const nlohmann::jso
 	file << "#include <unordered_map>\n";
 	file << "#include <cstdint>\n";
 	file << "#include <optional>\n";
+	file << "#include <memory>\n";
 	file << "#include <nlohmann/json.hpp>\n";
 	file << "#include \"../static/LSPTypes.h\"\n"; // Include LSPTypes for compatibility
 	file << "#include \"../static/Message.h\"\n"; // Include Message for base classes

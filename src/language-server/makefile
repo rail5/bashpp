@@ -6,7 +6,9 @@ ifeq ($(GENERATED_FILES),)
 GENERATED_FILES = generated/InitializeRequest.h
 endif
 
-all: $(STATIC_FILES) $(GENERATED_FILES)
+all: bpp-lsp
+
+bpp-lsp: $(STATIC_FILES) $(GENERATED_FILES) main.cpp BashppServer.h BashppServer.cpp
 	g++ -O2 -s -std=gnu++17 -o bpp-lsp ./main.cpp
 
 generated/%: generateLSPClasses
@@ -20,3 +22,6 @@ clean:
 	rm -f bpp-lsp
 	rm -f generateLSPClasses
 	rm -rf generated
+
+.PHONY: all clean
+.PRECIOUS: generated/%

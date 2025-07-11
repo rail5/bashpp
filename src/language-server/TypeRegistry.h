@@ -48,6 +48,7 @@ class TypeRegistry {
 		void generate_enum(const std::string& name, const nlohmann::json& def) const;
 		void generate_type_alias(const std::string& name, const nlohmann::json& def) const;
 		void generate_request(const std::string& name, const nlohmann::json& def) const;
+		void generate_notification(const std::string& name, const nlohmann::json& def) const;
 	public:
 		void load_meta_model(const nlohmann::json& meta_model);
 		std::string resolve_type(const nlohmann::json& type_def) const;

@@ -24,6 +24,9 @@ void TypeRegistry::load_meta_model(const nlohmann::json& meta_model) {
 	for (const auto& item : meta_model["requests"]) {
 		requests[item["typeName"]] = item;
 	}
+	for (const auto& item : meta_model["notifications"]) {
+		notifications[item["typeName"]] = item;
+	}
 }
 
 std::set<std::string> TypeRegistry::get_referenced_types(const nlohmann::json& type_def) const {
@@ -438,6 +441,11 @@ void TypeRegistry::generate_all_types() const {
 	for (const auto& [name, def] : requests) {
 		generate_request(name, def);
 	}
+
+	// Generate notifications
+	for (const auto& [name, def] : notifications) {
+		generate_notification(name, def);
+	}
 }
 
 void TypeRegistry::generate_LSP_types() const {
@@ -762,6 +770,66 @@ void TypeRegistry::generate_request(const std::string& name, const nlohmann::jso
 	if (def.contains("result")) {
 		std::string response_type = resolve_type(def["result"]);
 		file << "using " << name << "Response = ResponseMessage<" << response_type << ">;\n";
+	}
+
+	// The serialization is handled in the template base classes
+
+	file << std::flush;
+	file.close();
+}
+
+void TypeRegistry::generate_notification(const std::string& name, const nlohmann::json& def) const {
+	std::ofstream file(output_directory + "/" + name + ".h");
+	file << "#pragma once\n";
+	file << "#include <string>\n";
+	file << "#include <variant>\n";
+	file << "#include <vector>\n";
+	file << "#include <unordered_map>\n";
+	file << "#include <cstdint>\n";
+	file << "#include <optional>\n";
+	file << "#include <memory>\n";
+	file << "#include <nlohmann/json.hpp>\n";
+	file << "#include \"../static/LSPTypes.h\"\n"; // Include LSPTypes for compatibility
+	file << "#include \"../static/Message.h\"\n"; // Include Message for base classes
+
+	// Include any necessary headers for referenced types in params
+	std::set<std::string> includes;
+	if (def.contains("params")) {
+		includes = get_referenced_types(def["params"]);
+	}
+
+	// Write includes
+	for (const auto& inc : includes) {
+		// Skip base types
+		static const std::set<std::string> base_types = {
+			"string", "integer", "uinteger", "decimal", "boolean", "null"
+		};
+
+		if (base_types.find(inc) == base_types.end()) {
+			file << "#include \"" << inc << ".h\"\n";
+		}
+	}
+
+	// We have to generate both the Notification and Response types
+
+	// Handle the notification type
+	file << "/**\n";
+	file << " * @file " << name << ".h\n";
+	file << " * @struct " << name << "\n";
+
+	std::string brief = def.value("documentation", "No description provided.");
+	// Remove any '@' symbols from the brief
+	brief.erase(std::remove(brief.begin(), brief.end(), '@'), brief.end());
+	file << " * @brief ";
+	if (def.contains("messageDirection")) {
+		file << "(" << def["messageDirection"].get<std::string>() << ") ";
+	}
+	file << brief << "\n";
+	file << " **/\n";
+
+	if (def.contains("params")) {
+		std::string params_type = resolve_type(def["params"]);
+		file << "using " << name << " = NotificationMessage<" << params_type << ">;\n";
 	}
 
 	// The serialization is handled in the template base classes

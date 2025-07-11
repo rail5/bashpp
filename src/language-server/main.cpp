@@ -28,7 +28,6 @@ int main(int argc, char* argv[]) {
 	server.log_file << std::endl;
 
 	std::streambuf* buffer = std::cin.rdbuf();
-	int request_id = -1;
 
 	while (true) {
 		// Read headers

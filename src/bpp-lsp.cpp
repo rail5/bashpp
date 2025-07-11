@@ -18,11 +18,11 @@
 #include <unistd.h>
 #include <getopt.h>
 
-#include "BashppServer.h"
-#include "helpers.h"
+#include "lsp/BashppServer.h"
+#include "lsp/helpers.h"
 
-#include "../version.h"
-#include "../updated_year.h"
+#include "version.h"
+#include "updated_year.h"
 
 BashppServer server;
 int client_fd = -1;

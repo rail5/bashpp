@@ -5,8 +5,7 @@ src/.antlr
 src/updated_year.h
 src/version.h
 src/obj
-src/language-server/generated/*.h
-src/language-server/obj
+src/lsp/generated/*.h
 docs
 debian/*.3
 debian/*.1

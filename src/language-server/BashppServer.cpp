@@ -20,32 +20,27 @@ std::mutex BashppServer::cout_mutex;
 BashppServer::BashppServer() {}
 BashppServer::~BashppServer() {}
 
-void BashppServer::processMessage(const std::string& message) {
-	GenericRequestMessage request;
-	std::function<nlohmann::json(const nlohmann::json&)> handler = nullptr; // Function pointer to be set to the appropriate handler
-	try {
-		request = nlohmann::json::parse(message).get<GenericRequestMessage>();
+const GenericResponseMessage BashppServer::invalidRequestHandler(const GenericRequestMessage& request) {
+	throw std::runtime_error("Request not understood: " + request.method);
+}
 
-		auto it = handlers.find(request.method);
-		if (it == handlers.end()) {
-			log_file << "No handler found for method: " << request.method << std::endl;
-			return;
-		}
-		handler = it->second; // Set the handler to the appropriate function
-	} catch (const std::exception& e) {
-		std::cerr << "Error parsing message: " << e.what() << std::endl;
-		return;
-	}
+const void BashppServer::invalidNotificationHandler(const GenericNotificationMessage& request) {
+	throw std::runtime_error("Notification not understood: " + request.method);
+}
 
-	if (!handler) {
-		log_file << "No handler found for method: " << request.method << std::endl;
-		return;
-	}
-
-	// Call the handler and get the result
+void BashppServer::processRequest(const GenericRequestMessage& request) {
 	GenericResponseMessage response;
+	response.id = request.id;
+	std::function<GenericResponseMessage(const GenericRequestMessage&)> request_handler = invalidRequestHandler;
+	auto it = request_handlers.find(request.method);
+	if (it != request_handlers.end()) {
+		request_handler = it->second; // Set the handler to the appropriate function
+	} else {
+		log_file << "No handler found for request method: " << request.method << std::endl;
+	}
+
 	try {
-		response = handler(request);
+		response = request_handler(request);
 	} catch (const std::exception& e) {
 		log_file << "Error handling request: " << e.what() << std::endl;
 		ResponseError err;
@@ -55,16 +50,52 @@ void BashppServer::processMessage(const std::string& message) {
 		response.error = err;
 	}
 
-	if (response.error.code != 0) {
-		log_file << "Error in response: " << response.error.message << std::endl;
-	}
-
 	std::string response_str = nlohmann::json(response).dump();
 	std::string header = "Content-Length: " + std::to_string(response_str.size()) + "\r\n\r\n";
-	std::lock_guard<std::mutex> lock(cout_mutex); // Ensure thread-safe output
+	std::lock_guard<std::mutex> lock(cout_mutex);
 	std::cout << header << response_str << std::flush;
 	log_file << "Sent response for method: " << request.method << std::endl
 		<< response_str << std::endl;
+}
+
+void BashppServer::processNotification(const GenericNotificationMessage& notification) {
+	std::function<void(const GenericNotificationMessage&)> notification_handler = invalidNotificationHandler;
+	auto it = notification_handlers.find(notification.method);
+	if (it != notification_handlers.end()) {
+		notification_handler = it->second; // Set the handler to the appropriate function
+	} else {
+		log_file << "No handler found for notification method: " << notification.method << std::endl;
+	}
+
+	try {
+		notification_handler(notification);
+	} catch (const std::exception& e) {
+		log_file << "Error handling notification: " << e.what() << std::endl;
+	}
+}
+
+void BashppServer::processMessage(const std::string& message) {
+	GenericRequestMessage request;
+	GenericNotificationMessage notification;
+
+	nlohmann::json json_message;
+	try {
+		json_message = nlohmann::json::parse(message);
+	} catch (const nlohmann::json::parse_error& e) {
+		log_file << "JSON parse error: " << e.what() << std::endl;
+		return;
+	}
+
+	// Request or notification?
+	// Check if 'id' field is present
+	// Requests are required to have IDs, notifications are required to not have IDs
+	if (json_message.contains("id")) {
+		request = json_message.get<GenericRequestMessage>();
+		processRequest(request);
+	} else {
+		notification = json_message.get<GenericNotificationMessage>();
+		processNotification(notification);
+	}
 
 	if (request.method == "shutdown") {
 		log_file << "Shutting down server" << std::endl;
@@ -195,35 +226,6 @@ GenericResponseMessage BashppServer::handleDocumentSymbol(const GenericRequestMe
 	return response;
 }
 
-GenericResponseMessage BashppServer::handleDidOpen(const GenericRequestMessage& request) {
-	// Placeholder for actual implementation
-	/*json result = {"result", {
-		{"uri", params["textDocument"]["uri"]},
-		{"languageId", "bashpp"},
-		{"version", 1},
-		{"text", params["textDocument"]["text"]}
-	}};
-	return result;*/
-
-	// didOpen is a notification, not a request, so we don't return a response
-	GenericResponseMessage response;
-	return response;
-}
-
-GenericResponseMessage BashppServer::handleDidChange(const GenericRequestMessage& request) {
-	// Placeholder for actual implementation
-	/*json result = {"result", {
-		{"uri", params["textDocument"]["uri"]},
-		{"version", params["textDocument"]["version"]},
-		{"contentChanges", params["contentChanges"]}
-	}};
-	return result;*/
-
-	// didChange is a notification, not a request, so we don't return a response
-	GenericResponseMessage response;
-	return response;
-}
-
 GenericResponseMessage BashppServer::handleRename(const GenericRequestMessage& request) {
 	// Placeholder for actual implementation
 
@@ -250,4 +252,31 @@ GenericResponseMessage BashppServer::handleRename(const GenericRequestMessage& r
 	response.result = edit;
 
 	return response;
+}
+
+void BashppServer::handleDidOpen(const GenericNotificationMessage& request) {
+	// Placeholder for actual implementation
+	/*json result = {"result", {
+		{"uri", params["textDocument"]["uri"]},
+		{"languageId", "bashpp"},
+		{"version", 1},
+		{"text", params["textDocument"]["text"]}
+	}};
+	return result;*/
+
+	// didOpen is a notification, not a request, so we don't return a response
+	return;
+}
+
+void BashppServer::handleDidChange(const GenericNotificationMessage& request) {
+	// Placeholder for actual implementation
+	/*json result = {"result", {
+		{"uri", params["textDocument"]["uri"]},
+		{"version", params["textDocument"]["version"]},
+		{"contentChanges", params["contentChanges"]}
+	}};
+	return result;*/
+
+	// didChange is a notification, not a request, so we don't return a response
+	return;
 }

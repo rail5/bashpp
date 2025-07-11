@@ -49,6 +49,10 @@ void BashppServer::cleanup() {
 		// Unlink the Unix socket file if it exists
 		unlink(socket_path.value().c_str());
 	}
+
+	thread_pool.cleanup();
+	log("Bash++ Language Server cleaned up and exiting.");
+	log_file.close();
 }
 
 void BashppServer::mainLoop() {

@@ -23,5 +23,6 @@ class ThreadPool {
 		~ThreadPool();
 
 		void enqueue(std::function<void()> task);
+		void cleanup();
 		size_t getThreadCount() const;
 };

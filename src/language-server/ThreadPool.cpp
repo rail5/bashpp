@@ -52,6 +52,16 @@ void ThreadPool::enqueue(std::function<void()> task)  {
 	condition.notify_one(); // Notify one thread that a new task is available
 }
 
+void ThreadPool::cleanup() {
+	std::unique_lock<std::mutex> lock(queue_mutex);
+	while (!tasks.empty()) {
+		tasks.pop(); // Clear the task queue
+	}
+	stop = true; // Set stop to true to signal all threads to exit
+	lock.unlock();
+	condition.notify_all(); // Notify all threads to wake up and check the stop condition
+}
+
 size_t ThreadPool::getThreadCount() const {
 	return workers.size();
 }

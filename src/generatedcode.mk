@@ -4,9 +4,12 @@ include config.mk
 # (The ANTLR4-generated parser, the LSP classes)
 
 # Rule to generate the LSP classes from the metaModel.json file
-$(LSPDIR)/generated/%: obj/lsp/generateLSPClasses
+$(LSP_GENERATED_FILES): $(LSPDIR)/generated/.stamp
+
+$(LSPDIR)/generated/.stamp: obj/lsp/generateLSPClasses
 	@mkdir -p $(LSPDIR)/generated
 	obj/lsp/generateLSPClasses "$(LSPDIR)/metaModel.json" "$(LSPDIR)/generated"
+	@touch $@
 
 
 $(ANTLR4DIR)/%.cpp: BashppLexer.g4 BashppParser.g4
@@ -26,3 +29,5 @@ clean-antlr:
 clean-lsp:
 	@rm -f $(LSP_GENERATED_FILES)
 	@echo "Cleaned up LSP generated files."
+
+.PHONY: clean-antlr clean-lsp

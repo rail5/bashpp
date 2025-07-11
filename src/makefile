@@ -5,8 +5,10 @@ MAKEFLAGS += -j$(shell nproc)
 endif
 
 all:
-	$(MAKE) antlr/BashppParser.cpp
-	$(MAKE) bpp bpp-lsp
+	@echo "Generating necessary files..."
+	@$(MAKE) --no-print-directory antlr/BashppParser.cpp lsp/generated/.stamp
+	@echo "Building the compiler and language server..."
+	@$(MAKE) --no-print-directory bpp bpp-lsp
 
 # Standard config -- where to find antlr4, g++, build directories, source directories, etc
 include config.mk

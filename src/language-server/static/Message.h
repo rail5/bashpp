@@ -296,9 +296,18 @@ struct ResponseMessage : public ResponseMessageBase {
 	}
 };
 
+template <typename ParamsType>
+struct NotificationTraits;
+
 template<typename ParamsType>
 struct NotificationMessage : public NotificationMessageBase {
 	ParamsType params;
+
+	NotificationMessage() {
+		static_assert(std::is_base_of<NotificationTraits<ParamsType>, NotificationTraits<ParamsType>>::value,
+			"No NotificationTraits specialization found for this ParamsType");
+		method = NotificationTraits<ParamsType>::method; // Set method from traits
+	}
 
 	friend void to_json(nlohmann::json& j, const NotificationMessage<ParamsType>& msg) {
 		j = nlohmann::json::object();

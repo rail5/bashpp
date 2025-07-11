@@ -830,6 +830,11 @@ void TypeRegistry::generate_notification(const std::string& name, const nlohmann
 	if (def.contains("params")) {
 		std::string params_type = resolve_type(def["params"]);
 		file << "using " << name << " = NotificationMessage<" << params_type << ">;\n";
+
+		file << "\ntemplate <>\n";
+		file << "struct NotificationTraits<" << params_type << "> {\n";
+		file << "	static constexpr const char* method = \"" << def.value("method", "") << "\";\n";
+		file << "};\n";
 	}
 
 	// The serialization is handled in the template base classes

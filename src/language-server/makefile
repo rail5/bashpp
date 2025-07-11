@@ -18,21 +18,22 @@ obj/main.o: main.cpp BashppServer.h ThreadPool.h $(STATIC_FILES)
 	g++ -O2 -s -std=gnu++17 -c main.cpp -o $@
 
 obj/%.o: %.cpp %.h
-	mkdir -p obj
+	@mkdir -p obj
 	g++ -O2 -s -std=gnu++17 -c $< -o $@
 
 generated/%: generateLSPClasses
-	mkdir -p generated
+	@mkdir -p generated
 	./generateLSPClasses ./metaModel.json ./generated
 
 generateLSPClasses: generateLSPClasses.cpp metaModel.json obj/TypeRegistry.o
 	g++ -O2 -s -std=gnu++17 -o $@ generateLSPClasses.cpp obj/TypeRegistry.o
 
 clean:
-	rm -f bpp-lsp
-	rm -f generateLSPClasses
-	rm -rf generated
-	rm -f obj/*.o
+	@rm -f bpp-lsp
+	@rm -f generateLSPClasses
+	@rm -f generated/*.h
+	@rm -f obj/*.o
+	@echo "Cleaned up build artifacts."
 
 .PHONY: all clean
 .PRECIOUS: generated/%

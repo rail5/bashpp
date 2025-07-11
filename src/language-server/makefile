@@ -8,7 +8,7 @@ endif
 
 all: bpp-lsp
 
-bpp-lsp: obj/main.o obj/BashppServer.o obj/ThreadPool.o
+bpp-lsp: obj/main.o obj/helpers.o obj/BashppServer.o obj/ThreadPool.o
 	g++ -O2 -s -std=gnu++17 -o $@ $^
 
 obj/BashppServer.o: BashppServer.cpp BashppServer.h ThreadPool.h $(STATIC_FILES) $(GENERATED_FILES)

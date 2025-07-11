@@ -20,6 +20,7 @@
 #include "generated/ShowMessageNotification.h"
 
 std::mutex BashppServer::output_mutex;
+std::mutex BashppServer::log_mutex;
 
 BashppServer::BashppServer() {}
 BashppServer::~BashppServer() {}
@@ -64,7 +65,7 @@ void BashppServer::mainLoop() {
 		
 		if (header.empty()) continue;
 
-		log_file << "Received header: " << header << std::endl;
+		log("Received header: ", header);
 
 		size_t content_length = 0;
 		if (header.find("Content-Length: ") == 0) {
@@ -78,21 +79,19 @@ void BashppServer::mainLoop() {
 		// Read content
 		std::vector<char> content(content_length);
 		if (buffer->sgetn(content.data(), content_length) != content_length) {
-			log_file << "Error reading content." << std::endl;
+			log("Error reading content, expected ", content_length, " bytes but got less.");
 			break;
 		}
 
 		std::string message(content.begin(), content.end());
-		log_file << "Received message (" << content_length << " bytes): " 
-				 << message
-				 << std::endl;
+		log("Received message (", content_length, " bytes): ", message);
 
 		// Grab a thread from the pool to process the message
 		thread_pool.enqueue([this, message]() {
 			try {
 				this->processMessage(message);
 			} catch (const std::exception& e) {
-				log_file << "Error processing message: " << e.what() << std::endl;
+				log("Error processing message: ", e.what());
 			}
 		});
 	}
@@ -111,8 +110,7 @@ void BashppServer::sendResponse(const GenericResponseMessage& response) {
 	std::string header = "Content-Length: " + std::to_string(response_str.size()) + "\r\n\r\n";
 	std::lock_guard<std::mutex> lock(output_mutex);
 	*output_stream << header << response_str << std::flush;
-	log_file << "Sent response for request: " << std::endl
-		<< response_str << std::endl;
+	log("Sent response for request ID: ", response.id, ":", response_str);
 }
 
 void BashppServer::sendNotification(const GenericNotificationMessage& notification) {
@@ -120,8 +118,7 @@ void BashppServer::sendNotification(const GenericNotificationMessage& notificati
 	std::string header = "Content-Length: " + std::to_string(notification_str.size()) + "\r\n\r\n";
 	std::lock_guard<std::mutex> lock(output_mutex);
 	*output_stream << header << notification_str << std::flush;
-	log_file << "Sent notification for method: " << notification.method << std::endl
-		<< notification_str << std::endl;
+	log("Sent notification for method: ", notification.method, ":", notification_str);
 }
 
 void BashppServer::processRequest(const GenericRequestMessage& request) {
@@ -132,13 +129,13 @@ void BashppServer::processRequest(const GenericRequestMessage& request) {
 	if (it != request_handlers.end()) {
 		request_handler = it->second; // Set the handler to the appropriate function
 	} else {
-		log_file << "No handler found for request method: " << request.method << std::endl;
+		log("No handler found for request method: ", request.method);
 	}
 
 	try {
 		response = request_handler(request);
 	} catch (const std::exception& e) {
-		log_file << "Error handling request: " << e.what() << std::endl;
+		log("Error handling request: ", e.what());
 		ResponseError err;
 		err.code = static_cast<int>(ErrorCodes::InternalError);
 		err.message = "Internal error";
@@ -155,13 +152,13 @@ void BashppServer::processNotification(const GenericNotificationMessage& notific
 	if (it != notification_handlers.end()) {
 		notification_handler = it->second; // Set the handler to the appropriate function
 	} else {
-		log_file << "No handler found for notification method: " << notification.method << std::endl;
+		log("No handler found for notification method: ", notification.method);
 	}
 
 	try {
 		notification_handler(notification);
 	} catch (const std::exception& e) {
-		log_file << "Error handling notification: " << e.what() << std::endl;
+		log("Error handling notification: ", e.what());
 	}
 }
 
@@ -173,7 +170,7 @@ void BashppServer::processMessage(const std::string& message) {
 	try {
 		json_message = nlohmann::json::parse(message);
 	} catch (const nlohmann::json::parse_error& e) {
-		log_file << "JSON parse error: " << e.what() << std::endl;
+		log("Error parsing JSON message: ", e.what());
 		return;
 	}
 
@@ -189,7 +186,7 @@ void BashppServer::processMessage(const std::string& message) {
 	}
 
 	if (request.method == "shutdown") {
-		log_file << "Shutting down server" << std::endl;
+		log("Received shutdown request, cleaning up and exiting.");
 		cleanup();
 		exit(0);
 	}
@@ -199,7 +196,7 @@ GenericResponseMessage BashppServer::shutdown(const GenericRequestMessage& reque
 	GenericResponseMessage response;
 	response.id = request.id;
 	response.result = nullptr; // No result for shutdown
-	log_file << "Received shutdown request" << std::endl;
+	log("Received shutdown request, preparing to shut down the server.");
 	return response;
 }
 
@@ -231,8 +228,7 @@ GenericResponseMessage BashppServer::handleGotoDefinition(const GenericRequestMe
 	std::string uri = definition_request.params.textDocument.uri;
 	Position position = definition_request.params.position;
 
-	log_file << "Received GotoDefinition request for URI: " << uri << ", Position: (" 
-		<< position.line << ", " << position.character << ")" << std::endl;
+	log("Received Goto Definition request for URI: ", uri, ", Position: (", position.line, ", ", position.character, ")");
 
 	Location location;
 	location.uri = "file:///usr/lib/bpp/stdlib/SharedStack";
@@ -280,8 +276,7 @@ GenericResponseMessage BashppServer::handleHover(const GenericRequestMessage& re
 	std::string uri = hover_request.params.textDocument.uri;
 	Position position = hover_request.params.position;
 
-	log_file << "Received Hover request for URI: " << uri << ", Position: (" 
-		<< position.line << ", " << position.character << ")" << std::endl;
+	log("Received Hover request for URI: ", uri, ", Position: (", position.line, ", ", position.character, ")");
 
 	Hover hover;
 	MarkupContent hoverContent;

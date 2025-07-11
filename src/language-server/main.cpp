@@ -35,7 +35,7 @@ static int server_fd = -1;
 static int socket_port = 0;
 
 void signal_handler(int signum) {
-	server.log_file << "Received signal " << signum << ", shutting down server." << std::endl;
+	server.log("Received signal: ", signum, ", cleaning up and exiting.");
 	server.cleanup();
 	if (client_fd != -1) {
 		close(client_fd);
@@ -112,11 +112,15 @@ int main(int argc, char* argv[]) {
 	std::shared_ptr<std::istream> input_stream;
 	std::shared_ptr<std::ostream> output_stream;
 
-	server.log_file << "Language Server started with arguments: ";
+	server.log("Bash++ Language Server " bpp_compiler_version " starting...");
+	std::string args;
 	for (int i = 0; i < argc; ++i) {
-		server.log_file << argv[i] << (i < argc - 1 ? " " : "");
+		args += argv[i];
+		if (i < argc - 1) {
+			args += " ";
+		}
 	}
-	server.log_file << std::endl;
+	server.log("Command line arguments: ", args);
 	
 	client_fd = -1;
 	server_fd = -1;
@@ -170,7 +174,7 @@ int main(int argc, char* argv[]) {
 				return 0;
 			case 10000: // --stdio
 				// Use standard input/output for communication
-				server.log_file << "Using standard input/output for communication." << std::endl;
+				server.log("Using standard input/output for communication.");
 				input_stream = std::make_shared<std::istream>(std::cin.rdbuf());
 				output_stream = std::make_shared<std::ostream>(std::cout.rdbuf());
 				break;
@@ -186,7 +190,8 @@ int main(int argc, char* argv[]) {
 				if (server_fd < 0) {
 					return 1;
 				}
-				std::cout << "Listening on TCP port " << socket_port << std::endl;
+				std::cerr << "Listening on TCP port " << socket_port << std::endl;
+				server.log("Using TCP socket for communication on port ", socket_port);
 				client_fd = accept(server_fd, nullptr, nullptr);
 				if (client_fd < 0) {
 					std::cerr << "Error accepting connection" << std::endl;
@@ -203,7 +208,8 @@ int main(int argc, char* argv[]) {
 					if (server_fd < 0) {
 						return 1;
 					}
-					std::cout << "Listening on Unix socket " << socket_path << std::endl;
+					std::cerr << "Listening on Unix socket " << socket_path << std::endl;
+					server.log("Using Unix domain socket for communication at ", socket_path);
 					client_fd = accept(server_fd, nullptr, nullptr);
 					if (client_fd < 0) {
 						std::cerr << "Error accepting connection" << std::endl;
@@ -235,7 +241,7 @@ int main(int argc, char* argv[]) {
 		// Default to stdio if no other method is specified
 		input_stream = std::make_shared<std::istream>(std::cin.rdbuf());
 		output_stream = std::make_shared<std::ostream>(std::cout.rdbuf());
-		server.log_file << "Using standard input/output for communication." << std::endl;
+		server.log("Defaulting to standard input/output for communication.");
 	}
 
 	server.setInputStream(input_stream);

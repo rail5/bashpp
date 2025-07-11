@@ -21,6 +21,16 @@
 
 using json = nlohmann::json;
 
+template<typename T>
+void printValue(std::ostream& os, const T& value) {
+	os << value;
+}
+
+template<typename... Ts>
+void printValue(std::ostream& os, const std::variant<Ts...>& v) {
+	std::visit([&os](auto&& arg) { os << arg; }, v);
+}
+
 // Bash++ Language Server
 class BashppServer {
 	private:
@@ -28,9 +38,11 @@ class BashppServer {
 		std::shared_ptr<std::istream> input_stream;
 		std::shared_ptr<std::ostream> output_stream;
 		std::optional<std::string> socket_path;
-		ThreadPool thread_pool;
+		ThreadPool thread_pool = ThreadPool(std::thread::hardware_concurrency());
+		std::ofstream log_file = std::ofstream("/tmp/lsp.log", std::ios::app);
 
 		static std::mutex output_mutex; // Mutex for thread-safe output
+		static std::mutex log_mutex; // Mutex for thread-safe logging
 		
 		const std::unordered_map<std::string, std::function<GenericResponseMessage(const GenericRequestMessage& )>> request_handlers = {
 			{"initialize", std::bind(&BashppServer::handleInitialize, this, std::placeholders::_1)},
@@ -53,7 +65,6 @@ class BashppServer {
 		void processRequest(const GenericRequestMessage& request);
 		void processNotification(const GenericNotificationMessage& notification);
 	public:
-		std::ofstream log_file = std::ofstream("/tmp/lsp.log", std::ios::app);
 		BashppServer();
 		~BashppServer();
 
@@ -83,6 +94,12 @@ class BashppServer {
 		void sendResponse(const GenericResponseMessage& response);
 		void sendNotification(const GenericNotificationMessage& notification);
 
+		template <typename... Args>
+		void log(Args&&... args) {
+			std::lock_guard<std::mutex> lock(log_mutex);
+			((printValue(log_file, std::forward<Args>(args))), ...);
+			log_file << std::endl;
+		}
 };
 
 #endif // SRC_LANGUAGE_SERVER_BASHPP_SERVER_H_

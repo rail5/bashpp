@@ -13,8 +13,6 @@
 #include <thread>
 
 #include "BashppServer.h"
-#include "BashppServer.cpp" // Only for dev
-
 #include "ThreadPool.h"
 
 using json = nlohmann::json;

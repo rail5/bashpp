@@ -8,8 +8,17 @@ endif
 
 all: bpp-lsp
 
-bpp-lsp: $(STATIC_FILES) $(GENERATED_FILES) main.cpp BashppServer.h BashppServer.cpp
-	g++ -O2 -s -std=gnu++17 -o bpp-lsp ./main.cpp
+bpp-lsp: main.o BashppServer.o ThreadPool.o
+	g++ -O2 -s -std=gnu++17 -o $@ $^
+
+main.o: main.cpp BashppServer.h ThreadPool.h
+	g++ -O2 -s -std=gnu++17 -c main.cpp
+
+BashppServer.o: BashppServer.cpp BashppServer.h $(STATIC_FILES) $(GENERATED_FILES)
+	g++ -O2 -s -std=gnu++17 -c BashppServer.cpp
+
+ThreadPool.o: ThreadPool.cpp ThreadPool.h
+	g++ -O2 -s -std=gnu++17 -c ThreadPool.cpp
 
 generated/%: generateLSPClasses
 	mkdir -p generated

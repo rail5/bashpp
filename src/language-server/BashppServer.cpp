@@ -5,6 +5,8 @@
 
 #include "BashppServer.h"
 
+#include <unistd.h>
+
 #include "static/Message.h"
 #include "generated/InitializeRequest.h"
 #include "generated/InitializeResult.h"
@@ -14,11 +16,32 @@
 #include "generated/HoverRequest.h"
 #include "generated/DocumentSymbolRequest.h"
 #include "generated/RenameRequest.h"
+#include "generated/DidOpenTextDocumentNotification.h"
+#include "generated/ShowMessageNotification.h"
 
-std::mutex BashppServer::cout_mutex;
+std::mutex BashppServer::output_mutex;
 
 BashppServer::BashppServer() {}
 BashppServer::~BashppServer() {}
+
+void BashppServer::setOutputStream(std::shared_ptr<std::ostream> stream) {
+	output_stream = stream;
+}
+#include <iostream>
+void BashppServer::setSocketPath(const std::string& path) {
+	socket_path = path;
+}
+
+void BashppServer::cleanup() {
+	if (output_stream) {
+		output_stream->flush();
+	}
+
+	if (socket_path.has_value()) {
+		// Unlink the Unix socket file if it exists
+		unlink(socket_path.value().c_str());
+	}
+}
 
 const GenericResponseMessage BashppServer::invalidRequestHandler(const GenericRequestMessage& request) {
 	throw std::runtime_error("Request not understood: " + request.method);
@@ -31,8 +54,8 @@ const void BashppServer::invalidNotificationHandler(const GenericNotificationMes
 void BashppServer::sendResponse(const GenericResponseMessage& response) {
 	std::string response_str = nlohmann::json(response).dump();
 	std::string header = "Content-Length: " + std::to_string(response_str.size()) + "\r\n\r\n";
-	std::lock_guard<std::mutex> lock(cout_mutex);
-	std::cout << header << response_str << std::flush;
+	std::lock_guard<std::mutex> lock(output_mutex);
+	*output_stream << header << response_str << std::flush;
 	log_file << "Sent response for request: " << std::endl
 		<< response_str << std::endl;
 }
@@ -40,8 +63,8 @@ void BashppServer::sendResponse(const GenericResponseMessage& response) {
 void BashppServer::sendNotification(const GenericNotificationMessage& notification) {
 	std::string notification_str = nlohmann::json(notification).dump();
 	std::string header = "Content-Length: " + std::to_string(notification_str.size()) + "\r\n\r\n";
-	std::lock_guard<std::mutex> lock(cout_mutex);
-	std::cout << header << notification_str << std::flush;
+	std::lock_guard<std::mutex> lock(output_mutex);
+	*output_stream << header << notification_str << std::flush;
 	log_file << "Sent notification for method: " << notification.method << std::endl
 		<< notification_str << std::endl;
 }
@@ -112,6 +135,7 @@ void BashppServer::processMessage(const std::string& message) {
 
 	if (request.method == "shutdown") {
 		log_file << "Shutting down server" << std::endl;
+		cleanup();
 		exit(0);
 	}
 }
@@ -278,6 +302,13 @@ void BashppServer::handleDidOpen(const GenericNotificationMessage& request) {
 	return result;*/
 
 	// didOpen is a notification, not a request, so we don't return a response
+
+	// For fun, however, let's send a notification back just to prove we can
+	DidOpenTextDocumentNotification did_open_notification = request.toSpecific<DidOpenTextDocumentParams>();
+	ShowMessageNotification notification;
+	notification.params.type = MessageType::Info;
+	notification.params.message = "Opened file: " + did_open_notification.params.textDocument.uri;
+	sendNotification(notification);
 	return;
 }
 

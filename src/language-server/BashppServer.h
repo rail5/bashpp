@@ -9,6 +9,8 @@
 #include <iostream>
 #include <thread>
 #include <mutex>
+#include <memory>
+#include <optional>
 #include <unordered_map>
 #include <fstream>
 #include <nlohmann/json.hpp>
@@ -19,9 +21,12 @@ using json = nlohmann::json;
 // Bash++ Language Server
 class BashppServer {
 	private:
-		static std::mutex cout_mutex; // Mutex for thread-safe output
-		
+		// Resources
+		std::shared_ptr<std::ostream> output_stream;
+		std::optional<std::string> socket_path;
 
+		static std::mutex output_mutex; // Mutex for thread-safe output
+		
 		const std::unordered_map<std::string, std::function<GenericResponseMessage(const GenericRequestMessage& )>> request_handlers = {
 			{"initialize", std::bind(&BashppServer::handleInitialize, this, std::placeholders::_1)},
 			{"textDocument/definition", std::bind(&BashppServer::handleGotoDefinition, this, std::placeholders::_1)},
@@ -47,7 +52,11 @@ class BashppServer {
 		BashppServer();
 		~BashppServer();
 
+		void setOutputStream(std::shared_ptr<std::ostream> stream);
+		void setSocketPath(const std::string& path);
+
 		GenericResponseMessage shutdown(const GenericRequestMessage& request);
+		void cleanup();
 
 		void processMessage(const std::string& message);
 

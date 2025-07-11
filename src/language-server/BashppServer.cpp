@@ -22,7 +22,10 @@
 std::mutex BashppServer::output_mutex;
 std::mutex BashppServer::log_mutex;
 
-BashppServer::BashppServer() {}
+BashppServer::BashppServer() {
+	log("Bash++ Language Server initialized.");
+	log("Using ", thread_pool.getThreadCount(), " threads for processing requests.");
+}
 BashppServer::~BashppServer() {}
 
 void BashppServer::setInputStream(std::shared_ptr<std::istream> stream) {

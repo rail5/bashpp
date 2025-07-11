@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <nlohmann/json.hpp>
 #include <thread>
 #include <csignal>
 
@@ -101,8 +100,6 @@ int setup_unix_socket_server(const std::string& path) {
 
 	return server_fd;
 }
-
-using json = nlohmann::json;
 
 int main(int argc, char* argv[]) {
 	// Trap signals

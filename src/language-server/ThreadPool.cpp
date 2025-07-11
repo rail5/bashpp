@@ -51,3 +51,7 @@ void ThreadPool::enqueue(std::function<void()> task)  {
 	}
 	condition.notify_one(); // Notify one thread that a new task is available
 }
+
+size_t ThreadPool::getThreadCount() const {
+	return workers.size();
+}

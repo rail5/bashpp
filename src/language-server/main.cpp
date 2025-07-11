@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
 				 << std::endl;
 
 		// Grab a thread from the pool to process the message
-		thread_pool.enqueue([&server, message, &request_id]() {
+		thread_pool.enqueue([&server, message]() {
 			try {
 				server.processMessage(message);
 			} catch (const std::exception& e) {

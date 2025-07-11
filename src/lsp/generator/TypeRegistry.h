@@ -20,6 +20,7 @@ class TypeRegistry {
 		std::unordered_map<std::string, nlohmann::json> notifications;
 
 		std::string get_sanitized_name(const std::string& name) const;
+		std::string get_sanitized_description(const std::string& description) const;
 
 		std::string resolve_base_type(const std::string& name) const;
 		std::string resolve_reference_type(const std::string& name, std::set<std::string> visited) const;

@@ -476,6 +476,23 @@ std::string TypeRegistry::get_sanitized_name(const std::string& name) const {
 	return name;
 }
 
+std::string TypeRegistry::get_sanitized_description(const std::string& description) const {
+	std::string sanitized = description;
+	// Remove any '@' symbols from the description
+	sanitized.erase(std::remove(sanitized.begin(), sanitized.end(), '@'), sanitized.end());
+	// Remove any occurrences of "/*" which will be mistaken for comments inside comments
+	size_t pos = 0;
+	while ((pos = sanitized.find("/*", pos)) != std::string::npos) {
+		sanitized.erase(pos, 2); // Remove "/*"
+	}
+	// Remove any occurrences of "*/" which will be mistaken for comment termination
+	while ((pos = sanitized.find("*/", pos)) != std::string::npos) {
+		sanitized.erase(pos, 2); // Remove "*/"
+	}
+
+	return sanitized;
+}
+
 void TypeRegistry::generate_enum(const std::string& name, const nlohmann::json& def) const {
 	std::ofstream file(output_directory + "/" + name + ".h");
 	file << "#pragma once\n";
@@ -496,8 +513,7 @@ void TypeRegistry::generate_enum(const std::string& name, const nlohmann::json& 
 		file << "/**\n";
 		file << " * @class " << name << "\n";
 		std::string brief = def.value("documentation", "No description provided.");
-		// Remove any '@' symbols from the brief
-		brief.erase(std::remove(brief.begin(), brief.end(), '@'), brief.end());
+		brief = get_sanitized_description(brief);
 		file << " * @brief " << brief << "\n";
 		file << " **/\n";
 
@@ -535,8 +551,7 @@ void TypeRegistry::generate_enum(const std::string& name, const nlohmann::json& 
 	file << "/**\n";
 	file << " * @enum " << name << "\n";
 	std::string brief = def.value("documentation", "No description provided.");
-	// Remove any '@' symbols from the brief
-	brief.erase(std::remove(brief.begin(), brief.end(), '@'), brief.end());
+	brief = get_sanitized_description(brief);
 	file << " * @brief " << brief << "\n";
 	file << " **/\n";
 
@@ -588,8 +603,7 @@ void TypeRegistry::generate_type_alias(const std::string& name, const nlohmann::
 	file << "/**\n";
 	file << " * @struct " << name << "\n";
 	std::string brief = def.value("documentation", "No description provided.");
-	// Remove any '@' symbols from the brief
-	brief.erase(std::remove(brief.begin(), brief.end(), '@'), brief.end());
+	brief = get_sanitized_description(brief);
 	file << " * @brief " << brief << "\n";
 	file << " **/\n";
 
@@ -644,8 +658,7 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 	file << " * @file " << name << ".h\n";
 	file << " * @struct " << name << "\n";
 	std::string brief = def.value("documentation", "No description provided.");
-	// Remove any '@' symbols from the brief
-	brief.erase(std::remove(brief.begin(), brief.end(), '@'), brief.end());
+	brief = get_sanitized_description(brief);
 	file << " * @brief " << brief << "\n";
 	file << " **/\n";
 
@@ -675,8 +688,7 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 		file << "	/**\n";
 		file << "	 * @brief (";
 		std::string type_description = type_def.value("documentation", "No description provided.");
-		// Remove any '@' symbols from the description
-		type_description.erase(std::remove(type_description.begin(), type_description.end(), '@'), type_description.end());
+		type_description = get_sanitized_description(type_description);
 		file << (prop.contains("optional") && prop["optional"].get<bool>() ? "Optional" : "Required") << ") ";
 		file << type_description << "\n";
 		file << "	 **/\n";
@@ -755,8 +767,7 @@ void TypeRegistry::generate_request(const std::string& name, const nlohmann::jso
 	file << " * @struct " << name << "\n";
 
 	std::string brief = def.value("documentation", "No description provided.");
-	// Remove any '@' symbols from the brief
-	brief.erase(std::remove(brief.begin(), brief.end(), '@'), brief.end());
+	brief = get_sanitized_description(brief);
 	file << " * @brief " << brief << "\n";
 	file << " **/\n";
 	
@@ -823,8 +834,7 @@ void TypeRegistry::generate_notification(const std::string& name, const nlohmann
 	file << " * @struct " << name << "\n";
 
 	std::string brief = def.value("documentation", "No description provided.");
-	// Remove any '@' symbols from the brief
-	brief.erase(std::remove(brief.begin(), brief.end(), '@'), brief.end());
+	brief = get_sanitized_description(brief);
 	file << " * @brief ";
 	if (def.contains("messageDirection")) {
 		file << "(" << def["messageDirection"].get<std::string>() << ") ";

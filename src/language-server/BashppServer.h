@@ -63,6 +63,9 @@ class BashppServer {
 		void handleDidOpen(const GenericNotificationMessage& request);
 		void handleDidChange(const GenericNotificationMessage& request);
 
+		void sendResponse(const GenericResponseMessage& response);
+		void sendNotification(const GenericNotificationMessage& notification);
+
 };
 
 #endif // SRC_LANGUAGE_SERVER_BASHPP_SERVER_H_

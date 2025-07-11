@@ -28,6 +28,24 @@ const void BashppServer::invalidNotificationHandler(const GenericNotificationMes
 	throw std::runtime_error("Notification not understood: " + request.method);
 }
 
+void BashppServer::sendResponse(const GenericResponseMessage& response) {
+	std::string response_str = nlohmann::json(response).dump();
+	std::string header = "Content-Length: " + std::to_string(response_str.size()) + "\r\n\r\n";
+	std::lock_guard<std::mutex> lock(cout_mutex);
+	std::cout << header << response_str << std::flush;
+	log_file << "Sent response for request: " << std::endl
+		<< response_str << std::endl;
+}
+
+void BashppServer::sendNotification(const GenericNotificationMessage& notification) {
+	std::string notification_str = nlohmann::json(notification).dump();
+	std::string header = "Content-Length: " + std::to_string(notification_str.size()) + "\r\n\r\n";
+	std::lock_guard<std::mutex> lock(cout_mutex);
+	std::cout << header << notification_str << std::flush;
+	log_file << "Sent notification for method: " << notification.method << std::endl
+		<< notification_str << std::endl;
+}
+
 void BashppServer::processRequest(const GenericRequestMessage& request) {
 	GenericResponseMessage response;
 	response.id = request.id;
@@ -50,12 +68,7 @@ void BashppServer::processRequest(const GenericRequestMessage& request) {
 		response.error = err;
 	}
 
-	std::string response_str = nlohmann::json(response).dump();
-	std::string header = "Content-Length: " + std::to_string(response_str.size()) + "\r\n\r\n";
-	std::lock_guard<std::mutex> lock(cout_mutex);
-	std::cout << header << response_str << std::flush;
-	log_file << "Sent response for method: " << request.method << std::endl
-		<< response_str << std::endl;
+	sendResponse(response);
 }
 
 void BashppServer::processNotification(const GenericNotificationMessage& notification) {

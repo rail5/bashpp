@@ -14,7 +14,7 @@ bpp-lsp: obj/main.o obj/BashppServer.o obj/ThreadPool.o
 obj/BashppServer.o: BashppServer.cpp BashppServer.h $(STATIC_FILES) $(GENERATED_FILES)
 	g++ -O2 -s -std=gnu++17 -c BashppServer.cpp -o obj/BashppServer.o
 
-obj/main.o: main.cpp BashppServer.h ThreadPool.h $(STATIC_FILES)
+obj/main.o: main.cpp BashppServer.h ThreadPool.h $(STATIC_FILES) ../version.h ../updated_year.h
 	g++ -O2 -s -std=gnu++17 -c main.cpp -o $@
 
 obj/%.o: %.cpp %.h
@@ -27,6 +27,12 @@ generated/%: generateLSPClasses
 
 generateLSPClasses: generateLSPClasses.cpp metaModel.json obj/TypeRegistry.o
 	g++ -O2 -s -std=gnu++17 -o $@ generateLSPClasses.cpp obj/TypeRegistry.o
+
+../version.h:
+	@cd ../.. && $(MAKE) update-version
+
+../updated_year.h:
+	@cd ../.. && $(MAKE) update-year
 
 clean:
 	@rm -f bpp-lsp

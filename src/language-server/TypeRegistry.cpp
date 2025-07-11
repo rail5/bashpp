@@ -763,6 +763,11 @@ void TypeRegistry::generate_request(const std::string& name, const nlohmann::jso
 	if (def.contains("params")) {
 		std::string params_type = resolve_type(def["params"]);
 		file << "using " << name << " = RequestMessage<" << params_type << ">;\n";
+
+		file << "\ntemplate <>\n";
+		file << "struct RequestTraits<" << params_type << "> {\n";
+		file << "	static constexpr const char* method = \"" << def.value("method", "") << "\";\n";
+		file << "};\n";
 	}
 
 	// Handle the response type

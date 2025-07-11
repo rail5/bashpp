@@ -228,9 +228,18 @@ struct GenericNotificationMessage : public NotificationMessageBase {
 	}
 };
 
+template <typename ParamsType>
+struct RequestTraits;
+
 template<typename ParamsType>
 struct RequestMessage : public RequestMessageBase {
 	ParamsType params;
+
+	RequestMessage() {
+		static_assert(std::is_base_of<RequestTraits<ParamsType>, RequestTraits<ParamsType>>::value,
+			"No RequestTraits specialization found for this ParamsType");
+		method = RequestTraits<ParamsType>::method; // Set method from traits
+	}
 
 	friend void to_json(nlohmann::json& j, const RequestMessage<ParamsType>& msg) {
 		j = nlohmann::json::object();

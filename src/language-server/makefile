@@ -8,29 +8,31 @@ endif
 
 all: bpp-lsp
 
-bpp-lsp: main.o BashppServer.o ThreadPool.o
+bpp-lsp: obj/main.o obj/BashppServer.o obj/ThreadPool.o
 	g++ -O2 -s -std=gnu++17 -o $@ $^
 
-main.o: main.cpp BashppServer.h ThreadPool.h
-	g++ -O2 -s -std=gnu++17 -c main.cpp
+obj/BashppServer.o: BashppServer.cpp BashppServer.h $(STATIC_FILES) $(GENERATED_FILES)
+	g++ -O2 -s -std=gnu++17 -c BashppServer.cpp -o obj/BashppServer.o
 
-BashppServer.o: BashppServer.cpp BashppServer.h $(STATIC_FILES) $(GENERATED_FILES)
-	g++ -O2 -s -std=gnu++17 -c BashppServer.cpp
+obj/main.o: main.cpp BashppServer.h ThreadPool.h $(STATIC_FILES)
+	g++ -O2 -s -std=gnu++17 -c main.cpp -o $@
 
-ThreadPool.o: ThreadPool.cpp ThreadPool.h
-	g++ -O2 -s -std=gnu++17 -c ThreadPool.cpp
+obj/%.o: %.cpp %.h
+	mkdir -p obj
+	g++ -O2 -s -std=gnu++17 -c $< -o $@
 
 generated/%: generateLSPClasses
 	mkdir -p generated
 	./generateLSPClasses ./metaModel.json ./generated
 
-generateLSPClasses: generateLSPClasses.cpp metaModel.json TypeRegistry.h TypeRegistry.cpp
-	g++ -O2 -s -std=gnu++17 -o generateLSPClasses ./generateLSPClasses.cpp
+generateLSPClasses: generateLSPClasses.cpp metaModel.json obj/TypeRegistry.o
+	g++ -O2 -s -std=gnu++17 -o $@ generateLSPClasses.cpp obj/TypeRegistry.o
 
 clean:
 	rm -f bpp-lsp
 	rm -f generateLSPClasses
 	rm -rf generated
+	rm -f obj/*.o
 
 .PHONY: all clean
 .PRECIOUS: generated/%

@@ -17,7 +17,6 @@
 #include <unordered_map>
 #include <nlohmann/json.hpp>
 #include "TypeRegistry.h"
-#include "TypeRegistry.cpp"
 
 using json = nlohmann::json;
 

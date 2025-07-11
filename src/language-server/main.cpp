@@ -15,10 +15,13 @@
 #include "BashppServer.h"
 #include "BashppServer.cpp" // Only for dev
 
+#include "ThreadPool.h"
+
 using json = nlohmann::json;
 
 int main(int argc, char* argv[]) {
 	BashppServer server;
+	ThreadPool thread_pool(std::thread::hardware_concurrency());
 
 	server.log_file << "Language Server started with arguments: ";
 	for (int i = 0; i < argc; ++i) {
@@ -63,14 +66,14 @@ int main(int argc, char* argv[]) {
 				 << message
 				 << std::endl;
 
-		// Spawn a new thread
-		std::thread([&server, message, &request_id]() {
+		// Grab a thread from the pool to process the message
+		thread_pool.enqueue([&server, message, &request_id]() {
 			try {
 				server.processMessage(message);
 			} catch (const std::exception& e) {
 				server.log_file << "Error processing message: " << e.what() << std::endl;
 			}
-		}).detach();
+		});
 	}
 
 	server.log_file << "Language Server stopped." << std::endl;

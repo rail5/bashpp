@@ -14,6 +14,9 @@
 #include <unordered_map>
 #include <fstream>
 #include <nlohmann/json.hpp>
+
+#include "ThreadPool.h"
+
 #include "static/Message.h"
 
 using json = nlohmann::json;
@@ -22,8 +25,10 @@ using json = nlohmann::json;
 class BashppServer {
 	private:
 		// Resources
+		std::shared_ptr<std::istream> input_stream;
 		std::shared_ptr<std::ostream> output_stream;
 		std::optional<std::string> socket_path;
+		ThreadPool thread_pool;
 
 		static std::mutex output_mutex; // Mutex for thread-safe output
 		
@@ -52,6 +57,9 @@ class BashppServer {
 		BashppServer();
 		~BashppServer();
 
+		void mainLoop();
+
+		void setInputStream(std::shared_ptr<std::istream> stream);
 		void setOutputStream(std::shared_ptr<std::ostream> stream);
 		void setSocketPath(const std::string& path);
 

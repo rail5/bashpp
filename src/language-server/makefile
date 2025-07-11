@@ -11,10 +11,10 @@ all: bpp-lsp
 bpp-lsp: obj/main.o obj/BashppServer.o obj/ThreadPool.o
 	g++ -O2 -s -std=gnu++17 -o $@ $^
 
-obj/BashppServer.o: BashppServer.cpp BashppServer.h $(STATIC_FILES) $(GENERATED_FILES)
+obj/BashppServer.o: BashppServer.cpp BashppServer.h ThreadPool.h $(STATIC_FILES) $(GENERATED_FILES)
 	g++ -O2 -s -std=gnu++17 -c BashppServer.cpp -o obj/BashppServer.o
 
-obj/main.o: main.cpp BashppServer.h ThreadPool.h $(STATIC_FILES) ../version.h ../updated_year.h
+obj/main.o: main.cpp BashppServer.h $(STATIC_FILES) ../version.h ../updated_year.h
 	g++ -O2 -s -std=gnu++17 -c main.cpp -o $@
 
 obj/%.o: %.cpp %.h

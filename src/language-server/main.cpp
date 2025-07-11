@@ -25,16 +25,24 @@
 #include <getopt.h>
 
 #include "BashppServer.h"
-#include "ThreadPool.h"
 
 #include "../version.h"
 #include "../updated_year.h"
 
 static BashppServer server;
+static int client_fd = -1;
+static int server_fd = -1;
+static int socket_port = 0;
 
 void signal_handler(int signum) {
 	server.log_file << "Received signal " << signum << ", shutting down server." << std::endl;
 	server.cleanup();
+	if (client_fd != -1) {
+		close(client_fd);
+	}
+	if (server_fd != -1) {
+		close(server_fd);
+	}
 	exit(signum);
 }
 
@@ -101,8 +109,6 @@ int main(int argc, char* argv[]) {
 	std::signal(SIGINT, signal_handler);
 	std::signal(SIGTERM, signal_handler);
 
-	ThreadPool thread_pool(std::thread::hardware_concurrency());
-
 	std::shared_ptr<std::istream> input_stream;
 	std::shared_ptr<std::ostream> output_stream;
 
@@ -111,11 +117,10 @@ int main(int argc, char* argv[]) {
 		server.log_file << argv[i] << (i < argc - 1 ? " " : "");
 	}
 	server.log_file << std::endl;
-
 	
-	int client_fd = -1;
-	int server_fd = -1;
-	int socket_port = 0;
+	client_fd = -1;
+	server_fd = -1;
+	socket_port = 0;
 
 	constexpr const char* help_string = "Bash++ Language Server " bpp_compiler_version "\n"
 		"Usage: bpp-lsp [options]\n"
@@ -212,7 +217,7 @@ int main(int argc, char* argv[]) {
 				return 1;
 		}
 	}
-	std::cout << "Client connected, running..." << std::endl;
+	std::cerr << "Client connected, running..." << std::endl;
 
 	if (client_fd != -1) {
 		auto filebuf = std::make_shared<__gnu_cxx::stdio_filebuf<char>>(client_fd, std::ios::in | std::ios::out);
@@ -233,56 +238,16 @@ int main(int argc, char* argv[]) {
 		server.log_file << "Using standard input/output for communication." << std::endl;
 	}
 
+	server.setInputStream(input_stream);
 	server.setOutputStream(output_stream);
 
-	std::streambuf* buffer = input_stream->rdbuf();
-
-	while (true) {
-		// Read headers
-		std::string header;
-		char c;
-		while (buffer->sgetn(&c, 1) == 1 && c != '\n') {
-			if (c == '\r') continue;
-			header += c;
-		}
-		
-		if (header.empty()) continue;
-
-		server.log_file << "Received header: " << header << std::endl;
-
-		size_t content_length = 0;
-		if (header.find("Content-Length: ") == 0) {
-			content_length = std::stoul(header.substr(16));
-		}
-
-		if (content_length == 0) continue;
-
-		content_length += 2; // Account for the trailing "\r\n"
-
-		// Read content
-		std::vector<char> content(content_length);
-		if (buffer->sgetn(content.data(), content_length) != content_length) {
-			server.log_file << "Error reading content." << std::endl;
-			break;
-		}
-
-		std::string message(content.begin(), content.end());
-		server.log_file << "Received message (" << content_length << " bytes): " 
-				 << message
-				 << std::endl;
-
-		// Grab a thread from the pool to process the message
-		thread_pool.enqueue([message]() {
-			try {
-				server.processMessage(message);
-			} catch (const std::exception& e) {
-				server.log_file << "Error processing message: " << e.what() << std::endl;
-			}
-		});
-	}
-
-	server.log_file << "Language Server stopped." << std::endl;
-	server.log_file.close();
+	server.mainLoop();
 	server.cleanup();
+	if (client_fd != -1) {
+		close(client_fd);
+	}
+	if (server_fd != -1) {
+		close(server_fd);
+	}
 	return 0;
 }

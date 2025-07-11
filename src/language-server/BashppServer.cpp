@@ -215,8 +215,12 @@ GenericResponseMessage BashppServer::handleInitialize(const GenericRequestMessag
 	InitializeResult result;
 	result.capabilities.textDocumentSync = static_cast<TextDocumentSyncKind>(1); // Full sync mode
 	result.capabilities.hoverProvider = true;
+
+	CompletionOptions completionProvider;
+	result.capabilities.completionProvider = completionProvider;
 	result.capabilities.completionProvider->resolveProvider = false;
 	result.capabilities.completionProvider->triggerCharacters = {".", "@"};
+
 	result.capabilities.definitionProvider = true;
 	result.capabilities.renameProvider = true;
 	result.capabilities.documentSymbolProvider = true;

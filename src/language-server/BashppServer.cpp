@@ -27,7 +27,7 @@ BashppServer::~BashppServer() {}
 void BashppServer::setOutputStream(std::shared_ptr<std::ostream> stream) {
 	output_stream = stream;
 }
-#include <iostream>
+
 void BashppServer::setSocketPath(const std::string& path) {
 	socket_path = path;
 }

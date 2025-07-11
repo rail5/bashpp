@@ -41,6 +41,8 @@ class BashppServer {
 		ThreadPool thread_pool = ThreadPool(std::thread::hardware_concurrency());
 		std::ofstream log_file = std::ofstream("/tmp/lsp.log", std::ios::app);
 
+		void _sendMessage(const std::string& message);
+
 		static std::mutex output_mutex; // Mutex for thread-safe output
 		static std::mutex log_mutex; // Mutex for thread-safe logging
 		

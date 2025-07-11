@@ -31,7 +31,6 @@ bpp-lsp: obj/bpp-lsp.o $(LSP_OBJS)
 
 clean: clean-objects clean-antlr clean-lsp
 	@rm -rf .antlr
-	@rm -f generateLSPClasses
 	@rm -f bpp
 	@rm -f bpp-lsp
 	@echo "Cleaned up build artifacts."

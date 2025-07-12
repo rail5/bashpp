@@ -1,12 +1,12 @@
 @class Parent {
 	@virtual @public @method greet {
 		echo "Hello from Parent"
-    }
+	}
 }
 
 @class Child : Parent {
 	@public @method greet {
 		@super.greet  # Calls Parent.greet
 		echo "Hello from Child"
-    }
+	}
 }

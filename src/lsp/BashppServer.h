@@ -3,8 +3,7 @@
  * Bash++: Bash with classes
  */
 
-#ifndef SRC_LANGUAGE_SERVER_BASHPP_SERVER_H_
-#define SRC_LANGUAGE_SERVER_BASHPP_SERVER_H_
+#pragma once
 
 #include <iostream>
 #include <thread>
@@ -41,7 +40,6 @@ class BashppServer {
 		std::shared_ptr<std::ostream> output_stream;
 		std::optional<std::string> socket_path;
 		ThreadPool thread_pool = ThreadPool(std::thread::hardware_concurrency());
-		//std::ofstream log_file = std::ofstream("/tmp/lsp.log", std::ios::app);
 		std::ofstream log_file;
 
 		void _sendMessage(const std::string& message);
@@ -49,6 +47,7 @@ class BashppServer {
 		static std::mutex output_mutex; // Mutex for thread-safe output
 		static std::mutex log_mutex; // Mutex for thread-safe logging
 		
+		// TODO(@rail5): When Debian 13 is released, use libfrozen-dev to make these maps constexpr
 		const std::unordered_map<std::string, std::function<GenericResponseMessage(const GenericRequestMessage& )>> request_handlers = {
 			{"initialize", std::bind(&BashppServer::handleInitialize, this, std::placeholders::_1)},
 			{"textDocument/definition", std::bind(&BashppServer::handleGotoDefinition, this, std::placeholders::_1)},
@@ -111,5 +110,3 @@ class BashppServer {
 			log_file << std::endl;
 		}
 };
-
-#endif // SRC_LANGUAGE_SERVER_BASHPP_SERVER_H_

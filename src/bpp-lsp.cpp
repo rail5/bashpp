@@ -52,6 +52,7 @@ int main(int argc, char* argv[]) {
 		"Options:\n"
 		"  -h, --help          Show this help message\n"
 		"  -v, --version       Show version information\n"
+		"  -l, --log <file>    Log messages to the specified file\n"
 		"      --stdio         Use standard input/output for communication (default)\n"
 		"      --socket <port> Use TCP socket for communication\n"
 		"      --pipe <path>   Use Unix domain socket for communication\n";
@@ -79,13 +80,14 @@ int main(int argc, char* argv[]) {
 	static struct option long_options[] = {
 		{"help", no_argument, nullptr, 'h'},
 		{"version", no_argument, nullptr, 'v'},
+		{"log", required_argument, nullptr, 'l'},
 		{"stdio", no_argument, nullptr, 10000},
 		{"socket", required_argument, nullptr, 10001},
 		{"pipe", required_argument, nullptr, 10002},
 		{nullptr, 0, nullptr, 0} // Sentinel
 	};
 
-	while ((opt = getopt_long(argc, argv, "hv", long_options, nullptr)) != -1) {
+	while ((opt = getopt_long(argc, argv, "hvl:", long_options, nullptr)) != -1) {
 		switch (opt) {
 			case 'h':
 				std::cout << help_string << std::flush;
@@ -93,6 +95,14 @@ int main(int argc, char* argv[]) {
 			case 'v':
 				std::cout << version_string << std::flush;
 				return 0;
+			case 'l':
+				try {
+					server.setLogFile(optarg);
+				} catch (const std::exception& e) {
+					std::cerr << "Error setting log file: " << e.what() << std::endl;
+					return 1;
+				}
+				break;
 			case 10000: // --stdio
 				// Use standard input/output for communication
 				server.log("Using standard input/output for communication.");

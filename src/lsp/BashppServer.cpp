@@ -40,6 +40,13 @@ void BashppServer::setSocketPath(const std::string& path) {
 	socket_path = path;
 }
 
+void BashppServer::setLogFile(const std::string& path) {
+	log_file.open(path, std::ios::app);
+	if (!log_file.is_open()) {
+		throw std::runtime_error("Failed to open log file: " + path);
+	}
+}
+
 void BashppServer::cleanup() {
 	if (output_stream) {
 		output_stream->flush();

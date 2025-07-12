@@ -14,6 +14,7 @@
 #include <unordered_map>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <unistd.h>
 
 #include "ThreadPool.h"
 
@@ -34,12 +35,14 @@ void printValue(std::ostream& os, const std::variant<Ts...>& v) {
 // Bash++ Language Server
 class BashppServer {
 	private:
+		__pid_t pid = getpid();
 		// Resources
 		std::shared_ptr<std::istream> input_stream;
 		std::shared_ptr<std::ostream> output_stream;
 		std::optional<std::string> socket_path;
 		ThreadPool thread_pool = ThreadPool(std::thread::hardware_concurrency());
-		std::ofstream log_file = std::ofstream("/tmp/lsp.log", std::ios::app);
+		//std::ofstream log_file = std::ofstream("/tmp/lsp.log", std::ios::app);
+		std::ofstream log_file;
 
 		void _sendMessage(const std::string& message);
 
@@ -75,6 +78,7 @@ class BashppServer {
 		void setInputStream(std::shared_ptr<std::istream> stream);
 		void setOutputStream(std::shared_ptr<std::ostream> stream);
 		void setSocketPath(const std::string& path);
+		void setLogFile(const std::string& path);
 
 		GenericResponseMessage shutdown(const GenericRequestMessage& request);
 		void cleanup();
@@ -98,7 +102,11 @@ class BashppServer {
 
 		template <typename... Args>
 		void log(Args&&... args) {
+			if (!log_file.is_open()) {
+				return; // Not logging
+			}
 			std::lock_guard<std::mutex> lock(log_mutex);
+			log_file << "[" << std::to_string(pid) << "] ";
 			((printValue(log_file, std::forward<Args>(args))), ...);
 			log_file << std::endl;
 		}

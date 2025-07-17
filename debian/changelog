@@ -1,5 +1,14 @@
 bpp (0.5.1) unstable; urgency=medium
 
+  * Created abstract resolve_reference function in codegen
+    This function will resolve entity references (whether object
+    references or self references, rvalues or lvalues) and return a
+    pointer to the referenced entity, as well as compiled code necessary
+    to access it, debug information about that compiled code (whether
+    temporary variables were necessary in the compiled code), and
+    optional error information if the reference could not be resolved
+    This removes a lot of code duplication in handling references
+  * Fixed example code display on spec page for 'super'
   * Error reporting:
     Cast tokens to CommonToken before throwing an error or warning
     This should at least *mostly* eliminate 'Position Unknown' errors
@@ -15,7 +24,7 @@ bpp (0.5.1) unstable; urgency=medium
     In the case of '-o -', this clutters the output when errors are
     present.
 
- -- rail5 <andrew@rail5.org>  Tue, 08 Jul 2025 01:15:29 +0800
+ -- rail5 <andrew@rail5.org>  Thu, 17 Jul 2025 15:44:24 +0800
 
 bpp (0.5.0) unstable; urgency=medium
 

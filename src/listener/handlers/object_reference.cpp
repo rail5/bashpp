@@ -62,129 +62,59 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 	// Are we dereferencing a pointer?
 	std::shared_ptr<bpp::bpp_pointer_dereference> pointer_dereference = std::dynamic_pointer_cast<bpp::bpp_pointer_dereference>(current_code_entity);
 
-	bpp::reference_type last_reference_type = bpp::reference_type::ref_object;
-	std::shared_ptr<bpp::bpp_entity> last_reference_entity = current_code_entity;
-
-	std::shared_ptr<bpp::bpp_object> object = nullptr;
-	bool object_is_pointer = false;
-	bool first_object_is_pointer = false;
-	std::shared_ptr<bpp::bpp_datamember> datamember = nullptr;
-	bool datamember_is_pointer = false;
-	std::shared_ptr<bpp::bpp_method> method = nullptr;
-	std::shared_ptr<bpp::bpp_class> class_containing_the_method = nullptr;
-
-	bool created_first_temporary_variable = false;
-	bool created_second_temporary_variable = false;
-	std::string indirection = "";
-
-	std::string object_reference_code = "";
-
-	std::string encase_open = ctx->IDENTIFIER().size() > 2 ? "${" : "";
-	std::string encase_close = ctx->IDENTIFIER().size() > 2 ? "}" : "";
-
-	for (auto& identifier : ctx->IDENTIFIER()) {
-		bool throw_error = false;
-		std::string error_string = "";
-		switch (last_reference_type) {
-			case bpp::reference_type::ref_object:
-				break;
-			case bpp::reference_type::ref_primitive:
-				throw_error = true;
-				error_string = "Unexpected identifier after primitive object reference";
-				break;
-			case bpp::reference_type::ref_method:
-				throw_error = true;
-				error_string = "Unexpected identifier after method reference";
-				break;
-			default:
-				throw internal_error("Unknown reference type", ctx);
-		}
-
-		if (throw_error) {
-			throw_syntax_error_from_exitRule(identifier, error_string);
-		}
-		std::string identifier_text = identifier->getText();
-
-		if (identifier_text.find("__") != std::string::npos) {
-			throw_syntax_error_from_exitRule(identifier, "Invalid identifier: " + identifier_text + "\nBash++ identifiers cannot contain double underscores");
-		}
-
-		std::shared_ptr<bpp::bpp_class> reference_class = last_reference_entity->get_class();
-		if (reference_class != nullptr) {
-			object = nullptr;
-			datamember = reference_class->get_datamember(identifier_text, current_class);
-			method = reference_class->get_method(identifier_text, current_class);
-		} else {
-			object = last_reference_entity->get_object(identifier_text);
-			first_object_is_pointer = (object == nullptr) ? false : object->is_pointer();
-		}
-
-		if (reference_class == nullptr && object == nullptr) {
-			throw_syntax_error_from_exitRule(identifier, "Object not found: " + identifier_text);
-		}
-
-		if (datamember == bpp::inaccessible_datamember || method == bpp::inaccessible_method) {
-			throw_syntax_error_from_exitRule(identifier, identifier_text + " is inaccessible in this context");
-		}
-
-		if (object != nullptr) {
-			last_reference_type = bpp::reference_type::ref_object;
-			last_reference_entity = object;
-			object_is_pointer = object->is_pointer();
-			if (object_is_pointer) {
-				created_first_temporary_variable = true;
-				encase_open = "${";
-				encase_close = "}";
-			}
-			object_reference_code = object->get_address();
-			object->add_reference(
-				source_file,
-				identifier->getSymbol()->getLine(),
-				identifier->getSymbol()->getCharPositionInLine() + 1
-			);
-		} else if (method != nullptr) {
-			class_containing_the_method = last_reference_entity->get_class();
-			last_reference_type = bpp::reference_type::ref_method;
-			last_reference_entity = method;
-			method->add_reference(
-				source_file,
-				identifier->getSymbol()->getLine(),
-				identifier->getSymbol()->getCharPositionInLine() + 1
-			);
-		} else if (datamember != nullptr) {
-			bool is_primitive = datamember->get_class() == primitive;
-			datamember_is_pointer = datamember->is_pointer();
-			last_reference_type = is_primitive ? bpp::reference_type::ref_primitive : bpp::reference_type::ref_object;
-			last_reference_entity = datamember;
-
-			indirection = created_second_temporary_variable ? "!" : "";
-			std::string temporary_variable_lvalue = object_reference_code + "__" + identifier_text;
-			std::string temporary_variable_rvalue = "${" + indirection + object_reference_code + "}__" + identifier_text;
-
-			if (created_first_temporary_variable) {
-				object_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n");
-				object_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
-				created_second_temporary_variable = true;
-			}
-			object_reference_code = temporary_variable_lvalue;
-			created_first_temporary_variable = true;
-			datamember->add_reference(
-				source_file,
-				identifier->getSymbol()->getLine(),
-				identifier->getSymbol()->getCharPositionInLine() + 1
-			);
-		} else {
-			throw_syntax_error_from_exitRule(identifier, last_reference_entity->get_name() + " has no member named " + identifier_text);
-		}
+	std::deque<antlr4::tree::TerminalNode*> ids;
+	for (auto& id : ctx->IDENTIFIER()) {
+		ids.push_back(id);
 	}
 
-	object_reference_entity->set_reference_type(last_reference_type);
+	std::shared_ptr<bpp::bpp_object> first_object = current_code_entity->get_object(ids.at(0)->getText());
+	bool first_object_is_pointer = first_object != nullptr && first_object->is_pointer();
+
+	bpp::entity_reference ref = bpp::resolve_reference(
+		current_code_entity,
+		ids,
+		current_class,
+		program
+	);
+
+	if (ref.error.has_value()) {
+		throw_syntax_error_from_exitRule(ref.error->token, ref.error->message);
+	}
+
+	object_reference_entity->add_code_to_previous_line(ref.reference_code.pre_code);
+	object_reference_entity->add_code_to_next_line(ref.reference_code.post_code);
+
+	bpp::reference_type reference_type;
+	std::string encase_open, encase_close, indirection;
+
+	std::shared_ptr<bpp::bpp_object> object = std::dynamic_pointer_cast<bpp::bpp_object>(ref.entity);
+	std::shared_ptr<bpp::bpp_datamember> datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(ref.entity);
+	bool datamember_is_pointer = datamember != nullptr && datamember->is_pointer();
+	std::shared_ptr<bpp::bpp_method> method = std::dynamic_pointer_cast<bpp::bpp_method>(ref.entity);
+
+	if (method != nullptr) {
+		reference_type = bpp::reference_type::ref_method;
+	} else if (datamember != nullptr) {
+		reference_type = datamember->get_class() == program->get_primitive_class()
+			? bpp::reference_type::ref_primitive
+			: bpp::reference_type::ref_object;
+	} else if (object != nullptr) {
+		reference_type = bpp::reference_type::ref_object;
+	} else {
+		throw internal_error("Referenced entity is not an object, data member or method", ctx);
+	}
+
+	object_reference_entity->set_reference_type(reference_type);
+
+	encase_open = ref.created_first_temporary_variable ? "${" : "";
+	encase_close = ref.created_first_temporary_variable ? "}" : "";
+	indirection = ref.created_second_temporary_variable ? "!" : "";
 
 	bool ready_to_exit = false;
 
-	if (last_reference_type == bpp::reference_type::ref_method) {
+	if (reference_type == bpp::reference_type::ref_method) {
 		indirection = ctx->IDENTIFIER().size() > 3 ? "!" : "";
-		code_segment method_call_code = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, method->get_name(), class_containing_the_method, false, program);
+		code_segment method_call_code = generate_method_call_code(encase_open + indirection + ref.reference_code.code + encase_close, method->get_name(), ref.class_containing_the_method, false, program);
 		// Are we taking the *address* of the method or are we calling it?
 		if (object_address_entity != nullptr) {
 			/**
@@ -254,19 +184,19 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 
 			bool have_to_dereference_a_pointer = first_object_is_pointer || (ctx->IDENTIFIER().size() > 2);
 
-			std::string temporary_variable_lvalue = object_reference_code + "____arrayIndexString";
+			std::string temporary_variable_lvalue = ref.reference_code.code + "____arrayIndexString";
 			std::string temporary_variable_rvalue;
 
 			if (have_to_dereference_a_pointer) {
-				temporary_variable_rvalue = counting + "${" + object_reference_code + "}[" + object_reference_entity->get_array_index() + "]";
+				temporary_variable_rvalue = counting + "${" + ref.reference_code.code + "}[" + object_reference_entity->get_array_index() + "]";
 			} else {
-				temporary_variable_rvalue = "${" + counting + indirection + object_reference_code + "[" + object_reference_entity->get_array_index() + "]}";
+				temporary_variable_rvalue = "${" + counting + indirection + ref.reference_code.code + "[" + object_reference_entity->get_array_index() + "]}";
 			}
 
 			object_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n");
 			object_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
 
-			temporary_variable_rvalue = "${" + object_reference_code + "____arrayIndexString}";
+			temporary_variable_rvalue = "${" + ref.reference_code.code + "____arrayIndexString}";
 
 			// If we're counting, we need to add another small layer of abstraction
 			// Ordinarily, by this point, we've set up a temporary variable whose value is a STRING (not in fact a variable reference,
@@ -279,22 +209,21 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 			}
 
 			if (have_to_dereference_a_pointer) {
-				temporary_variable_lvalue = object_reference_code + "____arrayIndex";
+				temporary_variable_lvalue = ref.reference_code.code + "____arrayIndex";
 				object_reference_entity->add_code_to_previous_line("eval " + temporary_variable_lvalue + "=\"" + temporary_variable_rvalue + "\"\n");
 				object_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
 			}
 
-			object_reference_code = temporary_variable_lvalue;
+			ref.reference_code.code = temporary_variable_lvalue;
 		}
 
-		if (last_reference_type == bpp::reference_type::ref_primitive || (datamember_is_pointer && pointer_dereference == nullptr)) {
-			indirection = (created_second_temporary_variable && !hasPoundKey) ? "!" : "";
-			object_reference_entity->add_code("${" + indirection + object_reference_code + "}");
+		if (reference_type == bpp::reference_type::ref_primitive || (datamember_is_pointer && pointer_dereference == nullptr)) {
+			indirection = (ref.created_second_temporary_variable && !hasPoundKey) ? "!" : "";
+			object_reference_entity->add_code("${" + indirection + ref.reference_code.code + "}");
 
 			std::shared_ptr<bpp::bpp_delete_statement> delete_entity = std::dynamic_pointer_cast<bpp::bpp_delete_statement>(entity_stack.top());
 			if (delete_entity != nullptr && datamember_is_pointer) {
-				std::shared_ptr<bpp::bpp_object> last_reference_object = std::dynamic_pointer_cast<bpp::bpp_object>(last_reference_entity);
-				delete_entity->set_object_to_delete(last_reference_object);
+				delete_entity->set_object_to_delete(object);
 				delete_entity->set_force_pointer(true);
 			}
 			ready_to_exit = true;
@@ -302,12 +231,12 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 	}
 
 	if (!ready_to_exit) {
-		if (last_reference_entity->get_class() == nullptr) {
+		if (ref.entity->get_class() == nullptr) {
 			throw internal_error("Last reference entity has no class", ctx);
 		}
 
 		// If we're here, the last reference entity is a non-primitive object
-		std::shared_ptr<bpp::bpp_object> last_reference_object = std::dynamic_pointer_cast<bpp::bpp_object>(last_reference_entity);
+		std::shared_ptr<bpp::bpp_object> last_reference_object = std::dynamic_pointer_cast<bpp::bpp_object>(ref.entity);
 		std::string code_to_add = "";
 
 		// Are we in a delete statement?
@@ -315,7 +244,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 		if (delete_entity != nullptr) {
 			delete_entity->set_object_to_delete(last_reference_object);
 			delete_entity->set_force_pointer(true);
-			code_to_add = object_reference_code;
+			code_to_add = ref.reference_code.code;
 			ready_to_exit = true;
 		}
 
@@ -331,9 +260,9 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 					pointer_dereference->get_value_assignment()->set_nonprimitive_object(last_reference_object);
 				} else {
 					// Call .toPrimitive
-					indirection = (created_second_temporary_variable && !hasPoundKey) ? "!" : "";
+					indirection = (ref.created_second_temporary_variable && !hasPoundKey) ? "!" : "";
 
-					code_segment method_call_code = generate_method_call_code("${" + indirection + object_reference_code + "}", "toPrimitive", last_reference_object->get_class(), false, program);
+					code_segment method_call_code = generate_method_call_code("${" + indirection + ref.reference_code.code + "}", "toPrimitive", last_reference_object->get_class(), false, program);
 
 					code_segment method_code = generate_supershell_code(method_call_code.full_code(), in_while_condition, current_while_condition, program);
 					object_reference_entity->add_code_to_previous_line(method_code.pre_code);
@@ -348,8 +277,8 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 				}
 				ready_to_exit = true;
 			} else {
-				indirection = created_second_temporary_variable ? "!" : "";
-				code_to_add = "${" + indirection + object_reference_code + "}";
+				indirection = ref.created_second_temporary_variable ? "!" : "";
+				code_to_add = "${" + indirection + ref.reference_code.code + "}";
 				ready_to_exit = true;
 			}
 		}
@@ -360,7 +289,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 	if (!ready_to_exit) {
 		// Are we otherwise in an object_address context?
 		if (object_address_entity != nullptr) {
-			object_reference_entity->add_code("${" + object_reference_code + "}");
+			object_reference_entity->add_code("${" + ref.reference_code.code + "}");
 			ready_to_exit = true;
 		}
 	}
@@ -368,9 +297,9 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 	if (!ready_to_exit) {
 		// Are we in a value_assignment context?
 		if (value_assignment_entity != nullptr && value_assignment_entity->lvalue_is_nonprimitive()) {
-			value_assignment_entity->set_nonprimitive_object(last_reference_entity);
+			value_assignment_entity->set_nonprimitive_object(ref.entity);
 			value_assignment_entity->set_nonprimitive_assignment(true);
-			object_reference_entity->add_code(object_reference_code);
+			object_reference_entity->add_code(ref.reference_code.code);
 			ready_to_exit = true;
 		}
 	}
@@ -381,7 +310,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 		encase_close = ctx->IDENTIFIER().size() > 1 ? "}" : "";
 		indirection = ctx->IDENTIFIER().size() > 2 ? "!" : "";
 
-		code_segment method_call_code = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, "toPrimitive", last_reference_entity->get_class(), false, program);
+		code_segment method_call_code = generate_method_call_code(encase_open + indirection + ref.reference_code.code + encase_close, "toPrimitive", ref.entity->get_class(), false, program);
 
 		code_segment method_code = generate_supershell_code(method_call_code.full_code(), in_while_condition, current_while_condition, program);
 		object_reference_entity->add_code_to_previous_line(method_code.pre_code);
@@ -421,7 +350,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 		// If it starts with '${!', we'll change that to '${'
 		// If it doesn't have the indirection exclamation point, but starts with '${', we'll remove the '${' and the closing '}'
 		// TODO(@rail5): This is a hacky way to do this, and should be replaced with a more robust solution
-		if (last_reference_type != bpp::reference_type::ref_method) {
+		if (reference_type != bpp::reference_type::ref_method) {
 			if (address.substr(0, 3) == "${!") {
 				address = "${" + address.substr(3);
 			} else if (address.substr(0, 2) == "${") {

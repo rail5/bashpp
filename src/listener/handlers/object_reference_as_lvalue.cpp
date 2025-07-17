@@ -38,132 +38,73 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 	object_reference_entity->inherit(current_code_entity);
 	entity_stack.push(object_reference_entity);
 
-	// Start by getting the first identifier
-	std::string first_object_name = ctx->IDENTIFIER_LVALUE()->getText();
-	std::shared_ptr<bpp::bpp_object> first_object = current_code_entity->get_object(first_object_name);
-	if (first_object == nullptr) {
+	std::deque<antlr4::tree::TerminalNode*> ids;
+
+	ids.push_back(ctx->IDENTIFIER_LVALUE());
+
+	for (auto& id : ctx->IDENTIFIER()) {
+		ids.push_back(id);
+	}
+
+	bpp::entity_reference ref = bpp::resolve_reference(
+		current_code_entity,
+		ids,
+		current_class,
+		program
+	);
+
+	if (ref.error.has_value()) {
 		entity_stack.pop();
-		throw_syntax_error(ctx->IDENTIFIER_LVALUE(), "Object not found: " + first_object_name);
+		throw_syntax_error(ref.error->token, ref.error->message);
 	}
 
-	bpp::reference_type last_reference_type = bpp::reference_type::ref_object;
-	std::shared_ptr<bpp::bpp_entity> last_reference_entity = first_object;
+	object_reference_entity->add_code_to_previous_line(ref.reference_code.pre_code);
+	object_reference_entity->add_code_to_next_line(ref.reference_code.post_code);
 
-	// If it's a method, which class contains the method?
-	// This shared_ptr will be filled in & updated as we go along
-	std::shared_ptr<bpp::bpp_class> class_containing_the_method;
+	bpp::reference_type reference_type;
 
-	std::shared_ptr<bpp::bpp_object> object = first_object;
-	std::shared_ptr<bpp::bpp_datamember> datamember;
-	std::shared_ptr<bpp::bpp_method> method;
+	std::shared_ptr<bpp::bpp_method> method = std::dynamic_pointer_cast<bpp::bpp_method>(ref.entity);
+	std::shared_ptr<bpp::bpp_datamember> datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(ref.entity);
+	std::shared_ptr<bpp::bpp_object> object = std::dynamic_pointer_cast<bpp::bpp_object>(ref.entity);
 
-	bool created_first_temporary_variable = false;
-	bool created_second_temporary_variable = false;
-	std::string encase_open = "";
-	std::string encase_close = "";
-	std::string indirection = "";
-
-	// Generate the first bit of pre-code
-	std::string object_reference_code;
-	if (first_object->is_pointer()) {
-		created_first_temporary_variable = true;
-		encase_open = "${";
-		encase_close = "}";
-	}
-	object_reference_code = first_object->get_address();
-
-	// Iterate over the list of identifiers
-	for (auto& identifier : ctx->IDENTIFIER()) {
-		bool throw_error = false;
-		std::string error_string = "";
-		switch (last_reference_type) {
-			case bpp::reference_type::ref_object:
-				break;
-			case bpp::reference_type::ref_primitive:
-				throw_error = true;
-				error_string = "Unexpected identifier after primitive object reference";
-				break;
-			case bpp::reference_type::ref_method:
-				throw_error = true;
-				error_string = "Unexpected identifier after method reference";
-				break;
-			default:
-				throw internal_error("Unknown reference type", ctx);
-		}
-
-		if (throw_error) {
-			entity_stack.pop();
-			throw_syntax_error(identifier, error_string);
-		}
-
-		std::string identifier_text = identifier->getText();
-
-		if (identifier_text.find("__") != std::string::npos) {
-			entity_stack.pop();
-			throw_syntax_error(identifier, "Invalid identifier: " + identifier_text + "\nBash++ identifiers cannot contain double underscores");
-		}
-
-		std::shared_ptr<bpp::bpp_class> reference_class = last_reference_entity->get_class();
-
-		object = nullptr;
-		datamember = reference_class->get_datamember(identifier_text, current_class);
-		method = reference_class->get_method(identifier_text, current_class);
-
-		if (datamember == bpp::inaccessible_datamember || method == bpp::inaccessible_method) {
-			entity_stack.pop();
-			throw_syntax_error(identifier, identifier_text + " is inaccessible in this context");
-		}
-
-		if (method != nullptr) {
-			class_containing_the_method = last_reference_entity->get_class();
-			last_reference_type = bpp::reference_type::ref_method;
-			last_reference_entity = method;
-		} else if (datamember != nullptr) {
-			last_reference_type = (datamember->get_class() == primitive) ? bpp::reference_type::ref_primitive : bpp::reference_type::ref_object;
-			last_reference_entity = datamember;
-
-			indirection = created_second_temporary_variable ? "!" : "";
-			std::string temporary_variable_lvalue = object_reference_code + "__" + identifier_text;
-			std::string temporary_variable_rvalue = "${" + indirection + object_reference_code + "}__" + identifier_text;
-
-			if (created_first_temporary_variable) {
-				object_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n");
-				object_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
-				created_second_temporary_variable = true;
-			}
-
-			object_reference_code = temporary_variable_lvalue;
-			created_first_temporary_variable = true;
-		} else {
-			entity_stack.pop();
-			throw_syntax_error(identifier, last_reference_entity->get_name() + " has no member named " + identifier_text);
-		}
+	if (method != nullptr) {
+		reference_type = bpp::reference_type::ref_method;
+	} else if (datamember != nullptr) {
+		reference_type = datamember->get_class() == program->get_primitive_class()
+			? bpp::reference_type::ref_primitive
+			: bpp::reference_type::ref_object;
+	} else if (object != nullptr) {
+		reference_type = bpp::reference_type::ref_object;
+	} else {
+		throw internal_error("Referenced entity is not an object, datamember or method", ctx);
 	}
 
-	object_reference_entity->set_reference_type(last_reference_type);
+	std::string encase_open, encase_close, indirection;
+
+	object_reference_entity->set_reference_type(reference_type);
 
 	// Are we in an object_assignment context?
 	std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(current_code_entity);
 
 	// Now that we've finished iterating through the identifiers
-	encase_open = created_first_temporary_variable ? "${" : "";
-	encase_close = created_first_temporary_variable ? "}" : "";
-	indirection = created_second_temporary_variable ? "!" : "";
+	encase_open = ref.created_first_temporary_variable ? "${" : "";
+	encase_close = ref.created_first_temporary_variable ? "}" : "";
+	indirection = ref.created_second_temporary_variable ? "!" : "";
 
 	if (object_assignment != nullptr) {
 		// Special encasing rules for object assignments
-		encase_open = created_second_temporary_variable ? "${" : "";
-		encase_close = created_second_temporary_variable ? "}" : "";
+		encase_open = ref.created_second_temporary_variable ? "${" : "";
+		encase_close = ref.created_second_temporary_variable ? "}" : "";
 		indirection = "";
 	}
 
-	if (last_reference_type == bpp::reference_type::ref_method) {
+	if (reference_type == bpp::reference_type::ref_method) {
 		if (object_assignment != nullptr) {
 			entity_stack.pop();
 			throw_syntax_error(ctx->IDENTIFIER_LVALUE(), "Cannot assign to a method");
 		}
 		// Call the method directly -- not in a supershell
-		code_segment method_call = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, method->get_name(), class_containing_the_method, false, program);
+		code_segment method_call = generate_method_call_code(encase_open + indirection + ref.reference_code.code + encase_close, method->get_name(), ref.class_containing_the_method, false, program);
 
 		object_reference_entity->add_code_to_previous_line(method_call.pre_code);
 		object_reference_entity->add_code_to_next_line(method_call.post_code);
@@ -177,42 +118,42 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 
 		bool have_to_dereference_a_pointer = ctx->IDENTIFIER().size() > 1;
 
-		std::string temporary_variable_lvalue = object_reference_code + "____arrayIndexString";
+		std::string temporary_variable_lvalue = ref.reference_code.code + "____arrayIndexString";
 		std::string temporary_variable_rvalue;
 
 		if (have_to_dereference_a_pointer) {
-			temporary_variable_rvalue = counting + "${" + object_reference_code + "}[" + object_reference_entity->get_array_index() + "]";
+			temporary_variable_rvalue = counting + "${" + ref.reference_code.code + "}[" + object_reference_entity->get_array_index() + "]";
 		} else {
-			temporary_variable_rvalue = "${" + counting + indirection + object_reference_code + "[" + object_reference_entity->get_array_index() + "]}";
+			temporary_variable_rvalue = "${" + counting + indirection + ref.reference_code.code + "[" + object_reference_entity->get_array_index() + "]}";
 		}
 
 		object_reference_entity->add_code_to_previous_line(temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n");
 		object_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
 
-		temporary_variable_rvalue = "${" + object_reference_code + "____arrayIndexString}";
+		temporary_variable_rvalue = "${" + ref.reference_code.code + "____arrayIndexString}";
 
 		if (hasPoundKey) {
 			temporary_variable_rvalue = "\\${" + temporary_variable_rvalue + "}";
 		}
 
 		if (have_to_dereference_a_pointer) {
-			temporary_variable_lvalue = object_reference_code + "____arrayIndex";
+			temporary_variable_lvalue = ref.reference_code.code + "____arrayIndex";
 			object_reference_entity->add_code_to_previous_line("eval " + temporary_variable_lvalue + "=\"" + temporary_variable_rvalue + "\"\n");
 			object_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
 		}
 
-		object_reference_code = temporary_variable_lvalue;
+		ref.reference_code.code = temporary_variable_lvalue;
 	}
 
 	bool datamember_is_pointer = (datamember != nullptr) && (datamember->is_pointer());
-	std::shared_ptr<bpp::bpp_object> last_reference_object = std::dynamic_pointer_cast<bpp::bpp_object>(last_reference_entity);
+	std::shared_ptr<bpp::bpp_object> last_reference_object = std::dynamic_pointer_cast<bpp::bpp_object>(ref.entity);
 	std::shared_ptr<bpp::bpp_delete_statement> delete_entity = std::dynamic_pointer_cast<bpp::bpp_delete_statement>(current_code_entity);
 
-	if (last_reference_type == bpp::reference_type::ref_primitive || datamember_is_pointer) {
+	if (reference_type == bpp::reference_type::ref_primitive || datamember_is_pointer) {
 		if (hasPoundKey) {
 			indirection = "";
 		}
-		object_reference_entity->add_code(encase_open + indirection + object_reference_code + encase_close);
+		object_reference_entity->add_code(encase_open + indirection + ref.reference_code.code + encase_close);
 
 		if (delete_entity != nullptr && datamember_is_pointer) {
 
@@ -222,7 +163,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 		return;
 	}
 
-	if (last_reference_entity->get_class() == nullptr) {
+	if (ref.entity->get_class() == nullptr) {
 		throw internal_error("Last reference entity has no class", ctx);
 	}
 
@@ -236,10 +177,10 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 			if (object_assignment != nullptr) {
 				object_assignment->set_lvalue_nonprimitive(true);
 				object_assignment->set_lvalue_object(last_reference_object);
-				object_reference_entity->add_code(encase_open + indirection + object_reference_code + encase_close);
+				object_reference_entity->add_code(encase_open + indirection + ref.reference_code.code + encase_close);
 			} else {
 				// Call .toPrimitive
-				code_segment method_call_code = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, "toPrimitive", last_reference_object->get_class(), false, program);
+				code_segment method_call_code = generate_method_call_code(encase_open + indirection + ref.reference_code.code + encase_close, "toPrimitive", last_reference_object->get_class(), false, program);
 
 				object_reference_entity->add_code_to_previous_line(method_call_code.pre_code);
 				object_reference_entity->add_code_to_next_line(method_call_code.post_code);
@@ -247,7 +188,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 			}
 			return;
 		} else {
-			object_reference_entity->add_code(encase_open + indirection + object_reference_code + encase_close);
+			object_reference_entity->add_code(encase_open + indirection + ref.reference_code.code + encase_close);
 			return;
 		}
 	}
@@ -257,13 +198,13 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 			object_assignment->set_lvalue_nonprimitive(true);
 			object_assignment->set_lvalue_object(last_reference_object);
 		}
-		object_reference_entity->add_code(encase_open + indirection + object_reference_code + encase_close);
+		object_reference_entity->add_code(encase_open + indirection + ref.reference_code.code + encase_close);
 		return;
 	}
 
 	if (last_reference_object != nullptr) {
 		// Call .toPrimitive
-		code_segment method_call_code = generate_method_call_code(encase_open + indirection + object_reference_code + encase_close, "toPrimitive", last_reference_object->get_class(), false, program);
+		code_segment method_call_code = generate_method_call_code(encase_open + indirection + ref.reference_code.code + encase_close, "toPrimitive", last_reference_object->get_class(), false, program);
 
 		object_reference_entity->add_code_to_previous_line(method_call_code.pre_code);
 		object_reference_entity->add_code_to_next_line(method_call_code.post_code);

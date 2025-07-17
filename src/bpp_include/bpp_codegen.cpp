@@ -246,4 +246,200 @@ code_segment inline_new(
 	return result;
 }
 
+/**
+ * @brief Resolves a reference to an entity in a particular context.
+ * 
+ * This function resolves a reference to an entity (object, method, or data member) based on a sequence of identifiers.
+ * 
+ * It does this by recursively scanning the current context for the requested identifier,
+ * and then setting a new context based on the resolution of that identifier.
+ * I.e., for {object, method}, it will first scan the current context for 'object',
+ * and then scan the 'object' context for 'method'.
+ * 
+ * If passing a self-reference (@this.... or @super....),
+ * The self-referential keyword should be the first node in the identifiers deque.
+ * 
+ * @param context The context (code_entity) in which to resolve the reference.
+ * @param identifiers A deque of identifiers making up the reference.
+ * @param current_class The class (if any) in which the reference is being resolved.
+ * @param program The program in which the reference is being resolved.
+ * 
+ * @return An entity_reference structure containing:
+ *  - entity: A shared pointer to the resolved entity (object, method, or data member).
+ *  - reference_code: A code_segment containing the code to access the entity.
+ *  - created_first_temporary_variable: Whether a first temporary variable was necessary in the compiled code
+ *  - created_second_temporary_variable: Whether a second temporary variable was necessary in the compiled code
+ *  - class_containing_the_method: The class containing the method, if applicable.
+ *  - error: An optional reference_error structure containing an error message and relevant token if the reference could not be resolved.
+ */
+entity_reference resolve_reference(
+	std::shared_ptr<bpp::bpp_code_entity> context,
+	std::deque<antlr4::tree::TerminalNode*> identifiers,
+	std::shared_ptr<bpp::bpp_class> current_class,
+	std::shared_ptr<bpp::bpp_program> program
+) {
+	bool self_reference = identifiers.at(0)->getSymbol()->getType() == BashppLexer::KEYWORD_THIS
+			|| identifiers.at(0)->getSymbol()->getType()            == BashppLexer::KEYWORD_THIS_LVALUE
+			|| identifiers.at(0)->getSymbol()->getType()            == BashppLexer::KEYWORD_SUPER
+			|| identifiers.at(0)->getSymbol()->getType()            == BashppLexer::KEYWORD_SUPER_LVALUE;
+	
+	bool super = identifiers.at(0)->getSymbol()->getType()          == BashppLexer::KEYWORD_SUPER
+			|| identifiers.at(0)->getSymbol()->getType()            == BashppLexer::KEYWORD_SUPER_LVALUE;
+
+	entity_reference result;
+
+	result.entity = context;
+	if (self_reference) {
+		result.entity = current_class;
+	}
+
+	bpp::reference_type last_reference_type = bpp::reference_type::ref_object;
+
+	std::shared_ptr<bpp::bpp_object> object = nullptr;
+	std::shared_ptr<bpp::bpp_datamember> datamember = nullptr;
+	std::shared_ptr<bpp::bpp_method> method = nullptr;
+	result.class_containing_the_method = current_class;
+
+	if (!self_reference) {
+		// Get the first object
+		std::string first_object_name = identifiers.at(0)->getText();
+		object = context->get_object(first_object_name);
+		result.entity = object;
+
+		if (object == nullptr) {
+			result.error = entity_reference::reference_error{
+				"Object not found: " + first_object_name,
+				identifiers.at(0)
+			};
+			return result;
+		}
+	}
+
+	if (super) {
+		std::string derived_class_name = result.entity->get_name();
+		result.entity = current_class->get_parent();
+		if (result.entity == nullptr) {
+			result.error = entity_reference::reference_error{
+				derived_class_name + " has no parent class to reference with @super",
+				identifiers.at(0)
+			};
+			return result;
+		}
+	}
+
+	identifiers.pop_front();
+
+	// The following two booleans are used for code generation
+	// to determine how many layers of indirection are needed in generated code
+	// E.g:
+	// To access object.innerObject.innerMostObject.property
+	// We need to resolve each step of the reference into its own shell variable at runtime
+	// *After* we've created our first temporary variable, we need to start encasing
+	// future references in ${...}
+	// And *after* we've created our second temporary variable, we need to add
+	// indirection with ${!...}
+	result.created_first_temporary_variable = self_reference; // If it's a self-reference, the ${__this} pointer counts as our first temporary variable
+	result.created_second_temporary_variable = false;
+
+	if (object != nullptr && object->is_pointer()) {
+		result.created_first_temporary_variable = true; // Having to dereference a pointer means creating a temporary variable
+	}
+
+	std::string encase_open = "";
+	std::string encase_close = "";
+	std::string indirection = "";
+
+	if (self_reference) {
+		result.reference_code.code = "__this";
+	} else {
+		result.reference_code.code = object->get_address();
+	}
+
+	for (auto& identifier : identifiers) {
+		if (result.created_first_temporary_variable) {
+			encase_open = "${";
+			encase_close = "}";
+		}
+		if (result.created_second_temporary_variable) {
+			indirection = "!";
+		}
+
+		switch (last_reference_type) {
+			case bpp::reference_type::ref_object:
+				// All OK, can descend the object hierarchy
+				break;
+			case bpp::reference_type::ref_primitive:
+				result.error = entity_reference::reference_error{
+					"Unexpected identifier after primitive object reference",
+					identifier
+				};
+				return result;
+			case bpp::reference_type::ref_method:
+				result.error = entity_reference::reference_error{
+					"Unexpected identifier after method reference",
+					identifier
+				};
+				return result;
+		}
+
+		std::string identifier_text = identifier->getText();
+
+		if (identifier_text.find("__") != std::string::npos) {
+			result.error = entity_reference::reference_error{
+				"Invalid identifier: " + identifier_text + "\nBash++ identifiers cannot contain double underscores",
+				identifier
+			};
+			return result;
+		}
+
+		std::shared_ptr<bpp::bpp_class> reference_class = result.entity->get_class();
+
+		object = nullptr;
+		datamember = reference_class->get_datamember(identifier_text, current_class);
+		method = reference_class->get_method(identifier_text, current_class);
+
+		if (datamember == bpp::inaccessible_datamember || method == bpp::inaccessible_method) {
+			result.error = entity_reference::reference_error{
+				identifier_text + " is inaccessible in this context",
+				identifier
+			};
+			return result;
+		}
+
+		if (method != nullptr) {
+			result.class_containing_the_method = result.entity->get_class();
+			last_reference_type = bpp::reference_type::ref_method;
+			result.entity = method;
+		} else if (datamember != nullptr) {
+			last_reference_type = (datamember->get_class() == program->get_primitive_class())
+					? bpp::reference_type::ref_primitive
+					: bpp::reference_type::ref_object;
+			result.entity = datamember;
+
+			std::string temporary_variable_lvalue = result.reference_code.code + "__" + identifier_text;
+			std::string temporary_varible_rvalue = "${" + indirection + result.reference_code.code + "}__" + identifier_text;
+
+			if (result.created_first_temporary_variable) {
+				result.reference_code.pre_code += temporary_variable_lvalue + "=" + temporary_varible_rvalue + "\n";
+				result.reference_code.post_code += "unset " + temporary_variable_lvalue + "\n";
+				result.created_second_temporary_variable = true;
+			}
+
+			result.reference_code.code = temporary_variable_lvalue;
+			result.created_first_temporary_variable = true;
+		} else {
+			result.error = entity_reference::reference_error{
+				result.entity->get_name() + " has no member named " + identifier_text,
+				identifier
+			};
+			return result;
+		}
+	}
+
+	// Having finished iterating over all the identifiers
+	// And determining precisely which entity is referred to
+	// We can now return
+	return result;
+}
+
 } // namespace bpp

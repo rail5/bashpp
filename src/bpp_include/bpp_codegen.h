@@ -8,8 +8,12 @@
 
 #include <string>
 #include <memory>
+#include <optional>
+#include <deque>
 #include <antlr4-runtime.h>
 
+#include "bpp.h"
+#include "../antlr/BashppLexer.h"
 #include "../internal_error.h"
 
 namespace bpp {
@@ -78,6 +82,29 @@ code_segment inline_new(
 	const std::string&					new_address,
 	std::shared_ptr<bpp::bpp_class>		new_class
 	);
+
+
+struct entity_reference {
+	std::shared_ptr<bpp::bpp_entity> entity;
+	code_segment reference_code;
+	bool created_first_temporary_variable = false;
+	bool created_second_temporary_variable = false;
+	std::shared_ptr<bpp::bpp_class> class_containing_the_method;
+	
+	struct reference_error {
+		std::string message;
+		antlr4::tree::TerminalNode* token = nullptr;
+	};
+
+	std::optional<reference_error> error;
+};
+
+entity_reference resolve_reference(
+	std::shared_ptr<bpp::bpp_code_entity> context,
+	std::deque<antlr4::tree::TerminalNode*> identifiers,
+	std::shared_ptr<bpp::bpp_class> current_class,
+	std::shared_ptr<bpp::bpp_program> program
+);
 
 } // namespace bpp
 

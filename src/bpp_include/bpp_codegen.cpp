@@ -278,6 +278,7 @@ entity_reference resolve_reference(
 	std::shared_ptr<bpp::bpp_class> current_class,
 	std::shared_ptr<bpp::bpp_program> program
 ) {
+	// TODO(@rail5): Track entity references by calling entity->add_reference(file, line, column) at each resolution step
 	bool self_reference = identifiers.at(0)->getSymbol()->getType() == BashppLexer::KEYWORD_THIS
 			|| identifiers.at(0)->getSymbol()->getType()            == BashppLexer::KEYWORD_THIS_LVALUE
 			|| identifiers.at(0)->getSymbol()->getType()            == BashppLexer::KEYWORD_SUPER

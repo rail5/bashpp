@@ -39,4 +39,6 @@ clean: clean-objects clean-antlr clean-lsp
 
 .PHONY: all clean
 
+ifeq ($(filter clean clean-objects clean-antlr clean-lsp,$(MAKECMDGOALS)),)
 -include $(shell find obj -name '*.d' 2>/dev/null)
+endif

@@ -239,7 +239,11 @@ std::shared_ptr<bpp::bpp_entity> bpp_program::get_active_entity(
 
 	EntityMap& map = it->second;
 
-	return map.find(line, column);
+	std::shared_ptr<bpp::bpp_entity> entity = map.find(FilePosition(line, column));
+	if (entity == nullptr) {
+		return shared_from_this(); // If no lower-level entity is found, return the program itself as the "active" entity at that point
+	}
+	return entity;
 }
 
 } // namespace bpp

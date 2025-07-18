@@ -10,7 +10,7 @@
 
 // Forward decl.
 namespace bpp {
-class bpp_code_entity;
+class bpp_entity;
 }
 
 using IntervalType = lib_interval_tree::interval<uint64_t, lib_interval_tree::closed>;
@@ -19,7 +19,7 @@ struct EntityNode : lib_interval_tree::node<uint64_t, IntervalType, EntityNode> 
 	using base_type = lib_interval_tree::node<uint64_t, IntervalType, EntityNode>;
 	using interval_type = typename base_type::interval_type;
 
-	std::shared_ptr<bpp::bpp_code_entity> payload;
+	std::shared_ptr<bpp::bpp_entity> payload;
 
 	EntityNode(EntityNode* parent, interval_type interval)
 		: base_type(parent, std::move(interval)) {}

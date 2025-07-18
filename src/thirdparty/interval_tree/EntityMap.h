@@ -34,12 +34,12 @@ class EntityMap {
 		/**
 		 * @brief Add an entity to the entity map
 		 */
-		void insert(FilePosition start, FilePosition end, const std::shared_ptr<bpp::bpp_code_entity>& entity) {
+		void insert(FilePosition start, FilePosition end, const std::shared_ptr<bpp::bpp_entity>& entity) {
 			auto it = tree.insert({start, end});
 			it.node()->payload = entity;
 		}
 
-		std::shared_ptr<bpp::bpp_code_entity> find(FilePosition point) {
+		std::shared_ptr<bpp::bpp_entity> find(FilePosition point) {
 			// Because of our strictly-nested tree structure,
 			// The innermost active entity at a given point
 			// Is guaranteed to be the entity which overlaps that point and has the highest start position
@@ -55,7 +55,7 @@ class EntityMap {
 			// (Where an inner entity is not *entirely* contained within the outer entity)
 			// If that were possible, this method would not work correctly
 			std::optional<uint64_t> highestStart = std::nullopt;
-			std::shared_ptr<bpp::bpp_code_entity> innermostEntity;
+			std::shared_ptr<bpp::bpp_entity> innermostEntity;
 			tree.overlap_find_all({point, point}, [&](auto const& it) {
 				// This is also based on the assumption (valid in our case)
 				// That no two entities can start at the same point
@@ -71,7 +71,7 @@ class EntityMap {
 		/**
 		 * @brief Find the active code entity at a specific line and column
 		 */
-		std::shared_ptr<bpp::bpp_code_entity> find(uint32_t line, uint32_t column) {
+		std::shared_ptr<bpp::bpp_entity> find(uint32_t line, uint32_t column) {
 			return find(FilePosition(line, column));
 		}
 };

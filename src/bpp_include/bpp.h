@@ -444,7 +444,7 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 		// Source file -> EntityMap
 		std::unordered_map<std::string, EntityMap> entity_maps;
 		// s.t. requesting entity_maps["/path/to/file1.bpp"] returns an EntityMap
-		// which outlines for us which code entities are active at each point in the file
+		// which outlines for us which container entities are active at each point in the file
 	public:
 		bpp_program();
 
@@ -475,10 +475,10 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 			const std::string& file,
 			uint32_t start_line, uint32_t start_column,
 			uint32_t end_line, uint32_t end_column,
-			std::shared_ptr<bpp::bpp_code_entity> entity
+			std::shared_ptr<bpp::bpp_entity> entity
 		);
 
-		std::shared_ptr<bpp::bpp_code_entity> get_active_entity(
+		std::shared_ptr<bpp::bpp_entity> get_active_entity(
 			const std::string& file,
 			uint32_t line, uint32_t column
 		);

@@ -221,14 +221,14 @@ void bpp_program::mark_entity(
 	const std::string& file,
 	uint32_t start_line, uint32_t start_column,
 	uint32_t end_line, uint32_t end_column,
-	std::shared_ptr<bpp::bpp_code_entity> entity
+	std::shared_ptr<bpp::bpp_entity> entity
 ) {
 	FilePosition start(start_line, start_column);
 	FilePosition end(end_line, end_column);
 	entity_maps[file].insert(start, end, entity); // RAII
 }
 
-std::shared_ptr<bpp::bpp_code_entity> bpp_program::get_active_entity(
+std::shared_ptr<bpp::bpp_entity> bpp_program::get_active_entity(
 	const std::string& file,
 	uint32_t line, uint32_t column
 ) {

@@ -24,6 +24,12 @@ void BashppListener::enterSupershell(BashppParser::SupershellContext *ctx) {
 	supershell_entity->set_containing_class(current_code_entity->get_containing_class());
 	supershell_entity->inherit(current_code_entity);
 	entity_stack.push(supershell_entity);
+
+	supershell_entity->set_definition_position(
+		source_file,
+		ctx->SUPERSHELL_START()->getSymbol()->getLine(),
+		ctx->SUPERSHELL_START()->getSymbol()->getCharPositionInLine() + 1
+	);
 }
 
 void BashppListener::exitSupershell(BashppParser::SupershellContext *ctx) {
@@ -34,6 +40,15 @@ void BashppListener::exitSupershell(BashppParser::SupershellContext *ctx) {
 	}
 
 	entity_stack.pop();
+
+	program->mark_entity(
+		source_file,
+		supershell_entity->get_initial_definition().line,
+		supershell_entity->get_initial_definition().column,
+		ctx->SUPERSHELL_END()->getSymbol()->getLine(),
+		ctx->SUPERSHELL_END()->getSymbol()->getCharPositionInLine() + 1,
+		supershell_entity
+	);
 
 	// Carry objects, classes, etc from the supershell to the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());

@@ -79,6 +79,12 @@ void BashppListener::enterBash_case_pattern(BashppParser::Bash_case_patternConte
 	case_pattern_entity->set_containing_case(case_statement_entity);
 
 	entity_stack.push(case_pattern_entity);
+
+	case_pattern_entity->set_definition_position(
+		source_file,
+		ctx->start->getLine(),
+		ctx->start->getCharPositionInLine() + 1
+	);
 }
 
 void BashppListener::exitBash_case_pattern(BashppParser::Bash_case_patternContext *ctx) {
@@ -102,6 +108,15 @@ void BashppListener::exitBash_case_pattern(BashppParser::Bash_case_patternContex
 		+ case_pattern_entity->get_code() + "\n"
 		+ case_pattern_entity->get_post_code()
 		+ "\n;;\n");
+	
+	program->mark_entity(
+		source_file,
+		case_pattern_entity->get_initial_definition().line,
+		case_pattern_entity->get_initial_definition().column,
+		ctx->BASH_CASE_PATTERN_DELIM()->getSymbol()->getLine(),
+		ctx->BASH_CASE_PATTERN_DELIM()->getSymbol()->getCharPositionInLine() + 1,
+		case_pattern_entity
+	);
 }
 
 void BashppListener::enterBash_case_pattern_header(BashppParser::Bash_case_pattern_headerContext *ctx) {

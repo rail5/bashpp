@@ -21,6 +21,12 @@ void BashppListener::enterSubshell(BashppParser::SubshellContext *ctx) {
 
 	// Push the subshell entity onto the entity stack
 	entity_stack.push(subshell_entity);
+
+	subshell_entity->set_definition_position(
+		source_file,
+		ctx->SUBSHELL_START()->getSymbol()->getLine(),
+		ctx->SUBSHELL_START()->getSymbol()->getCharPositionInLine() + 1
+	);
 }
 
 void BashppListener::exitSubshell(BashppParser::SubshellContext *ctx) {
@@ -38,4 +44,13 @@ void BashppListener::exitSubshell(BashppParser::SubshellContext *ctx) {
 	current_code_entity->add_code_to_previous_line(subshell_entity->get_pre_code());
 	current_code_entity->add_code_to_next_line("\n" + subshell_entity->get_post_code());
 	current_code_entity->add_code(ctx->SUBSHELL_START()->getText() + subshell_entity->get_code() + ctx->SUBSHELL_END()->getText());
+
+	program->mark_entity(
+		source_file,
+		subshell_entity->get_initial_definition().line,
+		subshell_entity->get_initial_definition().column,
+		ctx->SUBSHELL_END()->getSymbol()->getLine(),
+		ctx->SUBSHELL_END()->getSymbol()->getCharPositionInLine() + 1,
+		subshell_entity
+	);
 }

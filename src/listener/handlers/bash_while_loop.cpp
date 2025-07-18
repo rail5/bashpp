@@ -23,6 +23,12 @@ void BashppListener::enterBash_while_loop(BashppParser::Bash_while_loopContext *
 	while_statement->inherit(current_code_entity);
 
 	entity_stack.push(while_statement);
+
+	while_statement->set_definition_position(
+		source_file,
+		ctx->start->getLine(),
+		ctx->start->getCharPositionInLine() + 1
+	);
 }
 
 void BashppListener::exitBash_while_loop(BashppParser::Bash_while_loopContext *ctx) {
@@ -54,6 +60,15 @@ void BashppListener::exitBash_while_loop(BashppParser::Bash_while_loopContext *c
 	current_code_entity->add_code("while " + while_statement->get_while_condition()->get_code() + "; do\n"
 		+ while_statement->get_pre_code() + "\n"
 		+ while_statement->get_code() + "\n" + supershell_evaluation + "done", false);
+	
+	program->mark_entity(
+		source_file,
+		while_statement->get_initial_definition().line,
+		while_statement->get_initial_definition().column,
+		ctx->BASH_KEYWORD_DONE()->getSymbol()->getLine(),
+		ctx->BASH_KEYWORD_DONE()->getSymbol()->getCharPositionInLine() + 1,
+		while_statement
+	);
 }
 
 void BashppListener::enterBash_while_condition(BashppParser::Bash_while_conditionContext *ctx) {

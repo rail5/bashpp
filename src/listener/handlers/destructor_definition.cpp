@@ -26,6 +26,12 @@ void BashppListener::enterDestructor_definition(BashppParser::Destructor_definit
 	destructor->set_containing_class(current_class);
 	destructor->inherit(program);
 	entity_stack.push(destructor);
+
+	destructor->set_definition_position(
+		source_file,
+		ctx->KEYWORD_DESTRUCTOR()->getSymbol()->getLine(),
+		ctx->KEYWORD_DESTRUCTOR()->getSymbol()->getCharPositionInLine() + 1
+	);
 }
 
 void BashppListener::exitDestructor_definition(BashppParser::Destructor_definitionContext *ctx) {
@@ -46,6 +52,15 @@ void BashppListener::exitDestructor_definition(BashppParser::Destructor_definiti
 	if (current_class == nullptr) {
 		throw internal_error("Class not found on the entity stack", ctx);
 	}
+
+	program->mark_entity(
+		source_file,
+		destructor->get_initial_definition().line,
+		destructor->get_initial_definition().column,
+		ctx->RBRACE()->getSymbol()->getLine(),
+		ctx->RBRACE()->getSymbol()->getCharPositionInLine() + 1,
+		destructor
+	);
 
 	if (!current_class->add_method(destructor)) {
 		throw_syntax_error_from_exitRule(ctx->KEYWORD_DESTRUCTOR(), "Destructor already defined");

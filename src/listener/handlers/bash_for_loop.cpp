@@ -23,6 +23,12 @@ void BashppListener::enterBash_for_loop(BashppParser::Bash_for_loopContext *ctx)
 	for_statement->inherit(current_code_entity);
 
 	entity_stack.push(for_statement);
+
+	for_statement->set_definition_position(
+		source_file,
+		ctx->start->getLine(),
+		ctx->start->getCharPositionInLine() + 1
+	);
 }
 
 void BashppListener::exitBash_for_loop(BashppParser::Bash_for_loopContext *ctx) {
@@ -44,6 +50,15 @@ void BashppListener::exitBash_for_loop(BashppParser::Bash_for_loopContext *ctx) 
 	current_code_entity->add_code_to_next_line(for_loop->get_header_post_code());
 	current_code_entity->add_code_to_previous_line(for_loop->get_header_code());
 	current_code_entity->add_code(for_loop->get_pre_code() + for_loop->get_code() + for_loop->get_post_code());
+
+	program->mark_entity(
+		source_file,
+		for_loop->get_initial_definition().line,
+		for_loop->get_initial_definition().column,
+		ctx->BASH_KEYWORD_DONE()->getSymbol()->getLine(),
+		ctx->BASH_KEYWORD_DONE()->getSymbol()->getCharPositionInLine() + 1,
+		for_loop
+	);
 }
 
 void BashppListener::enterBash_for_header(BashppParser::Bash_for_headerContext *ctx) {

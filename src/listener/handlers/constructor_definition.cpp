@@ -26,6 +26,12 @@ void BashppListener::enterConstructor_definition(BashppParser::Constructor_defin
 	constructor->set_containing_class(current_class);
 	constructor->inherit(program);
 	entity_stack.push(constructor);
+
+	constructor->set_definition_position(
+		source_file,
+		ctx->KEYWORD_CONSTRUCTOR()->getSymbol()->getLine(),
+		ctx->KEYWORD_CONSTRUCTOR()->getSymbol()->getCharPositionInLine() + 1
+	);
 }
 
 void BashppListener::exitConstructor_definition(BashppParser::Constructor_definitionContext *ctx) {
@@ -46,6 +52,15 @@ void BashppListener::exitConstructor_definition(BashppParser::Constructor_defini
 	if (current_class == nullptr) {
 		throw internal_error("Class not found on the entity stack", ctx);
 	}
+
+	program->mark_entity(
+		source_file,
+		constructor->get_initial_definition().line,
+		constructor->get_initial_definition().column,
+		ctx->RBRACE()->getSymbol()->getLine(),
+		ctx->RBRACE()->getSymbol()->getCharPositionInLine() + 1,
+		constructor
+	);
 
 	if (!current_class->add_method(constructor)) {
 		throw_syntax_error_from_exitRule(ctx->KEYWORD_CONSTRUCTOR(), "Constructor already defined");

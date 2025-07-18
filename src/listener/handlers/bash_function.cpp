@@ -43,6 +43,12 @@ void BashppListener::enterBash_function(BashppParser::Bash_functionContext *ctx)
 
 	// Push the entity onto the stack
 	entity_stack.push(function_entity);
+
+	function_entity->set_definition_position(
+		source_file,
+		first_token->getSymbol()->getLine(),
+		first_token->getSymbol()->getCharPositionInLine() + 1
+	);
 }
 
 void BashppListener::exitBash_function(BashppParser::Bash_functionContext *ctx) {
@@ -73,4 +79,13 @@ void BashppListener::exitBash_function(BashppParser::Bash_functionContext *ctx) 
 		code_to_add += "\n" + function_entity->get_post_code();
 	}
 	current_code_entity->add_code(code_to_add);
+
+	program->mark_entity(
+		source_file,
+		function_entity->get_initial_definition().line,
+		function_entity->get_initial_definition().column,
+		ctx->getStop()->getLine(),
+		ctx->getStop()->getCharPositionInLine() + 1,
+		function_entity
+	);
 }

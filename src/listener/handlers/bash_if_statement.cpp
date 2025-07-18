@@ -131,6 +131,12 @@ void BashppListener::enterBash_if_root_branch(BashppParser::Bash_if_root_branchC
 	condition_entity->set_if_statement(if_statement_entity);
 
 	entity_stack.push(condition_entity);
+
+	condition_entity->set_definition_position(
+		source_file,
+		ctx->BASH_KEYWORD_IF()->getSymbol()->getLine(),
+		ctx->BASH_KEYWORD_IF()->getSymbol()->getCharPositionInLine() + 1
+	);
 }
 
 void BashppListener::exitBash_if_root_branch(BashppParser::Bash_if_root_branchContext *ctx) {
@@ -150,6 +156,15 @@ void BashppListener::exitBash_if_root_branch(BashppParser::Bash_if_root_branchCo
 	if_statement_entity->add_branch_code(condition_entity->get_pre_code());
 	if_statement_entity->add_branch_code(condition_entity->get_code());
 	if_statement_entity->add_branch_code(condition_entity->get_post_code());
+
+	program->mark_entity(
+		source_file,
+		condition_entity->get_initial_definition().line,
+		condition_entity->get_initial_definition().column,
+		ctx->getStop()->getLine(),
+		ctx->getStop()->getCharPositionInLine() + 1,
+		condition_entity
+	);
 }
 
 void BashppListener::enterBash_if_else_branch(BashppParser::Bash_if_else_branchContext *ctx) {
@@ -174,6 +189,12 @@ void BashppListener::enterBash_if_else_branch(BashppParser::Bash_if_else_branchC
 	condition_entity->set_if_statement(if_statement_entity);
 
 	entity_stack.push(condition_entity);
+
+	condition_entity->set_definition_position(
+		source_file,
+		ctx->start->getLine(),
+		ctx->start->getCharPositionInLine() + 1
+	);
 }
 
 void BashppListener::exitBash_if_else_branch(BashppParser::Bash_if_else_branchContext *ctx) {
@@ -193,6 +214,15 @@ void BashppListener::exitBash_if_else_branch(BashppParser::Bash_if_else_branchCo
 	if_statement_entity->add_branch_code(condition_entity->get_pre_code());
 	if_statement_entity->add_branch_code(condition_entity->get_code());
 	if_statement_entity->add_branch_code(condition_entity->get_post_code());
+
+	program->mark_entity(
+		source_file,
+		condition_entity->get_initial_definition().line,
+		condition_entity->get_initial_definition().column,
+		ctx->getStop()->getLine(),
+		ctx->getStop()->getCharPositionInLine() + 1,
+		condition_entity
+	);
 }
 
 void BashppListener::enterBash_if_condition(BashppParser::Bash_if_conditionContext *ctx) {

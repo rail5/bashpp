@@ -70,4 +70,16 @@ void BashppListener::exitClass_definition(BashppParser::Class_definitionContext 
 
 	// Add the class to the program
 	program->add_class(new_class);
+
+	// Mark the class's position in the file's entity map
+	// This is important for the LSP to know which entities are active at which points in the file
+	// This is used for features such as "Go to Definition" and "Find References"
+	program->mark_entity(
+		source_file,
+		new_class->get_initial_definition().line,
+		new_class->get_initial_definition().column,
+		ctx->RBRACE_ROOTLEVEL()->getSymbol()->getLine(),
+		ctx->RBRACE_ROOTLEVEL()->getSymbol()->getCharPositionInLine() + 1,
+		new_class
+	);
 }

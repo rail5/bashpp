@@ -217,4 +217,29 @@ uint64_t bpp_program::get_object_counter() const {
 	return object_counter;
 }
 
+void bpp_program::mark_entity(
+	const std::string& file,
+	uint32_t start_line, uint32_t start_column,
+	uint32_t end_line, uint32_t end_column,
+	std::shared_ptr<bpp::bpp_code_entity> entity
+) {
+	FilePosition start(start_line, start_column);
+	FilePosition end(end_line, end_column);
+	entity_maps[file].insert(start, end, entity); // RAII
+}
+
+std::shared_ptr<bpp::bpp_code_entity> bpp_program::get_active_entity(
+	const std::string& file,
+	uint32_t line, uint32_t column
+) {
+	auto it = entity_maps.find(file);
+	if (it == entity_maps.end()) {
+		return nullptr; // No entity map for this file
+	}
+
+	EntityMap& map = it->second;
+
+	return map.find(line, column);
+}
+
 } // namespace bpp

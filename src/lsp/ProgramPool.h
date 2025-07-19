@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
+#include <optional>
 
 #include "../bpp_include/bpp.h"
 
@@ -23,7 +24,9 @@ class ProgramPool {
 		std::unordered_map<std::string, size_t> program_indices; // Maps file paths to program indices in the pool
 
 		void _remove_oldest_program();
-		std::shared_ptr<bpp::bpp_program> _parse_program(const std::string& file_path);
+		std::shared_ptr<bpp::bpp_program> _parse_program(
+			const std::string& file_path, 
+			std::optional<std::pair<std::string, std::string>> replacement_file_contents = std::nullopt);
 
 		// Configurable settings
 		std::shared_ptr<std::vector<std::string>> include_paths = std::make_shared<std::vector<std::string>>();
@@ -46,6 +49,10 @@ class ProgramPool {
 		bool has_program(const std::string& file_path);
 
 		std::shared_ptr<bpp::bpp_program> re_parse_program(const std::string& file_path);
+
+		std::shared_ptr<bpp::bpp_program> re_parse_program(
+			const std::string& file_path, 
+			std::pair<std::string, std::string> replacement_file_contents);
 
 		void clean();
 };

@@ -126,6 +126,10 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 	listener.set_included_from(this);
 	listener.set_run_on_exit(false);
 	listener.set_suppress_warnings(suppress_warnings);
+	
+	if (replacement_file_contents.has_value()) {
+		listener.set_replacement_file_contents(replacement_file_contents->first, replacement_file_contents->second);
+	}
 
 	if (!dynamic_linking) {
 		// If we're linking statically, copy the compiled code from the included file to the current program
@@ -138,8 +142,14 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 	listener.set_output_file("");
 
 	// Create a new ANTLR input stream
-	std::ifstream file_stream(full_path);
-	antlr4::ANTLRInputStream input(file_stream);
+	antlr4::ANTLRInputStream input;
+	if (!replacement_file_contents.has_value() || replacement_file_contents->first != full_path) {
+		std::ifstream file_stream(full_path);
+		input = antlr4::ANTLRInputStream(file_stream);
+	} else {
+		// If we have replacement file contents for this file, use those instead
+		input = antlr4::ANTLRInputStream(replacement_file_contents->second);
+	}
 	BashppLexer lexer(&input);
 	antlr4::CommonTokenStream tokens(&lexer);
 

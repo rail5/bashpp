@@ -53,7 +53,10 @@ void ProgramPool::_remove_oldest_program() {
 	}
 }
 
-std::shared_ptr<bpp::bpp_program> ProgramPool::_parse_program(const std::string& file_path) {
+std::shared_ptr<bpp::bpp_program> ProgramPool::_parse_program(
+	const std::string& file_path, 
+	std::optional<std::pair<std::string, std::string>> replacement_file_contents
+) {
 	// Create output streams that will discard output
 	std::shared_ptr<std::ostream> output_stream = std::make_shared<NullOStream>();
 	std::shared_ptr<std::ostringstream> code_buffer = std::make_shared<NullOStringStream>();
@@ -68,8 +71,19 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::_parse_program(const std::string&
 	listener.set_suppress_warnings(suppress_warnings);
 	listener.set_include_paths(include_paths);
 
-	std::ifstream file_stream(file_path);
-	antlr4::ANTLRInputStream input(file_stream);
+	if (replacement_file_contents.has_value()) {
+		listener.set_replacement_file_contents(replacement_file_contents->first, replacement_file_contents->second);
+	}
+
+	// Create a new ANTLR input stream
+	antlr4::ANTLRInputStream input;
+	if (!replacement_file_contents.has_value() || replacement_file_contents->first != file_path) {
+		std::ifstream file_stream(file_path);
+		input = antlr4::ANTLRInputStream(file_stream);
+	} else {
+		// If we have replacement file contents for this file, use those instead
+		input = antlr4::ANTLRInputStream(replacement_file_contents->second);
+	}
 	BashppLexer lexer(&input);
 	antlr4::CommonTokenStream tokens(&lexer);
 	tokens.fill();
@@ -139,6 +153,21 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::re_parse_program(const std::strin
 		return programs[index];
 	} else {
 		return get_program(file_path); // If it doesn't exist, create it
+	}
+}
+
+std::shared_ptr<bpp::bpp_program> ProgramPool::re_parse_program(
+			const std::string& file_path, 
+			std::pair<std::string, std::string> replacement_file_contents
+) {
+	std::lock_guard<std::recursive_mutex> lock(pool_mutex);
+	if (has_program(file_path)) {
+		size_t index = program_indices[file_path];
+		std::string main_source_file = programs[index]->get_main_source_file();
+		programs[index] = _parse_program(main_source_file, replacement_file_contents);
+		return programs[index];
+	} else {
+		return nullptr;
 	}
 }
 

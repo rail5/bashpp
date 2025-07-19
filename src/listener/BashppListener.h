@@ -12,6 +12,7 @@
 #include <list>
 #include <memory>
 #include <stack>
+#include <optional>
 #include <antlr4-runtime.h>
 
 #include "../antlr/BashppParserBaseListener.h"
@@ -132,6 +133,18 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 
 		bool is_protected_keyword(const std::string& keyword);
 
+		/**
+		 * @var replacement_file_contents
+		 * @brief This option is used by the language server.
+		 * 
+		 * The first element is the file path, and the second element is the contents of the file.
+		 * 
+		 * If set, it tells the listener not to read from the given file path, but instead to use the contents provided.
+		 * 
+		 * The language server uses this to parse unsaved changes in your editor.
+		 */
+		std::optional<std::pair<std::string, std::string>> replacement_file_contents;
+
 		std::shared_ptr<bpp::bpp_class> primitive;
 
 		bool error_thrown = false;
@@ -197,6 +210,8 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 	void set_run_on_exit(bool run_on_exit);
 	void set_suppress_warnings(bool suppress_warnings);
 	void set_arguments(std::vector<char*> arguments);
+
+	void set_replacement_file_contents(const std::string& file_path, const std::string& contents);
 
 	std::shared_ptr<bpp::bpp_program> get_program();
 	std::shared_ptr<std::set<std::string>> get_included_files();

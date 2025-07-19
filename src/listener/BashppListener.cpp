@@ -109,3 +109,7 @@ bool BashppListener::is_protected_keyword(const std::string& keyword) {
 	}
 	return false;
 }
+
+void BashppListener::set_replacement_file_contents(const std::string& file_path, const std::string& contents) {
+	replacement_file_contents = std::make_pair(file_path, contents);
+}

@@ -7,6 +7,8 @@
 
 #include <unistd.h>
 
+#include "../bpp_include/bpp_codegen.h"
+
 #include "static/Message.h"
 #include "generated/InitializeRequest.h"
 #include "generated/InitializeResult.h"
@@ -17,6 +19,7 @@
 #include "generated/DocumentSymbolRequest.h"
 #include "generated/RenameRequest.h"
 #include "generated/DidOpenTextDocumentNotification.h"
+#include "generated/DidChangeTextDocumentNotification.h"
 #include "generated/ShowMessageNotification.h"
 
 std::mutex BashppServer::output_mutex;
@@ -241,26 +244,54 @@ GenericResponseMessage BashppServer::handleInitialize(const GenericRequestMessag
 }
 
 GenericResponseMessage BashppServer::handleGotoDefinition(const GenericRequestMessage& request) {
-	// Placeholder for actual implementation
+	DefinitionRequest definition_request = request.toSpecific<DefinitionParams>();
 	DefinitionRequestResponse response;
 	response.id = request.id;
-	DefinitionRequest definition_request = request.toSpecific<DefinitionParams>();
-	std::string uri = definition_request.params.textDocument.uri;
-	Position position = definition_request.params.position;
 
+	std::string uri = definition_request.params.textDocument.uri;
+	// Verify the URI starts with "file://"
+	if (uri.find("file://") != 0) {
+		log("Ignoring request to go to definition for non-local file: ", uri);
+		response.error.code = static_cast<int>(ErrorCodes::InvalidParams);
+		response.error.message = "Invalid URI: " + uri;
+		return response;
+	} else {
+		// Strip the "file://" prefix
+		uri = uri.substr(7);
+	}
+
+	Position position = definition_request.params.position;
 	log("Received Goto Definition request for URI: ", uri, ", Position: (", position.line, ", ", position.character, ")");
 
+	std::shared_ptr<bpp::bpp_program> program = program_pool.get_program(uri);
+
+	if (program == nullptr) {
+		log("Program not found for URI: ", uri);
+		response.error.code = static_cast<int>(ErrorCodes::InternalError);
+		response.error.message = "Program not found for URI: " + uri;
+		return response;
+	}
+
+	bpp::entity_reference referenced_entity = bpp::resolve_reference_at(uri, position.line, position.character, program);
+
+	if (referenced_entity.entity == nullptr) {
+		log("No entity found at position: (", position.line, ", ", position.character, ") in URI: ", uri);
+		response.error.code = static_cast<int>(ErrorCodes::InvalidParams);
+		response.error.message = "No entity found at the specified position.";
+		return response;
+	}
+
+	bpp::SymbolPosition definition_location = referenced_entity.entity->get_initial_definition();
+
 	Location location;
-	location.uri = "file:///usr/lib/bpp/stdlib/SharedStack";
-	location.range.start.line = 72;
-	location.range.start.character = 1;
-	location.range.end.line = 72;
-	location.range.end.character = 8;
+	location.uri = "file://" + uri;
+	location.range.start.line = definition_location.line;
+	location.range.start.character = definition_location.column;
+	location.range.end.line = definition_location.line;
+	location.range.end.character = definition_location.column + referenced_entity.entity->get_name().size();
 
-	Definition definition = location;
-
-	response.result = definition;
-
+	response.result = std::vector<Location>{location};
+	log("Found definition for entity: ", referenced_entity.entity->get_name(), " at URI: ", uri, ", Range: (", location.range.start.line, ", ", location.range.start.character, ") to (", location.range.end.line, ", ", location.range.end.character, ")");
 	return response;
 }
 
@@ -362,35 +393,45 @@ GenericResponseMessage BashppServer::handleRename(const GenericRequestMessage& r
 }
 
 void BashppServer::handleDidOpen(const GenericNotificationMessage& request) {
-	// Placeholder for actual implementation
-	/*json result = {"result", {
-		{"uri", params["textDocument"]["uri"]},
-		{"languageId", "bashpp"},
-		{"version", 1},
-		{"text", params["textDocument"]["text"]}
-	}};
-	return result;*/
-
-	// didOpen is a notification, not a request, so we don't return a response
-
-	// For fun, however, let's send a notification back just to prove we can
 	DidOpenTextDocumentNotification did_open_notification = request.toSpecific<DidOpenTextDocumentParams>();
-	ShowMessageNotification notification;
-	notification.params.type = MessageType::Info;
-	notification.params.message = "Opened file: " + did_open_notification.params.textDocument.uri;
-	sendNotification(notification);
+	
+	log("Received DidOpen notification for URI: ", did_open_notification.params.textDocument.uri);
+
+	// Ensure the URI starts with "file://"
+	// We will reject any URIs that do not point to a file
+	std::string uri = did_open_notification.params.textDocument.uri;
+	if (uri.find("file://") != 0) {
+		log("Ignoring request to parse non-local file: ", uri);
+		return;
+	} else {
+		// Strip the "file://" prefix
+		uri = uri.substr(7);
+	}
+
+	std::shared_ptr<bpp::bpp_program> program = program_pool.get_program(uri);
+	log("Finished parsing: ", uri);
+	if (program == nullptr) {
+		log("Failed to parse program: ", uri);
+		// Send an error notification or response if needed
+		return;
+	}
 	return;
 }
 
 void BashppServer::handleDidChange(const GenericNotificationMessage& request) {
-	// Placeholder for actual implementation
-	/*json result = {"result", {
-		{"uri", params["textDocument"]["uri"]},
-		{"version", params["textDocument"]["version"]},
-		{"contentChanges", params["contentChanges"]}
-	}};
-	return result;*/
+	DidChangeTextDocumentNotification did_change_notification = request.toSpecific<DidChangeTextDocumentParams>();
+	log("Received DidChange notification for URI: ", did_change_notification.params.textDocument.uri);
+	// Ensure the URI starts with "file://"
+	std::string uri = did_change_notification.params.textDocument.uri;
+	if (uri.find("file://") != 0) {
+		log("Ignoring request to re-parse non-local file: ", uri);
+		return;
+	} else {
+		// Strip the "file://" prefix
+		uri = uri.substr(7);
+	}
 
-	// didChange is a notification, not a request, so we don't return a response
+	program_pool.re_parse_program(uri);
+	log("Re-parsed program: ", uri);
 	return;
 }

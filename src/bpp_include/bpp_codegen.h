@@ -102,7 +102,6 @@ struct entity_reference {
 entity_reference resolve_reference(
 	std::shared_ptr<bpp::bpp_code_entity> context,
 	std::deque<antlr4::tree::TerminalNode*> identifiers,
-	std::shared_ptr<bpp::bpp_class> current_class,
 	std::shared_ptr<bpp::bpp_program> program
 );
 

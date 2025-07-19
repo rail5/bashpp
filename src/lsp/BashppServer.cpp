@@ -471,9 +471,18 @@ GenericResponseMessage BashppServer::handleCompletion(const GenericRequestMessag
 		case '.':
 		{
 			log("Received Completion request for URI: ", uri, " with trigger character: '.'");
+			// Wait for stored_changes_content_updating to be false before proceeding
+			// Just to make sure we're suggesting completions based on the latest content
+			// When the user types '.', the client will send a didChange notification,
+			// and then immediately after, it'll send a completion request.
+			// We need to ensure that our internally-stored version of the file content
+			// is up-to-date before we resolve the reference and provide completions.
+			while (stored_changes_content_updating) {
+				std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Sleep for 10 milliseconds
+			}
 			std::lock_guard<std::mutex> lock(unsaved_changes_mutex);
 
-			std::shared_ptr<bpp::bpp_program> program = program_pool.get_program(uri); // Do not jump the queue, wait for previous unsaved changes to be processed
+			std::shared_ptr<bpp::bpp_program> program = program_pool.get_program(uri, true); // Jump the queue and get the program immediately
 			if (program == nullptr) {
 				log("Program not found for URI: ", uri);
 				response.result = nullptr;
@@ -694,6 +703,7 @@ void BashppServer::handleDidOpen(const GenericNotificationMessage& request) {
 }
 
 void BashppServer::handleDidChange(const GenericNotificationMessage& request) {
+	stored_changes_content_updating = true; // Set the flag to indicate that changes are pending
 	DidChangeTextDocumentNotification did_change_notification = request.toSpecific<DidChangeTextDocumentParams>();
 	std::string uri = did_change_notification.params.textDocument.uri;
 
@@ -706,6 +716,19 @@ void BashppServer::handleDidChange(const GenericNotificationMessage& request) {
 	} else {
 		// Strip the "file://" prefix
 		uri = uri.substr(7);
+	}
+
+	// Update the "unsaved changes" stored
+	{
+		std::lock_guard<std::mutex> changes_lock(unsaved_changes_mutex);
+		if (did_change_notification.params.contentChanges.size() == 1
+			&& std::holds_alternative<TextDocumentContentChangeWholeDocument>(did_change_notification.params.contentChanges.at(0))) {
+			unsaved_changes[uri] = std::get<TextDocumentContentChangeWholeDocument>(did_change_notification.params.contentChanges.at(0)).text;
+			stored_changes_content_updating = false;
+		} else {
+			log("Ignoring DidChange notification for URI: ", uri, " as it either has multiple content changes or is not a whole document change.");
+			return;
+		}
 	}
 
 	// Debounce didChange processing
@@ -760,8 +783,6 @@ void BashppServer::handleDidChange(const GenericNotificationMessage& request) {
 			}
 			
 			if (!unsaved_content.empty()) {
-				std::lock_guard<std::mutex> changes_lock(unsaved_changes_mutex);
-				unsaved_changes[uri] = unsaved_content; // Store the unsaved content
 				std::shared_ptr<bpp::bpp_program> program = program_pool.re_parse_program(uri, {uri, unsaved_content});
 				if (program != nullptr) {
 					publishDiagnostics(program);

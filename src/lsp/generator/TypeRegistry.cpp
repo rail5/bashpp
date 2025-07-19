@@ -537,7 +537,7 @@ void TypeRegistry::generate_enum(const std::string& name, const nlohmann::json& 
 		file << "};\n\n";
 
 		for (const auto& member : def["values"]) {
-			file << "const " << name << " " << name << "::"
+			file << "inline const " << name << " " << name << "::"
 				 << get_sanitized_name(member["name"].get<std::string>()) << " = "
 				 << name << "(\"" << get_sanitized_name(member["value"].get<std::string>()) << "\");\n";
 		}

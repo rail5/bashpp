@@ -276,15 +276,14 @@ GenericResponseMessage BashppServer::handleGotoDefinition(const GenericRequestMe
 
 	if (referenced_entity.entity == nullptr) {
 		log("No entity found at position: (", position.line, ", ", position.character, ") in URI: ", uri);
-		response.error.code = static_cast<int>(ErrorCodes::InvalidParams);
-		response.error.message = "No entity found at the specified position.";
+		response.result = nullptr;
 		return response;
 	}
 
 	bpp::SymbolPosition definition_location = referenced_entity.entity->get_initial_definition();
 
 	Location location;
-	location.uri = "file://" + uri;
+	location.uri = "file://" + definition_location.file;
 	location.range.start.line = definition_location.line;
 	location.range.start.character = definition_location.column;
 	location.range.end.line = definition_location.line;

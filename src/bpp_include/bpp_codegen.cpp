@@ -497,7 +497,8 @@ entity_reference resolve_reference_at(
 	const std::string& file,
 	uint32_t line,
 	uint32_t column,
-	std::shared_ptr<bpp::bpp_program> program
+	std::shared_ptr<bpp::bpp_program> program,
+	const std::string& replacement_contents
 ) {
 	entity_reference result;
 	// Get the active containing entity at the given line and column
@@ -508,28 +509,45 @@ entity_reference resolve_reference_at(
 
 	// Extract the identifiers at that line and column
 	// TODO(@rail5): This business about rewinding to the last '@' character and finding the nearest whitespace is pretty hacky
-	std::ifstream source_file(file);
-	if (!source_file.is_open()) {
-		result.error = entity_reference::reference_error{
-			"Could not open file: " + file,
-			nullptr
-		};
-		return result;
-	}
-
 	std::string line_content;
-	uint32_t current_line = 0;
-	while (std::getline(source_file, line_content) && current_line < line) {
-		current_line++;
-	}
-	source_file.close();
+	if (replacement_contents.empty()) {
+		std::ifstream source_file(file);
+		if (!source_file.is_open()) {
+			result.error = entity_reference::reference_error{
+				"Could not open file: " + file,
+				nullptr
+			};
+			return result;
+		}
 
-	if (current_line != line) {
-		result.error = entity_reference::reference_error{
-			"Line " + std::to_string(line) + " does not exist in file " + file,
-			nullptr
-		};
-		return result;
+		uint32_t current_line = 0;
+		while (std::getline(source_file, line_content) && current_line < line) {
+			current_line++;
+		}
+		source_file.close();
+
+		if (current_line != line) {
+			result.error = entity_reference::reference_error{
+				"Line " + std::to_string(line) + " does not exist in file " + file,
+				nullptr
+			};
+			return result;
+		}
+	} else {
+		// Use replacement_contents instead of reading from the file
+		// Trim replacement_contents to the specified line
+		std::istringstream stream(replacement_contents);
+		uint32_t current_line = 0;
+		while (std::getline(stream, line_content) && current_line < line) {
+			current_line++;
+		}
+		if (current_line != line) {
+			result.error = entity_reference::reference_error{
+				"Line " + std::to_string(line) + " does not exist in file " + file,
+				nullptr
+			};
+			return result;
+		}
 	}
 
 	std::deque<std::string> identifiers;

@@ -138,7 +138,8 @@ entity_reference resolve_reference_at(
 	const std::string& file,
 	uint32_t line,
 	uint32_t column,
-	std::shared_ptr<bpp::bpp_program> program
+	std::shared_ptr<bpp::bpp_program> program,
+	const std::string& replacement_contents = ""
 );
 
 } // namespace bpp

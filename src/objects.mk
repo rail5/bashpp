@@ -25,7 +25,7 @@ $(HANDLERS_OBJDIR)/%.o: listener/handlers/%.cpp $(HEADERS)
 # Rule to compile all .cpp files in the lsp directory
 $(LSP_OBJDIR)/%.o: $(LSPDIR)/%.cpp $(LSP_GENERATED_FILES)
 	@mkdir -p $(LSP_OBJDIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
 
 $(LSP_GENERATOR_OBJDIR)/%.o: $(LSPDIR)/generator/%.cpp
 	@mkdir -p $(LSP_GENERATOR_OBJDIR)

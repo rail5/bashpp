@@ -27,9 +27,8 @@ include generatedcode.mk
 bpp: $(BPP_OBJS) $(ANTLR4_OBJS) $(LISTENER_OBJS) $(HANDLER_OBJS) $(EXTRA_OBJS) $(MAIN_OBJ) $(ANTLR4DIR)/BashppParser.cpp $(HEADERS)
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -o $@ $(BPP_OBJS) $(ANTLR4_OBJS) $(LISTENER_OBJS) $(HANDLER_OBJS) $(EXTRA_OBJS) $(MAIN_OBJ) $(ANTLR4_RUNTIME_LIBRARY)
 
-bpp-lsp: obj/bpp-lsp.o $(LSP_OBJS)
-	@echo $(LSP_OBJS)
-	g++ -O2 -s -std=gnu++17 -o $@ $^
+bpp-lsp: obj/bpp-lsp.o $(LSP_OBJS) $(ANTLR4_OBJS) $(BPP_OBJS) $(LISTENER_OBJS) $(HANDLER_OBJS) $(EXTRA_OBJS)
+	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -o $@ $^ $(ANTLR4_RUNTIME_LIBRARY)
 
 clean: clean-objects clean-antlr clean-lsp
 	@rm -rf .antlr

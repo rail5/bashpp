@@ -16,6 +16,7 @@
 #include <unistd.h>
 
 #include "ThreadPool.h"
+#include "ProgramPool.h"
 
 #include "static/Message.h"
 
@@ -34,12 +35,13 @@ void printValue(std::ostream& os, const std::variant<Ts...>& v) {
 // Bash++ Language Server
 class BashppServer {
 	private:
-		__pid_t pid = getpid();
+		pid_t pid = getpid();
 		// Resources
 		std::shared_ptr<std::istream> input_stream;
 		std::shared_ptr<std::ostream> output_stream;
 		std::optional<std::string> socket_path;
 		ThreadPool thread_pool = ThreadPool(std::thread::hardware_concurrency());
+		ProgramPool program_pool = ProgramPool(10); // Maximum 10 programs in the pool
 		std::ofstream log_file;
 
 		void _sendMessage(const std::string& message);

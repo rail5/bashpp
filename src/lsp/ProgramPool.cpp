@@ -30,20 +30,33 @@ void ProgramPool::set_suppress_warnings(bool suppress) {
 }
 
 void ProgramPool::_remove_oldest_program() {
+	_remove_program(0);
+}
+
+void ProgramPool::_remove_program(size_t index) {
 	std::lock_guard<std::recursive_mutex> lock(pool_mutex);
-	if (programs.empty()) {
-		return; // Nothing to remove
+	if (index >= programs.size()) {
+		return; // Invalid index
 	}
 
-	// Remove the oldest program (the first one in the vector)
-	programs.erase(programs.begin());
+	std::shared_ptr<bpp::bpp_program> program = programs[index];
+	if (program != nullptr) {
+		// Close all files associated with this program
+		for (const auto& file_path : program->get_source_files()) {
+			open_files.erase(file_path); // Remove the file from the open files map
+		}
+	}
+
+	// Remove the program at the specified index
+	programs.erase(programs.begin() + static_cast<std::vector<std::shared_ptr<bpp::bpp_program>>::difference_type>(index));
+
+	std::vector<std::string> keys_to_remove;
 
 	// Update the program indices
-	std::vector<std::string> keys_to_remove;
 	for (auto& entry : program_indices) {
-		if (entry.second > 0) {
+		if (entry.second > index) {
 			entry.second--; // Decrement indices of all programs after the removed one
-		} else {
+		} else if (entry.second == index) {
 			keys_to_remove.push_back(entry.first); // Mark for removal
 		}
 	}
@@ -111,7 +124,17 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::_parse_program(
 	}
 }
 
-std::shared_ptr<bpp::bpp_program> ProgramPool::get_program(const std::string& file_path) {
+std::shared_ptr<bpp::bpp_program> ProgramPool::get_program(const std::string& file_path, bool jump_queue) {
+	if (jump_queue) {
+		// Jump the queue -- skip getting a lock, and only return non-nullptr if the file's already been processed
+		auto it = program_indices.find(file_path);
+		if (it != program_indices.end()) {
+			return programs[it->second];
+		} else {
+			return nullptr;
+		}
+	}
+
 	std::lock_guard<std::recursive_mutex> lock(pool_mutex);
 
 	// Check if the program is already in the pool
@@ -136,6 +159,8 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::get_program(const std::string& fi
 	for (const auto& path : new_program->get_source_files()) {
 		program_indices[path] = index; // Map the file path to the program index
 	}
+
+	open_files[file_path] = true; // Mark the file as open
 	return new_program;
 }
 
@@ -150,6 +175,7 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::re_parse_program(const std::strin
 		size_t index = program_indices[file_path];
 		std::string main_source_file = programs[index]->get_main_source_file();
 		programs[index] = _parse_program(main_source_file);
+		open_files[file_path] = true; // Mark the file as open
 		return programs[index];
 	} else {
 		return get_program(file_path); // If it doesn't exist, create it
@@ -165,9 +191,48 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::re_parse_program(
 		size_t index = program_indices[file_path];
 		std::string main_source_file = programs[index]->get_main_source_file();
 		programs[index] = _parse_program(main_source_file, replacement_file_contents);
+		open_files[file_path] = true; // Mark the file as open
 		return programs[index];
 	} else {
 		return nullptr;
+	}
+}
+
+void ProgramPool::open_file(const std::string& file_path) {
+	std::lock_guard<std::recursive_mutex> lock(pool_mutex);
+	
+	auto it = program_indices.find(file_path);
+	if (it == program_indices.end()) {
+		// Invalid request to 'open file', ignore
+		return;
+	}
+
+	open_files[file_path] = true; // Mark the file as open
+}
+
+void ProgramPool::close_file(const std::string& file_path) {
+	std::lock_guard<std::recursive_mutex> lock(pool_mutex);
+	
+	auto it = open_files.find(file_path);
+	if (it != open_files.end()) {
+		open_files.erase(it); // Remove the file from the open files map
+
+		auto program_it = program_indices.find(file_path);
+		if (program_it != program_indices.end()) {
+			size_t index = program_it->second;
+			bool program_still_has_some_files_open = false;
+			for (const auto& source_file : programs[index]->get_source_files()) {
+				if (open_files.find(source_file) != open_files.end()) {
+					program_still_has_some_files_open = true;
+					break; // At least one file is still open, so we don't remove the program
+				}
+			}
+
+			if (!program_still_has_some_files_open) {
+				// If no files are open, remove the program from the pool, free some memory
+				_remove_program(index);
+			}
+		}
 	}
 }
 

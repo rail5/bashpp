@@ -23,7 +23,10 @@ class ProgramPool {
 
 		std::unordered_map<std::string, size_t> program_indices; // Maps file paths to program indices in the pool
 
+		std::unordered_map<std::string, bool> open_files; // Maps file paths to whether they are currently open
+
 		void _remove_oldest_program();
+		void _remove_program(size_t index);
 		std::shared_ptr<bpp::bpp_program> _parse_program(
 			const std::string& file_path, 
 			std::optional<std::pair<std::string, std::string>> replacement_file_contents = std::nullopt);
@@ -44,7 +47,7 @@ class ProgramPool {
 		 * If the program does not exist, it creates a new program, adds it to the pool,
 		 * and returns the new program.
 		 */
-		std::shared_ptr<bpp::bpp_program> get_program(const std::string& file_path);
+		std::shared_ptr<bpp::bpp_program> get_program(const std::string& file_path, bool jump_queue = false);
 
 		bool has_program(const std::string& file_path);
 
@@ -53,6 +56,9 @@ class ProgramPool {
 		std::shared_ptr<bpp::bpp_program> re_parse_program(
 			const std::string& file_path, 
 			std::pair<std::string, std::string> replacement_file_contents);
+		
+		void open_file(const std::string& file_path);
+		void close_file(const std::string& file_path);
 
 		void clean();
 };

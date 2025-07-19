@@ -402,6 +402,10 @@ void TypeRegistry::generate_serialization(std::ofstream& file,
 				file << "			obj." << prop_name << " = std::nullopt;\n";
 				file << "		}\n";
 			} else {
+				// Verify the property is present, and throw an exception if not
+				file << "		if (!j.contains(\"" << prop_name << "\")) {\n";
+				file << "			throw std::runtime_error(\"Property '" << prop_name << "' is required but not present.\");\n";
+				file << "		}\n";
 				file << "		j[\"" << prop_name << "\"].get_to(obj." << prop_name << ");\n";
 			}
 		}

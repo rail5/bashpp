@@ -52,6 +52,14 @@ void BashppListener::enterParameter(BashppParser::ParameterContext *ctx) {
 	parameter->set_type(type);
 
 	if (!current_method->add_parameter(parameter)) {
+		if (current_method->get_object(name->getText()) != nullptr) {
+			throw_syntax_error(name, "Parameter name conflicts with existing object: " + name->getText());
+		}
+		
+		if (current_method->get_class(name->getText()) != nullptr) {
+			throw_syntax_error(name, "Parameter name conflicts with existing class: " + name->getText());
+		}
+		// If we reach here, the parameter name is already in use
 		throw_syntax_error(name, "Duplicate parameter: " + name->getText());
 	}
 }

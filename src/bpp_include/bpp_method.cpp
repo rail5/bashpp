@@ -20,7 +20,14 @@ bpp_method::bpp_method(const std::string& name) : name(name) {}
  */
 bool bpp_method::add_object_as_parameter(std::shared_ptr<bpp_object> object) {
 	std::string name = object->get_name();
+	
+	// Verify the object's name isn't already in use by another object
 	if (objects.find(name) != objects.end() || local_objects.find(name) != local_objects.end()) {
+		return false;
+	}
+
+	// Verify the object's name doesn't conflict with a class name
+	if (classes.find(name) != classes.end()) {
 		return false;
 	}
 

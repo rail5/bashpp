@@ -8,6 +8,8 @@
 #include <iostream>
 #include <thread>
 #include <mutex>
+#include <chrono>
+#include <atomic>
 #include <memory>
 #include <optional>
 #include <unordered_map>
@@ -44,6 +46,10 @@ class BashppServer {
 		ProgramPool program_pool = ProgramPool(10); // Maximum 10 programs in the pool
 		std::ofstream log_file;
 
+		// Debouncing didChange notifications
+		std::unordered_map<std::string, std::shared_ptr<std::atomic<uint64_t>>> debounce_timestamps;
+		std::mutex debounce_mutex;
+
 		void _sendMessage(const std::string& message);
 
 		static std::mutex output_mutex; // Mutex for thread-safe output
@@ -62,7 +68,7 @@ class BashppServer {
 
 		const std::unordered_map<std::string, std::function<void(const GenericNotificationMessage& )>> notification_handlers = {
 			{"textDocument/didOpen", std::bind(&BashppServer::handleDidOpen, this, std::placeholders::_1)},
-			{"textDocument/didChange", std::bind(&BashppServer::handleDidChange, this, std::placeholders::_1)}
+			{"workspace/didChangeWatchedFiles", std::bind(&BashppServer::handleDidChange, this, std::placeholders::_1)}
 		};
 
 		static const GenericResponseMessage invalidRequestHandler(const GenericRequestMessage& request);

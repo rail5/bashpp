@@ -19,7 +19,7 @@
 #include "generated/DocumentSymbolRequest.h"
 #include "generated/RenameRequest.h"
 #include "generated/DidOpenTextDocumentNotification.h"
-#include "generated/DidChangeTextDocumentNotification.h"
+#include "generated/DidChangeWatchedFilesNotification.h"
 #include "generated/ShowMessageNotification.h"
 
 std::mutex BashppServer::output_mutex;
@@ -161,7 +161,6 @@ void BashppServer::processRequest(const GenericRequestMessage& request) {
 		err.data = e.what();
 		response.error = err;
 	}
-
 	sendResponse(response);
 }
 
@@ -418,19 +417,51 @@ void BashppServer::handleDidOpen(const GenericNotificationMessage& request) {
 }
 
 void BashppServer::handleDidChange(const GenericNotificationMessage& request) {
-	DidChangeTextDocumentNotification did_change_notification = request.toSpecific<DidChangeTextDocumentParams>();
-	log("Received DidChange notification for URI: ", did_change_notification.params.textDocument.uri);
-	// Ensure the URI starts with "file://"
-	std::string uri = did_change_notification.params.textDocument.uri;
-	if (uri.find("file://") != 0) {
-		log("Ignoring request to re-parse non-local file: ", uri);
+	DidChangeWatchedFilesNotification did_change_notification = request.toSpecific<DidChangeWatchedFilesParams>();
+	std::vector<FileEvent> changes = did_change_notification.params.changes;
+	if (changes.empty()) {
+		log("Received empty DidChange notification, ignoring.");
 		return;
-	} else {
-		// Strip the "file://" prefix
-		uri = uri.substr(7);
 	}
+	log("Received DidChange notification for ", changes.size(), " files.");
+	
+	for (const auto& change : changes) {
+		log("File change detected: ", change.uri);
+		// Ensure the URI starts with "file://"
+		std::string uri = change.uri;
+		if (uri.find("file://") != 0) {
+			log("Ignoring request to re-parse non-local file: ", uri);
+			return;
+		} else {
+			// Strip the "file://" prefix
+			uri = uri.substr(7);
+		}
 
-	program_pool.re_parse_program(uri);
-	log("Re-parsed program: ", uri);
-	return;
+		// Debounce didChange notifications
+		uint64_t now = static_cast<uint64_t>(std::chrono::steady_clock::now().time_since_epoch().count()); // Record current timestamp
+		{
+			std::lock_guard<std::mutex> lock(debounce_mutex);
+			if (!debounce_timestamps.count(uri)) {
+				debounce_timestamps[uri] = std::make_shared<std::atomic<uint64_t>>(0);
+			}
+			debounce_timestamps[uri]->store(now); // Store the previously-recorded timestamp in the map
+		}
+
+		std::thread([this, uri, now]() {
+			std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // 1 second debounce
+			bool should_parse = false;
+			{
+				std::lock_guard<std::mutex> lock(debounce_mutex);
+				if (debounce_timestamps[uri]->load() == now) {
+					should_parse = true; // Only re-parse if this thread's "now" is the last one that was stored in the map
+					// Earlier threads had their timestamps overwritten, and will not continue
+				}
+			}
+
+			if (should_parse) {
+				program_pool.re_parse_program(uri);
+				log("Re-parsed program:", uri);
+			}
+		}).detach();
+	}
 }

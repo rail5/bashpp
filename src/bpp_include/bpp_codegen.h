@@ -104,7 +104,7 @@ struct entity_reference {
 
 entity_reference resolve_reference_impl(
 	const std::string& file,
-	std::shared_ptr<bpp::bpp_code_entity> context,
+	std::shared_ptr<bpp::bpp_entity> context,
 	std::deque<antlr4::tree::TerminalNode*> identifiers,
 	std::deque<std::string> identifier_texts,
 	std::shared_ptr<bpp::bpp_program> program
@@ -112,7 +112,7 @@ entity_reference resolve_reference_impl(
 
 inline entity_reference resolve_reference(
 	const std::string& file,
-	std::shared_ptr<bpp::bpp_code_entity> context,
+	std::shared_ptr<bpp::bpp_entity> context,
 	std::deque<std::string> identifiers,
 	std::shared_ptr<bpp::bpp_program> program
 ) {
@@ -122,7 +122,7 @@ inline entity_reference resolve_reference(
 
 inline entity_reference resolve_reference(
 	const std::string& file,
-	std::shared_ptr<bpp::bpp_code_entity> context,
+	std::shared_ptr<bpp::bpp_entity> context,
 	std::deque<antlr4::tree::TerminalNode*> identifiers,
 	std::shared_ptr<bpp::bpp_program> program
 ) {
@@ -133,6 +133,13 @@ inline entity_reference resolve_reference(
 	}
 	return resolve_reference_impl(file, context, identifiers, identifier_texts, program);
 }
+
+entity_reference resolve_reference_at(
+	const std::string& file,
+	uint32_t line,
+	uint32_t column,
+	std::shared_ptr<bpp::bpp_program> program
+);
 
 } // namespace bpp
 

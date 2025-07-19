@@ -275,7 +275,7 @@ code_segment inline_new(
  */
 entity_reference resolve_reference_impl(
 	const std::string& file,
-	std::shared_ptr<bpp::bpp_code_entity> context,
+	std::shared_ptr<bpp::bpp_entity> context,
 	std::deque<antlr4::tree::TerminalNode*> nodes,
 	std::deque<std::string> identifiers,
 	std::shared_ptr<bpp::bpp_program> program
@@ -331,8 +331,8 @@ entity_reference resolve_reference_impl(
 		if (!nodes.empty()) {
 			object->add_reference(
 				file,
-				nodes.front()->getSymbol()->getLine(),
-				nodes.front()->getSymbol()->getCharPositionInLine() + 1
+				nodes.front()->getSymbol()->getLine() - 1,
+				nodes.front()->getSymbol()->getCharPositionInLine()
 			);
 		}
 	}
@@ -443,8 +443,8 @@ entity_reference resolve_reference_impl(
 			if (!nodes.empty()) {
 				method->add_reference(
 					file,
-					nodes.front()->getSymbol()->getLine(),
-					nodes.front()->getSymbol()->getCharPositionInLine() + 1
+					nodes.front()->getSymbol()->getLine() - 1,
+					nodes.front()->getSymbol()->getCharPositionInLine()
 				);
 			}
 		} else if (datamember != nullptr) {
@@ -468,8 +468,8 @@ entity_reference resolve_reference_impl(
 			if (!nodes.empty()) {
 				datamember->add_reference(
 					file,
-					nodes.front()->getSymbol()->getLine(),
-					nodes.front()->getSymbol()->getCharPositionInLine() + 1
+					nodes.front()->getSymbol()->getLine() - 1,
+					nodes.front()->getSymbol()->getCharPositionInLine()
 				);
 			}
 		} else {
@@ -491,6 +491,103 @@ entity_reference resolve_reference_impl(
 	// And determining precisely which entity is referred to
 	// We can now return
 	return result;
+}
+
+entity_reference resolve_reference_at(
+	const std::string& file,
+	uint32_t line,
+	uint32_t column,
+	std::shared_ptr<bpp::bpp_program> program
+) {
+	entity_reference result;
+	// Get the active containing entity at the given line and column
+	std::shared_ptr<bpp::bpp_entity> context = program->get_active_entity(file, line, column);
+	if (context == nullptr) {
+		context = program;
+	}
+
+	// Extract the identifiers at that line and column
+	// TODO(@rail5): This business about rewinding to the last '@' character and finding the nearest whitespace is pretty hacky
+	std::ifstream source_file(file);
+	if (!source_file.is_open()) {
+		result.error = entity_reference::reference_error{
+			"Could not open file: " + file,
+			nullptr
+		};
+		return result;
+	}
+
+	std::string line_content;
+	uint32_t current_line = 0;
+	while (std::getline(source_file, line_content) && current_line < line) {
+		current_line++;
+	}
+	source_file.close();
+
+	if (current_line != line) {
+		result.error = entity_reference::reference_error{
+			"Line " + std::to_string(line) + " does not exist in file " + file,
+			nullptr
+		};
+		return result;
+	}
+
+	std::deque<std::string> identifiers;
+	std::string identifier;
+
+	// If the given column doesn't point to an '@' character,
+	// Rewind to the last '@' character
+	while (line_content[column] != '@' && column > 0) {
+		column--;
+	}
+
+	if (line_content[column] != '@') {
+		result.error = entity_reference::reference_error{
+			"No reference found to resolve",
+			nullptr
+		};
+		return result;
+	}
+
+	// Pinpoint the nearest whitespace after the '@' character
+	size_t start = column + 1;
+	while (start < line_content.size() && !isspace(line_content[start])) {
+		start++;
+	}
+
+	line_content = line_content.substr(column + 1, start - column - 1);
+
+	// Now, we can extract the identifiers from the line content
+	antlr4::ANTLRInputStream input_stream(line_content);
+	BashppLexer lexer(&input_stream);
+	antlr4::CommonTokenStream tokens(&lexer);
+	tokens.fill();
+
+	// Iterate over any IDENTIFIER or IDENTIFIER_LVALUE tokens
+	for (const auto& token : tokens.getTokens()) {
+		switch (token->getType()) {
+			case BashppLexer::IDENTIFIER:
+			case BashppLexer::IDENTIFIER_LVALUE:
+			case BashppLexer::KEYWORD_THIS:
+			case BashppLexer::KEYWORD_SUPER: 
+			case BashppLexer::KEYWORD_THIS_LVALUE:
+			case BashppLexer::KEYWORD_SUPER_LVALUE:
+				identifiers.push_back(token->getText());
+				break;
+			default:
+				break; // Ignore other tokens
+		}
+	}
+
+	if (identifiers.empty()) {
+		result.error = entity_reference::reference_error{
+			"No identifiers found at line " + std::to_string(line) + ", column " + std::to_string(column) + " in file " + file,
+			nullptr
+		};
+		return result;
+	}
+
+	return resolve_reference(file, context, identifiers, program);
 }
 
 } // namespace bpp

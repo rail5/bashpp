@@ -22,6 +22,8 @@
 
 #include "static/Message.h"
 
+#include "generated/CompletionList.h"
+
 using json = nlohmann::json;
 
 template<typename T>
@@ -45,6 +47,8 @@ class BashppServer {
 		ThreadPool thread_pool = ThreadPool(std::thread::hardware_concurrency());
 		ProgramPool program_pool = ProgramPool(10); // Maximum 10 programs in the pool
 		std::ofstream log_file;
+		std::unordered_map<std::string, std::string> unsaved_changes; // Maps file paths to their unsaved contents
+		std::mutex unsaved_changes_mutex;
 
 		// Debouncing didChange notifications
 		std::unordered_map<std::string, std::shared_ptr<std::atomic<uint64_t>>> debounce_timestamps;
@@ -69,7 +73,8 @@ class BashppServer {
 		const std::unordered_map<std::string, std::function<void(const GenericNotificationMessage& )>> notification_handlers = {
 			{"textDocument/didOpen", std::bind(&BashppServer::handleDidOpen, this, std::placeholders::_1)},
 			{"textDocument/didChange", std::bind(&BashppServer::handleDidChange, this, std::placeholders::_1)},
-			{"workspace/didChangeWatchedFiles", std::bind(&BashppServer::handleDidChangeWatchedFiles, this, std::placeholders::_1)}
+			{"workspace/didChangeWatchedFiles", std::bind(&BashppServer::handleDidChangeWatchedFiles, this, std::placeholders::_1)},
+			{"textDocument/didClose", std::bind(&BashppServer::handleDidClose, this, std::placeholders::_1)}
 		};
 
 		static const GenericResponseMessage invalidRequestHandler(const GenericRequestMessage& request);
@@ -77,6 +82,8 @@ class BashppServer {
 
 		void processRequest(const GenericRequestMessage& request);
 		void processNotification(const GenericNotificationMessage& notification);
+
+		CompletionList default_completion_list;
 	public:
 		BashppServer();
 		~BashppServer();
@@ -105,6 +112,7 @@ class BashppServer {
 		void handleDidOpen(const GenericNotificationMessage& request);
 		void handleDidChange(const GenericNotificationMessage& request);
 		void handleDidChangeWatchedFiles(const GenericNotificationMessage& request);
+		void handleDidClose(const GenericNotificationMessage& request);
 
 		void sendResponse(const GenericResponseMessage& response);
 		void sendNotification(const GenericNotificationMessage& notification);

@@ -21,6 +21,7 @@
 #include "generated/DidOpenTextDocumentNotification.h"
 #include "generated/DidChangeTextDocumentNotification.h"
 #include "generated/DidChangeWatchedFilesNotification.h"
+#include "generated/DidCloseTextDocumentNotification.h"
 #include "generated/ShowMessageNotification.h"
 #include "generated/PublishDiagnosticsNotification.h"
 
@@ -30,6 +31,106 @@ std::mutex BashppServer::log_mutex;
 BashppServer::BashppServer() {
 	log("Bash++ Language Server initialized.");
 	log("Using ", thread_pool.getThreadCount(), " threads for processing requests.");
+
+	// Populate the default completion list
+	default_completion_list.isIncomplete = false;
+
+	CompletionItem i_class;
+	i_class.label = "class";
+	i_class.kind = CompletionItemKind::Keyword;
+	i_class.detail = "Define a new class";
+	default_completion_list.items.push_back(i_class);
+
+	CompletionItem i_public;
+	i_public.label = "public";
+	i_public.kind = CompletionItemKind::Keyword;
+	i_public.detail = "Public access specifier";
+	default_completion_list.items.push_back(i_public);
+
+	CompletionItem i_private;
+	i_private.label = "private";
+	i_private.kind = CompletionItemKind::Keyword;
+	i_private.detail = "Private access specifier";
+	default_completion_list.items.push_back(i_private);
+
+	CompletionItem i_protected;
+	i_protected.label = "protected";
+	i_protected.kind = CompletionItemKind::Keyword;
+	i_protected.detail = "Protected access specifier";
+	default_completion_list.items.push_back(i_protected);
+
+	CompletionItem i_method;
+	i_method.label = "method";
+	i_method.kind = CompletionItemKind::Keyword;
+	i_method.detail = "Define a new method in a class";
+	default_completion_list.items.push_back(i_method);
+
+	CompletionItem i_constructor;
+	i_constructor.label = "constructor";
+	i_constructor.kind = CompletionItemKind::Keyword;
+	i_constructor.detail = "Define a constructor for a class";
+	default_completion_list.items.push_back(i_constructor);
+
+	CompletionItem i_destructor;
+	i_destructor.label = "destructor";
+	i_destructor.kind = CompletionItemKind::Keyword;
+	i_destructor.detail = "Define a destructor for a class";
+	default_completion_list.items.push_back(i_destructor);
+
+	CompletionItem i_virtual;
+	i_virtual.label = "virtual";
+	i_virtual.kind = CompletionItemKind::Keyword;
+	i_virtual.detail = "Declare a method to be virtual";
+	default_completion_list.items.push_back(i_virtual);
+
+	CompletionItem i_this;
+	i_this.label = "this";
+	i_this.kind = CompletionItemKind::Keyword;
+	i_this.detail = "Reference to the current object";
+	default_completion_list.items.push_back(i_this);
+
+	CompletionItem i_super;
+	i_super.label = "super";
+	i_super.kind = CompletionItemKind::Keyword;
+	i_super.detail = "Reference to the current object's parent class";
+	default_completion_list.items.push_back(i_super);
+
+	CompletionItem i_include;
+	i_include.label = "include";
+	i_include.kind = CompletionItemKind::Keyword;
+	i_include.detail = "Include a file";
+	default_completion_list.items.push_back(i_include);
+	
+	CompletionItem i_include_once;
+	i_include_once.label = "include_once";
+	i_include_once.kind = CompletionItemKind::Keyword;
+	i_include_once.detail = "Include a file only once";
+	default_completion_list.items.push_back(i_include_once);
+
+	CompletionItem i_dynamic_cast;
+	i_dynamic_cast.label = "dynamic_cast";
+	i_dynamic_cast.kind = CompletionItemKind::Keyword;
+	i_dynamic_cast.detail = "Perform a dynamic cast";
+	default_completion_list.items.push_back(i_dynamic_cast);
+
+	CompletionItem i_new;
+	i_new.label = "new";
+	i_new.kind = CompletionItemKind::Keyword;
+	i_new.detail = "Create a new object";
+	default_completion_list.items.push_back(i_new);
+
+	CompletionItem i_delete;
+	i_delete.label = "delete";
+	i_delete.kind = CompletionItemKind::Keyword;
+	i_delete.detail = "Delete an object";
+	default_completion_list.items.push_back(i_delete);
+
+	CompletionItem i_nullptr;
+	i_nullptr.label = "nullptr";
+	i_nullptr.kind = CompletionItemKind::Keyword;
+	i_nullptr.detail = "Null pointer constant";
+	default_completion_list.items.push_back(i_nullptr);
+
 }
 BashppServer::~BashppServer() {}
 
@@ -296,25 +397,198 @@ GenericResponseMessage BashppServer::handleGotoDefinition(const GenericRequestMe
 }
 
 GenericResponseMessage BashppServer::handleCompletion(const GenericRequestMessage& request) {
-	// Placeholder for actual implementation
 
 	CompletionRequestResponse response;
 	response.id = request.id;
 	CompletionRequest completion_request = request.toSpecific<CompletionParams>();
 
-	CompletionItem item;
-	item.label = "example";
-	item.kind = CompletionItemKind::Text;
-	item.detail = "Example completion item";
-	item.documentation = "This is an example completion item.";
+	std::string uri = completion_request.params.textDocument.uri;
+	// Verify the URI starts with "file://"
+	if (uri.find("file://") != 0) {
+		log("Ignoring request to provide completions for non-local file: ", uri);
+		response.result = nullptr;
+		return response;
+	} else {
+		// Strip the "file://" prefix
+		uri = uri.substr(7);
+	}
+	
+	// Which character triggered the request?
+	char trigger_character = '@';
+	if (completion_request.params.context.has_value() && completion_request.params.context->triggerCharacter.has_value()) {
+		trigger_character = completion_request.params.context->triggerCharacter.value()[0];
+	}
 
 	CompletionList completion_list;
-	completion_list.isIncomplete = false;
+	completion_list.isIncomplete = false; // Assume completions are complete for now
+	
+	// If it was '@', suggest class names, object names, and standard operators like include or dynamic_cast
+	// If it was '.', suggest method names and data members of the current object
+	// Also, '.' requires for us to wait until previous unsaved changes have been processed (done by default)
+	switch (trigger_character) {
+		case '@':
+		default:
+		{
+			log("Received Completion request for URI: ", uri, " with trigger character: '@'");
 
-	completion_list.items.push_back(item);
+			completion_list = default_completion_list; // Start with the default completion list
+
+			std::shared_ptr<bpp::bpp_program> program = program_pool.get_program(uri, true); // Jump the queue and get the program immediately
+			if (program == nullptr) {
+				log("Program not found for URI: ", uri);
+				response.result = nullptr;
+				return response;
+			}
+
+			Position position = completion_request.params.position;
+			
+			// Which entity is active at the given position?
+			std::shared_ptr<bpp::bpp_entity> active_entity = program->get_active_entity(uri, position.line, position.character);
+			if (active_entity == nullptr) {
+				log("BUG: No active entity found at position: (", position.line, ", ", position.character, ") in URI: ", uri, " - returning default completions.");
+			} else {
+				auto objects = active_entity->get_objects();
+				auto classes = active_entity->get_classes();
+
+				for (const auto& obj : objects) {
+					CompletionItem item;
+					item.label = obj.first;
+					item.kind = CompletionItemKind::Variable;
+					item.detail = "@" + obj.second->get_class()->get_name() + " " + obj.first; // As in: @ClassName objectName
+					completion_list.items.push_back(item);
+				}
+
+				for (const auto& cls : classes) {
+					CompletionItem item;
+					item.label = cls.first;
+					item.kind = CompletionItemKind::Class;
+					item.detail = "@class " + cls.second->get_name(); // As in: @class ClassName
+					completion_list.items.push_back(item);
+				}
+			}
+		}
+		break;
+		case '.':
+		{
+			log("Received Completion request for URI: ", uri, " with trigger character: '.'");
+			std::lock_guard<std::mutex> lock(unsaved_changes_mutex);
+
+			std::shared_ptr<bpp::bpp_program> program = program_pool.get_program(uri); // Do not jump the queue, wait for previous unsaved changes to be processed
+			if (program == nullptr) {
+				log("Program not found for URI: ", uri);
+				response.result = nullptr;
+				return response;
+			}
+
+			Position position = completion_request.params.position;
+
+			// Resolve the referenced entity before the dot
+			bpp::entity_reference referenced_entity;
+
+			if (unsaved_changes.find(uri) != unsaved_changes.end()) {
+				referenced_entity = bpp::resolve_reference_at(uri, position.line, position.character, program, unsaved_changes[uri]);
+			} else {
+				referenced_entity = bpp::resolve_reference_at(uri, position.line, position.character, program);
+			}
+
+			if (referenced_entity.entity == nullptr) {
+				log("No entity found at position: (", position.line, ", ", position.character, ") in URI: ", uri, " - returning default completions.");
+				response.result = nullptr;
+				return response;
+			}
+
+			// Ensure that the referenced entity is a non-primitive object
+			std::shared_ptr<bpp::bpp_object> obj = std::dynamic_pointer_cast<bpp::bpp_object>(referenced_entity.entity);
+			if (obj == nullptr || obj->get_class() == program->get_primitive_class()) {
+				log("Referenced entity is not a valid object or is a primitive type at position: (", position.line, ", ", position.character, ") in URI: ", uri, " - returning default completions.");
+				response.result = nullptr;
+				return response;
+			}
+
+			// Otherwise, let's populate the completion list with methods and data members of the object's class
+			for (const auto& method : obj->get_class()->get_methods()) {
+				if (method->get_name().find("__") != std::string::npos) {
+					continue; // Skip system methods
+				}
+
+				CompletionItem item;
+				item.label = method->get_name();
+				item.kind = CompletionItemKind::Method;
+
+				std::string detail = "";
+
+				if (method->is_virtual()) {
+					detail += "@virtual ";
+				}
+				
+				switch (method->get_scope()) {
+					case bpp::bpp_scope::SCOPE_PUBLIC:
+						detail += "@public ";
+						break;
+					case bpp::bpp_scope::SCOPE_PRIVATE:
+						detail += "@private ";
+						break;
+					case bpp::bpp_scope::SCOPE_PROTECTED:
+						detail += "@protected ";
+						break;
+					default:
+						detail += "@private ";
+						break;
+				}
+
+				detail += "@method " + method->get_name();
+
+				for (const auto& param : method->get_parameters()) {
+					detail += " [";
+					if (param->get_type() == program->get_primitive_class()) {
+						detail += "$" + param->get_name();
+					} else {
+						detail += "@" + param->get_type()->get_name() + "* " + param->get_name();
+					}
+					detail += "]";
+				}
+
+				item.detail = detail;
+				// Full example: @virtual @public @method methodName [@ClassName* param1] [$primitive_param2]
+
+				completion_list.items.push_back(item);
+			}
+
+			for (const auto& data_member : obj->get_class()->get_datamembers()) {
+				CompletionItem item;
+				item.label = data_member->get_name();
+				item.kind = CompletionItemKind::Field;
+
+				std::string detail = "@" + obj->get_name() + "." + data_member->get_name();
+				detail += " (";
+
+				if (data_member->get_class() == program->get_primitive_class()) {
+					detail += "primitive";
+					if (data_member->is_array()) {
+						detail += " array";
+					}
+				} else {
+					detail += "@" + data_member->get_class()->get_name();
+
+					if (data_member->is_pointer()) {
+						detail += "*";
+					}
+				}
+				detail += ")";
+
+				item.detail = detail;
+				// Full example: @objectName.dataMemberName (primitive)
+				// Or: @objectName.dataMemberName (primitive array)
+				// Or: @objectName.dataMemberName (@ClassName)
+				// Or: @objectName.dataMemberName (@ClassName*)
+
+				completion_list.items.push_back(item);
+			}
+		}
+		break;
+	}
 
 	response.result = completion_list;
-
 	return response;
 }
 
@@ -415,6 +689,7 @@ void BashppServer::handleDidOpen(const GenericNotificationMessage& request) {
 		return;
 	}
 	publishDiagnostics(program);
+	program_pool.open_file(uri); // Mark the file as open
 	return;
 }
 
@@ -485,6 +760,8 @@ void BashppServer::handleDidChange(const GenericNotificationMessage& request) {
 			}
 			
 			if (!unsaved_content.empty()) {
+				std::lock_guard<std::mutex> changes_lock(unsaved_changes_mutex);
+				unsaved_changes[uri] = unsaved_content; // Store the unsaved content
 				std::shared_ptr<bpp::bpp_program> program = program_pool.re_parse_program(uri, {uri, unsaved_content});
 				if (program != nullptr) {
 					publishDiagnostics(program);
@@ -517,6 +794,15 @@ void BashppServer::handleDidChangeWatchedFiles(const GenericNotificationMessage&
 			uri = uri.substr(7);
 		}
 
+		{
+			std::lock_guard<std::mutex> lock(unsaved_changes_mutex);
+			auto it = unsaved_changes.find(uri);
+			if (it != unsaved_changes.end()) {
+				log("Forgetting unsaved changes for URI: ", uri);
+				unsaved_changes.erase(it); // Remove unsaved changes for this URI
+			}
+		}
+
 		log("Re-parsing program for URI: ", uri);
 		std::shared_ptr<bpp::bpp_program> program = program_pool.re_parse_program(uri);
 		if (program != nullptr) {
@@ -525,6 +811,34 @@ void BashppServer::handleDidChangeWatchedFiles(const GenericNotificationMessage&
 			log("Failed to re-parse program: ", uri);
 		}
 	}
+}
+
+void BashppServer::handleDidClose(const GenericNotificationMessage& request) {
+	DidCloseTextDocumentNotification did_close_notification = request.toSpecific<DidCloseTextDocumentParams>();
+	std::string uri = did_close_notification.params.textDocument.uri;
+
+	log("Received DidClose notification for URI: ", uri);
+
+	// Ensure the URI starts with "file://"
+	if (uri.find("file://") != 0) {
+		log("Ignoring request to close non-local file: ", uri);
+		return;
+	} else {
+		// Strip the "file://" prefix
+		uri = uri.substr(7);
+	}
+
+	// If we've stored unsaved changes for this URI, we can remove them
+	{
+		std::lock_guard<std::mutex> lock(unsaved_changes_mutex);
+		auto it = unsaved_changes.find(uri);
+		if (it != unsaved_changes.end()) {
+			log("Forgetting unsaved changes for URI: ", uri);
+			unsaved_changes.erase(it);
+		}
+	}
+
+	program_pool.close_file(uri); // Mark the file as closed
 }
 
 void BashppServer::publishDiagnostics(std::shared_ptr<bpp::bpp_program> program) {

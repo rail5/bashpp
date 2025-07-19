@@ -14,7 +14,15 @@
 
 #include "syntax_error.h"
 
-void print_syntax_error_or_warning(std::string source_file, int line, int column, const std::string& text, const std::string& msg, std::stack<std::string> include_chain, bool is_warning) {
+void print_syntax_error_or_warning(
+	std::string source_file,
+	int line, int column,
+	const std::string& text,
+	const std::string& msg,
+	std::stack<std::string> include_chain,
+	std::shared_ptr<bpp::bpp_program> program,
+	bool is_warning
+) {
 	bool is_tty = isatty(fileno(stderr));
 	std::string color_red = is_tty ? "\033[0;31m" : "";
 	std::string color_purple = is_tty ? "\033[1;35m" : "";
@@ -111,5 +119,18 @@ void print_syntax_error_or_warning(std::string source_file, int line, int column
 		std::cerr << secondline_padding << color_red << "^" << color_reset << std::endl;
 
 		file.close();
+	}
+
+	// Add to the program's diagnostics
+	if (!position_unknown && program != nullptr) {
+		program->add_diagnostic(
+			source_file,
+			is_warning ? bpp::diagnostic_type::DIAGNOSTIC_WARNING : bpp::diagnostic_type::DIAGNOSTIC_ERROR,
+			msg,
+			static_cast<uint32_t>(line) - 1, // 0-indexed. Antlr4 uses 1-indexed line numbers
+			static_cast<uint32_t>(column),
+			static_cast<uint32_t>(line) - 1,
+			static_cast<uint32_t>(column + text.length())
+		);
 	}
 }

@@ -262,4 +262,36 @@ void bpp_program::set_main_source_file(const std::string& file) {
 	main_source_file = file;
 }
 
+void bpp_program::add_diagnostic(
+	const std::string& file,
+	diagnostic_type type,
+	const std::string& message,
+	uint32_t start_line, uint32_t start_column,
+	uint32_t end_line, uint32_t end_column
+) {
+	bpp::diagnostic diag;
+	diag.type = type;
+	diag.message = message;
+	diag.start_line = start_line;
+	diag.start_column = start_column;
+	diag.end_line = end_line;
+	diag.end_column = end_column;
+	diagnostics[file].push_back(diag);
+}
+
+std::vector<bpp::diagnostic> bpp_program::get_diagnostics(const std::string& file) const {
+	auto it = diagnostics.find(file);
+	if (it != diagnostics.end()) {
+		return it->second;
+	}
+	return {}; // Return an empty vector if no diagnostics are found for the file
+}
+
+void bpp_program::clear_diagnostics(const std::string& file) {
+	auto it = diagnostics.find(file);
+	if (it != diagnostics.end()) {
+		diagnostics.erase(it);
+	}
+}
+
 } // namespace bpp

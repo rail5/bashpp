@@ -45,7 +45,7 @@ class ProgramPool {
 
 		bool has_program(const std::string& file_path);
 
-		void re_parse_program(const std::string& file_path);
+		std::shared_ptr<bpp::bpp_program> re_parse_program(const std::string& file_path);
 
 		void clean();
 };

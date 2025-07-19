@@ -8,6 +8,8 @@
 
 #include <string>
 #include <stack>
+#include <memory>
+#include "bpp_include/bpp.h"
 
 /**
  * @brief Print a syntax error or warning message to stderr
@@ -26,6 +28,7 @@ void print_syntax_error_or_warning(
 	const std::string& text,
 	const std::string& msg,
 	std::stack<std::string> include_chain,
+	std::shared_ptr<bpp::bpp_program> program,
 	bool is_warning = false);
 
 #endif // SRC_SYNTAX_ERROR_H_

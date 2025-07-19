@@ -130,14 +130,15 @@ bool ProgramPool::has_program(const std::string& file_path) {
 	return program_indices.find(file_path) != program_indices.end();
 }
 
-void ProgramPool::re_parse_program(const std::string& file_path) {
+std::shared_ptr<bpp::bpp_program> ProgramPool::re_parse_program(const std::string& file_path) {
 	std::lock_guard<std::recursive_mutex> lock(pool_mutex);
 	if (has_program(file_path)) {
 		size_t index = program_indices[file_path];
 		std::string main_source_file = programs[index]->get_main_source_file();
 		programs[index] = _parse_program(main_source_file);
+		return programs[index];
 	} else {
-		get_program(file_path); // If it doesn't exist, create it
+		return get_program(file_path); // If it doesn't exist, create it
 	}
 }
 

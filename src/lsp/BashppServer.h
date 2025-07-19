@@ -107,6 +107,8 @@ class BashppServer {
 		void sendResponse(const GenericResponseMessage& response);
 		void sendNotification(const GenericNotificationMessage& notification);
 
+		void publishDiagnostics(std::shared_ptr<bpp::bpp_program> program);
+
 		template <typename... Args>
 		void log(Args&&... args) {
 			if (!log_file.is_open()) {

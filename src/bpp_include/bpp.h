@@ -32,6 +32,22 @@ enum reference_type {
 	ref_object
 };
 
+enum diagnostic_type {
+	DIAGNOSTIC_ERROR,
+	DIAGNOSTIC_WARNING,
+	DIAGNOSTIC_INFO,
+	DIAGNOSTIC_HINT
+};
+
+struct diagnostic {
+	diagnostic_type type;
+	std::string message;
+	uint32_t start_line;
+	uint32_t start_column;
+	uint32_t end_line;
+	uint32_t end_column;
+};
+
 // Forward declarations
 
 class bpp_entity;
@@ -447,6 +463,10 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 		std::unordered_map<std::string, EntityMap> entity_maps;
 		// s.t. requesting entity_maps["/path/to/file1.bpp"] returns an EntityMap
 		// which outlines for us which container entities are active at each point in the file
+
+		// Source file -> Diagnostics
+		std::unordered_map<std::string, std::vector<bpp::diagnostic>> diagnostics;
+		// Each 'diagnostic' contains a type (error, warning, etc), message, and position in the source file
 	public:
 		bpp_program();
 
@@ -488,6 +508,17 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 		std::vector<std::string> get_source_files() const;
 		std::string get_main_source_file() const;
 		void set_main_source_file(const std::string& file);
+
+		void add_diagnostic(
+			const std::string& file,
+			diagnostic_type type,
+			const std::string& message,
+			uint32_t start_line, uint32_t start_column,
+			uint32_t end_line, uint32_t end_column
+		);
+
+		std::vector<bpp::diagnostic> get_diagnostics(const std::string& file) const;
+		void clear_diagnostics(const std::string& file);
 };
 
 /**

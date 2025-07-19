@@ -21,6 +21,7 @@
 #include "generated/DidOpenTextDocumentNotification.h"
 #include "generated/DidChangeWatchedFilesNotification.h"
 #include "generated/ShowMessageNotification.h"
+#include "generated/PublishDiagnosticsNotification.h"
 
 std::mutex BashppServer::output_mutex;
 std::mutex BashppServer::log_mutex;
@@ -410,9 +411,9 @@ void BashppServer::handleDidOpen(const GenericNotificationMessage& request) {
 	log("Finished parsing: ", uri);
 	if (program == nullptr) {
 		log("Failed to parse program: ", uri);
-		// Send an error notification or response if needed
 		return;
 	}
+	publishDiagnostics(program);
 	return;
 }
 
@@ -459,9 +460,60 @@ void BashppServer::handleDidChange(const GenericNotificationMessage& request) {
 			}
 
 			if (should_parse) {
-				program_pool.re_parse_program(uri);
-				log("Re-parsed program:", uri);
+				log("Re-parsing program for URI: ", uri);
+				std::shared_ptr<bpp::bpp_program> program = program_pool.re_parse_program(uri);
+				if (program != nullptr) {
+					publishDiagnostics(program);
+				} else {
+					log("Failed to re-parse program: ", uri);
+				}
 			}
 		}).detach();
+	}
+}
+
+void BashppServer::publishDiagnostics(std::shared_ptr<bpp::bpp_program> program) {
+	log("Publishing diagnostics for program rooted at: ", program->get_main_source_file());
+	if (program == nullptr) {
+		log("Cannot publish diagnostics for a null program.");
+		return;
+	}
+
+	std::vector<std::string> source_files = program->get_source_files();
+	for (const auto& file : source_files) {
+		PublishDiagnosticsNotification notification;
+		notification.params.uri = "file://" + file;
+		std::vector<bpp::diagnostic> diags = program->get_diagnostics(file);
+		std::vector<Diagnostic> lsp_diags;
+		for (const auto& diag : diags) {
+			Diagnostic lsp_diag;
+			lsp_diag.range.start.line = diag.start_line;
+			lsp_diag.range.start.character = diag.start_column;
+			lsp_diag.range.end.line = diag.end_line;
+			lsp_diag.range.end.character = diag.end_column;
+			
+			switch (diag.type) {
+				case bpp::diagnostic_type::DIAGNOSTIC_ERROR:
+					lsp_diag.severity = DiagnosticSeverity::Error;
+					break;
+				case bpp::diagnostic_type::DIAGNOSTIC_WARNING:
+					lsp_diag.severity = DiagnosticSeverity::Warning;
+					break;
+				case bpp::diagnostic_type::DIAGNOSTIC_INFO:
+					lsp_diag.severity = DiagnosticSeverity::Information;
+					break;
+				case bpp::diagnostic_type::DIAGNOSTIC_HINT:
+					lsp_diag.severity = DiagnosticSeverity::Hint;
+					break;
+			}
+
+			lsp_diag.message = diag.message;
+
+			lsp_diags.push_back(lsp_diag);
+		}
+
+		notification.params.diagnostics = lsp_diags;
+		log("Publishing ", lsp_diags.size(), " diagnostics for file: ", file);
+		sendNotification(notification);
 	}
 }

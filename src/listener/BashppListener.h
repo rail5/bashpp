@@ -155,7 +155,7 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 				column = static_cast<int>(token->getCharPositionInLine()); \
 				text = token->getText(); \
 			} \
-			print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack()); \
+			print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), program); \
 			program_has_errors = true;
 
 		#define throw_syntax_error_sym(symbol, msg) \
@@ -177,7 +177,7 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 				int line = static_cast<int>(symbol->getLine()); \
 				int column = static_cast<int>(symbol->getCharPositionInLine()); \
 				std::string text = symbol->getText(); \
-				print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), true); \
+				print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), program, true); \
 			}
 		
 		#define show_warning(token, msg) antlr4::Token* symbol = token->getSymbol(); \

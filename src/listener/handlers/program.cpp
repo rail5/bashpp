@@ -14,6 +14,10 @@
 void BashppListener::enterProgram(BashppParser::ProgramContext *ctx) {
 	program->set_output_stream(code_buffer);
 
+	if (!included) {
+		program->set_main_source_file(source_file);
+	}
+
 	if (included) {
 		program = included_from->get_program();
 		program->set_output_stream(code_buffer);
@@ -30,58 +34,6 @@ void BashppListener::enterProgram(BashppParser::ProgramContext *ctx) {
 
 void BashppListener::exitProgram(BashppParser::ProgramContext *ctx) {
 	program->flush_code_buffers();
-
-	// DEBUG:
-	// Dump all symbol information (definition locations, references) to stderr
-	auto classes = program->get_classes();
-	for (const auto& [name, class_] : classes) {
-		if (name == "primitive") {
-			continue; // Skip the primitive class
-		}
-		std::cerr << "Symbol: " << name << std::endl;
-		auto initial_definition = class_->get_initial_definition();
-		std::cerr << initial_definition.file << ":" << initial_definition.line << ":" << initial_definition.column << std::endl;
-		auto references = class_->get_references();
-		for (const auto& reference : references) {
-			std::cerr <<  reference.file << ":" << reference.line << ":" << reference.column << std::endl;
-		}
-
-		std::vector<std::shared_ptr<bpp::bpp_method>> methods = class_->get_methods();
-		for (const auto& method : methods) {
-			if (method->get_name().find("__") == 0) {
-				continue; // Skip system methods
-			}
-			std::cerr << "Symbol: " << method->get_name() << std::endl;
-			auto method_initial_definition = method->get_initial_definition();
-			std::cerr << method_initial_definition.file << ":" << method_initial_definition.line << ":" << method_initial_definition.column << std::endl;
-			auto method_references = method->get_references();
-			for (const auto& method_reference : method_references) {
-				std::cerr << method_reference.file << ":" << method_reference.line << ":" << method_reference.column << std::endl;
-			}
-		}
-
-		std::vector<std::shared_ptr<bpp::bpp_datamember>> datamembers = class_->get_datamembers();
-		for (const auto& datamember : datamembers) {
-			std::cerr << "Symbol: " << datamember->get_name() << std::endl;
-			auto datamember_initial_definition = datamember->get_initial_definition();
-			std::cerr << datamember_initial_definition.file << ":" << datamember_initial_definition.line << ":" << datamember_initial_definition.column << std::endl;
-			auto datamember_references = datamember->get_references();
-			for (const auto& datamember_reference : datamember_references) {
-				std::cerr << datamember_reference.file << ":" << datamember_reference.line << ":" << datamember_reference.column << std::endl;
-			}
-		}
-	}
-
-	auto objects = program->get_objects();
-	for (const auto& [name, object] : objects) {
-		std::cerr << "Symbol: " << name << std::endl;
-		auto initial_definition = object->get_initial_definition();
-		std::cerr << initial_definition.file << ":" << initial_definition.line << ":" << initial_definition.column << std::endl;
-		auto references = object->get_references();
-		for (const auto& reference : references) {
-			std::cerr << reference.file << ":" << reference.line << ":" << reference.column << std::endl;
-		}
-	}
 
 	entity_stack.pop();
 	if (!entity_stack.empty()) {

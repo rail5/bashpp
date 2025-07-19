@@ -441,6 +441,8 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 		uint64_t dynamic_cast_counter = 0;
 		uint64_t object_counter = 0;
 
+		std::string main_source_file;
+
 		// Source file -> EntityMap
 		std::unordered_map<std::string, EntityMap> entity_maps;
 		// s.t. requesting entity_maps["/path/to/file1.bpp"] returns an EntityMap
@@ -482,6 +484,10 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 			const std::string& file,
 			uint32_t line, uint32_t column
 		);
+
+		std::vector<std::string> get_source_files() const;
+		std::string get_main_source_file() const;
+		void set_main_source_file(const std::string& file);
 };
 
 /**

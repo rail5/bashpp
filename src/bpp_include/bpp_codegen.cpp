@@ -535,6 +535,8 @@ entity_reference resolve_reference_at(
 	std::deque<std::string> identifiers;
 	std::string identifier;
 
+	uint32_t original_column = column;
+
 	// If the given column doesn't point to an '@' character,
 	// Rewind to the last '@' character
 	while (line_content[column] != '@' && column > 0) {
@@ -549,9 +551,9 @@ entity_reference resolve_reference_at(
 		return result;
 	}
 
-	// Pinpoint the nearest whitespace after the '@' character
-	size_t start = column + 1;
-	while (start < line_content.size() && !isspace(line_content[start])) {
+	// Pinpoint the nearest whitespace, dot, or '}' after the initially-given position
+	size_t start = original_column;
+	while (start < line_content.size() && !isspace(line_content[start]) && line_content[start] != '.' && line_content[start] != '}') {
 		start++;
 	}
 

@@ -78,8 +78,8 @@ void BashppListener::exitClass_definition(BashppParser::Class_definitionContext 
 		source_file,
 		new_class->get_initial_definition().line,
 		new_class->get_initial_definition().column,
-		ctx->RBRACE_ROOTLEVEL()->getSymbol()->getLine() - 1,
-		ctx->RBRACE_ROOTLEVEL()->getSymbol()->getCharPositionInLine(),
+		ctx->CLASS_END()->getSymbol()->getLine() - 1,
+		ctx->CLASS_END()->getSymbol()->getCharPositionInLine(),
 		new_class
 	);
 }

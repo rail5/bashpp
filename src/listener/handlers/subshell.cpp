@@ -24,8 +24,8 @@ void BashppListener::enterSubshell(BashppParser::SubshellContext *ctx) {
 
 	subshell_entity->set_definition_position(
 		source_file,
-		ctx->SUBSHELL_START()->getSymbol()->getLine(),
-		ctx->SUBSHELL_START()->getSymbol()->getCharPositionInLine() + 1
+		ctx->SUBSHELL_START()->getSymbol()->getLine() - 1,
+		ctx->SUBSHELL_START()->getSymbol()->getCharPositionInLine()
 	);
 }
 
@@ -49,8 +49,8 @@ void BashppListener::exitSubshell(BashppParser::SubshellContext *ctx) {
 		source_file,
 		subshell_entity->get_initial_definition().line,
 		subshell_entity->get_initial_definition().column,
-		ctx->SUBSHELL_END()->getSymbol()->getLine(),
-		ctx->SUBSHELL_END()->getSymbol()->getCharPositionInLine() + 1,
+		ctx->SUBSHELL_END()->getSymbol()->getLine() - 1,
+		ctx->SUBSHELL_END()->getSymbol()->getCharPositionInLine(),
 		subshell_entity
 	);
 }

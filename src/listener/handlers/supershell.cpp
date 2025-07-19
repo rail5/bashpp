@@ -27,8 +27,8 @@ void BashppListener::enterSupershell(BashppParser::SupershellContext *ctx) {
 
 	supershell_entity->set_definition_position(
 		source_file,
-		ctx->SUPERSHELL_START()->getSymbol()->getLine(),
-		ctx->SUPERSHELL_START()->getSymbol()->getCharPositionInLine() + 1
+		ctx->SUPERSHELL_START()->getSymbol()->getLine() - 1,
+		ctx->SUPERSHELL_START()->getSymbol()->getCharPositionInLine()
 	);
 }
 
@@ -45,8 +45,8 @@ void BashppListener::exitSupershell(BashppParser::SupershellContext *ctx) {
 		source_file,
 		supershell_entity->get_initial_definition().line,
 		supershell_entity->get_initial_definition().column,
-		ctx->SUPERSHELL_END()->getSymbol()->getLine(),
-		ctx->SUPERSHELL_END()->getSymbol()->getCharPositionInLine() + 1,
+		ctx->SUPERSHELL_END()->getSymbol()->getLine() - 1,
+		ctx->SUPERSHELL_END()->getSymbol()->getCharPositionInLine(),
 		supershell_entity
 	);
 

@@ -29,8 +29,8 @@ void BashppListener::enterDestructor_definition(BashppParser::Destructor_definit
 
 	destructor->set_definition_position(
 		source_file,
-		ctx->KEYWORD_DESTRUCTOR()->getSymbol()->getLine(),
-		ctx->KEYWORD_DESTRUCTOR()->getSymbol()->getCharPositionInLine() + 1
+		ctx->KEYWORD_DESTRUCTOR()->getSymbol()->getLine() - 1,
+		ctx->KEYWORD_DESTRUCTOR()->getSymbol()->getCharPositionInLine()
 	);
 }
 
@@ -57,8 +57,8 @@ void BashppListener::exitDestructor_definition(BashppParser::Destructor_definiti
 		source_file,
 		destructor->get_initial_definition().line,
 		destructor->get_initial_definition().column,
-		ctx->RBRACE()->getSymbol()->getLine(),
-		ctx->RBRACE()->getSymbol()->getCharPositionInLine() + 1,
+		ctx->RBRACE()->getSymbol()->getLine() - 1,
+		ctx->RBRACE()->getSymbol()->getCharPositionInLine(),
 		destructor
 	);
 

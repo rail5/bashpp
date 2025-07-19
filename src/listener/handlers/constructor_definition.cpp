@@ -29,8 +29,8 @@ void BashppListener::enterConstructor_definition(BashppParser::Constructor_defin
 
 	constructor->set_definition_position(
 		source_file,
-		ctx->KEYWORD_CONSTRUCTOR()->getSymbol()->getLine(),
-		ctx->KEYWORD_CONSTRUCTOR()->getSymbol()->getCharPositionInLine() + 1
+		ctx->KEYWORD_CONSTRUCTOR()->getSymbol()->getLine() - 1,
+		ctx->KEYWORD_CONSTRUCTOR()->getSymbol()->getCharPositionInLine()
 	);
 }
 
@@ -57,8 +57,8 @@ void BashppListener::exitConstructor_definition(BashppParser::Constructor_defini
 		source_file,
 		constructor->get_initial_definition().line,
 		constructor->get_initial_definition().column,
-		ctx->RBRACE()->getSymbol()->getLine(),
-		ctx->RBRACE()->getSymbol()->getCharPositionInLine() + 1,
+		ctx->RBRACE()->getSymbol()->getLine() - 1,
+		ctx->RBRACE()->getSymbol()->getCharPositionInLine(),
 		constructor
 	);
 

@@ -134,8 +134,8 @@ void BashppListener::enterBash_if_root_branch(BashppParser::Bash_if_root_branchC
 
 	condition_entity->set_definition_position(
 		source_file,
-		ctx->BASH_KEYWORD_IF()->getSymbol()->getLine(),
-		ctx->BASH_KEYWORD_IF()->getSymbol()->getCharPositionInLine() + 1
+		ctx->BASH_KEYWORD_IF()->getSymbol()->getLine() - 1,
+		ctx->BASH_KEYWORD_IF()->getSymbol()->getCharPositionInLine()
 	);
 }
 
@@ -161,8 +161,8 @@ void BashppListener::exitBash_if_root_branch(BashppParser::Bash_if_root_branchCo
 		source_file,
 		condition_entity->get_initial_definition().line,
 		condition_entity->get_initial_definition().column,
-		ctx->getStop()->getLine(),
-		ctx->getStop()->getCharPositionInLine() + 1,
+		ctx->getStop()->getLine() - 1,
+		ctx->getStop()->getCharPositionInLine(),
 		condition_entity
 	);
 }
@@ -192,8 +192,8 @@ void BashppListener::enterBash_if_else_branch(BashppParser::Bash_if_else_branchC
 
 	condition_entity->set_definition_position(
 		source_file,
-		ctx->start->getLine(),
-		ctx->start->getCharPositionInLine() + 1
+		ctx->start->getLine() - 1,
+		ctx->start->getCharPositionInLine()
 	);
 }
 
@@ -219,8 +219,8 @@ void BashppListener::exitBash_if_else_branch(BashppParser::Bash_if_else_branchCo
 		source_file,
 		condition_entity->get_initial_definition().line,
 		condition_entity->get_initial_definition().column,
-		ctx->getStop()->getLine(),
-		ctx->getStop()->getCharPositionInLine() + 1,
+		ctx->getStop()->getLine() - 1,
+		ctx->getStop()->getCharPositionInLine(),
 		condition_entity
 	);
 }

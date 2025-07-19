@@ -12,8 +12,8 @@ void BashppListener::enterClass_definition(BashppParser::Class_definitionContext
 
 	new_class->set_definition_position(
 		source_file,
-		ctx->IDENTIFIER(0)->getSymbol()->getLine(),
-		ctx->IDENTIFIER(0)->getSymbol()->getCharPositionInLine() + 1
+		ctx->IDENTIFIER(0)->getSymbol()->getLine() - 1,
+		ctx->IDENTIFIER(0)->getSymbol()->getCharPositionInLine()
 	);
 
 	// Get the class name
@@ -78,8 +78,8 @@ void BashppListener::exitClass_definition(BashppParser::Class_definitionContext 
 		source_file,
 		new_class->get_initial_definition().line,
 		new_class->get_initial_definition().column,
-		ctx->RBRACE_ROOTLEVEL()->getSymbol()->getLine(),
-		ctx->RBRACE_ROOTLEVEL()->getSymbol()->getCharPositionInLine() + 1,
+		ctx->RBRACE_ROOTLEVEL()->getSymbol()->getLine() - 1,
+		ctx->RBRACE_ROOTLEVEL()->getSymbol()->getCharPositionInLine(),
 		new_class
 	);
 }

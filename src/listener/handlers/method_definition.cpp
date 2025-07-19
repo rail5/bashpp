@@ -22,8 +22,8 @@ void BashppListener::enterMethod_definition(BashppParser::Method_definitionConte
 
 	method->set_definition_position(
 		source_file,
-		ctx->IDENTIFIER()->getSymbol()->getLine(),
-		ctx->IDENTIFIER()->getSymbol()->getCharPositionInLine() + 1
+		ctx->IDENTIFIER()->getSymbol()->getLine() - 1,
+		ctx->IDENTIFIER()->getSymbol()->getCharPositionInLine()
 	);
 
 	// Set the method's scope
@@ -77,8 +77,8 @@ void BashppListener::exitMethod_definition(BashppParser::Method_definitionContex
 		source_file,
 		method->get_initial_definition().line,
 		method->get_initial_definition().column,
-		ctx->METHOD_END()->getSymbol()->getLine(),
-		ctx->METHOD_END()->getSymbol()->getCharPositionInLine() + 1,
+		ctx->METHOD_END()->getSymbol()->getLine() - 1,
+		ctx->METHOD_END()->getSymbol()->getCharPositionInLine(),
 		method
 	);
 }

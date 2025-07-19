@@ -26,8 +26,8 @@ void BashppListener::enterBash_for_loop(BashppParser::Bash_for_loopContext *ctx)
 
 	for_statement->set_definition_position(
 		source_file,
-		ctx->start->getLine(),
-		ctx->start->getCharPositionInLine() + 1
+		ctx->start->getLine() -1,
+		ctx->start->getCharPositionInLine()
 	);
 }
 
@@ -55,8 +55,8 @@ void BashppListener::exitBash_for_loop(BashppParser::Bash_for_loopContext *ctx) 
 		source_file,
 		for_loop->get_initial_definition().line,
 		for_loop->get_initial_definition().column,
-		ctx->BASH_KEYWORD_DONE()->getSymbol()->getLine(),
-		ctx->BASH_KEYWORD_DONE()->getSymbol()->getCharPositionInLine() + 1,
+		ctx->BASH_KEYWORD_DONE()->getSymbol()->getLine() - 1,
+		ctx->BASH_KEYWORD_DONE()->getSymbol()->getCharPositionInLine(),
 		for_loop
 	);
 }

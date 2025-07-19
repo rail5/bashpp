@@ -26,8 +26,8 @@ void BashppListener::enterBash_while_loop(BashppParser::Bash_while_loopContext *
 
 	while_statement->set_definition_position(
 		source_file,
-		ctx->start->getLine(),
-		ctx->start->getCharPositionInLine() + 1
+		ctx->start->getLine() - 1,
+		ctx->start->getCharPositionInLine()
 	);
 }
 
@@ -65,8 +65,8 @@ void BashppListener::exitBash_while_loop(BashppParser::Bash_while_loopContext *c
 		source_file,
 		while_statement->get_initial_definition().line,
 		while_statement->get_initial_definition().column,
-		ctx->BASH_KEYWORD_DONE()->getSymbol()->getLine(),
-		ctx->BASH_KEYWORD_DONE()->getSymbol()->getCharPositionInLine() + 1,
+		ctx->BASH_KEYWORD_DONE()->getSymbol()->getLine() - 1,
+		ctx->BASH_KEYWORD_DONE()->getSymbol()->getCharPositionInLine(),
 		while_statement
 	);
 }

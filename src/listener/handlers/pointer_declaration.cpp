@@ -58,8 +58,8 @@ void BashppListener::enterPointer_declaration(BashppParser::Pointer_declarationC
 
 	new_object->set_definition_position(
 		source_file,
-		object_name->getSymbol()->getLine(),
-		object_name->getSymbol()->getCharPositionInLine() + 1
+		object_name->getSymbol()->getLine() - 1,
+		object_name->getSymbol()->getCharPositionInLine()
 	);
 
 	new_object->set_class(object_class);

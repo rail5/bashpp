@@ -46,8 +46,8 @@ void BashppListener::enterBash_function(BashppParser::Bash_functionContext *ctx)
 
 	function_entity->set_definition_position(
 		source_file,
-		first_token->getSymbol()->getLine(),
-		first_token->getSymbol()->getCharPositionInLine() + 1
+		first_token->getSymbol()->getLine() - 1,
+		first_token->getSymbol()->getCharPositionInLine()
 	);
 }
 
@@ -84,8 +84,8 @@ void BashppListener::exitBash_function(BashppParser::Bash_functionContext *ctx) 
 		source_file,
 		function_entity->get_initial_definition().line,
 		function_entity->get_initial_definition().column,
-		ctx->getStop()->getLine(),
-		ctx->getStop()->getCharPositionInLine() + 1,
+		ctx->getStop()->getLine() - 1,
+		ctx->getStop()->getCharPositionInLine(),
 		function_entity
 	);
 }

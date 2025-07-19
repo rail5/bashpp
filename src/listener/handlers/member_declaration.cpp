@@ -56,8 +56,8 @@ void BashppListener::enterMember_declaration(BashppParser::Member_declarationCon
 
 		new_datamember->set_definition_position(
 			source_file,
-			ctx->IDENTIFIER()->getSymbol()->getLine(),
-			ctx->IDENTIFIER()->getSymbol()->getCharPositionInLine() + 1
+			ctx->IDENTIFIER()->getSymbol()->getLine() - 1,
+			ctx->IDENTIFIER()->getSymbol()->getCharPositionInLine()
 		);
 
 		// Verify the name doesn't contain a double underscore

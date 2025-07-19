@@ -43,8 +43,8 @@ void BashppListener::enterObject_instantiation(BashppParser::Object_instantiatio
 
 	new_object->set_definition_position(
 		source_file,
-		object_name->getSymbol()->getLine(),
-		object_name->getSymbol()->getCharPositionInLine() + 1
+		object_name->getSymbol()->getLine() - 1,
+		object_name->getSymbol()->getCharPositionInLine()
 	);
 
 	// Verify that the object's class exists

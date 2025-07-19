@@ -31,8 +31,8 @@ void BashppListener::enterNew_statement(BashppParser::New_statementContext *ctx)
 
 	new_class->add_reference(
 		source_file,
-		ctx->IDENTIFIER()->getSymbol()->getLine(),
-		ctx->IDENTIFIER()->getSymbol()->getCharPositionInLine() + 1
+		ctx->IDENTIFIER()->getSymbol()->getLine() - 1,
+		ctx->IDENTIFIER()->getSymbol()->getCharPositionInLine()
 	);
 
 	// Call the class's "new" method in a supershell and substitute the result

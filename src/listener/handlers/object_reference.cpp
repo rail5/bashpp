@@ -71,6 +71,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 	bool first_object_is_pointer = first_object != nullptr && first_object->is_pointer();
 
 	bpp::entity_reference ref = bpp::resolve_reference(
+		source_file,
 		current_code_entity,
 		ids,
 		program

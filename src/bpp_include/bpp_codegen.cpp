@@ -259,9 +259,10 @@ code_segment inline_new(
  * If passing a self-reference (@this.... or @super....),
  * The self-referential keyword should be the first node in the identifiers deque.
  * 
+ * @param file The source file in which the reference is being resolved.
  * @param context The context (code_entity) in which to resolve the reference.
- * @param identifiers A deque of identifiers making up the reference.
- * @param current_class The class (if any) in which the reference is being resolved.
+ * @param nodes A deque of TerminalNode pointers representing the identifiers in the reference.
+ * @param identifiers A deque of strings representing the identifiers in the reference.
  * @param program The program in which the reference is being resolved.
  * 
  * @return An entity_reference structure containing:
@@ -272,19 +273,27 @@ code_segment inline_new(
  *  - class_containing_the_method: The class containing the method, if applicable.
  *  - error: An optional reference_error structure containing an error message and relevant token if the reference could not be resolved.
  */
-entity_reference resolve_reference(
+entity_reference resolve_reference_impl(
+	const std::string& file,
 	std::shared_ptr<bpp::bpp_code_entity> context,
-	std::deque<antlr4::tree::TerminalNode*> identifiers,
+	std::deque<antlr4::tree::TerminalNode*> nodes,
+	std::deque<std::string> identifiers,
 	std::shared_ptr<bpp::bpp_program> program
 ) {
-	// TODO(@rail5): Track entity references by calling entity->add_reference(file, line, column) at each resolution step
-	bool self_reference = identifiers.at(0)->getSymbol()->getType() == BashppLexer::KEYWORD_THIS
-			|| identifiers.at(0)->getSymbol()->getType()            == BashppLexer::KEYWORD_THIS_LVALUE
-			|| identifiers.at(0)->getSymbol()->getType()            == BashppLexer::KEYWORD_SUPER
-			|| identifiers.at(0)->getSymbol()->getType()            == BashppLexer::KEYWORD_SUPER_LVALUE;
-	
-	bool super = identifiers.at(0)->getSymbol()->getType()          == BashppLexer::KEYWORD_SUPER
-			|| identifiers.at(0)->getSymbol()->getType()            == BashppLexer::KEYWORD_SUPER_LVALUE;
+	bool self_reference = identifiers.front() == "this" || identifiers.front() == "super";
+	bool super = identifiers.front() == "super";
+
+	// This function can be called with either:
+	// A deque of TerminalNode pointers, or
+	// A deque of strings representing identifiers.
+	// All we need to resolve the reference is the set of strings,
+	// But if we're also given the TerminalNode pointers,
+	// Then we can (a) provide error messages (necessary in compilation),
+	// And (b) keep track of where each entity is referenced in the source code.
+	// If this is a request from the language server,
+	// Ie, after all the analysis has already been done,
+	// Then a deque of strings is perfectly fine -- we don't need to track positions.
+	antlr4::tree::TerminalNode* error_token = nullptr;
 
 	entity_reference result;
 
@@ -304,16 +313,27 @@ entity_reference resolve_reference(
 
 	if (!self_reference) {
 		// Get the first object
-		std::string first_object_name = identifiers.at(0)->getText();
+		std::string first_object_name = identifiers.front();
 		object = context->get_object(first_object_name);
 		result.entity = object;
 
 		if (object == nullptr) {
+			if (!nodes.empty()) {
+				error_token = nodes.at(0);
+			}
 			result.error = entity_reference::reference_error{
 				"Object not found: " + first_object_name,
-				identifiers.at(0)
+				error_token
 			};
 			return result;
+		}
+
+		if (!nodes.empty()) {
+			object->add_reference(
+				file,
+				nodes.front()->getSymbol()->getLine(),
+				nodes.front()->getSymbol()->getCharPositionInLine() + 1
+			);
 		}
 	}
 
@@ -321,15 +341,22 @@ entity_reference resolve_reference(
 		std::string derived_class_name = result.entity->get_name();
 		result.entity = current_class->get_parent();
 		if (result.entity == nullptr) {
+			if (!nodes.empty()) {
+				error_token = nodes.at(0);
+			}
 			result.error = entity_reference::reference_error{
 				derived_class_name + " has no parent class to reference with @super",
-				identifiers.at(0)
+				error_token
 			};
 			return result;
 		}
 	}
 
 	identifiers.pop_front();
+
+	if (!nodes.empty()) {
+		nodes.pop_front();
+	}
 
 	// The following two booleans are used for code generation
 	// to determine how many layers of indirection are needed in generated code
@@ -357,7 +384,9 @@ entity_reference resolve_reference(
 		result.reference_code.code = object->get_address();
 	}
 
-	for (auto& identifier : identifiers) {
+	while (!identifiers.empty()) {
+		error_token = nodes.empty() ? nullptr : nodes.front();
+
 		if (result.created_first_temporary_variable) {
 			encase_open = "${";
 			encase_close = "}";
@@ -373,23 +402,21 @@ entity_reference resolve_reference(
 			case bpp::reference_type::ref_primitive:
 				result.error = entity_reference::reference_error{
 					"Unexpected identifier after primitive object reference",
-					identifier
+					error_token
 				};
 				return result;
 			case bpp::reference_type::ref_method:
 				result.error = entity_reference::reference_error{
 					"Unexpected identifier after method reference",
-					identifier
+					error_token
 				};
 				return result;
 		}
 
-		std::string identifier_text = identifier->getText();
-
-		if (identifier_text.find("__") != std::string::npos) {
+		if (identifiers.front().find("__") != std::string::npos) {
 			result.error = entity_reference::reference_error{
-				"Invalid identifier: " + identifier_text + "\nBash++ identifiers cannot contain double underscores",
-				identifier
+				"Invalid identifier: " + identifiers.front() + "\nBash++ identifiers cannot contain double underscores",
+				error_token
 			};
 			return result;
 		}
@@ -397,13 +424,13 @@ entity_reference resolve_reference(
 		std::shared_ptr<bpp::bpp_class> reference_class = result.entity->get_class();
 
 		object = nullptr;
-		datamember = reference_class->get_datamember(identifier_text, current_class);
-		method = reference_class->get_method(identifier_text, current_class);
+		datamember = reference_class->get_datamember(identifiers.front(), current_class);
+		method = reference_class->get_method(identifiers.front(), current_class);
 
 		if (datamember == bpp::inaccessible_datamember || method == bpp::inaccessible_method) {
 			result.error = entity_reference::reference_error{
-				identifier_text + " is inaccessible in this context",
-				identifier
+				identifiers.front() + " is inaccessible in this context",
+				error_token
 			};
 			return result;
 		}
@@ -412,14 +439,22 @@ entity_reference resolve_reference(
 			result.class_containing_the_method = result.entity->get_class();
 			last_reference_type = bpp::reference_type::ref_method;
 			result.entity = method;
+
+			if (!nodes.empty()) {
+				method->add_reference(
+					file,
+					nodes.front()->getSymbol()->getLine(),
+					nodes.front()->getSymbol()->getCharPositionInLine() + 1
+				);
+			}
 		} else if (datamember != nullptr) {
 			last_reference_type = (datamember->get_class() == program->get_primitive_class())
 					? bpp::reference_type::ref_primitive
 					: bpp::reference_type::ref_object;
 			result.entity = datamember;
 
-			std::string temporary_variable_lvalue = result.reference_code.code + "__" + identifier_text;
-			std::string temporary_varible_rvalue = "${" + indirection + result.reference_code.code + "}__" + identifier_text;
+			std::string temporary_variable_lvalue = result.reference_code.code + "__" + identifiers.front();
+			std::string temporary_varible_rvalue = "${" + indirection + result.reference_code.code + "}__" + identifiers.front();
 
 			if (result.created_first_temporary_variable) {
 				result.reference_code.pre_code += temporary_variable_lvalue + "=" + temporary_varible_rvalue + "\n";
@@ -429,12 +464,26 @@ entity_reference resolve_reference(
 
 			result.reference_code.code = temporary_variable_lvalue;
 			result.created_first_temporary_variable = true;
+
+			if (!nodes.empty()) {
+				datamember->add_reference(
+					file,
+					nodes.front()->getSymbol()->getLine(),
+					nodes.front()->getSymbol()->getCharPositionInLine() + 1
+				);
+			}
 		} else {
 			result.error = entity_reference::reference_error{
-				result.entity->get_name() + " has no member named " + identifier_text,
-				identifier
+				result.entity->get_name() + " has no member named " + identifiers.front(),
+				error_token
 			};
 			return result;
+		}
+
+		identifiers.pop_front();
+
+		if (!nodes.empty()) {
+			nodes.pop_front();
 		}
 	}
 

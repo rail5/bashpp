@@ -70,6 +70,7 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 	}
 
 	bpp::entity_reference ref = bpp::resolve_reference(
+		source_file,
 		current_code_entity,
 		ids,
 		program

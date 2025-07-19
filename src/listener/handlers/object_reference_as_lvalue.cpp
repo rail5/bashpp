@@ -47,6 +47,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 	}
 
 	bpp::entity_reference ref = bpp::resolve_reference(
+		source_file,
 		current_code_entity,
 		ids,
 		program

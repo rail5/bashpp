@@ -56,7 +56,7 @@ include_statement: (KEYWORD_INCLUDE | KEYWORD_INCLUDE_ONCE) JUNK*
 	(INCLUDE_AS LOCAL_INCLUDE_PATH)? JUNK*;
 
 // Class definition
-class_definition: KEYWORD_CLASS WS* IDENTIFIER WS* (COLON WS* IDENTIFIER WS*)? LBRACE_ROOTLEVEL (class_body_statement | general_statement | extra_statement)* RBRACE_ROOTLEVEL;
+class_definition: KEYWORD_CLASS WS* IDENTIFIER WS* (COLON WS* IDENTIFIER WS*)? CLASS_START (class_body_statement | general_statement | extra_statement)* CLASS_END;
 
 class_member_or_method: (KEYWORD_VIRTUAL WS*)? (KEYWORD_PUBLIC | KEYWORD_PRIVATE | KEYWORD_PROTECTED) WS* (member_declaration | method_definition);
 
@@ -211,7 +211,8 @@ other_statement: ~(RBRACE | RBRACE_ROOTLEVEL
 	| METHOD_END | BASH_KEYWORD_IF
 	| BASH_KEYWORD_ELIF | BASH_KEYWORD_THEN
 	| BASH_KEYWORD_ELSE | BASH_KEYWORD_FI
-	| BASH_CASE_PATTERN_DELIM | HEREDOC_END)+?;
+	| BASH_CASE_PATTERN_DELIM | HEREDOC_END
+	| CLASS_START | CLASS_END)+?;
 
 // This rule will *only* ever be matched as part a value_assignment
 raw_rvalue: IDENTIFIER | NUMBER | BASH_VAR;

@@ -32,6 +32,7 @@ bool inDeprecatedSubshell = false;
 bool waiting_for_heredoc_terminator = false;
 bool waiting_for_heredoc_content_start = false;
 bool parsing_method = false;
+bool parsing_class = false;
 bool in_twotoken_bpp_command = false;
 bool anticipating_exclam = false;
 int dynamic_cast_stage = 0;
@@ -572,7 +573,11 @@ SINGLEQUOTE: '\'' {
 };
 
 // Keywords
-KEYWORD_CLASS: '@class' WORD_BOUNDARY;
+KEYWORD_CLASS: '@class' WORD_BOUNDARY {
+	if (modeStack.top() == no_mode) {
+		parsing_class = true;
+	}
+};
 KEYWORD_PUBLIC: '@public' WORD_BOUNDARY;
 KEYWORD_PRIVATE: '@private' WORD_BOUNDARY;
 KEYWORD_PROTECTED: '@protected' WORD_BOUNDARY;
@@ -905,7 +910,7 @@ LBRACE: '{' {
 		case mode_primitive_reference:
 		case no_mode:
 			if (braceDepth == 0) {
-				emit(LBRACE_ROOTLEVEL, getText());
+				emit(parsing_class ? CLASS_START : LBRACE_ROOTLEVEL, getText());
 			} else if (parsing_method && braceDepth == 1) {
 				emit(METHOD_START, getText());
 			}
@@ -924,7 +929,8 @@ RBRACE: '}' {
 		case no_mode:
 			braceDepth = std::max(braceDepth - 1, 0);
 			if (braceDepth == 0) {
-				emit(RBRACE_ROOTLEVEL, getText());
+				emit(parsing_class ? CLASS_END : RBRACE_ROOTLEVEL, getText());
+				parsing_class = false;
 			} else if (parsing_method && braceDepth == 1) {
 				emit(METHOD_END, getText());
 				parsing_method = false;
@@ -937,6 +943,8 @@ LBRACE_ROOTLEVEL: '{'; // Another dummy token
 RBRACE_ROOTLEVEL: '}'; // Yet another dummy token
 METHOD_START: '{'; // Yet another dummy token
 METHOD_END: '}'; // Yet another dummy token
+CLASS_START: '{';
+CLASS_END: '}';
 
 BACKTICK: '`' {
 	if (!inDeprecatedSubshell) {

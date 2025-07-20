@@ -26,10 +26,6 @@ include build.mk
 
 all: compiler-and-lsp std
 
-compiler: clean-main update-version update-year
-	cd src && $(MAKE)
-	@mv src/bpp bin/bpp
-
 std: clean-std compiler
 	@echo $(STDLIB_FILES)
 	$(MAKE) $(STDLIB_FILES)

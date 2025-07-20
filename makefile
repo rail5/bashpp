@@ -21,10 +21,10 @@ endif
 # And append ".sh" to each file name
 STDLIB_FILES := $(shell find stdlib -type f -not -name '*.*' -exec basename {} \; | sed 's/^/stdlib\//; s/$$/.sh/')
 
+all: compiler-and-lsp std
+
 # build.mk contains the rules to build the compiler and language server
 include build.mk
-
-all: compiler-and-lsp std
 
 std: clean-std compiler
 	@echo $(STDLIB_FILES)

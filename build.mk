@@ -27,5 +27,5 @@ bin/bpp-lsp: bin/obj/bpp-lsp.o $(LSP_OBJS) $(ANTLR4_OBJS) $(BPP_OBJS) $(LISTENER
 .PHONY: compiler-and-lsp
 
 ifeq ($(filter clean%,$(MAKECMDGOALS)),)
--include $(shell find obj -name '*.d' 2>/dev/null)
+-include $(shell find bin -name '*.d' 2>/dev/null)
 endif

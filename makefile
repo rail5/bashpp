@@ -21,7 +21,10 @@ endif
 # And append ".sh" to each file name
 STDLIB_FILES := $(shell find stdlib -type f -not -name '*.*' -exec basename {} \; | sed 's/^/stdlib\//; s/$$/.sh/')
 
-all: compiler std
+# build.mk contains the rules to build the compiler and language server
+include build.mk
+
+all: compiler-and-lsp std
 
 compiler: clean-main update-version update-year
 	cd src && $(MAKE)
@@ -34,6 +37,9 @@ std: clean-std compiler
 stdlib/%.sh: stdlib/%
 	@echo "Compiling stdlib: $<"
 	@bin/bpp -o $@ $<
+
+vscode:
+	@cd vscode && $(MAKE) --no-print-directory
 
 test:
 	bin/bpp test-suite/run.bpp
@@ -99,19 +105,20 @@ update-year:
 		echo "#define bpp_compiler_updated_year \"$(LASTUPDATEDYEAR)\"" > src/updated_year.h; \
 	fi;
 
-clean-src:
-	@cd src && $(MAKE) clean
-
-clean-main:
+clean-bin:
 	@rm -f bin/bpp
+	@rm -f bin/bpp-lsp
+	@echo "Cleaned up binaries."
 
 clean-std:
 	@rm -f stdlib/*.sh
+	@echo "Cleaned up stdlib files."
 
 clean-manual: clean-detailed-manuals
 	@rm -f debian/bpp.1
 	@rm -f debian/bpp.7
 	@rm -rf tmp
+	@echo "Cleaned up manuals."
 
 clean-detailed-manuals:
 	@rm -f debian/bpp-*.3
@@ -119,7 +126,12 @@ clean-detailed-manuals:
 
 clean-technical-docs:
 	@rm -rf docs
+	@echo "Cleaned up technical documentation."
 
-clean: clean-src clean-main clean-std clean-manual clean-technical-docs
+clean-vscode:
+	@cd vscode && $(MAKE) --no-print-directory clean
+	@echo "Cleaned up VSCode extension files."
 
-.PHONY: all compiler std test process-manual-code-snippets clean-src clean-main clean-std clean-manual clean-detailed-manuals clean-technical-docs clean update-version update-year detailed-manuals manual technical-docs stdlib/%.sh
+clean: clean-antlr clean-lsp clean-objects clean-bin clean-std clean-manual clean-technical-docs clean-vscode
+
+.PHONY: all std test process-manual-code-snippets clean-bin clean-std clean-manual clean-detailed-manuals clean-technical-docs clean-vscode clean update-version update-year detailed-manuals manual technical-docs stdlib/%.sh vscode

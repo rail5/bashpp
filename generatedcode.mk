@@ -6,19 +6,19 @@ include config.mk
 # Rule to generate the LSP classes from the metaModel.json file
 $(LSP_GENERATED_FILES): $(LSPDIR)/generated/.stamp
 
-$(LSPDIR)/generated/.stamp: obj/lsp/generateLSPClasses
+$(LSPDIR)/generated/.stamp: bin/obj/lsp/generateLSPClasses
 	@mkdir -p $(LSPDIR)/generated
-	obj/lsp/generateLSPClasses "$(LSPDIR)/metaModel.json" "$(LSPDIR)/generated"
+	bin/obj/lsp/generateLSPClasses "$(LSPDIR)/metaModel.json" "$(LSPDIR)/generated"
 	@touch $@
 
 
-$(ANTLR4DIR)/%.cpp: BashppLexer.g4 BashppParser.g4
+$(ANTLR4DIR)/%.cpp: $(SRCDIR)/BashppLexer.g4 $(SRCDIR)/BashppParser.g4
 	@mkdir -p $(ANTLR4DIR)
-	$(ANTLR4) -Dlanguage=Cpp ./BashppLexer.g4 ./BashppParser.g4 -o ./antlr
+	cd $(SRCDIR) && $(ANTLR4) -Dlanguage=Cpp ./BashppLexer.g4 ./BashppParser.g4 -o antlr
 
 
 # Rule to generate the LSP classes executable
-obj/lsp/generateLSPClasses: $(LSP_GENERATOR_OBJS)
+bin/obj/lsp/generateLSPClasses: $(LSP_GENERATOR_OBJS)
 	@mkdir -p $(LSP_GENERATOR_OBJDIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -o $@ $^
 

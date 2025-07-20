@@ -13,12 +13,12 @@ $(ANTLR4_OBJDIR)/%.o: $(ANTLR4DIR)/%.cpp $(ANTLR4DIR)/BashppParser.cpp $(HEADERS
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
 
 # Rule to compile all .cpp files in the listener directory
-$(LISTENER_OBJDIR)/%.o: listener/%.cpp $(HEADERS) $(LISTENERS)
+$(LISTENER_OBJDIR)/%.o: $(SRCDIR)/listener/%.cpp $(HEADERS) $(LISTENERS)
 	@mkdir -p $(LISTENER_OBJDIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
 
 # Rule to compile all .cpp files in the listener/handlers directory
-$(HANDLERS_OBJDIR)/%.o: listener/handlers/%.cpp $(HEADERS)
+$(HANDLERS_OBJDIR)/%.o: $(SRCDIR)/listener/handlers/%.cpp $(HEADERS)
 	@mkdir -p $(HANDLERS_OBJDIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
 
@@ -31,24 +31,24 @@ $(LSP_GENERATOR_OBJDIR)/%.o: $(LSPDIR)/generator/%.cpp
 	@mkdir -p $(LSP_GENERATOR_OBJDIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(EXTRA_OBJDIR)/%.o: %.cpp
+$(EXTRA_OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	@mkdir -p $(EXTRA_OBJDIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
 
 # Rule to compile the main.cpp file
 ## The Antlr4 objects are a prerequisite for this
-obj/$(MAIN:.cpp=.o): $(MAIN) $(ANTLR4_OBJS) $(ANTLR4DIR)/BashppParser.cpp $(HEADERS) $(LISTENERS)
-	@mkdir -p obj
+bin/obj/main.o: $(MAIN) $(ANTLR4_OBJS) $(ANTLR4DIR)/BashppParser.cpp $(HEADERS) $(LISTENERS)
+	@mkdir -p bin/obj
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
 
 # Rule to compile the bpp-lsp.cpp file
-obj/bpp-lsp.o: bpp-lsp.cpp $(HEADERS) $(LSP_STATIC_FILES) $(LSP_GENERATED_FILES)
+bin/obj/bpp-lsp.o: src/bpp-lsp.cpp $(HEADERS) $(LSP_STATIC_FILES) $(LSP_GENERATED_FILES)
 	@mkdir -p obj
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
 
 clean-objects:
-	@rm -rf obj
-	@find . -name '*.d' -exec rm -f {} +
+	@rm -rf bin/obj
+	@find bin -name '*.d' -exec rm -f {} +
 	@echo "Cleaned up object files."
 
 .PHONY: clean-objects

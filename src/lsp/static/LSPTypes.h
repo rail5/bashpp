@@ -18,12 +18,59 @@ template <typename T>
 struct RecursiveWrapper {
 	T value;
 	
+	// Default constructor
 	RecursiveWrapper() = default;
+	
+	// Value constructors
 	RecursiveWrapper(const T& v) : value(v) {}
 	RecursiveWrapper(T&& v) : value(std::move(v)) {}
 	
+	// Copy constructor
+	RecursiveWrapper(const RecursiveWrapper& other) : value(other.value) {}
+	
+	// Move constructor
+	RecursiveWrapper(RecursiveWrapper&& other) noexcept : value(std::move(other.value)) {}
+	
+	// Copy assignment operator
+	RecursiveWrapper& operator=(const RecursiveWrapper& other) {
+		if (this != &other) {
+			value = other.value;
+		}
+		return *this;
+	}
+	
+	// Move assignment operator
+	RecursiveWrapper& operator=(RecursiveWrapper&& other) noexcept {
+		if (this != &other) {
+			value = std::move(other.value);
+		}
+		return *this;
+	}
+	
+	// Value assignment operators
+	RecursiveWrapper& operator=(const T& v) {
+		value = v;
+		return *this;
+	}
+	
+	RecursiveWrapper& operator=(T&& v) {
+		value = std::move(v);
+		return *this;
+	}
+	
+	// Destructor (explicit to ensure proper cleanup)
+	~RecursiveWrapper() = default;
+	
+	// Conversion operators to maintain value semantics
 	operator T&() { return value; }
 	operator const T&() const { return value; }
+	
+	// Access operators
+	T& operator*() { return value; }
+	const T& operator*() const { return value; }
+	
+	T* operator->() { return &value; }
+	const T* operator->() const { return &value; }
 };
 
 // Forward declarations
@@ -72,7 +119,8 @@ struct adl_serializer<RecursiveWrapper<T>> {
 	}
 	
 	static void from_json(const json& j, RecursiveWrapper<T>& wrapper) {
-		wrapper.value = j.get<T>();
+		T temp = j.get<T>();
+		wrapper.value = std::move(temp);
 	}
 };
 

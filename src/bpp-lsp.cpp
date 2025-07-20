@@ -84,17 +84,25 @@ int main(int argc, char* argv[]) {
 		{"help", no_argument, nullptr, 'h'},
 		{"version", no_argument, nullptr, 'v'},
 		{"log", required_argument, nullptr, 'l'},
+		{"suppress-warnings", no_argument, nullptr, 's'},
+		{"include", required_argument, nullptr, 'I'},
 		{"stdio", no_argument, nullptr, 10000},
 		{"socket", required_argument, nullptr, 10001},
 		{"pipe", required_argument, nullptr, 10002},
 		{nullptr, 0, nullptr, 0} // Sentinel
 	};
 
-	while ((opt = getopt_long(argc, argv, "hvl:", long_options, nullptr)) != -1) {
+	while ((opt = getopt_long(argc, argv, "hI:svl:", long_options, nullptr)) != -1) {
 		switch (opt) {
 			case 'h':
 				std::cout << help_string << std::flush;
 				return 0;
+			case 'I':
+				server.add_include_path(optarg);
+				break;
+			case 's':
+				server.set_suppress_warnings(true);
+				break;
 			case 'v':
 				std::cout << version_string << std::flush;
 				return 0;

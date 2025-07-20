@@ -907,3 +907,11 @@ void BashppServer::publishDiagnostics(std::shared_ptr<bpp::bpp_program> program)
 		sendNotification(notification);
 	}
 }
+
+void BashppServer::add_include_path(const std::string& path) {
+	program_pool.add_include_path(path);
+}
+
+void BashppServer::set_suppress_warnings(bool suppress) {
+	program_pool.set_suppress_warnings(suppress);
+}

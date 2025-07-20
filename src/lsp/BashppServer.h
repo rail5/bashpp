@@ -120,6 +120,9 @@ class BashppServer {
 
 		void publishDiagnostics(std::shared_ptr<bpp::bpp_program> program);
 
+		void add_include_path(const std::string& path);
+		void set_suppress_warnings(bool suppress);
+
 		template <typename... Args>
 		void log(Args&&... args) {
 			if (!log_file.is_open()) {

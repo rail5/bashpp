@@ -24,7 +24,7 @@
 #include "version.h"
 #include "updated_year.h"
 
-BashppServer server;
+bpp::BashppServer server;
 int client_fd = -1;
 int server_fd = -1;
 int socket_port = 0;

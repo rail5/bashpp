@@ -24,6 +24,8 @@
 
 #include "generated/CompletionList.h"
 
+namespace bpp {
+
 using json = nlohmann::json;
 
 template<typename T>
@@ -134,3 +136,5 @@ class BashppServer {
 			log_file << std::endl;
 		}
 };
+
+} // namespace bpp

@@ -1,33 +1,121 @@
 {
   "name": "bashpp",
   "displayName": "Bash++",
-  "description": "Syntax highlighting for Bash++",
-  "version": "0.5.2",
+  "description": "Language support for Bash++",
+  "version": "0.5.3",
   "homepage": "https://bpp.sh",
   "publisher": "rail5",
   "repository": {
     "type": "git",
-    "url": "https://github.com/rail5/bashpp.git"
-    },
+    "url": "https://github.com/rail5/bashpp.git",
+    "directory": "vscode"
+  },
   "engines": {
     "vscode": "^1.75.0"
   },
   "categories": [
     "Programming Languages"
   ],
+  "main": "./dist/extension.js",
+  "scripts": {
+    "vscode:prepublish": "webpack --mode production"
+  },
+  "activationEvents": [],
   "icon": "icon.png",
   "contributes": {
-    "languages": [{
-      "id": "bashpp",
-      "aliases": ["Bash++", "bashpp"],
-      "extensions": [".bpp"],
-      "firstLine": "^#!.*\\b(bpp)\\b",
-      "configuration": "./language-configuration.json"
-    }],
-    "grammars": [{
-      "language": "bashpp",
-      "scopeName": "source.bashpp",
-      "path": "./syntaxes/bashpp.tmLanguage.json"
-    }]
+    "languages": [
+      {
+        "id": "bashpp",
+        "aliases": [
+          "Bash++",
+          "bashpp"
+        ],
+        "extensions": [
+          ".bpp"
+        ],
+        "firstLine": "^#!.*\\b(bpp)\\b",
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "bashpp",
+        "scopeName": "source.bashpp",
+        "path": "./syntaxes/bashpp.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Bash++",
+      "properties": {
+        "bashpp.languageServer.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the Bash++ language server (if installed)."
+        },
+        "bashpp.languageServer.path": {
+          "type": "string",
+          "default": "/usr/bin/bpp-lsp",
+          "description": "Path to the Bash++ language server executable. If not set, the extension will try to find it in the system PATH."
+        },
+        "bashpp.languageServer.log": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable logging for the Bash++ language server for debugging purposes."
+        },
+        "bashpp.languageServer.logFile": {
+          "type": "string",
+          "default": "/tmp/bpp-lsp.log",
+          "description": "Path to the log file for the Bash++ language server. This file will be created if it does not exist."
+        },
+        "bashpp.languageServer.includePaths": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional include paths for the Bash++ language server. These paths will be used to resolve include statements in Bash++ files."
+        },
+        "bashpp.languageServer.showWarnings": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show warnings from the Bash++ language server."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "bashpp.showOutput",
+        "title": "Bash++: Show Output",
+        "category": "Bash++"
+      },
+      {
+        "command": "bashpp.enableLanguageServer",
+        "title": "Bash++: Enable Language Server",
+        "category": "Bash++"
+      },
+      {
+        "command": "bashpp.disableLanguageServer",
+        "title": "Bash++: Disable Language Server",
+        "category": "Bash++"
+      },
+      {
+        "command": "bashpp.restartLanguageServer",
+        "title": "Bash++: Restart Language Server",
+        "category": "Bash++"
+      },
+      {
+        "command": "bashpp.openSettings",
+        "title": "Bash++: Open Settings",
+        "category": "Bash++"
+      }
+    ]
+  },
+  "dependencies": {
+    "vscode-languageclient": "^8.1.0"
+  },
+  "devDependencies": {
+    "webpack": "^5.100.2",
+    "webpack-cli": "^6.0.1"
   }
 }

@@ -10,3 +10,6 @@ docs
 debian/*.3
 debian/*.1
 debian/*.7
+vscode/node_modules
+vscode/*.vsix
+vscode/dist

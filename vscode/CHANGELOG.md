@@ -1,5 +1,16 @@
 # Change Log
 
+## [0.5.3]
+
+- Added support for the new Bash++ language server
+  - If installed on your system, the language server will be automatically started when you open a Bash++ file in VSCode.
+  - The language server provides features such as:
+    - Syntax checking
+    - Code completion
+    - Go to definition
+    - Find references
+  - The language server can be disabled or configured via the VSCode settings.
+
 ## [0.5.2]
 
 - Bug fix: properly highlight `@this` and `@super` as *keywords* within double-quoted strings

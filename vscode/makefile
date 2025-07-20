@@ -1,4 +1,5 @@
 all:
+	npm install
 	vsce package
 
 publish:
@@ -6,3 +7,6 @@ publish:
 
 clean:
 	rm -f *.vsix
+	rm -rf node_modules
+
+.PHONY: all publish clean

@@ -1,3 +1,12 @@
 .vscode/**
 .vscode-test/**
 .gitignore
+node_modules/**
+**/tsconfig.json
+**/.eslintrc.json
+**/*.map
+**/*.ts
+**/*.vsix
+**/.DS_Store
+extension.js
+webpack.config.js

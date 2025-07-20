@@ -1,0 +1,212 @@
+/**
+ * Copyright (C) 2025 Andrew S. Rightenburg
+ * Bash++: Bash with classes
+ */
+
+#include "../BashppServer.h"
+#include "../generated/CompletionRequest.h"
+
+GenericResponseMessage bpp::BashppServer::handleCompletion(const GenericRequestMessage& request) {
+
+	CompletionRequestResponse response;
+	response.id = request.id;
+	CompletionRequest completion_request = request.toSpecific<CompletionParams>();
+
+	std::string uri = completion_request.params.textDocument.uri;
+	// Verify the URI starts with "file://"
+	if (uri.find("file://") != 0) {
+		log("Ignoring request to provide completions for non-local file: ", uri);
+		response.result = nullptr;
+		return response;
+	} else {
+		// Strip the "file://" prefix
+		uri = uri.substr(7);
+	}
+	
+	// Which character triggered the request?
+	char trigger_character = '@';
+	if (completion_request.params.context.has_value() && completion_request.params.context->triggerCharacter.has_value()) {
+		trigger_character = completion_request.params.context->triggerCharacter.value()[0];
+	}
+
+	CompletionList completion_list;
+	completion_list.isIncomplete = false; // Assume completions are complete for now
+	
+	// If it was '@', suggest class names, object names, and standard operators like include or dynamic_cast
+	// If it was '.', suggest method names and data members of the current object
+	// Also, '.' requires for us to wait until previous unsaved changes have been processed (done by default)
+	switch (trigger_character) {
+		case '@':
+		default:
+		{
+			log("Received Completion request for URI: ", uri, " with trigger character: '@'");
+
+			completion_list = default_completion_list; // Start with the default completion list
+
+			std::shared_ptr<bpp::bpp_program> program = program_pool.get_program(uri, true); // Jump the queue and get the program immediately
+			if (program == nullptr) {
+				log("Program not found for URI: ", uri);
+				response.result = nullptr;
+				return response;
+			}
+
+			Position position = completion_request.params.position;
+			
+			// Which entity is active at the given position?
+			std::shared_ptr<bpp::bpp_entity> active_entity = program->get_active_entity(uri, position.line, position.character);
+			if (active_entity == nullptr) {
+				log("BUG: No active entity found at position: (", position.line, ", ", position.character, ") in URI: ", uri, " - returning default completions.");
+			} else {
+				auto objects = active_entity->get_objects();
+				auto classes = active_entity->get_classes();
+
+				for (const auto& obj : objects) {
+					CompletionItem item;
+					item.label = obj.first;
+					item.kind = CompletionItemKind::Variable;
+					item.detail = "@" + obj.second->get_class()->get_name() + " " + obj.first; // As in: @ClassName objectName
+					completion_list.items.push_back(item);
+				}
+
+				for (const auto& cls : classes) {
+					CompletionItem item;
+					item.label = cls.first;
+					item.kind = CompletionItemKind::Class;
+					item.detail = "@class " + cls.second->get_name(); // As in: @class ClassName
+					completion_list.items.push_back(item);
+				}
+			}
+		}
+		break;
+		case '.':
+		{
+			log("Received Completion request for URI: ", uri, " with trigger character: '.'");
+			// Wait for stored_changes_content_updating to be false before proceeding
+			// Just to make sure we're suggesting completions based on the latest content
+			// When the user types '.', the client will send a didChange notification,
+			// and then immediately after, it'll send a completion request.
+			// We need to ensure that our internally-stored version of the file content
+			// is up-to-date before we resolve the reference and provide completions.
+			while (stored_changes_content_updating) {
+				std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Sleep for 10 milliseconds
+			}
+			std::lock_guard<std::mutex> lock(unsaved_changes_mutex);
+
+			std::shared_ptr<bpp::bpp_program> program = program_pool.get_program(uri, true); // Jump the queue and get the program immediately
+			if (program == nullptr) {
+				log("Program not found for URI: ", uri);
+				response.result = nullptr;
+				return response;
+			}
+
+			Position position = completion_request.params.position;
+
+			// Resolve the referenced entity before the dot
+			bpp::entity_reference referenced_entity;
+
+			if (unsaved_changes.find(uri) != unsaved_changes.end()) {
+				referenced_entity = bpp::resolve_reference_at(uri, position.line, position.character, program, unsaved_changes[uri]);
+			} else {
+				referenced_entity = bpp::resolve_reference_at(uri, position.line, position.character, program);
+			}
+
+			if (referenced_entity.entity == nullptr) {
+				log("No entity found at position: (", position.line, ", ", position.character, ") in URI: ", uri, " - returning default completions.");
+				response.result = nullptr;
+				return response;
+			}
+
+			// Ensure that the referenced entity is a non-primitive object
+			std::shared_ptr<bpp::bpp_object> obj = std::dynamic_pointer_cast<bpp::bpp_object>(referenced_entity.entity);
+			if (obj == nullptr || obj->get_class() == program->get_primitive_class()) {
+				log("Referenced entity is not a valid object or is a primitive type at position: (", position.line, ", ", position.character, ") in URI: ", uri, " - returning default completions.");
+				response.result = nullptr;
+				return response;
+			}
+
+			// Otherwise, let's populate the completion list with methods and data members of the object's class
+			for (const auto& method : obj->get_class()->get_methods()) {
+				if (method->get_name().find("__") != std::string::npos) {
+					continue; // Skip system methods
+				}
+
+				CompletionItem item;
+				item.label = method->get_name();
+				item.kind = CompletionItemKind::Method;
+
+				std::string detail = "";
+
+				if (method->is_virtual()) {
+					detail += "@virtual ";
+				}
+				
+				switch (method->get_scope()) {
+					case bpp::bpp_scope::SCOPE_PUBLIC:
+						detail += "@public ";
+						break;
+					case bpp::bpp_scope::SCOPE_PRIVATE:
+						detail += "@private ";
+						break;
+					case bpp::bpp_scope::SCOPE_PROTECTED:
+						detail += "@protected ";
+						break;
+					default:
+						detail += "@private ";
+						break;
+				}
+
+				detail += "@method " + method->get_name();
+
+				for (const auto& param : method->get_parameters()) {
+					detail += " [";
+					if (param->get_type() == program->get_primitive_class()) {
+						detail += "$" + param->get_name();
+					} else {
+						detail += "@" + param->get_type()->get_name() + "* " + param->get_name();
+					}
+					detail += "]";
+				}
+
+				item.detail = detail;
+				// Full example: @virtual @public @method methodName [@ClassName* param1] [$primitive_param2]
+
+				completion_list.items.push_back(item);
+			}
+
+			for (const auto& data_member : obj->get_class()->get_datamembers()) {
+				CompletionItem item;
+				item.label = data_member->get_name();
+				item.kind = CompletionItemKind::Field;
+
+				std::string detail = "@" + obj->get_name() + "." + data_member->get_name();
+				detail += " (";
+
+				if (data_member->get_class() == program->get_primitive_class()) {
+					detail += "primitive";
+					if (data_member->is_array()) {
+						detail += " array";
+					}
+				} else {
+					detail += "@" + data_member->get_class()->get_name();
+
+					if (data_member->is_pointer()) {
+						detail += "*";
+					}
+				}
+				detail += ")";
+
+				item.detail = detail;
+				// Full example: @objectName.dataMemberName (primitive)
+				// Or: @objectName.dataMemberName (primitive array)
+				// Or: @objectName.dataMemberName (@ClassName)
+				// Or: @objectName.dataMemberName (@ClassName*)
+
+				completion_list.items.push_back(item);
+			}
+		}
+		break;
+	}
+
+	response.result = completion_list;
+	return response;
+}

@@ -21,8 +21,11 @@
 #include "ProgramPool.h"
 
 #include "static/Message.h"
+#include "generated/ErrorCodes.h"
 
 #include "generated/CompletionList.h"
+
+#include "../bpp_include/bpp_codegen.h"
 
 namespace bpp {
 
@@ -65,7 +68,7 @@ class BashppServer {
 		// TODO(@rail5): When Debian 13 is released, use libfrozen-dev to make these maps constexpr
 		const std::unordered_map<std::string, std::function<GenericResponseMessage(const GenericRequestMessage& )>> request_handlers = {
 			{"initialize", std::bind(&BashppServer::handleInitialize, this, std::placeholders::_1)},
-			{"textDocument/definition", std::bind(&BashppServer::handleGotoDefinition, this, std::placeholders::_1)},
+			{"textDocument/definition", std::bind(&BashppServer::handleDefinition, this, std::placeholders::_1)},
 			{"textDocument/completion", std::bind(&BashppServer::handleCompletion, this, std::placeholders::_1)},
 			{"textDocument/hover", std::bind(&BashppServer::handleHover, this, std::placeholders::_1)},
 			{"textDocument/documentSymbol", std::bind(&BashppServer::handleDocumentSymbol, this, std::placeholders::_1)},
@@ -105,7 +108,7 @@ class BashppServer {
 
 		// Request-Response handlers
 		GenericResponseMessage handleInitialize(const GenericRequestMessage& request);
-		GenericResponseMessage handleGotoDefinition(const GenericRequestMessage& request);
+		GenericResponseMessage handleDefinition(const GenericRequestMessage& request);
 		GenericResponseMessage handleCompletion(const GenericRequestMessage& request);
 		GenericResponseMessage handleHover(const GenericRequestMessage& request);
 		GenericResponseMessage handleDocumentSymbol(const GenericRequestMessage& request);

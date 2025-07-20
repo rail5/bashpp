@@ -26,6 +26,7 @@ LISTENER_OBJDIR = bin/obj/listener
 HANDLERS_OBJDIR = bin/obj/listener/handlers
 EXTRA_OBJDIR = bin/obj/extra
 LSP_OBJDIR = bin/obj/lsp
+LSP_HANDLER_OBJDIR = bin/obj/lsp/handlers
 LSP_GENERATOR_OBJDIR = bin/obj/lsp/generator
 
 
@@ -93,3 +94,6 @@ LSP_OBJS = $(patsubst $(LSPDIR)/%.cpp,$(LSP_OBJDIR)/%.o,$(LSP_SRCS))
 
 LSP_GENERATOR_SRCS = $(wildcard $(LSPDIR)/generator/*.cpp)
 LSP_GENERATOR_OBJS = $(patsubst $(LSPDIR)/generator/%.cpp,$(LSP_GENERATOR_OBJDIR)/%.o,$(LSP_GENERATOR_SRCS))
+
+LSP_HANDLER_SRCS = $(wildcard $(LSPDIR)/handlers/*.cpp)
+LSP_HANDLER_OBJS = $(patsubst $(LSPDIR)/handlers/%.cpp,$(LSP_HANDLER_OBJDIR)/%.o,$(LSP_HANDLER_SRCS))

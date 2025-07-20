@@ -69,8 +69,11 @@ manual: clean-manual detailed-manuals
 	@sed -i '1s/^/% bpp(7) Version '"$(VERSION)"' | Manual for the Bash++ language\n/' tmp/language.md
 	@sed -i 's/Programming in Bash++/NAME\nbpp - The Bash++ language/g' tmp/language.md
 	$(MAKE) process-manual-code-snippets FILE=tmp/language.md
+	@tail -n +5 "wiki/bpp-lsp.md" > tmp/bpp-lsp.md
+	@sed -i '1s/^/% bpp-lsp(1) Version '"$(VERSION)"' | Bash++ Language Server\n/' tmp/bpp-lsp.md
 	@pandoc --standalone --to man tmp/compiler.md -o debian/bpp.1
 	@pandoc --standalone --to man tmp/language.md -o debian/bpp.7
+	@pandoc --standalone --to man tmp/bpp-lsp.md -o debian/bpp-lsp.1
 	@rm -rf tmp
 
 detailed-manuals: clean-detailed-manuals

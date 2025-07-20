@@ -2,25 +2,40 @@ Source: bpp
 Priority: optional
 Maintainer: rail5 <andrew@rail5.org>
 Build-Depends: debhelper (>= 10), pandoc, antlr4, libantlr4-runtime-dev, perl, nlohmann-json3-dev
-Standards-Version: 3.9.3
+Standards-Version: 4.6.2
 Section: utils
 
 Package: bpp
-Version: 0.2
-License: GPL-3.0
-Vendor: rail5 <andrew@rail5.org>
 Priority: optional
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libstd-bpp
-Description: Bash with classes
+Recommends: bpp-lsp
+Description: Bash++: Bash with classes
  Bash++ is a superset of Bash which adds support for object orientation
+ .
+ This package provides the Bash++ compiler.
 
 Package: libstd-bpp
-Version: 0.2
-License: GPL-3.0
-Vendor: rail5 <andrew@rail5.org>
 Priority: optional
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${misc:Depends}
 Description: Standard library for Bash++
  The standard library for Bash++ (common data structures and algorithms)
+ .
+ This package provides the standard library for Bash++,
+ which includes common data structures and algorithms.
+
+Package: bpp-lsp
+Priority: optional
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libstd-bpp
+Recommends: bpp
+Description: Bash++ language server
+ The Bash++ language server provides support for Bash++ files.
+ It includes features such as code completion, diagnostics, and more.
+ This package is intended for use with editors that support the
+ language server protocol, such as Visual Studio Code.
+ .
+ This package includes the language server binary.
+ It does not include the Visual Studio Code extension, which is
+ available separately.

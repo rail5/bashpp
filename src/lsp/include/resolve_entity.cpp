@@ -272,6 +272,7 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 
 			std::shared_ptr<bpp::bpp_entity> faux_entity = std::make_shared<bpp::bpp_entity>();
 			faux_entity->set_definition_position(source_filename, 0, 0);
+			faux_entity->set_name(full_path);
 			return faux_entity;
 		}
 		break;
@@ -284,7 +285,9 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 				return nullptr; // Not a valid instantiation context
 			}
 
-			auto class_name_token = instantiation_ctx->IDENTIFIER_LVALUE();
+			auto class_name_token = (instantiation_ctx->IDENTIFIER_LVALUE() != nullptr)
+				? instantiation_ctx->IDENTIFIER_LVALUE()
+				: instantiation_ctx->IDENTIFIER(0);
 			auto class_pointer = context->get_class(class_name_token->getText());
 			return class_pointer;
 		}

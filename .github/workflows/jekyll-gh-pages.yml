@@ -78,6 +78,7 @@ jobs:
       - name: Run tests and generate test stats SVG
         if: steps.code_changed.outputs.code == 'true'
         run: |
+          apt install bc -y
           bash wiki/_includes/code/run-tests.sh
       - name: Preserve old test stats SVG
         if: steps.code_changed.outputs.code == 'false'

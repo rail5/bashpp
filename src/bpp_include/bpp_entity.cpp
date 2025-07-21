@@ -50,8 +50,12 @@ std::string bpp_entity::get_address() const {
 	return "";
 }
 
+void bpp_entity::set_name(const std::string& name) {
+	this->name = name;
+}
+
 std::string bpp_entity::get_name() const {
-	return "";
+	return this->name;
 }
 
 /**

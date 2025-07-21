@@ -9,12 +9,4 @@ namespace bpp {
 
 bash_function::bash_function() {}
 
-void bash_function::set_name(const std::string& name) {
-	this->name = name;
-}
-
-std::string bash_function::get_name() const {
-	return name;
-}
-
 } // namespace bpp

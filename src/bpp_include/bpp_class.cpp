@@ -168,10 +168,6 @@ bool bpp_class::add_datamember(std::shared_ptr<bpp_datamember> datamember) {
 	return true;
 }
 
-std::string bpp_class::get_name() const {
-	return name;
-}
-
 std::vector<std::shared_ptr<bpp_method>> bpp_class::get_methods() const {
 	return methods;
 }

@@ -10,7 +10,9 @@ namespace bpp {
 
 bpp_method::bpp_method() {}
 
-bpp_method::bpp_method(const std::string& name) : name(name) {}
+bpp_method::bpp_method(const std::string& name) {
+	set_name(name);
+}
 
 /**
  * @brief Add a pointer to a non-primitive object as a parameter to the method
@@ -77,10 +79,6 @@ bool bpp_method::add_parameter(std::shared_ptr<bpp_method_parameter> parameter) 
 	return true;
 }
 
-void bpp_method::set_name(const std::string& name) {
-	this->name = name;
-}
-
 void bpp_method::set_scope(bpp_scope scope) {
 	this->scope = scope;
 }
@@ -91,10 +89,6 @@ void bpp_method::set_virtual(bool is_virtual) {
 
 void bpp_method::set_inherited(bool is_inherited) {
 	inherited = is_inherited;
-}
-
-std::string bpp_method::get_name() const {
-	return name;
 }
 
 std::vector<std::shared_ptr<bpp_method_parameter>> bpp_method::get_parameters() const {

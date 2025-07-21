@@ -120,6 +120,7 @@ struct SymbolPosition {
  */
 class bpp_entity {
 	protected:
+		std::string name = "";
 		/**
 		 * @var classes
 		 * @brief A map of class names to class objects within this entity
@@ -149,6 +150,7 @@ class bpp_entity {
 
 		virtual std::shared_ptr<bpp_class> get_class();
 		virtual std::string get_address() const;
+		virtual void set_name(const std::string& name);
 		virtual std::string get_name() const;
 		virtual std::weak_ptr<bpp::bpp_class> get_containing_class();
 		virtual bool set_containing_class(std::weak_ptr<bpp::bpp_class> containing_class);
@@ -292,7 +294,6 @@ class bpp_string : public bpp_code_entity {
  */
 class bpp_method : public bpp_code_entity {
 	private:
-		std::string name;
 		std::vector<std::shared_ptr<bpp_method_parameter>> parameters;
 		bpp_scope scope = SCOPE_PUBLIC;
 		bool m_is_virtual = false;
@@ -304,13 +305,11 @@ class bpp_method : public bpp_code_entity {
 		bpp_method(const std::string& name, bool is_virtual);
 
 		virtual bool add_parameter(std::shared_ptr<bpp_method_parameter> parameter);
-		void set_name(const std::string& name);
 		void set_scope(bpp_scope scope);
 		void set_virtual(bool is_virtual);
 		void set_inherited(bool is_inherited);
 		bool add_object(std::shared_ptr<bpp_object> object, bool make_local) override;
 
-		std::string get_name() const override;
 		std::vector<std::shared_ptr<bpp_method_parameter>> get_parameters() const;
 		bpp_scope get_scope() const;
 		bool is_virtual() const;
@@ -325,14 +324,10 @@ class bpp_method : public bpp_code_entity {
  * @brief A parameter in a method
  */
 class bpp_method_parameter : public bpp_entity {
-	private:
-		std::string name;
 	public:
 		explicit bpp_method_parameter(const std::string& name);
 
 		void set_type(std::shared_ptr<bpp_class>);
-
-		std::string get_name() const override;
 		std::shared_ptr<bpp_class> get_type() const;
 };
 
@@ -343,7 +338,6 @@ class bpp_method_parameter : public bpp_entity {
  */
 class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_class> {
 	private:
-		std::string name;
 		std::vector<std::shared_ptr<bpp_method>> methods;
 		std::vector<std::shared_ptr<bpp_datamember>> datamembers;
 		bool has_custom_toPrimitive = false;
@@ -363,11 +357,10 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 
 		std::shared_ptr<bpp_class> get_class() override;
 
-		void set_name(const std::string& name);
+		void set_name(const std::string& name) override;
 		bool add_method(std::shared_ptr<bpp_method> method);
 		bool add_datamember(std::shared_ptr<bpp_datamember> datamember);
 
-		std::string get_name() const override;
 		std::vector<std::shared_ptr<bpp_method>> get_methods() const;
 		std::vector<std::shared_ptr<bpp_datamember>> get_datamembers() const;
 
@@ -388,7 +381,6 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
  */
 class bpp_object : public bpp_entity {
 	protected:
-		std::string name = "";
 		std::string address = "";
 		std::string assignment_value = "";
 		std::string pre_access_code = "";
@@ -402,14 +394,12 @@ class bpp_object : public bpp_entity {
 
 		void set_class(std::shared_ptr<bpp_class> object_class);
 		void set_pointer(bool is_pointer);
-		void set_name(const std::string& name);
 		void set_address(const std::string& address);
 		void set_assignment_value(const std::string& assignment_value);
 		void set_pre_access_code(const std::string& pre_access_code);
 		void set_post_access_code(const std::string& post_access_code);
 		void set_nullptr();
 
-		std::string get_name() const override;
 		std::string get_address() const override;
 		std::string get_assignment_value() const;
 		std::shared_ptr<bpp_class> get_class() override;
@@ -704,13 +694,8 @@ class bash_for : public bpp_code_entity {
 };
 
 class bash_function : public bpp_code_entity {
-	private:
-		std::string name = "";
 	public:
 		bash_function();
-
-		void set_name(const std::string& name);
-		std::string get_name() const override;
 };
 
 /**

@@ -9,9 +9,12 @@ namespace bpp {
 
 bpp_object::bpp_object() {}
 
-bpp_object::bpp_object(const std::string& name) : name(name) {}
-
-bpp_object::bpp_object(const std::string& name, bool is_pointer) : name(name), m_is_pointer(is_pointer) {}
+bpp_object::bpp_object(const std::string& name) {
+	set_name(name);
+}
+bpp_object::bpp_object(const std::string& name, bool is_pointer) : m_is_pointer(is_pointer) {
+	set_name(name);
+}
 
 void bpp_object::set_class(std::shared_ptr<bpp_class> object_class) {
 	this->type = object_class;
@@ -19,10 +22,6 @@ void bpp_object::set_class(std::shared_ptr<bpp_class> object_class) {
 
 void bpp_object::set_pointer(bool is_pointer) {
 	m_is_pointer = is_pointer;
-}
-
-void bpp_object::set_name(const std::string& name) {
-	this->name = name;
 }
 
 void bpp_object::set_address(const std::string& address) {
@@ -45,10 +44,6 @@ void bpp_object::set_nullptr() {
 	if (m_is_pointer) {
 		assignment_value = bpp::bpp_nullptr;
 	}
-}
-
-std::string bpp_object::get_name() const {
-	return name;
 }
 
 std::string bpp_object::get_address() const {

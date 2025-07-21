@@ -1,3 +1,30 @@
+bpp (0.5.2) unstable; urgency=medium
+
+  * Created bpp-lsp: A Bash++ language server
+    This language server has full support for:
+    Go-to-definition, hover text, in-editor diagnostics (errors, etc),
+    and completions.
+    It is multi-threaded and mostly compliant with the LSP spec.
+  * VSCode Extension: Added support for the language server
+    If the language server is installed on your system, then by default,
+    the VSCode extension will connect to it. If it is not installed, then
+    no error messages will be shown.
+  * Polished the package's build system
+  * Error reporting: More helpful error messages in the case of method
+    parameters
+  * Error reporting: Manually track lexer token position data
+    This fixes a bug in which occasionally an error would be reported for
+    a token, and we would not be able to say *where* in the file that
+    token was.
+  * Bug fix: Emit special lexer tokens for class definition start and end
+    Fixes an elusive bug in which occasionally the parser would not
+    recognize a class definition
+  * Optimization: Abstracted a 'resolve_reference' function for use by
+    all 4 object reference rules (rvalue/lvalue, object/self references)
+
+
+ -- rail5 <andrew@rail5.org>  Mon, 21 Jul 2025 20:18:20 +0800
+
 bpp (0.5.1) unstable; urgency=medium
 
   * Created abstract resolve_reference function in codegen

@@ -71,7 +71,7 @@ jobs:
       run: |
         if [ "${{ matrix.language }}" = "c-cpp" ]; then
           apt-get update
-          apt-get install build-essential antlr4 libantlr4-runtime-dev pandoc nlohmann-json3-dev
+          apt-get install build-essential antlr4 libantlr4-runtime-dev pandoc nlohmann-json3-dev -y
         fi
 
     # Add any setup steps before running the `github/codeql-action/init` action.

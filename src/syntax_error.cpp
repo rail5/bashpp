@@ -14,6 +14,8 @@
 
 #include "syntax_error.h"
 
+#include "thirdparty/utf8/utf8.h"
+
 void print_syntax_error_or_warning(
 	std::string source_file,
 	int line, int column,
@@ -32,6 +34,8 @@ void print_syntax_error_or_warning(
 		color_red = "";
 		color_reset = "";
 	}
+
+	std::setlocale(LC_ALL, "");
 
 	// Sometimes ANTLR sets position data for a token as line=0, col=-1
 	// I have no idea why it does this. I would guess that it's a bug in ANTLR.
@@ -107,12 +111,34 @@ void print_syntax_error_or_warning(
 		}
 		std::cerr << firstline_padding << line_contents << std::endl;
 
-		for (int i = 0; i < column; i++) {
-			if (line_contents[i] == '\t') {
+		int display_col = 0;
+		std::string::iterator it = line_contents.begin();
+		while (display_col < column && it != line_contents.end()) {
+			uint32_t cp;
+			try {
+				cp = utf8::next(it, line_contents.end());
+			} catch (const utf8::invalid_utf8& e) {
+				// If we encounter an invalid UTF-8 sequence, we can just skip it
+				// This is a bit of a hack, but it allows us to continue displaying the rest of the line
+				cp = 0xFFFD; // Replacement character
+			}
+
+			if (cp == '\t') {
 				secondline_padding += "\t";
-			} else {
+				display_col++;
+				continue;
+			}
+			
+			int width = wcwidth(static_cast<wchar_t>(cp));
+			if (width < 0) {
+				width = 1;
+			}
+
+			for (int i = 0; i < width; i++) {
 				secondline_padding += " ";
 			}
+
+			display_col++;
 		}
 
 		// Print the error indicator

@@ -28,6 +28,9 @@ jobs:
     #   - https://gh.io/using-larger-runners (GitHub.com only)
     # Consider using larger runners or machines with greater resources for possible analysis time improvements.
     runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+    container:
+      image: debian:stable
+      options: --user root
     permissions:
       # required for all workflows
       security-events: write
@@ -56,6 +59,11 @@ jobs:
         # If you are analyzing a compiled language, you can modify the 'build-mode' for that language to customize how
         # your codebase is analyzed, see https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/codeql-code-scanning-for-compiled-languages
     steps:
+    - name: Set up Git
+      run: |
+        apt-get update
+        apt-get install git git-lfs -y
+        git config --global --add safe.directory "$GITHUB_WORKSPACE"
     - name: Checkout repository
       uses: actions/checkout@v4
 

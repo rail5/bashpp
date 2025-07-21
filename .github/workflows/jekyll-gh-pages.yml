@@ -36,6 +36,10 @@ jobs:
       image: debian:stable
     if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }} # Conditional check to ensure the job only runs on GitHub Actions
     steps:
+      - name: Set up Git
+        run: |
+          sudo apt-get update
+          sudo apt-get install git
       - name: Checkout
         uses: actions/checkout@v3
         with:

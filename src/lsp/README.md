@@ -6,9 +6,34 @@ This is a work-in-progress implementation of a Bash++ language server.
 
 It is designed to provide language server protocol (LSP) features such as code completion, go-to definition, and hover information for Bash++ scripts.
 
-The files `generateLSPClasses.cpp`, `TypeRegistry.cpp`, and `TypeRegistry.h` are responsible for automatically generating the necessary C++ classes based on the LSP specification defined in `metaModel.json`.
+## Feature Checklist
 
-The generated classes are then used to handle LSP requests and responses in the Bash++ language server.
+- [&#10003;] Diagnostics (syntax errors, etc.)
+- [&#10003;] Code completions
+- [&#10003;] Go to definition
+- [&#10003;] Hover information
+- [ &nbsp; ] Document symbols (in progress)
+- [ &nbsp; ] Workspace renaming (in progress)
+
+### Position Encodings
+
+Our compiler uses UTF-8, but VSCode demands UTF-16 position encodings. Microsoft is full of weird ideas about what's normal:
+
+> We choose UTF-16 encoding here since most language store strings in memory in UTF-16 not UTF-8.
+
+&mdash; [LSP Architect](https://github.com/microsoft/language-server-protocol/issues/376)
+
+This statement is simply not true.
+
+Adding UTF-16 position encoding support is going to be a **massive** pain, and *only* has any benefit for Microsoft products. Therefore I consider it extremely low priority.
+
+The language server, at the moment, sends position data to the client based on UTF-8 counts. In the vast majority of cases, this will not cause a problem, but if you have emojis in your source code, there will be some discrepancies.
+
+The trouble comes from 4-byte UTF-8 characters, which are counted as 1 character in UTF-8, but 2 "code points" in UTF-16.
+
+All of the most-commonly used characters however (including Latin, Cyrillic, Greek, Chinese, Japanese, Korean, Arabic, and Hebrew, to name a few) **will work just fine.**
+
+However: emojis, ancient cuneiform, and other obscure characters will not be counted correctly. If you have these in your source code, you'll see error squiggles show up in the wrong place, etc.
 
 ## Copyright and License
 

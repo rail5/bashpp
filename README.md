@@ -58,6 +58,7 @@ Pre-built packages are available for **amd64**, **i386**, and **arm64** architec
  - `g++`
  - `antlr4`
  - Antlr4 C++ runtime
+ - `nlohmann-json3-dev`
 
 Optional:
  - `pandoc` and `perl` for building the documentation
@@ -67,7 +68,7 @@ On Debian-based systems, you can install the prerequisites with:
 
 ```bash
 $ sudo apt update
-$ sudo apt install build-essential antlr4 libantlr4-runtime-dev pandoc perl debhelper
+$ sudo apt install build-essential antlr4 libantlr4-runtime-dev pandoc perl debhelper nlohmann-json3-dev
 ```
 
 #### Building
@@ -111,4 +112,4 @@ $ shellwatch compiled-program.sh
 
 ## VSCode extension
 
-The [Bash++ extension for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=rail5.bashpp) provides syntax highlighting for Bash++.
+The [Bash++ extension for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=rail5.bashpp) provides IDE language support for Bash++, including syntax highlighting and (optionally) language server features such as code completion, go-to definition, etc.

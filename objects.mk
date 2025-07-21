@@ -45,12 +45,12 @@ $(EXTRA_OBJDIR)/%.o: $(SRCDIR)/%.cpp
 
 # Rule to compile the main.cpp file
 ## The Antlr4 objects are a prerequisite for this
-bin/obj/main.o: $(MAIN) $(ANTLR4_OBJS) $(ANTLR4DIR)/BashppParser.cpp $(HEADERS) $(LISTENERS)
+bin/obj/main.o: $(MAIN) $(ANTLR4_OBJS) $(ANTLR4DIR)/BashppParser.cpp $(HEADERS) $(LISTENERS) | update-version update-year
 	@mkdir -p bin/obj
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
 
 # Rule to compile the bpp-lsp.cpp file
-bin/obj/bpp-lsp.o: src/bpp-lsp.cpp $(HEADERS) $(LSP_STATIC_FILES) $(LSP_GENERATED_FILES)
+bin/obj/bpp-lsp.o: src/bpp-lsp.cpp $(HEADERS) $(LSP_STATIC_FILES) $(LSP_GENERATED_FILES) | update-version update-year
 	@mkdir -p obj
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
 

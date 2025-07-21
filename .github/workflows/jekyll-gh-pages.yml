@@ -40,7 +40,7 @@ jobs:
       - name: Set up Git
         run: |
           apt-get update
-          apt-get install git
+          apt-get install git -y
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -73,7 +73,7 @@ jobs:
         if: steps.code_changed.outputs.code == 'true'
         run: |
           apt-get update
-          apt-get install build-essential antlr4 libantlr4-runtime-dev doxygen graphviz
+          apt-get install build-essential antlr4 libantlr4-runtime-dev doxygen graphviz -y
       - name: Run tests and generate test stats SVG
         if: steps.code_changed.outputs.code == 'true'
         run: |
@@ -86,7 +86,6 @@ jobs:
       - name: Generate STL documentation
         if: steps.code_changed.outputs.code == 'true'
         run: |
-          apt-get install git
           git clone https://github.com/rail5/autodoc-bpp.git autodoc-bpp
           # Generate the docs with autodoc-bpp
           bin/bpp -I$(pwd)/stdlib/ autodoc-bpp/autodoc.bpp -d "$(pwd)/stdlib/" -n "Bash++ Standard Library" -e -o "wiki/stl/" -m md
@@ -122,7 +121,7 @@ jobs:
         if: steps.code_changed.outputs.code == 'false'
         run: |
           # Download the old documentation from the website
-          apt-get install wget
+          apt-get install wget -y
           mkdir -p wiki/doxygen
           wget -mpEk https://bpp.sh/doxygen/
           cp -r bpp.sh/doxygen/* wiki/doxygen/

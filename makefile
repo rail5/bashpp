@@ -30,7 +30,7 @@ std: compiler
 	@echo $(STDLIB_FILES)
 	$(MAKE) $(STDLIB_FILES)
 
-stdlib/%.sh: stdlib/%
+stdlib/%.sh: stdlib/% bin/bpp
 	@echo "Compiling stdlib: $<"
 	@bin/bpp -o $@ $<
 

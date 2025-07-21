@@ -27,6 +27,17 @@ GenericResponseMessage bpp::BashppServer::handleInitialize(const GenericRequestM
 	result.capabilities.documentSymbolProvider = true;
 	result.capabilities.workspaceSymbolProvider = true;
 
+	// If the client advertises that it supports UTF-8 position data, respond to let it know that's what we'll be sending
+	if (initialize_request.params.capabilities.general.has_value()
+		&& initialize_request.params.capabilities.general->positionEncodings.has_value()
+		&& std::find(
+				initialize_request.params.capabilities.general->positionEncodings->begin(),
+				initialize_request.params.capabilities.general->positionEncodings->end(),
+				PositionEncodingKind::UTF8)
+			!= initialize_request.params.capabilities.general->positionEncodings->end()) {
+		result.capabilities.positionEncoding = PositionEncodingKind::UTF8;
+	}
+
 	response.result = result;
 
 	return response;

@@ -27,6 +27,22 @@ bin/obj/lsp/generateLSPClasses: $(LSP_GENERATOR_OBJS)
 	@mkdir -p $(LSP_GENERATOR_OBJDIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -o $@ $^
 
+update-version:
+	@ \
+	if [ ! -z "$(VERSION)" ]; then \
+		echo "#define bpp_compiler_version \"$(VERSION)\"" > src/version.h; \
+	else \
+		echo "#define bpp_compiler_version \"0.5.2\"" > src/version.h; \
+	fi;
+
+update-year:
+	@ \
+	if [ ! -z "$(LASTUPDATEDYEAR)" ]; then \
+		echo "#define bpp_compiler_updated_year \"$(LASTUPDATEDYEAR)\"" > src/updated_year.h; \
+	else \
+		echo "#define bpp_compiler_updated_year \"2025\"" > src/updated_year.h; \
+	fi;
+
 clean-antlr:
 	@rm -rf $(ANTLR4DIR)
 	@echo "Cleaned up ANTLR4 generated files."

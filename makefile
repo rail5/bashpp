@@ -6,16 +6,6 @@ endif
 
 .SUFFIXES:
 
-PARSECHANGELOG := $(shell command -v dpkg-parsechangelog 2> /dev/null)
-
-ifdef PARSECHANGELOG
-	VERSION=$$(dpkg-parsechangelog -l debian/changelog --show-field version)
-	LASTUPDATEDYEAR=$$(date +%Y -d@$$(dpkg-parsechangelog -l debian/changelog --show-field timestamp))
-else
-	VERSION=$$(head -n1 debian/changelog | grep -o "[[:digit:].]*" || echo "0.1")
-	LASTUPDATEDYEAR=$$(grep "^ \-- " debian/changelog | head -n 1 | cut -d, -f2 | date -d - +%Y || date +%Y || echo "2025")
-endif
-
 # STDLIB_FILES:
 # Find all files without extensions in the stdlib directory
 # And append ".sh" to each file name
@@ -91,18 +81,6 @@ detailed-manuals: clean-detailed-manuals
 
 technical-docs: clean-technical-docs
 	doxygen Doxyfile
-
-update-version:
-	@ \
-	if [ ! -z "$(VERSION)" ]; then \
-		echo "#define bpp_compiler_version \"$(VERSION)\"" > src/version.h; \
-	fi;
-
-update-year:
-	@ \
-	if [ ! -z "$(LASTUPDATEDYEAR)" ]; then \
-		echo "#define bpp_compiler_updated_year \"$(LASTUPDATEDYEAR)\"" > src/updated_year.h; \
-	fi;
 
 clean-bin:
 	@rm -f bin/bpp

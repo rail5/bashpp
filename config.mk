@@ -9,6 +9,16 @@ ANTLR4_HEADERS = /usr/include/antlr4-runtime # Path to the antlr4-runtime header
 ANTLR4_RUNTIME_LIBRARY = $(shell (find /usr -name libantlr4-runtime.a || find /usr -name libantlr4-runtime.so) | head -n 1)
 
 
+PARSECHANGELOG := $(shell command -v dpkg-parsechangelog 2> /dev/null)
+
+ifdef PARSECHANGELOG
+	VERSION=$$(dpkg-parsechangelog -l debian/changelog --show-field version)
+	LASTUPDATEDYEAR=$$(date +%Y -d@$$(dpkg-parsechangelog -l debian/changelog --show-field timestamp))
+else
+	VERSION=$$(head -n1 debian/changelog | grep -o "[[:digit:].]*" || echo "0.1")
+	LASTUPDATEDYEAR=$$(grep "^ \-- " debian/changelog | head -n 1 | cut -d, -f2 | date -d - +%Y || date +%Y || echo "2025")
+endif
+
 
 # C++ CONFIG
 

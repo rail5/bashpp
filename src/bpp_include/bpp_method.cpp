@@ -63,6 +63,11 @@ bool bpp_method::add_parameter(std::shared_ptr<bpp_method_parameter> parameter) 
 		object->set_class(parameter->get_type());
 		object->set_name(name);
 		object->set_address(name);
+		object->set_definition_position(
+			parameter->get_initial_definition().file,
+			parameter->get_initial_definition().line,
+			parameter->get_initial_definition().column
+		); // Preserve definition position
 		if (!add_object_as_parameter(object)) {
 			return false;
 		}

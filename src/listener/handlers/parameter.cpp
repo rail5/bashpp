@@ -51,6 +51,12 @@ void BashppListener::enterParameter(BashppParser::ParameterContext *ctx) {
 	std::shared_ptr<bpp::bpp_method_parameter> parameter = std::make_shared<bpp::bpp_method_parameter>(name->getText());
 	parameter->set_type(type);
 
+	parameter->set_definition_position(
+		source_file,
+		name->getSymbol()->getLine() - 1,
+		name->getSymbol()->getCharPositionInLine()
+	);
+
 	if (!current_method->add_parameter(parameter)) {
 		if (parameter->get_class() != primitive && current_method->get_object(name->getText()) != nullptr) {
 			throw_syntax_error(name, "Parameter name conflicts with existing object: " + name->getText());
@@ -63,12 +69,6 @@ void BashppListener::enterParameter(BashppParser::ParameterContext *ctx) {
 		// If we reach here, the parameter name is already in use
 		throw_syntax_error(name, "Duplicate parameter: " + name->getText());
 	}
-
-	parameter->set_definition_position(
-		source_file,
-		name->getSymbol()->getLine() - 1,
-		name->getSymbol()->getCharPositionInLine()
-	);
 }
 
 void BashppListener::exitParameter(BashppParser::ParameterContext *ctx) {

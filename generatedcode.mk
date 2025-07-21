@@ -12,10 +12,15 @@ $(LSPDIR)/generated/.stamp: bin/obj/lsp/generateLSPClasses
 	@touch $@
 
 
-$(ANTLR4DIR)/%.cpp: $(SRCDIR)/BashppLexer.g4 $(SRCDIR)/BashppParser.g4
+$(ANTLR4_STAMP): $(SRCDIR)/BashppLexer.g4 $(SRCDIR)/BashppParser.g4
 	@mkdir -p $(ANTLR4DIR)
 	cd $(SRCDIR) && $(ANTLR4) -Dlanguage=Cpp ./BashppLexer.g4 ./BashppParser.g4 -o antlr
+	touch $@
 
+$(ANTLR4DIR)/BashppParser.cpp \
+$(ANTLR4DIR)/BashppParser.h   \
+$(ANTLR4DIR)/BashppLexer.cpp  \
+$(ANTLR4DIR)/BashppLexer.h : $(ANTLR4_STAMP)
 
 # Rule to generate the LSP classes executable
 bin/obj/lsp/generateLSPClasses: $(LSP_GENERATOR_OBJS)

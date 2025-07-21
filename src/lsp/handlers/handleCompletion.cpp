@@ -5,6 +5,7 @@
 
 #include "../BashppServer.h"
 #include "../generated/CompletionRequest.h"
+#include "../include/resolve_entity.h"
 
 GenericResponseMessage bpp::BashppServer::handleCompletion(const GenericRequestMessage& request) {
 
@@ -102,22 +103,35 @@ GenericResponseMessage bpp::BashppServer::handleCompletion(const GenericRequestM
 			Position position = completion_request.params.position;
 
 			// Resolve the referenced entity before the dot
-			bpp::entity_reference referenced_entity;
+			std::shared_ptr<bpp::bpp_entity> referenced_entity;
 
 			if (unsaved_changes.find(uri) != unsaved_changes.end()) {
-				referenced_entity = bpp::resolve_reference_at(uri, position.line, position.character, program, unsaved_changes[uri]);
+				//referenced_entity = bpp::resolve_reference_at(uri, position.line, position.character, program, unsaved_changes[uri]);
+				referenced_entity = resolve_entity_at(
+					uri,
+					position.line,
+					position.character,
+					program,
+					unsaved_changes[uri]
+				);
 			} else {
-				referenced_entity = bpp::resolve_reference_at(uri, position.line, position.character, program);
+				//referenced_entity = bpp::resolve_reference_at(uri, position.line, position.character, program);
+				referenced_entity = resolve_entity_at(
+					uri,
+					position.line,
+					position.character,
+					program
+				);
 			}
 
-			if (referenced_entity.entity == nullptr) {
+			if (referenced_entity == nullptr) {
 				log("No entity found at position: (", position.line, ", ", position.character, ") in URI: ", uri, " - returning default completions.");
 				response.result = nullptr;
 				return response;
 			}
 
 			// Ensure that the referenced entity is a non-primitive object
-			std::shared_ptr<bpp::bpp_object> obj = std::dynamic_pointer_cast<bpp::bpp_object>(referenced_entity.entity);
+			std::shared_ptr<bpp::bpp_object> obj = std::dynamic_pointer_cast<bpp::bpp_object>(referenced_entity);
 			if (obj == nullptr || obj->get_class() == program->get_primitive_class()) {
 				log("Referenced entity is not a valid object or is a primitive type at position: (", position.line, ", ", position.character, ") in URI: ", uri, " - returning default completions.");
 				response.result = nullptr;

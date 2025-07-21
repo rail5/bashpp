@@ -11,7 +11,7 @@
 #include "../listener/BashppListener.h"
 #include "../antlr/BashppLexer.h"
 #include "../antlr/BashppParser.h"
-#include "NullStream.h"
+#include "include/NullStream.h"
 
 ProgramPool::ProgramPool(size_t max_programs) : max_programs(max_programs) {
 	// Initialize the program pool with a maximum number of programs

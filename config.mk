@@ -43,6 +43,7 @@ BPP_OBJS = $(patsubst $(BPP_INCLUDEDIR)/%.cpp,$(BPP_OBJDIR)/%.o,$(BPP_SRCS))
 
 ANTLR4DIR = $(SRCDIR)/antlr
 
+ANTLR4_STAMP = $(ANTLR4DIR)/.antlr4.stamp
 
 # List of all .cpp files in the antlr directory
 # This will be used to generate the object files
@@ -91,6 +92,9 @@ endif
 
 LSP_SRCS = $(wildcard $(LSPDIR)/*.cpp)
 LSP_OBJS = $(patsubst $(LSPDIR)/%.cpp,$(LSP_OBJDIR)/%.o,$(LSP_SRCS))
+
+LSP_INCLUDE_SRCS = $(wildcard $(LSPDIR)/include/*.cpp)
+LSP_INCLUDE_OBJS = $(patsubst $(LSPDIR)/include/%.cpp,$(LSP_OBJDIR)/include/%.o,$(LSP_INCLUDE_SRCS))
 
 LSP_GENERATOR_SRCS = $(wildcard $(LSPDIR)/generator/*.cpp)
 LSP_GENERATOR_OBJS = $(patsubst $(LSPDIR)/generator/%.cpp,$(LSP_GENERATOR_OBJDIR)/%.o,$(LSP_GENERATOR_SRCS))

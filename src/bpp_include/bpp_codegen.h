@@ -134,14 +134,6 @@ inline entity_reference resolve_reference(
 	return resolve_reference_impl(file, context, identifiers, identifier_texts, program);
 }
 
-entity_reference resolve_reference_at(
-	const std::string& file,
-	uint32_t line,
-	uint32_t column,
-	std::shared_ptr<bpp::bpp_program> program,
-	const std::string& replacement_contents = ""
-);
-
 } // namespace bpp
 
 #endif // SRC_BPP_INCLUDE_BPP_CODEGEN_H_

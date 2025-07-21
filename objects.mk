@@ -27,6 +27,10 @@ $(LSP_OBJDIR)/%.o: $(LSPDIR)/%.cpp $(LSP_GENERATED_FILES)
 	@mkdir -p $(LSP_OBJDIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
 
+$(LSP_OBJDIR)/include/%.o: $(LSPDIR)/include/%.cpp $(ANTLR4_OBJS) $(HEADERS)
+	@mkdir -p $(LSP_OBJDIR)/include
+	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
+
 $(LSP_HANDLER_OBJDIR)/%.o: $(LSPDIR)/handlers/%.cpp $(LSP_GENERATED_FILES)
 	@mkdir -p $(LSP_HANDLER_OBJDIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@

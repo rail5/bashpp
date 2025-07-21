@@ -15,15 +15,15 @@ include generatedcode.mk
 ## - All .cpp files in the bpp_include directory
 ## - All .cpp files in the antlr directory
 ## - The main.cpp file
-bin/bpp: $(BPP_OBJS) $(ANTLR4_OBJS) $(LISTENER_OBJS) $(HANDLER_OBJS) $(EXTRA_OBJS) $(MAIN_OBJ) $(ANTLR4DIR)/BashppParser.cpp $(HEADERS)
+bin/bpp: $(BPP_OBJS) $(ANTLR4_OBJS) $(LISTENER_OBJS) $(HANDLER_OBJS) $(EXTRA_OBJS) $(MAIN_OBJ) $(HEADERS)
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -o $@ $(BPP_OBJS) $(ANTLR4_OBJS) $(LISTENER_OBJS) $(HANDLER_OBJS) $(EXTRA_OBJS) $(MAIN_OBJ) $(ANTLR4_RUNTIME_LIBRARY)
 
 compiler:
 	@echo "Generating ANTLR parser..."
-	@$(MAKE) --no-print-directory src/antlr/BashppParser.cpp
+	@$(MAKE) --no-print-directory $(ANTLR4DIR)/BashppParser.cpp
 	@$(MAKE) --no-print-directory bin/bpp
 
-bin/bpp-lsp: bin/obj/bpp-lsp.o $(LSP_OBJS) $(ANTLR4_OBJS) $(BPP_OBJS) $(LISTENER_OBJS) $(HANDLER_OBJS) $(EXTRA_OBJS) $(LSP_HANDLER_OBJS)
+bin/bpp-lsp: bin/obj/bpp-lsp.o $(LSP_OBJS) $(ANTLR4_OBJS) $(BPP_OBJS) $(LISTENER_OBJS) $(HANDLER_OBJS) $(EXTRA_OBJS) $(LSP_HANDLER_OBJS) $(LSP_INCLUDE_OBJS)
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -o $@ $^ $(ANTLR4_RUNTIME_LIBRARY)
 
 lsp:

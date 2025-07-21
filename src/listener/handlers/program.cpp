@@ -13,6 +13,7 @@
 #include <iostream>
 void BashppListener::enterProgram(BashppParser::ProgramContext *ctx) {
 	program->set_output_stream(code_buffer);
+	program->set_include_paths(include_paths);
 
 	if (!included) {
 		program->set_main_source_file(source_file);

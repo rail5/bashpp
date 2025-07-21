@@ -467,6 +467,9 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 		// Source file -> Diagnostics
 		std::unordered_map<std::string, std::vector<bpp::diagnostic>> diagnostics;
 		// Each 'diagnostic' contains a type (error, warning, etc), message, and position in the source file
+
+		// For debug info:
+		std::shared_ptr<std::vector<std::string>> include_paths;
 	public:
 		bpp_program();
 
@@ -477,6 +480,9 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 		bool add_class(std::shared_ptr<bpp_class> class_) override;
 
 		std::shared_ptr<bpp_class> get_primitive_class() const;
+
+		void set_include_paths(std::shared_ptr<std::vector<std::string>> paths);
+		std::shared_ptr<std::vector<std::string>> get_include_paths() const;
 
 		void increment_supershell_counter();
 		uint64_t get_supershell_counter() const;

@@ -5,7 +5,7 @@
 
 #include "../BashppServer.h"
 #include "../generated/DefinitionRequest.h"
-
+#include "../include/resolve_entity.h"
 
 GenericResponseMessage bpp::BashppServer::handleDefinition(const GenericRequestMessage& request) {
 	DefinitionRequest definition_request = request.toSpecific<DefinitionParams>();
@@ -36,24 +36,36 @@ GenericResponseMessage bpp::BashppServer::handleDefinition(const GenericRequestM
 		return response;
 	}
 
-	bpp::entity_reference referenced_entity = bpp::resolve_reference_at(uri, position.line, position.character, program);
+	std::shared_ptr<bpp::bpp_entity> referenced_entity = resolve_entity_at(
+		uri,
+		position.line,
+		position.character,
+		program
+	);
 
-	if (referenced_entity.entity == nullptr) {
+	if (referenced_entity == nullptr) {
 		log("No entity found at position: (", position.line, ", ", position.character, ") in URI: ", uri);
 		response.result = nullptr;
 		return response;
 	}
 
-	bpp::SymbolPosition definition_location = referenced_entity.entity->get_initial_definition();
+	bpp::SymbolPosition definition_location = referenced_entity->get_initial_definition();
+	
+	// Verify that a definition location was found
+	if (definition_location.file.empty()) {
+		log("No definition found for entity: ", referenced_entity->get_name(), " at position: (", position.line, ", ", position.character, ") in URI: ", uri);
+		response.result = nullptr;
+		return response;
+	}
 
 	Location location;
 	location.uri = "file://" + definition_location.file;
 	location.range.start.line = definition_location.line;
 	location.range.start.character = definition_location.column;
 	location.range.end.line = definition_location.line;
-	location.range.end.character = definition_location.column + referenced_entity.entity->get_name().size();
+	location.range.end.character = definition_location.column + referenced_entity->get_name().size();
 
 	response.result = std::vector<Location>{location};
-	log("Found definition for entity: ", referenced_entity.entity->get_name(), " at URI: ", uri, ", Range: (", location.range.start.line, ", ", location.range.start.character, ") to (", location.range.end.line, ", ", location.range.end.character, ")");
+	log("Found definition for entity: ", referenced_entity->get_name(), " at URI: ", uri, ", Range: (", location.range.start.line, ", ", location.range.start.character, ") to (", location.range.end.line, ", ", location.range.end.character, ")");
 	return response;
 }

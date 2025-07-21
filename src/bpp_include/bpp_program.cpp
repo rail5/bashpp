@@ -160,6 +160,14 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	return true;
 }
 
+void bpp_program::set_include_paths(std::shared_ptr<std::vector<std::string>> paths) {
+	include_paths = paths;
+}
+
+std::shared_ptr<std::vector<std::string>> bpp_program::get_include_paths() const {
+	return include_paths;
+}
+
 void bpp_program::increment_supershell_counter() {
 	supershell_counter++;
 	if (supershell_counter == 1) {

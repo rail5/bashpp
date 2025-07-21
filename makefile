@@ -26,7 +26,7 @@ all: compiler-and-lsp std
 # build.mk contains the rules to build the compiler and language server
 include build.mk
 
-std: clean-std compiler
+std: compiler
 	@echo $(STDLIB_FILES)
 	$(MAKE) $(STDLIB_FILES)
 

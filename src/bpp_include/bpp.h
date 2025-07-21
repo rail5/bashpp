@@ -168,6 +168,8 @@ class bpp_entity {
 		std::unordered_map<std::string, std::shared_ptr<bpp_object>> get_objects() const;
 		std::shared_ptr<bpp_class> get_class(const std::string& name);
 		std::shared_ptr<bpp_object> get_object(const std::string& name);
+
+		std::shared_ptr<bpp_class> get_parent() const;
 };
 
 /**

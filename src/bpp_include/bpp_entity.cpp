@@ -146,4 +146,12 @@ std::shared_ptr<bpp::bpp_object> bpp_entity::get_object(const std::string& name)
 	return nullptr;
 }
 
+std::shared_ptr<bpp::bpp_class> bpp_entity::get_parent() const {
+	if (!parents.empty()) {
+		return parents.back();
+	}
+
+	return nullptr;
+}
+
 } // namespace bpp

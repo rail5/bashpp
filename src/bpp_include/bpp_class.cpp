@@ -142,6 +142,8 @@ bool bpp_class::add_method(std::shared_ptr<bpp_method> method) {
 		}
 	}
 
+	method->set_containing_class(weak_from_this());
+
 	methods.push_back(method);
 	return true;
 }
@@ -163,6 +165,8 @@ bool bpp_class::add_datamember(std::shared_ptr<bpp_datamember> datamember) {
 			return false;
 		}
 	}
+
+	datamember->set_containing_class(weak_from_this());
 
 	datamembers.push_back(datamember);
 	return true;

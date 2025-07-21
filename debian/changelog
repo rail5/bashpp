@@ -22,7 +22,6 @@ bpp (0.5.2) unstable; urgency=medium
   * Optimization: Abstracted a 'resolve_reference' function for use by
     all 4 object reference rules (rvalue/lvalue, object/self references)
 
-
  -- rail5 <andrew@rail5.org>  Mon, 21 Jul 2025 20:18:20 +0800
 
 bpp (0.5.1) unstable; urgency=medium

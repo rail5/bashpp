@@ -40,7 +40,7 @@ jobs:
       - name: Set up Git
         run: |
           apt-get update
-          apt-get install git -y
+          apt-get install git git-lfs -y
       - name: Checkout
         uses: actions/checkout@v3
         with:

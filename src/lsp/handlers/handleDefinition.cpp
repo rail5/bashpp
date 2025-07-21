@@ -36,12 +36,18 @@ GenericResponseMessage bpp::BashppServer::handleDefinition(const GenericRequestM
 		return response;
 	}
 
-	std::shared_ptr<bpp::bpp_entity> referenced_entity = resolve_entity_at(
-		uri,
-		position.line,
-		position.character,
-		program
-	);
+	std::shared_ptr<bpp::bpp_entity> referenced_entity = nullptr;
+	
+	try {
+		referenced_entity = resolve_entity_at(
+			uri,
+			position.line,
+			position.character,
+			program
+		);
+	} catch (...) {
+		// Ignore, it'll just be nullptr.
+	}
 
 	if (referenced_entity == nullptr) {
 		log("No entity found at position: (", position.line, ", ", position.character, ") in URI: ", uri);

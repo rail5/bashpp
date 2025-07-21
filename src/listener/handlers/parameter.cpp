@@ -63,6 +63,12 @@ void BashppListener::enterParameter(BashppParser::ParameterContext *ctx) {
 		// If we reach here, the parameter name is already in use
 		throw_syntax_error(name, "Duplicate parameter: " + name->getText());
 	}
+
+	parameter->set_definition_position(
+		source_file,
+		name->getSymbol()->getLine() - 1,
+		name->getSymbol()->getCharPositionInLine()
+	);
 }
 
 void BashppListener::exitParameter(BashppParser::ParameterContext *ctx) {

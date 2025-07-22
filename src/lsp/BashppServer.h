@@ -84,7 +84,7 @@ class BashppServer {
 		};
 
 		static const GenericResponseMessage invalidRequestHandler(const GenericRequestMessage& request);
-		static const void invalidNotificationHandler(const GenericNotificationMessage& request);
+		static void invalidNotificationHandler(const GenericNotificationMessage& request);
 
 		void processRequest(const GenericRequestMessage& request);
 		void processNotification(const GenericNotificationMessage& notification);

@@ -205,7 +205,7 @@ const GenericResponseMessage bpp::BashppServer::invalidRequestHandler(const Gene
 	throw std::runtime_error("Request not understood: " + request.method);
 }
 
-const void bpp::BashppServer::invalidNotificationHandler(const GenericNotificationMessage& request) {
+void bpp::BashppServer::invalidNotificationHandler(const GenericNotificationMessage& request) {
 	throw std::runtime_error("Notification not understood: " + request.method);
 }
 

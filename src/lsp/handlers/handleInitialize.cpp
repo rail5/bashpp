@@ -14,7 +14,7 @@ GenericResponseMessage bpp::BashppServer::handleInitialize(const GenericRequestM
 	response.id = request.id;
 
 	InitializeResult result;
-	result.capabilities.textDocumentSync = static_cast<TextDocumentSyncKind>(1); // Full sync mode
+	result.capabilities.textDocumentSync = TextDocumentSyncKind::Full; // Full sync mode
 	result.capabilities.hoverProvider = true;
 
 	CompletionOptions completionProvider;

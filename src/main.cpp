@@ -263,16 +263,17 @@ int main(int argc, char* argv[]) {
 	if (run_on_exit) {
 		// Create a temporary file to store the program
 		std::string temp_dir = std::filesystem::temp_directory_path();
-		char temp_file[4097];
-		strncpy(temp_file, temp_dir.c_str(), 4096);
-		strncat(temp_file, "/bashpp_temp_XXXXXX", 4096 - strlen(temp_file));
-		int fd = mkstemp(temp_file);
+		std::string temp_file = temp_dir + "/bashpp_temp_XXXXXX";
+		// mkstemp requires a mutable char array
+		std::vector<char> temp_file_vec(temp_file.begin(), temp_file.end());
+		temp_file_vec.push_back('\0'); // Null-terminate the string for mkstemp
+		int fd = mkstemp(temp_file_vec.data());
 		if (fd == -1) {
 			throw std::runtime_error("Failed to create temporary file");
 		}
 		close(fd);
-		output_stream = std::dynamic_pointer_cast<std::ostream>(std::make_shared<std::ofstream>(temp_file));
-		output_file = std::string(temp_file);
+		output_stream = std::dynamic_pointer_cast<std::ostream>(std::make_shared<std::ofstream>(temp_file_vec.data()));
+		output_file = std::string(temp_file_vec.data());
 	}
 
 	antlr4::tree::ParseTree* tree = nullptr;
@@ -287,15 +288,17 @@ int main(int argc, char* argv[]) {
 		// Walk the tree
 		antlr4::tree::ParseTreeWalker walker;
 		std::unique_ptr<BashppListener> listener = std::make_unique<BashppListener>();
-		char full_path[PATH_MAX];
-		if (realpath(file_to_read.c_str(), full_path) == nullptr) {
+		std::string full_path;
+		char resolved_path[PATH_MAX];
+		if (realpath(file_to_read.c_str(), resolved_path) == nullptr) {
 			if (!received_filename) {
-				const char* inlabel = "<stdin>";
-				strncpy(full_path, inlabel, strlen(inlabel) + 1);
+				full_path = "<stdin>";
 			} else {
 				std::cerr << "Error: Could not get full path of source file '" << file_to_read << "'" << std::endl;
 				return 1;
 			}
+		} else {
+			full_path = std::string(resolved_path);
 		}
 		listener->set_source_file(full_path);
 		listener->set_include_paths(include_paths);

@@ -35,7 +35,7 @@ GenericResponseMessage bpp::BashppServer::handleCompletion(const GenericRequestM
 	
 	// If it was '@', suggest class names, object names, and standard operators like include or dynamic_cast
 	// If it was '.', suggest method names and data members of the current object
-	// Also, '.' requires for us to wait until previous unsaved changes have been processed (done by default)
+	// Also, '.' requires for us to wait until previous unsaved changes have been stored (done by default)
 	switch (trigger_character) {
 		case '@':
 		default:

@@ -1,3 +1,12 @@
+bpp (0.5.3) unstable; urgency=medium
+
+  * Language server: completions: resolve entity at position *before*
+    the '.' completion character
+  * Language server: HandleInitialize: Send TextDocumentSyncKind::Full
+    explicitly, not a casted numeric value
+
+ -- rail5 <andrew@rail5.org>  Tue, 22 Jul 2025 13:27:54 +0800
+
 bpp (0.5.2) unstable; urgency=medium
 
   * Created bpp-lsp: A Bash++ language server

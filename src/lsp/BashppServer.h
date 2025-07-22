@@ -24,6 +24,7 @@
 #include "generated/ErrorCodes.h"
 
 #include "generated/CompletionList.h"
+#include "generated/CompletionParams.h"
 
 #include "../bpp_include/bpp_codegen.h"
 
@@ -109,10 +110,13 @@ class BashppServer {
 		// Request-Response handlers
 		GenericResponseMessage handleInitialize(const GenericRequestMessage& request);
 		GenericResponseMessage handleDefinition(const GenericRequestMessage& request);
-		GenericResponseMessage handleCompletion(const GenericRequestMessage& request);
 		GenericResponseMessage handleHover(const GenericRequestMessage& request);
 		GenericResponseMessage handleDocumentSymbol(const GenericRequestMessage& request);
 		GenericResponseMessage handleRename(const GenericRequestMessage& request);
+		GenericResponseMessage handleCompletion(const GenericRequestMessage& request);
+
+		CompletionList handleATCompletion(const CompletionParams& params);
+		CompletionList handleDOTCompletion(const CompletionParams& params);
 
 		// Notification handlers
 		void handleDidOpen(const GenericNotificationMessage& request);

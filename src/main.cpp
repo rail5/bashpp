@@ -121,8 +121,6 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	struct stat statbuf;
-
 	while ((c = getopt_long(static_cast<int>(compiler_arguments.size()), compiler_arguments.data(), "DhI:o:pstv", long_options, &option_index)) != -1) {
 		switch(c) {
 			case 'h':
@@ -130,14 +128,9 @@ int main(int argc, char* argv[]) {
 				return 0;
 				break;
 			case 'I':
-				statbuf = {};
 				// Verify the given include path is a directory
-				if (stat(optarg, &statbuf) != 0) {
-					std::cerr << program_name << ": Error: Include path '" << optarg << "' does not exist" << std::endl;
-					return 1;
-				}
-				if (!S_ISDIR(statbuf.st_mode)) {
-					std::cerr << program_name << ": Error: Include path '" << optarg << "' is not a directory" << std::endl;
+				if (!std::filesystem::exists(optarg) || !std::filesystem::is_directory(optarg)) {
+					std::cerr << program_name << ": Error: Include path '" << optarg << "' does not exist or is not a directory" << std::endl;
 					return 1;
 				}
 				include_paths->push_back(std::string(optarg));
@@ -158,21 +151,30 @@ int main(int argc, char* argv[]) {
 
 				// Check if we have permission to write to the specified output file
 				// If the file already exists, verify write access; if it doesn't, verify write access on its parent directory
-				statbuf = {};
-				if (stat(output_file.c_str(), &statbuf) == 0) {
-					// File exists
-					if (access(output_file.c_str(), W_OK) != 0) {
-						std::cerr << program_name << ": Error: No write permission for file " << output_file << std::endl;
-						return 1;
+				try {
+					if (std::filesystem::exists(output_file)) {
+						if (!std::filesystem::is_regular_file(output_file)) {
+							std::cerr << program_name << ": Error: Output file '" << output_file << "' is not a regular file" << std::endl;
+							return 1;
+						}
+						if (access(output_file.c_str(), W_OK) != 0) {
+							std::cerr << program_name << ": Error: No write permission for output file '" << output_file << "'" << std::endl;
+							return 1;
+						}
+					} else {
+						std::filesystem::path parent_path = std::filesystem::path(output_file).parent_path();
+						if (!std::filesystem::exists(parent_path) || !std::filesystem::is_directory(parent_path)) {
+							std::cerr << program_name << ": Error: Parent directory of output file '" << output_file << "' does not exist or is not a directory" << std::endl;
+							return 1;
+						}
+						if (access(parent_path.c_str(), W_OK) != 0) {
+							std::cerr << program_name << ": Error: No write permission for parent directory of output file '" << output_file << "'" << std::endl;
+							return 1;
+						}
 					}
-				} else {
-					// File does not exist; check write permission on the parent directory
-					std::string::size_type pos = output_file.find_last_of('/');
-					std::string dir = (pos != std::string::npos) ? output_file.substr(0, pos) : ".";
-					if (access(dir.c_str(), W_OK) != 0) {
-						std::cerr << program_name << ": Error: No write permission in directory " << dir << std::endl;
-						return 1;
-					}
+				} catch (...) {
+					std::cerr << program_name << ": Error: Could not verify write permission for output file '" << output_file << "'" << std::endl;
+					return 1;
 				}
 				output_stream = std::dynamic_pointer_cast<std::ostream>(std::make_shared<std::ofstream>(output_file));
 				if (output_stream == nullptr) {

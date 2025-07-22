@@ -26,7 +26,34 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 	std::string meta_model_path = argv[1];
+
+	// Validate the meta model file
+	if (!std::filesystem::exists(meta_model_path)) {
+		std::cerr << "Error: Meta model file '" << meta_model_path << "' does not exist." << std::endl;
+		return 1;
+	}
+
+	// Verify it's a regular file
+	if (!std::filesystem::is_regular_file(meta_model_path)) {
+		std::cerr << "Error: Meta model file '" << meta_model_path << "' is not a regular file." << std::endl;
+		return 1;
+	}
+
 	std::string output_directory = argv[2];
+
+	// Validate output directory
+	if (!std::filesystem::exists(output_directory)) {
+		std::cerr << "Error: Output directory '" << output_directory << "' does not exist." << std::endl;
+		return 1;
+	}
+
+	// Check if the output directory is writable
+	if (!std::filesystem::is_directory(output_directory) ||
+		((std::filesystem::status(output_directory).permissions() & std::filesystem::perms::owner_write) == std::filesystem::perms::none)) {
+		std::cerr << "Error: Output directory '" << output_directory << "' is not writable." << std::endl;
+		return 1;
+	}
+
 	// Load LSP meta model
 	std::ifstream meta_file(meta_model_path);
 	nlohmann::json meta_model = nlohmann::json::parse(meta_file);

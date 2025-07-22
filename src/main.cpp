@@ -264,8 +264,8 @@ int main(int argc, char* argv[]) {
 
 	if (run_on_exit) {
 		// Create a temporary file to store the program
-		std::string temp_dir = std::filesystem::temp_directory_path();
-		std::string temp_file = temp_dir + "/bashpp_temp_XXXXXX";
+		std::filesystem::path temp_path = std::filesystem::temp_directory_path() / "bashpp_temp_XXXXXX";
+		std::string temp_file = temp_path.string();
 		// mkstemp requires a mutable char array
 		std::vector<char> temp_file_vec(temp_file.begin(), temp_file.end());
 		temp_file_vec.push_back('\0'); // Null-terminate the string for mkstemp
@@ -274,7 +274,12 @@ int main(int argc, char* argv[]) {
 			throw std::runtime_error("Failed to create temporary file");
 		}
 		close(fd);
-		output_stream = std::dynamic_pointer_cast<std::ostream>(std::make_shared<std::ofstream>(temp_file_vec.data()));
+		std::shared_ptr<std::ofstream> stream = std::make_shared<std::ofstream>(temp_file_vec.data());
+		if (!stream->is_open()) {
+			std::cerr << program_name << ": Error: Could not open temporary file for output" << std::endl;
+			return 1;
+		}
+		output_stream = std::dynamic_pointer_cast<std::ostream>(stream);
 		output_file = std::string(temp_file_vec.data());
 	}
 

@@ -105,27 +105,16 @@ GenericResponseMessage bpp::BashppServer::handleCompletion(const GenericRequestM
 			// Resolve the referenced entity before the dot
 			std::shared_ptr<bpp::bpp_entity> referenced_entity;
 
-			if (unsaved_changes.find(uri) != unsaved_changes.end()) {
-				//referenced_entity = bpp::resolve_reference_at(uri, position.line, position.character, program, unsaved_changes[uri]);
-				referenced_entity = resolve_entity_at(
-					uri,
-					position.line,
-					position.character,
-					program,
-					unsaved_changes[uri]
-				);
-			} else {
-				//referenced_entity = bpp::resolve_reference_at(uri, position.line, position.character, program);
-				referenced_entity = resolve_entity_at(
-					uri,
-					position.line,
-					position.character,
-					program
-				);
-			}
+			referenced_entity = resolve_entity_at(
+				uri,
+				position.line,
+				position.character - 1, // Position before the dot
+				program,
+				unsaved_changes.find(uri) != unsaved_changes.end() ? unsaved_changes[uri] : "" // Send unsaved changes content if available
+			);
 
 			if (referenced_entity == nullptr) {
-				log("No entity found at position: (", position.line, ", ", position.character, ") in URI: ", uri, " - returning default completions.");
+				log("No entity found at position: (", position.line, ", ", position.character, ") in URI: ", uri, " - returning empty completion list.");
 				response.result = nullptr;
 				return response;
 			}
@@ -172,17 +161,15 @@ GenericResponseMessage bpp::BashppServer::handleCompletion(const GenericRequestM
 				detail += "@method " + method->get_name();
 
 				for (const auto& param : method->get_parameters()) {
-					detail += " [";
 					if (param->get_type() == program->get_primitive_class()) {
-						detail += "$" + param->get_name();
+						detail += " $" + param->get_name();
 					} else {
-						detail += "@" + param->get_type()->get_name() + "* " + param->get_name();
+						detail += " @" + param->get_type()->get_name() + "* " + param->get_name();
 					}
-					detail += "]";
 				}
 
 				item.detail = detail;
-				// Full example: @virtual @public @method methodName [@ClassName* param1] [$primitive_param2]
+				// Full example: @virtual @public @method methodName @ClassName* param1 $primitive_param2
 
 				completion_list.items.push_back(item);
 			}

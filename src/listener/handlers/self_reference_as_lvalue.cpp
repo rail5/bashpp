@@ -58,7 +58,7 @@ void BashppListener::enterSelf_reference_as_lvalue(BashppParser::Self_reference_
 	bpp::entity_reference ref = bpp::resolve_reference(
 		source_file,
 		current_code_entity,
-		ids,
+		&ids,
 		program
 	);
 

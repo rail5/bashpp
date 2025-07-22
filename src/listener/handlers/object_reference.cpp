@@ -73,7 +73,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 	bpp::entity_reference ref = bpp::resolve_reference(
 		source_file,
 		current_code_entity,
-		ids,
+		&ids,
 		program
 	);
 

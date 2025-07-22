@@ -105,33 +105,33 @@ struct entity_reference {
 entity_reference resolve_reference_impl(
 	const std::string& file,
 	std::shared_ptr<bpp::bpp_entity> context,
-	std::deque<antlr4::tree::TerminalNode*> identifiers,
-	std::deque<std::string> identifier_texts,
+	std::deque<antlr4::tree::TerminalNode*>* identifiers,
+	std::deque<std::string>* identifier_texts,
 	std::shared_ptr<bpp::bpp_program> program
 );
 
 inline entity_reference resolve_reference(
 	const std::string& file,
 	std::shared_ptr<bpp::bpp_entity> context,
-	std::deque<std::string> identifiers,
+	std::deque<std::string>* identifiers,
 	std::shared_ptr<bpp::bpp_program> program
 ) {
 	std::deque<antlr4::tree::TerminalNode*> debug_nodes;
-	return resolve_reference_impl(file, context, debug_nodes, identifiers, program);
+	return resolve_reference_impl(file, context, &debug_nodes, identifiers, program);
 }
 
 inline entity_reference resolve_reference(
 	const std::string& file,
 	std::shared_ptr<bpp::bpp_entity> context,
-	std::deque<antlr4::tree::TerminalNode*> identifiers,
+	std::deque<antlr4::tree::TerminalNode*>* identifiers,
 	std::shared_ptr<bpp::bpp_program> program
 ) {
 	// Extract identifier texts from the nodes
 	std::deque<std::string> identifier_texts;
-	for (const auto& node : identifiers) {
+	for (const auto& node : *identifiers) {
 		identifier_texts.push_back(node->getText());
 	}
-	return resolve_reference_impl(file, context, identifiers, identifier_texts, program);
+	return resolve_reference_impl(file, context, identifiers, &identifier_texts, program);
 }
 
 } // namespace bpp

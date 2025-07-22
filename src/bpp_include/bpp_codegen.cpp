@@ -276,12 +276,15 @@ code_segment inline_new(
 entity_reference resolve_reference_impl(
 	const std::string& file,
 	std::shared_ptr<bpp::bpp_entity> context,
-	std::deque<antlr4::tree::TerminalNode*> nodes,
-	std::deque<std::string> identifiers,
+	std::deque<antlr4::tree::TerminalNode*>* nodes,
+	std::deque<std::string>* identifiers,
 	std::shared_ptr<bpp::bpp_program> program
 ) {
-	bool self_reference = identifiers.front() == "this" || identifiers.front() == "super";
-	bool super = identifiers.front() == "super";
+	std::deque<antlr4::tree::TerminalNode*> nds = static_cast<std::deque<antlr4::tree::TerminalNode*>>(*nodes);
+	std::deque<std::string> ids = static_cast<std::deque<std::string>>(*identifiers);
+
+	bool self_reference = ids.front() == "this" || ids.front() == "super";
+	bool super = ids.front() == "super";
 
 	// This function can be called with either:
 	// A deque of TerminalNode pointers, or
@@ -313,13 +316,13 @@ entity_reference resolve_reference_impl(
 
 	if (!self_reference) {
 		// Get the first object
-		std::string first_object_name = identifiers.front();
+		std::string first_object_name = ids.front();
 		object = context->get_object(first_object_name);
 		result.entity = object;
 
 		if (object == nullptr) {
-			if (!nodes.empty()) {
-				error_token = nodes.at(0);
+			if (!nds.empty()) {
+				error_token = nds.at(0);
 			}
 			result.error = entity_reference::reference_error{
 				"Object not found: " + first_object_name,
@@ -328,11 +331,11 @@ entity_reference resolve_reference_impl(
 			return result;
 		}
 
-		if (!nodes.empty()) {
+		if (!nds.empty()) {
 			object->add_reference(
 				file,
-				nodes.front()->getSymbol()->getLine() - 1,
-				nodes.front()->getSymbol()->getCharPositionInLine()
+				nds.front()->getSymbol()->getLine() - 1,
+				nds.front()->getSymbol()->getCharPositionInLine()
 			);
 		}
 	}
@@ -341,8 +344,8 @@ entity_reference resolve_reference_impl(
 		std::string derived_class_name = result.entity->get_name();
 		result.entity = current_class->get_parent();
 		if (result.entity == nullptr) {
-			if (!nodes.empty()) {
-				error_token = nodes.at(0);
+			if (!nds.empty()) {
+				error_token = nds.at(0);
 			}
 			result.error = entity_reference::reference_error{
 				derived_class_name + " has no parent class to reference with @super",
@@ -352,10 +355,10 @@ entity_reference resolve_reference_impl(
 		}
 	}
 
-	identifiers.pop_front();
+	ids.pop_front();
 
-	if (!nodes.empty()) {
-		nodes.pop_front();
+	if (!nds.empty()) {
+		nds.pop_front();
 	}
 
 	// The following two booleans are used for code generation
@@ -384,8 +387,8 @@ entity_reference resolve_reference_impl(
 		result.reference_code.code = object->get_address();
 	}
 
-	while (!identifiers.empty()) {
-		error_token = nodes.empty() ? nullptr : nodes.front();
+	while (!ids.empty()) {
+		error_token = nds.empty() ? nullptr : nds.front();
 
 		if (result.created_first_temporary_variable) {
 			encase_open = "${";
@@ -413,9 +416,9 @@ entity_reference resolve_reference_impl(
 				return result;
 		}
 
-		if (identifiers.front().find("__") != std::string::npos) {
+		if (ids.front().find("__") != std::string::npos) {
 			result.error = entity_reference::reference_error{
-				"Invalid identifier: " + identifiers.front() + "\nBash++ identifiers cannot contain double underscores",
+				"Invalid identifier: " + ids.front() + "\nBash++ identifiers cannot contain double underscores",
 				error_token
 			};
 			return result;
@@ -424,12 +427,12 @@ entity_reference resolve_reference_impl(
 		std::shared_ptr<bpp::bpp_class> reference_class = result.entity->get_class();
 
 		object = nullptr;
-		datamember = reference_class->get_datamember(identifiers.front(), current_class);
-		method = reference_class->get_method(identifiers.front(), current_class);
+		datamember = reference_class->get_datamember(ids.front(), current_class);
+		method = reference_class->get_method(ids.front(), current_class);
 
 		if (datamember == bpp::inaccessible_datamember || method == bpp::inaccessible_method) {
 			result.error = entity_reference::reference_error{
-				identifiers.front() + " is inaccessible in this context",
+				ids.front() + " is inaccessible in this context",
 				error_token
 			};
 			return result;
@@ -440,11 +443,11 @@ entity_reference resolve_reference_impl(
 			last_reference_type = bpp::reference_type::ref_method;
 			result.entity = method;
 
-			if (!nodes.empty()) {
+			if (!nds.empty()) {
 				method->add_reference(
 					file,
-					nodes.front()->getSymbol()->getLine() - 1,
-					nodes.front()->getSymbol()->getCharPositionInLine()
+					nds.front()->getSymbol()->getLine() - 1,
+					nds.front()->getSymbol()->getCharPositionInLine()
 				);
 			}
 		} else if (datamember != nullptr) {
@@ -453,8 +456,8 @@ entity_reference resolve_reference_impl(
 					: bpp::reference_type::ref_object;
 			result.entity = datamember;
 
-			std::string temporary_variable_lvalue = result.reference_code.code + "__" + identifiers.front();
-			std::string temporary_varible_rvalue = "${" + indirection + result.reference_code.code + "}__" + identifiers.front();
+			std::string temporary_variable_lvalue = result.reference_code.code + "__" + ids.front();
+			std::string temporary_varible_rvalue = "${" + indirection + result.reference_code.code + "}__" + ids.front();
 
 			if (result.created_first_temporary_variable) {
 				result.reference_code.pre_code += temporary_variable_lvalue + "=" + temporary_varible_rvalue + "\n";
@@ -465,25 +468,25 @@ entity_reference resolve_reference_impl(
 			result.reference_code.code = temporary_variable_lvalue;
 			result.created_first_temporary_variable = true;
 
-			if (!nodes.empty()) {
+			if (!nds.empty()) {
 				datamember->add_reference(
 					file,
-					nodes.front()->getSymbol()->getLine() - 1,
-					nodes.front()->getSymbol()->getCharPositionInLine()
+					nds.front()->getSymbol()->getLine() - 1,
+					nds.front()->getSymbol()->getCharPositionInLine()
 				);
 			}
 		} else {
 			result.error = entity_reference::reference_error{
-				result.entity->get_name() + " has no member named " + identifiers.front(),
+				result.entity->get_name() + " has no member named " + ids.front(),
 				error_token
 			};
 			return result;
 		}
 
-		identifiers.pop_front();
+		ids.pop_front();
 
-		if (!nodes.empty()) {
-			nodes.pop_front();
+		if (!nds.empty()) {
+			nds.pop_front();
 		}
 	}
 

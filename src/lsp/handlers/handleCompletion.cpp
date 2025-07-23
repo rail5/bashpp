@@ -184,13 +184,11 @@ CompletionList bpp::BashppServer::handleDOTCompletion(const CompletionParams& pa
 				detail += "@public ";
 				break;
 			case bpp::bpp_scope::SCOPE_PRIVATE:
+			case bpp::bpp_scope::SCOPE_INACCESSIBLE:
 				detail += "@private ";
 				break;
 			case bpp::bpp_scope::SCOPE_PROTECTED:
 				detail += "@protected ";
-				break;
-			default:
-				detail += "@private ";
 				break;
 		}
 

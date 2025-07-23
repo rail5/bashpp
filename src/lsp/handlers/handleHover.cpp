@@ -103,13 +103,11 @@ GenericResponseMessage bpp::BashppServer::handleHover(const GenericRequestMessag
 				hover_text += "@public ";
 				break;
 			case bpp::bpp_scope::SCOPE_PRIVATE:
+			case bpp::bpp_scope::SCOPE_INACCESSIBLE:
 				hover_text += "@private ";
 				break;
 			case bpp::bpp_scope::SCOPE_PROTECTED:
 				hover_text += "@protected ";
-				break;
-			default:
-				hover_text += "@private ";
 				break;
 		}
 

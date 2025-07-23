@@ -18,8 +18,8 @@ antlr4::tree::ParseTree* find_node_at_column(antlr4::tree::ParseTree* single_lin
 		return nullptr;
 	}
 
-	int start_column = start->getCharPositionInLine();
-	int stop_column = stop->getCharPositionInLine() + static_cast<int>(stop->getText().length());
+	uint64_t start_column = start->getCharPositionInLine();
+	uint64_t stop_column = stop->getCharPositionInLine() + stop->getText().length();
 
 	if (column < start_column || column > stop_column) {
 		return nullptr; // Column is outside the range of this node

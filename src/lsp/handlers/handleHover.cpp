@@ -148,8 +148,8 @@ GenericResponseMessage bpp::BashppServer::handleHover(const GenericRequestMessag
 
 	Hover hover;
 	MarkupContent hoverContent;
-	hoverContent.kind = MarkupKind::PlainText;
-	hoverContent.value = hover_text;
+	hoverContent.kind = MarkupKind::Markdown;
+	hoverContent.value = "```bashpp\n" + hover_text + "\n```";
 	hover.contents = hoverContent;
 
 	response.result = hover;

@@ -44,8 +44,8 @@ volatile int bpp_exit_code = 0;
 #include "internal_error.h"
 
 int main(int argc, char* argv[]) {
-	const char* program_name = "Bash++";
-	const char* copyright = "Copyright (C) 2024-"
+	constexpr const char* program_name = "Bash++";
+	constexpr const char* copyright = "Copyright (C) 2024-"
 		bpp_compiler_updated_year
 		" Andrew S. Rightenburg\n\n"
 		"This program is free software; you can redistribute it and/or modify\n"
@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
 		"GNU General Public License for more details.\n\n"
 		"You should have received a copy of the GNU General Public License\n"
 		"along with this program. If not, see http://www.gnu.org/licenses/.\n";
-	const char* help_string = "Usage: bpp [options] [file] ...\n"
+	constexpr const char* help_string = "Usage: bpp [options] [file] ...\n"
 		"If no file is specified, read from stdin\n"
 		"All arguments after the file are passed to the compiled program\n"
 		"Options:\n"

@@ -145,6 +145,13 @@ GenericResponseMessage bpp::BashppServer::handleHover(const GenericRequestMessag
 		return response; // No hover text available
 	}
 
+	// Search for any relevant comments associated with the entity
+	std::string comments = find_comments_for_entity(entity);
+
+	if (!comments.empty()) {
+		hover_text += "\n\n" + comments; // Append comments if available
+	}
+
 	Hover hover;
 	MarkupContent hoverContent;
 	hoverContent.kind = MarkupKind::Markdown;

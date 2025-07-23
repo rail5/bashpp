@@ -359,3 +359,53 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 
 	return nullptr;
 }
+
+std::string find_comments_for_entity(std::shared_ptr<bpp::bpp_entity> entity) {
+	if (entity == nullptr) {
+		return "";
+	}
+
+	// Locate the entity's definition position
+	auto definition_position = entity->get_initial_definition();
+
+	if (definition_position.file.empty()) {
+		return ""; // No known source file, no alternative contents provided
+	}
+
+	// TODO(@rail5): Should we be concerned that we're reading from the filesystem here?
+	// Should the language server keep a cache of file contents for parsed files?
+	std::ifstream source_file(definition_position.file);
+	if (!source_file.is_open()) {
+		return ""; // Could not open the source file
+	}
+
+	std::string comments;
+	std::string line;
+	uint32_t current_line = 0;
+	while (std::getline(source_file, line)) {
+		if (current_line >= definition_position.line) {
+			break; // Stop reading after reaching the definition line
+		}
+		current_line++;
+
+		size_t comment_start = line.find('#');
+		if (comment_start != std::string::npos) {
+			// Extract the comment part
+			std::string comment = line.substr(comment_start);
+			// Trim leading whitespace from the comment
+			comment.erase(0, comment.find_first_not_of(" \t"));
+
+			if (!comments.empty()) {
+				comments += "\n"; // Separate comments with a newline
+			}
+			comments += comment; // Append this comment to the comment block
+		} else {
+			comments.clear(); // A comment block ended, and we still haven't hit the definition line
+				// In other words: the previous comment block is not associated with the entity
+				// Therefore, clear it
+		}
+	}
+
+	source_file.close();
+	return comments;
+}

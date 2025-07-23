@@ -1,3 +1,14 @@
+bpp (0.5.4) unstable; urgency=medium
+
+  * Language server: Include comments connected with the hovered Entity
+    in Hover responses
+  * Language server: Syntax highlighting in hover responses via markdown
+  * Bug fix: Add the required sentinel to getopt's long options struct
+  * Entity resolution: preserve line/column signedness and precision
+  * Security: Use std::string operations, never strncat, strncpy
+
+ -- rail5 <andrew@rail5.org>  Thu, 24 Jul 2025 02:34:27 +0800
+
 bpp (0.5.3) unstable; urgency=medium
 
   * Language server: completions: resolve entity at position *before*

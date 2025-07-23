@@ -121,7 +121,15 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	while ((c = getopt_long(static_cast<int>(compiler_arguments.size()), compiler_arguments.data(), "DhI:o:pstv", long_options, &option_index)) != -1) {
+	while (
+		(c = getopt_long(
+			static_cast<int>(compiler_arguments.size()),
+			compiler_arguments.data(),
+			"DhI:o:pstv",
+			long_options,
+			&option_index)
+		) != -1
+	) {
 		switch(c) {
 			case 'h':
 				std::cout << program_name << " " << bpp_compiler_version << std::endl << help_string;

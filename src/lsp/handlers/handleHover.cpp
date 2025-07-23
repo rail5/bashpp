@@ -92,7 +92,7 @@ GenericResponseMessage bpp::BashppServer::handleHover(const GenericRequestMessag
 
 	std::shared_ptr<bpp::bpp_method> method = std::dynamic_pointer_cast<bpp::bpp_method>(entity);
 	if (method) {
-		// If it's a method, display [@virtual] {@public | @private | @protected} @method @ClassName.methodName [paremeter list]
+		// If it's a method, display [@virtual] {@public | @private | @protected} @method @ClassName.methodName [parameter list]
 		hover_text = "";
 		if (method->is_virtual()) {
 			hover_text += "@virtual ";

@@ -76,11 +76,12 @@ GenericResponseMessage bpp::BashppServer::handleHover(const GenericRequestMessag
 			if (datamember->is_pointer()) {
 				hover_text += "*";
 			}
+			hover_text += " ";
 		}
 
 		std::shared_ptr<bpp::bpp_class> containing_class = datamember->get_containing_class().lock();
 		if (containing_class) {
-			hover_text += " @" + datamember->get_containing_class().lock()->get_name() + "." + datamember->get_name();
+			hover_text += "@" + datamember->get_containing_class().lock()->get_name() + "." + datamember->get_name();
 		} else {
 			// Failsafe:
 			// If we fail to lock the containing class weak ptr:

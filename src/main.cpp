@@ -82,7 +82,8 @@ int main(int argc, char* argv[]) {
 		{"parse-tree", no_argument, 0, 'p'},
 		{"no-warnings", no_argument, 0, 's'},
 		{"tokens", no_argument, 0, 't'},
-		{"version", no_argument, 0, 'v'}
+		{"version", no_argument, 0, 'v'},
+		{0, 0, 0, 0} // Sentinel
 	};
 
 	bool received_filename = false;

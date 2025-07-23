@@ -103,8 +103,8 @@ int main(int argc, char* argv[]) {
 
 	std::vector<char*> program_arguments = {};
 	std::vector<char*> compiler_arguments = {};
-	program_arguments.reserve(argc);
-	compiler_arguments.reserve(argc);
+	program_arguments.reserve(static_cast<std::vector<char*>::size_type>(argc));
+	compiler_arguments.reserve(static_cast<std::vector<char*>::size_type>(argc));
 	compiler_arguments.push_back(argv[0]);
 
 	// Find the first non-option argument, interpret it as the source file to compile,

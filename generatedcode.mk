@@ -45,6 +45,7 @@ update-year:
 
 clean-antlr:
 	@rm -rf $(ANTLR4DIR)
+	@rm -rf src/.antlr
 	@echo "Cleaned up ANTLR4 generated files."
 
 clean-lsp:

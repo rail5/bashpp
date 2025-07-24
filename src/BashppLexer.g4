@@ -9,6 +9,7 @@ lexer grammar BashppLexer;
 }
 
 @lexer::members {
+bool utf16_mode = false;
 uint64_t charCount = 0;
 uint64_t lineCount = 1;
 int parenDepth = 0;
@@ -83,6 +84,58 @@ size_t utf8_char_count(const std::string& s) {
 	return count;
 }
 
+// This function exists **solely** to accommodate the LSP.
+size_t utf16_char_count(const std::string& s) {
+	size_t count = 0;
+
+	for (size_t i = 0; i < s.size();) {
+		unsigned char c = s[i];
+		uint32_t codepoint;
+		size_t len;
+
+		if ((c & 0x80) == 0) {
+			// 1-byte character (ASCII)
+			codepoint = c;
+			len = 1;
+		} else if ((c & 0xE0) == 0xC0) {
+			// 2-byte character
+			codepoint = (c & 0x1F) << 6 | (s[i + 1] & 0x3F);
+			len = 2;
+		} else if ((c & 0xF0) == 0xE0) {
+			// 3-byte character
+			codepoint = (c & 0x0F) << 12 | (s[i + 1] & 0x3F) << 6 | (s[i + 2] & 0x3F);
+			len = 3;
+		} else if ((c & 0xF8) == 0xF0) {
+			// 4-byte character
+			codepoint = (c & 0x07) << 18 | (s[i + 1] & 0x3F) << 12 | (s[i + 2] & 0x3F) << 6 | (s[i + 3] & 0x3F);
+			len = 4;
+		} else {
+			// Invalid UTF-8 sequence, treat as a single character
+			codepoint = c;
+			len = 1;
+		}
+
+		if (codepoint >= 0x10000) {
+			// Convert to UTF-16 surrogate pair
+			count += 2; // Surrogate pairs count as two UTF-16 code units
+		} else {
+			count++; // Single UTF-16 code unit
+		}
+
+		i += len;
+	}
+
+	return count;
+}
+
+size_t char_count(const std::string& s) {
+	if (utf16_mode) {
+		return utf16_char_count(s);
+	}
+
+	return utf8_char_count(s);
+}
+
 void emit(std::unique_ptr<antlr4::Token> token) {
 	/**
 	* The following nonsense (casting it to CommonToken, and manually tracking the line/char position)
@@ -91,7 +144,7 @@ void emit(std::unique_ptr<antlr4::Token> token) {
 	std::unique_ptr<antlr4::CommonToken> t = std::unique_ptr<antlr4::CommonToken>(dynamic_cast<antlr4::CommonToken*>(token.release()));
 	t->setLine(lineCount);
 	t->setCharPositionInLine(charCount);
-	charCount += utf8_char_count(t->getText());
+	charCount += char_count(t->getText());
 	if (t->getText() == "\n") {
 		lineCount++;
 		charCount = 0;

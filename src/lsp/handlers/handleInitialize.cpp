@@ -38,6 +38,9 @@ GenericResponseMessage bpp::BashppServer::handleInitialize(const GenericRequestM
 				PositionEncodingKind::UTF8)
 			!= initialize_request.params.capabilities.general->positionEncodings->end()) {
 		result.capabilities.positionEncoding = PositionEncodingKind::UTF8;
+	} else {
+		program_pool.set_utf16_mode(true);
+		result.capabilities.positionEncoding = PositionEncodingKind::UTF16;
 	}
 
 	response.result = result;

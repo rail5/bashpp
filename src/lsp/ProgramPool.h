@@ -25,6 +25,8 @@ class ProgramPool {
 
 		std::unordered_map<std::string, bool> open_files; // Maps file paths to whether they are currently open
 
+		bool utf16_mode = false; // Whether to use UTF-16 mode for character counting
+
 		void _remove_oldest_program();
 		void _remove_program(size_t index);
 		std::shared_ptr<bpp::bpp_program> _parse_program(
@@ -39,6 +41,7 @@ class ProgramPool {
 
 		void add_include_path(const std::string& path);
 		void set_suppress_warnings(bool suppress);
+		void set_utf16_mode(bool mode);
 		
 		/**
 		 * @brief Get or create a program for the given file path

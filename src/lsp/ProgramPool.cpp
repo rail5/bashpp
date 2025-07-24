@@ -29,6 +29,10 @@ void ProgramPool::set_suppress_warnings(bool suppress) {
 	suppress_warnings = suppress;
 }
 
+void ProgramPool::set_utf16_mode(bool mode) {
+	utf16_mode = mode;
+}
+
 void ProgramPool::_remove_oldest_program() {
 	_remove_program(0);
 }
@@ -98,6 +102,7 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::_parse_program(
 		input = antlr4::ANTLRInputStream(replacement_file_contents->second);
 	}
 	BashppLexer lexer(&input);
+	lexer.utf16_mode = utf16_mode;
 	antlr4::CommonTokenStream tokens(&lexer);
 	tokens.fill();
 

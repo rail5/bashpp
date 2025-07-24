@@ -3,12 +3,12 @@
 <img title="" src="./wiki/banner.png" alt="Bash++: Bash with classes" width="319" data-align="center">
 
 <!--
-	The following snippet is highlighted as if it were D
+	The following snippet is highlighted as if it were Java
 	Because our language is not recognized by GitHub, and the
-	D syntax highlighting looks less-bad than anything else so far
+	Java syntax highlighting looks less-bad than anything else so far
 	For proper syntax highlighting, use the Bash++ VSCode extension
 -->
-```d
+```java
 @class Bashpp {
   @public author="Andrew S. Rightenburg"
   @public source="https://github.com/rail5/bashpp"

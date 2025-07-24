@@ -23,8 +23,8 @@ endif
 # C++ CONFIG
 
 CXX = g++
-CXXFLAGS = -std=gnu++17 -O2 -s -Wall -Wno-attributes -MMD -MP
-INCLUDEFLAGS = -I$(ANTLR4_HEADERS)
+CXXFLAGS = -std=gnu++17 -O2 -s -Wall -MMD -MP
+INCLUDEFLAGS = -isystem $(ANTLR4_HEADERS)
 
 
 # OBJECT DIRECTORIES

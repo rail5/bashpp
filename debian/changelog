@@ -1,3 +1,9 @@
+bpp (0.5.5) unstable; urgency=medium
+
+  * Language server / lexer: UTF16 position encoding support
+
+ -- rail5 <andrew@rail5.org>  Thu, 24 Jul 2025 23:39:12 +0800
+
 bpp (0.5.4) unstable; urgency=medium
 
   * Language server: Include comments connected with the hovered Entity

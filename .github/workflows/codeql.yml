@@ -18,6 +18,7 @@ on:
       - '.github/workflows/codeql.yml'
   schedule:
     - cron: '36 16 * * 4'
+  workflow_dispatch:
 
 jobs:
   analyze:

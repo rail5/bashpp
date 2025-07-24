@@ -31,6 +31,7 @@ antlr4::tree::ParseTree* find_node_at_column(antlr4::tree::ParseTree* single_lin
  * @param line The line number to resolve the entity at (0-indexed).
  * @param column The column number to resolve the entity at (0-indexed).
  * @param program The program to resolve the entity in.
+ * @param utf16_mode Whether to use UTF-16 mode for character counting.
  * @param file_contents Alternative contents of the file to use instead of reading from the filesystem.
  * @return A shared pointer to the resolved entity, or nullptr if no entity is found.
  */
@@ -39,6 +40,7 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 	uint32_t line,
 	uint32_t column,
 	std::shared_ptr<bpp::bpp_program> program,
+	bool utf16_mode,
 	const std::string& file_contents = ""
 );
 

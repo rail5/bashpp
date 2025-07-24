@@ -33,6 +33,10 @@ void ProgramPool::set_utf16_mode(bool mode) {
 	utf16_mode = mode;
 }
 
+bool ProgramPool::get_utf16_mode() const {
+	return utf16_mode;
+}
+
 void ProgramPool::_remove_oldest_program() {
 	_remove_program(0);
 }

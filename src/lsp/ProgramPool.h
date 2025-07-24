@@ -42,6 +42,7 @@ class ProgramPool {
 		void add_include_path(const std::string& path);
 		void set_suppress_warnings(bool suppress);
 		void set_utf16_mode(bool mode);
+		bool get_utf16_mode() const;
 		
 		/**
 		 * @brief Get or create a program for the given file path

@@ -41,6 +41,7 @@ GenericResponseMessage bpp::BashppServer::handleHover(const GenericRequestMessag
 			position.line,
 			position.character,
 			program,
+			program_pool.get_utf16_mode(),
 			unsaved_changes.find(uri) != unsaved_changes.end() ? unsaved_changes[uri] : ""
 		);
 	} catch (...) {

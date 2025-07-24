@@ -42,6 +42,7 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 	uint32_t line,
 	uint32_t column,
 	std::shared_ptr<bpp::bpp_program> program,
+	bool utf16_mode,
 	const std::string& file_contents
 ) {
 	if (program == nullptr || file.empty()) {
@@ -86,6 +87,7 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 	// Use the ANTLR4 parser to parse the line content
 	antlr4::ANTLRInputStream input(line_content);
 	BashppLexer lexer(&input);
+	lexer.utf16_mode = utf16_mode; // Set the lexer to use UTF-16 mode if specified
 	antlr4::CommonTokenStream tokens(&lexer);
 	tokens.fill();
 

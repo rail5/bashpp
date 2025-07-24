@@ -285,12 +285,12 @@ int main(int argc, char* argv[]) {
 			throw std::runtime_error("Failed to create temporary file");
 		}
 		close(fd);
-		std::shared_ptr<std::ofstream> stream = std::make_shared<std::ofstream>(temp_file_vec.data());
-		if (!stream->is_open()) {
+		std::shared_ptr<std::ofstream> ostream = std::make_shared<std::ofstream>(temp_file_vec.data());
+		if (!ostream->is_open()) {
 			std::cerr << program_name << ": Error: Could not open temporary file for output" << std::endl;
 			return 1;
 		}
-		output_stream = std::dynamic_pointer_cast<std::ostream>(stream);
+		output_stream = std::dynamic_pointer_cast<std::ostream>(ostream);
 		output_file = std::string(temp_file_vec.data());
 	}
 

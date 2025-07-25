@@ -54,6 +54,12 @@ void BashppListener::enterClass_definition(BashppParser::Class_definitionContext
 			throw_syntax_error(ctx->IDENTIFIER(1), "Parent class not found: " + parent_class_name);
 		}
 		new_class->inherit(parent_class);
+
+		parent_class->add_reference(
+			source_file,
+			ctx->IDENTIFIER(1)->getSymbol()->getLine() - 1,
+			ctx->IDENTIFIER(1)->getSymbol()->getCharPositionInLine()
+		);
 	}
 }
 

@@ -1,7 +1,7 @@
 # Default to using all available CPU cores for parallel builds
 # unless the user specifies a different number of jobs with -jN
 ifeq ($(filter -j%,$(MAKEFLAGS)),)
-MAKEFLAGS += -j$(shell nproc)
+	MAKEFLAGS += -j$(shell nproc)
 endif
 
 .SUFFIXES:
@@ -11,14 +11,12 @@ endif
 # And append ".sh" to each file name
 STDLIB_FILES := $(shell find stdlib -type f -not -name '*.*' -exec basename {} \; | sed 's/^/stdlib\//; s/$$/.sh/')
 
-all: compiler-and-lsp std
+all: bin/bpp bin/bpp-lsp std
+	@:
 
-# build.mk contains the rules to build the compiler and language server
-include build.mk
+include mk/build.mk
 
-std: compiler
-	@echo $(STDLIB_FILES)
-	$(MAKE) $(STDLIB_FILES)
+std: $(STDLIB_FILES)
 
 stdlib/%.sh: stdlib/% bin/bpp
 	@echo "Compiling stdlib: $<"
@@ -82,11 +80,6 @@ detailed-manuals: clean-detailed-manuals
 technical-docs: clean-technical-docs
 	doxygen Doxyfile
 
-clean-bin:
-	@rm -f bin/bpp
-	@rm -f bin/bpp-lsp
-	@echo "Cleaned up binaries."
-
 clean-std:
 	@rm -f stdlib/*.sh
 	@echo "Cleaned up stdlib files."
@@ -109,6 +102,10 @@ clean-vscode:
 	@cd vscode && $(MAKE) --no-print-directory clean
 	@echo "Cleaned up VSCode extension files."
 
-clean: clean-antlr clean-lsp clean-objects clean-bin clean-std clean-manual clean-technical-docs clean-vscode
+clean: clean-antlr clean-lsp clean-meta clean-objects clean-bin clean-std clean-manual clean-technical-docs clean-vscode
 
-.PHONY: all std test process-manual-code-snippets clean-bin clean-std clean-manual clean-detailed-manuals clean-technical-docs clean-vscode clean update-version update-year detailed-manuals manual technical-docs stdlib/%.sh vscode
+.PHONY: all std test process-manual-code-snippets manual detailed-manuals technical-docs clean-std clean-manual clean-detailed-manuals clean-technical-docs clean-vscode
+
+ifeq ($(filter clean%,$(MAKECMDGOALS)),)
+-include $(shell find bin -name '*.d' 2>/dev/null)
+endif

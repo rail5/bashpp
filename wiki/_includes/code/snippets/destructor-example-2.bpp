@@ -4,4 +4,4 @@
 	}
 }
 @MyClass myObject
-@delete myObject
+@delete @myObject

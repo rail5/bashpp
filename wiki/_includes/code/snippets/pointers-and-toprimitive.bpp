@@ -1,4 +1,4 @@
-@MyClass* myPointer=@new @MyClass # Declare a pointer
+@MyClass* myPointer=@new MyClass # Declare a pointer
 echo "@myPointer" # Echoes the pointer
 echo "@myPointer.toPrimitive" # Calls the toPrimitive method
 

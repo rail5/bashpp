@@ -2,6 +2,6 @@
 	@public dataMember="Hello, world!"
 }
 
-@MyClass* myPointer=@new @MyClass
+@MyClass* myPointer=@new MyClass
 
-@delete myPointer
+@delete @myPointer

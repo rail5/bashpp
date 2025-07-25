@@ -259,9 +259,9 @@ All pointers are set to `@nullptr` by default until otherwise specified. For exa
 {%- include code/snippets/nullptr.html -%}
 </code></pre></div>
 
-When writing `@new {some class}`, the identifier which follows the `@new` keyword must be the name of a class. It can optionally be preceded by an `@` symbol. `@new MyClass` and `@new @MyClass` are both valid.
+When writing `@new {some class}`, the identifier which follows the `@new` keyword must be the name of a class.
 
-When writing `@delete {some object or pointer}`, the identifier which follows the `@delete` keyword must be the name of an object or pointer. Because this is an *object reference*, it **must** be preceded by an `@` symbol. `@delete @myObject` is valid, but `@delete myObject` is not.
+When writing `@delete @{some object or pointer}`, the identifier which follows the `@delete` keyword must be the name of an object or pointer. Because this is an *object reference*, it **must** be preceded by an `@` symbol. `@delete @myObject` is valid, but `@delete myObject` is not.
 
 ## `@nullptr`
 

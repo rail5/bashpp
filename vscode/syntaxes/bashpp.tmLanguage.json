@@ -50,7 +50,7 @@
 			"include": "#bashpp-keyword"
 		},
 		{
-			"include": "#class-declaration"
+			"include": "#class-name"
 		},
 		{
 			"include": "#method-declaration"
@@ -895,23 +895,40 @@
 				}
 			]
 		},
-		"class-declaration": {
+		"class-name": {
 			"patterns": [
 				{
 					"match": "(?<=@class\\s)(?!.*__)[a-zA-Z_][a-zA-Z0-9_]*(?=\\s|$)",
-					"name": "entity.name.type.class.bashpp"
+					"name": "entity.name.type.class.bashpp",
+					"comment": "Matches the name after '@class' in a class definition"
 				},
 				{
 					"match": "(?<=@class\\s([a-zA-Z_][a-zA-Z0-9_]*\\s:\\s))(?!.*__)[a-zA-Z_][a-zA-Z0-9_]*(?=\\s|$)",
-					"name": "entity.name.type.parentclass.bashpp"
+					"name": "entity.name.type.parentclass.bashpp",
+					"comment": "Matches the parent class in a class definition, as in @class Name : Parent"
 				},
 				{
 					"match": "(?<=@dynamic_cast(\\s)*\\<(\\s)*)(?!.*__)[a-zA-Z_][a-zA-Z0-9_]*(?=\\s|\\>|\\*|$)",
-					"name": "entity.name.type.class.bashpp"
+					"name": "entity.name.type.class.bashpp",
+					"comment": "Matches the class name in @dynamic_cast<ClassName>"
 				},
 				{
 					"match": "(?<=@new\\s)(?!.*__)[a-zA-Z_][a-zA-Z0-9_]*(?=\\s|$)",
-					"name": "entity.name.type.class.bashpp"
+					"name": "entity.name.type.class.bashpp",
+					"comment": "Matches the class name after '@new'"
+				},
+				{
+					"match": "(?<!\\\\)(@(?!class\\b)(?!public\\b)(?!private\\b)(?!protected\\b)(?!virtual\\b)(?!method\\b)(?!constructor\\b)(?!destructor\\b)(?!new\\b)(?!delete\\b)(?!nullptr\\b)(?!include_once\\b)(?!include\\b)(?!.*__)[a-zA-Z_][a-zA-Z0-9_]*)\\*?\\s+((?!.*__)[a-zA-Z_][a-zA-Z0-9_]*)",
+					"captures": {
+						"1": {
+							"name": "entity.name.type.class.bashpp",
+							"comment": "Matches the class name in an object instantiation, e.g. @ClassName object"
+						},
+						"2": {
+							"name": "variable.other.normal.bashpp",
+							"comment": "Matches te object name in an object instantiation, e.g @type ObjectName"
+						}
+					}
 				}
 			]
 		},
@@ -1370,7 +1387,8 @@
 						}
 					},
 					"match": "(?<!\\\\)(@)(?!class\\b)(?!public\\b)(?!private\\b)(?!protected\\b)(?!virtual\\b)(?!method\\b)(?!constructor\\b)(?!destructor\\b)(?!new\\b)(?!delete\\b)(?!nullptr\\b)(?!include_once\\b)(?!include\\b)((?!__)[a-zA-Z_]([a-zA-Z0-9_]*\\.?)*)",
-					"name": "variable.other.normal.bashpp"
+					"name": "variable.other.normal.bashpp",
+					"comment": "Matches a full object reference, as in @object.innerObject.method"
 				},
 				{
 					"begin": "@\\{",

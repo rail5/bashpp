@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.5.4]
+
+- Highlight classes written after `@new`
+
 ## [0.5.3]
 
 - Added support for the new Bash++ language server

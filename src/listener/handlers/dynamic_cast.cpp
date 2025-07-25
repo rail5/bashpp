@@ -35,6 +35,13 @@ void BashppListener::enterDynamic_cast_statement(BashppParser::Dynamic_cast_stat
 	}
 
 	dynamic_cast_entity->set_cast_to(cast_class);
+
+	cast_class->add_reference(
+		source_file,
+		ctx->IDENTIFIER()->getSymbol()->getLine() - 1,
+		ctx->IDENTIFIER()->getSymbol()->getCharPositionInLine()
+	);
+
 	entity_stack.push(dynamic_cast_entity);
 }
 

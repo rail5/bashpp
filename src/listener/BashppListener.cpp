@@ -101,15 +101,6 @@ std::shared_ptr<bpp::bpp_code_entity> BashppListener::latest_code_entity() {
 	return latest_entity;
 }
 
-bool BashppListener::is_protected_keyword(const std::string& keyword) {
-	for (const char* protected_keyword : protected_keywords) {
-		if (keyword == protected_keyword) {
-			return true;
-		}
-	}
-	return false;
-}
-
 void BashppListener::set_replacement_file_contents(const std::string& file_path, const std::string& contents) {
 	replacement_file_contents = std::make_pair(file_path, contents);
 }

@@ -23,9 +23,9 @@ GenericResponseMessage bpp::BashppServer::handleInitialize(const GenericRequestM
 	result.capabilities.completionProvider->triggerCharacters = {".", "@"};
 
 	result.capabilities.definitionProvider = true;
+	result.capabilities.renameProvider = true;
 
 	// Planned but not yet implemented:
-	//result.capabilities.renameProvider = true;
 	//result.capabilities.documentSymbolProvider = true;
 	//result.capabilities.workspaceSymbolProvider = true;
 

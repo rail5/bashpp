@@ -281,7 +281,10 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 
 		case BashppParser::RuleObject_instantiation:
 		{
-			// Resolve the class name being instantiated
+			// Resolve either:
+			// 1. The class being instantiated, or
+			// 2. The object being instantiated
+			// depending on the position of the column
 			auto instantiation_ctx = dynamic_cast<BashppParser::Object_instantiationContext*>(ctx);
 			if (!instantiation_ctx) {
 				return nullptr; // Not a valid instantiation context
@@ -290,14 +293,39 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 			auto class_name_token = (instantiation_ctx->IDENTIFIER_LVALUE() != nullptr)
 				? instantiation_ctx->IDENTIFIER_LVALUE()
 				: instantiation_ctx->IDENTIFIER(0);
-			auto class_pointer = context->get_class(class_name_token->getText());
-			return class_pointer;
+			
+			auto object_name_token = (instantiation_ctx->IDENTIFIER_LVALUE() != nullptr)
+				? instantiation_ctx->IDENTIFIER(0)
+				: instantiation_ctx->IDENTIFIER(1);
+			
+			// Are we being asked to resolve the class?
+			uint64_t class_name_start = class_name_token->getSymbol()->getCharPositionInLine();
+			uint64_t class_name_end = class_name_start + class_name_token->getText().length();
+			if (column >= class_name_start && column <= class_name_end) {
+				auto class_pointer = context->get_class(class_name_token->getText());
+				return class_pointer;
+			}
+
+			// Are we being asked to resolve the object?
+			uint64_t object_name_start = object_name_token->getSymbol()->getCharPositionInLine();
+			uint64_t object_name_end = object_name_start + object_name_token->getText().length();
+			if (column >= object_name_start && column <= object_name_end) {
+				// Resolve the object being instantiated
+				auto object_pointer = context->get_object(object_name_token->getText());
+				return object_pointer;
+			}
+
+			// If we reach here, the column is not within the class or object name tokens
+			return nullptr;
 		}
 		break;
 
 		case BashppParser::RulePointer_declaration:
 		{
-			// Resolve the pointer type being declared
+			// Resolve either:
+			// 1. The class type of the pointer, or
+			// 2. The pointer variable itself
+			// depending on the position of the column
 			auto pointer_ctx = dynamic_cast<BashppParser::Pointer_declarationContext*>(ctx);
 			if (!pointer_ctx) {
 				return nullptr; // Not a valid pointer declaration context
@@ -306,14 +334,39 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 			auto type_token = (pointer_ctx->IDENTIFIER_LVALUE() != nullptr)
 				? pointer_ctx->IDENTIFIER_LVALUE()
 				: pointer_ctx->IDENTIFIER(0);
-			auto type_pointer = context->get_class(type_token->getText());
-			return type_pointer;
+			
+			auto name_token = (pointer_ctx->IDENTIFIER_LVALUE() != nullptr)
+				? pointer_ctx->IDENTIFIER(0)
+				: pointer_ctx->IDENTIFIER(1);
+			
+			// Are we being asked to resolve the class type?
+			uint64_t type_start = type_token->getSymbol()->getCharPositionInLine();
+			uint64_t type_end = type_start + type_token->getText().length();
+			if (column >= type_start && column <= type_end) {
+				auto class_pointer = context->get_class(type_token->getText());
+				return class_pointer;
+			}
+
+			// Are we being asked to resolve the pointer variable?
+			uint64_t name_start = name_token->getSymbol()->getCharPositionInLine();
+			uint64_t name_end = name_start + name_token->getText().length();
+			if (column >= name_start && column <= name_end) {
+				// Resolve the pointer variable
+				auto pointer_variable = context->get_object(name_token->getText());
+				return pointer_variable;
+			}
+
+			// If we reach here, the column is not within the class type or pointer variable tokens
+			return nullptr;
 		}
 		break;
 
 		case BashppParser::RuleParameter:
 		{
-			// Resolve the parameter class (if any)
+			// Resolve either:
+			// 1. The class type of the parameter, or
+			// 2. The parameter variable itself
+			// depending on the position of the column
 			auto param_ctx = dynamic_cast<BashppParser::ParameterContext*>(ctx);
 			if (!param_ctx) {
 				return nullptr; // Not a valid parameter context
@@ -322,10 +375,20 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 			if (param_ctx->IDENTIFIER().size() > 1) {
 				// There being more than one identifier means that this is a non-primitive parameter
 				// Which therefore has a class type to resolve
-				auto type_pointer = context->get_class(param_ctx->IDENTIFIER(0)->getText());
-				return type_pointer;
+
+				// Are we being asked to resolve the class type?
+				uint64_t type_start = param_ctx->IDENTIFIER(0)->getSymbol()->getCharPositionInLine();
+				uint64_t type_end = type_start + param_ctx->IDENTIFIER(0)->getText().length();
+				if (column >= type_start && column <= type_end) {
+					auto class_pointer = context->get_class(param_ctx->IDENTIFIER(0)->getText());
+					return class_pointer;
+				} else {
+					auto parameter_variable = context->get_object(param_ctx->IDENTIFIER(1)->getText());
+					return parameter_variable;
+				}
 			} else {
-				return nullptr; // Primitive parameter, no class to resolve
+				// Primitive parameter, return nothing
+				return nullptr;
 			}
 		}
 		break;
@@ -337,6 +400,14 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 			if (!new_ctx) {
 				return nullptr; // Not a valid new statement context
 			}
+
+			// Verify that the given position is within the class name token
+			uint64_t class_name_start = new_ctx->IDENTIFIER()->getSymbol()->getCharPositionInLine();
+			uint64_t class_name_end = class_name_start + new_ctx->IDENTIFIER()->getText().length();
+			if (column < class_name_start || column > class_name_end) {
+				return nullptr; // Column is outside the class name token
+			}
+
 			auto class_pointer = context->get_class(new_ctx->IDENTIFIER()->getText());
 			return class_pointer;
 		}
@@ -349,6 +420,14 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 			if (!cast_ctx) {
 				return nullptr; // Not a valid dynamic cast statement context
 			}
+
+			// Verify that the given position is within the class name token
+			uint64_t class_name_start = cast_ctx->IDENTIFIER()->getSymbol()->getCharPositionInLine();
+			uint64_t class_name_end = class_name_start + cast_ctx->IDENTIFIER()->getText().length();
+			if (column < class_name_start || column > class_name_end) {
+				return nullptr; // Column is outside the class name token
+			}
+
 			auto class_pointer = context->get_class(cast_ctx->IDENTIFIER()->getText());
 			return class_pointer;
 		}

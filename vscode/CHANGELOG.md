@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.5.5]
+
+- Syntax highlighting: properly identify class and object names in object instantations and pointer declarations
+
 ## [0.5.4]
 
 - Highlight classes written after `@new`

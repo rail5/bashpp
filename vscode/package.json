@@ -2,7 +2,7 @@
   "name": "bashpp",
   "displayName": "Bash++",
   "description": "Language support for Bash++",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "homepage": "https://bpp.sh",
   "publisher": "rail5",
   "repository": {

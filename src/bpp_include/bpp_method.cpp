@@ -125,7 +125,6 @@ void bpp_method::destruct_local_objects(std::shared_ptr<bpp_program> program) {
 
 		*code << delete_code.pre_code << "\n" << std::flush;
 	}
-	local_objects.clear();
 }
 
 bool bpp_method::add_object(std::shared_ptr<bpp_object> object, bool make_local) {

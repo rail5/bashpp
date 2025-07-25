@@ -1,4 +1,4 @@
-name: Deploy Jekyll Site
+name: Test Compiler And Deploy Site
 
 on:
   # Runs on pushes targeting the default branch

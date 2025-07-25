@@ -4,7 +4,7 @@
 # Generates badge.svg and test-results.svg files in /wiki/ based on test results
 
 # Build the compiler
-make compiler
+make bin/bpp
 
 testsPassed=0
 testsFailed=0

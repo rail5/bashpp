@@ -7,6 +7,8 @@
 #include "interval_tree.hpp"
 #include "tree_hooks.hpp"
 #include <cstdint>
+#include <memory>
+#include "../../bpp_include/bpp.h"
 
 // Forward decl.
 namespace bpp {

@@ -63,6 +63,13 @@ void BashppListener::enterPointer_declaration(BashppParser::Pointer_declarationC
 	);
 
 	new_object->set_class(object_class);
+
+	object_class->add_reference(
+		source_file,
+		object_type->getSymbol()->getLine() - 1,
+		object_type->getSymbol()->getCharPositionInLine()
+	);
+
 	new_object->set_address("bpp____ptr__" + std::to_string(program->get_object_counter()) + "__" + new_object->get_class()->get_name() + "__" + new_object->get_name());
 	program->increment_object_counter();
 

@@ -25,6 +25,12 @@ void BashppListener::enterParameter(BashppParser::ParameterContext *ctx) {
 		}
 		name = ctx->IDENTIFIER(1);
 
+		type->add_reference(
+			source_file,
+			ctx->IDENTIFIER(0)->getSymbol()->getLine() - 1,
+			ctx->IDENTIFIER(0)->getSymbol()->getCharPositionInLine()
+		);
+
 		if (ctx->ASTERISK() == nullptr) {
 			throw_syntax_error(ctx->IDENTIFIER(0), "Methods can only accept pointers as parameters, not objects");
 		}

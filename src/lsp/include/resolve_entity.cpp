@@ -4,6 +4,7 @@
  */
 
 #include "resolve_entity.h"
+#include <regex>
 #include <unistd.h>
 
 antlr4::tree::ParseTree* find_node_at_column(antlr4::tree::ParseTree* single_line_node, uint32_t column) {
@@ -85,357 +86,423 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 	}
 
 	// Use the ANTLR4 parser to parse the line content
-	antlr4::ANTLRInputStream input(line_content);
-	BashppLexer lexer(&input);
-	lexer.utf16_mode = utf16_mode; // Set the lexer to use UTF-16 mode if specified
-	antlr4::CommonTokenStream tokens(&lexer);
-	tokens.fill();
+	try {
+		antlr4::ANTLRInputStream input(line_content);
+		BashppLexer lexer(&input);
+		lexer.utf16_mode = utf16_mode; // Set the lexer to use UTF-16 mode if specified
+		antlr4::CommonTokenStream tokens(&lexer);
+		tokens.fill();
 
-	BashppParser parser(&tokens);
-	parser.removeErrorListeners();
-	std::unique_ptr<antlr4::DiagnosticErrorListener> error_listener = std::make_unique<antlr4::DiagnosticErrorListener>();
-	parser.addErrorListener(error_listener.get());
-	parser.setErrorHandler(std::make_shared<antlr4::BailErrorStrategy>());
-	antlr4::tree::ParseTree* tree = parser.program();
-	
-	// Find the statement that intersects with the given column
-	antlr4::tree::ParseTree* node = find_node_at_column(tree, column);
-	if (!node) {
-		return nullptr; // No node found at the specified column
-	}
-
-	// What type of statement is it?
-	auto ctx = dynamic_cast<antlr4::ParserRuleContext*>(node);
-	if (!ctx) {
-		return nullptr; // Not a valid context
-	}
-
-	bool is_object_reference = false;
-	std::deque<std::string> identifiers;
-
-	// First, check if it's an object reference
-	switch (ctx->getRuleIndex()) {
-		case BashppParser::RuleObject_reference:
-		{
-			is_object_reference = true;
-			auto object_ref_ctx = dynamic_cast<BashppParser::Object_referenceContext*>(ctx);
-			if (!object_ref_ctx) {
-				return nullptr; // Not a valid object reference context
-			}
-
-			for (const auto& id : object_ref_ctx->IDENTIFIER()) {
-				if (id->getSymbol()->getCharPositionInLine() > column) {
-					break;
-				}
-				identifiers.push_back(id->getText());
-			}
+		BashppParser parser(&tokens);
+		parser.removeErrorListeners();
+		std::unique_ptr<antlr4::DiagnosticErrorListener> error_listener = std::make_unique<antlr4::DiagnosticErrorListener>();
+		parser.addErrorListener(error_listener.get());
+		parser.setErrorHandler(std::make_shared<antlr4::BailErrorStrategy>());
+		antlr4::tree::ParseTree* tree = parser.program();
+		
+		// Find the statement that intersects with the given column
+		antlr4::tree::ParseTree* node = find_node_at_column(tree, column);
+		if (!node) {
+			return nullptr; // No node found at the specified column
 		}
-		break;
-		case BashppParser::RuleObject_reference_as_lvalue:
-		{
-			is_object_reference = true;
-			auto object_ref_lvalue_ctx = dynamic_cast<BashppParser::Object_reference_as_lvalueContext*>(ctx);
-			if (!object_ref_lvalue_ctx) {
-				return nullptr; // Not a valid object reference as lvalue context
-			}
 
-			identifiers.push_back(object_ref_lvalue_ctx->IDENTIFIER_LVALUE()->getText());
-
-			for (const auto& id : object_ref_lvalue_ctx->IDENTIFIER()) {
-				if (id->getSymbol()->getCharPositionInLine() > column) {
-					break;
-				}
-				identifiers.push_back(id->getText());
-			}
+		// What type of statement is it?
+		auto ctx = dynamic_cast<antlr4::ParserRuleContext*>(node);
+		if (!ctx) {
+			return nullptr; // Not a valid context
 		}
-		break;
-		case BashppParser::RuleSelf_reference:
-		{
-			is_object_reference = true;
-			auto self_ref_ctx = dynamic_cast<BashppParser::Self_referenceContext*>(ctx);
-			if (!self_ref_ctx) {
-				return nullptr; // Not a valid self reference context
-			}
 
-			if (self_ref_ctx->KEYWORD_THIS() != nullptr) {
-				// This is a self-reference
-				identifiers.push_back("this");
-			} else if (self_ref_ctx->KEYWORD_SUPER() != nullptr) {
-				// This is a super-reference
-				identifiers.push_back("super");
-			}
+		bool is_object_reference = false;
+		std::deque<std::string> identifiers;
 
-			for (const auto& id : self_ref_ctx->IDENTIFIER()) {
-				if (id->getSymbol()->getCharPositionInLine() > column) {
-					break;
+		// First, check if it's an object reference
+		switch (ctx->getRuleIndex()) {
+			case BashppParser::RuleObject_reference:
+			{
+				is_object_reference = true;
+				auto object_ref_ctx = dynamic_cast<BashppParser::Object_referenceContext*>(ctx);
+				if (!object_ref_ctx) {
+					return nullptr; // Not a valid object reference context
 				}
-				identifiers.push_back(id->getText());
-			}
-		}
-		break;
-		case BashppParser::RuleSelf_reference_as_lvalue:
-		{
-			is_object_reference = true;
-			auto self_ref_lvalue_ctx = dynamic_cast<BashppParser::Self_reference_as_lvalueContext*>(ctx);
-			if (!self_ref_lvalue_ctx) {
-				return nullptr; // Not a valid self reference as lvalue context
-			}
 
-			if (self_ref_lvalue_ctx->KEYWORD_THIS_LVALUE() != nullptr) {
-				// This is a self-reference
-				identifiers.push_back("this");
-			} else if (self_ref_lvalue_ctx->KEYWORD_SUPER_LVALUE() != nullptr) {
-				// This is a super-reference
-				identifiers.push_back("super");
-			}
-
-			for (const auto& id : self_ref_lvalue_ctx->IDENTIFIER()) {
-				if (id->getSymbol()->getCharPositionInLine() > column) {
-					break;
-				}
-				identifiers.push_back(id->getText());
-			}
-		}
-		break;
-	}
-
-	if (is_object_reference) {
-		// Resolve the object reference
-		bpp::entity_reference entity_ref = bpp::resolve_reference(
-			file,
-			context,
-			&identifiers,
-			program
-		);
-		return entity_ref.entity;
-	}
-	
-	// If we're here, it's not an object reference. Keep checking
-	switch (ctx->getRuleIndex()) {
-		case BashppParser::RuleInclude_statement:
-		{
-			// Create a faux-entity that points to the included file line 0, column 0
-			auto include_ctx = dynamic_cast<BashppParser::Include_statementContext*>(ctx);
-			if (!include_ctx) {
-				return nullptr; // Not a valid include statement context
-			}
-			bool local_include;
-			antlr4::tree::TerminalNode* path_token;
-
-			if (include_ctx->SYSTEM_INCLUDE_PATH() != nullptr) {
-				local_include = false;
-				path_token = include_ctx->SYSTEM_INCLUDE_PATH();
-			} else {
-				local_include = true;
-				path_token = include_ctx->LOCAL_INCLUDE_PATH(0);
-			}
-			
-			// Trim the first and last characters (either quote-marks or '<' and '>') from the path
-			std::string source_filename = path_token->getText();
-			source_filename = source_filename.substr(1, source_filename.length() - 2);
-
-			// Resolve the path
-			if (!local_include) {
-				// Search for the file in the include paths
-				bool found = false;
-				for (const std::string& include_path : *program->get_include_paths()) {
-					std::string full_path = include_path + "/" + source_filename;
-					if (access(full_path.c_str(), F_OK) == 0) {
-						source_filename = full_path;
-						found = true;
+				for (const auto& id : object_ref_ctx->IDENTIFIER()) {
+					if (id->getSymbol()->getCharPositionInLine() > column) {
 						break;
 					}
+					identifiers.push_back(id->getText());
+				}
+			}
+			break;
+			case BashppParser::RuleObject_reference_as_lvalue:
+			{
+				is_object_reference = true;
+				auto object_ref_lvalue_ctx = dynamic_cast<BashppParser::Object_reference_as_lvalueContext*>(ctx);
+				if (!object_ref_lvalue_ctx) {
+					return nullptr; // Not a valid object reference as lvalue context
 				}
 
-				if (!found) {
-					return nullptr; // File not found in include paths
-				}
-			} else {
-				std::string current_directory;
-				if (file == "<stdin>") {
-					char current_working_directory[PATH_MAX];
-					if (getcwd(current_working_directory, PATH_MAX) == nullptr) {
-						throw internal_error("Could not get current working directory", ctx);
+				identifiers.push_back(object_ref_lvalue_ctx->IDENTIFIER_LVALUE()->getText());
+
+				for (const auto& id : object_ref_lvalue_ctx->IDENTIFIER()) {
+					if (id->getSymbol()->getCharPositionInLine() > column) {
+						break;
 					}
-					current_directory = current_working_directory;
-				} else {
-					current_directory = file.substr(0, file.find_last_of('/'));
+					identifiers.push_back(id->getText());
+				}
+			}
+			break;
+			case BashppParser::RuleSelf_reference:
+			{
+				is_object_reference = true;
+				auto self_ref_ctx = dynamic_cast<BashppParser::Self_referenceContext*>(ctx);
+				if (!self_ref_ctx) {
+					return nullptr; // Not a valid self reference context
 				}
 
-				// Append the source_filename to the directory
-				source_filename = current_directory + "/" + source_filename;
-			}
+				if (self_ref_ctx->KEYWORD_THIS() != nullptr) {
+					// This is a self-reference
+					identifiers.push_back("this");
+				} else if (self_ref_ctx->KEYWORD_SUPER() != nullptr) {
+					// This is a super-reference
+					identifiers.push_back("super");
+				}
 
-			// Get the full path of the file
-			char full_path[PATH_MAX];
-			if (realpath(source_filename.c_str(), full_path) == nullptr) {
-				return nullptr; // File not found
+				for (const auto& id : self_ref_ctx->IDENTIFIER()) {
+					if (id->getSymbol()->getCharPositionInLine() > column) {
+						break;
+					}
+					identifiers.push_back(id->getText());
+				}
 			}
+			break;
+			case BashppParser::RuleSelf_reference_as_lvalue:
+			{
+				is_object_reference = true;
+				auto self_ref_lvalue_ctx = dynamic_cast<BashppParser::Self_reference_as_lvalueContext*>(ctx);
+				if (!self_ref_lvalue_ctx) {
+					return nullptr; // Not a valid self reference as lvalue context
+				}
 
-			std::shared_ptr<bpp::bpp_entity> faux_entity = std::make_shared<bpp::bpp_entity>();
-			faux_entity->set_definition_position(source_filename, 0, 0);
-			faux_entity->set_name(full_path);
-			return faux_entity;
+				if (self_ref_lvalue_ctx->KEYWORD_THIS_LVALUE() != nullptr) {
+					// This is a self-reference
+					identifiers.push_back("this");
+				} else if (self_ref_lvalue_ctx->KEYWORD_SUPER_LVALUE() != nullptr) {
+					// This is a super-reference
+					identifiers.push_back("super");
+				}
+
+				for (const auto& id : self_ref_lvalue_ctx->IDENTIFIER()) {
+					if (id->getSymbol()->getCharPositionInLine() > column) {
+						break;
+					}
+					identifiers.push_back(id->getText());
+				}
+			}
+			break;
 		}
-		break;
 
-		case BashppParser::RuleObject_instantiation:
-		{
-			// Resolve either:
-			// 1. The class being instantiated, or
-			// 2. The object being instantiated
-			// depending on the position of the column
-			auto instantiation_ctx = dynamic_cast<BashppParser::Object_instantiationContext*>(ctx);
-			if (!instantiation_ctx) {
-				return nullptr; // Not a valid instantiation context
-			}
-
-			auto class_name_token = (instantiation_ctx->IDENTIFIER_LVALUE() != nullptr)
-				? instantiation_ctx->IDENTIFIER_LVALUE()
-				: instantiation_ctx->IDENTIFIER(0);
-			
-			auto object_name_token = (instantiation_ctx->IDENTIFIER_LVALUE() != nullptr)
-				? instantiation_ctx->IDENTIFIER(0)
-				: instantiation_ctx->IDENTIFIER(1);
-			
-			// Are we being asked to resolve the class?
-			uint64_t class_name_start = class_name_token->getSymbol()->getCharPositionInLine();
-			uint64_t class_name_end = class_name_start + class_name_token->getText().length();
-			if (column >= class_name_start && column <= class_name_end) {
-				auto class_pointer = context->get_class(class_name_token->getText());
-				return class_pointer;
-			}
-
-			// Are we being asked to resolve the object?
-			uint64_t object_name_start = object_name_token->getSymbol()->getCharPositionInLine();
-			uint64_t object_name_end = object_name_start + object_name_token->getText().length();
-			if (column >= object_name_start && column <= object_name_end) {
-				// Resolve the object being instantiated
-				auto object_pointer = context->get_object(object_name_token->getText());
-				return object_pointer;
-			}
-
-			// If we reach here, the column is not within the class or object name tokens
-			return nullptr;
+		if (is_object_reference) {
+			// Resolve the object reference
+			bpp::entity_reference entity_ref = bpp::resolve_reference(
+				file,
+				context,
+				&identifiers,
+				program
+			);
+			return entity_ref.entity;
 		}
-		break;
+		
+		// If we're here, it's not an object reference. Keep checking
+		switch (ctx->getRuleIndex()) {
+			case BashppParser::RuleInclude_statement:
+			{
+				// Create a faux-entity that points to the included file line 0, column 0
+				auto include_ctx = dynamic_cast<BashppParser::Include_statementContext*>(ctx);
+				if (!include_ctx) {
+					return nullptr; // Not a valid include statement context
+				}
+				bool local_include;
+				antlr4::tree::TerminalNode* path_token;
 
-		case BashppParser::RulePointer_declaration:
-		{
-			// Resolve either:
-			// 1. The class type of the pointer, or
-			// 2. The pointer variable itself
-			// depending on the position of the column
-			auto pointer_ctx = dynamic_cast<BashppParser::Pointer_declarationContext*>(ctx);
-			if (!pointer_ctx) {
-				return nullptr; // Not a valid pointer declaration context
+				if (include_ctx->SYSTEM_INCLUDE_PATH() != nullptr) {
+					local_include = false;
+					path_token = include_ctx->SYSTEM_INCLUDE_PATH();
+				} else {
+					local_include = true;
+					path_token = include_ctx->LOCAL_INCLUDE_PATH(0);
+				}
+				
+				// Trim the first and last characters (either quote-marks or '<' and '>') from the path
+				std::string source_filename = path_token->getText();
+				source_filename = source_filename.substr(1, source_filename.length() - 2);
+
+				// Resolve the path
+				if (!local_include) {
+					// Search for the file in the include paths
+					bool found = false;
+					for (const std::string& include_path : *program->get_include_paths()) {
+						std::string full_path = include_path + "/" + source_filename;
+						if (access(full_path.c_str(), F_OK) == 0) {
+							source_filename = full_path;
+							found = true;
+							break;
+						}
+					}
+
+					if (!found) {
+						return nullptr; // File not found in include paths
+					}
+				} else {
+					std::string current_directory;
+					if (file == "<stdin>") {
+						char current_working_directory[PATH_MAX];
+						if (getcwd(current_working_directory, PATH_MAX) == nullptr) {
+							throw internal_error("Could not get current working directory", ctx);
+						}
+						current_directory = current_working_directory;
+					} else {
+						current_directory = file.substr(0, file.find_last_of('/'));
+					}
+
+					// Append the source_filename to the directory
+					source_filename = current_directory + "/" + source_filename;
+				}
+
+				// Get the full path of the file
+				char full_path[PATH_MAX];
+				if (realpath(source_filename.c_str(), full_path) == nullptr) {
+					return nullptr; // File not found
+				}
+
+				std::shared_ptr<bpp::bpp_entity> faux_entity = std::make_shared<bpp::bpp_entity>();
+				faux_entity->set_definition_position(source_filename, 0, 0);
+				faux_entity->set_name(full_path);
+				return faux_entity;
 			}
+			break;
 
-			auto type_token = (pointer_ctx->IDENTIFIER_LVALUE() != nullptr)
-				? pointer_ctx->IDENTIFIER_LVALUE()
-				: pointer_ctx->IDENTIFIER(0);
-			
-			auto name_token = (pointer_ctx->IDENTIFIER_LVALUE() != nullptr)
-				? pointer_ctx->IDENTIFIER(0)
-				: pointer_ctx->IDENTIFIER(1);
-			
-			// Are we being asked to resolve the class type?
-			uint64_t type_start = type_token->getSymbol()->getCharPositionInLine();
-			uint64_t type_end = type_start + type_token->getText().length();
-			if (column >= type_start && column <= type_end) {
-				auto class_pointer = context->get_class(type_token->getText());
-				return class_pointer;
-			}
+			case BashppParser::RuleObject_instantiation:
+			{
+				// Resolve either:
+				// 1. The class being instantiated, or
+				// 2. The object being instantiated
+				// depending on the position of the column
+				auto instantiation_ctx = dynamic_cast<BashppParser::Object_instantiationContext*>(ctx);
+				if (!instantiation_ctx) {
+					return nullptr; // Not a valid instantiation context
+				}
 
-			// Are we being asked to resolve the pointer variable?
-			uint64_t name_start = name_token->getSymbol()->getCharPositionInLine();
-			uint64_t name_end = name_start + name_token->getText().length();
-			if (column >= name_start && column <= name_end) {
-				// Resolve the pointer variable
-				auto pointer_variable = context->get_object(name_token->getText());
-				return pointer_variable;
-			}
-
-			// If we reach here, the column is not within the class type or pointer variable tokens
-			return nullptr;
-		}
-		break;
-
-		case BashppParser::RuleParameter:
-		{
-			// Resolve either:
-			// 1. The class type of the parameter, or
-			// 2. The parameter variable itself
-			// depending on the position of the column
-			auto param_ctx = dynamic_cast<BashppParser::ParameterContext*>(ctx);
-			if (!param_ctx) {
-				return nullptr; // Not a valid parameter context
-			}
-
-			if (param_ctx->IDENTIFIER().size() > 1) {
-				// There being more than one identifier means that this is a non-primitive parameter
-				// Which therefore has a class type to resolve
-
-				// Are we being asked to resolve the class type?
-				uint64_t type_start = param_ctx->IDENTIFIER(0)->getSymbol()->getCharPositionInLine();
-				uint64_t type_end = type_start + param_ctx->IDENTIFIER(0)->getText().length();
-				if (column >= type_start && column <= type_end) {
-					auto class_pointer = context->get_class(param_ctx->IDENTIFIER(0)->getText());
+				auto class_name_token = (instantiation_ctx->IDENTIFIER_LVALUE() != nullptr)
+					? instantiation_ctx->IDENTIFIER_LVALUE()
+					: instantiation_ctx->IDENTIFIER(0);
+				
+				auto object_name_token = (instantiation_ctx->IDENTIFIER_LVALUE() != nullptr)
+					? instantiation_ctx->IDENTIFIER(0)
+					: instantiation_ctx->IDENTIFIER(1);
+				
+				// Are we being asked to resolve the class?
+				uint64_t class_name_start = class_name_token->getSymbol()->getCharPositionInLine();
+				uint64_t class_name_end = class_name_start + class_name_token->getText().length();
+				if (column >= class_name_start && column <= class_name_end) {
+					auto class_pointer = context->get_class(class_name_token->getText());
 					return class_pointer;
-				} else {
-					auto parameter_variable = context->get_object(param_ctx->IDENTIFIER(1)->getText());
-					return parameter_variable;
 				}
-			} else {
-				// Primitive parameter, return nothing
+
+				// Are we being asked to resolve the object?
+				uint64_t object_name_start = object_name_token->getSymbol()->getCharPositionInLine();
+				uint64_t object_name_end = object_name_start + object_name_token->getText().length();
+				if (column >= object_name_start && column <= object_name_end) {
+					// Resolve the object being instantiated
+					auto object_pointer = context->get_object(object_name_token->getText());
+					return object_pointer;
+				}
+
+				// If we reach here, the column is not within the class or object name tokens
 				return nullptr;
 			}
+			break;
+
+			case BashppParser::RulePointer_declaration:
+			{
+				// Resolve either:
+				// 1. The class type of the pointer, or
+				// 2. The pointer variable itself
+				// depending on the position of the column
+				auto pointer_ctx = dynamic_cast<BashppParser::Pointer_declarationContext*>(ctx);
+				if (!pointer_ctx) {
+					return nullptr; // Not a valid pointer declaration context
+				}
+
+				auto type_token = (pointer_ctx->IDENTIFIER_LVALUE() != nullptr)
+					? pointer_ctx->IDENTIFIER_LVALUE()
+					: pointer_ctx->IDENTIFIER(0);
+				
+				auto name_token = (pointer_ctx->IDENTIFIER_LVALUE() != nullptr)
+					? pointer_ctx->IDENTIFIER(0)
+					: pointer_ctx->IDENTIFIER(1);
+				
+				// Are we being asked to resolve the class type?
+				uint64_t type_start = type_token->getSymbol()->getCharPositionInLine();
+				uint64_t type_end = type_start + type_token->getText().length();
+				if (column >= type_start && column <= type_end) {
+					auto class_pointer = context->get_class(type_token->getText());
+					return class_pointer;
+				}
+
+				// Are we being asked to resolve the pointer variable?
+				uint64_t name_start = name_token->getSymbol()->getCharPositionInLine();
+				uint64_t name_end = name_start + name_token->getText().length();
+				if (column >= name_start && column <= name_end) {
+					// Resolve the pointer variable
+					auto pointer_variable = context->get_object(name_token->getText());
+					return pointer_variable;
+				}
+
+				// If we reach here, the column is not within the class type or pointer variable tokens
+				return nullptr;
+			}
+			break;
+
+			case BashppParser::RuleMember_declaration:
+			{
+				// If it's a non-primitive class member, this will be caught by object_instantiation or pointer_declaration
+				// Here, it's a primitive member
+				auto member_ctx = dynamic_cast<BashppParser::Member_declarationContext*>(ctx);
+				if (!member_ctx) {
+					return nullptr; // Not a valid member declaration context
+				}
+
+				std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(context);
+				if (!current_class) {
+					return nullptr; // Not in a class context
+				}
+
+				std::shared_ptr<bpp::bpp_datamember> member = current_class->get_datamember(member_ctx->IDENTIFIER()->getText(), current_class);
+				return member;
+			}
+
+			case BashppParser::RuleParameter:
+			{
+				// Resolve either:
+				// 1. The class type of the parameter, or
+				// 2. The parameter variable itself
+				// depending on the position of the column
+				auto param_ctx = dynamic_cast<BashppParser::ParameterContext*>(ctx);
+				if (!param_ctx) {
+					return nullptr; // Not a valid parameter context
+				}
+
+				if (param_ctx->IDENTIFIER().size() > 1) {
+					// There being more than one identifier means that this is a non-primitive parameter
+					// Which therefore has a class type to resolve
+
+					// Are we being asked to resolve the class type?
+					uint64_t type_start = param_ctx->IDENTIFIER(0)->getSymbol()->getCharPositionInLine();
+					uint64_t type_end = type_start + param_ctx->IDENTIFIER(0)->getText().length();
+					if (column >= type_start && column <= type_end) {
+						auto class_pointer = context->get_class(param_ctx->IDENTIFIER(0)->getText());
+						return class_pointer;
+					} else {
+						auto parameter_variable = context->get_object(param_ctx->IDENTIFIER(1)->getText());
+						return parameter_variable;
+					}
+				} else {
+					// Primitive parameter, return nothing
+					return nullptr;
+				}
+			}
+			break;
+
+			case BashppParser::RuleNew_statement:
+			{
+				// Resolve the class being instantiated with 'new'
+				auto new_ctx = dynamic_cast<BashppParser::New_statementContext*>(ctx);
+				if (!new_ctx) {
+					return nullptr; // Not a valid new statement context
+				}
+
+				// Verify that the given position is within the class name token
+				uint64_t class_name_start = new_ctx->IDENTIFIER()->getSymbol()->getCharPositionInLine();
+				uint64_t class_name_end = class_name_start + new_ctx->IDENTIFIER()->getText().length();
+				if (column < class_name_start || column > class_name_end) {
+					return nullptr; // Column is outside the class name token
+				}
+
+				auto class_pointer = context->get_class(new_ctx->IDENTIFIER()->getText());
+				return class_pointer;
+			}
+			break;
+
+			case BashppParser::RuleDynamic_cast_statement:
+			{
+				// Resolve the class being cast to
+				auto cast_ctx = dynamic_cast<BashppParser::Dynamic_cast_statementContext*>(ctx);
+				if (!cast_ctx) {
+					return nullptr; // Not a valid dynamic cast statement context
+				}
+
+				// Verify that the given position is within the class name token
+				uint64_t class_name_start = cast_ctx->IDENTIFIER()->getSymbol()->getCharPositionInLine();
+				uint64_t class_name_end = class_name_start + cast_ctx->IDENTIFIER()->getText().length();
+				if (column < class_name_start || column > class_name_end) {
+					return nullptr; // Column is outside the class name token
+				}
+
+				auto class_pointer = context->get_class(cast_ctx->IDENTIFIER()->getText());
+				return class_pointer;
+			}
+			break;
+
+			default:
+				break;
 		}
-		break;
+	} catch (const antlr4::ParseCancellationException& e) {
+		// Parser failed, ignore
+	}
 
-		case BashppParser::RuleNew_statement:
-		{
-			// Resolve the class being instantiated with 'new'
-			auto new_ctx = dynamic_cast<BashppParser::New_statementContext*>(ctx);
-			if (!new_ctx) {
-				return nullptr; // Not a valid new statement context
-			}
+	// Nothing hit -- last ditch effort: try regex matching partial class or method definitions
+	std::regex class_regex(R"(@class\s+([a-zA-Z_][a-zA-Z0-9_]*)(?:\s*:\s*([a-zA-Z_][a-zA-Z0-9_]*))?)");
+	std::smatch class_match;
+	if (std::regex_search(line_content, class_match, class_regex)) {
+		
+		std::string class_name = class_match[1].str();
+		std::string parent_class_name = class_match[2].matched ? class_match[2].str() : "";
 
-			// Verify that the given position is within the class name token
-			uint64_t class_name_start = new_ctx->IDENTIFIER()->getSymbol()->getCharPositionInLine();
-			uint64_t class_name_end = class_name_start + new_ctx->IDENTIFIER()->getText().length();
-			if (column < class_name_start || column > class_name_end) {
-				return nullptr; // Column is outside the class name token
-			}
+		auto class_name_start = class_match.position(1);
+		auto class_name_end = class_name_start + class_match[1].length();
 
-			auto class_pointer = context->get_class(new_ctx->IDENTIFIER()->getText());
+		auto parent_class_name_start = class_match[2].matched ? class_match.position(2) : -1;
+		auto parent_class_name_end = parent_class_name_start + (parent_class_name.empty() ? 0 : class_match[2].length());
+
+		if (column >= class_name_start && column <= class_name_end) {
+			// We're resolving the class name
+			auto class_pointer = program->get_class(class_name);
 			return class_pointer;
+		} else if (parent_class_name_start != -1 &&
+		           column >= parent_class_name_start && column <= parent_class_name_end) {
+			// We're resolving the parent class name
+			auto parent_class_pointer = program->get_class(parent_class_name);
+			return parent_class_pointer;
 		}
-		break;
+	}
 
-		case BashppParser::RuleDynamic_cast_statement:
-		{
-			// Resolve the class being cast to
-			auto cast_ctx = dynamic_cast<BashppParser::Dynamic_cast_statementContext*>(ctx);
-			if (!cast_ctx) {
-				return nullptr; // Not a valid dynamic cast statement context
-			}
+	std::regex method_regex(R"(@method\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*)");
+	std::smatch method_match;
+	if (std::regex_search(line_content, method_match, method_regex)) {
+		std::string method_name = method_match[1].str();
 
-			// Verify that the given position is within the class name token
-			uint64_t class_name_start = cast_ctx->IDENTIFIER()->getSymbol()->getCharPositionInLine();
-			uint64_t class_name_end = class_name_start + cast_ctx->IDENTIFIER()->getText().length();
-			if (column < class_name_start || column > class_name_end) {
-				return nullptr; // Column is outside the class name token
-			}
+		auto method_name_start = method_match.position(1);
+		auto method_name_end = method_name_start + method_match[1].length();
 
-			auto class_pointer = context->get_class(cast_ctx->IDENTIFIER()->getText());
-			return class_pointer;
-		}
-		break;
-
-		default:
-			// For any other rule, we cannot resolve an entity
+		std::shared_ptr<bpp::bpp_method> method_ctx = std::dynamic_pointer_cast<bpp::bpp_method>(context);
+		if (!method_ctx) {
+			// Not in a method context, so we can't resolve the method
 			return nullptr;
+		}
+
+		if (column >= method_name_start && column <= method_name_end) {
+			return method_ctx;
+		}
 	}
 
 	return nullptr;

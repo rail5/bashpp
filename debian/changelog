@@ -1,3 +1,16 @@
+bpp (0.5.6) unstable; urgency=medium
+
+  * Language server: Full support for workspace renaming
+  * Language server: resolve_entity_at(): Enable resolution of class
+    data members, method definitions, and class definitions
+  * Class definitions: Track reference to parent class
+  * Language server: Stricter resolve_entity_at()
+  * Parser: Track class references in object instantiations, pointer
+    declarations, and method parameter declarations 
+  * Re-organized the build system
+
+ -- rail5 <andrew@rail5.org>  Fri, 25 Jul 2025 23:30:52 +0800
+
 bpp (0.5.5) unstable; urgency=medium
 
   * Language server / lexer: UTF16 position encoding support

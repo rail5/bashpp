@@ -74,6 +74,7 @@ bool bpp_entity::set_containing_class(std::weak_ptr<bpp::bpp_class> containing_c
 
 void bpp_entity::set_definition_position(const std::string& file, uint64_t line, uint64_t column) {
 	initial_definition = bpp::SymbolPosition(file, line, column);
+	references.emplace_front(file, line, column); // Set the definition as the entity's first reference
 }
 
 bpp::SymbolPosition bpp_entity::get_initial_definition() const {

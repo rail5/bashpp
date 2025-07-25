@@ -61,19 +61,18 @@ void BashppListener::enterObject_instantiation(BashppParser::Object_instantiatio
 	new_object->set_address("bpp__" + std::to_string(program->get_object_counter()) + "__" + new_object->get_class()->get_name() + "__" + new_object->get_name());
 	program->increment_object_counter();
 
-
-	// Verify that the object's name is not already in use (or a protected keyword)
-	if (is_protected_keyword(new_object->get_name())) {
+	// Verify the object's name is valid
+	if (!bpp::is_valid_identifier(new_object->get_name())) {
 		entity_stack.pop();
-		throw_syntax_error(object_name, "Invalid object name: " + new_object->get_name());
+		// If, specifically, it contains a double underscore, we can provide a more specific error message
+		if (new_object->get_name().find("__") != std::string::npos) {
+			throw_syntax_error(object_name, "Invalid object name: " + new_object->get_name() + "\nBash++ identifiers cannot contain double underscores");
+		} else {
+			throw_syntax_error(object_name, "Invalid object name: " + new_object->get_name());
+		}
 	}
 
-	// Verify that the object's name does not contain a double underscore
-	if (new_object->get_name().find("__") != std::string::npos) {
-		entity_stack.pop();
-		throw_syntax_error(object_name, "Invalid object name: " + new_object->get_name() + "\nBash++ identifiers cannot contain double underscores");
-	}
-
+	// Verify that the object name is not already in use
 	if (current_code_entity->get_class(new_object->get_name()) != nullptr) {
 		entity_stack.pop();
 		throw_syntax_error(object_name, "Class already exists: " + new_object->get_name());

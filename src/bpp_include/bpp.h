@@ -101,6 +101,61 @@ inline const std::shared_ptr<bpp_method> inaccessible_method = std::make_shared<
  */
 static const char bpp_nullptr[] = "0";
 
+/**
+ * @var protected_keywords
+ * @brief A list of keywords that are reserved and cannot be used as identifiers in Bash++
+ */
+inline constexpr const char* protected_keywords[] = {
+			"class", "constructor", "delete", "destructor",
+			"dynamic_cast", "include", "include_once", "method",
+			"new", "nullptr", "primitive", "private",
+			"protected", "public", "super", "this", "virtual"
+		};
+
+/**
+ * @brief Check if a string matches any of our protected keywords
+ * @param keyword The string to check
+ */
+inline bool is_protected_keyword(const std::string& keyword) {
+	for (const char* protected_keyword : protected_keywords) {
+		if (keyword == protected_keyword) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * @brief Check if a string is a valid identifier in Bash++
+ * @param identifier The string to check
+ * @return true if the string is a valid identifier, false otherwise
+ */
+inline bool is_valid_identifier(const std::string& identifier) {
+	// Verify it's not empty, and not a reserved keyword
+	if (identifier.empty() || is_protected_keyword(identifier)) {
+		return false;
+	}
+
+	// Verify it doesn't contain two consecutive underscores
+	if (identifier.find("__") != std::string::npos) {
+		return false;
+	}
+
+	// Verify it starts with a letter or underscore, and contains only letters, digits, and underscores
+	if (!isalpha(identifier[0]) && identifier[0] != '_') {
+		return false;
+	}
+
+	for (char c : identifier) {
+		if (!isalnum(c) && c != '_') {
+			return false;
+		}
+	}
+	
+	// If all checks passed, it's a valid identifier
+	return true;
+}
+
 struct SymbolPosition {
 	std::string file;
 	uint64_t line;

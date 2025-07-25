@@ -29,13 +29,14 @@ void BashppListener::enterParameter(BashppParser::ParameterContext *ctx) {
 			throw_syntax_error(ctx->IDENTIFIER(0), "Methods can only accept pointers as parameters, not objects");
 		}
 
-		// Verify the parameter name is not a protected keyword
-		if (is_protected_keyword(name->getText())) {
-			throw_syntax_error(name, "Invalid parameter name: " + name->getText());
-		}
-		// Verify that the parameter name does not contain a double underscore
-		if (name->getText().find("__") != std::string::npos) {
-			throw_syntax_error(name, "Invalid parameter name: " + name->getText() + "\nBash++ identifiers cannot contain double underscores");
+		// Verify that the parameter name is valid
+		if (!bpp::is_valid_identifier(name->getText())) {
+			// If, specifically, it contains a double underscore, we can provide a more specific error message
+			if (name->getText().find("__") != std::string::npos) {
+				throw_syntax_error(name, "Invalid parameter name: " + name->getText() + "\nBash++ identifiers cannot contain double underscores");
+			} else {
+				throw_syntax_error(name, "Invalid parameter name: " + name->getText());
+			}
 		}
 
 		// Run an implicit dynamic cast in the event that the type is non-primitive

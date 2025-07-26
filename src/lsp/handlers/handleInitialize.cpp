@@ -15,15 +15,24 @@ GenericResponseMessage bpp::BashppServer::handleInitialize(const GenericRequestM
 
 	InitializeResult result;
 	result.capabilities.textDocumentSync = TextDocumentSyncKind::Full; // Full sync mode
+
+	// Advertise that we support hover requests
 	result.capabilities.hoverProvider = true;
 
+	// Advertise that we support completion requests
 	CompletionOptions completionProvider;
 	result.capabilities.completionProvider = completionProvider;
 	result.capabilities.completionProvider->resolveProvider = false;
 	result.capabilities.completionProvider->triggerCharacters = {".", "@"};
 
+	// Advertise that we support definition requests
 	result.capabilities.definitionProvider = true;
+
+	// Advertise that we support rename requests
 	result.capabilities.renameProvider = true;
+
+	// Advertise that we support references requests
+	result.capabilities.referencesProvider = true;
 
 	// Planned but not yet implemented:
 	//result.capabilities.documentSymbolProvider = true;

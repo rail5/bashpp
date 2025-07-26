@@ -74,6 +74,7 @@ class BashppServer {
 			{"textDocument/hover", std::bind(&BashppServer::handleHover, this, std::placeholders::_1)},
 			{"textDocument/documentSymbol", std::bind(&BashppServer::handleDocumentSymbol, this, std::placeholders::_1)},
 			{"textDocument/rename", std::bind(&BashppServer::handleRename, this, std::placeholders::_1)},
+			{"textDocument/references", std::bind(&BashppServer::handleReferences, this, std::placeholders::_1)},
 			{"shutdown", std::bind(&BashppServer::shutdown, this, std::placeholders::_1)}
 		};
 
@@ -113,6 +114,7 @@ class BashppServer {
 		GenericResponseMessage handleHover(const GenericRequestMessage& request);
 		GenericResponseMessage handleDocumentSymbol(const GenericRequestMessage& request);
 		GenericResponseMessage handleRename(const GenericRequestMessage& request);
+		GenericResponseMessage handleReferences(const GenericRequestMessage& request);
 		GenericResponseMessage handleCompletion(const GenericRequestMessage& request);
 
 		CompletionList handleATCompletion(const CompletionParams& params);

@@ -24,6 +24,14 @@ int setup_tcp_server(int port) {
 		return -1;
 	}
 
+	// Allow address reuse
+	int opt = 1;
+	if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+		std::cerr << "Error setting SO_REUSEADDR" << std::endl;
+		close(server_fd);
+		return -1;
+	}
+
 	struct sockaddr_in address;
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = INADDR_ANY;

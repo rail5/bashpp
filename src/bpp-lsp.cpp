@@ -59,8 +59,8 @@ int main(int argc, char* argv[]) {
 		"  -s, --no-warnings     Suppress warnings\n"
 		"  -I, --include <path>  Add a directory to include path\n"
 		"      --stdio           Use standard input/output for communication (default)\n"
-		"      --socket <port>   Use TCP socket for communication\n"
-		"      --pipe <path>     Use Unix domain socket for communication\n";
+		"      --port <port>     Use TCP port for communication\n"
+		"      --socket <path>   Use Unix domain socket for communication\n";
 
 	constexpr const char* version_string = "Bash++ Language Server " bpp_compiler_version "\n"
 		"Copyright (C) 2024-" bpp_compiler_updated_year " Andrew S. Rightenburg\n"
@@ -89,8 +89,8 @@ int main(int argc, char* argv[]) {
 		{"include", required_argument, nullptr, 'I'},
 		{"no-warnings", no_argument, nullptr, 's'},
 		{"stdio", no_argument, nullptr, 10000},
-		{"socket", required_argument, nullptr, 10001},
-		{"pipe", required_argument, nullptr, 10002},
+		{"port", required_argument, nullptr, 10001},
+		{"socket", required_argument, nullptr, 10002},
 		{nullptr, 0, nullptr, 0} // Sentinel
 	};
 
@@ -122,8 +122,8 @@ int main(int argc, char* argv[]) {
 				input_stream = std::make_shared<std::istream>(std::cin.rdbuf());
 				output_stream = std::make_shared<std::ostream>(std::cout.rdbuf());
 				break;
-			case 10001: // --socket
-				// Use TCP socket for communication
+			case 10001: // --port
+				// Use TCP port for communication
 				try {
 					socket_port = std::stoi(optarg);
 				} catch (...) {
@@ -143,7 +143,7 @@ int main(int argc, char* argv[]) {
 					return 1;
 				}
 				break;
-			case 10002: // --pipe
+			case 10002: // --socket
 				// Use Unix domain socket for communication
 				{
 					std::string socket_path = optarg;

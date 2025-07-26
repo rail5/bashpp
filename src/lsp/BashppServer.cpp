@@ -182,7 +182,8 @@ void bpp::BashppServer::mainLoop() {
 
 		// Read content
 		std::vector<char> content(content_length);
-		if (buffer->sgetn(content.data(), content_length) != content_length) {
+		std::streamsize read_count = buffer->sgetn(content.data(), static_cast<std::streamsize>(content_length));
+		if (read_count != static_cast<std::streamsize>(content_length)) {
 			log("Error reading content, expected ", content_length, " bytes but got less.");
 			break;
 		}

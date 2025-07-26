@@ -1,3 +1,14 @@
+bpp (0.5.7) unstable; urgency=medium
+
+  * bpp-lsp: Allow immediate port reuse, set SO_REUSEADDR 
+  * bpp-lsp: Renamed port/socket longopts to be more intuitive
+  * bpp-lsp: Renamed longopt to match corresponding option in bpp
+  * Corrected inaccuracies in the documentation
+  * bpp: Track class references in object instantiations, dynamic
+    casts, and pointer declarations
+
+ -- rail5 <andrew@rail5.org>  Sat, 26 Jul 2025 13:47:45 +0800
+
 bpp (0.5.6) unstable; urgency=medium
 
   * Language server: Full support for workspace renaming

@@ -13,6 +13,7 @@ It is designed to provide language server protocol (LSP) features such as code c
 - [&#10003;] Go to definition
 - [&#10003;] Hover information
 - [&#10003;] Workspace renaming
+- [&#10003;] Find references
 - [ &nbsp; ] Document symbols (in progress)
 
 ## Copyright and License

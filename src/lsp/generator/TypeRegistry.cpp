@@ -691,7 +691,7 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 
 		file << "	/**\n";
 		file << "	 * @brief (";
-		std::string type_description = type_def.value("documentation", "No description provided.");
+		std::string type_description = prop.value("documentation", "No description provided.");
 		type_description = get_sanitized_description(type_description);
 		file << (prop.contains("optional") && prop["optional"].get<bool>() ? "Optional" : "Required") << ") ";
 		file << type_description << "\n";

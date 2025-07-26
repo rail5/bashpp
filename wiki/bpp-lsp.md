@@ -26,7 +26,7 @@ It is not required for running Bash++ scripts, but enhances the development expe
 - `-I`, `--include <path>` : Add a directory to the include paths
   - The default include path is `/usr/lib/bpp/stdlib`
   - Files in the include paths can be included with `@include <file>`
-- `-s`, `--suppress-warnings` : Suppress warnings
+- `-s`, `--no-warnings` : Suppress warnings
 - `--stdio` : Use stdin/stdout for communication (default)
 - `--socket <port>` : Use TCP socket for communication
 - `--pipe <path>` : Use Unix domain socket for communication

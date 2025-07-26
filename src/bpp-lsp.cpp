@@ -53,14 +53,14 @@ int main(int argc, char* argv[]) {
 	constexpr const char* help_string = "Bash++ Language Server " bpp_compiler_version "\n"
 		"Usage: bpp-lsp [options]\n"
 		"Options:\n"
-		"  -h, --help               Show this help message\n"
-		"  -v, --version            Show version information\n"
-		"  -l, --log <file>         Log messages to the specified file\n"
-		"  -I, --include <path>     Add a directory to the include paths\n"
-		"  -s, --suppress-warnings  Suppress warning messages\n"
-		"      --stdio              Use standard input/output for communication (default)\n"
-		"      --socket <port>      Use TCP socket for communication\n"
-		"      --pipe <path>        Use Unix domain socket for communication\n";
+		"  -h, --help            Show this help message\n"
+		"  -v, --version         Show version information\n"
+		"  -l, --log <file>      Log messages to the specified file\n"
+		"  -s, --no-warnings     Suppress warnings\n"
+		"  -I, --include <path>  Add a directory to include path\n"
+		"      --stdio           Use standard input/output for communication (default)\n"
+		"      --socket <port>   Use TCP socket for communication\n"
+		"      --pipe <path>     Use Unix domain socket for communication\n";
 
 	constexpr const char* version_string = "Bash++ Language Server " bpp_compiler_version "\n"
 		"Copyright (C) 2024-" bpp_compiler_updated_year " Andrew S. Rightenburg\n"
@@ -86,8 +86,8 @@ int main(int argc, char* argv[]) {
 		{"help", no_argument, nullptr, 'h'},
 		{"version", no_argument, nullptr, 'v'},
 		{"log", required_argument, nullptr, 'l'},
-		{"suppress-warnings", no_argument, nullptr, 's'},
 		{"include", required_argument, nullptr, 'I'},
+		{"no-warnings", no_argument, nullptr, 's'},
 		{"stdio", no_argument, nullptr, 10000},
 		{"socket", required_argument, nullptr, 10001},
 		{"pipe", required_argument, nullptr, 10002},

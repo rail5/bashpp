@@ -15,7 +15,7 @@ GenericResponseMessage bpp::BashppServer::handleRename(const GenericRequestMessa
 	
 	// Verify the URI starts with "file://"
 	if (uri.find("file://") != 0) {
-		log("Ignoring request to go to definition for non-local file: ", uri);
+		log("Ignoring request to handle rename for non-local file: ", uri);
 		response.error.code = static_cast<int>(ErrorCodes::InvalidParams);
 		response.error.message = "Invalid URI: " + uri;
 		return response;

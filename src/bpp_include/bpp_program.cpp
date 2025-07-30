@@ -178,7 +178,11 @@ std::shared_ptr<std::vector<std::string>> bpp_program::get_include_paths() const
 
 void bpp_program::increment_supershell_counter() {
 	supershell_counter++;
-	if (supershell_counter == 1) {
+
+	// If we're compiling to any standard below Bash 5.3, we need to add the supershell function to the program
+	if (supershell_counter == 1 &&
+		(target_bash_version.first < 5 || (target_bash_version.first == 5 && target_bash_version.second < 3))
+	) {
 		// This is the first object to be created in a supershell
 		// We need to add the code to create the supershell
 		add_code_to_previous_line(bpp_supershell_function);

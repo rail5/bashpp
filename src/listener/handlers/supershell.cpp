@@ -57,7 +57,23 @@ void BashppListener::exitSupershell(BashppParser::SupershellContext *ctx) {
 	}
 	current_code_entity->inherit(supershell_entity);
 
-	code_segment supershell_code = generate_supershell_code(supershell_entity->get_pre_code() + supershell_entity->get_code() + "\n" + supershell_entity->get_post_code(), in_while_condition, current_while_condition, program);
+	std::string code_to_run;
+
+	if (!supershell_entity->get_pre_code().empty()) {
+		code_to_run = supershell_entity->get_pre_code() + "\n";
+	}
+
+	code_to_run += supershell_entity->get_code();
+
+	if (!supershell_entity->get_post_code().empty()) {
+		code_to_run += "\n" + supershell_entity->get_post_code();
+	}
+
+	code_segment supershell_code = generate_supershell_code(
+		code_to_run, 
+		in_while_condition, 
+		current_while_condition, 
+		program);
 
 	// If we're in an assignment, add the supershell code to the assignment
 	std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(current_code_entity);

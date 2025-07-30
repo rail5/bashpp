@@ -22,6 +22,9 @@ $ bpp -v # Display version
 - `-I` or `--include` : Add a directory to the include path
 	- The default include path is `/usr/lib/bpp/stdlib`
 	- Files in the include paths can be included with `@include <file>`
+- `-b` or `--target-bash` : Specify the target Bash version for the compiled program
+	- The default is Bash 5.2, but you can specify a different version like `-b 5.3` or `-b 6.0`
+	- This affects how the program is compiled, especially regarding features and syntax compatibility
 - `-t` or `--tokens` : Display lexer output (do not compile)
 - `-p` or `--parse-tree` : Display parse tree (do not compile)
 - `-h` or `--help` : Display help

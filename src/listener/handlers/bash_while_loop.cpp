@@ -48,19 +48,28 @@ void BashppListener::exitBash_while_loop(BashppParser::Bash_while_loopContext *c
 	current_code_entity->add_code_to_previous_line(while_statement->get_while_condition()->get_pre_code());
 	current_code_entity->add_code_to_next_line(while_statement->get_while_condition()->get_post_code());
 
-	std::string supershell_evaluation = "";
-	for (const std::string& function_call : while_statement->get_while_condition()->get_supershell_function_calls()) {
-		supershell_evaluation += function_call + "\n";
+	// If we're targeting Bash 5.2 or earlier, extra logic is needed to re-evaluate supershells with each iteration of the loop
+	// If we're targeting Bash 5.3 or later, we can use the new native implementation
+
+	if (program->get_target_bash_version().first >= 5 && program->get_target_bash_version().second >= 3) {
+		current_code_entity->add_code("while " + while_statement->get_while_condition()->get_code() + "; do\n"
+			+ while_statement->get_pre_code() + "\n"
+			+ while_statement->get_code() + "\ndone", false);
+	} else {
+		std::string supershell_evaluation = "";
+		for (const std::string& function_call : while_statement->get_while_condition()->get_supershell_function_calls()) {
+			supershell_evaluation += function_call + "\n";
+		}
+
+		current_code_entity->add_code_to_previous_line(supershell_evaluation); // Evaluate the supershell before the while loop starts
+
+		current_code_entity->add_code_to_next_line(while_statement->get_post_code());
+
+		current_code_entity->add_code("while " + while_statement->get_while_condition()->get_code() + "; do\n"
+			+ while_statement->get_pre_code() + "\n"
+			+ while_statement->get_code() + "\n" + supershell_evaluation + "done", false);
 	}
 
-	current_code_entity->add_code_to_previous_line(supershell_evaluation); // Evaluate the supershell before the while loop starts
-
-	current_code_entity->add_code_to_next_line(while_statement->get_post_code());
-
-	current_code_entity->add_code("while " + while_statement->get_while_condition()->get_code() + "; do\n"
-		+ while_statement->get_pre_code() + "\n"
-		+ while_statement->get_code() + "\n" + supershell_evaluation + "done", false);
-	
 	program->mark_entity(
 		source_file,
 		while_statement->get_initial_definition().line,

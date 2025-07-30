@@ -290,6 +290,11 @@ Arguments parse_arguments(int argc, char* argv[]) {
 					throw std::runtime_error("Multiple output files specified");
 				}
 
+				if (std::string(optarg) == "-") {
+					args.output_file = optarg;
+					break;
+				}
+
 				{
 					std::filesystem::path output_path(optarg);
 					if (output_path.is_absolute()) {
@@ -298,10 +303,6 @@ Arguments parse_arguments(int argc, char* argv[]) {
 						args.output_file = std::filesystem::current_path() / output_path;
 					}
 				}
-
-				if (args.output_file == "-") {
-						break;
-					}
 			
 				// Check if we have permission to write to the specified output file
 				// If the file exists, verify write access; if it doesn't, verify write access on its parent directory

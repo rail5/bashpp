@@ -41,6 +41,21 @@ code_segment generate_supershell_code(
 	result.pre_code += "	" + code_to_run + "\n";
 	result.pre_code += "}\n";
 
+	// Supershells were introduced as a native form of command substitution in Bash 5.3
+	// If we're targeting Bash 5.3 or later, we can just use the native implementation
+	// This is more efficient and avoids the need for a custom supershell function
+	// Otherwise, run our old logic for Bash++ supershells
+	auto target_bash_version = program->get_target_bash_version();
+	
+	if (target_bash_version.first >= 5 && target_bash_version.second >= 3) {
+		result.code = "${ " + supershell_function_name + "; }";
+		program->increment_supershell_counter();
+		return result;
+	}
+
+	// If we haven't returned yet, we're targeting Bash 5.2 or earlier
+	// Carry on
+
 	if (in_while_condition) {
 		current_while_condition->add_supershell_function_call("bpp____supershell " + supershell_output_variable + " " + supershell_function_name);
 		current_while_condition->increment_supershell_count();

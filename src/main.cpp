@@ -21,8 +21,6 @@ volatile int bpp_exit_code = 0;
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <set>
-#include <unordered_map>
 #include <filesystem>
 #include <cstring>
 #include <memory>
@@ -35,8 +33,6 @@ volatile int bpp_exit_code = 0;
 #include "updated_year.h"
 
 #include "include/parse_arguments.h"
-
-#include "syntax_error.h"
 
 #include "antlr/BashppLexer.h"
 #include "antlr/BashppParser.h"
@@ -185,6 +181,7 @@ int main(int argc, char* argv[]) {
 		listener->set_output_file(args.output_file.value_or(""));
 		listener->set_run_on_exit(run_on_exit);
 		listener->set_suppress_warnings(args.suppress_warnings);
+		listener->set_target_bash_version(args.target_bash_version.first, args.target_bash_version.second);
 		listener->set_arguments(args.program_arguments);
 		walker.walk(listener.get(), tree);
 

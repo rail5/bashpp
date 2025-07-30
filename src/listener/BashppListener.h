@@ -100,6 +100,12 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 		bool run_on_exit = false;
 
 		/**
+		* @var target_bash_version
+		* @brief The target Bash version to compile for (default is 5.2)
+		*/
+		std::pair<uint16_t, uint16_t> target_bash_version = {5, 2};
+
+		/**
 		 * @var arguments
 		 * @brief Command-line arguments to pass to the compiled program if run_on_exit is true
 		 */
@@ -200,6 +206,7 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 	void set_output_file(std::string output_file);
 	void set_run_on_exit(bool run_on_exit);
 	void set_suppress_warnings(bool suppress_warnings);
+	void set_target_bash_version(uint16_t major, uint16_t minor);
 	void set_arguments(std::vector<char*> arguments);
 
 	void set_replacement_file_contents(const std::string& file_path, const std::string& contents);

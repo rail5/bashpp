@@ -14,6 +14,7 @@
 void BashppListener::enterProgram(BashppParser::ProgramContext *ctx) {
 	program->set_output_stream(code_buffer);
 	program->set_include_paths(include_paths);
+	program->set_target_bash_version(target_bash_version.first, target_bash_version.second);
 
 	if (!included) {
 		program->set_main_source_file(source_file);

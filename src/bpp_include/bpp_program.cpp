@@ -225,6 +225,14 @@ uint64_t bpp_program::get_object_counter() const {
 	return object_counter;
 }
 
+void bpp_program::set_target_bash_version(uint16_t major, uint16_t minor) {
+	target_bash_version = {major, minor};
+}
+
+std::pair<uint16_t, uint16_t> bpp_program::get_target_bash_version() const {
+	return target_bash_version;
+}
+
 void bpp_program::mark_entity(
 	const std::string& file,
 	uint32_t start_line, uint32_t start_column,

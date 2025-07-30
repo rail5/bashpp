@@ -5,7 +5,9 @@
 
 #pragma once
 
+#include <iostream>
 #include <string>
+#include <cstring>
 #include <vector>
 #include <optional>
 #include <filesystem>
@@ -52,6 +54,7 @@ struct Option {
 
 constexpr Option options[] = {
 	{'o', "output", "Specify output file (default: run on exit)", true},
+	{'b', "target-bash", "Target Bash version (default: 5.2)", true},
 	{'s', "no-warnings", "Suppress warnings", false},
 	{'I', "include", "Add directory to include path", true},
 	{'p', "parse-tree", "Display parse tree (do not compile program)", false},
@@ -128,6 +131,7 @@ struct Arguments {
 	std::vector<char*> program_arguments;
 	std::optional<std::string> input_file;
 	std::optional<std::string> output_file;
+	std::pair<uint16_t, uint16_t> target_bash_version = {5, 2}; // Default to Bash 5.2
 	std::shared_ptr<std::vector<std::string>> include_paths = std::make_shared<std::vector<std::string>>();
 	bool suppress_warnings = false;
 	bool display_tokens = false;
@@ -256,6 +260,19 @@ Arguments parse_arguments(int argc, char* argv[]) {
 		) != -1
 	) {
 		switch (c) {
+			case 'b':
+				// Parse the target Bash version
+				{
+					std::istringstream version_stream(optarg);
+					uint16_t major, minor;
+					char dot;
+					if (!(version_stream >> major >> dot >> minor) || dot != '.') {
+						throw std::runtime_error("Invalid Bash version format: " + std::string(optarg) +
+							"\nExpected format: <major>.<minor> (e.g., 5.2)");
+					}
+					args.target_bash_version = {major, minor};
+				}
+				break;
 			case 'h':
 				std::cout << program_name << " " << bpp_compiler_version << std::endl << generate_help_string();
 				args.exit_early = true;
@@ -272,11 +289,19 @@ Arguments parse_arguments(int argc, char* argv[]) {
 				if (received_output_filename) {
 					throw std::runtime_error("Multiple output files specified");
 				}
-				args.output_file = std::string(optarg);
-				
-				if (args.output_file == "-") {
-					break;
+
+				{
+					std::filesystem::path output_path(optarg);
+					if (output_path.is_absolute()) {
+						args.output_file = output_path.string();
+					} else {
+						args.output_file = std::filesystem::current_path() / output_path;
+					}
 				}
+
+				if (args.output_file == "-") {
+						break;
+					}
 			
 				// Check if we have permission to write to the specified output file
 				// If the file exists, verify write access; if it doesn't, verify write access on its parent directory

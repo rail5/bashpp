@@ -94,8 +94,16 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 			assignments += "	eval \"${__this}__" + dm->get_name() + "=" + default_value_preface + default_value + "\"\n";
 		} else {
 			// Call 'new' in a supershell and assign its output
-			assignments += "	bpp____supershell \"${__this}__" + dm->get_name() + "\" \"bpp__" + dm->get_class()->get_name() + "____new\"\n";
-			increment_supershell_counter();
+			code_segment supershell_code = generate_supershell_code(
+				"bpp__" + dm->get_class()->get_name() + "____new",
+				false,
+				nullptr,
+				shared_from_this()
+			);
+			assignments += supershell_code.pre_code;
+			assignments += "	eval \"${__this}__" + dm->get_name() + "=" + supershell_code.code + "\"\n";
+			assignments += supershell_code.post_code;
+
 			// Call the constructor if it exists
 			if (dm->get_class()->get_method_UNSAFE("__constructor") != nullptr) {
 				assignments += "	bpp__" + dm->get_class()->get_name() + "____constructor \"${__this}__" + dm->get_name() + "\"\n";

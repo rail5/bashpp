@@ -25,7 +25,7 @@ GenericResponseMessage bpp::BashppServer::handleCompletion(const GenericRequestM
 	}
 	
 	// Which character triggered the request?
-	char trigger_character = '@';
+	char trigger_character = '.';
 	if (completion_request.params.context.has_value() && completion_request.params.context->triggerCharacter.has_value()) {
 		trigger_character = completion_request.params.context->triggerCharacter.value()[0];
 	}

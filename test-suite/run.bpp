@@ -42,6 +42,12 @@ fi
 echo "----------------"
 echo "@runner.stats.toPrimitive"
 
+returncode=0
+
 if [[ "@runner.stats.getFailCount" -gt 0 ]]; then
-	exit 1
+	returncode=1
 fi
+
+@runner.stats.clean
+
+exit $returncode

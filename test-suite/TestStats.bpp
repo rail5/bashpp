@@ -50,6 +50,5 @@
 		echo "Tests Passed: @this.getPassCount"
 		echo "Tests Failed: @this.getFailCount"
 		echo "Tests Untested: @this.getUntestedCount"
-		@this.clean
 	}
 }

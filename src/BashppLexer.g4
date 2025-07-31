@@ -453,11 +453,12 @@ WS: [ \t\r]+;
 
 // Delimiters (newlines and semicolons, as in Bash)
 NEWLINE: '\n' {
-	emit(DELIM, "\n");
 	if (waiting_for_heredoc_content_start) {
 		emit(HEREDOC_CONTENT_START, "\n");
 		waiting_for_heredoc_content_start = false;
 		modeStack.push(mode_heredoc);
+	} else {
+		emit(DELIM, "\n");
 	}
 };
 
@@ -915,7 +916,11 @@ SEMICOLON: ';' {
 
 // Identifiers
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]* {
-	if (incoming_token_can_be_lvalue) {
+	if (modeStack.top() == mode_heredoc && getText() == nestedHeredocStack.top()) {
+		modeStack.pop();
+		nestedHeredocStack.pop();
+		emit(HEREDOC_END, getText());
+	} else if (incoming_token_can_be_lvalue) {
 		emit(IDENTIFIER_LVALUE, getText());
 	}
 
@@ -923,12 +928,6 @@ IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]* {
 		waiting_for_heredoc_terminator = false;
 		waiting_for_heredoc_content_start = true;
 		nestedHeredocStack.push(getText());
-	}
-
-	if (modeStack.top() == mode_heredoc && getText() == nestedHeredocStack.top()) {
-		modeStack.pop();
-		nestedHeredocStack.pop();
-		emit(HEREDOC_END, getText());
 	}
 };
 

@@ -21,7 +21,7 @@ manual: clean-manual detailed-manuals
 	@cp wiki/compiler.md tmp/
 	@sed -i '1s/^/% bpp(1) Version '"$(VERSION)"' | Manual for the Bash++ compiler\n/' tmp/compiler.md
 	@sed -i 's/Using the Bash++ compiler/NAME\nbpp - Compiler for the Bash++ language/g' tmp/compiler.md
-	@sed -i 's/# Basic usage/ SYNOPSIS/g' tmp/compiler.md
+	@sed -i 's/Basic usage/SYNOPSIS/g' tmp/compiler.md
 	@sed -i '1s/^/% bpp(7) Version '"$(VERSION)"' | Manual for the Bash++ language\n/' tmp/language.md
 	@sed -i 's/Programming in Bash++/NAME\nbpp - The Bash++ language/g' tmp/language.md
 	$(MAKE) process-manual-code-snippets FILE=tmp/language.md
@@ -53,8 +53,8 @@ technical-docs: clean-technical-docs
 	doxygen Doxyfile
 
 clean-manual: clean-detailed-manuals
-	@rm -f debian/bpp.1
-	@rm -f debian/bpp.7
+	@rm -f debian/*.1
+	@rm -f debian/*.7
 	@rm -rf tmp
 	@echo "Cleaned up manuals."
 

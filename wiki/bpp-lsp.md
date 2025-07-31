@@ -20,16 +20,37 @@ It is not required for running Bash++ scripts, but enhances the development expe
 
 # OPTIONS
 
-- `-h`, `--help` : Display help
-- `-v`, `--version` : Display version\
-- `-l`, `--log <file>` : Log debug messages to a file 
-- `-I`, `--include <path>` : Add a directory to the include paths
-  - The default include path is `/usr/lib/bpp/stdlib`
-  - Files in the include paths can be included with `@include <file>`
-- `-s`, `--no-warnings` : Suppress warnings
-- `--stdio` : Use stdin/stdout for communication (default)
-- `--port <port>` : Use TCP port for communication
-- `--socket <path>` : Use Unix domain socket for communication
+###### `--stdio`
+
+Run the language server over standard input/output. This is the default mode of operation.
+
+###### `--port <port>`
+
+Run the language server with a TCP socket on the specified port. This allows the language server to be accessed over a network.
+
+###### `--socket <path>`
+
+Run the language server with a Unix domain socket at the specified path. This is useful for local communication between processes.
+
+###### `-l <file>`, `--log <file>`
+
+Log debug messages to the specified file.
+
+###### `-I <path>`, `--include <path>`
+
+Add a directory to the include paths for Bash++ libraries. This allows the language server to resolve symbols and provide completions for libraries located in these directories.
+
+###### `-s`, `--no-warnings`
+
+Suppress all warnings during the language server's operation. If this option is used, diagnostics will only include errors.
+
+###### `-h`, `--help`
+
+Display help information.
+
+###### `-v`, `--version`
+
+Display the version of the Bash++ language server.
 
 # SEE ALSO
 

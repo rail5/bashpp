@@ -1,3 +1,18 @@
+bpp (0.6.0) unstable; urgency=medium
+
+  * bpp: Added --target-bash/-b option
+    This option allows you to specify the target Bash version for
+    compiled code. If specifying a version >= 5.3, supershells will
+    compile to use Bash 5.3's new native supershell implementation
+    There is a plan to support compiling to Bash < 4.0, but this has
+    not yet been implemented. Default Bash target is 5.2
+  * Cleaned up manuals
+  * bpp-lsp: Resolve nonprimitive data members of classes
+  * bpp-lsp: Fixed code completions when suggesting data members, methods
+  * bpp-lsp: Full support for Reference Requests ("Find references")
+
+ -- rail5 <andrew@rail5.org>  Thu, 31 Jul 2025 20:59:21 +0800
+
 bpp (0.5.7) unstable; urgency=medium
 
   * bpp-lsp: Allow immediate port reuse, set SO_REUSEADDR 

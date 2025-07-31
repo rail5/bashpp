@@ -6,6 +6,20 @@
 #ifndef SRC_BPP_INCLUDE_TEMPLATES_H_
 #define SRC_BPP_INCLUDE_TEMPLATES_H_
 
+/**
+ * COMPATIBILITY NOTES:
+ *
+ * - The $BASHPID internal variable was introduced in Bash 4.0.
+ *    This is used by the internal supershell function to ensure forked processes don't overwrite each other's data
+ *
+ * - The `exec {var}<>` syntax for file descriptors was introduced in Bash 4.1.
+ *    This is again used by the internal supershell function
+ *
+ * - Associative arrays were introduced in Bash 4.0.
+ *    This is used by the vTable lookup and dynamic_cast functions to store method pointers and to check types.
+ */
+
+
 static const char* bpp_supershell_function = R"EOF(function bpp____initsupershell() {
 	local bpp____supershellDirectory="/dev/shm/"
 	if [[ ! -d "${bpp____supershellDirectory}" ]]; then

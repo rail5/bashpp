@@ -18,6 +18,8 @@ void BashppListener::enterProgram(BashppParser::ProgramContext *ctx) {
 
 	if (!included) {
 		program->set_main_source_file(source_file);
+	} else {
+		program->add_source_file(source_file);
 	}
 
 	if (included) {

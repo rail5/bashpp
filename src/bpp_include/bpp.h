@@ -567,6 +567,7 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 		std::vector<std::string> get_source_files() const;
 		std::string get_main_source_file() const;
 		void set_main_source_file(const std::string& file);
+		void add_source_file(const std::string& file);
 
 		void add_diagnostic(
 			const std::string& file,

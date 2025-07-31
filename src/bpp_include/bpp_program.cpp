@@ -288,6 +288,17 @@ std::string bpp_program::get_main_source_file() const {
 
 void bpp_program::set_main_source_file(const std::string& file) {
 	main_source_file = file;
+	// Create an empty entity map for the main source file if it doesn't exist
+	if (entity_maps.find(file) == entity_maps.end()) {
+		entity_maps[file] = EntityMap();
+	}
+}
+
+void bpp_program::add_source_file(const std::string& file) {
+	// Create an empty entity map for the source file if it doesn't exist
+	if (entity_maps.find(file) == entity_maps.end()) {
+		entity_maps[file] = EntityMap();
+	}
 }
 
 void bpp_program::add_diagnostic(

@@ -8,6 +8,7 @@
 void BashppListener::enterClass_definition(BashppParser::Class_definitionContext *ctx) {
 	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_class> new_class = std::make_shared<bpp::bpp_class>();
+	new_class->inherit(program);
 	entity_stack.push(new_class);
 
 	new_class->set_definition_position(

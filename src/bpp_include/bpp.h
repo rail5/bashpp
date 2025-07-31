@@ -426,6 +426,7 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 		std::shared_ptr<bpp_datamember> get_datamember(const std::string& name, std::shared_ptr<bpp_entity> context);
 
 		void inherit(std::shared_ptr<bpp_class> parent) override;
+		void inherit(std::shared_ptr<bpp_entity> parent) override;
 		std::shared_ptr<bpp::bpp_class> get_parent();
 
 		void finalize(std::shared_ptr<bpp_program> program);

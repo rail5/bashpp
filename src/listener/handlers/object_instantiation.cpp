@@ -15,9 +15,6 @@ void BashppListener::enterObject_instantiation(BashppParser::Object_instantiatio
 
 	// Verify that we're in a place where an object *can* be instantiated
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
-	if (current_class != nullptr) {
-		throw_syntax_error(ctx->AT(), "Stray object instantiation inside class body.\nDid you mean to declare a data member?\nIf so, start by declaring the data member with a visibility keyword (@public, @private, @protected)");
-	}
 
 	antlr4::tree::TerminalNode* object_type = nullptr;
 	antlr4::tree::TerminalNode* object_name = nullptr;
@@ -30,6 +27,10 @@ void BashppListener::enterObject_instantiation(BashppParser::Object_instantiatio
 		// The object type is in IDENTIFIER(0)
 		object_type = ctx->IDENTIFIER(0);
 		object_name = ctx->IDENTIFIER(1);
+	}
+
+	if (current_class != nullptr) {
+		throw_syntax_error(object_type, "Stray object instantiation inside class body.\nDid you mean to declare a data member?\nIf so, start by declaring the data member with a visibility keyword (@public, @private, @protected)");
 	}
 
 	std::string object_type_text = object_type->getText();
@@ -52,7 +53,7 @@ void BashppListener::enterObject_instantiation(BashppParser::Object_instantiatio
 	// Verify that the object's class exists
 	if (object_class == nullptr) {
 		entity_stack.pop();
-		throw_syntax_error(ctx->AT(), "Class not found: " + object_type->getText());
+		throw_syntax_error(object_type, "Class not found: " + object_type->getText());
 	}
 
 	new_object->set_class(object_class);

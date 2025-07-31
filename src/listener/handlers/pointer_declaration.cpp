@@ -13,15 +13,6 @@ void BashppListener::enterPointer_declaration(BashppParser::Pointer_declarationC
 	 * If IDENTIFIER(0), then the pointer name will be in IDENTIFIER(1)
 	 */
 
-	// Verify that we're in a place where an object *can* be instantiated
-	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
-	if (current_class != nullptr) {
-		throw_syntax_error(ctx->AT(), "Stray pointer declaration inside class body.\nDid you mean to declare a data member?\nIf so, start by declaring the data member with a visibility keyword (@public, @private, @protected)");
-	}
-
-	// Actually get the containing class
-	current_class = entity_stack.top()->get_containing_class().lock();
-
 	antlr4::tree::TerminalNode* object_type = nullptr;
 	antlr4::tree::TerminalNode* object_name = nullptr;
 
@@ -34,6 +25,15 @@ void BashppListener::enterPointer_declaration(BashppParser::Pointer_declarationC
 		object_type = ctx->IDENTIFIER(0);
 		object_name = ctx->IDENTIFIER(1);
 	}
+
+	// Verify that we're in a place where an object *can* be instantiated
+	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
+	if (current_class != nullptr) {
+		throw_syntax_error(object_type, "Stray pointer declaration inside class body.\nDid you mean to declare a data member?\nIf so, start by declaring the data member with a visibility keyword (@public, @private, @protected)");
+	}
+
+	// Actually get the containing class
+	current_class = entity_stack.top()->get_containing_class().lock();
 
 	std::string object_type_text = object_type->getText();
 	std::string object_name_text = object_name->getText();

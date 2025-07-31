@@ -4,6 +4,7 @@
  */
 
 #include "resolve_entity.h"
+#include <memory>
 #include <regex>
 #include <unistd.h>
 
@@ -313,7 +314,15 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 				uint64_t object_name_end = object_name_start + object_name_token->getText().length();
 				if (column >= object_name_start && column <= object_name_end) {
 					// Resolve the object being instantiated
-					auto object_pointer = context->get_object(object_name_token->getText());
+					std::shared_ptr<bpp::bpp_entity> object_pointer;
+					// If we're inside a class, resolve the object as a data member
+					// Otherwise, resolve it as an object
+					std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(context);
+					if (current_class) {
+						object_pointer = current_class->get_datamember(object_name_token->getText(), current_class);
+					} else {
+						object_pointer = context->get_object(object_name_token->getText());
+					}
 					return object_pointer;
 				}
 
@@ -354,7 +363,15 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 				uint64_t name_end = name_start + name_token->getText().length();
 				if (column >= name_start && column <= name_end) {
 					// Resolve the pointer variable
-					auto pointer_variable = context->get_object(name_token->getText());
+					std::shared_ptr<bpp::bpp_entity> pointer_variable;
+					// If we're inside a class, resolve the pointer as a data member
+					// Otherwise, resolve it as an object
+					std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(context);
+					if (current_class) {
+						pointer_variable = current_class->get_datamember(name_token->getText(), current_class);
+					} else {
+						pointer_variable = context->get_object(name_token->getText());
+					}
 					return pointer_variable;
 				}
 

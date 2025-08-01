@@ -144,11 +144,23 @@ void emit(std::unique_ptr<antlr4::Token> token) {
 	std::unique_ptr<antlr4::CommonToken> t = std::unique_ptr<antlr4::CommonToken>(dynamic_cast<antlr4::CommonToken*>(token.release()));
 	t->setLine(lineCount);
 	t->setCharPositionInLine(charCount);
-	charCount += char_count(t->getText());
-	if (t->getText() == "\n") {
+	// Iterate over each line of the token's text
+	// For each newline, increment the lineCount and set charCount = 0
+	// Once we find the last line, set charCount += char_count(that line's text)
+	// In general, tokens should not span more than one line
+	// However, this procedure leaves us prepared for any case
+	// From handling single newline tokens, escaped newlines, and possible multi-line tokens which may be implemented in the future
+	std::string text = t->getText();
+	size_t newline_pos = text.find('\n');
+	while (newline_pos != std::string::npos) {
 		lineCount++;
-		charCount = 0;
+		charCount = 0; // Reset charCount for the next line
+		newline_pos = text.find('\n', newline_pos + 1);
 	}
+	// Truncate 'text' to just the last line
+	text = text.substr(text.rfind('\n') + 1);
+	charCount += char_count(text);
+
 	last_token_was_lvalue = false;
 	switch (t->getType()) {
 		case WS:

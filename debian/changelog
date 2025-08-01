@@ -1,3 +1,25 @@
+bpp (0.6.1) unstable; urgency=medium
+
+  * Lexer: handle position tracking with potential (as yet
+    unimplemented) multi-line tokens
+    This also fixes a bug in position tracking re: escaped newlines
+    Our previous (naive) procedure was simply to assume that if a newline
+    was emitted, it was as its own independent token with no other content
+    Therefore we just compared token->getText() to '\n'
+    But escaped newlines were emitted as "\\n", which meant that we weren't
+    properly tracking source code position data when these were present
+    Further, multi-line tokens will very likely be implemented in our
+    eternally-pending lexer/parser rewrite, in an effort to more efficiently
+    handle strings as statements of arbitrary string_data + occasional
+    interpolation sequences like object references, supershells, etc.
+  * Docs: Consistent formatting in the compiler manual
+  * bpp: More helpful error reporting in object instantations / pointer
+    declarations
+  * bpp_program: Keep entity maps even if empty for all source files
+  * Lexer: No double emits  Double-emits screw up position tracking
+
+ -- rail5 <andrew@rail5.org>  Sat, 02 Aug 2025 00:17:41 +0800
+
 bpp (0.6.0) unstable; urgency=medium
 
   * bpp: Added --target-bash/-b option

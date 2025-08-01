@@ -13,7 +13,17 @@
 #include <cstdint>
 #include <nlohmann/json.hpp>
 
-// Recursive wrapper for variant types
+/**
+ * @class RecursiveWrapper
+ * @brief A wrapper class to allow the LSP's recursive LSPAny -> LSPArray type definitions,
+ *        while also preserving value semantics.
+ *        The spec defines LSPAny as one of a given list of types, **or** an LSPArray
+ *        The spec then defines an LSPArray as an array of LSPAny.
+ *        These recursive definitions aren't too friendly to C++'s type system,
+ *        so this wrapper class is necessary for us to comply with the spec.
+ * 
+ * @tparam T The type to wrap. In practice, this will be LSPArray.
+ */
 template <typename T>
 struct RecursiveWrapper {
 	T value;
@@ -77,7 +87,12 @@ struct RecursiveWrapper {
 struct LSPAny;
 using LSPArray = std::vector<LSPAny>;
 
-// LSPAny definition
+
+/**
+ * @class LSPAny
+ * @brief A type defined by the LSP spec as a kind of "catch-all" type
+ * 
+ */
 struct LSPAny {
 	using ValueType = std::variant<
 		std::unordered_map<std::string, LSPAny>,

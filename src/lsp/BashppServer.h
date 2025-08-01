@@ -42,7 +42,15 @@ void printValue(std::ostream& os, const std::variant<Ts...>& v) {
 	std::visit([&os](auto&& arg) { os << arg; }, v);
 }
 
-// Bash++ Language Server
+
+/**
+ * @class BashppServer
+ * @brief The main server class for handling LSP requests and notifications.
+ *
+ * This class manages the server's lifecycle, handles incoming messages,
+ * processes requests and notifications, logs, and maintains the state of the server.
+ * 
+ */
 class BashppServer {
 	private:
 		pid_t pid = getpid();
@@ -67,6 +75,10 @@ class BashppServer {
 		static std::mutex log_mutex; // Mutex for thread-safe logging
 		
 		// TODO(@rail5): When Debian 13 is released, use libfrozen-dev to make these maps constexpr
+		/**
+		 * @brief Maps request types to the functions that handle them.
+		 * 
+		 */
 		const std::unordered_map<std::string, std::function<GenericResponseMessage(const GenericRequestMessage& )>> request_handlers = {
 			{"initialize", std::bind(&BashppServer::handleInitialize, this, std::placeholders::_1)},
 			{"textDocument/definition", std::bind(&BashppServer::handleDefinition, this, std::placeholders::_1)},
@@ -78,6 +90,10 @@ class BashppServer {
 			{"shutdown", std::bind(&BashppServer::shutdown, this, std::placeholders::_1)}
 		};
 
+		/**
+		 * @brief Maps notification types to the functions that handle them.
+		 * 
+		 */
 		const std::unordered_map<std::string, std::function<void(const GenericNotificationMessage& )>> notification_handlers = {
 			{"textDocument/didOpen", std::bind(&BashppServer::handleDidOpen, this, std::placeholders::_1)},
 			{"textDocument/didChange", std::bind(&BashppServer::handleDidChange, this, std::placeholders::_1)},

@@ -10,6 +10,16 @@
 #include <nlohmann/json.hpp>
 #include "LSPTypes.h"
 
+/**
+ * @struct ResponseError
+ * @brief Represents an error response in the LSP.
+ * This implementation is slightly off-spec -- the spec says that ResponseError
+ * is an **optional** field in a ResponseMessage, but our implementation always
+ * includes it, and makes the distinction that if the code is 0, there is no error.
+ * We should definitely change this to be more exactly in-line with the spec, but
+ * this has worked for us so far.
+ * 
+ */
 struct ResponseError {
 	int code = 0; // Error code, 0 means no error
 	std::string message;
@@ -68,6 +78,11 @@ struct ResponseMessage;
 template<typename ParamsType>
 struct NotificationMessage;
 
+/**
+ * @struct GenericRequestMessage
+ * @brief A generic type that can be converted to/from any specific RequestMessage type.
+ * 
+ */
 struct GenericRequestMessage : public RequestMessageBase {
 	LSPAny params;
 
@@ -102,6 +117,15 @@ struct GenericRequestMessage : public RequestMessageBase {
 		}
 	}
 
+	/**
+	 * @brief Convert this GenericRequestMessage to a specific RequestMessage type.
+	 *
+	 * This method allows converting the generic message to a specific type based on the ParamsType.
+	 * It uses the JSON serialization/deserialization to convert the params field to the specific type.
+	 * 
+	 * @tparam ParamsType The specific parameters type to convert to.
+	 * @return RequestMessage<ParamsType> The specific RequestMessage type with the converted parameters.
+	 */
 	template <typename ParamsType>
 	RequestMessage<ParamsType> toSpecific() const {
 		RequestMessage<ParamsType> specific;
@@ -117,6 +141,11 @@ struct GenericRequestMessage : public RequestMessageBase {
 	}
 };
 
+/**
+ * @struct GenericResponseMessage
+ * @brief A generic type that can be converted to/from any specific ResponseMessage type.
+ * 
+ */
 struct GenericResponseMessage : public ResponseMessageBase {
 	LSPAny result;
 
@@ -174,6 +203,11 @@ struct GenericResponseMessage : public ResponseMessageBase {
 	}
 };
 
+/**
+ * @struct GenericNotificationMessage
+ * @brief A generic type that can be converted to/from any specific NotificationMessage type.
+ * 
+ */
 struct GenericNotificationMessage : public NotificationMessageBase {
 	LSPAny params;
 
@@ -231,6 +265,17 @@ struct GenericNotificationMessage : public NotificationMessageBase {
 template <typename ParamsType>
 struct RequestTraits;
 
+/**
+ * @struct RequestMessage
+ * @brief A template class for all LSP request messages.
+ *
+ * Different request types are distinguished by their method name and parameters.
+ * This class is templated on the ParamsType, which represents the specific parameters
+ * for the request. It inherits from RequestMessageBase to provide the common structure.
+ * The method name is determined by the RequestTraits specialization for the ParamsType.
+ * 
+ * @tparam ParamsType 
+ */
 template<typename ParamsType>
 struct RequestMessage : public RequestMessageBase {
 	ParamsType params;
@@ -261,6 +306,17 @@ struct RequestMessage : public RequestMessageBase {
 	}
 };
 
+/**
+ * @struct ResponseMessage
+ * @brief A template class for all LSP response messages.
+ *
+ * Different response types are distinguished by their result type.
+ * This class is templated on the ResultType, which represents the specific result
+ * for the response. It inherits from ResponseMessageBase to provide the common structure.
+ * The error field is included to indicate if there was an error processing the request.
+ * 
+ * @tparam ResultType 
+ */
 template<typename ResultType>
 struct ResponseMessage : public ResponseMessageBase {
 	ResponseError error;
@@ -288,6 +344,11 @@ struct ResponseMessage : public ResponseMessageBase {
 		}
 	}
 
+	/**
+	 * @brief Convert this ResponseMessage to a GenericResponseMessage.
+	 * 
+	 * @return GenericResponseMessage 
+	 */
 	GenericResponseMessage toGeneric() const {
 		GenericResponseMessage generic;
 		generic.jsonrpc = jsonrpc;
@@ -308,6 +369,20 @@ struct ResponseMessage : public ResponseMessageBase {
 template <typename ParamsType>
 struct NotificationTraits;
 
+/**
+ * @struct NotificationMessage
+ * @brief A template class for all LSP notification messages.
+ *
+ * Notifications do not have a response, and are distinguished by their method name and parameters.
+ * This class is templated on the ParamsType, which represents the specific parameters of the notification.
+ * It inherits from NotificationMessageBase to provide the common structure.
+ * The method name is determined by the NotificationTraits specialization for the ParamsType.
+ *
+ * Notifications in the LSP spec are used to send information (either from the server to the client, or vice versa)
+ * without expecting a response. They are typically used for events or updates that do not require a reply.
+ * 
+ * @tparam ParamsType 
+ */
 template<typename ParamsType>
 struct NotificationMessage : public NotificationMessageBase {
 	ParamsType params;
@@ -335,6 +410,11 @@ struct NotificationMessage : public NotificationMessageBase {
 		}
 	}
 
+	/**
+	 * @brief Convert this NotificationMessage to a GenericNotificationMessage.
+	 * 
+	 * @return GenericNotificationMessage 
+	 */
 	GenericNotificationMessage toGeneric() const {
 		GenericNotificationMessage generic;
 		generic.jsonrpc = jsonrpc;

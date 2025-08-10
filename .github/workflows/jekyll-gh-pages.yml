@@ -33,7 +33,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: debian:trixie
+      image: debian:stable
       options: --user root
     if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }} # Conditional check to ensure the job only runs on GitHub Actions
     steps:

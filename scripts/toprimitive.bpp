@@ -23,7 +23,7 @@
 }
 
 @class ObjectWithCasting {
-	@private @Object outerDataMember=@new Object # This data member is non-primitive
+	@private @Object outerDataMember # This data member is non-primitive
 	
 	@public @method update newValue {
 		@this.outerDataMember.update "$newValue"

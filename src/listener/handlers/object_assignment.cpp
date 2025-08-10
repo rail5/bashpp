@@ -39,7 +39,7 @@ void BashppListener::exitObject_assignment(BashppParser::Object_assignmentContex
 		}
 
 		if (lvalue_object->get_class()->get_name() != rvalue_object->get_class()->get_name()) {
-			throw_syntax_error_sym(ctx->getStart(), "Cannot copy objects of different classes");
+			throw_syntax_error_from_exitRule_ctx(ctx, "Cannot copy objects of different classes");
 		}
 
 		// Call the __copy method
@@ -60,7 +60,7 @@ void BashppListener::exitObject_assignment(BashppParser::Object_assignmentContex
 	}
 
 	if (object_assignment->lvalue_is_nonprimitive() && !object_assignment->rvalue_is_nonprimitive()) {
-		throw_syntax_error_sym(ctx->getStart(), "Cannot assign a primitive value to a nonprimitive object");
+		throw_syntax_error_from_exitRule_ctx(ctx->value_assignment(), "Cannot assign a primitive value to a nonprimitive object");
 	}
 
 	std::string object_assignment_lvalue = object_assignment->get_lvalue();

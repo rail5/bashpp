@@ -64,7 +64,10 @@ Pre-built packages are available for **amd64**, **i386**, and **arm64** architec
  - `g++`
  - `antlr4`
  - Antlr4 C++ runtime
+
+Language server-specific prerequisites:
  - `nlohmann-json3-dev`
+ - `libfrozen-dev`
 
 Optional:
  - `pandoc` and `perl` for building the documentation
@@ -74,13 +77,13 @@ On Debian-based systems, you can install the prerequisites with:
 
 ```bash
 $ sudo apt update
-$ sudo apt install build-essential antlr4 libantlr4-runtime-dev pandoc perl debhelper nlohmann-json3-dev
+$ sudo apt install build-essential antlr4 libantlr4-runtime-dev pandoc perl debhelper nlohmann-json3-dev libfrozen-dev
 ```
 
 #### Building
 
 ```bash
-$ make        # Build the Bash++ compiler, which can then be found at bin/bpp
+$ make        # Build the Bash++ compiler and language server, bin/bpp and bin/bpp-lsp
 $ make manual # Build the manpages, which can then be found under debian/
 $ make test   # Run the test suite to verify the compiler works correctly
 ```

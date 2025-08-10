@@ -17,6 +17,9 @@
 #include <nlohmann/json.hpp>
 #include <unistd.h>
 
+#include <frozen/string.h>
+#include <frozen/unordered_map.h>
+
 #include "ThreadPool.h"
 #include "ProgramPool.h"
 
@@ -74,32 +77,19 @@ class BashppServer {
 		static std::mutex output_mutex; // Mutex for thread-safe output
 		static std::mutex log_mutex; // Mutex for thread-safe logging
 		
-		// TODO(@rail5): When Debian 13 is released, use libfrozen-dev to make these maps constexpr
+		using RequestHandler = GenericResponseMessage (BashppServer::*)(const GenericRequestMessage&);
+		using NotificationHandler = void (BashppServer::*)(const GenericNotificationMessage&);
 		/**
 		 * @brief Maps request types to the functions that handle them.
 		 * 
 		 */
-		const std::unordered_map<std::string, std::function<GenericResponseMessage(const GenericRequestMessage& )>> request_handlers = {
-			{"initialize", std::bind(&BashppServer::handleInitialize, this, std::placeholders::_1)},
-			{"textDocument/definition", std::bind(&BashppServer::handleDefinition, this, std::placeholders::_1)},
-			{"textDocument/completion", std::bind(&BashppServer::handleCompletion, this, std::placeholders::_1)},
-			{"textDocument/hover", std::bind(&BashppServer::handleHover, this, std::placeholders::_1)},
-			{"textDocument/documentSymbol", std::bind(&BashppServer::handleDocumentSymbol, this, std::placeholders::_1)},
-			{"textDocument/rename", std::bind(&BashppServer::handleRename, this, std::placeholders::_1)},
-			{"textDocument/references", std::bind(&BashppServer::handleReferences, this, std::placeholders::_1)},
-			{"shutdown", std::bind(&BashppServer::shutdown, this, std::placeholders::_1)}
-		};
+		static const frozen::unordered_map<frozen::string, RequestHandler, 8> request_handlers;
 
 		/**
 		 * @brief Maps notification types to the functions that handle them.
 		 * 
 		 */
-		const std::unordered_map<std::string, std::function<void(const GenericNotificationMessage& )>> notification_handlers = {
-			{"textDocument/didOpen", std::bind(&BashppServer::handleDidOpen, this, std::placeholders::_1)},
-			{"textDocument/didChange", std::bind(&BashppServer::handleDidChange, this, std::placeholders::_1)},
-			{"workspace/didChangeWatchedFiles", std::bind(&BashppServer::handleDidChangeWatchedFiles, this, std::placeholders::_1)},
-			{"textDocument/didClose", std::bind(&BashppServer::handleDidClose, this, std::placeholders::_1)}
-		};
+		static const frozen::unordered_map<frozen::string, NotificationHandler, 4> notification_handlers;
 
 		static const GenericResponseMessage invalidRequestHandler(const GenericRequestMessage& request);
 		static void invalidNotificationHandler(const GenericNotificationMessage& request);

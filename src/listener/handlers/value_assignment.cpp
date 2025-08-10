@@ -84,6 +84,10 @@ void BashppListener::exitValue_assignment(BashppParser::Value_assignmentContext 
 			current_object->set_pre_access_code(value_assignment_entity->get_pre_code());
 			current_object->set_post_access_code(value_assignment_entity->get_post_code());
 			current_object->set_assignment_value(value_assignment_entity->get_code());
+		} else if (!value_assignment_entity->is_nonprimitive_assignment()) {
+			// The object we're assigning to is not a pointer, and yet we're trying to assign a primitive to it
+			// Throw an error
+			throw_syntax_error_from_exitRule_ctx(ctx, "Cannot assign a primitive value to a nonprimitive object");
 		}
 	}
 }

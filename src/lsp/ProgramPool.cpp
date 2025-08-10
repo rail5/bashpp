@@ -82,41 +82,40 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::_parse_program(
 	std::shared_ptr<std::ostream> output_stream = std::make_shared<NullOStream>();
 	std::shared_ptr<std::ostringstream> code_buffer = std::make_shared<NullOStringStream>();
 
-	BashppListener listener;
-	listener.set_source_file(file_path);
-	listener.set_run_on_exit(false);
-	listener.set_included(false);
-	listener.set_output_stream(output_stream);
-	listener.set_code_buffer(code_buffer);
-
-	listener.set_suppress_warnings(suppress_warnings);
-	listener.set_include_paths(include_paths);
-
-	if (replacement_file_contents.has_value()) {
-		listener.set_replacement_file_contents(replacement_file_contents->first, replacement_file_contents->second);
-	}
-
-	// Create a new ANTLR input stream
-	antlr4::ANTLRInputStream input;
-	if (!replacement_file_contents.has_value() || replacement_file_contents->first != file_path) {
-		std::ifstream file_stream(file_path);
-		input = antlr4::ANTLRInputStream(file_stream);
-	} else {
-		// If we have replacement file contents for this file, use those instead
-		input = antlr4::ANTLRInputStream(replacement_file_contents->second);
-	}
-	BashppLexer lexer(&input);
-	lexer.utf16_mode = utf16_mode;
-	antlr4::CommonTokenStream tokens(&lexer);
-	tokens.fill();
-
-	BashppParser parser(&tokens);
-	parser.removeErrorListeners();
-	std::unique_ptr<antlr4::DiagnosticErrorListener> error_listener = std::make_unique<antlr4::DiagnosticErrorListener>();
-	parser.addErrorListener(error_listener.get());
-	parser.setErrorHandler(std::make_shared<antlr4::BailErrorStrategy>());
-
 	try {
+		BashppListener listener;
+		listener.set_source_file(file_path);
+		listener.set_run_on_exit(false);
+		listener.set_included(false);
+		listener.set_output_stream(output_stream);
+		listener.set_code_buffer(code_buffer);
+
+		listener.set_suppress_warnings(suppress_warnings);
+		listener.set_include_paths(include_paths);
+
+		if (replacement_file_contents.has_value()) {
+			listener.set_replacement_file_contents(replacement_file_contents->first, replacement_file_contents->second);
+		}
+
+		// Create a new ANTLR input stream
+		antlr4::ANTLRInputStream input;
+		if (!replacement_file_contents.has_value() || replacement_file_contents->first != file_path) {
+			std::ifstream file_stream(file_path);
+			input = antlr4::ANTLRInputStream(file_stream);
+		} else {
+			// If we have replacement file contents for this file, use those instead
+			input = antlr4::ANTLRInputStream(replacement_file_contents->second);
+		}
+		BashppLexer lexer(&input);
+		lexer.utf16_mode = utf16_mode;
+		antlr4::CommonTokenStream tokens(&lexer);
+		tokens.fill();
+
+		BashppParser parser(&tokens);
+		parser.removeErrorListeners();
+		std::unique_ptr<antlr4::DiagnosticErrorListener> error_listener = std::make_unique<antlr4::DiagnosticErrorListener>();
+		parser.addErrorListener(error_listener.get());
+		parser.setErrorHandler(std::make_shared<antlr4::BailErrorStrategy>());
 		antlr4::tree::ParseTree* tree = parser.program();
 		if (tree == nullptr) {
 			throw std::runtime_error("Failed to parse program");

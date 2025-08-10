@@ -1,3 +1,18 @@
+bpp (0.6.2) unstable; urgency=medium
+
+  * Error reporting: Highlight error string in red & underline
+    Unified output_syntax_error(varied types, message) to a
+    single templated function
+    Assign syntax error position to object_assignment ctx rather than
+    a specific token
+  * Bug fix: Object instantiations: inherit current class from context
+  * Bug fix: Protect against primitive value assignments in object
+    instantiations
+  * bpp-lsp: Use libfrozen-dev to make request/notification handler maps
+    constexpr
+
+ -- rail5 <andrew@rail5.org>  Sun, 10 Aug 2025 20:05:37 +0800
+
 bpp (0.6.1) unstable; urgency=medium
 
   * Lexer: handle position tracking with potential (as yet

@@ -64,6 +64,8 @@ void BashppListener::enterObject_instantiation(BashppParser::Object_instantiatio
 		object_type->getSymbol()->getCharPositionInLine()
 	);
 
+	new_object->set_containing_class(current_code_entity->get_containing_class());
+
 	// Note:
 	// Here, we're incrementing an internal object counter and determining the location of the object in memory AT COMPILE-TIME
 	// Should this be determined at run-time instead?

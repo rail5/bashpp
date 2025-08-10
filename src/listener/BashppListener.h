@@ -151,54 +151,58 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 
 		#define set_error_context error_thrown = true; error_context = ctx;
 
-		#define output_syntax_error(symbol, msg) \
-			antlr4::CommonToken* token = dynamic_cast<antlr4::CommonToken*>(symbol); \
-			int line; \
-			int column; \
-			std::string text; \
-			if (token == nullptr) { \
-				line = static_cast<int>(symbol->getLine()); \
-				column = static_cast<int>(symbol->getCharPositionInLine()); \
-				text = symbol->getText(); \
-			} else { \
-				line = static_cast<int>(token->getLine()); \
-				column = static_cast<int>(token->getCharPositionInLine()); \
-				text = token->getText(); \
-			} \
-			print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), program); \
-			program_has_errors = true;
+		template<class T>
+		static constexpr bool dependent_false_v = false;
 		
-		#define output_syntax_error_ctx(ctx, msg) \
-			int line; \
-			int column; \
-			std::string text; \
-			line = static_cast<int>(ctx->getStart()->getLine()); \
-			column = static_cast<int>(ctx->getStart()->getCharPositionInLine()); \
-			text = ctx->getText(); \
-			print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), program); \
+		template<typename Sym>
+		void output_syntax_error(Sym* error_ctx, const std::string& msg) {
+			if constexpr(std::is_base_of<antlr4::ParserRuleContext, Sym>::value) {
+				// A ParserRuleContext has been passed
+				int line = static_cast<int>(error_ctx->getStart()->getLine());
+				int column = static_cast<int>(error_ctx->getStart()->getCharPositionInLine());
+				std::string text = error_ctx->getText();
+				print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), program);
+			} else if constexpr(std::is_base_of<antlr4::tree::TerminalNode, Sym>::value) {
+				// A token has been passed directly
+				antlr4::Token* symbol = error_ctx->getSymbol();
+				antlr4::CommonToken* token = dynamic_cast<antlr4::CommonToken*>(symbol);
+				int line;
+				int column;
+				std::string text;
+				if (token == nullptr) {
+					line = static_cast<int>(symbol->getLine());
+					column = static_cast<int>(symbol->getCharPositionInLine());
+					text = symbol->getText();
+				} else {
+					line = static_cast<int>(token->getLine());
+					column = static_cast<int>(token->getCharPositionInLine());
+					text = token->getText();
+				}
+				print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), program);
+			} else if constexpr(std::is_base_of<antlr4::Token, Sym>::value) {
+				// A symbol has been passed
+				int line = static_cast<int>(error_ctx->getLine());
+				int column = static_cast<int>(error_ctx->getCharPositionInLine());
+				std::string text = error_ctx->getText();
+				print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), program);
+			} else {
+				static_assert(dependent_false_v<Sym>, "output_syntax_error<Sym>: Sym must be a ParserRuleContext*, TerminalNode*, or Token*.");
+			}
 			program_has_errors = true;
+		}
 
 		#define throw_syntax_error_sym(symbol, msg) \
-			output_syntax_error(symbol, msg) \
+			output_syntax_error(symbol, msg); \
 			set_error_context \
 			return;
 
-		#define throw_syntax_error(token, msg) antlr4::Token* symbol = token->getSymbol(); \
-			throw_syntax_error_sym(symbol, msg) \
+		#define throw_syntax_error(token, msg) \
+			throw_syntax_error_sym(token, msg) \
 			set_error_context \
 			return;
 
-		#define throw_syntax_error_from_exitRule(token, msg) antlr4::Token* symbol = token->getSymbol(); \
-			output_syntax_error(symbol, msg) \
-			return;
-		
-		#define throw_syntax_error_ctx(ctx, msg) \
-			output_syntax_error_ctx(ctx, msg) \
-			set_error_context \
-			return;
-
-		#define throw_syntax_error_from_exitRule_ctx(ctx, msg) \
-			output_syntax_error_ctx(ctx, msg) \
+		#define throw_syntax_error_from_exitRule(token, msg) \
+			output_syntax_error(token, msg); \
 			return;
 		
 		#define show_warning_sym(symbol, msg) \

@@ -109,7 +109,17 @@ void print_syntax_error_or_warning(
 			line_contents = line_contents.substr(static_cast<size_t>(start), static_cast<size_t>(end - start));
 			column = column - start;
 		}
-		std::cerr << firstline_padding << line_contents << std::endl;
+
+		std::cerr << firstline_padding;
+
+		// Print the line contents up to the start of the error
+		std::cerr << line_contents.substr(0, static_cast<size_t>(column));
+
+		// Print the error text
+		std::cerr << color_red << line_contents.substr(static_cast<size_t>(column), text.length()) << color_reset;
+
+		// Print the rest of the line contents
+		std::cerr << line_contents.substr(static_cast<std::string::size_type>(static_cast<std::string::size_type>(column) + text.length())) << std::endl;
 
 		int display_col = 0;
 		std::string::iterator it = line_contents.begin();
@@ -142,7 +152,14 @@ void print_syntax_error_or_warning(
 		}
 
 		// Print the error indicator
-		std::cerr << secondline_padding << color_red << "^" << color_reset << std::endl;
+		std::cerr << secondline_padding << color_red << "^";
+
+		// Add an underline for the rest length of the error text
+		for (size_t i = 1; i < text.length(); i++) {
+			std::cerr << "~";
+		}
+		
+		std::cerr << color_reset << std::endl;
 
 		file.close();
 	}

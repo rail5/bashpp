@@ -53,7 +53,7 @@ sudo apt update
 sudo apt install bpp
 ```
 
-Pre-built packages are available for **amd64**, **i386**, and **arm64** architectures. The .debs can also be downloaded directly from the [GitHub releases page](https://github.com/rail5/bashpp/releases/latest)
+Pre-built packages are available for **amd64** and **arm64**. The .debs can also be downloaded directly from the [GitHub releases page](https://github.com/rail5/bashpp/releases/latest)
 
 ### Building from source
 

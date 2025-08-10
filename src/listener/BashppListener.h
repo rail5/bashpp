@@ -167,6 +167,16 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 			} \
 			print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), program); \
 			program_has_errors = true;
+		
+		#define output_syntax_error_ctx(ctx, msg) \
+			int line; \
+			int column; \
+			std::string text; \
+			line = static_cast<int>(ctx->getStart()->getLine()); \
+			column = static_cast<int>(ctx->getStart()->getCharPositionInLine()); \
+			text = ctx->getText(); \
+			print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), program); \
+			program_has_errors = true;
 
 		#define throw_syntax_error_sym(symbol, msg) \
 			output_syntax_error(symbol, msg) \
@@ -180,6 +190,15 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 
 		#define throw_syntax_error_from_exitRule(token, msg) antlr4::Token* symbol = token->getSymbol(); \
 			output_syntax_error(symbol, msg) \
+			return;
+		
+		#define throw_syntax_error_ctx(ctx, msg) \
+			output_syntax_error_ctx(ctx, msg) \
+			set_error_context \
+			return;
+
+		#define throw_syntax_error_from_exitRule_ctx(ctx, msg) \
+			output_syntax_error_ctx(ctx, msg) \
 			return;
 		
 		#define show_warning_sym(symbol, msg) \

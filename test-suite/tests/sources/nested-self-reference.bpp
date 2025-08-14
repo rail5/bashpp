@@ -1,0 +1,11 @@
+@class Example {
+	@public member="default"
+
+	@public @method change append {
+		@this.member=@(echo @this.member $append)
+	}
+}
+
+@Example ex
+@ex.change " value"
+echo @ex.member

@@ -13,6 +13,8 @@ void BashppListener::enterSupershell(BashppParser::SupershellContext *ctx) {
 	 * Where ... is a series of commands to be executed in a supershell
 	 * Supershells can be nested
 	 */
+	
+	in_supershell = true;
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
@@ -74,6 +76,8 @@ void BashppListener::exitSupershell(BashppParser::SupershellContext *ctx) {
 		in_while_condition, 
 		current_while_condition, 
 		program);
+
+	in_supershell = false;
 
 	// If we're in an assignment, add the supershell code to the assignment
 	std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(current_code_entity);

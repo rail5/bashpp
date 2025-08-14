@@ -293,6 +293,7 @@ entity_reference resolve_reference_impl(
 	std::shared_ptr<bpp::bpp_entity> context,
 	std::deque<antlr4::tree::TerminalNode*>* nodes,
 	std::deque<std::string>* identifiers,
+	bool declare_local,
 	std::shared_ptr<bpp::bpp_program> program
 ) {
 	std::deque<antlr4::tree::TerminalNode*> nds = static_cast<std::deque<antlr4::tree::TerminalNode*>>(*nodes);
@@ -321,6 +322,8 @@ entity_reference resolve_reference_impl(
 	if (self_reference) {
 		result.entity = current_class;
 	}
+
+	std::string temporary_variable_declaration_prefix = declare_local ? "local " : "";
 
 	bpp::reference_type last_reference_type = bpp::reference_type::ref_object;
 
@@ -475,7 +478,8 @@ entity_reference resolve_reference_impl(
 			std::string temporary_varible_rvalue = "${" + indirection + result.reference_code.code + "}__" + ids.front();
 
 			if (result.created_first_temporary_variable) {
-				result.reference_code.pre_code += temporary_variable_lvalue + "=" + temporary_varible_rvalue + "\n";
+				result.reference_code.pre_code += 
+					temporary_variable_declaration_prefix + temporary_variable_lvalue + "=" + temporary_varible_rvalue + "\n";
 				result.reference_code.post_code += "unset " + temporary_variable_lvalue + "\n";
 				result.created_second_temporary_variable = true;
 			}

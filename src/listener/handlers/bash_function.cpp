@@ -19,6 +19,8 @@ void BashppListener::enterBash_function(BashppParser::Bash_functionContext *ctx)
 	 * function_name() { ... }
 	 */
 
+	in_bash_function = true;
+
 	// What's the first token in the statement?
 	antlr4::tree::TerminalNode* first_token = ctx->BASH_KEYWORD_FUNCTION() != nullptr ? ctx->BASH_KEYWORD_FUNCTION() : ctx->IDENTIFIER_LVALUE();
 
@@ -88,4 +90,6 @@ void BashppListener::exitBash_function(BashppParser::Bash_functionContext *ctx) 
 		ctx->getStop()->getCharPositionInLine(),
 		function_entity
 	);
+
+	in_bash_function = false;
 }

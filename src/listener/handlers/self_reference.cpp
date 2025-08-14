@@ -73,6 +73,7 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 		source_file,
 		current_code_entity,
 		&ids,
+		in_class || in_supershell || in_bash_function,
 		program
 	);
 

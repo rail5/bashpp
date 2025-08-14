@@ -74,6 +74,7 @@ void BashppListener::exitObject_reference(BashppParser::Object_referenceContext 
 		source_file,
 		current_code_entity,
 		&ids,
+		in_class || in_supershell || in_bash_function,
 		program
 	);
 

@@ -11,6 +11,8 @@ void BashppListener::enterClass_definition(BashppParser::Class_definitionContext
 	new_class->inherit(program);
 	entity_stack.push(new_class);
 
+	in_class = true;
+
 	new_class->set_definition_position(
 		source_file,
 		ctx->IDENTIFIER(0)->getSymbol()->getLine() - 1,
@@ -90,4 +92,6 @@ void BashppListener::exitClass_definition(BashppParser::Class_definitionContext 
 		ctx->CLASS_END()->getSymbol()->getCharPositionInLine(),
 		new_class
 	);
+
+	in_class = false;
 }

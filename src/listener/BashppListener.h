@@ -117,6 +117,10 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 		std::shared_ptr<bpp::bash_while_condition> current_while_condition = nullptr;
 		bool in_method = false;
 
+		bool in_class = false;
+		bool in_supershell = false;
+		bool in_bash_function = false;
+
 		/**
 		 * @var entity_stack
 		 * @brief A stack to keep track of the current entity being processed

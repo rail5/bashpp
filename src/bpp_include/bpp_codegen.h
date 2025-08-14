@@ -107,6 +107,7 @@ entity_reference resolve_reference_impl(
 	std::shared_ptr<bpp::bpp_entity> context,
 	std::deque<antlr4::tree::TerminalNode*>* identifiers,
 	std::deque<std::string>* identifier_texts,
+	bool declare_local,
 	std::shared_ptr<bpp::bpp_program> program
 );
 
@@ -114,16 +115,18 @@ inline entity_reference resolve_reference(
 	const std::string& file,
 	std::shared_ptr<bpp::bpp_entity> context,
 	std::deque<std::string>* identifiers,
+	bool declare_local,
 	std::shared_ptr<bpp::bpp_program> program
 ) {
 	std::deque<antlr4::tree::TerminalNode*> debug_nodes;
-	return resolve_reference_impl(file, context, &debug_nodes, identifiers, program);
+	return resolve_reference_impl(file, context, &debug_nodes, identifiers, declare_local, program);
 }
 
 inline entity_reference resolve_reference(
 	const std::string& file,
 	std::shared_ptr<bpp::bpp_entity> context,
 	std::deque<antlr4::tree::TerminalNode*>* identifiers,
+	bool declare_local,
 	std::shared_ptr<bpp::bpp_program> program
 ) {
 	// Extract identifier texts from the nodes
@@ -131,7 +134,7 @@ inline entity_reference resolve_reference(
 	for (const auto& node : *identifiers) {
 		identifier_texts.push_back(node->getText());
 	}
-	return resolve_reference_impl(file, context, identifiers, &identifier_texts, program);
+	return resolve_reference_impl(file, context, identifiers, &identifier_texts, declare_local, program);
 }
 
 } // namespace bpp

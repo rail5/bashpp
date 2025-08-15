@@ -31,4 +31,11 @@ void print_syntax_error_or_warning(
 	std::shared_ptr<bpp::bpp_program> program,
 	bool is_warning = false);
 
+// Helper functions
+// Should probably be moved to a separate file or somehow better organized
+int number_of_digits(int number);
+std::string utf8_substr(const std::string& str, int start, int length);
+int utf8_length(const std::string& str);
+std::string equal_width_padding(const std::string& str, char padding_char = ' ');
+
 #endif // SRC_SYNTAX_ERROR_H_

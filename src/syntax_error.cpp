@@ -64,7 +64,7 @@ void print_syntax_error_or_warning(
 	// 2. '               | '
 	std::string line1_prefix = std::to_string(line) + " | ";
 	std::string line2_prefix;
-	for (int i = 0; i < number_of_digits(line); i++) {
+	for (int i = 0; i < std::to_string(line).size(); i++) {
 		line2_prefix += " ";
 	}
 	line2_prefix += " | ";
@@ -106,15 +106,6 @@ void print_syntax_error_or_warning(
 			static_cast<uint32_t>(column + text.length())
 		);
 	}
-}
-
-int number_of_digits(int number) {
-	int digits = 0;
-	while (number) {
-		number /= 10;
-		digits++;
-	}
-	return digits == 0 ? 1 : digits; // Ensure at least one digit
 }
 
 std::string utf8_substr(const std::string& str, int start, int length) {

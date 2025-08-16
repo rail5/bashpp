@@ -33,7 +33,6 @@ void print_syntax_error_or_warning(
 
 // Helper functions
 // Should probably be moved to a separate file or somehow better organized
-int number_of_digits(int number);
 std::string utf8_substr(const std::string& str, int start, int length);
 int utf8_length(const std::string& str);
 std::string equal_width_padding(const std::string& str, char padding_char = ' ');

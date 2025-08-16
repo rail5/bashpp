@@ -64,7 +64,7 @@ void print_syntax_error_or_warning(
 	// 2. '               | '
 	std::string line1_prefix = std::to_string(line) + " | ";
 	std::string line2_prefix;
-	for (int i = 0; i < std::to_string(line).size(); i++) {
+	for (size_t i = 0; i < std::to_string(line).size(); i++) {
 		line2_prefix += " ";
 	}
 	line2_prefix += " | ";

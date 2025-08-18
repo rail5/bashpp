@@ -1,0 +1,7 @@
+echo @typeof &@object
+echo @typeof @pointer
+echo @typeof "abc" # Blank line
+
+if [[ @typeof &@object == "ExpectedClass" ]]; then
+	# '@object' is an instance of 'ExpectedClass'
+fi

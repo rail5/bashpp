@@ -1,3 +1,78 @@
+bpp (0.7.0) unstable; urgency=medium
+
+  * bpp: Added typeof operator: Returns a pointer's class name as a
+    string
+  * Dynamic casts: return nonzero exit code if the cast fails under any
+    circumstances
+  * bpp: Allow dynamic_casts to resolve the target class dynamically at
+    runtime
+    With this update:
+    - @dynamic_cast<$shell_var> and @dynamic_cast<@object.reference> are
+    now valid syntax
+    - If a shell variable or object reference are given as the target
+    'cast-to' class, the compiler will expect to resolve the class type
+    at runtime
+    - @dynamic_cast<ClassName> is still absolutely valid syntax,
+    however, ClassName being invalid will no longer result in a syntax
+    error, but will instead give a warning that 'ClassName' does not
+    refer to any known class and that the cast may fail at runtime
+  * Error reporting overhaul:  Better and more conscious UTF8 handling
+    Removed the 'position_unknown' checks; we no longer have to deal
+    with unknown positions now that we're not relying on ANTLR's built-
+    in position tracking
+    Separation of concerns: moved padding, etc, utf8 procedures to
+    helper functions rather than complicating things by inlining
+    everything
+  * Bug fix in entity resolution: Declare all temporary variables local
+    if possible
+    If we're inside a class, a supershell, or bash function, it's
+    possible for us to declare all temporary variables 'local', and we
+    absolutely should
+    This fixes a bug with nested object references. For example,
+    @this.member=@(echo @this.member and then some)
+    If the temporary variables necessary to access this.member are not
+    declared local, then:
+    - The pre-code necessary to access this.member precedes that
+    assignment statement
+    - Then, we enter the supershell in the rvalue of the assignment
+    statement, which also contains a reference to this.member
+    - So, once again we generate the pre-code necessary to access it, we
+    access it,
+    - AND THEN we execute the post-code necesary to clear the memory
+    - That memory having been cleared, we return from the supershell
+    context to the broader assignment statement
+    And we find that we no longer know where to put the rvalue.
+    The variables which told us how to access this.member have been
+    cleared from inside the supershell.
+    If we declare all temporary variables local however, then the pre-
+    and post-code within the supershell is entirely isolated from the
+    pre- and post-code of the surrounding assignment statement.
+  * STL: Added Typed versions of arrays, stacks and queues
+    With our new dynamic cast semantics permitting runtime
+    evaluation of the target (casted) type, runtime type restrictions
+    become enforceable and typed containers such as these become
+    possible
+  * STL: Added TypedShared classes: Shared (concurrency-safe) data
+    structures with runtime type enforcement on their elements
+  * bpp-lsp: Wrap program parsing in try-catch
+    No need to crash if there's a ParseCancellationException etc.
+    The lexer & parser still need a full rewrite.
+  * bpp-lsp: ProgramPool: Verify parsing was successful before changing
+    pool state
+    This prevents crashes which may come from storing 'nullptr' parse
+    results in the program pool's state, and later (unthinkingly) using
+    them as if they were valid pointers. It also prevents us from losing
+    diagnostic information about programs which have been parsed, which
+    have also undergone incomplete updates that can't yet be fully
+    re-parsed.
+  * bpp-lsp: Keep state AND snapshot of state
+    This eliminates any slight possibility for race conditions, where
+    one thread may jump the queue and access an element of the
+    ProgramPool's state while another thread is simultaneously modifying
+    it
+
+ -- rail5 <andrew@rail5.org>  Mon, 18 Aug 2025 22:45:57 +0800
+
 bpp (0.6.2) unstable; urgency=medium
 
   * Error reporting: Highlight error string in red & underline

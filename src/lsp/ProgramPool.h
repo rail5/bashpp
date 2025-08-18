@@ -37,11 +37,15 @@ class ProgramPool {
 	private:
 		size_t max_programs = 10; // Maximum number of programs to keep in the pool
 		std::vector<std::shared_ptr<bpp::bpp_program>> programs;
+		std::unordered_map<std::string, size_t> program_indices; // Maps file paths to program indices in the pool
+		std::unordered_map<std::string, bool> open_files; // Maps file paths to whether they are currently open
 		std::recursive_mutex pool_mutex; // Mutex to protect access to the pool
 
-		std::unordered_map<std::string, size_t> program_indices; // Maps file paths to program indices in the pool
-
-		std::unordered_map<std::string, bool> open_files; // Maps file paths to whether they are currently open
+		// Pool snapshots:
+		std::vector<std::shared_ptr<bpp::bpp_program>> programs_snapshot; // Snapshot of the current programs in the pool
+		std::unordered_map<std::string, size_t> program_indices_snapshot; // Snapshot of the current program indices
+		std::unordered_map<std::string, bool> open_files_snapshot; // Snapshot of the current open files
+		std::recursive_mutex snapshot_mutex; // Mutex to protect access to the snapshots
 
 		bool utf16_mode = false; // Whether to use UTF-16 mode for character counting
 
@@ -54,6 +58,8 @@ class ProgramPool {
 		// Configurable settings
 		std::shared_ptr<std::vector<std::string>> include_paths = std::make_shared<std::vector<std::string>>();
 		bool suppress_warnings = false;
+
+		void update_snapshot();
 	public:
 		explicit ProgramPool(size_t max_programs = 10);
 

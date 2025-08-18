@@ -1,0 +1,27 @@
+@class Object {
+}
+
+@class Derived : Object {
+}
+
+@class Unrelated {
+	@public @method something {
+		echo "A method that outputs something."
+	}
+}
+
+@Object o1
+@Derived o2
+@Unrelated o3
+
+echo @typeof &@o1 # "Object"
+echo @typeof &@o2 # "Derived"
+echo @typeof &@o3 # "Unrelated"
+
+echo @typeof "abc" # Blank line
+echo @typeof @o1 # Blank line, implicit call to @o1.toPrimitive, results in @typeof "Object Instance" -> not a type name
+echo @typeof @o3.something # Blank line
+
+if [[ @typeof &@o1 == "Object" ]]; then
+	echo "Type of o1 is Object"
+fi

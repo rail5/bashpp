@@ -460,13 +460,17 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 				}
 
 				// Verify that the given position is within the class name token
-				uint64_t class_name_start = cast_ctx->IDENTIFIER()->getSymbol()->getCharPositionInLine();
-				uint64_t class_name_end = class_name_start + cast_ctx->IDENTIFIER()->getText().length();
+				uint64_t class_name_start = cast_ctx->dynamic_cast_target()->getStart()->getCharPositionInLine();
+				uint64_t class_name_end = class_name_start + cast_ctx->dynamic_cast_target()->getText().length();
+				if (cast_ctx->dynamic_cast_target()->BASH_VAR() != nullptr) {
+					// If it's a BASH_VAR, we don't resolve the class name
+					return nullptr;
+				}
 				if (column < class_name_start || column > class_name_end) {
 					return nullptr; // Column is outside the class name token
 				}
 
-				auto class_pointer = context->get_class(cast_ctx->IDENTIFIER()->getText());
+				auto class_pointer = context->get_class(cast_ctx->dynamic_cast_target()->getText());
 				return class_pointer;
 			}
 			break;

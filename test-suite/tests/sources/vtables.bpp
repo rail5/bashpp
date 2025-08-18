@@ -47,3 +47,21 @@ echo @dyntest6 # Valid pointer
 
 @Base* nonsense=@dynamic_cast<Base> "This string is not a valid pointer."
 echo @nonsense # "0" (@nullptr)
+
+shell_var="Base"
+@class Object {
+	@public member="Derived"
+}
+@Object o
+
+@Base* cast_using_shell_var=@dynamic_cast<$shell_var> &@derived_object
+echo @cast_using_shell_var # Valid pointer
+@Derived* cast_using_object_ref=@dynamic_cast<@o.member> &@derived_object
+echo @cast_using_object_ref # Valid pointer
+
+shell_var="Nonsense"
+@o.member="Nonsense"
+@Base* cast_using_invalid_shell_var=@dynamic_cast<$shell_var> &@derived_object
+echo @cast_using_invalid_shell_var # "0" (@nullptr)
+@Derived* cast_using_invalid_object_ref=@dynamic_cast<@o.member> &@derived_object
+echo @cast_using_invalid_object_ref # "0" (@nullptr)

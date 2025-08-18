@@ -320,6 +320,9 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 	void enterDynamic_cast_target(BashppParser::Dynamic_cast_targetContext *ctx) override;
 	void exitDynamic_cast_target(BashppParser::Dynamic_cast_targetContext *ctx) override;
 
+	void enterTypeof_statement(BashppParser::Typeof_statementContext *ctx) override;
+	void exitTypeof_statement(BashppParser::Typeof_statementContext *ctx) override;
+
 	void enterSupershell(BashppParser::SupershellContext *ctx) override;
 	void exitSupershell(BashppParser::SupershellContext *ctx) override;
 

@@ -223,6 +223,7 @@ void emit(std::unique_ptr<antlr4::Token> token) {
 			break;
 		case KEYWORD_DYNAMIC_CAST:
 			dynamic_cast_stage = 1;
+		case KEYWORD_TYPEOF:
 		case KEYWORD_NEW:
 			in_twotoken_bpp_command = true;
 			incoming_token_can_be_lvalue = false;
@@ -689,6 +690,8 @@ KEYWORD_SUPER: 'super' {
 };
 
 KEYWORD_SUPER_LVALUE: 'super'; // Yet another dummy token
+
+KEYWORD_TYPEOF: '@typeof' WORD_BOUNDARY;
 
 // Bash keywords
 BASH_KEYWORD_IF: 'if' {

@@ -503,6 +503,7 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 		uint64_t assignment_counter = 0;
 		uint64_t function_counter = 0;
 		uint64_t dynamic_cast_counter = 0;
+		uint64_t typeof_counter = 0;
 		uint64_t object_counter = 0;
 		
 		std::pair<uint16_t, uint16_t> target_bash_version = {5, 2};
@@ -545,6 +546,9 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 
 		void increment_dynamic_cast_counter();
 		uint64_t get_dynamic_cast_counter() const;
+
+		void increment_typeof_counter();
+		uint64_t get_typeof_counter() const;
 
 		void increment_object_counter();
 		uint64_t get_object_counter() const;

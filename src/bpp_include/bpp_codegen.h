@@ -78,6 +78,11 @@ code_segment generate_dynamic_cast_code(
 	std::shared_ptr<bpp::bpp_program>	program
 	);
 
+code_segment generate_typeof_code(
+	const std::string&					reference_code,
+	std::shared_ptr<bpp::bpp_program>	program
+	);
+
 code_segment inline_new(
 	const std::string&					new_address,
 	std::shared_ptr<bpp::bpp_class>		new_class

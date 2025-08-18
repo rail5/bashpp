@@ -198,6 +198,21 @@ code_segment generate_dynamic_cast_code(
 	return result;
 }
 
+code_segment generate_typeof_code(
+	const std::string& reference_code,
+	std::shared_ptr<bpp::bpp_program> program
+) {
+	code_segment result;
+
+	result.pre_code = "bpp____typeof " + reference_code + " __typeof" + std::to_string(program->get_typeof_counter()) + "\n";
+	result.code = "${__typeof" + std::to_string(program->get_typeof_counter()) + "}";
+	result.post_code = "unset __typeof" + std::to_string(program->get_typeof_counter()) + "\n";
+
+	program->increment_typeof_counter();
+
+	return result;
+}
+
 /**
  * @brief Generates a code segment to INLINE class's "new" function within a method
  * 

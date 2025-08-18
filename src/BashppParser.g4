@@ -38,6 +38,7 @@ general_statement: include_statement
 	| pointer_dereference
 	| nullptr_ref
 	| dynamic_cast_statement
+	| typeof_statement
 	| new_statement
 	| bash_while_loop
 	| bash_if_statement
@@ -90,6 +91,7 @@ valid_rvalue: ((raw_rvalue
 	| supershell)+
 	| new_statement
 	| dynamic_cast_statement
+	| typeof_statement
 	| array_value)?;
 
 // Object instantiation
@@ -115,6 +117,8 @@ dynamic_cast_statement: KEYWORD_DYNAMIC_CAST WS* LESSTHAN WS* dynamic_cast_targe
 dynamic_cast_target: IDENTIFIER WS* ASTERISK?
 	| BASH_VAR
 	| ref_rvalue;
+
+typeof_statement: KEYWORD_TYPEOF WS* valid_rvalue;
 
 // Object reference
 ref_general: ref_lvalue | ref_rvalue;

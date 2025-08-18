@@ -229,6 +229,20 @@ uint64_t bpp_program::get_dynamic_cast_counter() const {
 	return dynamic_cast_counter;
 }
 
+void bpp_program::increment_typeof_counter() {
+	typeof_counter++;
+
+	if (typeof_counter == 1) {
+		// This is the first typeof called
+		// Write the typeof code to the program
+		add_code_to_previous_line(bpp_typeof_function);
+	}
+}
+
+uint64_t bpp_program::get_typeof_counter() const {
+	return typeof_counter;
+}
+
 void bpp_program::increment_object_counter() {
 	object_counter++;
 }

@@ -85,6 +85,27 @@ static const char* bpp_dynamic_cast = R"EOF(function bpp____dynamic__cast() {
 }
 )EOF";
 
+static const char* bpp_typeof_function = R"EOF(function bpp____typeof() {
+	local __this="$1" __outputVar="$2"
+	[[ -z "${__this}" ]] && >&2 echo "Bash++: Error: Invalid type name request" && exit 1
+	while : ; do
+		if ! eval "declare -p \"${__this}\"" &>/dev/null; then
+			break
+		fi
+		[[ -z "${!__this}" ]] && break
+		__this="${!__this}"
+	done
+	local __vTable="${__this}____vPointer"
+	if ! eval "declare -p \"${__vTable}\"" &>/dev/null; then
+		return 1
+	fi
+	__vTable="${!__vTable}"
+	local __typeName="${__vTable/bpp__/}"
+	__typeName="${__typeName/____vTable/}"
+	eval "${__outputVar}=\"${__typeName}\""
+}
+)EOF";
+
 static const char* template_new_function = R"EOF(function bpp__%CLASS%____new() {
 	local __this="$1"
 	if [[ "${__this}" == "" ]]; then

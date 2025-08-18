@@ -1,0 +1,31 @@
+@include "../../../stdlib/TypedStack"
+
+@class Object {
+	@public member="default value"
+}
+
+@class DerivedObject : Object {
+	@public member="derived value"
+}
+
+@class Unrelated {
+	@public member="unrelated"
+}
+
+@TypedStack stack
+@stack.set_type "Object"
+
+@Object obj1
+@DerivedObject obj2
+@Unrelated unrelatedObj
+
+@stack.push &@obj1
+@stack.push &@obj2
+@stack.push &@unrelatedObj # Error
+
+@stack.set_type "DerivedObject" # Error, cannot change type after adding elements
+
+@stack.pop # obj2 pointer
+@stack.pop # obj1 pointer
+
+@stack.empty # Should echo "true" since all elements are removed

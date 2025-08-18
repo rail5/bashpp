@@ -1,0 +1,32 @@
+@include "../../../stdlib/TypedQueue"
+
+@class Object {
+	@public member="default value"
+}
+
+@class DerivedObject : Object {
+	@public member="derived value"
+}
+
+@class Unrelated {
+	@public member="unrelated"
+}
+
+@TypedQueue queue
+@queue.set_type "Object"
+
+@Object obj1
+@DerivedObject obj2
+@Unrelated unrelatedObj
+
+@queue.enqueue &@obj1
+@queue.enqueue &@obj2
+@queue.enqueue &@unrelatedObj # Error
+@queue.front # Should echo the pointer to obj1
+@queue.back # Should echo the pointer to obj2
+
+@queue.set_type "DerivedObject" # Error, cannot change type after adding elements
+
+@queue.dequeue # Should echo the pointer to obj2
+@queue.dequeue # Should echo the pointer to obj1
+@queue.empty # Should echo "true" since all elements are removed

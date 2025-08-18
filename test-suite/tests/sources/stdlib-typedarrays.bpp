@@ -1,0 +1,36 @@
+@include "../../../stdlib/TypedArray"
+
+@class Object {
+	@public member="default value"
+}
+
+@class DerivedObject : Object {
+	@public member="derived value"
+}
+
+@class Unrelated {
+	@public member="unrelated"
+}
+
+@TypedArray arr
+@arr.set_type "Object"
+
+@Object obj1
+@DerivedObject obj2
+@Unrelated unrelatedObj
+
+@arr.push &@obj1
+@arr.push &@obj2
+@arr.push &@unrelatedObj # Error
+@arr.all # Two pointers, one to obj1 and one to obj2, separated by spaces
+
+@arr.set_type "DerivedObject" # Error, cannot change type after adding elements
+
+@arr.pop # obj2 pointer
+@arr.all # Should only contain obj1
+@arr.insert 0 &@obj1 # Insert obj1 at index 0
+@arr.insert 0 &@unrelatedObj # Error, unrelatedObj is not of type DerivedObject
+
+@arr.pop # obj1 pointer
+@arr.pop # obj1 pointer
+@arr.empty # Should echo "true" since all elements are removed

@@ -40,7 +40,7 @@ fi
 @class SharedArray : SharedObject {
 	##METHOD public size
 	### Echoes the number of elements in the shared array.
-	@public @method size {
+	@virtual @public @method size {
 		@this._lock
 		wc -l 2>/dev/null < @this.object_file || echo 0
 		@this._unlock
@@ -50,7 +50,7 @@ fi
 	### Adds a value to the end of the shared array.
 	###PARAM primitive value
 	#### The value to add to the shared array.
-	@public @method push value {
+	@virtual @public @method push value {
 		@this.used=1
 		@this._lock
 		if [[ @this.encrypted -eq 1 ]]; then
@@ -87,7 +87,7 @@ fi
 
 	##METHOD public pop
 	### Removes and echoes the last element of the shared array.
-	@public @method pop {
+	@virtual @public @method pop {
 		@this.used=1
 		@this._lock
 
@@ -107,7 +107,7 @@ fi
 	### The index at which to insert the value.
 	###PARAM primitive value
 	### The value to insert into the shared array.
-	@public @method insert index value {
+	@virtual @public @method insert index value {
 		@this.used=1
 		if [[ $index -lt 0 || $index -gt @this.size ]]; then
 			>&2 echo "Error: SharedArray: Index out of bounds."
@@ -143,7 +143,7 @@ fi
 	### Removes the value at a specific index from the shared array.
 	###PARAM primitive index
 	### The index of the value to remove.
-	@public @method remove index {
+	@virtual @public @method remove index {
 		@this.used=1
 		if [[ $index -lt 0 || $index -ge @this.size ]]; then
 			>&2 echo "Error: SharedArray: Index out of bounds."
@@ -161,7 +161,7 @@ fi
 	### Gets the value at a specific index in the shared array.
 	###PARAM primitive index
 	### The index of the value to retrieve.
-	@public @method at index {
+	@virtual @public @method at index {
 		if [[ $index -lt 0 || $index -ge @this.size ]]; then
 			>&2 echo "Error: SharedArray: Index out of bounds."
 			return 1
@@ -177,7 +177,7 @@ fi
 
 	##METHOD public front
 	### Echoes the first element of the shared array.
-	@public @method front {
+	@virtual @public @method front {
 		@this._lock
 		@this._get_front
 		if [[ $? -ne 0 ]]; then
@@ -189,7 +189,7 @@ fi
 
 	##METHOD public back
 	### Echoes the last element of the shared array.
-	@public @method back {
+	@virtual @public @method back {
 		@this._lock
 		@this._get_back
 		if [[ $? -ne 0 ]]; then
@@ -201,7 +201,7 @@ fi
 
 	##METHOD public all
 	### Echoes all elements of the shared array.
-	@public @method all {
+	@virtual @public @method all {
 		@this._lock
 		local array_copy=()
 		while IFS= read -r line; do
@@ -217,11 +217,13 @@ fi
 
 	##METHOD public empty
 	### Echoes "true" if the shared array is empty, "false" otherwise.
-	@public @method empty {
+	@virtual @public @method empty {
 		if [[ @this.size -eq 0 ]]; then
 			echo "true"
+			return 0
 		else
 			echo "false"
+			return 1
 		fi
 	}
 
@@ -231,7 +233,7 @@ fi
 	### The starting index of the slice (inclusive).
 	###PARAM primitive end
 	### The ending index of the slice (inclusive).
-	@public @method slice start end {
+	@virtual @public @method slice start end {
 		if [[ $start -gt $end || @this.size -eq 0 ]]; then
 			return 1
 		fi
@@ -256,7 +258,7 @@ fi
 
 	##METHOD public clear
 	### Removes all elements from the shared array.
-	@public @method clear {
+	@virtual @public @method clear {
 		@this._lock
 		> "@this.object_file" # Clear the file
 		@this._unlock

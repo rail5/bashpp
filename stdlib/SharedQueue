@@ -35,7 +35,7 @@ fi
 @class SharedQueue : SharedObject {
 	##METHOD public size
 	### Echoes the number of elements in the queue.
-	@public @method size {
+	@virtual @public @method size {
 		wc -l 2>/dev/null < @this.object_file || echo 0
 	}
 
@@ -43,7 +43,7 @@ fi
 	### Adds a value to the back of the queue.
 	###PARAM primitive value
 	#### The value to add to the queue.
-	@public @method enqueue value {
+	@virtual @public @method enqueue value {
 		@this.used=1
 		@this._lock
 		if [[ @this.encrypted -eq 1 ]]; then
@@ -82,7 +82,7 @@ fi
 
 	##METHOD public dequeue
 	### Removes the front element from the queue and echoes it.
-	@public @method dequeue {
+	@virtual @public @method dequeue {
 		@this.used=1
 		@this._lock
 		@this._get_front
@@ -96,7 +96,7 @@ fi
 
 	##METHOD public front
 	### Echoes the front element of the queue without removing it.
-	@public @method front {
+	@virtual @public @method front {
 		@this.used=1
 		@this._lock
 		@this._get_front
@@ -109,7 +109,7 @@ fi
 
 	##METHOD public back
 	### Echoes the back element of the queue without removing it.
-	@public @method back {
+	@virtual @public @method back {
 		@this.used=1
 		@this._lock
 		@this._get_back
@@ -122,7 +122,7 @@ fi
 
 	##METHOD public clear
 	### Removes all elements from the queue.
-	@public @method clear {
+	@virtual @public @method clear {
 		@this._lock
 		> "@this.object_file"
 		@this._unlock
@@ -130,7 +130,7 @@ fi
 
 	##METHOD public empty
 	### Echoes "true" if the queue is empty, "false" otherwise.
-	@public @method empty {
+	@virtual @public @method empty {
 		@this._lock
 		if [[ -z $(head -n 1 "@this.object_file") ]]; then
 			echo "true"

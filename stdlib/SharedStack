@@ -36,7 +36,7 @@ fi
 @class SharedStack : SharedObject {
 	##METHOD public size
 	### Echoes the number of elements in the stack.
-	@public @method size {
+	@virtual @public @method size {
 		wc -l 2>/dev/null < @this.object_file || echo 0
 	}
 
@@ -44,7 +44,7 @@ fi
 	### Pushes a value onto the top of the stack.
 	###PARAM primitive value
 	#### The value to push onto the top of the stack.
-	@public @method push value {
+	@virtual @public @method push value {
 		@this.used=1
 		@this._lock
 		if [[ @this.encrypted -eq 1 ]]; then
@@ -70,7 +70,7 @@ fi
 
 	##METHOD public pop
 	### Pops the top element off the stack and echoes it.
-	@public @method pop {
+	@virtual @public @method pop {
 		@this.used=1
 		@this._lock
 
@@ -86,7 +86,7 @@ fi
 
 	##METHOD public top
 	### Echoes the top element of the stack without removing it.
-	@public @method top {
+	@virtual @public @method top {
 		@this.used=1
 		@this._lock
 
@@ -101,7 +101,7 @@ fi
 
 	##METHOD public clear
 	### Removes all elements from the stack.
-	@public @method clear {
+	@virtual @public @method clear {
 		@this._lock
 		> "@this.object_file"
 		@this._unlock
@@ -109,7 +109,7 @@ fi
 
 	##METHOD public empty
 	### Echoes "true" if the stack is empty, "false" otherwise.
-	@public @method empty {
+	@virtual @public @method empty {
 		@this._lock
 		if [[ -z $(head -n 1 "@this.object_file") ]]; then
 			echo "true"

@@ -109,7 +109,8 @@ inline constexpr const char* protected_keywords[] = {
 			"class", "constructor", "delete", "destructor",
 			"dynamic_cast", "include", "include_once", "method",
 			"new", "nullptr", "primitive", "private",
-			"protected", "public", "super", "this", "virtual"
+			"protected", "public", "super", "this",
+			"typeof", "virtual"
 		};
 
 /**

@@ -75,7 +75,7 @@ static const char* bpp_dynamic_cast = R"EOF(function bpp____dynamic__cast() {
 	done
 	local __vTable="${__this}____vPointer"
 	if ! eval "declare -p \"${__vTable}\"" &>/dev/null; then
-		return
+		return 1
 	fi
 	while [[ ! -z "${!__vTable}" ]] 2>/dev/null; do
 		[[ "${!__vTable}" == "bpp__${__type}____vTable" ]] && eval "${__outputVar}=\"${__this}\"" && return 0

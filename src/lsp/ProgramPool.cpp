@@ -202,6 +202,12 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::re_parse_program(const std::strin
 	if (has_program(file_path)) {
 		size_t index = program_indices[file_path];
 		std::string main_source_file = programs[index]->get_main_source_file();
+
+		auto new_program = _parse_program(main_source_file);
+		if (new_program == nullptr) {
+			return nullptr; // Return nullptr if parsing fails
+		}
+
 		programs[index] = _parse_program(main_source_file);
 		open_files[file_path] = true; // Mark the file as open
 
@@ -221,6 +227,13 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::re_parse_program(
 	if (has_program(file_path)) {
 		size_t index = program_indices[file_path];
 		std::string main_source_file = programs[index]->get_main_source_file();
+
+		auto new_program = _parse_program(main_source_file, replacement_file_contents);
+
+		if (new_program == nullptr) {
+			return nullptr; // Return nullptr if parsing fails
+		}
+
 		programs[index] = _parse_program(main_source_file, replacement_file_contents);
 		open_files[file_path] = true; // Mark the file as open
 

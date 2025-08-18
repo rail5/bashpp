@@ -1,0 +1,50 @@
+@include "../../../stdlib/TypedSharedQueue"
+
+@class Object {
+	@public member="default value"
+}
+
+@class DerivedObject : Object {
+	@public member="derived value"
+}
+
+@class Unrelated {
+	@public member="unrelated"
+}
+
+@Object obj1
+@DerivedObject obj2
+@Unrelated unrelatedObj
+
+# SINGLE-PROCESS, UNENCRYPTED QUEUE TEST
+
+@TypedSharedQueue queue
+@queue.set_type "Object"
+@queue.setEncrypted 0
+@queue.size # 0
+@queue.enqueue &@obj1
+@queue.enqueue &@obj2
+@queue.enqueue &@unrelatedObj # Error
+@queue.size # 2
+@queue.empty # false
+@queue.front # obj1 pointer
+@queue.back # obj2 pointer
+@queue.dequeue # obj1 pointer
+@queue.front # obj2 pointer
+@queue.back # obj2 pointer
+@queue.size # 1
+@queue.dequeue # obj2 pointer
+@queue.size # 0
+@queue.empty # true
+@queue.front # No output
+@queue.back # No output
+
+@delete @queue
+
+# The remaining tests (multi-process, encrypted) will always yield exactly the same results
+# 	as the tests for stdlib-sharedqueues
+# In other words:
+# 	If multi-process and encrypted tests pass for stdlib-sharedqueues,
+# 	AND the single-process unencrypted tests pass for stdlib-typedsharedqueues,
+# 	then the multi-process and encrypted tests for stdlib-typedsharedqueues are guaranteed to pass as well.
+# Therefore, we skip them here to avoid redundancy.

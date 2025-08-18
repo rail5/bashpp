@@ -1,0 +1,45 @@
+@include "../../../stdlib/TypedSharedStack"
+
+@class Object {
+	@public member="default value"
+}
+
+@class DerivedObject : Object {
+	@public member="derived value"
+}
+
+@class Unrelated {
+	@public member="unrelated"
+}
+
+@Object obj1
+@DerivedObject obj2
+@Unrelated unrelatedObj
+
+# SINGLE-PROCESS, UNENCRYPTED STACK TEST
+@TypedSharedStack stack
+@stack.set_type "Object"
+@stack.setEncrypted 0
+
+@stack.size # 0
+@stack.push &@obj1
+@stack.push &@obj2
+@stack.push &@unrelatedObj # Error
+@stack.size # 2
+@stack.empty # false
+@stack.top # obj2 pointer
+@stack.pop # obj2 pointer
+@stack.size # 1
+@stack.pop # obj1 pointer
+@stack.size # 0
+@stack.empty # true
+
+@delete @stack
+
+# The remaining tests (multi-process, encrypted) will always yield exactly the same results
+# 	as the tests for stdlib-sharedstacks
+# In other words:
+# 	If multi-process and encrypted tests pass for stdlib-sharedstacks,
+# 	AND the single-process unencrypted tests pass for stdlib-typedsharedstacks,
+# 	then the multi-process and encrypted tests for stdlib-typedsharedstacks are guaranteed to pass as well.
+# Therefore, we skip them here to avoid redundancy.

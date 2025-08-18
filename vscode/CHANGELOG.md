@@ -1,5 +1,13 @@
 # Change Log
 
+## [0.7.0]
+
+- Brought syntax rules up to speed with Bash++ v0.7.0 by adding support for the `@typeof` keyword
+  - The `@typeof` directive can be used to determine the type of an object at runtime.
+  - It can be used in various contexts, such as in `if` statements or variable assignments.
+  - The syntax is: `@typeof {INPUT}`, where `{INPUT}` can be any rvalue, but should be a pointer to an object.
+  - The output will be the class name of the object if the input is a valid pointer, or an empty string otherwise.
+
 ## [0.5.5]
 
 - Syntax highlighting: properly identify class and object names in object instantations and pointer declarations

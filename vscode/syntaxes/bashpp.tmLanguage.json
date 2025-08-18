@@ -863,7 +863,7 @@
 		"bashpp-keyword": {
 			"patterns": [
 				{
-					"match": "(?<!\\\\)(?:@new|@delete|@nullptr|@include_once|@include|@this|@super)(?=\\s|\\(|$)",
+					"match": "(?<!\\\\)(?:@new|@delete|@nullptr|@include_once|@include|@this|@super|@typeof)(?=\\s|\\(|$)",
 					"name": "keyword.other.bashpp"
 				},
 				{
@@ -918,15 +918,15 @@
 					"comment": "Matches the class name after '@new'"
 				},
 				{
-					"match": "(?<!\\\\)(@(?!class\\b)(?!public\\b)(?!private\\b)(?!protected\\b)(?!virtual\\b)(?!method\\b)(?!constructor\\b)(?!destructor\\b)(?!new\\b)(?!delete\\b)(?!nullptr\\b)(?!include_once\\b)(?!include\\b)(?!.*__)[a-zA-Z_][a-zA-Z0-9_]*)\\*?\\s+((?!.*__)[a-zA-Z_][a-zA-Z0-9_]*)",
+					"match": "(?<!\\\\)(@(?!class\\b)(?!public\\b)(?!private\\b)(?!protected\\b)(?!virtual\\b)(?!method\\b)(?!constructor\\b)(?!destructor\\b)(?!new\\b)(?!delete\\b)(?!nullptr\\b)(?!include_once\\b)(?!include\\b)(?!typeof\\b)(?!.*__)[a-zA-Z_][a-zA-Z0-9_]*)\\*?\\s+((?!.*__)[a-zA-Z_][a-zA-Z0-9_]*)",
 					"captures": {
 						"1": {
 							"name": "entity.name.type.class.bashpp",
-							"comment": "Matches the class name in an object instantiation, e.g. @ClassName object"
+							"comment": "Matches the class name in an object instantiation or pointer declaration, e.g. @ClassName object or @ClassName* pointer"
 						},
 						"2": {
 							"name": "variable.other.normal.bashpp",
-							"comment": "Matches te object name in an object instantiation, e.g @type ObjectName"
+							"comment": "Matches the object name in an object instantiation or pointer declaration, e.g @type ObjectName or @type* PointerName"
 						}
 					}
 				}
@@ -1386,7 +1386,7 @@
 							"name": "punctuation.definition.variable.bashpp"
 						}
 					},
-					"match": "(?<!\\\\)(@)(?!class\\b)(?!public\\b)(?!private\\b)(?!protected\\b)(?!virtual\\b)(?!method\\b)(?!constructor\\b)(?!destructor\\b)(?!new\\b)(?!delete\\b)(?!nullptr\\b)(?!include_once\\b)(?!include\\b)((?!__)[a-zA-Z_]([a-zA-Z0-9_]*\\.?)*)",
+					"match": "(?<!\\\\)(@)(?!class\\b)(?!public\\b)(?!private\\b)(?!protected\\b)(?!virtual\\b)(?!method\\b)(?!constructor\\b)(?!destructor\\b)(?!new\\b)(?!delete\\b)(?!nullptr\\b)(?!include_once\\b)(?!include\\b)(?!typeof\\b)((?!__)[a-zA-Z_]([a-zA-Z0-9_]*\\.?)*)",
 					"name": "variable.other.normal.bashpp",
 					"comment": "Matches a full object reference, as in @object.innerObject.method"
 				},

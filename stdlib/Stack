@@ -12,7 +12,7 @@
 
 	##METHOD public size
 	### Echoes the number of elements in the stack.
-	@public @method size {
+	@virtual @public @method size {
 		echo "@{#this.stack[@]}"
 	}
 
@@ -20,13 +20,13 @@
 	### Pushes a value onto the top of the stack.
 	###PARAM primitive value
 	#### The value to push onto the top of the stack.
-	@public @method push value {
+	@virtual @public @method push value {
 		@this.stack+=("$value")
 	}
 
 	##METHOD public pop
 	### Pops the top element off the stack and echoes it.
-	@public @method pop {
+	@virtual @public @method pop {
 		if [[ @{#this.stack[@]} -gt 0 ]]; then
 			echo "@{this.stack[$((@{#this.stack[@]} - 1))]}"
 			unset &@this.stack[$((@{#this.stack[@]} - 1))]
@@ -35,7 +35,7 @@
 
 	##METHOD public top
 	### Echoes the top element of the stack.
-	@public @method top {
+	@virtual @public @method top {
 		if [[ @{#this.stack[@]} -gt 0 ]]; then
 			echo "@{this.stack[$((@{#this.stack[@]} - 1))]}"
 		fi
@@ -43,13 +43,13 @@
 
 	##METHOD public clear
 	### Removes all elements from the stack.
-	@public @method clear {
+	@virtual @public @method clear {
 		unset &@this.stack
 	}
 
 	##METHOD public empty
 	### Echoes "true" if the stack is empty, "false" otherwise.
-	@public @method empty {
+	@virtual @public @method empty {
 		[[ @{#this.stack[@]} -eq 0 ]] && echo "true" || echo "false"
 	}
 }

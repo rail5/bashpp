@@ -12,7 +12,7 @@
 
 	##METHOD public size
 	### Echoes the number of elements in the array.
-	@public @method size {
+	@virtual @public @method size {
 		echo "@{#this.array[@]}"
 	}
 
@@ -20,13 +20,13 @@
 	### Adds a value to the end of the array.
 	###PARAM primitive value
 	#### The value to add to the array.
-	@public @method push value {
+	@virtual @public @method push value {
 		@this.array+=("$value")
 	}
 
 	##METHOD public pop
 	### Removes and echoes the last element of the array.
-	@public @method pop {
+	@virtual @public @method pop {
 		if [[ @{#this.array[@]} -gt 0 ]]; then
 			echo "@{this.array[-1]}"
 			unset &@this.array[-1]
@@ -41,7 +41,7 @@
 	#### The index at which to insert the value.
 	###PARAM primitive value
 	#### The value to insert into the array.
-	@public @method insert index value {
+	@virtual @public @method insert index value {
 		if [[ $index -lt 0 || $index -gt @{#this.array[@]} ]]; then
 			return 1
 		fi
@@ -58,7 +58,7 @@
 	### Removes the specified index from the array.
 	###PARAM primitive index
 	#### The index of the value to remove.
-	@public @method remove index {
+	@virtual @public @method remove index {
 		if [[ $index -lt 0 || $index -ge @{#this.array[@]} ]]; then
 			return 1
 		fi
@@ -70,13 +70,13 @@
 	### Gets the value at a specific index.
 	###PARAM primitive index
 	#### The index of the value to retrieve.
-	@public @method at index {
+	@virtual @public @method at index {
 		echo "@{this.array[$index]}"
 	}
 
 	##METHOD public front
 	### Echoes the first element of the array.
-	@public @method front {
+	@virtual @public @method front {
 		if [[ @{#this.array[@]} -gt 0 ]]; then
 			echo "@{this.array[0]}"
 		else
@@ -86,7 +86,7 @@
 
 	##METHOD public back
 	### Echoes the last element of the array.
-	@public @method back {
+	@virtual @public @method back {
 		if [[ @{#this.array[@]} -gt 0 ]]; then
 			echo "@{this.array[-1]}"
 		else
@@ -96,7 +96,7 @@
 
 	##METHOD public all
 	### Echoes all elements of the array.
-	@public @method all {
+	@virtual @public @method all {
 		if [[ @{#this.array[@]} -gt 0 ]]; then
 			echo "@{this.array[@]}"
 		else
@@ -106,8 +106,14 @@
 
 	##METHOD public empty
 	### Echoes "true" if the array is empty, "false" otherwise.
-	@public @method empty {
-		[[ @{#this.array[@]} -eq 0 ]] && echo "true" || echo "false"
+	@virtual @public @method empty {
+		if [[ @{#this.array[@]} -eq 0 ]]; then
+			echo "true"
+			return 0
+		else
+			echo "false"
+			return 1
+		fi
 	}
 
 	##METHOD public slice
@@ -116,7 +122,7 @@
 	#### The starting index of the slice (inclusive).
 	###PARAM primitive end
 	#### The ending index of the slice (inclusive).
-	@public @method slice start end {
+	@virtual @public @method slice start end {
 		if [[ $start -gt $end || @{#this.array[@]} -eq 0 ]]; then
 			return 1
 		fi
@@ -132,7 +138,7 @@
 
 	##METHOD public clear
 	### Removes all elements from the array.
-	@public @method clear {
+	@virtual @public @method clear {
 		unset &@this.array
 	}
 }

@@ -19,21 +19,27 @@
 
 	##METHOD public size
 	### Echoes the number of elements in the queue.
-	@public @method size {
+	@virtual @public @method size {
 		echo "@this.queueSize"
 	}
 
 	##METHOD public empty
 	### Echoes "true" if the queue is empty, "false" otherwise.
-	@public @method empty {
-		[[ @this.queueSize -eq 0 ]] && echo "true" || echo "false"
+	@virtual @public @method empty {
+		if [[ @this.queueSize -eq 0 ]]; then 
+			echo "true"
+			return 0
+		else
+			echo "false"
+			return 1
+		fi
 	}
 
 	##METHOD public enqueue
 	### Adds a value to the end of the queue.
 	###PARAM primitive value
 	#### The value to add to the queue.
-	@public @method enqueue value {
+	@virtual @public @method enqueue value {
 		@QueueNode* node=@new QueueNode
 		@node.data="$value"
 
@@ -50,7 +56,7 @@
 
 	##METHOD public dequeue
 	### Removes and echoes the value at the front of the queue.
-	@public @method dequeue {
+	@virtual @public @method dequeue {
 		if [[ @this.queueSize -gt 0 ]]; then
 			@QueueNode* node=@this.head
 			@this.head=@this.head.next
@@ -62,7 +68,7 @@
 
 	##METHOD public front
 	### Echoes the value at the front of the queue.
-	@public @method front {
+	@virtual @public @method front {
 		if [[ @this.queueSize -gt 0 ]]; then
 			echo "@this.head.data"
 		fi
@@ -70,7 +76,7 @@
 
 	##METHOD public back
 	### Echoes the value at the back of the queue.
-	@public @method back {
+	@virtual @public @method back {
 		if [[ @this.queueSize -gt 0 ]]; then
 			echo "@this.tail.data"
 		fi
@@ -78,7 +84,7 @@
 
 	##METHOD public clear
 	### Removes all elements from the queue.
-	@public @method clear {
+	@virtual @public @method clear {
 		local size=@this.queueSize
 		while [[ $size -gt 0 ]]; do
 			@this.dequeue >/dev/null

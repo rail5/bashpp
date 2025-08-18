@@ -1,0 +1,15 @@
+@class Object {
+	@public member="Object"
+}
+
+shell_var="Object"
+
+@Object obj
+
+@Object* castedObj=@dynamic_cast<$shell_var> &@obj # Successful cast of obj to 'Object'
+
+@Object* castedObj2=@dynamic_cast<@obj.member> &@obj # Successful cast of obj to 'Object'
+
+@obj.member="NotARealClass"
+
+@castedObj=@dynamic_cast<@obj.member> &@obj # Failed cast, no class called 'NotARealClass' exists, returns @nullptr

@@ -10,6 +10,8 @@ title: Dynamic Cast
 
 ```bash
 @dynamic_cast<CLASS-NAME[*]> {INPUT}
+@dynamic_cast<$shell_variable> {INPUT}
+@dynamic_cast<@object.reference> {INPUT}
 ```
 
 # DESCRIPTION
@@ -21,10 +23,32 @@ The **output** of the `@dynamic_cast` directive will be either:
  - **An exact copy of INPUT** if the input is a valid pointer to an object which can be safely cast to the specified type.
  - `@nullptr` otherwise.
 
+# TARGETS
+
+The target of the `@dynamic_cast` directive is the type to which you want to cast the object. The target is given in the `<...>` bracket pair and can be one of the following:
+
+ - A class name, optionally followed by an asterisk (`*`)
+ - A shell variable, which contains the name of the target class
+ - An object reference, whose output will be the name of the target class
+
+If a class name is given directly, the compiler will emit a warning if the class is not defined in the current context.
+
+If a shell variable or object reference is given, the compiler will expect to resolve the class name at runtime.
+
+If an object reference is given, it can refer to either a data member or a method. I.e., all kinds of object references are acceptable here. If the reference refers to a method, that method will be implicitly executed in a supershell, and its output will be treated as the target class name.
+
 # EXAMPLE
+
+The safest way to use `@dynamic_cast` is to specify the target class name directly:
 
 <div class="highlight"><pre class="highlight"><code>
 {%- include code/snippets/manual-dynamic-cast-example-1.html -%}
+</code></pre></div>
+
+However, we can also give a shell variable or an object reference as the target class. In this case, no warnings will be emitted, and the class name will be resolved at runtime:
+
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/manual-dynamic-cast-example-2.html -%}
 </code></pre></div>
 
 # NOTES

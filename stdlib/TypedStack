@@ -1,0 +1,52 @@
+#!/usr/bin/env bpp
+#AUTODOC#
+
+# Copyright (C) 2025 Andrew S. Rightenburg
+# GNU General Public License v3.0
+# This file is part of the Bash++ Standard Library.
+
+@include_once "Stack"
+
+#CLASS TypedStack : Stack
+## The TypedStack class provides a stack implementation which enforces type restrictions on its elements.
+## After setting the stack's type, all elements must be pointers to objects of that type or its subclasses.
+@class TypedStack : Stack {
+	@protected type=""
+	@protected used=0
+
+	##METHOD public set_type
+	### Sets the type of elements that this stack will hold.
+	### This method must be called before adding elements to the stack.
+	### The stack's type cannot be changed after elements have been added.
+	###PARAM primitive type
+	#### The type to enforce for the elements of this stack.
+	@virtual @public @method set_type type {
+		if [[ @this.used -ne 0 ]]; then
+			>&2 echo "Error: TypedStack: Cannot change type after the stack has been used."
+			return 1
+		fi
+		@this.type="$type"
+	}
+
+	@protected @method _check_type value {
+		local check=@dynamic_cast<@this.type> "$value"
+		if [[ "$check" == @nullptr ]]; then
+			>&2 echo "Error: TypedStack: Value '$value' is not of type '@this.type'."
+			return 1
+		fi
+		return 0
+	}
+
+	##METHOD public push
+	### Adds a value to the top of the stack, enforcing the specified type.
+	###PARAM primitive value
+	#### The value to add to the stack.
+	@public @method push value {
+		@this.used=1
+		if @this._check_type "$value"; then
+			@super.push "$value"
+		else
+			return 1
+		fi
+	}
+}

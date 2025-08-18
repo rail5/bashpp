@@ -9,9 +9,16 @@ void BashppListener::enterDynamic_cast_statement(BashppParser::Dynamic_cast_stat
 	skip_syntax_errors
 	/**
 	 * Dynamic cast statements take the form
-	 * 	@dynamic_cast<ClassName> Object
-	 * Where ClassName is the name of the class to cast to
-	 * And Object is the object to cast
+	 * 	@dynamic_cast<ClassName> Pointer
+	 * or:
+	 *  @dynamic_cast<$shell_variable> Pointer
+	 * or:
+	 *  @dynamic_cast<@object.reference> Pointer
+	 * Where Pointer is what we're casting
+	 *
+	 * If the cast is in the first form, ClassName refers to the class we're casting to
+	 * If it's in the second or third form, we expect that the class we're casting to will be evaluated at runtime
+	 * Ie, the class name is contained in the shell variable or object reference
 	 * 
 	 * This statement performs a runtime check to verify the cast is valid
 	 * And substitutes either the address of the cast object or the @nullptr value
@@ -25,22 +32,6 @@ void BashppListener::enterDynamic_cast_statement(BashppParser::Dynamic_cast_stat
 	std::shared_ptr<bpp::bpp_dynamic_cast_statement> dynamic_cast_entity = std::make_shared<bpp::bpp_dynamic_cast_statement>();
 	dynamic_cast_entity->set_containing_class(current_code_entity->get_containing_class());
 	dynamic_cast_entity->inherit(current_code_entity);
-
-	// Verify that the class actually exists
-	std::string class_name = ctx->IDENTIFIER()->getText();
-	std::shared_ptr<bpp::bpp_class> cast_class = current_code_entity->get_class(class_name);
-
-	if (cast_class == nullptr) {
-		throw_syntax_error(ctx->IDENTIFIER(), "Class not found: " + class_name);
-	}
-
-	dynamic_cast_entity->set_cast_to(cast_class);
-
-	cast_class->add_reference(
-		source_file,
-		ctx->IDENTIFIER()->getSymbol()->getLine() - 1,
-		ctx->IDENTIFIER()->getSymbol()->getCharPositionInLine()
-	);
 
 	entity_stack.push(dynamic_cast_entity);
 }
@@ -59,7 +50,11 @@ void BashppListener::exitDynamic_cast_statement(BashppParser::Dynamic_cast_state
 		throw internal_error("Current code entity was not found in the entity stack", ctx);
 	}
 
-	code_segment dynamic_cast_code = generate_dynamic_cast_code(dynamic_cast_entity->get_code(), dynamic_cast_entity->get_cast_to()->get_name(), program);
+	if (dynamic_cast_entity->get_cast_to().empty()) {
+		throw_syntax_error_from_exitRule(ctx, "Dynamic cast target not specified");
+	}
+
+	code_segment dynamic_cast_code = generate_dynamic_cast_code(dynamic_cast_entity->get_code(), dynamic_cast_entity->get_cast_to(), program);
 
 	current_code_entity->add_code_to_previous_line(dynamic_cast_entity->get_pre_code());
 	current_code_entity->add_code_to_previous_line(dynamic_cast_code.pre_code);

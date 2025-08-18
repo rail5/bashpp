@@ -110,7 +110,11 @@ pointer_dereference: ASTERISK ref_general;
 object_address: AMPERSAND ref_rvalue;
 
 // Casting
-dynamic_cast_statement: KEYWORD_DYNAMIC_CAST WS* LESSTHAN WS* IDENTIFIER WS* ASTERISK? WS* GREATERTHAN WS* valid_rvalue;
+dynamic_cast_statement: KEYWORD_DYNAMIC_CAST WS* LESSTHAN WS* dynamic_cast_target WS* GREATERTHAN WS* valid_rvalue;
+
+dynamic_cast_target: IDENTIFIER WS* ASTERISK?
+	| BASH_VAR
+	| ref_rvalue;
 
 // Object reference
 ref_general: ref_lvalue | ref_rvalue;

@@ -9,11 +9,11 @@ namespace bpp {
 
 bpp_dynamic_cast_statement::bpp_dynamic_cast_statement() {}
 
-void bpp_dynamic_cast_statement::set_cast_to(std::shared_ptr<bpp::bpp_class> cast_to) {
+void bpp_dynamic_cast_statement::set_cast_to(const std::string& cast_to) {
 	this->cast_to = cast_to;
 }
 
-std::shared_ptr<bpp::bpp_class> bpp_dynamic_cast_statement::get_cast_to() const {
+std::string bpp_dynamic_cast_statement::get_cast_to() const {
 	return cast_to;
 }
 

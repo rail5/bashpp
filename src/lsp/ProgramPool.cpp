@@ -208,7 +208,7 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::re_parse_program(const std::strin
 			return nullptr; // Return nullptr if parsing fails
 		}
 
-		programs[index] = _parse_program(main_source_file);
+		programs[index] = new_program;
 		open_files[file_path] = true; // Mark the file as open
 
 		update_snapshot();
@@ -234,7 +234,7 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::re_parse_program(
 			return nullptr; // Return nullptr if parsing fails
 		}
 
-		programs[index] = _parse_program(main_source_file, replacement_file_contents);
+		programs[index] = new_program;
 		open_files[file_path] = true; // Mark the file as open
 
 		update_snapshot();

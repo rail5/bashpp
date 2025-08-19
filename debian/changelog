@@ -1,3 +1,15 @@
+bpp (0.7.1) unstable; urgency=medium
+
+  * Compile with C++23 standard
+  * bpp-lsp: Eliminate deadlock potential in ProgramPool
+    Restrict ourselves to only one mutex, and use atomic operations on
+    the snapshot state instead of relying on a secondary mutex which
+    could otherwise potentially cause deadlock
+  * bpp-lsp: Bug fix: avoid re-parsing twice
+  * docs: Cleaned up synopsis on manual page for 'typeof'
+
+ -- rail5 <andrew@rail5.org>  Tue, 19 Aug 2025 23:48:06 +0800
+
 bpp (0.7.0) unstable; urgency=medium
 
   * bpp: Added typeof operator: Returns a pointer's class name as a

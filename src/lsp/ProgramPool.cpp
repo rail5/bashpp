@@ -41,14 +41,6 @@ void ProgramPool::_remove_oldest_program() {
 	_remove_program(0);
 }
 
-const ProgramPool::Snapshot& ProgramPool::load_snapshot() const  {
-	return *std::atomic_load_explicit(&_snapshot, std::memory_order_acquire);
-}
-
-void ProgramPool::_set_snapshot(std::shared_ptr<const Snapshot> new_snapshot)  {
-	std::atomic_store_explicit(&_snapshot, new_snapshot, std::memory_order_release);
-}
-
 void ProgramPool::update_snapshot() {
 	auto new_snapshot = std::make_shared<Snapshot>();
 	{
@@ -57,7 +49,15 @@ void ProgramPool::update_snapshot() {
 		new_snapshot->program_indices_snapshot = program_indices;
 		new_snapshot->open_files_snapshot = open_files;
 	}
-	_set_snapshot(new_snapshot); // Update the snapshot atomically
+	snapshot.store(new_snapshot, std::memory_order_release);
+}
+
+ProgramPool::Snapshot ProgramPool::load_snapshot() const {
+	auto current_snapshot = snapshot.load(std::memory_order_acquire);
+	if (current_snapshot == nullptr) {
+		return ProgramPool::Snapshot{}; // return a default-constructed copy
+	}
+	return *current_snapshot; // Return a **copy** of the pointed-to Snapshot
 }
 
 void ProgramPool::_remove_program(size_t index) {
@@ -162,10 +162,10 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::get_program(const std::string& fi
 		// Skip getting a lock on the pool's main state, since we're not modifying it
 		// Instead, read from the snapshot
 		// And REFUSE to modify the pool if the file isn't already in it
-		Snapshot snapshot = load_snapshot();
-		auto it = snapshot.program_indices_snapshot.find(file_path);
-		if (it != snapshot.program_indices_snapshot.end()) {
-			return snapshot.programs_snapshot[it->second];
+		Snapshot snapshot_copy = load_snapshot();
+		auto it = snapshot_copy.program_indices_snapshot.find(file_path);
+		if (it != snapshot_copy.program_indices_snapshot.end()) {
+			return snapshot_copy.programs_snapshot[it->second];
 		} else {
 			return nullptr;
 		}
@@ -205,8 +205,8 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::get_program(const std::string& fi
 
 bool ProgramPool::has_program(const std::string& file_path) {
 	// Scan the SNAPSHOT for the program
-	Snapshot snapshot = load_snapshot();
-	const auto& program_indices_snapshot = snapshot.program_indices_snapshot;
+	Snapshot snapshot_copy = load_snapshot();
+	const auto& program_indices_snapshot = snapshot_copy.program_indices_snapshot;
 	return program_indices_snapshot.find(file_path) != program_indices_snapshot.end();
 }
 

@@ -5,7 +5,7 @@ ANTLR4_RUNTIME_LIBRARY = $(shell (find /usr -name libantlr4-runtime.a || find /u
 
 # C++ CONFIG
 CXX = g++
-CXXFLAGS = -std=gnu++17 -O2 -s -Wall -MMD -MP
+CXXFLAGS = -std=gnu++23 -O2 -s -Wall -MMD -MP
 INCLUDEFLAGS = -isystem $(ANTLR4_HEADERS)
 
 # Can we parse debian/changelog?

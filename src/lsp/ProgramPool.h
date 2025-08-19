@@ -47,10 +47,7 @@ class ProgramPool {
 			std::unordered_map<std::string, size_t> program_indices_snapshot; // Snapshot of the current program indices
 			std::unordered_map<std::string, bool> open_files_snapshot; // Snapshot of the current open files
 		};
-		std::shared_ptr<const Snapshot> _snapshot = std::make_shared<Snapshot>(); // DO NOT access directly
-			// Use the following member functions instead:
-		const Snapshot& load_snapshot() const;
-		void _set_snapshot(std::shared_ptr<const Snapshot> new_snapshot);
+		std::atomic<std::shared_ptr<Snapshot>> snapshot; // Atomic snapshot for thread-safe access
 
 		bool utf16_mode = false; // Whether to use UTF-16 mode for character counting
 
@@ -65,6 +62,7 @@ class ProgramPool {
 		bool suppress_warnings = false;
 
 		void update_snapshot();
+		Snapshot load_snapshot() const;
 	public:
 		explicit ProgramPool(size_t max_programs = 10);
 

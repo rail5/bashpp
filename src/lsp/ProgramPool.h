@@ -42,10 +42,15 @@ class ProgramPool {
 		std::recursive_mutex pool_mutex; // Mutex to protect access to the pool
 
 		// Pool snapshots:
-		std::vector<std::shared_ptr<bpp::bpp_program>> programs_snapshot; // Snapshot of the current programs in the pool
-		std::unordered_map<std::string, size_t> program_indices_snapshot; // Snapshot of the current program indices
-		std::unordered_map<std::string, bool> open_files_snapshot; // Snapshot of the current open files
-		std::recursive_mutex snapshot_mutex; // Mutex to protect access to the snapshots
+		struct Snapshot {
+			std::vector<std::shared_ptr<bpp::bpp_program>> programs_snapshot; // Snapshot of the current programs in the pool
+			std::unordered_map<std::string, size_t> program_indices_snapshot; // Snapshot of the current program indices
+			std::unordered_map<std::string, bool> open_files_snapshot; // Snapshot of the current open files
+		};
+		std::shared_ptr<const Snapshot> _snapshot = std::make_shared<Snapshot>(); // DO NOT access directly
+			// Use the following member functions instead:
+		const Snapshot& load_snapshot() const;
+		void _set_snapshot(std::shared_ptr<const Snapshot> new_snapshot);
 
 		bool utf16_mode = false; // Whether to use UTF-16 mode for character counting
 

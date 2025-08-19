@@ -41,11 +41,23 @@ void ProgramPool::_remove_oldest_program() {
 	_remove_program(0);
 }
 
+const ProgramPool::Snapshot& ProgramPool::load_snapshot() const  {
+	return *std::atomic_load_explicit(&_snapshot, std::memory_order_acquire);
+}
+
+void ProgramPool::_set_snapshot(std::shared_ptr<const Snapshot> new_snapshot)  {
+	std::atomic_store_explicit(&_snapshot, new_snapshot, std::memory_order_release);
+}
+
 void ProgramPool::update_snapshot() {
-	std::lock_guard<std::recursive_mutex> snapshot_lock(snapshot_mutex);
-	programs_snapshot = programs; // Copy the current programs state
-	program_indices_snapshot = program_indices; // Copy the current program indices state
-	open_files_snapshot = open_files; // Copy the current open files state
+	auto new_snapshot = std::make_shared<Snapshot>();
+	{
+		std::lock_guard<std::recursive_mutex> lock(pool_mutex);
+		new_snapshot->programs_snapshot = programs;
+		new_snapshot->program_indices_snapshot = program_indices;
+		new_snapshot->open_files_snapshot = open_files;
+	}
+	_set_snapshot(new_snapshot); // Update the snapshot atomically
 }
 
 void ProgramPool::_remove_program(size_t index) {
@@ -148,12 +160,12 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::get_program(const std::string& fi
 	if (jump_queue) {
 		// Jump the queue:
 		// Skip getting a lock on the pool's main state, since we're not modifying it
-		// Instead, get a lock on the snapshot
+		// Instead, read from the snapshot
 		// And REFUSE to modify the pool if the file isn't already in it
-		std::lock_guard<std::recursive_mutex> lock(snapshot_mutex);
-		auto it = program_indices_snapshot.find(file_path);
-		if (it != program_indices_snapshot.end()) {
-			return programs_snapshot[it->second];
+		Snapshot snapshot = load_snapshot();
+		auto it = snapshot.program_indices_snapshot.find(file_path);
+		if (it != snapshot.program_indices_snapshot.end()) {
+			return snapshot.programs_snapshot[it->second];
 		} else {
 			return nullptr;
 		}
@@ -193,56 +205,58 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::get_program(const std::string& fi
 
 bool ProgramPool::has_program(const std::string& file_path) {
 	// Scan the SNAPSHOT for the program
-	std::lock_guard<std::recursive_mutex> lock(snapshot_mutex);
+	Snapshot snapshot = load_snapshot();
+	const auto& program_indices_snapshot = snapshot.program_indices_snapshot;
 	return program_indices_snapshot.find(file_path) != program_indices_snapshot.end();
 }
 
 std::shared_ptr<bpp::bpp_program> ProgramPool::re_parse_program(const std::string& file_path) {
-	std::lock_guard<std::recursive_mutex> lock(pool_mutex);
-	if (has_program(file_path)) {
-		size_t index = program_indices[file_path];
-		std::string main_source_file = programs[index]->get_main_source_file();
-
-		auto new_program = _parse_program(main_source_file);
-		if (new_program == nullptr) {
-			return nullptr; // Return nullptr if parsing fails
-		}
-
-		programs[index] = new_program;
-		open_files[file_path] = true; // Mark the file as open
-
-		update_snapshot();
-
-		return programs[index];
-	} else {
+	if (!has_program(file_path)) {
 		return get_program(file_path); // If it doesn't exist, create it
 	}
+
+	std::lock_guard<std::recursive_mutex> lock(pool_mutex);
+	// The program exists, so we can re-parse it
+	size_t index = program_indices[file_path];
+	std::string main_source_file = programs[index]->get_main_source_file();
+
+	auto new_program = _parse_program(main_source_file);
+	if (new_program == nullptr) {
+		return nullptr; // Return nullptr if parsing fails
+	}
+
+	programs[index] = new_program;
+	open_files[file_path] = true; // Mark the file as open
+
+	update_snapshot();
+
+	return programs[index];
 }
 
 std::shared_ptr<bpp::bpp_program> ProgramPool::re_parse_program(
 			const std::string& file_path, 
 			std::pair<std::string, std::string> replacement_file_contents
 ) {
-	std::lock_guard<std::recursive_mutex> lock(pool_mutex);
-	if (has_program(file_path)) {
-		size_t index = program_indices[file_path];
-		std::string main_source_file = programs[index]->get_main_source_file();
-
-		auto new_program = _parse_program(main_source_file, replacement_file_contents);
-
-		if (new_program == nullptr) {
-			return nullptr; // Return nullptr if parsing fails
-		}
-
-		programs[index] = new_program;
-		open_files[file_path] = true; // Mark the file as open
-
-		update_snapshot();
-
-		return programs[index];
-	} else {
+	if (!has_program(file_path)) {
 		return nullptr;
 	}
+
+	std::lock_guard<std::recursive_mutex> lock(pool_mutex);
+	size_t index = program_indices[file_path];
+	std::string main_source_file = programs[index]->get_main_source_file();
+
+	auto new_program = _parse_program(main_source_file, replacement_file_contents);
+
+	if (new_program == nullptr) {
+		return nullptr; // Return nullptr if parsing fails
+	}
+
+	programs[index] = new_program;
+	open_files[file_path] = true; // Mark the file as open
+
+	update_snapshot();
+
+	return programs[index];
 }
 
 void ProgramPool::open_file(const std::string& file_path) {
@@ -289,13 +303,10 @@ void ProgramPool::close_file(const std::string& file_path) {
 
 void ProgramPool::clean() {
 	std::lock_guard<std::recursive_mutex> lock(pool_mutex);
-	std::lock_guard<std::recursive_mutex> snapshot_lock(snapshot_mutex);
 
 	programs.clear();
 	program_indices.clear();
 	open_files.clear();
 
-	programs_snapshot.clear();
-	program_indices_snapshot.clear();
-	open_files_snapshot.clear();
+	update_snapshot(); // Update the snapshot after cleaning
 }

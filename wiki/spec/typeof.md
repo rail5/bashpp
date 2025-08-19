@@ -9,11 +9,7 @@ title: Typeof
 # SYNOPSIS
 
 ```bash
-echo @typeof {INPUT}
-var=@typeof {INPUT}
-if [[ @typeof {INPUT} == "expected_type" ]]; then
-	# Do something
-fi
+@typeof {INPUT}
 ```
 
 # DESCRIPTION

@@ -50,7 +50,7 @@ bpp (0.7.0) unstable; urgency=medium
     statement, which also contains a reference to this.member
     - So, once again we generate the pre-code necessary to access it, we
     access it,
-    - AND THEN we execute the post-code necesary to clear the memory
+    - AND THEN we execute the post-code necessary to clear the memory
     - That memory having been cleared, we return from the supershell
     context to the broader assignment statement
     And we find that we no longer know where to put the rvalue.

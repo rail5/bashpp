@@ -10,6 +10,7 @@
 #include <memory>
 #include <optional>
 #include <deque>
+#include <type_traits>
 #include <antlr4-runtime.h>
 
 #include "bpp.h"
@@ -119,27 +120,41 @@ entity_reference resolve_reference_impl(
 inline entity_reference resolve_reference(
 	const std::string& file,
 	std::shared_ptr<bpp::bpp_entity> context,
-	std::deque<std::string>* identifiers,
+	auto identifiers,
 	bool declare_local,
 	std::shared_ptr<bpp::bpp_program> program
 ) {
-	std::deque<antlr4::tree::TerminalNode*> debug_nodes;
-	return resolve_reference_impl(file, context, &debug_nodes, identifiers, declare_local, program);
-}
+	// identifiers should be either:
+	// 1. std::deque<std::string>*
+	// 2. std::deque<antlr4::tree::TerminalNode*>*
 
-inline entity_reference resolve_reference(
-	const std::string& file,
-	std::shared_ptr<bpp::bpp_entity> context,
-	std::deque<antlr4::tree::TerminalNode*>* identifiers,
-	bool declare_local,
-	std::shared_ptr<bpp::bpp_program> program
-) {
-	// Extract identifier texts from the nodes
-	std::deque<std::string> identifier_texts;
-	for (const auto& node : *identifiers) {
-		identifier_texts.push_back(node->getText());
+	using ident_t = std::remove_cvref_t<decltype(identifiers)>;
+	using container_t = std::remove_pointer_t<ident_t>;
+	using value_t = typename container_t::value_type;
+
+	std::deque<antlr4::tree::TerminalNode*> node_deque;
+	std::deque<std::string> text_deque;
+
+	if constexpr (std::is_convertible_v<value_t, std::string>) {
+		// identifiers: deque<string>*
+		for (const auto& id : *identifiers) {
+			text_deque.push_back(id);
+		}
+		return resolve_reference_impl(file, context, &node_deque, &text_deque, declare_local, program);
+	} else if constexpr (std::is_convertible_v<value_t, antlr4::tree::TerminalNode*>) {
+		// identifiers: deque<TerminalNode*>*
+		for (const auto& node : *identifiers) {
+			node_deque.push_back(node);
+		}
+		for (const auto& node : node_deque) {
+			text_deque.push_back(node->getText());
+		}
+		return resolve_reference_impl(file, context, &node_deque, &text_deque, declare_local, program);
+	} else {
+		static_assert(sizeof(value_t) == 0,
+			"resolve_reference: Identifiers must be either strings or TerminalNode pointers.");
 	}
-	return resolve_reference_impl(file, context, identifiers, &identifier_texts, declare_local, program);
+
 }
 
 } // namespace bpp

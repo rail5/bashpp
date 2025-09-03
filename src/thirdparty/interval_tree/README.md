@@ -8,6 +8,7 @@ The files authored by Tim Ebbeke are:
  - `interval_tree_fwd.hpp`
  - `interval_types.hpp`
  - `tree_hooks.hpp`
+ - `optional.hpp`
  - `feature_test.hpp`
 
 The files `EntityNode.h` and `EntityMap.h` are GNU GPL v3 additions to give us a slightly higher-level abstraction for our use case.

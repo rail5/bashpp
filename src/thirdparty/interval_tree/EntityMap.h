@@ -5,7 +5,6 @@
 
 #pragma once
 #include <optional>
-#include "interval_tree.hpp"
 #include "EntityNode.h"
 
 using IntervalTree = lib_interval_tree::interval_tree<IntervalType, EntityHooks>;

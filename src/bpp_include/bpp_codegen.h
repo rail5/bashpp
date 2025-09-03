@@ -125,8 +125,8 @@ inline entity_reference resolve_reference(
 	std::shared_ptr<bpp::bpp_program> program
 ) {
 	// identifiers should be either:
-	// 1. std::deque<std::string>*
-	// 2. std::deque<antlr4::tree::TerminalNode*>*
+	// 1. A pointer to a container of strings (eg, std::deque<std::string>*)
+	// 2. A pointer to a container of antlr4::tree::TerminalNode* (eg, std::deque<antlr4::tree::TerminalNode*>*)
 
 	using ident_t = std::remove_cvref_t<decltype(identifiers)>;
 	using container_t = std::remove_pointer_t<ident_t>;

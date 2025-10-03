@@ -166,29 +166,35 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 			std::shared_ptr<bpp::bpp_pointer_dereference> pointer_dereference = std::dynamic_pointer_cast<bpp::bpp_pointer_dereference>(current_code_entity);
 
 			if (pointer_dereference != nullptr && ref.entity->get_class() != primitive) {
-				// Are we in a value assignment?
-				if (value_assignment_entity != nullptr) {
-					// TODO(@rail5): Non-primitive copies
+				// We're dereferencing a pointer
+				// If this pointer dereference is part of a larger value assignment, we need to handle it differently
+				// Ie, @object=*@pointer should copy the object pointed to by @pointer into @object
+				// In other contexts, however, e.g., echo *@pointer, dereferencing the pointer means calling the .toPrimitive method
+				if (pointer_dereference->get_value_assignment() != nullptr) {
+					pointer_dereference->add_code_to_previous_line(self_reference_entity->get_pre_code());
+					pointer_dereference->add_code_to_next_line(self_reference_entity->get_post_code());
+					pointer_dereference->get_value_assignment()->set_nonprimitive_assignment(true);
+					pointer_dereference->get_value_assignment()->set_nonprimitive_object(std::dynamic_pointer_cast<bpp::bpp_object>(ref.entity));
+				} else {
+					// Call .toPrimitive in a supershell and substitute the result
+					code_segment method_call_code = generate_method_call_code("${" + indirection + ref.reference_code.code + "}", "toPrimitive", ref.entity->get_class(), force_static_reference, program);
+
+					code_segment method_code = generate_supershell_code(method_call_code.full_code(), in_while_condition, current_while_condition, program);
+					self_reference_entity->add_code_to_previous_line(method_code.pre_code);
+					self_reference_entity->add_code_to_next_line(method_code.post_code);
+					self_reference_entity->add_code(method_code.code);
+
+					current_code_entity->add_code_to_previous_line(self_reference_entity->get_pre_code());
+					current_code_entity->add_code_to_next_line(self_reference_entity->get_post_code());
+					current_code_entity->add_code(self_reference_entity->get_code());
+
+					// Show a warning if we're doing a dynamic_cast
+					std::shared_ptr<bpp::bpp_dynamic_cast_statement> dynamic_cast_entity = std::dynamic_pointer_cast<bpp::bpp_dynamic_cast_statement>(current_code_entity);
+					if (dynamic_cast_entity != nullptr) {
+						show_warning(this_keyword, "Dynamic casting the result of .toPrimitive may not be what you want\nDid you mean to take the address of the object?");
+					}
 					return;
 				}
-				// Call .toPrimitive in a supershell and substitute the result
-				code_segment method_call_code = generate_method_call_code("${" + indirection + ref.reference_code.code + "}", "toPrimitive", ref.entity->get_class(), force_static_reference, program);
-
-				code_segment method_code = generate_supershell_code(method_call_code.full_code(), in_while_condition, current_while_condition, program);
-				self_reference_entity->add_code_to_previous_line(method_code.pre_code);
-				self_reference_entity->add_code_to_next_line(method_code.post_code);
-				self_reference_entity->add_code(method_code.code);
-
-				current_code_entity->add_code_to_previous_line(self_reference_entity->get_pre_code());
-				current_code_entity->add_code_to_next_line(self_reference_entity->get_post_code());
-				current_code_entity->add_code(self_reference_entity->get_code());
-
-				// Show a warning if we're doing a dynamic_cast
-				std::shared_ptr<bpp::bpp_dynamic_cast_statement> dynamic_cast_entity = std::dynamic_pointer_cast<bpp::bpp_dynamic_cast_statement>(current_code_entity);
-				if (dynamic_cast_entity != nullptr) {
-					show_warning(this_keyword, "Dynamic casting the result of .toPrimitive may not be what you want\nDid you mean to take the address of the object?");
-				}
-				return;
 			}
 
 			self_reference_entity->add_code("${" + indirection + ref.reference_code.code + "}");

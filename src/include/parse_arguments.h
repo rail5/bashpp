@@ -16,6 +16,8 @@
 #include <unistd.h>
 #include <algorithm>
 
+#include "FixedString.h"
+
 #include "../version.h"
 #include "../updated_year.h"
 
@@ -64,7 +66,7 @@ constexpr Option options[] = {
 	{0, nullptr, nullptr, false} // Sentinel
 };
 
-constexpr size_t option_label_length(const Option& opt) {
+consteval size_t option_label_length(const Option& opt) {
 	size_t length = 0;
 	if (opt.shortopt) {
 		length += 2; // '-x'
@@ -75,7 +77,7 @@ constexpr size_t option_label_length(const Option& opt) {
 	}
 
 	if (opt.longopt) {
-		length += 2 + std::char_traits<char>::length(opt.longopt); // '--longopt'
+		length += 2 + string_length(opt.longopt); // '--longopt'
 	}
 
 	if (opt.takes_argument) {
@@ -85,7 +87,7 @@ constexpr size_t option_label_length(const Option& opt) {
 	return length;
 }
 
-constexpr size_t max_option_label_length(const Option* options) {
+consteval size_t max_option_label_length() {
 	size_t max_length = 0;
 	for (size_t i = 0; options[i].shortopt || options[i].longopt; i++) {
 		size_t length = option_label_length(options[i]);
@@ -97,34 +99,91 @@ constexpr size_t max_option_label_length(const Option* options) {
 	return max_length;
 }
 
-std::string generate_help_string() {
-	std::string help_string = "Usage: bpp [options] [file] ...\n"
-		"If no file is specified, read from stdin\n"
-		"All arguments after the file are passed to the compiled program\n"
-		"Options:\n";
-	
-	for (const auto& opt : options) {
-		if (!opt.shortopt && !opt.longopt) {
-			break; // Sentinel reached
+constexpr const char* help_intro = 
+	"Usage: bpp [options] [file] ...\n"
+	"If no file is specified, read from stdin\n"
+	"All arguments after the file are passed to the compiled program\n"
+	"Options:\n";
+
+consteval size_t calculate_help_string_length() {
+	size_t total_length = string_length(help_intro);
+	constexpr size_t max_label_length = max_option_label_length();
+
+	for (size_t i = 0; options[i].shortopt || options[i].longopt; i++) {
+		const auto& opt = options[i];
+
+		// Base line: "  -x, --longopt <arg>"
+		total_length += 2; // "  "
+		if (opt.shortopt) {
+			total_length += 2; // "-x"
 		}
 
-		size_t label_length = option_label_length(opt);
-		size_t padding_amount = max_option_label_length(options) - label_length;
+		if (opt.shortopt && opt.longopt) {
+			total_length += 2; // ", "
+		}
 
-		help_string += "  -" + std::string(1, opt.shortopt);
 		if (opt.longopt) {
-			help_string += ", --" + std::string(opt.longopt);
+			total_length += 2 + string_length(opt.longopt); // "--longopt"
 		}
 
 		if (opt.takes_argument) {
-			help_string += " <arg>";
+			total_length += 6; // " <arg>"
 		}
 
-		help_string += std::string(padding_amount + 1, ' ') + opt.description + "\n";
+		// Padding + space + description + newline
+		size_t label_length = option_label_length(opt);
+		size_t padding_amount = max_label_length - label_length;
+		total_length += padding_amount + 1 + string_length(opt.description) + 1;
 	}
 
-	return help_string;
+	return total_length + 1; // +1 for null terminator
 }
+
+// Generate the help string at compile-time
+consteval auto generate_help_string() {
+	constexpr size_t total_size = calculate_help_string_length();
+	FixedString<total_size> result;
+
+	result.append(help_intro);
+
+	constexpr size_t max_label_length = max_option_label_length();
+
+	for (size_t i = 0; options[i].shortopt || options[i].longopt; i++) {
+		const auto& opt = options[i];
+
+		result.append("  ");
+
+		if (opt.shortopt) {
+			result.append('-');
+			result.append(opt.shortopt);
+		}
+
+		if (opt.shortopt && opt.longopt) {
+			result.append(", ");
+		}
+
+		if (opt.longopt) {
+			result.append("--");
+			result.append(opt.longopt);
+		}
+
+		if (opt.takes_argument) {
+			result.append(" <arg>");
+		}
+
+		// Add padding
+		size_t label_length = option_label_length(opt);
+		size_t padding_amount = max_label_length - label_length;
+		result.append(' ', padding_amount + 1); // Padding + space
+		result.append(opt.description);
+		result.append('\n');
+	}
+
+	result.append('\0'); // Null-terminate the string
+	return result;
+}
+
+constexpr auto help_string = generate_help_string();
 
 
 struct Arguments {
@@ -274,7 +333,7 @@ Arguments parse_arguments(int argc, char* argv[]) {
 				}
 				break;
 			case 'h':
-				std::cout << program_name << " " << bpp_compiler_version << std::endl << generate_help_string();
+				std::cout << program_name << " " << bpp_compiler_version << std::endl << help_string;
 				args.exit_early = true;
 				return args;
 				break;

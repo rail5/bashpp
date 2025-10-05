@@ -1,0 +1,25 @@
+@class Inner {
+	@public member=default
+}
+
+@class Object {
+	@public @Inner m1
+	@public @Inner* m2=@new Inner
+	@public @method what {
+		@Inner in1
+		@Inner* in2=@new Inner
+
+		@in2.member="recognizable"
+
+		@in1=*@in2
+		echo @in1.member # "recognizable"
+
+		@this.m2.member="another"
+
+		@this.m1=*@this.m2
+		echo @this.m1.member # "another"
+	}
+}
+
+@Object obj
+@obj.what

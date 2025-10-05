@@ -22,7 +22,7 @@ void bpp_datamember::set_array(bool is_array) {
 }
 
 std::string bpp_datamember::get_address() const {
-	return "bpp__" + type->get_name() + "__${__objectName}__" + name;
+	return "${__this}__" + name;
 }
 
 std::string bpp_datamember::get_default_value() const {

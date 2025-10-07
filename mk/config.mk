@@ -1,7 +1,7 @@
 # ANTLR4 CONFIG
 ANTLR4 = antlr4
 ANTLR4_HEADERS = /usr/include/antlr4-runtime
-ANTLR4_RUNTIME_LIBRARY = $(shell (find /usr -name libantlr4-runtime.a || find /usr -name libantlr4-runtime.so) | head -n 1)
+ANTLR4_RUNTIME_LIBRARY = $(shell (find /usr -name libantlr4-runtime.a || find /usr -name libantlr4-runtime.so) 2>/dev/null | head -n 1)
 
 # C++ CONFIG
 CXX = g++

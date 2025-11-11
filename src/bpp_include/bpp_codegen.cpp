@@ -5,6 +5,7 @@
 
 #include "bpp_codegen.h"
 #include "bpp.h"
+#include <memory>
 
 namespace bpp {
 
@@ -309,6 +310,8 @@ entity_reference resolve_reference_impl(
 	std::deque<antlr4::tree::TerminalNode*>* nodes,
 	std::deque<std::string>* identifiers,
 	bool declare_local,
+	bool can_take_object,
+	bool can_take_primitive,
 	std::shared_ptr<bpp::bpp_program> program
 ) {
 	std::deque<antlr4::tree::TerminalNode*> nds = static_cast<std::deque<antlr4::tree::TerminalNode*>>(*nodes);
@@ -524,9 +527,51 @@ entity_reference resolve_reference_impl(
 		}
 	}
 
-	// Having finished iterating over all the identifiers
-	// And determining precisely which entity is referred to
-	// We can now return
+	/**
+	 * Having finished iteration over all the identiifers,
+	 * And having determined precisely which entity is being referred to,
+	 * We now have to check this entity against the context's expectations
+	 * 
+	 * I.e.:
+	 * - If the context cannot accept a non-primitive object, but one has been referenced,
+	 *    Then we should replace this reference with a call to the object's .toPrimitive method
+	 * - If the context cannot accept a primitive, but one has been referenced,
+	 *    Then we should throw an error
+	 * - If the context can accept neither an object nor a primitive,
+	 *    Then we should throw an error
+	 * In other cases, we can just return the resolved reference as-is
+	 */
+
+	if (!can_take_object && !can_take_primitive) {
+		throw internal_error("Context cannot accept either object or primitive");
+	}
+
+	std::shared_ptr<bpp::bpp_object> final_object = std::dynamic_pointer_cast<bpp::bpp_object>(result.entity);
+	bool object_is_nonprimitive = final_object != nullptr
+		&& final_object->get_class() != program->get_primitive_class()
+		&& !final_object->is_pointer();
+	
+	if (object_is_nonprimitive && !can_take_object) {
+		// Implicit call to .toPrimitive
+		std::shared_ptr<bpp::bpp_class> final_object_class = final_object->get_class();
+		if (final_object_class == nullptr) {
+			throw internal_error("Final object has no class");
+		}
+
+		std::shared_ptr<bpp::bpp_method> to_primitive_method = final_object_class->get_method_UNSAFE("toPrimitive");
+		if (to_primitive_method == nullptr) {
+			throw internal_error("Class " + final_object_class->get_name() + " has no toPrimitive method");
+		}
+
+		result.entity = to_primitive_method;
+		result.class_containing_the_method = final_object_class;
+	} else if (final_object == nullptr && !can_take_primitive) {
+		result.error = entity_reference::reference_error{
+			"Context cannot accept a primitive value",
+			error_token
+		};
+	}
+
 	return result;
 }
 

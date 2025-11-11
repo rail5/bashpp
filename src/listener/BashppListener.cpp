@@ -35,7 +35,7 @@ void BashppListener::set_included_files(std::shared_ptr<std::set<std::string>> i
 
 /**
  * @brief Sets the program_has_errors flag to true.
- * 
+ *
  * This function is called when a syntax error is encountered during parsing.
  */
 void BashppListener::set_errors() {

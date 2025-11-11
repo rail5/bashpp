@@ -24,6 +24,10 @@ void BashppListener::enterDelete_statement(BashppParser::Delete_statementContext
 	delete_entity->set_containing_class(entity_stack.top()->get_containing_class());
 	delete_entity->inherit(latest_code_entity());
 	entity_stack.push(delete_entity);
+
+	// Set context expectations:
+	// @delete statements **can** take non-primitive objects
+	can_take_object = true;
 }
 
 void BashppListener::exitDelete_statement(BashppParser::Delete_statementContext *ctx) {
@@ -35,6 +39,9 @@ void BashppListener::exitDelete_statement(BashppParser::Delete_statementContext 
 	}
 
 	entity_stack.pop();
+
+	// Reset context expectations
+	can_take_object = false;
 
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> code_entity = latest_code_entity();

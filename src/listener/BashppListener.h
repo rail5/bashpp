@@ -16,6 +16,7 @@
 #include <antlr4-runtime.h>
 
 #include "../antlr/BashppParserBaseListener.h"
+#include "ParserRuleContext.h"
 
 class BashppListener;
 
@@ -113,6 +114,20 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 
 		std::shared_ptr<bpp::bpp_program> program = std::make_shared<bpp::bpp_program>();
 
+		/**
+		 * Context information:
+		 * @var in_while_condition: This is set high when we're parsing the *condition* of a while loop
+		 * @var current_while_condition: If in_while_condition is true, this points to the relevant while_condition entity
+		 * @var in_method: This is set high when we're parsing a method definition
+		 * @var in_class: This is set high when we're parsing a class definition
+		 * @var in_supershell: This is set high when we're parsing a supershell (i.e., the contents inside '@( ... )')
+		 * @var in_bash_function: This is set high when we're parsing a pure-bash function definition
+		 *
+		 * The last three booleans are especially helpful to determine whether temporary variables can be declared 'local' or not.
+		 * Although the compiler always tries to automatically clean up after itself (using 'unset'),
+		 * We still prefer to declare temporary variables as 'local' whenever possible, to avoid polluting the global namespace.
+		 */
+
 		bool in_while_condition = false;
 		std::shared_ptr<bpp::bash_while_condition> current_while_condition = nullptr;
 		bool in_method = false;
@@ -120,6 +135,31 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 		bool in_class = false;
 		bool in_supershell = false;
 		bool in_bash_function = false;
+
+		/**
+		 * Context expectations information:
+		 * @var can_take_primitive: Whether a primitive value is acceptable in the current context
+		 * @var can_take_object: Whether a non-primitive object is acceptable in the current
+		 * In the event that a non-primitive object is referenced in a place where only a primitive is acceptable,
+		 * The Bash++ spec says that the .toPrimitive method should be called automatically.
+		 *
+		 * Further:
+		 * There are only four cases in which a non-primitive object can be used directly (without conversion to a primitive),
+		 * And there is only one case in which a primitive cannot be used directly.
+		 *
+		 * The four cases in which a non-primitive object can be used directly are:
+		 *   1. In @delete statements
+		 *   2. In non-primitive copies (rvalue) [the right-hand side of an assignment iff the left-hand was non-primitive]
+		 *   3. In non-primitive copies (lvalue) [the left-hand side of an assignment, always]
+		 *   4. When preceded by the '&' operator to get the object's address
+		 *
+		 * The one case in which a primitive cannot be used directly is as the rvalue in a non-primitive assignment.
+		 *  I.e., @nonPrimitiveObject="primitive value"
+		 *
+		 * In **all** other contexts: primitives are acceptable, and non-primitives are unacceptable.
+		 */
+		bool can_take_primitive = true;
+		bool can_take_object = false;
 
 		/**
 		 * @var entity_stack

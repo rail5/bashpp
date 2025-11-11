@@ -12,12 +12,18 @@ void BashppListener::enterObject_assignment(BashppParser::Object_assignmentConte
 	object_assignment->set_containing_class(entity_stack.top()->get_containing_class());
 	object_assignment->inherit(latest_code_entity());
 	entity_stack.push(object_assignment);
+
+	// Set context expectations
+	can_take_object = true;
 }
 
 void BashppListener::exitObject_assignment(BashppParser::Object_assignmentContext *ctx) {
 	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(entity_stack.top());
 	entity_stack.pop();
+
+	// Reset context expectations
+	can_take_object = false;
 
 	if (object_assignment == nullptr) {
 		throw internal_error("Object assignment context was not found in the entity stack", ctx);

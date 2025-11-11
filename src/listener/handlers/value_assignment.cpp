@@ -4,6 +4,7 @@
 */
 
 #include "../BashppListener.h"
+#include <memory>
 
 void BashppListener::enterValue_assignment(BashppParser::Value_assignmentContext *ctx) {
 	skip_syntax_errors
@@ -15,6 +16,15 @@ void BashppListener::enterValue_assignment(BashppParser::Value_assignmentContext
 	std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(entity_stack.top());
 	if (object_assignment != nullptr) {
 		value_assignment_entity->set_lvalue_nonprimitive(object_assignment->lvalue_is_nonprimitive());
+	}
+
+	// Set context expectations
+	if (value_assignment_entity->lvalue_is_nonprimitive()) {
+		can_take_object = true;
+		can_take_primitive = false;
+	} else {
+		can_take_object = false;
+		can_take_primitive = true;
 	}
 
 	value_assignment_entity->set_adding(ctx->PLUS() != nullptr);
@@ -38,6 +48,10 @@ void BashppListener::exitValue_assignment(BashppParser::Value_assignmentContext 
 	if (value_assignment_entity == nullptr) {
 		throw internal_error("Value assignment context was not found in the entity stack", ctx);
 	}
+
+	// Reset context expectations
+	can_take_primitive = true;
+	can_take_object = false;
 
 	// Check if we're in a member declaration
 	std::shared_ptr<bpp::bpp_datamember> current_datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(entity_stack.top());

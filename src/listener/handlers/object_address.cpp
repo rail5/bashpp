@@ -25,6 +25,9 @@ void BashppListener::enterObject_address(BashppParser::Object_addressContext *ct
 	object_address_entity->set_containing_class(current_code_entity->get_containing_class());
 	object_address_entity->inherit(current_code_entity);
 	entity_stack.push(object_address_entity);
+
+	// Set context expectations
+	can_take_object = true;
 }
 
 void BashppListener::exitObject_address(BashppParser::Object_addressContext *ctx) {
@@ -35,6 +38,9 @@ void BashppListener::exitObject_address(BashppParser::Object_addressContext *ctx
 	}
 
 	entity_stack.pop();
+
+	// Reset context expectations
+	can_take_object = false;
 
 	// Add the object address to the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());

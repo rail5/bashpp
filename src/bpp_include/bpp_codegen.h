@@ -114,6 +114,8 @@ entity_reference resolve_reference_impl(
 	std::deque<antlr4::tree::TerminalNode*>* identifiers,
 	std::deque<std::string>* identifier_texts,
 	bool declare_local,
+	bool can_take_object,
+	bool can_take_primitive,
 	std::shared_ptr<bpp::bpp_program> program
 );
 
@@ -122,6 +124,8 @@ inline entity_reference resolve_reference(
 	std::shared_ptr<bpp::bpp_entity> context,
 	auto identifiers,
 	bool declare_local,
+	bool can_take_object,
+	bool can_take_primitive,
 	std::shared_ptr<bpp::bpp_program> program
 ) {
 	// identifiers should be either:
@@ -140,7 +144,16 @@ inline entity_reference resolve_reference(
 		for (const auto& id : *identifiers) {
 			text_deque.push_back(id);
 		}
-		return resolve_reference_impl(file, context, &node_deque, &text_deque, declare_local, program);
+		return resolve_reference_impl(
+			file,
+			context,
+			&node_deque,
+			&text_deque,
+			declare_local,
+			can_take_object,
+			can_take_primitive,
+			program
+		);
 	} else if constexpr (std::is_convertible_v<value_t, antlr4::tree::TerminalNode*>) {
 		// identifiers: deque<TerminalNode*>*
 		for (const auto& node : *identifiers) {
@@ -149,7 +162,16 @@ inline entity_reference resolve_reference(
 		for (const auto& node : node_deque) {
 			text_deque.push_back(node->getText());
 		}
-		return resolve_reference_impl(file, context, &node_deque, &text_deque, declare_local, program);
+		return resolve_reference_impl(
+			file,
+			context,
+			&node_deque,
+			&text_deque,
+			declare_local,
+			can_take_object,
+			can_take_primitive,
+			program
+		);
 	} else {
 		static_assert(sizeof(value_t) == 0,
 			"resolve_reference: Identifiers must be either strings or TerminalNode pointers.");

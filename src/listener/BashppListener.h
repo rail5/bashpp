@@ -32,6 +32,8 @@ using bpp::generate_dynamic_cast_code;
 #include "../syntax_error.h"
 #include "../internal_error.h"
 
+#include "ContextExpectations.h"
+
 #define skip_syntax_errors if (error_thrown) { \
 		if (error_context == ctx) { \
 			error_thrown = false; \
@@ -137,29 +139,19 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 		bool in_bash_function = false;
 
 		/**
-		 * Context expectations information:
-		 * @var can_take_primitive: Whether a primitive value is acceptable in the current context
-		 * @var can_take_object: Whether a non-primitive object is acceptable in the current
-		 * In the event that a non-primitive object is referenced in a place where only a primitive is acceptable,
-		 * The Bash++ spec says that the .toPrimitive method should be called automatically.
-		 *
-		 * Further:
-		 * There are only four cases in which a non-primitive object can be used directly (without conversion to a primitive),
-		 * And there is only one case in which a primitive cannot be used directly.
-		 *
-		 * The four cases in which a non-primitive object can be used directly are:
-		 *   1. In @delete statements
-		 *   2. In non-primitive copies (rvalue) [the right-hand side of an assignment iff the left-hand was non-primitive]
-		 *   3. In non-primitive copies (lvalue) [the left-hand side of an assignment, always]
-		 *   4. When preceded by the '&' operator to get the object's address
-		 *
-		 * The one case in which a primitive cannot be used directly is as the rvalue in a non-primitive assignment.
-		 *  I.e., @nonPrimitiveObject="primitive value"
-		 *
-		 * In **all** other contexts: primitives are acceptable, and non-primitives are unacceptable.
+		 * @var context_expectations_stack
+		 * @brief A stack to keep track of what kind of entities are expected in the current context
+		 * 
 		 */
-		bool can_take_primitive = true;
-		bool can_take_object = false;
+		ContextExpectationsStack context_expectations_stack;
+
+		bool can_take_primitive() {
+			return context_expectations_stack.top().can_take_primitive;
+		}
+
+		bool can_take_object() {
+			return context_expectations_stack.top().can_take_object;
+		}
 
 		/**
 		 * @var entity_stack

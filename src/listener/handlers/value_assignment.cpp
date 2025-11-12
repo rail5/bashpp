@@ -20,11 +20,9 @@ void BashppListener::enterValue_assignment(BashppParser::Value_assignmentContext
 
 	// Set context expectations
 	if (value_assignment_entity->lvalue_is_nonprimitive()) {
-		can_take_object = true;
-		can_take_primitive = false;
+		context_expectations_stack.push(false, true);
 	} else {
-		can_take_object = false;
-		can_take_primitive = true;
+		context_expectations_stack.push(true, false);
 	}
 
 	value_assignment_entity->set_adding(ctx->PLUS() != nullptr);
@@ -50,8 +48,7 @@ void BashppListener::exitValue_assignment(BashppParser::Value_assignmentContext 
 	}
 
 	// Reset context expectations
-	can_take_primitive = true;
-	can_take_object = false;
+	context_expectations_stack.pop();
 
 	// Check if we're in a member declaration
 	std::shared_ptr<bpp::bpp_datamember> current_datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(entity_stack.top());

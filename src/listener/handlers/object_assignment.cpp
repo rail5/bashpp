@@ -14,7 +14,7 @@ void BashppListener::enterObject_assignment(BashppParser::Object_assignmentConte
 	entity_stack.push(object_assignment);
 
 	// Set context expectations
-	can_take_object = true;
+	context_expectations_stack.push(true, true);
 }
 
 void BashppListener::exitObject_assignment(BashppParser::Object_assignmentContext *ctx) {
@@ -23,7 +23,7 @@ void BashppListener::exitObject_assignment(BashppParser::Object_assignmentContex
 	entity_stack.pop();
 
 	// Reset context expectations
-	can_take_object = false;
+	context_expectations_stack.pop();
 
 	if (object_assignment == nullptr) {
 		throw internal_error("Object assignment context was not found in the entity stack", ctx);

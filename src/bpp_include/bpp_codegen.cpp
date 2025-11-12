@@ -565,7 +565,7 @@ entity_reference resolve_reference_impl(
 
 		result.entity = to_primitive_method;
 		result.class_containing_the_method = final_object_class;
-	} else if (final_object == nullptr && !can_take_primitive) {
+	} else if (!object_is_nonprimitive && !can_take_primitive) {
 		result.error = entity_reference::reference_error{
 			"Context cannot accept a primitive value",
 			error_token

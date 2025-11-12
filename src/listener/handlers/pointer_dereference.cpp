@@ -30,6 +30,11 @@ void BashppListener::enterPointer_dereference(BashppParser::Pointer_dereferenceC
 	pointer_dereference_entity->set_containing_class(current_code_entity->get_containing_class());
 	pointer_dereference_entity->inherit(current_code_entity);
 
+	// Set context expectations
+	// Pointer dereferences are a case of the programmer electing to treat a primitive object as a non-primitive object
+	// Therefore, here a primitive is acceptable, but a non-primitive object is not
+	context_expectations_stack.push(true, false);
+
 	// Are we in a value assignment context?
 	std::shared_ptr<bpp::bpp_value_assignment> value_assignment = std::dynamic_pointer_cast<bpp::bpp_value_assignment>(entity_stack.top());
 
@@ -49,6 +54,9 @@ void BashppListener::exitPointer_dereference(BashppParser::Pointer_dereferenceCo
 	}
 
 	entity_stack.pop();
+
+	// Reset context expectations
+	context_expectations_stack.pop();
 
 	// Are we in a value assignment context?
 	std::shared_ptr<bpp::bpp_value_assignment> value_assignment = std::dynamic_pointer_cast<bpp::bpp_value_assignment>(entity_stack.top());

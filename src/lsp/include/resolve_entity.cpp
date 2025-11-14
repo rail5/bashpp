@@ -209,6 +209,8 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 				context,
 				&identifiers,
 				false,
+				true,
+				true,
 				program
 			);
 			return entity_ref.entity;

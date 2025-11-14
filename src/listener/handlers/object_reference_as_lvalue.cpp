@@ -50,7 +50,7 @@ void BashppListener::enterObject_reference_as_lvalue(BashppParser::Object_refere
 		source_file,
 		current_code_entity,
 		&ids,
-		in_class || in_supershell || in_bash_function,
+		can_declare_local(),
 		can_take_object(),
 		can_take_primitive(),
 		program

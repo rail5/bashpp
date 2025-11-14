@@ -125,7 +125,7 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 		 * @var in_supershell: This is set high when we're parsing a supershell (i.e., the contents inside '@( ... )')
 		 * @var in_bash_function: This is set high when we're parsing a pure-bash function definition
 		 *
-		 * The last three booleans are especially helpful to determine whether temporary variables can be declared 'local' or not.
+		 * The last four booleans are especially helpful to determine whether temporary variables can be declared 'local' or not.
 		 * Although the compiler always tries to automatically clean up after itself (using 'unset'),
 		 * We still prefer to declare temporary variables as 'local' whenever possible, to avoid polluting the global namespace.
 		 */
@@ -137,6 +137,10 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 		bool in_class = false;
 		bool in_supershell = false;
 		bool in_bash_function = false;
+
+		bool can_declare_local() {
+			return in_method || in_class || in_supershell || in_bash_function;
+		}
 
 		/**
 		 * @var context_expectations_stack

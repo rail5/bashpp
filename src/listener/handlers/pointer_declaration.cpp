@@ -131,7 +131,7 @@ void BashppListener::exitPointer_declaration(BashppParser::Pointer_declarationCo
 	if (current_code_entity != nullptr) {
 		current_code_entity->add_code_to_previous_line(new_object->get_pre_access_code());
 		current_code_entity->add_code_to_next_line(new_object->get_post_access_code());
-		current_code_entity->add_object(new_object, in_method);
+		current_code_entity->add_object(new_object, can_declare_local());
 		return;
 	}
 }

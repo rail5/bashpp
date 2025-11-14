@@ -138,6 +138,9 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 		bool in_supershell = false;
 		bool in_bash_function = false;
 
+		/**
+		 * @brief Determines whether temporary variables in generated code can be declared 'local' 
+		 */
 		bool can_declare_local() {
 			return in_method || in_class || in_supershell || in_bash_function;
 		}
@@ -149,10 +152,16 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 		 */
 		ContextExpectationsStack context_expectations_stack;
 
+		/**
+		 * @brief Determines whether the current context can accept primitive values
+		 */
 		bool can_take_primitive() {
 			return context_expectations_stack.top().can_take_primitive;
 		}
 
+		/**
+		 * @brief Determines whether the current context can accept nonprimitive object values directly without conversion
+		 */
 		bool can_take_object() {
 			return context_expectations_stack.top().can_take_object;
 		}

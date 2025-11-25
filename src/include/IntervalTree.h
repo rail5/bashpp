@@ -92,6 +92,13 @@ class IntervalTree {
 	private:
 		std::unique_ptr<IntervalNode<T>> _root;
 
+		uint64_t find_max(std::unique_ptr<IntervalNode<T>>& node) {
+			if (!node) return 0;
+			uint64_t left_max = find_max(node->left());
+			uint64_t right_max = find_max(node->right());
+			return std::max({node->high(), left_max, right_max});
+		}
+
 		void insert_node(std::unique_ptr<IntervalNode<T>>& node, uint64_t low, uint64_t high, T payload) {
 			if (!node) {
 				node = std::make_unique<IntervalNode<T>>(low, high, payload);
@@ -114,6 +121,7 @@ class IntervalTree {
 				std::unique_ptr<IntervalNode<T>> old_parent = std::move(node);
 				node = std::make_unique<IntervalNode<T>>(low, high, payload);
 				node->set_right(std::move(old_parent));
+				node->set_max(find_max(node));
 				return;
 			}
 
@@ -124,7 +132,7 @@ class IntervalTree {
 			}
 
 			// Update the max value
-			node->set_max(std::max(node->max(), high));
+			node->set_max(find_max(node));
 		}
 
 		void find_overlaps(std::unique_ptr<IntervalNode<T>>& node, uint64_t point, std::vector<T>& overlaps) {

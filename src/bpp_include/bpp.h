@@ -15,7 +15,7 @@
 
 #include "replace_all.h"
 
-#include "../thirdparty/interval_tree/EntityMap.h"
+#include "../include/EntityMap.h"
 
 namespace bpp {
 

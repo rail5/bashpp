@@ -14,7 +14,7 @@
 
 #include "syntax_error.h"
 
-#include "thirdparty/utf8/utf8.h"
+#include <utf8cpp/utf8.h>
 
 void print_syntax_error_or_warning(
 	std::string source_file,

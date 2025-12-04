@@ -74,7 +74,7 @@ jobs:
         if: steps.code_changed.outputs.code == 'true'
         run: |
           apt-get update
-          apt-get install build-essential antlr4 libantlr4-runtime-dev doxygen graphviz -y
+          apt-get install build-essential antlr4 libantlr4-runtime-dev doxygen graphviz libutfcpp-dev -y
       - name: Run tests and generate test stats SVG
         if: steps.code_changed.outputs.code == 'true'
         run: |

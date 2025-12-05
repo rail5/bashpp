@@ -64,6 +64,7 @@ Pre-built packages are available for **amd64** and **arm64**. The .debs can also
  - `g++`
  - `antlr4`
  - Antlr4 C++ runtime
+ - `libutfcpp-dev`
 
 Language server-specific prerequisites:
  - `nlohmann-json3-dev`
@@ -77,7 +78,7 @@ On Debian-based systems, you can install the prerequisites with:
 
 ```bash
 $ sudo apt update
-$ sudo apt install build-essential antlr4 libantlr4-runtime-dev pandoc perl debhelper nlohmann-json3-dev libfrozen-dev
+$ sudo apt install build-essential antlr4 libantlr4-runtime-dev libutfcpp-dev pandoc perl debhelper nlohmann-json3-dev libfrozen-dev
 ```
 
 #### Building

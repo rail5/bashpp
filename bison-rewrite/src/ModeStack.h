@@ -7,11 +7,10 @@ class ModeStack {
 	private:
 		std::stack<int> modeStack;
 
-		bool inSync();
+		bool inSync() const;
 	public:
 		void push(int mode);
-
 		void pop();
-
-		int top();
+		int top() const;
+		bool empty() const;
 };

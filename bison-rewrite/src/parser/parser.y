@@ -17,7 +17,7 @@ void yyerror(const char *s);
 %define api.token.constructor
 %define api.value.type variant
 %code {
-	#include "parser.tab.hh"
+	#include "parser.tab.hpp"
 
 	yy::parser::symbol_type yylex();
 }

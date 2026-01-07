@@ -1,7 +1,7 @@
 
 
 %{
-#include "parser.tab.hh" // Bison header for token types
+#include "parser.tab.hpp" // Bison header for token types
 #include <cstdint>
 
 /**

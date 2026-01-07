@@ -26,6 +26,10 @@ GNU Bison Docs, 10.1.7.2: Complete Symbols
 #define YY_DECL yy::parser::symbol_type yylex()
 YY_DECL;
 
+static std::string singlequote_contents; // To hold contents within single quotes
+
+static uint64_t array_index_depth = 0;
+
 %}
 
 %option noyywrap
@@ -119,10 +123,6 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	* Helper to get the text of the current token as a std::string.
 	*/
 	#define tokenText std::string(yytext, yyleng)
-
-	std::string singlequote_contents; // To hold contents within single quotes
-
-	static uint64_t array_index_depth = 0;
 %}
 
 {ESCAPED_CHAR}         { emit(ESCAPED_CHAR, tokenText); }
@@ -174,6 +174,11 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		array_index_depth--;
 		yy_pop_state(); // Return to the reference mode that brought us here
 		emit(ARRAY_INDEX_END);
+		/* TODO: THIS IS WRONG.
+		 * array_index_depth > 0 is NOT a sufficient check to see if this is a matching rbracket to an opening lbracket
+		 * counter-example: @{object.reference["]"]}
+		 *                                     ^
+		 */
 	} else {
 		emit(RBRACKET);
 	}

@@ -125,7 +125,6 @@ statement:
 	| new_statement
 	| object_reference
 	| block
-	| BASH_VAR
 	| bash_variable
 	| dynamic_cast
 	;
@@ -141,7 +140,6 @@ valid_rvalue:
 	| doublequoted_string { $$ = $1; }
 	| new_statement { $$ = ""; }
 	| object_reference { $$ = $1; }
-	| BASH_VAR { $$ = $1; }
 	| bash_variable { $$ = $1; }
 	| dynamic_cast {$$ = $1; }
 	;
@@ -427,6 +425,8 @@ bash_variable:
 
 		$$ = "${" + varName + arrayIndex + "}";
 	}
+	| BASH_VAR { $$ = $1; }
+	;
 
 dynamic_cast:
 	KEYWORD_DYNAMIC_CAST LANGLE cast_target RANGLE WS valid_rvalue {

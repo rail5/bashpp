@@ -16,7 +16,7 @@ PARSER = $(GENERATEDDIR)/parser.tab.cpp
 CXX = g++
 CXXFLAGS = -std=gnu++23 -Wall -Wextra -O2 -s
 
-OBJECTS = $(OBJDIR)/main.o $(OBJDIR)/generated/parser.tab.o $(OBJDIR)/generated/lex.yy.o
+OBJECTS = $(OBJDIR)/main.o $(OBJDIR)/ModeStack.o $(OBJDIR)/generated/parser.tab.o $(OBJDIR)/generated/lex.yy.o
 
 all: $(TARGET)
 

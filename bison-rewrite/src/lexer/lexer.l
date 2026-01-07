@@ -2,7 +2,9 @@
 
 %{
 #include "parser.tab.hpp" // Bison header for token types
+#include "../ModeStack.h"
 #include <cstdint>
+#include <stack>
 
 /**
 GNU Bison Docs, 10.1.7.2: Complete Symbols
@@ -25,6 +27,8 @@ GNU Bison Docs, 10.1.7.2: Complete Symbols
 */
 #define YY_DECL yy::parser::symbol_type yylex()
 YY_DECL;
+
+static ModeStack modeStack; // Stack to manage lexer modes
 
 static std::string singlequote_contents; // To hold contents within single quotes
 
@@ -128,8 +132,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 {ESCAPED_CHAR}         { emit(ESCAPED_CHAR, tokenText); }
 {WS}                   { emit(WS, tokenText); }
 
-{KEYWORD_INCLUDE}      { yy_push_state(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE); }
-{KEYWORD_INCLUDE_ONCE} { yy_push_state(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE_ONCE); }
+{KEYWORD_INCLUDE}      { modeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE); }
+{KEYWORD_INCLUDE_ONCE} { modeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE_ONCE); }
 
 {KEYWORD_CLASS}        { emit(KEYWORD_CLASS); }
 {KEYWORD_PUBLIC}       { emit(KEYWORD_PUBLIC); }
@@ -142,9 +146,9 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 {KEYWORD_DESTRUCTOR}   { emit(KEYWORD_DESTRUCTOR); }
 {KEYWORD_DYNAMIC_CAST} { emit(KEYWORD_DYNAMIC_CAST); }
 
-"@{"                   { yy_push_state(BPP_BRACEREFERENCE_MODE); emit(REF_START); }
+"@{"                   { modeStack.push(BPP_BRACEREFERENCE_MODE); emit(REF_START); }
 
-{AT}                   { yy_push_state(BPP_MODE); emit(AT); }
+{AT}                   { modeStack.push(BPP_MODE); emit(AT); }
 {DELIM}                { emit(DELIM, tokenText); }
 {LBRACE}               { emit(LBRACE); }
 {RBRACE}               { emit(RBRACE); }
@@ -155,7 +159,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 {LANGLE}               { emit(LANGLE); }
 {RANGLE}               { emit(RANGLE); }
 
-"${"                   { yy_push_state(BASH_VAR_MODE); emit(BASH_VAR_START); }
+"${"                   { modeStack.push(BASH_VAR_MODE); emit(BASH_VAR_START); }
 
 \${IDENTIFIER}         { emit(BASH_VAR, tokenText); }
 \$@                    { emit(BASH_VAR, tokenText); }
@@ -172,7 +176,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 "]"                    {
 	if (array_index_depth > 0) {
 		array_index_depth--;
-		yy_pop_state(); // Return to the reference mode that brought us here
+		modeStack.pop(); // Return to the reference mode that brought us here
 		emit(ARRAY_INDEX_END);
 		/* TODO: THIS IS WRONG.
 		 * array_index_depth > 0 is NOT a sufficient check to see if this is a matching rbracket to an opening lbracket
@@ -185,13 +189,13 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 }
 
 ['] {
-	yy_push_state(SINGLEQUOTE_MODE);
+	modeStack.push(SINGLEQUOTE_MODE);
 	singlequote_contents.clear();
 	singlequote_contents += '\'';
 }
 
 ["] {
-	yy_push_state(DOUBLEQUOTE_MODE);
+	modeStack.push(DOUBLEQUOTE_MODE);
 	emit(QUOTE_BEGIN);
 }
 
@@ -209,7 +213,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 	"'" {
 		/* Closing singlequote found */
-		yy_pop_state(); // Exit SINGLEQUOTE_MODE
+		modeStack.pop(); // Exit SINGLEQUOTE_MODE
 		singlequote_contents += '\'';
 		emit(SINGLEQUOTED_STRING, singlequote_contents);
 	}
@@ -228,13 +232,13 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 	{AT} {
 		/* Start of an interpolation */
-		yy_push_state(BPP_MODE);
+		modeStack.push(BPP_MODE);
 		emit(AT);
 	}
 
 	["] {
 		/* Closing doublequote found */
-		yy_pop_state(); // Exit DOUBLEQUOTE_MODE
+		modeStack.pop(); // Exit DOUBLEQUOTE_MODE
 		emit(QUOTE_END);
 	}
 }
@@ -249,7 +253,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 
 	. {
-		yy_pop_state(); // Exit BPP_MODE if we see anything other than IDENTIFIER or DOT coming up next
+		modeStack.pop(); // Exit BPP_MODE if we see anything other than IDENTIFIER or DOT coming up next
 		yyless(0); // Do not consume the character; let the main lexer mode handle it
 	}
 }
@@ -264,13 +268,13 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 
 	"[" {
-		yy_push_state(INITIAL);
+		modeStack.push(INITIAL);
 		array_index_depth++;
 		emit(ARRAY_INDEX_START);
 	}
 
 	"}" {
-		yy_pop_state(); // Exit BPP_BRACEREFERENCE_MODE
+		modeStack.pop(); // Exit BPP_BRACEREFERENCE_MODE
 		emit(REF_END);
 	}
 }
@@ -281,13 +285,13 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 	
 	"[" {
-		yy_push_state(INITIAL);
+		modeStack.push(INITIAL);
 		array_index_depth++;
 		emit(ARRAY_INDEX_START);
 	}
 
 	"}" {
-		yy_pop_state(); // Exit BASH_VAR_MODE
+		modeStack.pop(); // Exit BASH_VAR_MODE
 		emit(BASH_VAR_END);
 	}
 }
@@ -312,7 +316,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		emit(INCLUDE_PATH, tokenText);
 	}
 	[\n] {
-		yy_pop_state(); // Exit BPP_INCLUDE_MODE
+		modeStack.pop(); // Exit BPP_INCLUDE_MODE
 		emit(DELIM, tokenText);
 	}
 }
@@ -322,3 +326,15 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 }
 
 %%
+
+extern void scanner_push_state(int state) {
+	yy_push_state(state);
+}
+
+extern void scanner_pop_state() {
+	yy_pop_state();
+}
+
+extern int scanner_current_state() {
+	return YY_START;
+}

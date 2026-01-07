@@ -162,14 +162,10 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 "${"                   { modeStack.push(BASH_VAR_MODE); emit(BASH_VAR_START); }
 
 \${IDENTIFIER}         { emit(BASH_VAR, tokenText); }
-\$@                    { emit(BASH_VAR, tokenText); }
-\$#                    { emit(BASH_VAR, tokenText); }
-\$\*                   { emit(BASH_VAR, tokenText); }
-\$-                    { emit(BASH_VAR, tokenText); }
-\$\$                   { emit(BASH_VAR, tokenText); }
-\$!                    { emit(BASH_VAR, tokenText); }
-\$\?                   { emit(BASH_VAR, tokenText); }
+\$[\@\#\*\-\$\!\?]     { emit(BASH_VAR, tokenText); }
+\$\{[\@\#\*\-\$!\?]\}  { emit(BASH_VAR, tokenText); }
 \${INTEGER}            { emit(BASH_VAR, tokenText); }
+\$\{{INTEGER}\}        { emit(BASH_VAR, tokenText); }
 
 "["                    { emit(LBRACKET); }
 

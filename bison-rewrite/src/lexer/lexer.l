@@ -195,6 +195,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	emit(QUOTE_BEGIN);
 }
 
+[\#][^\n]*  { /* Ignore comments */ }
+
 
 <SINGLEQUOTE_MODE>{
 	[^'\\]+ {

@@ -458,11 +458,6 @@ cast_target:
 		std::cout << "Parsed dynamic_cast target type: " << targetType << std::endl;
 		$$ = targetType;
 	}
-	| BASH_VAR {
-		std::string targetType = $1;
-		std::cout << "Parsed dynamic_cast target type (Bash variable): " << targetType << std::endl;
-		$$ = targetType;
-	}
 	| bash_variable {
 		std::string targetType = $1;
 		std::cout << "Parsed dynamic_cast target type (Bash variable): " << targetType << std::endl;

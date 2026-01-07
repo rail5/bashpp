@@ -1,5 +1,5 @@
 #include <iostream>
-#include "parser.tab.hh"
+#include "generated/parser.tab.hh"
 
 extern FILE* yyin;
 extern int yyleng;

@@ -1,20 +1,33 @@
-LEXER_SRC = lexer.l
-LEXER = lex.yy.c
-PARSER_SRC = parser.y
-PARSER = parser.tab.cc
-TARGET = bplex
+BINDIR = bin
+
+SRCDIR = src
+LEXERDIR = $(SRCDIR)/lexer
+PARSERDIR = $(SRCDIR)/parser
+GENERATEDDIR = $(SRCDIR)/generated
+
+LEXER_SRC = $(LEXERDIR)/lexer.l
+LEXER = $(GENERATEDDIR)/lex.yy.c
+
+PARSER_SRC = $(PARSERDIR)/parser.y
+PARSER = $(GENERATEDDIR)/parser.tab.cc
+
+TARGET = $(BINDIR)/bplex
 
 CXX = g++
-CXXFLAGS = -std=c++23 -Wall -Wextra -O2 -g
+CXXFLAGS = -std=gnu++23 -Wall -Wextra -O2 -g
 
-all: $(PARSER) $(LEXER) main.cpp
+
+all: $(TARGET)
+
+$(TARGET): $(PARSER) $(LEXER) $(SRCDIR)/main.cpp
 	$(CXX) $(CXXFLAGS) -o $(TARGET) $^
 
 $(LEXER): $(LEXER_SRC)
-	flex $<
+	flex -o $(LEXER) $<
 
 $(PARSER): $(PARSER_SRC)
-	bison -d $< -Wcounterexamples
+	bison -o $(PARSER) -d $< -Wcounterexamples
 
 clean:
-	rm -f $(TARGET) $(PARSER) parser.tab.hh $(LEXER)
+	rm -f $(GENERATEDDIR)/*
+	rm -f $(BINDIR)/*

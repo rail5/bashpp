@@ -1,4 +1,3 @@
-bplex
-lex.yy.c
-parser.tab.*
 test-scripts/**
+bin/**
+src/generated/**

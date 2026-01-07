@@ -124,6 +124,7 @@ statement:
 	| pointer_declaration
 	| new_statement
 	| object_reference
+	| object_assignment
 	| block
 	| bash_variable
 	| dynamic_cast
@@ -134,7 +135,19 @@ block:
 	;
 
 valid_rvalue:
-	/* empty */ { $$ = ""; }
+	/*
+	 * NOTE: In fact, neither WS nor DELIM are valid rvalues by themselves
+	 * But "empty" (epsilon) IS a valid rvalue
+	 * E.g., var=
+	 * Or @object.member=
+	 * Allowing "empty" as an alternative in the valid_rvalue rule opens up a ton of shift/reduce conflicts
+	 * None of these are actually problematic as far as I can tell (the parser's default behavior resolves them correctly)
+	 * But we can get the parser to quiet down & achieve the same effect by allowing WS and DELIM here instead of epsilon
+	 * Since, after all, the rvalue will always be followed by either WS or DELIM anyway
+	 * TODO(@rail5): revisit this, it seems horrible
+	 */
+	WS { $$ = ""; }
+	| DELIM { $$ = ""; }
 	| IDENTIFIER { $$ = $1; }
 	| SINGLEQUOTED_STRING { $$ = $1; }
 	| doublequoted_string { $$ = $1; }
@@ -461,6 +474,14 @@ cast_target:
 		$$ = targetType;
 	}
 	;
+
+object_assignment:
+	object_reference EQUALS valid_rvalue {
+		std::string objectRef = $1;
+		std::string rvalue = $3;
+
+		std::cout << "Parsed object assignment: ObjectReference='" << objectRef << "', RValue='" << rvalue << "'" << std::endl;
+	}
 
 %%
 

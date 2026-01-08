@@ -40,6 +40,9 @@ void yyerror(const char *s);
 %token KEYWORD_INCLUDE KEYWORD_INCLUDE_ONCE KEYWORD_AS KEYWORD_DYNAMIC_CAST
 %token <std::string> INCLUDE_TYPE INCLUDE_PATH
 
+%token SUPERSHELL_START SUPERSHELL_END
+%token LPAREN RPAREN
+
 %token KEYWORD_CLASS KEYWORD_VIRTUAL KEYWORD_METHOD KEYWORD_CONSTRUCTOR KEYWORD_DESTRUCTOR
 %token KEYWORD_NEW KEYWORD_DELETE KEYWORD_NULLPTR
 
@@ -66,6 +69,7 @@ void yyerror(const char *s);
 %type <std::string> bash_variable
 %type <std::string> dynamic_cast cast_target
 %type <std::string> object_address pointer_dereference pointer_dereference_rvalue pointer_dereference_lvalue
+%type <std::string> supershell
 
 /**
  * NOTE: A shift/reduce conflict is EXPECTED between 'object_instantiation' and
@@ -142,6 +146,7 @@ statement:
 	| block
 	| bash_variable
 	| dynamic_cast
+	| supershell
 	;
 
 block:
@@ -173,6 +178,7 @@ valid_rvalue:
 	| pointer_dereference_rvalue { $$ = $1; }
 	| bash_variable { $$ = $1; }
 	| dynamic_cast {$$ = $1; }
+	| supershell { $$ = $1; }
 	;
 
 maybe_whitespace:
@@ -737,6 +743,13 @@ pointer_dereference_lvalue:
 		std::cout << "Parsed lvalue self pointer dereference: SelfReference='" << selfRef << "'" << std::endl;
 
 		$$ = "*" + selfRef;
+	}
+	;
+
+supershell:
+	SUPERSHELL_START statements SUPERSHELL_END {
+		std::cout << "Parsed supershell block" << std::endl;
+		$$ = "@(supershell)";
 	}
 	;
 

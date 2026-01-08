@@ -89,6 +89,7 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 		case yy::parser::symbol_kind::S_DOUBLEAMPERSAND:
 		case yy::parser::symbol_kind::S_DOUBLEPIPE:
 		case yy::parser::symbol_kind::S_PIPE:
+		case yy::parser::symbol_kind::S_SUPERSHELL_START:
 			// At the start of a new command string, the next token can be an lvalue
 			incoming_token_can_be_lvalue = true;
 			break;
@@ -195,6 +196,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 %s ARRAY_INDEX_MODE
 
+%s SUPERSHELL_MODE
+
 %%
 
 %{
@@ -282,6 +285,23 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 			break;
 		default:
 			emit(RBRACKET);
+			break;
+	}
+}
+
+"@(" {
+	modeStack.push(SUPERSHELL_MODE);
+	emit(SUPERSHELL_START);
+}
+
+")" {
+	switch (modeStack.top()) {
+		case SUPERSHELL_MODE:
+			modeStack.pop(); // Exit SUPERSHELL_MODE
+			emit(SUPERSHELL_END);
+			break;
+		default:
+			emit(RPAREN);
 			break;
 	}
 }

@@ -33,6 +33,7 @@ void yyerror(const char *s);
 %token <std::string> DOUBLEQUOTE_CONTENT
 
 %token AT AT_LVALUE
+%token KEYWORD_THIS KEYWORD_THIS_LVALUE KEYWORD_SUPER KEYWORD_SUPER_LVALUE
 %token LBRACE RBRACE LANGLE RANGLE
 %token COLON EQUALS ASTERISK DOT
 
@@ -60,6 +61,7 @@ void yyerror(const char *s);
 %type <std::string> valid_rvalue
 %type <std::string> doublequoted_string quote_contents
 %type <std::string> object_reference object_reference_lvalue maybe_descend_object_hierarchy maybe_array_index
+%type <std::string> self_reference self_reference_lvalue
 %type <std::string> bash_variable
 %type <std::string> dynamic_cast cast_target
 
@@ -128,6 +130,8 @@ statement:
 	| new_statement
 	| object_reference
 	| object_reference_lvalue
+	| self_reference
+	| self_reference_lvalue
 	| shell_variable_assignment
 	| object_assignment
 	| block
@@ -158,6 +162,7 @@ valid_rvalue:
 	| doublequoted_string { $$ = $1; }
 	| new_statement { $$ = ""; }
 	| object_reference { $$ = $1; }
+	| self_reference { $$ = $1; }
 	| bash_variable { $$ = $1; }
 	| dynamic_cast {$$ = $1; }
 	;
@@ -444,6 +449,116 @@ object_reference_lvalue:
 		std::cout << std::endl;
 
 		$$ = "@" + objectName + hierarchy + arrayIndex;
+	}
+	;
+
+self_reference:
+	KEYWORD_THIS maybe_descend_object_hierarchy {
+		std::string hierarchy = $2;
+
+		std::cout << "Parsed self reference";
+		if (!hierarchy.empty()) {
+			std::cout << ", Hierarchy='" << hierarchy << "'";
+		}
+		std::cout << std::endl;
+
+		$$ = "@this" + hierarchy;
+	}
+	| REF_START KEYWORD_THIS maybe_descend_object_hierarchy maybe_array_index REF_END {
+		std::string hierarchy = $3;
+		std::string arrayIndex = $4;
+
+		std::cout << "Parsed reference self reference";
+		if (!hierarchy.empty()) {
+			std::cout << ", Hierarchy='" << hierarchy << "'";
+		}
+		if (!arrayIndex.empty()) {
+			std::cout << ", ArrayIndex='" << arrayIndex << "'";
+		}
+		std::cout << std::endl;
+
+		$$ = "@this" + hierarchy + arrayIndex;
+	}
+	| KEYWORD_SUPER maybe_descend_object_hierarchy {
+		std::string hierarchy = $2;
+
+		std::cout << "Parsed self reference to super";
+		if (!hierarchy.empty()) {
+			std::cout << ", Hierarchy='" << hierarchy << "'";
+		}
+		std::cout << std::endl;
+
+		$$ = "@super" + hierarchy;
+	}
+	| REF_START KEYWORD_SUPER maybe_descend_object_hierarchy maybe_array_index REF_END {
+		std::string hierarchy = $3;
+		std::string arrayIndex = $4;
+
+		std::cout << "Parsed reference self reference to super";
+		if (!hierarchy.empty()) {
+			std::cout << ", Hierarchy='" << hierarchy << "'";
+		}
+		if (!arrayIndex.empty()) {
+			std::cout << ", ArrayIndex='" << arrayIndex << "'";
+		}
+		std::cout << std::endl;
+
+		$$ = "@super" + hierarchy + arrayIndex;
+	}
+	;
+
+self_reference_lvalue:
+	KEYWORD_THIS_LVALUE maybe_descend_object_hierarchy {
+		std::string hierarchy = $2;
+
+		std::cout << "Parsed lvalue self reference";
+		if (!hierarchy.empty()) {
+			std::cout << ", Hierarchy='" << hierarchy << "'";
+		}
+		std::cout << std::endl;
+
+		$$ = "@this" + hierarchy;
+	}
+	| REF_START_LVALUE KEYWORD_THIS maybe_descend_object_hierarchy maybe_array_index REF_END {
+		std::string hierarchy = $3;
+		std::string arrayIndex = $4;
+
+		std::cout << "Parsed lvalue reference self reference";
+		if (!hierarchy.empty()) {
+			std::cout << ", Hierarchy='" << hierarchy << "'";
+		}
+		if (!arrayIndex.empty()) {
+			std::cout << ", ArrayIndex='" << arrayIndex << "'";
+		}
+		std::cout << std::endl;
+
+		$$ = "@this" + hierarchy + arrayIndex;
+	}
+	| KEYWORD_SUPER_LVALUE maybe_descend_object_hierarchy {
+		std::string hierarchy = $2;
+
+		std::cout << "Parsed lvalue self reference to super";
+		if (!hierarchy.empty()) {
+			std::cout << ", Hierarchy='" << hierarchy << "'";
+		}
+		std::cout << std::endl;
+
+		$$ = "@super" + hierarchy;
+	}
+	| REF_START_LVALUE KEYWORD_SUPER maybe_descend_object_hierarchy maybe_array_index REF_END {
+		std::string hierarchy = $3;
+		std::string arrayIndex = $4;
+
+		std::cout << "Parsed lvalue reference self reference to super";
+		if (!hierarchy.empty()) {
+			std::cout << ", Hierarchy='" << hierarchy << "'";
+		}
+		if (!arrayIndex.empty()) {
+			std::cout << ", ArrayIndex='" << arrayIndex << "'";
+		}
+		std::cout << std::endl;
+
+		$$ = "@super" + hierarchy + arrayIndex;
 	}
 	;
 

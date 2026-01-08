@@ -32,6 +32,8 @@ static ModeStack modeStack; // Stack to manage lexer modes
 
 static std::string singlequote_contents; // To hold contents within single quotes
 
+static uint32_t token_count_inside_bracereference = 0;
+
 static bool incoming_token_can_be_lvalue = true; // The first token of the program can of course be an lvalue
 
 void set_incoming_token_can_be_lvalue(bool canBeLvalue) {
@@ -69,6 +71,20 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 				return yy::parser::make_IDENTIFIER_LVALUE(text);
 			}
 			break;
+		case yy::parser::symbol_kind::S_KEYWORD_THIS:
+			// Same as above
+			if (incoming_token_can_be_lvalue) {
+				incoming_token_can_be_lvalue = false;
+				return yy::parser::make_KEYWORD_THIS_LVALUE();
+			}
+			break;
+		case yy::parser::symbol_kind::S_KEYWORD_SUPER:
+			// Same as above
+			if (incoming_token_can_be_lvalue) {
+				incoming_token_can_be_lvalue = false;
+				return yy::parser::make_KEYWORD_SUPER_LVALUE();
+			}
+			break;
 		case yy::parser::symbol_kind::S_DELIM:
 		case yy::parser::symbol_kind::S_DOUBLEAMPERSAND:
 		case yy::parser::symbol_kind::S_DOUBLEPIPE:
@@ -103,6 +119,9 @@ WS              [ \t]+
 
 DELIM           [\n;]
 
+IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
+INTEGER                 [0-9]+
+
 /* Bash++ keywords */
 KEYWORD_NEW             @new
 KEYWORD_DELETE          @delete
@@ -121,9 +140,6 @@ KEYWORD_THIS            @this
 KEYWORD_SUPER           @super
 KEYWORD_TYPEOF          @typeof
 KEYWORD_VIRTUAL         @virtual
-
-IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
-INTEGER                 [0-9]+
 
 LANGLE                  [<]
 RANGLE                  [>]
@@ -204,50 +220,54 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	#define tokenText std::string(yytext, yyleng)
 %}
 
-{ESCAPED_CHAR}         { emit(ESCAPED_CHAR, tokenText); }
-{WS}                   { emit(WS, tokenText); }
+{ESCAPED_CHAR}                       { emit(ESCAPED_CHAR, tokenText); }
+{WS}                                 { emit(WS, tokenText); }
 
-{KEYWORD_INCLUDE}      { modeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE); }
-{KEYWORD_INCLUDE_ONCE} { modeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE_ONCE); }
+{KEYWORD_INCLUDE}/[^a-zA-Z0-9_]      { modeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE); }
+{KEYWORD_INCLUDE_ONCE}/[^a-zA-Z0-9_] { modeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE_ONCE); }
 
-{KEYWORD_CLASS}        { emit(KEYWORD_CLASS); }
-{KEYWORD_PUBLIC}       { emit(KEYWORD_PUBLIC); }
-{KEYWORD_PROTECTED}    { emit(KEYWORD_PROTECTED); }
-{KEYWORD_PRIVATE}      { emit(KEYWORD_PRIVATE); }
-{KEYWORD_NEW}          { emit(KEYWORD_NEW); }
-{KEYWORD_METHOD}       { emit(KEYWORD_METHOD); }
-{KEYWORD_VIRTUAL}      { emit(KEYWORD_VIRTUAL); }
-{KEYWORD_CONSTRUCTOR}  { emit(KEYWORD_CONSTRUCTOR); }
-{KEYWORD_DESTRUCTOR}   { emit(KEYWORD_DESTRUCTOR); }
-{KEYWORD_DYNAMIC_CAST} { emit(KEYWORD_DYNAMIC_CAST); }
+{KEYWORD_CLASS}/[^a-zA-Z0-9_]        { emit(KEYWORD_CLASS); }
+{KEYWORD_PUBLIC}/[^a-zA-Z0-9_]       { emit(KEYWORD_PUBLIC); }
+{KEYWORD_PROTECTED}/[^a-zA-Z0-9_]    { emit(KEYWORD_PROTECTED); }
+{KEYWORD_PRIVATE}/[^a-zA-Z0-9_]      { emit(KEYWORD_PRIVATE); }
+{KEYWORD_NEW}/[^a-zA-Z0-9_]          { emit(KEYWORD_NEW); }
+{KEYWORD_METHOD}/[^a-zA-Z0-9_]       { emit(KEYWORD_METHOD); }
+{KEYWORD_VIRTUAL}/[^a-zA-Z0-9_]      { emit(KEYWORD_VIRTUAL); }
+{KEYWORD_CONSTRUCTOR}/[^a-zA-Z0-9_]  { emit(KEYWORD_CONSTRUCTOR); }
+{KEYWORD_DESTRUCTOR}/[^a-zA-Z0-9_]   { emit(KEYWORD_DESTRUCTOR); }
+{KEYWORD_DYNAMIC_CAST}/[^a-zA-Z0-9_] { emit(KEYWORD_DYNAMIC_CAST); }
 
-"@{"                   { modeStack.push(BPP_BRACEREFERENCE_MODE); emit(REF_START); }
+"@{"                                 { modeStack.push(BPP_BRACEREFERENCE_MODE); emit(REF_START); }
 
-{AT}                   { modeStack.push(BPP_MODE); emit(AT); }
-{DELIM}                { emit(DELIM, tokenText); }
-{DOUBLEAMPERSAND}      { emit(DOUBLEAMPERSAND); }
-{DOUBLEPIPE}           { emit(DOUBLEPIPE); }
-{PIPE}                 { emit(PIPE); }
-{LBRACE}               { emit(LBRACE); }
-{RBRACE}               { emit(RBRACE); }
-":"                    { emit(COLON); }
-"="                    { emit(EQUALS); }
-"*"                    { emit(ASTERISK); }
-{IDENTIFIER}           { emit(IDENTIFIER, tokenText); }
-{LANGLE}               { emit(LANGLE); }
-{RANGLE}               { emit(RANGLE); }
+{AT}                                 { modeStack.push(BPP_MODE); emit(AT); }
 
-"${"                   { modeStack.push(BASH_VAR_MODE); emit(BASH_VAR_START); }
+{KEYWORD_THIS}/[^a-zA-Z0-9_]         { modeStack.push(BPP_MODE); emit(KEYWORD_THIS); }
+{KEYWORD_SUPER}/[^a-zA-Z0-9_]        { modeStack.push(BPP_MODE); emit(KEYWORD_SUPER); }
 
-\${IDENTIFIER}         { emit(BASH_VAR, tokenText); }
-\$[\@\#\*\-\$\!\?]     { emit(BASH_VAR, tokenText); }
-\$\{[\@\#\*\-\$!\?]\}  { emit(BASH_VAR, tokenText); }
-\${INTEGER}            { emit(BASH_VAR, tokenText); }
-\$\{{INTEGER}\}        { emit(BASH_VAR, tokenText); }
+{DELIM}                              { emit(DELIM, tokenText); }
+{DOUBLEAMPERSAND}                    { emit(DOUBLEAMPERSAND); }
+{DOUBLEPIPE}                         { emit(DOUBLEPIPE); }
+{PIPE}                               { emit(PIPE); }
+{LBRACE}                             { emit(LBRACE); }
+{RBRACE}                             { emit(RBRACE); }
+":"                                  { emit(COLON); }
+"="                                  { emit(EQUALS); }
+"*"                                  { emit(ASTERISK); }
+{IDENTIFIER}                         { emit(IDENTIFIER, tokenText); }
+{LANGLE}                             { emit(LANGLE); }
+{RANGLE}                             { emit(RANGLE); }
 
-"["                    { emit(LBRACKET); }
+"${"                                 { modeStack.push(BASH_VAR_MODE); emit(BASH_VAR_START); }
 
-"]"                    {
+\${IDENTIFIER}                       { emit(BASH_VAR, tokenText); }
+\$[\@\#\*\-\$\!\?]                   { emit(BASH_VAR, tokenText); }
+\$\{[\@\#\*\-\$!\?]\}                { emit(BASH_VAR, tokenText); }
+\${INTEGER}                          { emit(BASH_VAR, tokenText); }
+\$\{{INTEGER}\}                      { emit(BASH_VAR, tokenText); }
+
+"["                                  { emit(LBRACKET); }
+
+"]"                                  {
 	switch (modeStack.top()) {
 		case ARRAY_INDEX_MODE:
 			modeStack.pop(); // Exit ARRAY_INDEX_MODE
@@ -332,21 +352,44 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 }
 
 <BPP_BRACEREFERENCE_MODE>{
+	"this" {
+		// If the 'this' is the very FIRST token inside the brace reference, it's the 'this' keyword
+		// Otherwise, it's just an identifier
+		if (token_count_inside_bracereference++ == 0) {
+			emit(KEYWORD_THIS);
+		} else {
+			emit(IDENTIFIER, tokenText);
+		}
+	}
+
+	"super" {
+		// Likewise
+		if (token_count_inside_bracereference++ == 0) {
+			emit(KEYWORD_SUPER);
+		} else {
+			emit(IDENTIFIER, tokenText);
+		}
+	}
+
 	{IDENTIFIER} {
+		token_count_inside_bracereference++;
 		emit(IDENTIFIER, tokenText);
 	}
 
 	"\." {
+		token_count_inside_bracereference++;
 		emit(DOT);
 	}
 
 	"[" {
+		token_count_inside_bracereference++;
 		modeStack.push(ARRAY_INDEX_MODE);
 		emit(ARRAY_INDEX_START);
 	}
 
 	"}" {
 		modeStack.pop(); // Exit BPP_BRACEREFERENCE_MODE
+		token_count_inside_bracereference = 0;
 		emit(REF_END);
 	}
 }

@@ -32,8 +32,6 @@ static ModeStack modeStack; // Stack to manage lexer modes
 
 static std::string singlequote_contents; // To hold contents within single quotes
 
-static uint64_t array_index_depth = 0;
-
 %}
 
 %option noyywrap
@@ -100,6 +98,20 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 /* Handling Bash shell variables */
 %x BASH_VAR_MODE
+
+
+/* INCLUSIVE start conditions
+ * These start conditions are essentially used to lex normally while distinguishing special modes,
+ * e.g., when parsing array indices (as in ${var[array_index]}),
+ * Most lexing inside the  '[ ... ]' pair has to be done normally (normal lexing mode),
+ * Except for the handling of the closing bracket ']'
+ * In this case, it's nice to have some flag to check whether we're inside an array index or not,
+ * Without disturbing the normal lexing rules.
+ * Therefore we declare an inclusive start condition with no special rules of its own,
+ * And inside the rule for ']', we check the top of the mode stack to see if we're in ARRAY_INDEX_MODE.
+ */
+
+%s ARRAY_INDEX_MODE
 
 %%
 
@@ -170,17 +182,14 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 "["                    { emit(LBRACKET); }
 
 "]"                    {
-	if (array_index_depth > 0) {
-		array_index_depth--;
-		modeStack.pop(); // Return to the reference mode that brought us here
-		emit(ARRAY_INDEX_END);
-		/* TODO: THIS IS WRONG.
-		 * array_index_depth > 0 is NOT a sufficient check to see if this is a matching rbracket to an opening lbracket
-		 * counter-example: @{object.reference["]"]}
-		 *                                     ^
-		 */
-	} else {
-		emit(RBRACKET);
+	switch (modeStack.top()) {
+		case ARRAY_INDEX_MODE:
+			modeStack.pop(); // Exit ARRAY_INDEX_MODE
+			emit(ARRAY_INDEX_END);
+			break;
+		default:
+			emit(RBRACKET);
+			break;
 	}
 }
 
@@ -266,8 +275,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 
 	"[" {
-		modeStack.push(INITIAL);
-		array_index_depth++;
+		modeStack.push(ARRAY_INDEX_MODE);
 		emit(ARRAY_INDEX_START);
 	}
 
@@ -283,8 +291,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 	
 	"[" {
-		modeStack.push(INITIAL);
-		array_index_depth++;
+		modeStack.push(ARRAY_INDEX_MODE);
 		emit(ARRAY_INDEX_START);
 	}
 

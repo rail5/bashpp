@@ -34,6 +34,9 @@ static std::string singlequote_contents; // To hold contents within single quote
 
 static uint32_t token_count_inside_bracereference = 0;
 
+static uint32_t deprecated_subshell_nesting_depth = 0;
+static std::stack<uint32_t> deprecated_subshell_nesting_depths;
+
 static bool incoming_token_can_be_lvalue = true; // The first token of the program can of course be an lvalue
 
 void set_incoming_token_can_be_lvalue(bool canBeLvalue) {
@@ -48,7 +51,6 @@ void set_incoming_token_can_be_lvalue(bool canBeLvalue) {
 */
 yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 	yy::parser::symbol_kind_type type = token.kind();
-	std::string text = token.value.as<std::string>();
 	switch (type) {
 		case yy::parser::symbol_kind::S_AT:
 			// If this AT is the first non-whitespace token of the new command string, it's an lvalue
@@ -68,6 +70,7 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 			// Same as above
 			if (incoming_token_can_be_lvalue) {
 				incoming_token_can_be_lvalue = false;
+				std::string text = token.value.as<std::string>();
 				return yy::parser::make_IDENTIFIER_LVALUE(text);
 			}
 			break;
@@ -92,6 +95,7 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 		case yy::parser::symbol_kind::S_SUPERSHELL_START:
 		case yy::parser::symbol_kind::S_SUBSHELL_START:
 		case yy::parser::symbol_kind::S_SUBSHELL_SUBSTITUTION_START:
+		case yy::parser::symbol_kind::S_DEPRECATED_SUBSHELL_START:
 			// At the start of a new command string, the next token can be an lvalue
 			incoming_token_can_be_lvalue = true;
 			break;
@@ -118,7 +122,7 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 %option noyywrap
 %option stack
 
-ESCAPED_CHAR    \\.
+ESCAPED_CHAR    \\(.|\n)
 AT              @
 
 WS              [ \t]+
@@ -204,6 +208,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 %s SUBSHELL_SUBSTITUTION_MODE
 
+%s DEPRECATED_SUBSHELL_MODE
+
 %%
 
 %{
@@ -232,7 +238,35 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	#define tokenText std::string(yytext, yyleng)
 %}
 
-{ESCAPED_CHAR}                       { emit(ESCAPED_CHAR, tokenText); }
+{ESCAPED_CHAR}                       {
+	std::string sequence = tokenText;
+	if (modeStack.top() == DEPRECATED_SUBSHELL_MODE && sequence[1] == '`') {
+		// Is this starting a nested subshell or is it finishing a nested subshell?
+		deprecated_subshell_nesting_depth++; // Include the latest backslash
+		if (
+			!deprecated_subshell_nesting_depths.empty()
+			&& deprecated_subshell_nesting_depth == deprecated_subshell_nesting_depths.top()
+		) {
+			// Finishing a nested subshell
+			modeStack.pop();
+			uint32_t depth = deprecated_subshell_nesting_depth;
+			deprecated_subshell_nesting_depths.pop();
+			deprecated_subshell_nesting_depth = 0;
+			emit(DEPRECATED_SUBSHELL_END, depth);
+		} else {
+			// Starting a new nested subshell
+			modeStack.push(DEPRECATED_SUBSHELL_MODE);
+			deprecated_subshell_nesting_depths.push(deprecated_subshell_nesting_depth);
+			deprecated_subshell_nesting_depth = 0;
+			emit(DEPRECATED_SUBSHELL_START, deprecated_subshell_nesting_depths.top());
+		}
+	} else if (modeStack.top() == DEPRECATED_SUBSHELL_MODE && sequence[1] == '\\') {
+		deprecated_subshell_nesting_depth++;
+		// No need to emit anything yet
+	} else {
+		emit(ESCAPED_CHAR, tokenText);
+	}
+}
 {WS}                                 { emit(WS, tokenText); }
 
 {KEYWORD_INCLUDE}/[^a-zA-Z0-9_]      { modeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE); }
@@ -326,6 +360,21 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 			break;
 		default:
 			emit(RPAREN);
+			break;
+	}
+}
+
+"`" {
+	switch (modeStack.top()) {
+		case DEPRECATED_SUBSHELL_MODE:
+			modeStack.pop(); // Exit DEPRECATED_SUBSHELL_MODE
+			emit(DEPRECATED_SUBSHELL_END, 0);
+			break;
+		default:
+			modeStack.push(DEPRECATED_SUBSHELL_MODE);
+			deprecated_subshell_nesting_depths.push(0);
+			deprecated_subshell_nesting_depth = 0;
+			emit(DEPRECATED_SUBSHELL_START, 0);
 			break;
 	}
 }

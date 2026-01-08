@@ -41,6 +41,7 @@ void yyerror(const char *s);
 %token <std::string> INCLUDE_TYPE INCLUDE_PATH
 
 %token SUPERSHELL_START SUPERSHELL_END SUBSHELL_START SUBSHELL_END SUBSHELL_SUBSTITUTION_START SUBSHELL_SUBSTITUTION_END
+%token <int> DEPRECATED_SUBSHELL_START DEPRECATED_SUBSHELL_END
 %token LPAREN RPAREN
 
 %token KEYWORD_CLASS KEYWORD_VIRTUAL KEYWORD_METHOD KEYWORD_CONSTRUCTOR KEYWORD_DESTRUCTOR
@@ -69,7 +70,7 @@ void yyerror(const char *s);
 %type <std::string> bash_variable
 %type <std::string> dynamic_cast cast_target
 %type <std::string> object_address pointer_dereference pointer_dereference_rvalue pointer_dereference_lvalue
-%type <std::string> supershell subshell subshell_raw subshell_substitution
+%type <std::string> supershell subshell subshell_raw subshell_substitution deprecated_subshell
 
 /**
  * NOTE: A shift/reduce conflict is EXPECTED between 'object_instantiation' and
@@ -180,7 +181,8 @@ valid_rvalue:
 	| bash_variable { $$ = $1; }
 	| dynamic_cast {$$ = $1; }
 	| supershell { $$ = $1; }
-	| subshell_substitution
+	| subshell_substitution { $$ = $1; }
+	| deprecated_subshell { $$ = $1; }
 	;
 
 maybe_whitespace:
@@ -758,6 +760,7 @@ supershell:
 subshell:
 	subshell_raw { $$ = $1; }
 	| subshell_substitution { $$ = $1; }
+	| deprecated_subshell { $$ = $1; }
 	;
 
 subshell_raw:
@@ -771,6 +774,13 @@ subshell_substitution:
 	SUBSHELL_SUBSTITUTION_START statements SUBSHELL_SUBSTITUTION_END {
 		std::cout << "Parsed subshell substitution block" << std::endl;
 		$$ = "$(subshell_substitution)";
+	}
+	;
+
+deprecated_subshell:
+	DEPRECATED_SUBSHELL_START statements DEPRECATED_SUBSHELL_END {
+		std::cout << "Parsed DEPRECATED subshell block" << std::endl;
+		$$ = "`deprecated_subshell`";
 	}
 	;
 

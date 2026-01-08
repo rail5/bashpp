@@ -40,7 +40,7 @@ void yyerror(const char *s);
 %token KEYWORD_INCLUDE KEYWORD_INCLUDE_ONCE KEYWORD_AS KEYWORD_DYNAMIC_CAST
 %token <std::string> INCLUDE_TYPE INCLUDE_PATH
 
-%token SUPERSHELL_START SUPERSHELL_END
+%token SUPERSHELL_START SUPERSHELL_END SUBSHELL_START SUBSHELL_END SUBSHELL_SUBSTITUTION_START SUBSHELL_SUBSTITUTION_END
 %token LPAREN RPAREN
 
 %token KEYWORD_CLASS KEYWORD_VIRTUAL KEYWORD_METHOD KEYWORD_CONSTRUCTOR KEYWORD_DESTRUCTOR
@@ -69,7 +69,7 @@ void yyerror(const char *s);
 %type <std::string> bash_variable
 %type <std::string> dynamic_cast cast_target
 %type <std::string> object_address pointer_dereference pointer_dereference_rvalue pointer_dereference_lvalue
-%type <std::string> supershell
+%type <std::string> supershell subshell subshell_raw subshell_substitution
 
 /**
  * NOTE: A shift/reduce conflict is EXPECTED between 'object_instantiation' and
@@ -147,6 +147,7 @@ statement:
 	| bash_variable
 	| dynamic_cast
 	| supershell
+	| subshell
 	;
 
 block:
@@ -179,6 +180,7 @@ valid_rvalue:
 	| bash_variable { $$ = $1; }
 	| dynamic_cast {$$ = $1; }
 	| supershell { $$ = $1; }
+	| subshell_substitution
 	;
 
 maybe_whitespace:
@@ -750,6 +752,25 @@ supershell:
 	SUPERSHELL_START statements SUPERSHELL_END {
 		std::cout << "Parsed supershell block" << std::endl;
 		$$ = "@(supershell)";
+	}
+	;
+
+subshell:
+	subshell_raw { $$ = $1; }
+	| subshell_substitution { $$ = $1; }
+	;
+
+subshell_raw:
+	SUBSHELL_START statements SUBSHELL_END {
+		std::cout << "Parsed subshell block" << std::endl;
+		$$ = "(subshell)";
+	}
+	;
+
+subshell_substitution:
+	SUBSHELL_SUBSTITUTION_START statements SUBSHELL_SUBSTITUTION_END {
+		std::cout << "Parsed subshell substitution block" << std::endl;
+		$$ = "$(subshell_substitution)";
 	}
 	;
 

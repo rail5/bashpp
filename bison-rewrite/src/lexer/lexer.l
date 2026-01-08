@@ -90,6 +90,8 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 		case yy::parser::symbol_kind::S_DOUBLEPIPE:
 		case yy::parser::symbol_kind::S_PIPE:
 		case yy::parser::symbol_kind::S_SUPERSHELL_START:
+		case yy::parser::symbol_kind::S_SUBSHELL_START:
+		case yy::parser::symbol_kind::S_SUBSHELL_SUBSTITUTION_START:
 			// At the start of a new command string, the next token can be an lvalue
 			incoming_token_can_be_lvalue = true;
 			break;
@@ -198,6 +200,10 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 %s SUPERSHELL_MODE
 
+%s SUBSHELL_MODE
+
+%s SUBSHELL_SUBSTITUTION_MODE
+
 %%
 
 %{
@@ -294,11 +300,29 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	emit(SUPERSHELL_START);
 }
 
+"$(" {
+	modeStack.push(SUBSHELL_SUBSTITUTION_MODE);
+	emit(SUBSHELL_SUBSTITUTION_START);
+}
+
+"(" {
+	modeStack.push(SUBSHELL_MODE);
+	emit(SUBSHELL_START);
+}
+
 ")" {
 	switch (modeStack.top()) {
 		case SUPERSHELL_MODE:
 			modeStack.pop(); // Exit SUPERSHELL_MODE
 			emit(SUPERSHELL_END);
+			break;
+		case SUBSHELL_MODE:
+			modeStack.pop(); // Exit SUBSHELL_MODE
+			emit(SUBSHELL_END);
+			break;
+		case SUBSHELL_SUBSTITUTION_MODE:
+			modeStack.pop(); // Exit SUBSHELL_SUBSTITUTION_MODE
+			emit(SUBSHELL_SUBSTITUTION_END);
 			break;
 		default:
 			emit(RPAREN);

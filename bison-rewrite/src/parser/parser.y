@@ -150,6 +150,10 @@ statement:
 	| dynamic_cast
 	| supershell
 	| subshell
+	| error {
+		std::cerr << "Syntax error in statement." << std::endl;
+		yyerrok;
+	}
 	;
 
 block:
@@ -235,6 +239,16 @@ object_instantiation:
 		std::string objectName = $4;
 
 		std::cout << "Parsed object instantiation: Class='" << className << "', Object='" << objectName << "'" << std::endl;
+	}
+	| AT_LVALUE IDENTIFIER WS error {
+		/* TODO(@rail5): Tie this into the compiler's actual error reporting function to display line/col etc */
+		std::cerr << "Syntax error in object instantiation: An object name is required after the class name."
+		<< std::endl
+		<< "If your intention was to call .toPrimitive with arguments, please do so explicitly, as in:"
+		<< std::endl
+		<< "	@" << $2 << ".toPrimitive <arg1> <arg2> ..."
+		<< std::endl;
+		yyerrok;
 	}
 	;
 

@@ -20,16 +20,19 @@ void yyerror(const char *s);
 	#include "parser.tab.hpp"
 
 	yy::parser::symbol_type yylex();
+
+	extern void set_incoming_token_can_be_lvalue(bool canBeLvalue);
 }
 
 %token <std::string> ESCAPED_CHAR WS DELIM
+%token DOUBLEAMPERSAND DOUBLEPIPE PIPE
 
 %token <std::string> SINGLEQUOTED_STRING
 
 %token QUOTE_BEGIN QUOTE_END
 %token <std::string> DOUBLEQUOTE_CONTENT
 
-%token AT
+%token AT AT_LVALUE
 %token LBRACE RBRACE LANGLE RANGLE
 %token COLON EQUALS ASTERISK DOT
 
@@ -38,12 +41,12 @@ void yyerror(const char *s);
 
 %token KEYWORD_CLASS KEYWORD_NEW KEYWORD_VIRTUAL KEYWORD_METHOD KEYWORD_CONSTRUCTOR KEYWORD_DESTRUCTOR
 
-%token <std::string> IDENTIFIER
+%token <std::string> IDENTIFIER IDENTIFIER_LVALUE
 
 %token KEYWORD_PUBLIC KEYWORD_PRIVATE KEYWORD_PROTECTED
 
 %token ARRAY_INDEX_START ARRAY_INDEX_END LBRACKET RBRACKET
-%token REF_START REF_END
+%token REF_START REF_START_LVALUE REF_END
 %token <std::string> BASH_VAR
 %token BASH_VAR_START BASH_VAR_END
 
@@ -56,13 +59,13 @@ void yyerror(const char *s);
 %type <std::string> maybe_include_type maybe_as_clause maybe_parent_class maybe_default_value
 %type <std::string> valid_rvalue
 %type <std::string> doublequoted_string quote_contents
-%type <std::string> object_reference maybe_descend_object_hierarchy maybe_array_index
+%type <std::string> object_reference object_reference_lvalue maybe_descend_object_hierarchy maybe_array_index
 %type <std::string> bash_variable
 %type <std::string> dynamic_cast cast_target
 
 /**
  * NOTE: A shift/reduce conflict is EXPECTED between 'object_instantiation' and
- * 'object_reference' on the WS token.
+ * 'object_reference_lvalue' on the WS token.
  *
  * This is because, with only 1 token of lookahead, the parser cannot determine
  * whether the WS is between the class name and object name in an object
@@ -124,6 +127,8 @@ statement:
 	| pointer_declaration
 	| new_statement
 	| object_reference
+	| object_reference_lvalue
+	| shell_variable_assignment
 	| object_assignment
 	| block
 	| bash_variable
@@ -201,7 +206,7 @@ maybe_as_clause:
 	;
 
 object_instantiation:
-	AT IDENTIFIER WS IDENTIFIER DELIM {
+	AT_LVALUE IDENTIFIER WS IDENTIFIER DELIM {
 		std::string className = $2;
 		std::string objectName = $4;
 
@@ -210,7 +215,7 @@ object_instantiation:
 	;
 
 pointer_declaration:
-	AT IDENTIFIER ASTERISK WS IDENTIFIER maybe_default_value DELIM {
+	AT_LVALUE IDENTIFIER ASTERISK WS IDENTIFIER maybe_default_value DELIM {
 		std::string typeName = $2;
 		std::string pointerName = $5;
 		std::string defaultValue = $6;
@@ -247,7 +252,7 @@ maybe_parent_class:
 	;
 
 datamember_declaration:
-	access_modifier IDENTIFIER maybe_default_value DELIM {
+	access_modifier IDENTIFIER_LVALUE maybe_default_value DELIM {
 		std::string accessMod;
 		switch ($1) {
 			case yy::parser::token::KEYWORD_PUBLIC:
@@ -411,6 +416,37 @@ object_reference:
 	}
 	;
 
+object_reference_lvalue:
+	AT_LVALUE IDENTIFIER maybe_descend_object_hierarchy {
+		std::string objectName = $2;
+		std::string hierarchy = $3;
+
+		std::cout << "Parsed lvalue object reference: Object='" << objectName << "'";
+		if (!hierarchy.empty()) {
+			std::cout << ", Hierarchy='" << hierarchy << "'";
+		}
+		std::cout << std::endl;
+
+		$$ = "@" + objectName + hierarchy;
+	}
+	| REF_START_LVALUE IDENTIFIER maybe_descend_object_hierarchy maybe_array_index REF_END {
+		std::string objectName = $2;
+		std::string hierarchy = $3;
+		std::string arrayIndex = $4;
+
+		std::cout << "Parsed lvalue reference object reference: Object='" << objectName << "'";
+		if (!hierarchy.empty()) {
+			std::cout << ", Hierarchy='" << hierarchy << "'";
+		}
+		if (!arrayIndex.empty()) {
+			std::cout << ", ArrayIndex='" << arrayIndex << "'";
+		}
+		std::cout << std::endl;
+
+		$$ = "@" + objectName + hierarchy + arrayIndex;
+	}
+	;
+
 maybe_descend_object_hierarchy:
 	/* empty */ { $$ = ""; }
 	| DOT IDENTIFIER maybe_descend_object_hierarchy {
@@ -471,11 +507,23 @@ cast_target:
 	;
 
 object_assignment:
-	object_reference EQUALS valid_rvalue {
+	object_reference_lvalue EQUALS valid_rvalue {
 		std::string objectRef = $1;
 		std::string rvalue = $3;
 
 		std::cout << "Parsed object assignment: ObjectReference='" << objectRef << "', RValue='" << rvalue << "'" << std::endl;
+
+		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
+	}
+
+shell_variable_assignment:
+	IDENTIFIER_LVALUE EQUALS valid_rvalue {
+		std::string varName = $1;
+		std::string rvalue = $3;
+
+		std::cout << "Parsed shell variable assignment: Variable='" << varName << "', RValue='" << rvalue << "'" << std::endl;
+
+		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
 	}
 
 %%

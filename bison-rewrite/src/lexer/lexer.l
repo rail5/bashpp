@@ -32,6 +32,65 @@ static ModeStack modeStack; // Stack to manage lexer modes
 
 static std::string singlequote_contents; // To hold contents within single quotes
 
+static bool incoming_token_can_be_lvalue = true; // The first token of the program can of course be an lvalue
+
+void set_incoming_token_can_be_lvalue(bool canBeLvalue) {
+	incoming_token_can_be_lvalue = canBeLvalue;
+}
+
+/**
+ * @brief Determines if the current token can be treated as an lvalue, and updates lexer state accordingly.
+ *
+ * @param token The current token being processed.
+ * @return Either the original token unmodified, or an lvalue variant of the token if applicable.
+*/
+yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
+	yy::parser::symbol_kind_type type = token.kind();
+	std::string text = token.value.as<std::string>();
+	switch (type) {
+		case yy::parser::symbol_kind::S_AT:
+			// If this AT is the first non-whitespace token of the new command string, it's an lvalue
+			if (incoming_token_can_be_lvalue) {
+				incoming_token_can_be_lvalue = false; // Next token cannot be an lvalue
+				return yy::parser::make_AT_LVALUE();
+			}
+			break;
+		case yy::parser::symbol_kind::S_REF_START:
+			// Same as above
+			if (incoming_token_can_be_lvalue) {
+				incoming_token_can_be_lvalue = false;
+				return yy::parser::make_REF_START_LVALUE();
+			}
+			break;
+		case yy::parser::symbol_kind::S_IDENTIFIER:
+			// Same as above
+			if (incoming_token_can_be_lvalue) {
+				incoming_token_can_be_lvalue = false;
+				return yy::parser::make_IDENTIFIER_LVALUE(text);
+			}
+			break;
+		case yy::parser::symbol_kind::S_DELIM:
+		case yy::parser::symbol_kind::S_DOUBLEAMPERSAND:
+		case yy::parser::symbol_kind::S_DOUBLEPIPE:
+		case yy::parser::symbol_kind::S_PIPE:
+			// At the start of a new command string, the next token can be an lvalue
+			incoming_token_can_be_lvalue = true;
+			break;
+		case yy::parser::symbol_kind::S_KEYWORD_PUBLIC:
+		case yy::parser::symbol_kind::S_KEYWORD_PROTECTED:
+		case yy::parser::symbol_kind::S_KEYWORD_PRIVATE:
+			// Access specifiers do not change lvalue considerations
+			break;
+		case yy::parser::symbol_kind::S_WS:
+			// Whitespace does not change lvalue considerations
+			break;
+		default:
+			incoming_token_can_be_lvalue = false;
+			break;
+	}
+	return token; // If we're here, just return the original token unmodified
+}
+
 %}
 
 %option noyywrap
@@ -71,6 +130,10 @@ RANGLE                  [>]
 
 LBRACE                  [{]
 RBRACE                  [}]
+
+DOUBLEAMPERSAND         "&&"
+DOUBLEPIPE              "||"
+PIPE                    "|"
 
 /* Tokens only signifcant to @include statements */
 SPECIAL_KEYWORD_DYNAMIC   dynamic
@@ -133,7 +196,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	*  return yy::parser::make_AT();
 	*/
 	#define emit(tokenType, ...) \
-		return yy::parser::make_##tokenType(__VA_ARGS__);
+		return maybe_get_lvalue_token(yy::parser::make_##tokenType(__VA_ARGS__));
 	
 	/**
 	* Helper to get the text of the current token as a std::string.
@@ -162,6 +225,9 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 {AT}                   { modeStack.push(BPP_MODE); emit(AT); }
 {DELIM}                { emit(DELIM, tokenText); }
+{DOUBLEAMPERSAND}      { emit(DOUBLEAMPERSAND); }
+{DOUBLEPIPE}           { emit(DOUBLEPIPE); }
+{PIPE}                 { emit(PIPE); }
 {LBRACE}               { emit(LBRACE); }
 {RBRACE}               { emit(RBRACE); }
 ":"                    { emit(COLON); }
@@ -259,7 +325,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		emit(DOT);
 	}
 
-	. {
+	(.|\n) {
 		modeStack.pop(); // Exit BPP_MODE if we see anything other than IDENTIFIER or DOT coming up next
 		yyless(0); // Do not consume the character; let the main lexer mode handle it
 	}

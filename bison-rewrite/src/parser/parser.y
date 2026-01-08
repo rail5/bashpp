@@ -40,7 +40,7 @@ void yyerror(const char *s);
 %token KEYWORD_INCLUDE KEYWORD_INCLUDE_ONCE KEYWORD_AS KEYWORD_DYNAMIC_CAST
 %token <std::string> INCLUDE_TYPE INCLUDE_PATH
 
-%token KEYWORD_CLASS KEYWORD_NEW KEYWORD_VIRTUAL KEYWORD_METHOD KEYWORD_CONSTRUCTOR KEYWORD_DESTRUCTOR
+%token KEYWORD_CLASS KEYWORD_NEW KEYWORD_DELETE KEYWORD_VIRTUAL KEYWORD_METHOD KEYWORD_CONSTRUCTOR KEYWORD_DESTRUCTOR
 
 %token <std::string> IDENTIFIER IDENTIFIER_LVALUE
 
@@ -128,6 +128,7 @@ statement:
 	| object_instantiation
 	| pointer_declaration
 	| new_statement
+	| delete_statement
 	| object_reference
 	| object_reference_lvalue
 	| self_reference
@@ -231,6 +232,7 @@ pointer_declaration:
 		}
 		std::cout << std::endl;
 	}
+	;
 
 new_statement:
 	KEYWORD_NEW WS IDENTIFIER {
@@ -238,6 +240,21 @@ new_statement:
 
 		std::cout << "Parsed new statement: Class='" << className << "'" << std::endl;
 	}
+	;
+
+delete_statement:
+	KEYWORD_DELETE WS object_reference {
+		std::string objectRef = $3;
+
+		std::cout << "Parsed delete statement: ObjectReference='" << objectRef << "'" << std::endl;
+	}
+	|
+	KEYWORD_DELETE WS self_reference {
+		std::string selfRef = $3;
+
+		std::cout << "Parsed delete statement: SelfReference='" << selfRef << "'" << std::endl;
+	}
+	;
 
 class_definition:
 	KEYWORD_CLASS WS IDENTIFIER maybe_parent_class block {
@@ -250,6 +267,7 @@ class_definition:
 		}
 		std::cout << std::endl;
 	}
+	;
 
 maybe_parent_class:
 	whitespace_or_delimiter { $$ = ""; }
@@ -630,6 +648,7 @@ object_assignment:
 
 		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
 	}
+	;
 
 shell_variable_assignment:
 	IDENTIFIER_LVALUE EQUALS valid_rvalue {
@@ -640,6 +659,7 @@ shell_variable_assignment:
 
 		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
 	}
+	;
 
 %%
 

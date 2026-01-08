@@ -231,6 +231,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 {KEYWORD_PROTECTED}/[^a-zA-Z0-9_]    { emit(KEYWORD_PROTECTED); }
 {KEYWORD_PRIVATE}/[^a-zA-Z0-9_]      { emit(KEYWORD_PRIVATE); }
 {KEYWORD_NEW}/[^a-zA-Z0-9_]          { emit(KEYWORD_NEW); }
+{KEYWORD_DELETE}/[^a-zA-Z0-9_]       { emit(KEYWORD_DELETE); }
 {KEYWORD_METHOD}/[^a-zA-Z0-9_]       { emit(KEYWORD_METHOD); }
 {KEYWORD_VIRTUAL}/[^a-zA-Z0-9_]      { emit(KEYWORD_VIRTUAL); }
 {KEYWORD_CONSTRUCTOR}/[^a-zA-Z0-9_]  { emit(KEYWORD_CONSTRUCTOR); }

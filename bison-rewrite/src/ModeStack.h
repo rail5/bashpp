@@ -13,4 +13,5 @@ class ModeStack {
 		void pop();
 		int top() const;
 		bool empty() const;
+		size_t size() const;
 };

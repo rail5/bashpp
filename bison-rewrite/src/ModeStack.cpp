@@ -36,3 +36,7 @@ int ModeStack::top() const {
 bool ModeStack::empty() const {
 	return modeStack.empty();
 }
+
+size_t ModeStack::size() const {
+	return modeStack.size();
+}

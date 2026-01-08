@@ -3,6 +3,7 @@
 
 %code requires {
 #include <memory>
+#include <cassert>
 }
 
 %{
@@ -779,7 +780,10 @@ subshell_substitution:
 
 deprecated_subshell:
 	DEPRECATED_SUBSHELL_START statements DEPRECATED_SUBSHELL_END {
-		std::cout << "Parsed DEPRECATED subshell block" << std::endl;
+		// NOTE: The nesting depth is stored as the semantic value of the DEPRECATED_SUBSHELL_START token
+		assert($1 == $3 && "Mismatched deprecated subshell nesting depths!");
+
+		std::cout << "Parsed DEPRECATED subshell block [depth = " << $1 << "]" << std::endl;
 		$$ = "`deprecated_subshell`";
 	}
 	;

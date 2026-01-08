@@ -35,7 +35,7 @@ void yyerror(const char *s);
 %token AT AT_LVALUE
 %token KEYWORD_THIS KEYWORD_THIS_LVALUE KEYWORD_SUPER KEYWORD_SUPER_LVALUE
 %token LBRACE RBRACE LANGLE RANGLE
-%token COLON EQUALS ASTERISK DOT
+%token COLON EQUALS ASTERISK DEREFERENCE_OPERATOR AMPERSAND DOT
 
 %token KEYWORD_INCLUDE KEYWORD_INCLUDE_ONCE KEYWORD_AS KEYWORD_DYNAMIC_CAST
 %token <std::string> INCLUDE_TYPE INCLUDE_PATH
@@ -65,6 +65,7 @@ void yyerror(const char *s);
 %type <std::string> self_reference self_reference_lvalue
 %type <std::string> bash_variable
 %type <std::string> dynamic_cast cast_target
+%type <std::string> object_address pointer_dereference pointer_dereference_rvalue pointer_dereference_lvalue
 
 /**
  * NOTE: A shift/reduce conflict is EXPECTED between 'object_instantiation' and
@@ -134,6 +135,8 @@ statement:
 	| object_reference_lvalue
 	| self_reference
 	| self_reference_lvalue
+	| object_address
+	| pointer_dereference
 	| shell_variable_assignment
 	| object_assignment
 	| block
@@ -166,6 +169,8 @@ valid_rvalue:
 	| new_statement { $$ = ""; }
 	| object_reference { $$ = $1; }
 	| self_reference { $$ = $1; }
+	| object_address { $$ = $1; }
+	| pointer_dereference_rvalue { $$ = $1; }
 	| bash_variable { $$ = $1; }
 	| dynamic_cast {$$ = $1; }
 	;
@@ -650,6 +655,22 @@ object_assignment:
 
 		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
 	}
+	| self_reference_lvalue EQUALS valid_rvalue {
+		std::string selfRef = $1;
+		std::string rvalue = $3;
+
+		std::cout << "Parsed self assignment: SelfReference='" << selfRef << "', RValue='" << rvalue << "'" << std::endl;
+
+		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
+	}
+	| pointer_dereference_lvalue EQUALS valid_rvalue {
+		std::string pointerDeref = $1;
+		std::string rvalue = $3;
+
+		std::cout << "Parsed pointer dereference assignment: PointerDereference='" << pointerDeref << "', RValue='" << rvalue << "'" << std::endl;
+
+		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
+	}
 	;
 
 shell_variable_assignment:
@@ -660,6 +681,62 @@ shell_variable_assignment:
 		std::cout << "Parsed shell variable assignment: Variable='" << varName << "', RValue='" << rvalue << "'" << std::endl;
 
 		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
+	}
+	;
+
+object_address:
+	AMPERSAND object_reference {
+		std::string objectRef = $2;
+
+		std::cout << "Parsed object address-of: ObjectReference='" << objectRef << "'" << std::endl;
+
+		$$ = "&" + objectRef;
+	}
+	| AMPERSAND self_reference {
+		std::string selfRef = $2;
+
+		std::cout << "Parsed self address-of: SelfReference='" << selfRef << "'" << std::endl;
+
+		$$ = "&" + selfRef;
+	}
+	;
+
+pointer_dereference:
+	pointer_dereference_rvalue { $$ = $1; }
+	| pointer_dereference_lvalue { $$ = $1; }
+	;
+
+pointer_dereference_rvalue:
+	DEREFERENCE_OPERATOR object_reference {
+		std::string objectRef = $2;
+
+		std::cout << "Parsed pointer dereference: ObjectReference='" << objectRef << "'" << std::endl;
+
+		$$ = "*" + objectRef;
+	}
+	| DEREFERENCE_OPERATOR self_reference {
+		std::string selfRef = $2;
+
+		std::cout << "Parsed self pointer dereference: SelfReference='" << selfRef << "'" << std::endl;
+
+		$$ = "*" + selfRef;
+	}
+	;
+
+pointer_dereference_lvalue:
+	DEREFERENCE_OPERATOR object_reference_lvalue {
+		std::string objectRef = $2;
+
+		std::cout << "Parsed lvalue pointer dereference: ObjectReference='" << objectRef << "'" << std::endl;
+
+		$$ = "*" + objectRef;
+	}
+	| DEREFERENCE_OPERATOR self_reference_lvalue {
+		std::string selfRef = $2;
+
+		std::cout << "Parsed lvalue self pointer dereference: SelfReference='" << selfRef << "'" << std::endl;
+
+		$$ = "*" + selfRef;
 	}
 	;
 

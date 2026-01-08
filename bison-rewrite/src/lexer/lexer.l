@@ -100,6 +100,9 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 		case yy::parser::symbol_kind::S_WS:
 			// Whitespace does not change lvalue considerations
 			break;
+		case yy::parser::symbol_kind::S_DEREFERENCE_OPERATOR:
+			// Dereference operator does not change lvalue considerations
+			break;
 		default:
 			incoming_token_can_be_lvalue = false;
 			break;
@@ -254,7 +257,9 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 {RBRACE}                             { emit(RBRACE); }
 ":"                                  { emit(COLON); }
 "="                                  { emit(EQUALS); }
-"*"                                  { emit(ASTERISK); }
+[\*]/[@]                             { emit(DEREFERENCE_OPERATOR); }
+[*]                                  { emit(ASTERISK); }
+"&"                                  { emit(AMPERSAND); }
 {IDENTIFIER}                         { emit(IDENTIFIER, tokenText); }
 {LANGLE}                             { emit(LANGLE); }
 {RANGLE}                             { emit(RANGLE); }

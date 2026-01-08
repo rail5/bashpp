@@ -1,7 +1,5 @@
 #include "ModeStack.h"
 
-#include <iostream>
-
 extern void scanner_push_state(int state);
 extern void scanner_pop_state();
 extern int scanner_current_state();

@@ -51,6 +51,7 @@ void yyerror(const char *s);
 %token <std::string> IDENTIFIER IDENTIFIER_LVALUE
 
 %token KEYWORD_PUBLIC KEYWORD_PRIVATE KEYWORD_PROTECTED
+%token KEYWORD_TYPEOF
 
 %token ARRAY_INDEX_START ARRAY_INDEX_END LBRACKET RBRACKET
 %token REF_START REF_START_LVALUE REF_END
@@ -74,6 +75,7 @@ void yyerror(const char *s);
 %type <std::string> object_address pointer_dereference pointer_dereference_rvalue pointer_dereference_lvalue
 %type <std::string> supershell subshell subshell_raw subshell_substitution deprecated_subshell
 %type <std::string> maybe_hash
+%type <std::string> typeof_expression
 
 /**
  * NOTE: A shift/reduce conflict is EXPECTED between 'object_instantiation' and
@@ -152,6 +154,7 @@ statement:
 	| dynamic_cast
 	| supershell
 	| subshell
+	| typeof_expression
 	;
 
 block:
@@ -186,6 +189,7 @@ valid_rvalue:
 	| supershell { $$ = $1; }
 	| subshell_substitution { $$ = $1; }
 	| deprecated_subshell { $$ = $1; }
+	| typeof_expression { $$ = $1; }
 	;
 
 maybe_whitespace:
@@ -767,6 +771,15 @@ pointer_dereference_lvalue:
 		$$ = "*" + selfRef;
 	}
 	;
+
+typeof_expression:
+	KEYWORD_TYPEOF WS valid_rvalue {
+		std::string expression = $3;
+
+		std::cout << "Parsed typeof expression: Expression='" << expression << "'" << std::endl;
+
+		$$ = "typeof(" + expression + ")";
+	}
 
 supershell:
 	SUPERSHELL_START statements SUPERSHELL_END {

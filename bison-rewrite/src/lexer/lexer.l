@@ -314,6 +314,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 {KEYWORD_CONSTRUCTOR}/[^a-zA-Z0-9_]  { emit(KEYWORD_CONSTRUCTOR); }
 {KEYWORD_DESTRUCTOR}/[^a-zA-Z0-9_]   { emit(KEYWORD_DESTRUCTOR); }
 {KEYWORD_DYNAMIC_CAST}/[^a-zA-Z0-9_] { emit(KEYWORD_DYNAMIC_CAST); }
+{KEYWORD_TYPEOF}/[^a-zA-Z0-9_]       { emit(KEYWORD_TYPEOF); }
 
 "@{"                                 { modeStack.push(BPP_BRACEREFERENCE_MODE); emit(REF_START); }
 

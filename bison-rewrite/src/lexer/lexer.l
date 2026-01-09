@@ -48,6 +48,7 @@ struct LexerState {
 	uint32_t token_count_inside_bracereference = 0;
 	uint32_t deprecated_subshell_nesting_depth = 0;
 	std::stack<uint32_t> deprecated_subshell_nesting_depths;
+	std::stack<std::string> nested_heredoc_delimiters;
 	bool incoming_token_can_be_lvalue = true;
 
 	void reset() {
@@ -214,10 +215,10 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 /* Handling double-quoted strings as sequences of STRING_TOKEN and interpolations */
 %x DOUBLEQUOTE_MODE
 
-
 /* Handling Bash shell variables */
 %x BASH_VAR_MODE
 
+%x HEREDOC_CONTENT_MODE
 
 /* INCLUSIVE start conditions
  * These start conditions are essentially used to lex normally while distinguishing special modes,
@@ -239,6 +240,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 %s SUBSHELL_SUBSTITUTION_MODE
 
 %s DEPRECATED_SUBSHELL_MODE
+
+%s HEREDOC_MODE
 
 %%
 
@@ -323,7 +326,12 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 {KEYWORD_THIS}/[^a-zA-Z0-9_]         { modeStack.push(BPP_MODE); emit(KEYWORD_THIS); }
 {KEYWORD_SUPER}/[^a-zA-Z0-9_]        { modeStack.push(BPP_MODE); emit(KEYWORD_SUPER); }
 
-{DELIM}                              { emit(DELIM, tokenText); }
+{DELIM}                              {
+	if (modeStack.top() == HEREDOC_MODE && tokenText == "\n") {
+		modeStack.push(HEREDOC_CONTENT_MODE);
+	}
+	emit(DELIM, tokenText);
+}
 {DOUBLEAMPERSAND}                    { emit(DOUBLEAMPERSAND); }
 {DOUBLEPIPE}                         { emit(DOUBLEPIPE); }
 {PIPE}                               { emit(PIPE); }
@@ -334,7 +342,15 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 [\*]/[@]                             { emit(DEREFERENCE_OPERATOR); }
 [*]                                  { emit(ASTERISK); }
 "&"                                  { emit(AMPERSAND); }
-{IDENTIFIER}                         { emit(IDENTIFIER, tokenText); }
+{IDENTIFIER}                         {
+	if (modeStack.top() == HEREDOC_MODE) {
+		// This IDENTIFIER is the heredoc delimiter
+		lexerState.nested_heredoc_delimiters.push(tokenText);
+		emit(HEREDOC_DELIMITER, tokenText);
+	} else {
+		emit(IDENTIFIER, tokenText);
+	}
+}
 {LANGLE}                             { emit(LANGLE); }
 {RANGLE}                             { emit(RANGLE); }
 
@@ -419,6 +435,62 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 ["] {
 	modeStack.push(DOUBLEQUOTE_MODE);
 	emit(QUOTE_BEGIN);
+}
+
+"<<-" {
+	modeStack.push(HEREDOC_MODE);
+	emit(HEREDOC_START);
+}
+
+"<<<" { emit(HERESTRING_START); }
+
+"<<" {
+	modeStack.push(HEREDOC_MODE);
+	emit(HEREDOC_START);
+}
+
+<HEREDOC_CONTENT_MODE>{
+	{IDENTIFIER} {
+		std::string id = tokenText;
+		if (!lexerState.nested_heredoc_delimiters.empty() && id == lexerState.nested_heredoc_delimiters.top()) {
+			// End of heredoc content
+			modeStack.pop(); // Exit HEREDOC_CONTENT_MODE
+			lexerState.nested_heredoc_delimiters.pop();
+			modeStack.pop(); // Exit HEREDOC_MODE
+			emit(HEREDOC_END, id);
+		} else {
+			emit(HEREDOC_CONTENT, tokenText);
+		}
+	}
+
+	{AT} {
+		// Start of interpolation inside heredoc content
+		modeStack.push(BPP_MODE);
+		emit(AT);
+	}
+
+	"<<-" {
+		// Nested heredoc start inside heredoc content
+		modeStack.push(HEREDOC_MODE);
+		emit(HEREDOC_START);
+	}
+	
+	"<<<" { emit(HEREDOC_CONTENT, tokenText); }
+
+	"<<" {
+		// Nested heredoc start inside heredoc content
+		modeStack.push(HEREDOC_MODE);
+		emit(HEREDOC_START);
+	}
+
+	"<" {
+		// Not significant
+		emit(HEREDOC_CONTENT, tokenText);
+	}
+
+	[^a-zA-Z0-9@<]+ {
+		emit(HEREDOC_CONTENT, tokenText);
+	}
 }
 
 [\#][^\n]*  { /* Ignore comments */ }

@@ -58,6 +58,8 @@ void yyerror(const char *s);
 %token <std::string> BASH_VAR
 %token BASH_VAR_START BASH_VAR_END
 %token HASH
+%token HEREDOC_START HERESTRING_START
+%token <std::string> HEREDOC_DELIMITER HEREDOC_CONTENT HEREDOC_END
 
 /* Handling unrecognized tokens */
 %token <std::string> ERROR
@@ -76,6 +78,7 @@ void yyerror(const char *s);
 %type <std::string> supershell subshell subshell_raw subshell_substitution deprecated_subshell
 %type <std::string> maybe_hash
 %type <std::string> typeof_expression
+%type <std::string> heredoc heredoc_content
 
 /**
  * NOTE: A shift/reduce conflict is EXPECTED between 'object_instantiation' and
@@ -155,6 +158,7 @@ statement:
 	| supershell
 	| subshell
 	| typeof_expression
+	| heredoc
 	;
 
 block:
@@ -439,7 +443,7 @@ doublequoted_string:
 quote_contents:
 	/* empty */ { $$ = ""; }
 	| quote_contents DOUBLEQUOTE_CONTENT { $$ = $1 + $2; }
-	| quote_contents AT IDENTIFIER { $$ = $1 + "@" + $3; }
+	| quote_contents AT IDENTIFIER { $$ = $1 + "@" + $3; } /* TODO: FIX THIS */
 	;
 
 object_reference:
@@ -816,6 +820,26 @@ deprecated_subshell:
 		std::cout << "Parsed DEPRECATED subshell block [depth = " << $1 << "]" << std::endl;
 		$$ = "`deprecated_subshell`";
 	}
+	;
+
+heredoc:
+	HEREDOC_START HEREDOC_DELIMITER DELIM heredoc_content HEREDOC_END {
+		std::string delimiter = $2;
+		std::string content = $4;
+
+		assert($2 == $5 && "Mismatched heredoc delimiters!");
+
+		std::cout << "Parsed heredoc: Delimiter='" << delimiter << "', Content='" << content << "'" << std::endl;
+
+		$$ = "<<"+ delimiter + "\n" + content + "\n" + delimiter;
+	}
+	;
+
+heredoc_content:
+	/* empty */ { $$ = ""; }
+	| heredoc_content HEREDOC_CONTENT { $$ = $1 + $2; }
+	| heredoc_content AT IDENTIFIER { $$ = $1 + "@" + $3; } /* TODO: FIX THIS */
+	| heredoc_content heredoc { $$ = $1 + $2; }
 	;
 
 %%

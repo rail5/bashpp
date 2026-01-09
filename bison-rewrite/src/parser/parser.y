@@ -56,6 +56,7 @@ void yyerror(const char *s);
 %token REF_START REF_START_LVALUE REF_END
 %token <std::string> BASH_VAR
 %token BASH_VAR_START BASH_VAR_END
+%token HASH
 
 /* Handling unrecognized tokens */
 %token <std::string> ERROR
@@ -72,6 +73,7 @@ void yyerror(const char *s);
 %type <std::string> dynamic_cast cast_target
 %type <std::string> object_address pointer_dereference pointer_dereference_rvalue pointer_dereference_lvalue
 %type <std::string> supershell subshell subshell_raw subshell_substitution deprecated_subshell
+%type <std::string> maybe_hash
 
 /**
  * NOTE: A shift/reduce conflict is EXPECTED between 'object_instantiation' and
@@ -150,10 +152,6 @@ statement:
 	| dynamic_cast
 	| supershell
 	| subshell
-	| error {
-		std::cerr << "Syntax error in statement." << std::endl;
-		yyerrok;
-	}
 	;
 
 block:
@@ -453,10 +451,10 @@ object_reference:
 
 		$$ = "@" + objectName + hierarchy;
 	}
-	| REF_START IDENTIFIER maybe_descend_object_hierarchy maybe_array_index REF_END {
-		std::string objectName = $2;
-		std::string hierarchy = $3;
-		std::string arrayIndex = $4;
+	| REF_START maybe_hash IDENTIFIER maybe_descend_object_hierarchy maybe_array_index REF_END {
+		std::string objectName = $3;
+		std::string hierarchy = $4;
+		std::string arrayIndex = $5;
 
 		std::cout << "Parsed reference object reference: Object='" << objectName << "'";
 		if (!hierarchy.empty()) {
@@ -484,10 +482,10 @@ object_reference_lvalue:
 
 		$$ = "@" + objectName + hierarchy;
 	}
-	| REF_START_LVALUE IDENTIFIER maybe_descend_object_hierarchy maybe_array_index REF_END {
-		std::string objectName = $2;
-		std::string hierarchy = $3;
-		std::string arrayIndex = $4;
+	| REF_START_LVALUE maybe_hash IDENTIFIER maybe_descend_object_hierarchy maybe_array_index REF_END {
+		std::string objectName = $3;
+		std::string hierarchy = $4;
+		std::string arrayIndex = $5;
 
 		std::cout << "Parsed lvalue reference object reference: Object='" << objectName << "'";
 		if (!hierarchy.empty()) {
@@ -514,9 +512,9 @@ self_reference:
 
 		$$ = "@this" + hierarchy;
 	}
-	| REF_START KEYWORD_THIS maybe_descend_object_hierarchy maybe_array_index REF_END {
-		std::string hierarchy = $3;
-		std::string arrayIndex = $4;
+	| REF_START maybe_hash KEYWORD_THIS maybe_descend_object_hierarchy maybe_array_index REF_END {
+		std::string hierarchy = $4;
+		std::string arrayIndex = $5;
 
 		std::cout << "Parsed reference self reference";
 		if (!hierarchy.empty()) {
@@ -540,9 +538,9 @@ self_reference:
 
 		$$ = "@super" + hierarchy;
 	}
-	| REF_START KEYWORD_SUPER maybe_descend_object_hierarchy maybe_array_index REF_END {
-		std::string hierarchy = $3;
-		std::string arrayIndex = $4;
+	| REF_START maybe_hash KEYWORD_SUPER maybe_descend_object_hierarchy maybe_array_index REF_END {
+		std::string hierarchy = $4;
+		std::string arrayIndex = $5;
 
 		std::cout << "Parsed reference self reference to super";
 		if (!hierarchy.empty()) {
@@ -569,9 +567,9 @@ self_reference_lvalue:
 
 		$$ = "@this" + hierarchy;
 	}
-	| REF_START_LVALUE KEYWORD_THIS maybe_descend_object_hierarchy maybe_array_index REF_END {
-		std::string hierarchy = $3;
-		std::string arrayIndex = $4;
+	| REF_START_LVALUE maybe_hash KEYWORD_THIS maybe_descend_object_hierarchy maybe_array_index REF_END {
+		std::string hierarchy = $4;
+		std::string arrayIndex = $5;
 
 		std::cout << "Parsed lvalue reference self reference";
 		if (!hierarchy.empty()) {
@@ -595,9 +593,9 @@ self_reference_lvalue:
 
 		$$ = "@super" + hierarchy;
 	}
-	| REF_START_LVALUE KEYWORD_SUPER maybe_descend_object_hierarchy maybe_array_index REF_END {
-		std::string hierarchy = $3;
-		std::string arrayIndex = $4;
+	| REF_START_LVALUE maybe_hash KEYWORD_SUPER maybe_descend_object_hierarchy maybe_array_index REF_END {
+		std::string hierarchy = $4;
+		std::string arrayIndex = $5;
 
 		std::cout << "Parsed lvalue reference self reference to super";
 		if (!hierarchy.empty()) {
@@ -626,10 +624,15 @@ maybe_array_index:
 	}
 	;
 
+maybe_hash:
+	/* empty */ { $$ = ""; }
+	| HASH { $$ = "#"; }
+	;
+
 bash_variable:
-	BASH_VAR_START IDENTIFIER maybe_array_index BASH_VAR_END {
-		std::string varName = $2;
-		std::string arrayIndex = $3;
+	BASH_VAR_START maybe_hash IDENTIFIER maybe_array_index BASH_VAR_END {
+		std::string varName = $3;
+		std::string arrayIndex = $4;
 
 		std::cout << "Parsed Bash variable: Name='" << varName << "'";
 		if (!arrayIndex.empty()) {

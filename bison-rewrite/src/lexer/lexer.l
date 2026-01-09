@@ -30,12 +30,19 @@ extern yyscan_t main_lexer;
 #define YY_DECL yy::parser::symbol_type yylex(yyscan_t yyscanner)
 YY_DECL;
 
+/* For compatibility with Bison's expectations, as documented above */
 yy::parser::symbol_type yylex() {
 	return ::yylex(main_lexer);
 }
 
 extern ModeStack modeStack; // Stack to manage lexer modes
 
+/**
+ * @struct LexerState
+ * @brief A struct to contain information that we need to keep track of during lexing,
+ * such as whether an incoming token could be an lvalue,
+ * or the current nesting depth of backtick-subshells.
+ */
 struct LexerState {
 	std::string singlequote_contents;
 	uint32_t token_count_inside_bracereference = 0;
@@ -56,6 +63,11 @@ struct LexerState {
 
 static LexerState lexerState;
 
+/* For external use by the parser
+ * After the parser parses an assignment statement,
+ * It can use this function to signal back to the lexer
+ * That the next token could be an lvalue
+ */
 void set_incoming_token_can_be_lvalue(bool canBeLvalue) {
 	lexerState.incoming_token_can_be_lvalue = canBeLvalue;
 }
@@ -494,6 +506,12 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		emit(IDENTIFIER, tokenText);
 	}
 
+	"#" {
+		// Don't count '#' towards token count
+		// E.g., @{#this.array[@]}
+		emit(HASH);
+	}
+
 	"\." {
 		lexerState.token_count_inside_bracereference++;
 		emit(DOT);
@@ -515,6 +533,10 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 <BASH_VAR_MODE>{
 	{IDENTIFIER} {
 		emit(IDENTIFIER, tokenText);
+	}
+
+	"#" {
+		emit(HASH);
 	}
 	
 	"[" {
@@ -573,7 +595,7 @@ extern int scanner_current_state(yyscan_t yyscanner) {
 }
 
 extern void destroyLexer() {
-	yylex_destroy(main_lexer);
 	modeStack.clear();
 	lexerState.reset();
+	yylex_destroy(main_lexer);
 }

@@ -36,17 +36,28 @@ yy::parser::symbol_type yylex() {
 
 extern ModeStack modeStack; // Stack to manage lexer modes
 
-static std::string singlequote_contents; // To hold contents within single quotes
+struct LexerState {
+	std::string singlequote_contents;
+	uint32_t token_count_inside_bracereference = 0;
+	uint32_t deprecated_subshell_nesting_depth = 0;
+	std::stack<uint32_t> deprecated_subshell_nesting_depths;
+	bool incoming_token_can_be_lvalue = true;
 
-static uint32_t token_count_inside_bracereference = 0;
+	void reset() {
+		singlequote_contents.clear();
+		token_count_inside_bracereference = 0;
+		deprecated_subshell_nesting_depth = 0;
+		while (!deprecated_subshell_nesting_depths.empty()) {
+			deprecated_subshell_nesting_depths.pop();
+		}
+		incoming_token_can_be_lvalue = true;
+	}
+};
 
-static uint32_t deprecated_subshell_nesting_depth = 0;
-static std::stack<uint32_t> deprecated_subshell_nesting_depths;
-
-static bool incoming_token_can_be_lvalue = true; // The first token of the program can of course be an lvalue
+static LexerState lexerState;
 
 void set_incoming_token_can_be_lvalue(bool canBeLvalue) {
-	incoming_token_can_be_lvalue = canBeLvalue;
+	lexerState.incoming_token_can_be_lvalue = canBeLvalue;
 }
 
 /**
@@ -60,37 +71,37 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 	switch (type) {
 		case yy::parser::symbol_kind::S_AT:
 			// If this AT is the first non-whitespace token of the new command string, it's an lvalue
-			if (incoming_token_can_be_lvalue) {
-				incoming_token_can_be_lvalue = false; // Next token cannot be an lvalue
+			if (lexerState.incoming_token_can_be_lvalue) {
+				lexerState.incoming_token_can_be_lvalue = false; // Next token cannot be an lvalue
 				return yy::parser::make_AT_LVALUE();
 			}
 			break;
 		case yy::parser::symbol_kind::S_REF_START:
 			// Same as above
-			if (incoming_token_can_be_lvalue) {
-				incoming_token_can_be_lvalue = false;
+			if (lexerState.incoming_token_can_be_lvalue) {
+				lexerState.incoming_token_can_be_lvalue = false;
 				return yy::parser::make_REF_START_LVALUE();
 			}
 			break;
 		case yy::parser::symbol_kind::S_IDENTIFIER:
 			// Same as above
-			if (incoming_token_can_be_lvalue) {
-				incoming_token_can_be_lvalue = false;
+			if (lexerState.incoming_token_can_be_lvalue) {
+				lexerState.incoming_token_can_be_lvalue = false;
 				std::string text = token.value.as<std::string>();
 				return yy::parser::make_IDENTIFIER_LVALUE(text);
 			}
 			break;
 		case yy::parser::symbol_kind::S_KEYWORD_THIS:
 			// Same as above
-			if (incoming_token_can_be_lvalue) {
-				incoming_token_can_be_lvalue = false;
+			if (lexerState.incoming_token_can_be_lvalue) {
+				lexerState.incoming_token_can_be_lvalue = false;
 				return yy::parser::make_KEYWORD_THIS_LVALUE();
 			}
 			break;
 		case yy::parser::symbol_kind::S_KEYWORD_SUPER:
 			// Same as above
-			if (incoming_token_can_be_lvalue) {
-				incoming_token_can_be_lvalue = false;
+			if (lexerState.incoming_token_can_be_lvalue) {
+				lexerState.incoming_token_can_be_lvalue = false;
 				return yy::parser::make_KEYWORD_SUPER_LVALUE();
 			}
 			break;
@@ -103,7 +114,7 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 		case yy::parser::symbol_kind::S_SUBSHELL_SUBSTITUTION_START:
 		case yy::parser::symbol_kind::S_DEPRECATED_SUBSHELL_START:
 			// At the start of a new command string, the next token can be an lvalue
-			incoming_token_can_be_lvalue = true;
+			lexerState.incoming_token_can_be_lvalue = true;
 			break;
 		case yy::parser::symbol_kind::S_KEYWORD_PUBLIC:
 		case yy::parser::symbol_kind::S_KEYWORD_PROTECTED:
@@ -117,7 +128,7 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 			// Dereference operator does not change lvalue considerations
 			break;
 		default:
-			incoming_token_can_be_lvalue = false;
+			lexerState.incoming_token_can_be_lvalue = false;
 			break;
 	}
 	return token; // If we're here, just return the original token unmodified
@@ -249,26 +260,26 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	std::string sequence = tokenText;
 	if (modeStack.top() == DEPRECATED_SUBSHELL_MODE && sequence[1] == '`') {
 		// Is this starting a nested subshell or is it finishing a nested subshell?
-		deprecated_subshell_nesting_depth++; // Include the latest backslash
+		lexerState.deprecated_subshell_nesting_depth++; // Include the latest backslash
 		if (
-			!deprecated_subshell_nesting_depths.empty()
-			&& deprecated_subshell_nesting_depth == deprecated_subshell_nesting_depths.top()
+			!lexerState.deprecated_subshell_nesting_depths.empty()
+			&& lexerState.deprecated_subshell_nesting_depth == lexerState.deprecated_subshell_nesting_depths.top()
 		) {
 			// Finishing a nested subshell
 			modeStack.pop();
-			uint32_t depth = deprecated_subshell_nesting_depth;
-			deprecated_subshell_nesting_depths.pop();
-			deprecated_subshell_nesting_depth = 0;
+			uint32_t depth = lexerState.deprecated_subshell_nesting_depth;
+			lexerState.deprecated_subshell_nesting_depths.pop();
+			lexerState.deprecated_subshell_nesting_depth = 0;
 			emit(DEPRECATED_SUBSHELL_END, depth);
 		} else {
 			// Starting a new nested subshell
 			modeStack.push(DEPRECATED_SUBSHELL_MODE);
-			deprecated_subshell_nesting_depths.push(deprecated_subshell_nesting_depth);
-			deprecated_subshell_nesting_depth = 0;
-			emit(DEPRECATED_SUBSHELL_START, deprecated_subshell_nesting_depths.top());
+			lexerState.deprecated_subshell_nesting_depths.push(lexerState.deprecated_subshell_nesting_depth);
+			lexerState.deprecated_subshell_nesting_depth = 0;
+			emit(DEPRECATED_SUBSHELL_START, lexerState.deprecated_subshell_nesting_depths.top());
 		}
 	} else if (modeStack.top() == DEPRECATED_SUBSHELL_MODE && sequence[1] == '\\') {
-		deprecated_subshell_nesting_depth++;
+		lexerState.deprecated_subshell_nesting_depth++;
 		// No need to emit anything yet
 	} else {
 		emit(ESCAPED_CHAR, tokenText);
@@ -379,8 +390,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 			break;
 		default:
 			modeStack.push(DEPRECATED_SUBSHELL_MODE);
-			deprecated_subshell_nesting_depths.push(0);
-			deprecated_subshell_nesting_depth = 0;
+			lexerState.deprecated_subshell_nesting_depths.push(0);
+			lexerState.deprecated_subshell_nesting_depth = 0;
 			emit(DEPRECATED_SUBSHELL_START, 0);
 			break;
 	}
@@ -388,8 +399,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 ['] {
 	modeStack.push(SINGLEQUOTE_MODE);
-	singlequote_contents.clear();
-	singlequote_contents += '\'';
+	lexerState.singlequote_contents.clear();
+	lexerState.singlequote_contents += '\'';
 }
 
 ["] {
@@ -403,19 +414,19 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 <SINGLEQUOTE_MODE>{
 	[^'\\]+ {
 		/* Consume all characters until closing singlequote */
-		singlequote_contents += tokenText;
+		lexerState.singlequote_contents += tokenText;
 	}
 
 	{ESCAPED_CHAR} {
 		/* If it's an escaped singlequote, it's not the end of the string */
-		singlequote_contents += tokenText;
+		lexerState.singlequote_contents += tokenText;
 	}
 
 	"'" {
 		/* Closing singlequote found */
 		modeStack.pop(); // Exit SINGLEQUOTE_MODE
-		singlequote_contents += '\'';
-		emit(SINGLEQUOTED_STRING, singlequote_contents);
+		lexerState.singlequote_contents += '\'';
+		emit(SINGLEQUOTED_STRING, lexerState.singlequote_contents);
 	}
 }
 
@@ -462,7 +473,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	"this" {
 		// If the 'this' is the very FIRST token inside the brace reference, it's the 'this' keyword
 		// Otherwise, it's just an identifier
-		if (token_count_inside_bracereference++ == 0) {
+		if (lexerState.token_count_inside_bracereference++ == 0) {
 			emit(KEYWORD_THIS);
 		} else {
 			emit(IDENTIFIER, tokenText);
@@ -471,7 +482,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 	"super" {
 		// Likewise
-		if (token_count_inside_bracereference++ == 0) {
+		if (lexerState.token_count_inside_bracereference++ == 0) {
 			emit(KEYWORD_SUPER);
 		} else {
 			emit(IDENTIFIER, tokenText);
@@ -479,24 +490,24 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 
 	{IDENTIFIER} {
-		token_count_inside_bracereference++;
+		lexerState.token_count_inside_bracereference++;
 		emit(IDENTIFIER, tokenText);
 	}
 
 	"\." {
-		token_count_inside_bracereference++;
+		lexerState.token_count_inside_bracereference++;
 		emit(DOT);
 	}
 
 	"[" {
-		token_count_inside_bracereference++;
+		lexerState.token_count_inside_bracereference++;
 		modeStack.push(ARRAY_INDEX_MODE);
 		emit(ARRAY_INDEX_START);
 	}
 
 	"}" {
 		modeStack.pop(); // Exit BPP_BRACEREFERENCE_MODE
-		token_count_inside_bracereference = 0;
+		lexerState.token_count_inside_bracereference = 0;
 		emit(REF_END);
 	}
 }
@@ -564,11 +575,5 @@ extern int scanner_current_state(yyscan_t yyscanner) {
 extern void destroyLexer() {
 	yylex_destroy(main_lexer);
 	modeStack.clear();
-	singlequote_contents.clear();
-	token_count_inside_bracereference = 0;
-	deprecated_subshell_nesting_depth = 0;
-	while (!deprecated_subshell_nesting_depths.empty()) {
-		deprecated_subshell_nesting_depths.pop();
-	}
-	incoming_token_can_be_lvalue = true;
+	lexerState.reset();
 }

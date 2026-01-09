@@ -450,8 +450,13 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 }
 
 <HEREDOC_CONTENT_MODE>{
-	{IDENTIFIER} {
+	^[\t]*[a-zA-Z_][a-zA-Z_0-9]*$ {
+		// The heredoc delimiter must be at the start of the line (possibly preceded by tabs)
+		// And it must be the only thing on the line
+		// TODO(@rail5): Question: do we even need to bother parsing nested heredocs inside heredoc content?
 		std::string id = tokenText;
+		// Strip leading tabs
+		if (id[0] == '\t') id.erase(0, id.find_first_not_of("\t"));
 		if (!lexerState.nested_heredoc_delimiters.empty() && id == lexerState.nested_heredoc_delimiters.top()) {
 			// End of heredoc content
 			modeStack.pop(); // Exit HEREDOC_CONTENT_MODE
@@ -461,6 +466,14 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		} else {
 			emit(HEREDOC_CONTENT, tokenText);
 		}
+	}
+
+	"\n" {
+		emit(HEREDOC_CONTENT, tokenText);
+	}
+
+	[a-zA-Z_][a-zA-Z_0-9]* {
+		emit(HEREDOC_CONTENT, tokenText);
 	}
 
 	{AT} {
@@ -488,7 +501,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		emit(HEREDOC_CONTENT, tokenText);
 	}
 
-	[^a-zA-Z0-9@<]+ {
+	[^a-zA-Z_0-9@<\n]+ {
 		emit(HEREDOC_CONTENT, tokenText);
 	}
 }

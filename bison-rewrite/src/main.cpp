@@ -1,12 +1,16 @@
 #include <iostream>
 #include "generated/parser.tab.hpp"
+#include "generated/lex.yy.hpp"
+#include "ModeStack.h"
 
-extern FILE* yyin;
-extern int yyleng;
-extern char* yytext;
+yyscan_t main_lexer;
+
+ModeStack modeStack;
+
+extern yy::parser::symbol_type yylex();
+extern void destroyLexer();
 
 void lexOnly();
-yy::parser::symbol_type yylex();
 
 int main(int argc, char* argv[]) {
 	if (argc < 2) {
@@ -14,19 +18,34 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	yyin = fopen(argv[1], "r");
-	if (!yyin) {
-		std::cerr << "Error: Could not open file " << argv[1] << "\n";
+	if (yylex_init(&main_lexer) != 0) {
+		std::cerr << "Error: Could not initialize lexer\n";
 		return 1;
 	}
 
+	modeStack.bind(main_lexer);
+
+	FILE* in = fopen(argv[1], "r");
+	if (!in) {
+		std::cerr << "Error: Could not open file " << argv[1] << "\n";
+		destroyLexer();
+		return 1;
+	}
+
+	yyset_in(in, main_lexer);
+
 	if (argc >= 3 && std::string(argv[2]) == "--lex") {
 		lexOnly();
+		fclose(in);
+		destroyLexer();
 		return 0;
 	}
 
 	yy::parser parser;
 	int result = parser.parse();
+
+	fclose(in);
+	destroyLexer();
 
 	if (result == 0) {
 		std::cout << "Parse successful.\n";

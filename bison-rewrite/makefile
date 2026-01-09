@@ -24,7 +24,7 @@ $(TARGET): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 $(LEXER): $(LEXER_SRC)
-	flex -o $(LEXER) $<
+	flex --header-file=$(GENERATEDDIR)/lex.yy.hpp -o $(LEXER) $<
 
 $(PARSER): $(PARSER_SRC)
 	bison -o $(PARSER) -d $< -Wcounterexamples

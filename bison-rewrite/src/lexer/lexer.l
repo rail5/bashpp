@@ -25,10 +25,16 @@ GNU Bison Docs, 10.1.7.2: Complete Symbols
 > additional arguments.
 
 */
-#define YY_DECL yy::parser::symbol_type yylex()
+extern yyscan_t main_lexer;
+
+#define YY_DECL yy::parser::symbol_type yylex(yyscan_t yyscanner)
 YY_DECL;
 
-static ModeStack modeStack; // Stack to manage lexer modes
+yy::parser::symbol_type yylex() {
+	return ::yylex(main_lexer);
+}
+
+extern ModeStack modeStack; // Stack to manage lexer modes
 
 static std::string singlequote_contents; // To hold contents within single quotes
 
@@ -121,6 +127,7 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 
 %option noyywrap
 %option stack
+%option reentrant
 
 ESCAPED_CHAR    \\(.|\n)
 AT              @
@@ -541,14 +548,27 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 %%
 
-extern void scanner_push_state(int state) {
-	yy_push_state(state);
+extern void scanner_push_state(int state, yyscan_t yyscanner) {
+	yy_push_state(state, yyscanner);
 }
 
-extern void scanner_pop_state() {
-	yy_pop_state();
+extern void scanner_pop_state(yyscan_t yyscanner) {
+	yy_pop_state(yyscanner);
 }
 
-extern int scanner_current_state() {
+extern int scanner_current_state(yyscan_t yyscanner) {
+	struct yyguts_t* yyg = (struct yyguts_t*)yyscanner;
 	return YY_START;
+}
+
+extern void destroyLexer() {
+	yylex_destroy(main_lexer);
+	modeStack.clear();
+	singlequote_contents.clear();
+	token_count_inside_bracereference = 0;
+	deprecated_subshell_nesting_depth = 0;
+	while (!deprecated_subshell_nesting_depths.empty()) {
+		deprecated_subshell_nesting_depths.pop();
+	}
+	incoming_token_can_be_lvalue = true;
 }

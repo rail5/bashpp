@@ -450,6 +450,21 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 }
 
 <HEREDOC_CONTENT_MODE>{
+	\\@ {
+		// Literal '@'
+		emit(HEREDOC_CONTENT, "@");
+	}
+
+	\\\\ {
+		// Literal backslash
+		emit(HEREDOC_CONTENT, "\\");
+	}
+
+	\\[\*&] {
+		// Literal '*' or '&'
+		emit(HEREDOC_CONTENT, tokenText.substr(1, 1));
+	}
+
 	^[\t]*[a-zA-Z_][a-zA-Z_0-9]*$ {
 		// The heredoc delimiter must be at the start of the line (possibly preceded by tabs)
 		// And it must be the only thing on the line
@@ -474,6 +489,14 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 	[a-zA-Z_][a-zA-Z_0-9]* {
 		emit(HEREDOC_CONTENT, tokenText);
+	}
+
+	\*/"@" {
+		emit(DEREFERENCE_OPERATOR);
+	}
+
+	&/"@" {
+		emit(AMPERSAND);
 	}
 
 	{AT} {
@@ -501,7 +524,15 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		emit(HEREDOC_CONTENT, tokenText);
 	}
 
-	[^a-zA-Z_0-9@<\n]+ {
+	\* {
+		emit(HEREDOC_CONTENT, tokenText);
+	}
+
+	"&" {
+		emit(HEREDOC_CONTENT, tokenText);
+	}
+
+	[^a-zA-Z_0-9@<\*&\n\\]+ {
 		emit(HEREDOC_CONTENT, tokenText);
 	}
 }
@@ -529,13 +560,23 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 }
 
 <DOUBLEQUOTE_MODE>{
-	[^"@\\]+ {
-		/* Consume all characters until closing doublequote or interpolation */
-		emit(DOUBLEQUOTE_CONTENT, tokenText);
+	\\@ {
+		// Literal '@'
+		emit(DOUBLEQUOTE_CONTENT, "@");
 	}
 
-	{ESCAPED_CHAR} {
-		/* Handle escaped characters within double quotes */
+	\\\\ {
+		// Literal backslash
+		emit(DOUBLEQUOTE_CONTENT, "\\");
+	}
+
+	\\[\*&] {
+		// Literal '*' or '&'
+		emit(DOUBLEQUOTE_CONTENT, tokenText.substr(1, 1));
+	}
+
+	[^"@\\&\*]+ {
+		/* Consume all characters until closing doublequote or interpolation */
 		emit(DOUBLEQUOTE_CONTENT, tokenText);
 	}
 
@@ -543,6 +584,22 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		/* Start of an interpolation */
 		modeStack.push(BPP_MODE);
 		emit(AT);
+	}
+
+	\*/"@" {
+		emit(DEREFERENCE_OPERATOR);
+	}
+
+	&/"@" {
+		emit(AMPERSAND);
+	}
+
+	\* {
+		emit(DOUBLEQUOTE_CONTENT, tokenText);
+	}
+
+	& {
+		emit(DOUBLEQUOTE_CONTENT, tokenText);
 	}
 
 	["] {

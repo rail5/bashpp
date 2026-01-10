@@ -451,9 +451,8 @@ string_interpolation:
 	| self_reference { $$ = $1; }
 	| object_address { $$ = $1; }
 	| pointer_dereference { $$ = $1; }
-	| supershell { $$ = $1; } /* TODO: Not handled in lexer quote mode */
-	| subshell_substitution { $$ = $1; } /* TODO: lexer quote mode doesn't handle subshells */
-	| bash_variable { $$ = $1; } /* Is this necessary to parse? */
+	| supershell { $$ = $1; }
+	| subshell_substitution { $$ = $1; }
 	;
 
 object_reference:

@@ -479,6 +479,16 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		emit(STRING_CONTENT, "@");
 	}
 
+	\\\$ {
+		// Literal dollar sign
+		emit(STRING_CONTENT, "$");
+	}
+
+	\\` {
+		// Literal backtick
+		emit(STRING_CONTENT, "`");
+	}
+
 	\\\\ {
 		// Literal backslash
 		emit(STRING_CONTENT, "\\");
@@ -492,6 +502,23 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	"@(" {
 		modeStack.push(SUPERSHELL_MODE);
 		emit(SUPERSHELL_START);
+	}
+
+	"$(" {
+		modeStack.push(SUBSHELL_SUBSTITUTION_MODE);
+		emit(SUBSHELL_SUBSTITUTION_START);
+	}
+
+	"$" {
+		// Solitary $
+		emit(STRING_CONTENT, "$");
+	}
+
+	"`" {
+		modeStack.push(DEPRECATED_SUBSHELL_MODE);
+		lexerState.deprecated_subshell_nesting_depths.push(0);
+		lexerState.deprecated_subshell_nesting_depth = 0;
+		emit(DEPRECATED_SUBSHELL_START, 0);
 	}
 
 	{AT} {
@@ -532,7 +559,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 }
 
 <DOUBLEQUOTE_MODE>{
-	[^"@\\&\*]+ {
+	[^"@\\&\*\$`]+ {
 		/* Consume all characters until closing doublequote or interpolation */
 		emit(STRING_CONTENT, tokenText);
 	}
@@ -568,7 +595,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		emit(STRING_CONTENT, tokenText);
 	}
 
-	[^a-zA-Z_0-9@\*&\n\\]+ {
+	[^a-zA-Z_0-9@\*&\n\$`\\]+ {
 		emit(STRING_CONTENT, tokenText);
 	}
 }

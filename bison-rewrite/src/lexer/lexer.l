@@ -48,7 +48,7 @@ struct LexerState {
 	uint32_t token_count_inside_bracereference = 0;
 	uint32_t deprecated_subshell_nesting_depth = 0;
 	std::stack<uint32_t> deprecated_subshell_nesting_depths;
-	std::stack<std::string> nested_heredoc_delimiters;
+	std::string heredoc_delimiter;
 	bool incoming_token_can_be_lvalue = true;
 
 	void reset() {
@@ -58,6 +58,7 @@ struct LexerState {
 		while (!deprecated_subshell_nesting_depths.empty()) {
 			deprecated_subshell_nesting_depths.pop();
 		}
+		heredoc_delimiter.clear();
 		incoming_token_can_be_lvalue = true;
 	}
 };
@@ -345,7 +346,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 {IDENTIFIER}                         {
 	if (modeStack.top() == HEREDOC_MODE) {
 		// This IDENTIFIER is the heredoc delimiter
-		lexerState.nested_heredoc_delimiters.push(tokenText);
+		lexerState.heredoc_delimiter = tokenText;
 		emit(HEREDOC_DELIMITER, tokenText);
 	} else {
 		emit(IDENTIFIER, tokenText);
@@ -449,94 +450,6 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	emit(HEREDOC_START);
 }
 
-<HEREDOC_CONTENT_MODE>{
-	\\@ {
-		// Literal '@'
-		emit(HEREDOC_CONTENT, "@");
-	}
-
-	\\\\ {
-		// Literal backslash
-		emit(HEREDOC_CONTENT, "\\");
-	}
-
-	\\[\*&] {
-		// Literal '*' or '&'
-		emit(HEREDOC_CONTENT, tokenText.substr(1, 1));
-	}
-
-	^[\t]*[a-zA-Z_][a-zA-Z_0-9]*$ {
-		// The heredoc delimiter must be at the start of the line (possibly preceded by tabs)
-		// And it must be the only thing on the line
-		// TODO(@rail5): Question: do we even need to bother parsing nested heredocs inside heredoc content?
-		std::string id = tokenText;
-		// Strip leading tabs
-		if (id[0] == '\t') id.erase(0, id.find_first_not_of("\t"));
-		if (!lexerState.nested_heredoc_delimiters.empty() && id == lexerState.nested_heredoc_delimiters.top()) {
-			// End of heredoc content
-			modeStack.pop(); // Exit HEREDOC_CONTENT_MODE
-			lexerState.nested_heredoc_delimiters.pop();
-			modeStack.pop(); // Exit HEREDOC_MODE
-			emit(HEREDOC_END, id);
-		} else {
-			emit(HEREDOC_CONTENT, tokenText);
-		}
-	}
-
-	"\n" {
-		emit(HEREDOC_CONTENT, tokenText);
-	}
-
-	[a-zA-Z_][a-zA-Z_0-9]* {
-		emit(HEREDOC_CONTENT, tokenText);
-	}
-
-	\*/"@" {
-		emit(DEREFERENCE_OPERATOR);
-	}
-
-	&/"@" {
-		emit(AMPERSAND);
-	}
-
-	{AT} {
-		// Start of interpolation inside heredoc content
-		modeStack.push(BPP_MODE);
-		emit(AT);
-	}
-
-	"<<-" {
-		// Nested heredoc start inside heredoc content
-		modeStack.push(HEREDOC_MODE);
-		emit(HEREDOC_START);
-	}
-	
-	"<<<" { emit(HEREDOC_CONTENT, tokenText); }
-
-	"<<" {
-		// Nested heredoc start inside heredoc content
-		modeStack.push(HEREDOC_MODE);
-		emit(HEREDOC_START);
-	}
-
-	"<" {
-		// Not significant
-		emit(HEREDOC_CONTENT, tokenText);
-	}
-
-	\* {
-		emit(HEREDOC_CONTENT, tokenText);
-	}
-
-	"&" {
-		emit(HEREDOC_CONTENT, tokenText);
-	}
-
-	[^a-zA-Z_0-9@<\*&\n\\]+ {
-		emit(HEREDOC_CONTENT, tokenText);
-	}
-}
-
 [\#][^\n]*  { /* Ignore comments */ }
 
 
@@ -559,31 +472,46 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 }
 
-<DOUBLEQUOTE_MODE>{
+<DOUBLEQUOTE_MODE,HEREDOC_CONTENT_MODE>{
+	/* The following rules are for handling string interpolations inside double-quoted strings and heredoc content */
 	\\@ {
 		// Literal '@'
-		emit(DOUBLEQUOTE_CONTENT, "@");
+		emit(STRING_CONTENT, "@");
 	}
 
 	\\\\ {
 		// Literal backslash
-		emit(DOUBLEQUOTE_CONTENT, "\\");
+		emit(STRING_CONTENT, "\\");
 	}
 
 	\\[\*&] {
 		// Literal '*' or '&'
-		emit(DOUBLEQUOTE_CONTENT, tokenText.substr(1, 1));
+		emit(STRING_CONTENT, tokenText.substr(1, 1));
 	}
 
-	[^"@\\&\*]+ {
-		/* Consume all characters until closing doublequote or interpolation */
-		emit(DOUBLEQUOTE_CONTENT, tokenText);
+	"@(" {
+		modeStack.push(SUPERSHELL_MODE);
+		emit(SUPERSHELL_START);
 	}
 
 	{AT} {
 		/* Start of an interpolation */
 		modeStack.push(BPP_MODE);
 		emit(AT);
+	}
+
+	\*/"@(" {
+		// Asterisk followed by a supershell
+		// Not a dereference operator, just a literal '*'
+		// Supershells cannot be dereferenced
+		emit(STRING_CONTENT, "*");
+	}
+
+	&/"@(" {
+		// Ampersand followed by a supershell
+		// Not an address-of operator, just a literal '&'
+		// Supershells cannot have their address taken
+		emit(STRING_CONTENT, "&");
 	}
 
 	\*/"@" {
@@ -595,17 +523,53 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 
 	\* {
-		emit(DOUBLEQUOTE_CONTENT, tokenText);
+		emit(STRING_CONTENT, tokenText);
 	}
 
 	& {
-		emit(DOUBLEQUOTE_CONTENT, tokenText);
+		emit(STRING_CONTENT, tokenText);
+	}
+}
+
+<DOUBLEQUOTE_MODE>{
+	[^"@\\&\*]+ {
+		/* Consume all characters until closing doublequote or interpolation */
+		emit(STRING_CONTENT, tokenText);
 	}
 
 	["] {
 		/* Closing doublequote found */
 		modeStack.pop(); // Exit DOUBLEQUOTE_MODE
 		emit(QUOTE_END);
+	}
+}
+
+<HEREDOC_CONTENT_MODE>{
+	^[a-zA-Z_][a-zA-Z_0-9]*$ {
+		// The heredoc delimiter must be at the start of the line
+		// And it must be the only thing on the line
+		std::string id = tokenText;
+		if (lexerState.heredoc_delimiter == id) {
+			// End of heredoc content
+			modeStack.pop(); // Exit HEREDOC_CONTENT_MODE
+			lexerState.heredoc_delimiter.clear();
+			modeStack.pop(); // Exit HEREDOC_MODE
+			emit(HEREDOC_END, id);
+		} else {
+			emit(STRING_CONTENT, tokenText);
+		}
+	}
+
+	"\n" {
+		emit(STRING_CONTENT, tokenText);
+	}
+
+	[a-zA-Z_][a-zA-Z_0-9]* {
+		emit(STRING_CONTENT, tokenText);
+	}
+
+	[^a-zA-Z_0-9@\*&\n\\]+ {
+		emit(STRING_CONTENT, tokenText);
 	}
 }
 

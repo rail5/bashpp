@@ -31,7 +31,7 @@ void yyerror(const char *s);
 %token <std::string> SINGLEQUOTED_STRING
 
 %token QUOTE_BEGIN QUOTE_END
-%token <std::string> DOUBLEQUOTE_CONTENT
+%token <std::string> STRING_CONTENT
 
 %token AT AT_LVALUE
 %token KEYWORD_THIS KEYWORD_THIS_LVALUE KEYWORD_SUPER KEYWORD_SUPER_LVALUE
@@ -59,7 +59,7 @@ void yyerror(const char *s);
 %token BASH_VAR_START BASH_VAR_END
 %token HASH
 %token HEREDOC_START HERESTRING_START
-%token <std::string> HEREDOC_DELIMITER HEREDOC_CONTENT HEREDOC_END
+%token <std::string> HEREDOC_DELIMITER HEREDOC_END
 
 /* Handling unrecognized tokens */
 %token <std::string> ERROR
@@ -442,7 +442,7 @@ doublequoted_string:
 
 quote_contents:
 	/* empty */ { $$ = ""; }
-	| quote_contents DOUBLEQUOTE_CONTENT { $$ = $1 + $2; }
+	| quote_contents STRING_CONTENT { $$ = $1 + $2; }
 	| quote_contents string_interpolation { $$ = $1 + $2; }
 	;
 
@@ -851,7 +851,7 @@ heredoc:
 
 heredoc_content:
 	/* empty */ { $$ = ""; }
-	| heredoc_content HEREDOC_CONTENT { $$ = $1 + $2; }
+	| heredoc_content STRING_CONTENT { $$ = $1 + $2; }
 	| heredoc_content string_interpolation { $$ = $1 + $2; }
 	| heredoc_content heredoc { $$ = $1 + $2; }
 	;

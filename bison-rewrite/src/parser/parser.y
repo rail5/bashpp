@@ -24,6 +24,7 @@ void yyerror(const char *s);
 
 	extern void set_incoming_token_can_be_lvalue(bool canBeLvalue);
 	extern void set_bash_case_input_received(bool received);
+	extern void set_bash_select_variable_received(bool received);
 }
 
 %token <std::string> ESCAPED_CHAR WS DELIM
@@ -64,6 +65,7 @@ void yyerror(const char *s);
 
 %token BASH_KEYWORD_CASE BASH_KEYWORD_IN BASH_CASE_PATTERN_DELIM BASH_CASE_PATTERN_TERMINATOR BASH_KEYWORD_ESAC
 %token <std::string> BASH_CASE_BODY_BEGIN
+%token BASH_KEYWORD_SELECT BASH_KEYWORD_DO BASH_KEYWORD_DONE
 
 /* Handling unrecognized tokens */
 %token <std::string> ERROR
@@ -86,6 +88,7 @@ void yyerror(const char *s);
 %type <std::string> heredoc heredoc_content
 %type <std::string> array_index
 %type <std::string> bash_case_body bash_case_header bash_case_input bash_case_pattern bash_case_statement bash_case_pattern_header
+%type <std::string> bash_select_statement bash_select_header bash_select_input bash_select_variable
 
 /**
  * NOTE: A shift/reduce conflict is EXPECTED between 'object_instantiation' and
@@ -167,6 +170,7 @@ statement:
 	| typeof_expression
 	| heredoc
 	| bash_case_statement
+	| bash_select_statement
 	;
 
 block:
@@ -912,6 +916,41 @@ bash_case_pattern_header:
 	/* empty */ { $$ = ""; }
 	| bash_case_pattern_header STRING_CONTENT { $$ = $1 + $2; }
 	| bash_case_pattern_header string_interpolation { $$ = $1 + $2; }
+	;
+
+bash_select_statement:
+	BASH_KEYWORD_SELECT WS bash_select_header BASH_KEYWORD_DO statements BASH_KEYWORD_DONE {
+		std::string selectHeader = $3;
+
+		std::cout << "Parsed bash select statement" << std::endl;
+
+		$$ = "select " + selectHeader + " do\n... statements ...\ndone";
+	}
+	;
+
+bash_select_header:
+	bash_select_variable WS BASH_KEYWORD_IN bash_select_input {
+		std::string selectVar = $1;
+		std::string selectInput = $4;
+
+		std::cout << "Parsed bash select header: Variable='" << selectVar << "', Input='" << selectInput << "'" << std::endl;
+
+		$$ = selectVar + " in " + selectInput;
+	}
+	;
+
+bash_select_variable:
+	IDENTIFIER {
+		set_bash_select_variable_received(true);
+		std::string varName = $1;
+		std::cout << "Parsed bash select variable: Name='" << varName << "'" << std::endl;
+		$$ = varName;
+	}
+	;
+
+bash_select_input:
+	valid_rvalue { $$ = $1; }
+	| bash_select_input valid_rvalue { $$ = $1 + " " + $2; }
 	;
 
 %%

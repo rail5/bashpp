@@ -49,6 +49,8 @@ struct LexerState {
 	uint32_t deprecated_subshell_nesting_depth = 0;
 	std::stack<uint32_t> deprecated_subshell_nesting_depths;
 	std::string heredoc_delimiter;
+	bool bash_case_input_received = false;
+	bool bash_cash_keyword_in_received = false;
 	bool incoming_token_can_be_lvalue = true;
 
 	void reset() {
@@ -59,6 +61,8 @@ struct LexerState {
 			deprecated_subshell_nesting_depths.pop();
 		}
 		heredoc_delimiter.clear();
+		bash_case_input_received = false;
+		bash_cash_keyword_in_received = false;
 		incoming_token_can_be_lvalue = true;
 	}
 };
@@ -72,6 +76,10 @@ static LexerState lexerState;
  */
 void set_incoming_token_can_be_lvalue(bool canBeLvalue) {
 	lexerState.incoming_token_can_be_lvalue = canBeLvalue;
+}
+
+void set_bash_case_input_received(bool received) {
+	lexerState.bash_case_input_received = received;
 }
 
 /**
@@ -221,6 +229,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 %x HEREDOC_CONTENT_MODE
 
+%x BASH_CASE_BODY_MODE
+
 /* INCLUSIVE start conditions
  * These start conditions are essentially used to lex normally while distinguishing special modes,
  * e.g., when parsing array indices (as in ${var[array_index]}),
@@ -243,6 +253,10 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 %s DEPRECATED_SUBSHELL_MODE
 
 %s HEREDOC_MODE
+
+%s BASH_CASE_MODE
+
+%s BASH_CASE_PATTERN_ACTION_MODE
 
 %%
 
@@ -328,8 +342,25 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 {KEYWORD_SUPER}/[^a-zA-Z0-9_]        { modeStack.push(BPP_MODE); emit(KEYWORD_SUPER); }
 
 {DELIM}                              {
-	if (modeStack.top() == HEREDOC_MODE && tokenText == "\n") {
-		modeStack.push(HEREDOC_CONTENT_MODE);
+	switch (modeStack.top()) {
+		case HEREDOC_MODE:
+			if (tokenText == "\n") {
+				modeStack.push(HEREDOC_CONTENT_MODE);
+			}
+			break;
+		case BASH_CASE_MODE:
+			if (lexerState.bash_cash_keyword_in_received) {
+				// Beginning of the case body
+				modeStack.pop(); // Exit BASH_CASE_MODE
+				modeStack.push(BASH_CASE_BODY_MODE);
+				emit(BASH_CASE_BODY_BEGIN, tokenText); // NOTE: CHANGE THIS IF emit() MACRO CHANGES
+				// We are VERY MUCH relying on emit() returning immediately
+			} else {
+				emit(WS, tokenText);
+			}
+			break;
+		default:
+			break;
 	}
 	emit(DELIM, tokenText);
 }
@@ -448,6 +479,61 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 "<<" {
 	modeStack.push(HEREDOC_MODE);
 	emit(HEREDOC_START);
+}
+
+"case"/[ \t] {
+	if (lexerState.incoming_token_can_be_lvalue) {
+		lexerState.incoming_token_can_be_lvalue = false;
+		modeStack.push(BASH_CASE_MODE);
+		emit(BASH_KEYWORD_CASE);
+	} else {
+		emit(IDENTIFIER, tokenText);
+	}
+}
+
+<BASH_CASE_MODE>{
+	"in"/[ \t\n] {
+		if (lexerState.bash_case_input_received) {
+			// This is only the special 'in' KEYWORD if we've received input for the case already
+			lexerState.bash_cash_keyword_in_received = true;
+			emit(BASH_KEYWORD_IN);
+		} else {
+			std::cout << "Here but no flag tripped" << std::endl;
+			emit(IDENTIFIER, tokenText);
+		}
+	}
+
+	[ \t]+\n {
+		if (lexerState.bash_cash_keyword_in_received) {
+			// Beginning of the case body
+			modeStack.pop(); // Exit BASH_CASE_MODE
+			modeStack.push(BASH_CASE_BODY_MODE);
+			emit(BASH_CASE_BODY_BEGIN, tokenText);
+		} else {
+			emit(WS, tokenText);
+		}
+	}
+}
+
+<BASH_CASE_BODY_MODE>{
+	[ \t\n]+esac/[^a-zA-Z0-9_] {
+		modeStack.pop(); // Exit BASH_CASE_BODY_MODE
+		emit(BASH_KEYWORD_ESAC);
+	}
+
+	[^\)]+\) {
+		// Pattern ending with ')'
+		modeStack.push(BASH_CASE_PATTERN_ACTION_MODE); // Next up is the action following this pattern
+		emit(BASH_CASE_PATTERN, tokenText);
+	}
+}
+
+<BASH_CASE_PATTERN_ACTION_MODE>{
+	";;" {
+		// End of this pattern's action; back to parsing more patterns
+		modeStack.pop(); // Exit BASH_CASE_PATTERN_ACTION_MODE
+		emit(BASH_CASE_PATTERN_TERMINATOR);
+	}
 }
 
 [\#][^\n]*  { /* Ignore comments */ }

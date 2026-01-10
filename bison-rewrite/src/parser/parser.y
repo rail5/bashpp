@@ -23,6 +23,7 @@ void yyerror(const char *s);
 	yy::parser::symbol_type yylex();
 
 	extern void set_incoming_token_can_be_lvalue(bool canBeLvalue);
+	extern void set_bash_case_input_received(bool received);
 }
 
 %token <std::string> ESCAPED_CHAR WS DELIM
@@ -61,6 +62,9 @@ void yyerror(const char *s);
 %token HEREDOC_START HERESTRING_START
 %token <std::string> HEREDOC_DELIMITER HEREDOC_END
 
+%token BASH_KEYWORD_CASE BASH_KEYWORD_IN BASH_CASE_PATTERN_TERMINATOR BASH_KEYWORD_ESAC
+%token <std::string> BASH_CASE_PATTERN BASH_CASE_BODY_BEGIN
+
 /* Handling unrecognized tokens */
 %token <std::string> ERROR
 
@@ -81,6 +85,7 @@ void yyerror(const char *s);
 %type <std::string> typeof_expression
 %type <std::string> heredoc heredoc_content
 %type <std::string> array_index
+%type <std::string> bash_case_body bash_case_header bash_case_input bash_case_pattern bash_case_statement
 
 /**
  * NOTE: A shift/reduce conflict is EXPECTED between 'object_instantiation' and
@@ -161,6 +166,7 @@ statement:
 	| subshell
 	| typeof_expression
 	| heredoc
+	| bash_case_statement
 	;
 
 block:
@@ -859,6 +865,47 @@ heredoc_content:
 	| heredoc_content STRING_CONTENT { $$ = $1 + $2; }
 	| heredoc_content string_interpolation { $$ = $1 + $2; }
 	| heredoc_content heredoc { $$ = $1 + $2; }
+	;
+
+bash_case_statement:
+	BASH_KEYWORD_CASE WS bash_case_header bash_case_body BASH_KEYWORD_ESAC {
+		std::string caseHeader = $3;
+		std::string caseBody = $4;
+
+		std::cout << "Parsed bash case statement" << std::endl;
+
+		$$ = "case " + caseHeader + " in\n" + caseBody + "\nesac";
+	}
+	;
+
+bash_case_header:
+	bash_case_input WS BASH_KEYWORD_IN BASH_CASE_BODY_BEGIN {
+		std::string caseInput = $1;
+		std::cout << "Parsed bash case header: Input='" << caseInput << "'" << std::endl;
+		$$ = caseInput;
+	}
+	;
+
+bash_case_input:
+	valid_rvalue {
+		set_bash_case_input_received(true);
+		$$ = $1;
+	}
+	;
+
+bash_case_body:
+	/* empty */ { $$ = ""; }
+	| bash_case_body bash_case_pattern { $$ = $1 + $2; }
+	;
+
+bash_case_pattern:
+	BASH_CASE_PATTERN statements BASH_CASE_PATTERN_TERMINATOR {
+		std::string pattern = $1;
+
+		std::cout << "Parsed bash case pattern: Pattern='" << pattern << "'" << std::endl;
+
+		$$ = pattern + "... statements ...;;";
+	}
 	;
 
 %%

@@ -75,7 +75,8 @@ void yyerror(const char *s);
 %type <std::string> bash_variable
 %type <std::string> dynamic_cast cast_target
 %type <std::string> object_address pointer_dereference pointer_dereference_rvalue pointer_dereference_lvalue
-%type <std::string> supershell subshell subshell_raw subshell_substitution deprecated_subshell
+%type <std::string> supershell subshell subshell_raw subshell_substitution dollar_subshell deprecated_subshell
+%type <std::string> string_interpolation
 %type <std::string> maybe_hash
 %type <std::string> typeof_expression
 %type <std::string> heredoc heredoc_content
@@ -192,7 +193,6 @@ valid_rvalue:
 	| dynamic_cast {$$ = $1; }
 	| supershell { $$ = $1; }
 	| subshell_substitution { $$ = $1; }
-	| deprecated_subshell { $$ = $1; }
 	| typeof_expression { $$ = $1; }
 	;
 
@@ -214,9 +214,9 @@ include_statement:
 		std::string asPath = $4.empty() ? "" : $4;
 
 		std::cout << "Parsed include statement: "
-		          << "Keyword='" << includeKeyword << "', "
-		          << "Type='" << includeType << "', "
-		          << "Path='" << includePath << "'";
+				  << "Keyword='" << includeKeyword << "', "
+				  << "Type='" << includeType << "', "
+				  << "Path='" << includePath << "'";
 		if (!asPath.empty()) {
 			std::cout << ", As='" << asPath << "'";
 		}
@@ -443,7 +443,17 @@ doublequoted_string:
 quote_contents:
 	/* empty */ { $$ = ""; }
 	| quote_contents DOUBLEQUOTE_CONTENT { $$ = $1 + $2; }
-	| quote_contents AT IDENTIFIER { $$ = $1 + "@" + $3; } /* TODO: FIX THIS */
+	| quote_contents string_interpolation { $$ = $1 + $2; }
+	;
+
+string_interpolation:
+	object_reference { $$ = $1; }
+	| self_reference { $$ = $1; }
+	| object_address { $$ = $1; } /* TODO: lexer quote mode doesn't handle & */
+	| pointer_dereference { $$ = $1; } /* TODO: lexer quote mode doesn't handle * */
+	| supershell { $$ = $1; }
+	| subshell_substitution { $$ = $1; } /* TODO: lexer quote mode doesn't handle subshells */
+	| bash_variable { $$ = $1; } /* Is this necessary to parse? */
 	;
 
 object_reference:
@@ -795,7 +805,6 @@ supershell:
 subshell:
 	subshell_raw { $$ = $1; }
 	| subshell_substitution { $$ = $1; }
-	| deprecated_subshell { $$ = $1; }
 	;
 
 subshell_raw:
@@ -806,6 +815,11 @@ subshell_raw:
 	;
 
 subshell_substitution:
+	dollar_subshell { $$ = $1; }
+	| deprecated_subshell { $$ = $1; }
+	;
+
+dollar_subshell:
 	SUBSHELL_SUBSTITUTION_START statements SUBSHELL_SUBSTITUTION_END {
 		std::cout << "Parsed subshell substitution block" << std::endl;
 		$$ = "$(subshell_substitution)";
@@ -838,7 +852,7 @@ heredoc:
 heredoc_content:
 	/* empty */ { $$ = ""; }
 	| heredoc_content HEREDOC_CONTENT { $$ = $1 + $2; }
-	| heredoc_content AT IDENTIFIER { $$ = $1 + "@" + $3; } /* TODO: FIX THIS */
+	| heredoc_content string_interpolation { $$ = $1 + $2; }
 	| heredoc_content heredoc { $$ = $1 + $2; }
 	;
 

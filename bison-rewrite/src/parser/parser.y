@@ -62,8 +62,8 @@ void yyerror(const char *s);
 %token HEREDOC_START HERESTRING_START
 %token <std::string> HEREDOC_DELIMITER HEREDOC_END
 
-%token BASH_KEYWORD_CASE BASH_KEYWORD_IN BASH_CASE_PATTERN_TERMINATOR BASH_KEYWORD_ESAC
-%token <std::string> BASH_CASE_PATTERN BASH_CASE_BODY_BEGIN
+%token BASH_KEYWORD_CASE BASH_KEYWORD_IN BASH_CASE_PATTERN_DELIM BASH_CASE_PATTERN_TERMINATOR BASH_KEYWORD_ESAC
+%token <std::string> BASH_CASE_BODY_BEGIN
 
 /* Handling unrecognized tokens */
 %token <std::string> ERROR
@@ -85,7 +85,7 @@ void yyerror(const char *s);
 %type <std::string> typeof_expression
 %type <std::string> heredoc heredoc_content
 %type <std::string> array_index
-%type <std::string> bash_case_body bash_case_header bash_case_input bash_case_pattern bash_case_statement
+%type <std::string> bash_case_body bash_case_header bash_case_input bash_case_pattern bash_case_statement bash_case_pattern_header
 
 /**
  * NOTE: A shift/reduce conflict is EXPECTED between 'object_instantiation' and
@@ -899,13 +899,19 @@ bash_case_body:
 	;
 
 bash_case_pattern:
-	BASH_CASE_PATTERN statements BASH_CASE_PATTERN_TERMINATOR {
+	bash_case_pattern_header BASH_CASE_PATTERN_DELIM statements BASH_CASE_PATTERN_TERMINATOR {
 		std::string pattern = $1;
 
 		std::cout << "Parsed bash case pattern: Pattern='" << pattern << "'" << std::endl;
 
 		$$ = pattern + "... statements ...;;";
 	}
+	;
+
+bash_case_pattern_header:
+	/* empty */ { $$ = ""; }
+	| bash_case_pattern_header STRING_CONTENT { $$ = $1 + $2; }
+	| bash_case_pattern_header string_interpolation { $$ = $1 + $2; }
 	;
 
 %%

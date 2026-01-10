@@ -50,7 +50,7 @@ struct LexerState {
 	std::stack<uint32_t> deprecated_subshell_nesting_depths;
 	std::string heredoc_delimiter;
 	bool bash_case_input_received = false;
-	bool bash_cash_keyword_in_received = false;
+	bool bash_case_keyword_in_received = false;
 	bool incoming_token_can_be_lvalue = true;
 
 	void reset() {
@@ -62,7 +62,7 @@ struct LexerState {
 		}
 		heredoc_delimiter.clear();
 		bash_case_input_received = false;
-		bash_cash_keyword_in_received = false;
+		bash_case_keyword_in_received = false;
 		incoming_token_can_be_lvalue = true;
 	}
 };
@@ -349,10 +349,12 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 			}
 			break;
 		case BASH_CASE_MODE:
-			if (lexerState.bash_cash_keyword_in_received) {
+			if (lexerState.bash_case_keyword_in_received) {
 				// Beginning of the case body
 				modeStack.pop(); // Exit BASH_CASE_MODE
 				modeStack.push(BASH_CASE_BODY_MODE);
+				lexerState.bash_case_keyword_in_received = false; // Reset for next time
+				lexerState.bash_case_input_received = false; // Reset for next time
 				emit(BASH_CASE_BODY_BEGIN, tokenText); // NOTE: CHANGE THIS IF emit() MACRO CHANGES
 				// We are VERY MUCH relying on emit() returning immediately
 			} else {
@@ -491,51 +493,6 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 }
 
-<BASH_CASE_MODE>{
-	"in"/[ \t\n] {
-		if (lexerState.bash_case_input_received) {
-			// This is only the special 'in' KEYWORD if we've received input for the case already
-			lexerState.bash_cash_keyword_in_received = true;
-			emit(BASH_KEYWORD_IN);
-		} else {
-			std::cout << "Here but no flag tripped" << std::endl;
-			emit(IDENTIFIER, tokenText);
-		}
-	}
-
-	[ \t]+\n {
-		if (lexerState.bash_cash_keyword_in_received) {
-			// Beginning of the case body
-			modeStack.pop(); // Exit BASH_CASE_MODE
-			modeStack.push(BASH_CASE_BODY_MODE);
-			emit(BASH_CASE_BODY_BEGIN, tokenText);
-		} else {
-			emit(WS, tokenText);
-		}
-	}
-}
-
-<BASH_CASE_BODY_MODE>{
-	[ \t\n]+esac/[^a-zA-Z0-9_] {
-		modeStack.pop(); // Exit BASH_CASE_BODY_MODE
-		emit(BASH_KEYWORD_ESAC);
-	}
-
-	[^\)]+\) {
-		// Pattern ending with ')'
-		modeStack.push(BASH_CASE_PATTERN_ACTION_MODE); // Next up is the action following this pattern
-		emit(BASH_CASE_PATTERN, tokenText);
-	}
-}
-
-<BASH_CASE_PATTERN_ACTION_MODE>{
-	";;" {
-		// End of this pattern's action; back to parsing more patterns
-		modeStack.pop(); // Exit BASH_CASE_PATTERN_ACTION_MODE
-		emit(BASH_CASE_PATTERN_TERMINATOR);
-	}
-}
-
 [\#][^\n]*  { /* Ignore comments */ }
 
 
@@ -558,8 +515,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 }
 
-<DOUBLEQUOTE_MODE,HEREDOC_CONTENT_MODE>{
-	/* The following rules are for handling string interpolations inside double-quoted strings and heredoc content */
+<DOUBLEQUOTE_MODE,HEREDOC_CONTENT_MODE,BASH_CASE_BODY_MODE>{
+	/* The following rules are for handling string interpolations */
 	\\@ {
 		// Literal '@'
 		emit(STRING_CONTENT, "@");
@@ -683,6 +640,62 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 	[^a-zA-Z_0-9@\*&\n\$`\\]+ {
 		emit(STRING_CONTENT, tokenText);
+	}
+}
+
+<BASH_CASE_MODE>{
+	"in"/[ \t\n] {
+		if (lexerState.bash_case_input_received) {
+			// This is only the special 'in' KEYWORD if we've received input for the case already
+			lexerState.bash_case_keyword_in_received = true;
+			emit(BASH_KEYWORD_IN);
+		} else {
+			emit(IDENTIFIER, tokenText);
+		}
+	}
+
+	[ \t]+\n {
+		if (lexerState.bash_case_keyword_in_received) {
+			// Beginning of the case body
+			modeStack.pop(); // Exit BASH_CASE_MODE
+			modeStack.push(BASH_CASE_BODY_MODE);
+			lexerState.bash_case_keyword_in_received = false; // Reset for next time
+			lexerState.bash_case_input_received = false; // Reset for next time
+			emit(BASH_CASE_BODY_BEGIN, tokenText);
+		} else {
+			emit(WS, tokenText);
+		}
+	}
+}
+
+<BASH_CASE_BODY_MODE>{
+	[ \t\n]+esac/[^a-zA-Z0-9_] {
+		modeStack.pop(); // Exit BASH_CASE_BODY_MODE
+		emit(BASH_KEYWORD_ESAC);
+	}
+
+	[^\)@\\&\*\$`esac]+ {
+		// Regular string content inside the case pattern
+		emit(STRING_CONTENT, tokenText);
+	}
+
+	[esac]+ {
+		// 'esac' fragment, but not the full 'esac' keyword
+		emit(STRING_CONTENT, tokenText);
+	}
+
+	")" {
+		// Pattern ends with ')'
+		modeStack.push(BASH_CASE_PATTERN_ACTION_MODE); // Next up is the action following this pattern
+		emit(BASH_CASE_PATTERN_DELIM);
+	}
+}
+
+<BASH_CASE_PATTERN_ACTION_MODE>{
+	";;" {
+		// End of this pattern's action; back to parsing more patterns
+		modeStack.pop(); // Exit BASH_CASE_PATTERN_ACTION_MODE
+		emit(BASH_CASE_PATTERN_TERMINATOR);
 	}
 }
 

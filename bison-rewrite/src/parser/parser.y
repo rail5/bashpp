@@ -80,6 +80,7 @@ void yyerror(const char *s);
 %type <std::string> maybe_hash
 %type <std::string> typeof_expression
 %type <std::string> heredoc heredoc_content
+%type <std::string> array_index
 
 /**
  * NOTE: A shift/reduce conflict is EXPECTED between 'object_instantiation' and
@@ -636,9 +637,14 @@ maybe_descend_object_hierarchy:
 
 maybe_array_index:
 	/* empty */ { $$ = ""; }
-	| ARRAY_INDEX_START valid_rvalue ARRAY_INDEX_END {
+	| ARRAY_INDEX_START array_index ARRAY_INDEX_END {
 		$$ = "[" + $2 + "]";
 	}
+	;
+
+array_index:
+	valid_rvalue { $$ = $1; }
+	| AT { $$ = "@"; } // '@' is a valid array index, as in ${array[@]}
 	;
 
 maybe_hash:

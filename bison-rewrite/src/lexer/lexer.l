@@ -51,8 +51,8 @@ struct LexerState {
 	std::string heredoc_delimiter;
 	bool bash_case_input_received = false;
 	bool bash_case_keyword_in_received = false;
-	bool bash_select_variable_received = false;
-	bool bash_select_input_received = false;
+	bool bash_for_or_select_variable_received = false;
+	bool bash_for_or_select_input_received = false;
 	bool parsed_assignment_operator = false;
 	bool incoming_token_can_be_lvalue = true;
 
@@ -66,8 +66,8 @@ struct LexerState {
 		heredoc_delimiter.clear();
 		bash_case_input_received = false;
 		bash_case_keyword_in_received = false;
-		bash_select_variable_received = false;
-		bash_select_input_received = false;
+		bash_for_or_select_variable_received = false;
+		bash_for_or_select_input_received = false;
 		parsed_assignment_operator = false;
 		incoming_token_can_be_lvalue = true;
 	}
@@ -88,8 +88,8 @@ void set_bash_case_input_received(bool received) {
 	lexerState.bash_case_input_received = received;
 }
 
-void set_bash_select_variable_received(bool received) {
-	lexerState.bash_select_variable_received = received;
+void set_bash_for_or_select_variable_received(bool received) {
+	lexerState.bash_for_or_select_variable_received = received;
 }
 
 void set_parsed_assignment_operator(bool parsed) {
@@ -278,11 +278,11 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 %s BASH_CASE_PATTERN_ACTION_MODE
 
-%s BASH_SELECT_MODE
+%s BASH_FOR_OR_SELECT_MODE
 
-%s BASH_SELECT_INPUT_MODE
+%s BASH_FOR_OR_SELECT_INPUT_MODE
 
-%s BASH_SELECT_BODY_MODE
+%s BASH_FOR_OR_SELECT_BODY_MODE
 
 %%
 
@@ -409,20 +409,20 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 				emit(WS, tokenText);
 			}
 			break;
-		case BASH_SELECT_INPUT_MODE:
-			modeStack.pop(); // Exit BASH_SELECT_INPUT_MODE
-			lexerState.bash_select_input_received = true; // So that we know 'do' can be a keyword
-			lexerState.bash_select_variable_received = false; // Reset for next time
+		case BASH_FOR_OR_SELECT_INPUT_MODE:
+			modeStack.pop(); // Exit BASH_FOR_OR_SELECT_INPUT_MODE
+			lexerState.bash_for_or_select_input_received = true; // So that we know 'do' can be a keyword
+			lexerState.bash_for_or_select_variable_received = false; // Reset for next time
 			modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
 			emit(DELIM, tokenText); // NOTE: CHANGE THIS IF emit() MACRO CHANGES
 			// Same deal as above
 			break;
-		case BASH_SELECT_MODE:
-			if (lexerState.bash_select_variable_received) {
+		case BASH_FOR_OR_SELECT_MODE:
+			if (lexerState.bash_for_or_select_variable_received) {
 				// No 'in' keyword; proceed to body directly
-				modeStack.pop(); // Exit BASH_SELECT_MODE
-				lexerState.bash_select_input_received = true; // So that we know 'do' can be a keyword
-				lexerState.bash_select_variable_received = false; // Reset for next time
+				modeStack.pop(); // Exit BASH_FOR_OR_SELECT_MODE
+				lexerState.bash_for_or_select_input_received = true; // So that we know 'do' can be a keyword
+				lexerState.bash_for_or_select_variable_received = false; // Reset for next time
 				modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
 				emit(DELIM, tokenText); // NOTE: CHANGE THIS IF emit() MACRO CHANGES
 			}
@@ -571,17 +571,27 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 "select"/[ \t\n] {
 	if (lexerState.incoming_token_can_be_lvalue) {
 		lexerState.incoming_token_can_be_lvalue = false;
-		modeStack.push(BASH_SELECT_MODE);
+		modeStack.push(BASH_FOR_OR_SELECT_MODE);
 		emit(BASH_KEYWORD_SELECT);
 	} else {
 		emit(IDENTIFIER, tokenText);
 	}
 }
 
+"for"/[ \t\n] {
+	if (lexerState.incoming_token_can_be_lvalue) {
+		lexerState.incoming_token_can_be_lvalue = false;
+		modeStack.push(BASH_FOR_OR_SELECT_MODE);
+		emit(BASH_KEYWORD_FOR);
+	} else {
+		emit(IDENTIFIER, tokenText);
+	}
+}
+
 "do"/[ \t\n] {
-	if (lexerState.bash_select_input_received) {
-		lexerState.bash_select_input_received = false; // Reset for next time
-		modeStack.push(BASH_SELECT_BODY_MODE);
+	if (lexerState.bash_for_or_select_input_received) {
+		lexerState.bash_for_or_select_input_received = false; // Reset for next time
+		modeStack.push(BASH_FOR_OR_SELECT_BODY_MODE);
 		emit(BASH_KEYWORD_DO);
 	} else {
 		emit(IDENTIFIER, tokenText);
@@ -794,12 +804,12 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 }
 
-<BASH_SELECT_MODE>{
+<BASH_FOR_OR_SELECT_MODE>{
 	"in"/[^a-zA-Z0-9_] {
-		if (lexerState.bash_select_variable_received) {
+		if (lexerState.bash_for_or_select_variable_received) {
 			// This is only the special 'in' KEYWORD if we've received the select variable already
-			modeStack.pop(); // Exit BASH_SELECT_MODE
-			modeStack.push(BASH_SELECT_INPUT_MODE);
+			modeStack.pop(); // Exit BASH_FOR_OR_SELECT_MODE
+			modeStack.push(BASH_FOR_OR_SELECT_INPUT_MODE);
 			emit(BASH_KEYWORD_IN);
 		} else {
 			emit(IDENTIFIER, tokenText);
@@ -807,9 +817,9 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 }
 
-<BASH_SELECT_BODY_MODE>{
+<BASH_FOR_OR_SELECT_BODY_MODE>{
 	[ \t\n]+done/[^a-zA-Z0-9_] {
-		modeStack.pop(); // Exit BASH_SELECT_BODY_MODE
+		modeStack.pop(); // Exit BASH_FOR_OR_SELECT_BODY_MODE
 		emit(BASH_KEYWORD_DONE);
 	}
 }

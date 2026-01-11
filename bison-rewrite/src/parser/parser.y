@@ -24,7 +24,7 @@ void yyerror(const char *s);
 
 	extern void set_incoming_token_can_be_lvalue(bool canBeLvalue);
 	extern void set_bash_case_input_received(bool received);
-	extern void set_bash_select_variable_received(bool received);
+	extern void set_bash_for_or_select_variable_received(bool received);
 	extern void set_parsed_assignment_operator(bool parsed);
 }
 
@@ -67,7 +67,7 @@ void yyerror(const char *s);
 
 %token BASH_KEYWORD_CASE BASH_KEYWORD_IN BASH_CASE_PATTERN_DELIM BASH_CASE_PATTERN_TERMINATOR BASH_KEYWORD_ESAC
 %token <std::string> BASH_CASE_BODY_BEGIN
-%token BASH_KEYWORD_SELECT BASH_KEYWORD_DO BASH_KEYWORD_DONE
+%token BASH_KEYWORD_SELECT BASH_KEYWORD_FOR BASH_KEYWORD_DO BASH_KEYWORD_DONE
 
 /* Handling unrecognized tokens */
 %token <std::string> ERROR
@@ -90,7 +90,8 @@ void yyerror(const char *s);
 %type <std::string> heredoc heredoc_content
 %type <std::string> array_index
 %type <std::string> bash_case_body bash_case_header bash_case_input bash_case_pattern bash_case_statement bash_case_pattern_header
-%type <std::string> bash_select_statement bash_select_header bash_select_input bash_select_variable bash_select_maybe_in_something
+%type <std::string> bash_select_statement bash_for_statement
+%type <std::string> bash_for_or_select_header bash_for_or_select_input bash_for_or_select_variable bash_for_or_select_maybe_in_something
 
 /**
  * NOTE: A shift/reduce conflict is EXPECTED between 'object_instantiation' and
@@ -173,6 +174,7 @@ statement:
 	| heredoc
 	| bash_case_statement
 	| bash_select_statement
+	| bash_for_statement
 	;
 
 block:
@@ -937,14 +939,14 @@ bash_case_pattern_header:
  * 6. select var; { ... statements ... }
  */
 bash_select_statement:
-	BASH_KEYWORD_SELECT WS bash_select_header DELIM maybe_whitespace BASH_KEYWORD_DO statements BASH_KEYWORD_DONE {
+	BASH_KEYWORD_SELECT WS bash_for_or_select_header DELIM maybe_whitespace BASH_KEYWORD_DO statements BASH_KEYWORD_DONE {
 		std::string selectHeader = $3;
 
 		std::cout << "Parsed bash select statement" << std::endl;
 
 		$$ = "select " + selectHeader + " do\n... statements ...\ndone";
 	}
-	| BASH_KEYWORD_SELECT WS bash_select_header DELIM maybe_whitespace block {
+	| BASH_KEYWORD_SELECT WS bash_for_or_select_header DELIM maybe_whitespace block {
 		std::string selectHeader = $3;
 
 		std::cout << "Parsed bash select statement with block" << std::endl;
@@ -953,49 +955,77 @@ bash_select_statement:
 	}
 	;
 
-bash_select_header:
-	bash_select_variable bash_select_maybe_in_something {
+bash_for_or_select_header:
+	bash_for_or_select_variable bash_for_or_select_maybe_in_something {
 		std::string varName = $1;
 		std::string inSomething = $2;
 
-		std::cout << "Parsed bash select header: Variable='" << varName << "'" << std::endl;
+		std::cout << "Parsed bash for/select header: Variable='" << varName << "'" << std::endl;
 
 		$$ = varName + inSomething;
 	}
 	;
 
-bash_select_maybe_in_something:
+bash_for_or_select_maybe_in_something:
 	maybe_whitespace { 
-		std::cout << "Parsed bash select header with no 'in'" << std::endl;
+		std::cout << "Parsed bash for/select header with no 'in'" << std::endl;
 		$$ = "";
 	}
-	| WS BASH_KEYWORD_IN WS bash_select_input {
+	| WS BASH_KEYWORD_IN WS bash_for_or_select_input {
 		std::string selectInput = $4;
 
-		std::cout << "Parsed bash select header with input: Input='" << selectInput << "'" << std::endl;
+		std::cout << "Parsed bash for/select header with input: Input='" << selectInput << "'" << std::endl;
 
 		$$ = " in " + selectInput;
 	}
 	| WS BASH_KEYWORD_IN maybe_whitespace {
-		std::cout << "Parsed bash select header with no input" << std::endl;
+		std::cout << "Parsed bash for/select header with no input" << std::endl;
 		$$ = " in";
 	}
 	;
 
-bash_select_variable:
+bash_for_or_select_variable:
 	IDENTIFIER {
-		set_bash_select_variable_received(true);
+		set_bash_for_or_select_variable_received(true);
 		std::string varName = $1;
-		std::cout << "Parsed bash select variable: Name='" << varName << "'" << std::endl;
+		std::cout << "Parsed bash for/select variable: Name='" << varName << "'" << std::endl;
 		$$ = varName;
 	}
 	;
 
-bash_select_input:
+bash_for_or_select_input:
 	valid_rvalue { $$ = $1; }
-	| bash_select_input WS valid_rvalue { $$ = $1 + " " + $3; }
-	| bash_select_input WS { $$ = $1; } /* Allow trailing whitespace */
+	| bash_for_or_select_input WS valid_rvalue { $$ = $1 + " " + $3; }
+	| bash_for_or_select_input WS { $$ = $1; } /* Allow trailing whitespace */
 	;
+
+/**
+ * Valid forms of a for statement as parsed by Bash:
+ * 1. for var in input; do ... statements ...; done
+ * 2. for var in input; { ... statements ... }
+ * 3. for var in; do ... statements ...; done
+ * 4. for var in; { ... statements ... }
+ * 5. for var; do ... statements ...; done
+ * 6. for var; { ... statements ... }
+ */
+bash_for_statement:
+	BASH_KEYWORD_FOR WS bash_for_or_select_header DELIM maybe_whitespace BASH_KEYWORD_DO statements BASH_KEYWORD_DONE {
+		std::string forHeader = $3;
+
+		std::cout << "Parsed bash for statement" << std::endl;
+
+		$$ = "for " + forHeader + " do\n... statements ...\ndone";
+	}
+	| BASH_KEYWORD_FOR WS bash_for_or_select_header DELIM maybe_whitespace block {
+		std::string forHeader = $3;
+
+		std::cout << "Parsed bash for statement with block" << std::endl;
+
+		$$ = "for " + forHeader + " {\n... statements ...\n}";
+	}
+	;
+
+
 
 %%
 

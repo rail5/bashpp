@@ -928,19 +928,26 @@ bash_case_pattern_header:
 	;
 
 bash_select_statement:
-	BASH_KEYWORD_SELECT WS bash_select_header BASH_KEYWORD_DO statements BASH_KEYWORD_DONE {
+	BASH_KEYWORD_SELECT WS bash_select_header DELIM maybe_whitespace BASH_KEYWORD_DO statements BASH_KEYWORD_DONE {
 		std::string selectHeader = $3;
 
 		std::cout << "Parsed bash select statement" << std::endl;
 
 		$$ = "select " + selectHeader + " do\n... statements ...\ndone";
 	}
+	| BASH_KEYWORD_SELECT WS bash_select_header DELIM maybe_whitespace block {
+		std::string selectHeader = $3;
+
+		std::cout << "Parsed bash select statement with block" << std::endl;
+
+		$$ = "select " + selectHeader + " {\n... statements ...\n}";
+	}
 	;
 
 bash_select_header:
-	bash_select_variable WS BASH_KEYWORD_IN bash_select_input {
+	bash_select_variable WS BASH_KEYWORD_IN WS bash_select_input {
 		std::string selectVar = $1;
-		std::string selectInput = $4;
+		std::string selectInput = $5;
 
 		std::cout << "Parsed bash select header: Variable='" << selectVar << "', Input='" << selectInput << "'" << std::endl;
 
@@ -959,7 +966,8 @@ bash_select_variable:
 
 bash_select_input:
 	valid_rvalue { $$ = $1; }
-	| bash_select_input valid_rvalue { $$ = $1 + " " + $2; }
+	| bash_select_input WS valid_rvalue { $$ = $1 + " " + $3; }
+	| bash_select_input WS { $$ = $1; } /* Allow trailing whitespace */
 	;
 
 %%

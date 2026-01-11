@@ -418,12 +418,15 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 			// Same deal as above
 			break;
 		case BASH_SELECT_MODE:
-			// No 'in' keyword; proceed to body directly
-			modeStack.pop(); // Exit BASH_SELECT_MODE
-			lexerState.bash_select_input_received = true; // So that we know 'do' can be a keyword
-			lexerState.bash_select_variable_received = false; // Reset for next time
-			modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
-			emit(DELIM, tokenText); // NOTE: CHANGE THIS IF emit() MACRO CHANGES
+			if (lexerState.bash_select_variable_received) {
+				// No 'in' keyword; proceed to body directly
+				modeStack.pop(); // Exit BASH_SELECT_MODE
+				lexerState.bash_select_input_received = true; // So that we know 'do' can be a keyword
+				lexerState.bash_select_variable_received = false; // Reset for next time
+				modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
+				emit(DELIM, tokenText); // NOTE: CHANGE THIS IF emit() MACRO CHANGES
+			}
+			break;
 		default:
 			break;
 	}

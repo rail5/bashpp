@@ -68,6 +68,9 @@ void yyerror(const char *s);
 %token BASH_KEYWORD_CASE BASH_KEYWORD_IN BASH_CASE_PATTERN_DELIM BASH_CASE_PATTERN_TERMINATOR BASH_KEYWORD_ESAC
 %token <std::string> BASH_CASE_BODY_BEGIN
 %token BASH_KEYWORD_SELECT BASH_KEYWORD_FOR BASH_KEYWORD_DO BASH_KEYWORD_DONE
+%token ARITH_FOR_CONDITION_START ARITH_FOR_CONDITION_END
+%token INCREMENT_OPERATOR DECREMENT_OPERATOR
+%token <std::string> INTEGER COMPARISON_OPERATOR
 
 /* Handling unrecognized tokens */
 %token <std::string> ERROR
@@ -80,6 +83,7 @@ void yyerror(const char *s);
 %type <std::string> doublequoted_string quote_contents
 %type <std::string> object_reference object_reference_lvalue maybe_descend_object_hierarchy maybe_array_index
 %type <std::string> self_reference self_reference_lvalue
+%type <std::string> object_assignment shell_variable_assignment
 %type <std::string> bash_variable
 %type <std::string> dynamic_cast cast_target
 %type <std::string> object_address pointer_dereference pointer_dereference_rvalue pointer_dereference_lvalue
@@ -92,6 +96,8 @@ void yyerror(const char *s);
 %type <std::string> bash_case_body bash_case_header bash_case_input bash_case_pattern bash_case_statement bash_case_pattern_header
 %type <std::string> bash_select_statement bash_for_statement
 %type <std::string> bash_for_or_select_header bash_for_or_select_input bash_for_or_select_variable bash_for_or_select_maybe_in_something
+%type <std::string> bash_arithmetic_for_statement arithmetic_for_condition arith_statement increment_decrement_expression arith_operator
+%type <std::string> arith_condition_term comparison_expression comparison_operator
 
 /**
  * NOTE: A shift/reduce conflict is EXPECTED between 'object_instantiation' and
@@ -175,6 +181,7 @@ statement:
 	| bash_case_statement
 	| bash_select_statement
 	| bash_for_statement
+	| bash_arithmetic_for_statement
 	;
 
 block:
@@ -184,6 +191,7 @@ block:
 valid_rvalue:
 	EMPTY_ASSIGNMENT { $$ = ""; }
 	| IDENTIFIER { $$ = $1; }
+	| INTEGER { $$ = $1; }
 	| SINGLEQUOTED_STRING { $$ = $1; }
 	| KEYWORD_NULLPTR { $$ = "0"; }
 	| doublequoted_string { $$ = $1; }
@@ -726,6 +734,8 @@ object_assignment:
 		std::cout << "Parsed object assignment: ObjectReference='" << objectRef << "', RValue='" << rvalue << "'" << std::endl;
 
 		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
+
+		$$ = $1 + "=" + $2;
 	}
 	| self_reference_lvalue value_assignment {
 		std::string selfRef = $1;
@@ -734,6 +744,8 @@ object_assignment:
 		std::cout << "Parsed self assignment: SelfReference='" << selfRef << "', RValue='" << rvalue << "'" << std::endl;
 
 		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
+
+		$$ = $1 + "=" + $2;
 	}
 	| pointer_dereference_lvalue value_assignment {
 		std::string pointerDeref = $1;
@@ -742,6 +754,8 @@ object_assignment:
 		std::cout << "Parsed pointer dereference assignment: PointerDereference='" << pointerDeref << "', RValue='" << rvalue << "'" << std::endl;
 
 		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
+
+		$$ = $1 + "=" + $2;
 	}
 	;
 
@@ -753,6 +767,8 @@ shell_variable_assignment:
 		std::cout << "Parsed shell variable assignment: Variable='" << varName << "', RValue='" << rvalue << "'" << std::endl;
 
 		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
+
+		$$ = varName + "=" + rvalue;
 	}
 	;
 
@@ -1025,7 +1041,128 @@ bash_for_statement:
 	}
 	;
 
+/**
+ * Valid forms of an arithmetic for statement as parsed by Bash:
+ * 1. for ((expr; expr; expr)); do ... statements ...; done
+ * 2. for ((expr; expr; expr)); { ... statements ... }
+ * 3. for ((expr; expr; expr)) do ... statements ...; done
+ * 4. for ((expr; expr; expr)) { ... statements ... }
+ */
+bash_arithmetic_for_statement:
+	BASH_KEYWORD_FOR WS arithmetic_for_condition BASH_KEYWORD_DO statements BASH_KEYWORD_DONE {
+		std::string forCondition = $3;
 
+		std::cout << "Parsed bash arithmetic for statement" << std::endl;
+
+		$$ = "for " + forCondition + " do\n... statements ...\ndone";
+	}
+	| BASH_KEYWORD_FOR WS arithmetic_for_condition DELIM maybe_whitespace BASH_KEYWORD_DO statements BASH_KEYWORD_DONE {
+		std::string forCondition = $3;
+
+		std::cout << "Parsed bash arithmetic for statement" << std::endl;
+
+		$$ = "for " + forCondition + " do\n... statements ...\ndone";
+	}
+	| BASH_KEYWORD_FOR WS arithmetic_for_condition block {
+		std::string forCondition = $3;
+
+		std::cout << "Parsed bash arithmetic for statement with block" << std::endl;
+
+		$$ = "for " + forCondition + " {\n... statements ...\n}";
+	}
+	| BASH_KEYWORD_FOR WS arithmetic_for_condition DELIM maybe_whitespace block {
+		std::string forCondition = $3;
+
+		std::cout << "Parsed bash arithmetic for statement with block" << std::endl;
+
+		$$ = "for " + forCondition + " {\n... statements ...\n}";
+	}
+	;
+
+arithmetic_for_condition:
+	ARITH_FOR_CONDITION_START arith_statement DELIM arith_statement DELIM arith_statement ARITH_FOR_CONDITION_END maybe_whitespace {
+		std::string initExpr = $2;
+		std::string condExpr = $4;
+		std::string iterExpr = $6;
+
+		std::cout << "Parsed bash arithmetic for condition: Init='" << initExpr << "', Condition='" << condExpr << "', Iteration='" << iterExpr << "'" << std::endl;
+
+		$$ = "((" + initExpr + "; " + condExpr + "; " + iterExpr + "))";
+	}
+	;
+
+/*
+ * Expressions that are valid inside arithmetic for conditions:
+ * - empty (no expression)
+ * - valid rvalue
+ * - object or shell variable assignment (e.g., i=0)
+ * - Increment/decrement operators applied to object references or shell variables (e.g., i++, ++i, i--, --i)
+ */
+arith_statement:
+	/* empty */ { $$ = ""; }
+	| valid_rvalue { $$ = $1; }
+	| IDENTIFIER_LVALUE { $$ = $1; }
+	| object_reference_lvalue { $$ = $1; }
+	| self_reference_lvalue { $$ = $1; }
+	| object_assignment { $$ = $1; }
+	| shell_variable_assignment { $$ = $1; }
+	| increment_decrement_expression { $$ = $1; }
+	| comparison_expression { $$ = $1; }
+	;
+
+increment_decrement_expression:
+	arith_condition_term arith_operator {
+		std::string ref = $1;
+		std::string op = $2;
+
+		std::cout << "Parsed increment/decrement expression: Reference='" << ref << "', Operator='" << op << "'" << std::endl;
+
+		$$ = ref + op;
+	}
+	| arith_operator arith_condition_term {
+		std::string op = $1;
+		std::string ref = $2;
+
+		std::cout << "Parsed increment/decrement expression: Operator='" << op << "', Reference='" << ref << "'" << std::endl;
+
+		$$ = op + ref;
+	}
+	;
+
+comparison_expression:
+	arith_condition_term maybe_whitespace comparison_operator maybe_whitespace arith_condition_term {
+		std::string leftTerm = $1;
+		std::string compOp = $3;
+		std::string rightTerm = $5;
+
+		std::cout << "Parsed comparison expression: LeftTerm='" << leftTerm << "', Operator='" << compOp << "', RightTerm='" << rightTerm << "'" << std::endl;
+
+		$$ = leftTerm + " " + compOp + " " + rightTerm;
+	}
+	;
+
+comparison_operator:
+	COMPARISON_OPERATOR { $$ = $1; }
+	| LANGLE { $$ = "<"; }
+	| RANGLE { $$ = ">"; }
+	;
+
+arith_condition_term:
+	object_reference { $$ = $1; }
+	| object_reference_lvalue { $$ = $1; }
+	| self_reference { $$ = $1; }
+	| self_reference_lvalue { $$ = $1; }
+	| bash_variable { $$ = $1; }
+	| IDENTIFIER_LVALUE { $$ = $1; }
+	| IDENTIFIER { $$ = $1; }
+	| INTEGER { $$ = $1; }
+	| KEYWORD_NULLPTR { $$ = "0"; }
+	;
+
+arith_operator:
+	INCREMENT_OPERATOR { $$ = "++"; }
+	| DECREMENT_OPERATOR { $$ = "--"; }
+	;
 
 %%
 

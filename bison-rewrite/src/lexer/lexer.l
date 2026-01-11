@@ -149,6 +149,7 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 		case yy::parser::symbol_kind::S_SUBSHELL_START:
 		case yy::parser::symbol_kind::S_SUBSHELL_SUBSTITUTION_START:
 		case yy::parser::symbol_kind::S_DEPRECATED_SUBSHELL_START:
+		case yy::parser::symbol_kind::S_ARITH_FOR_CONDITION_START:
 			// At the start of a new command string, the next token can be an lvalue
 			lexerState.incoming_token_can_be_lvalue = true;
 			break;
@@ -815,6 +816,18 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 			emit(IDENTIFIER, tokenText);
 		}
 	}
+
+	"((" { emit(ARITH_FOR_CONDITION_START); }
+	"))" { lexerState.bash_for_or_select_variable_received = true; emit(ARITH_FOR_CONDITION_END); }
+	"++" { emit(INCREMENT_OPERATOR); }
+	"--" { emit(DECREMENT_OPERATOR); }
+
+	[0-9]+ { emit(INTEGER, tokenText); }
+
+	"<=" { emit(COMPARISON_OPERATOR, tokenText); }
+	">=" { emit(COMPARISON_OPERATOR, tokenText); }
+	"==" { emit(COMPARISON_OPERATOR, tokenText); }
+	"!=" { emit(COMPARISON_OPERATOR, tokenText); }
 }
 
 <BASH_FOR_OR_SELECT_BODY_MODE>{

@@ -90,7 +90,7 @@ void yyerror(const char *s);
 %type <std::string> heredoc heredoc_content
 %type <std::string> array_index
 %type <std::string> bash_case_body bash_case_header bash_case_input bash_case_pattern bash_case_statement bash_case_pattern_header
-%type <std::string> bash_select_statement bash_select_header bash_select_input bash_select_variable
+%type <std::string> bash_select_statement bash_select_header bash_select_input bash_select_variable bash_select_maybe_in_something
 
 /**
  * NOTE: A shift/reduce conflict is EXPECTED between 'object_instantiation' and
@@ -927,6 +927,15 @@ bash_case_pattern_header:
 	| bash_case_pattern_header string_interpolation { $$ = $1 + $2; }
 	;
 
+/**
+ * Valid forms of a select statement as parsed by Bash:
+ * 1. select var in input; do ... statements ...; done
+ * 2. select var in input; { ... statements ... }
+ * 3. select var in; do ... statements ...; done
+ * 4. select var in; { ... statements ... }
+ * 5. select var; do ... statements ...; done
+ * 6. select var; { ... statements ... }
+ */
 bash_select_statement:
 	BASH_KEYWORD_SELECT WS bash_select_header DELIM maybe_whitespace BASH_KEYWORD_DO statements BASH_KEYWORD_DONE {
 		std::string selectHeader = $3;
@@ -945,13 +954,31 @@ bash_select_statement:
 	;
 
 bash_select_header:
-	bash_select_variable WS BASH_KEYWORD_IN WS bash_select_input {
-		std::string selectVar = $1;
-		std::string selectInput = $5;
+	bash_select_variable bash_select_maybe_in_something {
+		std::string varName = $1;
+		std::string inSomething = $2;
 
-		std::cout << "Parsed bash select header: Variable='" << selectVar << "', Input='" << selectInput << "'" << std::endl;
+		std::cout << "Parsed bash select header: Variable='" << varName << "'" << std::endl;
 
-		$$ = selectVar + " in " + selectInput;
+		$$ = varName + inSomething;
+	}
+	;
+
+bash_select_maybe_in_something:
+	maybe_whitespace { 
+		std::cout << "Parsed bash select header with no 'in'" << std::endl;
+		$$ = "";
+	}
+	| WS BASH_KEYWORD_IN WS bash_select_input {
+		std::string selectInput = $4;
+
+		std::cout << "Parsed bash select header with input: Input='" << selectInput << "'" << std::endl;
+
+		$$ = " in " + selectInput;
+	}
+	| WS BASH_KEYWORD_IN maybe_whitespace {
+		std::cout << "Parsed bash select header with no input" << std::endl;
+		$$ = " in";
 	}
 	;
 

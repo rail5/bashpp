@@ -53,6 +53,7 @@ struct LexerState {
 	bool bash_case_keyword_in_received = false;
 	bool bash_select_variable_received = false;
 	bool bash_select_input_received = false;
+	bool parsed_assignment_operator = false;
 	bool incoming_token_can_be_lvalue = true;
 
 	void reset() {
@@ -67,6 +68,7 @@ struct LexerState {
 		bash_case_keyword_in_received = false;
 		bash_select_variable_received = false;
 		bash_select_input_received = false;
+		parsed_assignment_operator = false;
 		incoming_token_can_be_lvalue = true;
 	}
 };
@@ -88,6 +90,10 @@ void set_bash_case_input_received(bool received) {
 
 void set_bash_select_variable_received(bool received) {
 	lexerState.bash_select_variable_received = received;
+}
+
+void set_parsed_assignment_operator(bool parsed) {
+	lexerState.parsed_assignment_operator = parsed;
 }
 
 /**
@@ -162,6 +168,10 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 			break;
 	}
 	return token; // If we're here, just return the original token unmodified
+}
+
+void updateLexerState() {
+	lexerState.parsed_assignment_operator = false;
 }
 
 %}
@@ -292,6 +302,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	*  return yy::parser::make_AT();
 	*/
 	#define emit(tokenType, ...) \
+		updateLexerState(); \
 		return maybe_get_lvalue_token(yy::parser::make_##tokenType(__VA_ARGS__));
 	
 	/**
@@ -329,7 +340,15 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		emit(ESCAPED_CHAR, tokenText);
 	}
 }
-{WS}                                 { emit(WS, tokenText); }
+{WS}                                 {
+	if (lexerState.parsed_assignment_operator) {
+		// If whitespace immediately follows an assignment operator,
+		// The rvalue of the assignment is empty
+		yyless(0); // Reconsume the whitespace
+		emit(EMPTY_ASSIGNMENT);
+	}
+	emit(WS, tokenText);
+}
 
 {KEYWORD_INCLUDE}/[^a-zA-Z0-9_]      { modeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE); }
 {KEYWORD_INCLUDE_ONCE}/[^a-zA-Z0-9_] { modeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE_ONCE); }
@@ -384,6 +403,13 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 			break;
 		default:
 			break;
+	}
+
+	if (lexerState.parsed_assignment_operator) {
+		// If a DELIM immediately follows an assignment operator,
+		// The rvalue of the assignment is empty
+		yyless(0); // Reconsume the DELIM
+		emit(EMPTY_ASSIGNMENT);
 	}
 	emit(DELIM, tokenText);
 }

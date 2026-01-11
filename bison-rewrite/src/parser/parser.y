@@ -25,6 +25,7 @@ void yyerror(const char *s);
 	extern void set_incoming_token_can_be_lvalue(bool canBeLvalue);
 	extern void set_bash_case_input_received(bool received);
 	extern void set_bash_select_variable_received(bool received);
+	extern void set_parsed_assignment_operator(bool parsed);
 }
 
 %token <std::string> ESCAPED_CHAR WS DELIM
@@ -39,6 +40,7 @@ void yyerror(const char *s);
 %token KEYWORD_THIS KEYWORD_THIS_LVALUE KEYWORD_SUPER KEYWORD_SUPER_LVALUE
 %token LBRACE RBRACE LANGLE RANGLE
 %token COLON EQUALS ASTERISK DEREFERENCE_OPERATOR AMPERSAND DOT
+%token EMPTY_ASSIGNMENT
 
 %token KEYWORD_INCLUDE KEYWORD_INCLUDE_ONCE KEYWORD_AS KEYWORD_DYNAMIC_CAST
 %token <std::string> INCLUDE_TYPE INCLUDE_PATH
@@ -74,7 +76,7 @@ void yyerror(const char *s);
 /* Nonterminal types */
 %type <int> include_keyword access_modifier access_modifier_keyword
 %type <std::string> maybe_include_type maybe_as_clause maybe_parent_class maybe_default_value
-%type <std::string> valid_rvalue
+%type <std::string> valid_rvalue value_assignment assignment_operator
 %type <std::string> doublequoted_string quote_contents
 %type <std::string> object_reference object_reference_lvalue maybe_descend_object_hierarchy maybe_array_index
 %type <std::string> self_reference self_reference_lvalue
@@ -178,19 +180,7 @@ block:
 	;
 
 valid_rvalue:
-	/*
-	 * NOTE: In fact, neither WS nor DELIM are valid rvalues by themselves
-	 * But "empty" (epsilon) IS a valid rvalue
-	 * E.g., var=
-	 * Or @object.member=
-	 * Allowing "empty" as an alternative in the valid_rvalue rule opens up a ton of shift/reduce conflicts
-	 * None of these are actually problematic as far as I can tell (the parser's default behavior resolves them correctly)
-	 * But we can get the parser to quiet down & achieve the same effect by allowing WS and DELIM here instead of epsilon
-	 * Since, after all, the rvalue will always be followed by either WS or DELIM anyway
-	 * TODO(@rail5): revisit this, it seems horrible
-	 */
-	WS { $$ = ""; }
-	| DELIM { $$ = ""; }
+	EMPTY_ASSIGNMENT { $$ = ""; }
 	| IDENTIFIER { $$ = $1; }
 	| SINGLEQUOTED_STRING { $$ = $1; }
 	| KEYWORD_NULLPTR { $$ = "0"; }
@@ -404,7 +394,26 @@ access_modifier_keyword:
 
 maybe_default_value:
 	maybe_whitespace { $$ = ""; }
-	| EQUALS valid_rvalue { $$ = $2; }
+	| value_assignment { $$ = $1; }
+	;
+
+value_assignment:
+	assignment_operator valid_rvalue {
+		std::string assignOp = $1;
+		std::string rvalue = $2;
+
+		std::cout << "Parsed value assignment: Operator='" << assignOp << "', RValue='" << rvalue << "'" << std::endl;
+
+		$$ = $2;
+	}
+	;
+
+assignment_operator:
+	EQUALS {
+		set_parsed_assignment_operator(true);
+		$$ = "=";
+	}
+	/*| PLUS EQUALS { $$ = "+="; }*/ // Future expansion
 	;
 
 method_definition:
@@ -708,25 +717,25 @@ cast_target:
 	;
 
 object_assignment:
-	object_reference_lvalue EQUALS valid_rvalue {
+	object_reference_lvalue value_assignment {
 		std::string objectRef = $1;
-		std::string rvalue = $3;
+		std::string rvalue = $2;
 
 		std::cout << "Parsed object assignment: ObjectReference='" << objectRef << "', RValue='" << rvalue << "'" << std::endl;
 
 		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
 	}
-	| self_reference_lvalue EQUALS valid_rvalue {
+	| self_reference_lvalue value_assignment {
 		std::string selfRef = $1;
-		std::string rvalue = $3;
+		std::string rvalue = $2;
 
 		std::cout << "Parsed self assignment: SelfReference='" << selfRef << "', RValue='" << rvalue << "'" << std::endl;
 
 		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
 	}
-	| pointer_dereference_lvalue EQUALS valid_rvalue {
+	| pointer_dereference_lvalue value_assignment {
 		std::string pointerDeref = $1;
-		std::string rvalue = $3;
+		std::string rvalue = $2;
 
 		std::cout << "Parsed pointer dereference assignment: PointerDereference='" << pointerDeref << "', RValue='" << rvalue << "'" << std::endl;
 
@@ -735,9 +744,9 @@ object_assignment:
 	;
 
 shell_variable_assignment:
-	IDENTIFIER_LVALUE EQUALS valid_rvalue {
+	IDENTIFIER_LVALUE value_assignment {
 		std::string varName = $1;
-		std::string rvalue = $3;
+		std::string rvalue = $2;
 
 		std::cout << "Parsed shell variable assignment: Variable='" << varName << "', RValue='" << rvalue << "'" << std::endl;
 

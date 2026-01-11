@@ -249,6 +249,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 %x BASH_CASE_BODY_MODE
 
+%x SKIP_AFTER_DELIM_MODE
+
 /* INCLUSIVE start conditions
  * These start conditions are essentially used to lex normally while distinguishing special modes,
  * e.g., when parsing array indices (as in ${var[array_index]}),
@@ -310,6 +312,16 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	*/
 	#define tokenText std::string(yytext, yyleng)
 %}
+
+<SKIP_AFTER_DELIM_MODE>{
+	[ \t\n]+    { /* Ignore whitespace and newlines after a DELIM */ }
+	[\#][^\n]*  { /* Ignore comments */ }
+	.           {
+		// Any other character means we're done skipping
+		modeStack.pop(); // Exit SKIP_AFTER_DELIM_MODE
+		yyless(0); // Reconsume the character
+	}
+}
 
 {ESCAPED_CHAR}                       {
 	std::string sequence = tokenText;
@@ -378,6 +390,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	switch (modeStack.top()) {
 		case HEREDOC_MODE:
 			if (tokenText == "\n") {
+				// Do not push SKIP_AFTER_DELIM_MODE if we're going into a string-type mode like HEREDOC_CONTENT_MODE
 				modeStack.push(HEREDOC_CONTENT_MODE);
 			}
 			break;
@@ -388,9 +401,11 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 				modeStack.push(BASH_CASE_BODY_MODE);
 				lexerState.bash_case_keyword_in_received = false; // Reset for next time
 				lexerState.bash_case_input_received = false; // Reset for next time
+				modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
 				emit(BASH_CASE_BODY_BEGIN, tokenText); // NOTE: CHANGE THIS IF emit() MACRO CHANGES
 				// We are VERY MUCH relying on emit() returning immediately
 			} else {
+				modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
 				emit(WS, tokenText);
 			}
 			break;
@@ -398,6 +413,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 			modeStack.pop(); // Exit BASH_SELECT_INPUT_MODE
 			lexerState.bash_select_input_received = true; // So that we know 'do' can be a keyword
 			lexerState.bash_select_variable_received = false; // Reset for next time
+			modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
 			emit(DELIM, tokenText); // NOTE: CHANGE THIS IF emit() MACRO CHANGES
 			// Same deal as above
 			break;
@@ -409,8 +425,10 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		// If a DELIM immediately follows an assignment operator,
 		// The rvalue of the assignment is empty
 		yyless(0); // Reconsume the DELIM
+		// Do not push SKIP_AFTER_DELIM_MODE yet, as we need to reconsume the DELIM first
 		emit(EMPTY_ASSIGNMENT);
 	}
+	modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
 	emit(DELIM, tokenText);
 }
 {DOUBLEAMPERSAND}                    { emit(DOUBLEAMPERSAND); }

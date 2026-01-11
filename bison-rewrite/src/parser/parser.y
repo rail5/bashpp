@@ -39,7 +39,7 @@ void yyerror(const char *s);
 %token AT AT_LVALUE
 %token KEYWORD_THIS KEYWORD_THIS_LVALUE KEYWORD_SUPER KEYWORD_SUPER_LVALUE
 %token LBRACE RBRACE LANGLE RANGLE
-%token COLON EQUALS ASTERISK DEREFERENCE_OPERATOR AMPERSAND DOT
+%token COLON PLUS_EQUALS EQUALS ASTERISK DEREFERENCE_OPERATOR AMPERSAND DOT
 %token EMPTY_ASSIGNMENT
 
 %token KEYWORD_INCLUDE KEYWORD_INCLUDE_ONCE KEYWORD_AS KEYWORD_DYNAMIC_CAST
@@ -204,6 +204,7 @@ valid_rvalue:
 	| dynamic_cast {$$ = $1; }
 	| supershell { $$ = $1; }
 	| subshell_substitution { $$ = $1; }
+	| subshell_raw { $$ = $1; } // Not actually subshells in the case of rvalues, but array values, as in arr+=("string"). Kind of a hack.
 	| typeof_expression { $$ = $1; }
 	;
 
@@ -423,7 +424,10 @@ assignment_operator:
 		set_parsed_assignment_operator(true);
 		$$ = "=";
 	}
-	/*| PLUS EQUALS { $$ = "+="; }*/ // Future expansion
+	| PLUS_EQUALS {
+		set_parsed_assignment_operator(true);
+		$$ = "+=";
+	}
 	;
 
 method_definition:

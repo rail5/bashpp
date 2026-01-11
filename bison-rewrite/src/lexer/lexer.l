@@ -448,6 +448,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 {LBRACE}                             { emit(LBRACE); }
 {RBRACE}                             { emit(RBRACE); }
 ":"                                  { emit(COLON); }
+"+="                                 { emit(PLUS_EQUALS); }
 "="                                  { emit(EQUALS); }
 [\*]/[@]                             { emit(DEREFERENCE_OPERATOR); }
 [*]                                  { emit(ASTERISK); }

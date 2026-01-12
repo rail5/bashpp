@@ -604,6 +604,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 }
 
+{INTEGER} { emit(INTEGER, tokenText); }
+
 [\#][^\n]*  { /* Ignore comments */ }
 
 

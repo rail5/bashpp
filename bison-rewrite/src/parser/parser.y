@@ -91,13 +91,14 @@ void yyerror(const char *s);
 %type <std::string> string_interpolation
 %type <std::string> maybe_hash
 %type <std::string> typeof_expression
-%type <std::string> heredoc heredoc_content
+%type <std::string> heredoc heredoc_content herestring
 %type <std::string> array_index
 %type <std::string> bash_case_body bash_case_header bash_case_input bash_case_pattern bash_case_statement bash_case_pattern_header
 %type <std::string> bash_select_statement bash_for_statement
 %type <std::string> bash_for_or_select_header bash_for_or_select_input bash_for_or_select_variable bash_for_or_select_maybe_in_something
 %type <std::string> bash_arithmetic_for_statement arithmetic_for_condition arith_statement increment_decrement_expression arith_operator
 %type <std::string> arith_condition_term comparison_expression comparison_operator
+%type <std::string> redirection redirection_preposition redirection_source redirection_operator named_fd maybe_namedfd_array_index
 
 /**
  * NOTE: A shift/reduce conflict is EXPECTED between 'object_instantiation' and
@@ -177,11 +178,91 @@ statement:
 	| supershell
 	| subshell
 	| typeof_expression
-	| heredoc
 	| bash_case_statement
 	| bash_select_statement
 	| bash_for_statement
 	| bash_arithmetic_for_statement
+	| redirection
+	;
+
+/**
+ * NOTE: A shift/reduce conflict is expected on AMPERSAND
+ * Example redirection: >&@object.reference
+ * Ambiguity: In this case, is it > &@object.address? Or is it >& @object.reference?
+ * Our resolution to this is to prefer the parser's default behavior of shifting
+ *   which would resolve to >& @object.reference
+ * If you want to redirect to an object address, whitespace is required before the address-of operator, as in:
+ *   > &@object.address
+ */
+redirection:
+	redirection_preposition maybe_whitespace valid_rvalue {
+		std::string redirPreposition = $1;
+		std::string rvalue = $3;
+
+		std::cout << "Parsed redirection: Preposition='" << redirPreposition << "', RValue='" << rvalue << "'" << std::endl;
+
+		$$ = redirPreposition + rvalue;
+	}
+	| heredoc {
+		std::string heredocContent = $1;
+
+		std::cout << "Parsed heredoc redirection with content: " << heredocContent << std::endl;
+
+		$$ = $1;
+	}
+	| INTEGER heredoc {
+		std::string fd = $1;
+		std::string heredocContent = $2;
+
+		std::cout << "Parsed heredoc redirection for FD " << fd << " with content: " << heredocContent << std::endl;
+
+		$$ = $1 + $2;
+	}
+	| named_fd heredoc {
+		std::string fd = $1;
+		std::string heredocContent = $2;
+
+		std::cout << "Parsed heredoc redirection for FD " << fd << " with content: " << heredocContent << std::endl;
+
+		$$ = $1 + $2;
+	}
+	;
+
+redirection_preposition:
+	redirection_source redirection_operator {
+		std::string source = $1;
+		std::string redirOp = $2;
+
+		std::cout << "Parsed redirection preposition: Source='" << source << "', Operator='" << redirOp << "'" << std::endl;
+	}
+	| AMPERSAND RANGLE { $$ = "&>"; } // &>
+	| AMPERSAND RANGLE RANGLE { $$ = "&>>"; } // &>>
+	;
+
+redirection_source:
+	/* empty */ { $$ = ""; }
+	| INTEGER { $$ = $1; }
+	| named_fd { $$ = $1; }
+	;
+
+redirection_operator:
+	LANGLE { $$ = "<"; }
+	| LANGLE RANGLE { $$ = "<>"; }
+	| LANGLE AMPERSAND { $$ = "<&"; }
+	| RANGLE { $$ = ">"; }
+	| RANGLE RANGLE { $$ = ">>"; }
+	| RANGLE AMPERSAND { $$ = ">&"; }
+	| RANGLE PIPE { $$ = ">|"; }
+	| herestring { $$ = $1; }
+	;
+
+named_fd:
+	LBRACE IDENTIFIER maybe_namedfd_array_index RBRACE { $$ = "{" + $2 + $3 + "}"; }
+	;
+
+maybe_namedfd_array_index:
+	/* empty */ { $$ = ""; }
+	| LBRACKET array_index RBRACKET { $$ = "[" + $2 + "]"; } // Since LBRACKET/RBRACKET don't get matched as ARRAY_INDEX_START/_END in normal lexer mode
 	;
 
 block:
@@ -900,6 +981,16 @@ heredoc_content:
 	| heredoc_content STRING_CONTENT { $$ = $1 + $2; }
 	| heredoc_content string_interpolation { $$ = $1 + $2; }
 	| heredoc_content heredoc { $$ = $1 + $2; }
+	;
+
+herestring:
+	HERESTRING_START maybe_whitespace valid_rvalue {
+		std::string rvalue = $3;
+
+		std::cout << "Parsed herestring: RValue='" << rvalue << "'" << std::endl;
+
+		$$ = "<<< " + rvalue;
+	}
 	;
 
 bash_case_statement:

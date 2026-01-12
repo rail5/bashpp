@@ -704,14 +704,14 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		emit(STRING_CONTENT, "`");
 	}
 
-	\\\\ {
-		// Literal backslash
-		emit(STRING_CONTENT, "\\");
-	}
-
 	\\[\*&] {
 		// Literal '*' or '&'
 		emit(STRING_CONTENT, tokenText.substr(1, 1));
+	}
+
+	\\ {
+		// Literal backslash
+		emit(STRING_CONTENT, "\\");
 	}
 
 	"@(" {

@@ -316,6 +316,10 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	#define tokenText std::string(yytext, yyleng)
 %}
 
+<*>{
+	[\r]+ { /* Ignore carriage returns globally */ }
+}
+
 <SKIP_AFTER_DELIM_MODE>{
 	[ \t\n]+    { /* Ignore whitespace and newlines after a DELIM */ }
 	[\#][^\n]*  { /* Ignore comments */ }

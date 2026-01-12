@@ -25,6 +25,7 @@ void yyerror(const char *s);
 	extern void set_incoming_token_can_be_lvalue(bool canBeLvalue);
 	extern void set_bash_case_input_received(bool received);
 	extern void set_bash_for_or_select_variable_received(bool received);
+	extern void set_bash_if_condition_received(bool received);
 	extern void set_parsed_assignment_operator(bool parsed);
 }
 
@@ -72,8 +73,10 @@ void yyerror(const char *s);
 %token INCREMENT_OPERATOR DECREMENT_OPERATOR
 %token <std::string> INTEGER COMPARISON_OPERATOR
 
+%token BASH_KEYWORD_IF BASH_KEYWORD_THEN BASH_KEYWORD_ELIF BASH_KEYWORD_ELSE BASH_KEYWORD_FI
+
 /* Handling unrecognized tokens */
-%token <std::string> ERROR
+%token <std::string> CATCHALL
 
 
 %precedence CONCAT_STOP
@@ -87,7 +90,7 @@ void yyerror(const char *s);
 %precedence SUPERSHELL_START
 %precedence SUBSHELL_SUBSTITUTION_START DEPRECATED_SUBSHELL_START
 %precedence LBRACE
-%precedence ERROR
+%precedence CATCHALL
 
 
 /* Nonterminal types */
@@ -116,6 +119,7 @@ void yyerror(const char *s);
 %type <std::string> redirection redirection_operator named_fd maybe_namedfd_array_index
 %type <std::string> shell_command simple_command simple_command_element operative_command_element
 %type <std::string> concatenatable_rvalue concatenated_rvalue
+%type <std::string> bash_if_statement bash_if_condition bash_if_else_branch bash_if_root_branch maybe_bash_if_else_branches
 
 /**
  * NOTE: A shift/reduce conflict is EXPECTED between 'object_instantiation' and
@@ -189,6 +193,7 @@ shell_command:
 	| bash_select_statement { $$ = $1; }
 	| bash_for_statement { $$ = $1; }
 	| bash_arithmetic_for_statement { $$ = $1; }
+	| bash_if_statement { $$ = $1; }
 	;
 
 simple_command:
@@ -299,7 +304,7 @@ concatenatable_rvalue:
 	| supershell { $$ = $1; }
 	| subshell_substitution { $$ = $1; }
 	| named_fd { $$ = $1; }
-	| ERROR { $$ = $1; }
+	| CATCHALL { $$ = $1; }
 	;
 
 maybe_whitespace:
@@ -1265,6 +1270,46 @@ arith_condition_term:
 arith_operator:
 	INCREMENT_OPERATOR { $$ = "++"; }
 	| DECREMENT_OPERATOR { $$ = "--"; }
+	;
+
+bash_if_statement:
+	bash_if_root_branch maybe_bash_if_else_branches BASH_KEYWORD_FI {}
+	;
+
+bash_if_root_branch:
+	BASH_KEYWORD_IF WS bash_if_condition DELIM maybe_whitespace BASH_KEYWORD_THEN statements {
+		std::string ifCondition = $3;
+
+		std::cout << "Parsed bash if root branch" << std::endl;
+
+		$$ = "if " + ifCondition + " then\n... statements ...";
+	}
+	;
+
+bash_if_condition:
+	simple_command {
+		set_bash_if_condition_received(true);
+		$$ = $1;
+	}
+	;
+
+maybe_bash_if_else_branches:
+	/* empty */ { $$ = ""; }
+	| maybe_bash_if_else_branches bash_if_else_branch { $$ = $1 + $2; }
+	;
+
+bash_if_else_branch:
+	BASH_KEYWORD_ELIF WS bash_if_condition DELIM maybe_whitespace BASH_KEYWORD_THEN statements {
+		std::string elifCondition = $3;
+
+		std::cout << "Parsed bash elif branch" << std::endl;
+
+		$$ = "elif " + elifCondition + " then\n... statements ...";
+	}
+	| BASH_KEYWORD_ELSE DELIM maybe_whitespace statements {
+		std::cout << "Parsed bash else branch" << std::endl;
+		$$ = "else\n... statements ...";
+	}
 	;
 
 %%

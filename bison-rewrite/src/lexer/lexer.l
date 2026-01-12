@@ -64,12 +64,14 @@ struct LexerState {
 	std::string singlequote_contents;
 	uint32_t token_count_inside_bracereference = 0;
 	uint32_t deprecated_subshell_nesting_depth = 0;
+	uint32_t if_depth = 0;
 	std::stack<uint32_t> deprecated_subshell_nesting_depths;
 	std::string heredoc_delimiter;
 	bool bash_case_input_received = false;
 	bool bash_case_keyword_in_received = false;
 	bool bash_for_or_select_variable_received = false;
 	bool bash_for_or_select_input_received = false;
+	bool bash_if_condition_received = false;
 	bool parsed_assignment_operator = false;
 	bool incoming_token_can_be_lvalue = true;
 
@@ -77,6 +79,7 @@ struct LexerState {
 		singlequote_contents.clear();
 		token_count_inside_bracereference = 0;
 		deprecated_subshell_nesting_depth = 0;
+		if_depth = 0;
 		while (!deprecated_subshell_nesting_depths.empty()) {
 			deprecated_subshell_nesting_depths.pop();
 		}
@@ -85,6 +88,7 @@ struct LexerState {
 		bash_case_keyword_in_received = false;
 		bash_for_or_select_variable_received = false;
 		bash_for_or_select_input_received = false;
+		bash_if_condition_received = false;
 		parsed_assignment_operator = false;
 		incoming_token_can_be_lvalue = true;
 	}
@@ -107,6 +111,10 @@ void set_bash_case_input_received(bool received) {
 
 void set_bash_for_or_select_variable_received(bool received) {
 	lexerState.bash_for_or_select_variable_received = received;
+}
+
+void set_bash_if_condition_received(bool received) {
+	lexerState.bash_if_condition_received = received;
 }
 
 void set_parsed_assignment_operator(bool parsed) {
@@ -182,6 +190,11 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 			break;
 		case yy::parser::symbol_kind::S_DEREFERENCE_OPERATOR:
 			// Dereference operator does not change lvalue considerations
+			break;
+		case yy::parser::symbol_kind::S_BASH_KEYWORD_IF:
+		case yy::parser::symbol_kind::S_BASH_KEYWORD_ELIF:
+			// Lvalues follow 'if' and 'elif' keywords
+			lexerState.incoming_token_can_be_lvalue = true;
 			break;
 		default:
 			lexerState.incoming_token_can_be_lvalue = false;
@@ -305,6 +318,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 %s BASH_FOR_OR_SELECT_INPUT_MODE
 
 %s BASH_FOR_OR_SELECT_BODY_MODE
+
+%s BASH_IF_MODE
 
 %%
 
@@ -501,8 +516,6 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 \${INTEGER}                          { emit(BASH_VAR, tokenText); }
 \$\{{INTEGER}\}                      { emit(BASH_VAR, tokenText); }
 
-"["                                  { emit(LBRACKET); }
-
 "]"                                  {
 	switch (modeStack.top()) {
 		case ARRAY_INDEX_MODE:
@@ -510,7 +523,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 			emit(ARRAY_INDEX_END);
 			break;
 		default:
-			emit(RBRACKET);
+			emit(CATCHALL, tokenText);
 			break;
 	}
 }
@@ -613,6 +626,44 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 }
 
+"if"/[ \t\n] {
+	if (lexerState.incoming_token_can_be_lvalue) {
+		// The next token can and should be an lvalue
+		modeStack.push(BASH_IF_MODE);
+		lexerState.if_depth++;
+		emit(BASH_KEYWORD_IF);
+	} else {
+		emit(IDENTIFIER, tokenText);
+	}
+}
+
+"fi"/[ \t\n] {
+	if (lexerState.if_depth > 0) {
+		lexerState.if_depth--;
+		emit(BASH_KEYWORD_FI);
+	} else {
+		emit(IDENTIFIER, tokenText);
+	}
+}
+
+"elif"/[ \t\n] {
+	if (lexerState.if_depth > 0) {
+		// The next token can and should be an lvalue
+		modeStack.push(BASH_IF_MODE);
+		emit(BASH_KEYWORD_ELIF);
+	} else {
+		emit(IDENTIFIER, tokenText);
+	}
+}
+
+"else"/[ \t\n] {
+	if (lexerState.if_depth > 0) {
+		emit(BASH_KEYWORD_ELSE);
+	} else {
+		emit(IDENTIFIER, tokenText);
+	}
+}
+
 "do"/[ \t\n] {
 	if (lexerState.bash_for_or_select_input_received) {
 		lexerState.bash_for_or_select_input_received = false; // Reset for next time
@@ -627,6 +678,18 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 [ \t]*[\#][^\n]*  { /* Ignore comments */ }
 
+<BASH_IF_MODE>{
+	"then"/[ \t\n] {
+		if (lexerState.bash_if_condition_received) {
+			lexerState.bash_if_condition_received = false; // Reset for next time
+			modeStack.pop(); // Exit BASH_IF_MODE
+			modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
+			emit(BASH_KEYWORD_THEN);
+		} else {
+			emit(IDENTIFIER, tokenText);
+		}
+	}
+}
 
 <SINGLEQUOTE_MODE>{
 	[^'\\]+ {
@@ -977,7 +1040,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 }
 
 <*>. {
-	emit(ERROR, tokenText);
+	emit(CATCHALL, tokenText);
 }
 
 %%

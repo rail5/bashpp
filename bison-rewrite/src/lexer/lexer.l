@@ -834,8 +834,6 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	"++" { emit(INCREMENT_OPERATOR); }
 	"--" { emit(DECREMENT_OPERATOR); }
 
-	[0-9]+ { emit(INTEGER, tokenText); }
-
 	"<=" { emit(COMPARISON_OPERATOR, tokenText); }
 	">=" { emit(COMPARISON_OPERATOR, tokenText); }
 	"==" { emit(COMPARISON_OPERATOR, tokenText); }

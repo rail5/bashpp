@@ -201,6 +201,8 @@ redirection:
 
 		std::cout << "Parsed redirection: Preposition='" << redirPreposition << "', RValue='" << rvalue << "'" << std::endl;
 
+		set_incoming_token_can_be_lvalue(true); // Lvalues can follow redirections
+
 		$$ = redirPreposition + rvalue;
 	}
 	| heredoc {

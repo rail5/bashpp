@@ -76,6 +76,19 @@ void yyerror(const char *s);
 %token <std::string> ERROR
 
 
+%precedence CONCAT_STOP
+%precedence IDENTIFIER INTEGER SINGLEQUOTED_STRING KEYWORD_NULLPTR
+%precedence QUOTE_BEGIN
+%precedence AT REF_START
+%precedence KEYWORD_THIS KEYWORD_SUPER
+%precedence AMPERSAND
+%precedence DEREFERENCE_OPERATOR
+%precedence BASH_VAR_START BASH_VAR
+%precedence SUPERSHELL_START
+%precedence SUBSHELL_SUBSTITUTION_START DEPRECATED_SUBSHELL_START
+%precedence LBRACE
+
+
 /* Nonterminal types */
 %type <int> include_keyword access_modifier access_modifier_keyword
 %type <std::string> maybe_include_type maybe_as_clause maybe_parent_class maybe_default_value
@@ -101,6 +114,7 @@ void yyerror(const char *s);
 %type <std::string> arith_condition_term comparison_expression comparison_operator
 %type <std::string> redirection redirection_operator named_fd maybe_namedfd_array_index
 %type <std::string> shell_command simple_command simple_command_element operative_command_element
+%type <std::string> concatenatable_rvalue concatenated_rvalue
 
 /**
  * NOTE: A shift/reduce conflict is EXPECTED between 'object_instantiation' and
@@ -155,7 +169,7 @@ statements:
 
 statement:
 	DELIM
-	| shell_command
+	| shell_command %prec CONCAT_STOP
 	| include_statement
 	| class_definition
 	| datamember_declaration
@@ -169,7 +183,7 @@ statement:
 	;
 
 shell_command:
-	simple_command { $$ = $1; }
+	simple_command %prec CONCAT_STOP { $$ = $1; }
 	| bash_case_statement { $$ = $1; }
 	| bash_select_statement { $$ = $1; }
 	| bash_for_statement { $$ = $1; }
@@ -188,7 +202,7 @@ simple_command_element:
 	| object_assignment { $$ = $1; }
 	| redirection { $$ = $1; }
 	| operative_command_element { $$ = $1; }
-	| valid_rvalue { $$ = $1; }
+	| valid_rvalue %prec CONCAT_STOP { $$ = $1; }
 	;
 
 // List of LVALUES that can be used as commands
@@ -258,22 +272,31 @@ block:
 
 valid_rvalue:
 	EMPTY_ASSIGNMENT { $$ = ""; }
-	| IDENTIFIER { $$ = $1; }
+	| new_statement { $$ = ""; }
+	| dynamic_cast {$$ = $1; }
+	| subshell_raw { $$ = $1; } // Not actually subshells in the case of rvalues, but array values, as in arr+=("string"). Kind of a hack.
+	| typeof_expression { $$ = $1; }
+	| concatenated_rvalue %prec CONCAT_STOP { $$ = $1; }
+	;
+
+concatenated_rvalue:
+	concatenatable_rvalue %prec CONCAT_STOP { $$ = $1; }
+	| concatenated_rvalue concatenatable_rvalue { $$ = $1 + $2; }
+	;
+
+concatenatable_rvalue:
+	IDENTIFIER { $$ = $1; }
 	| INTEGER { $$ = $1; }
 	| SINGLEQUOTED_STRING { $$ = $1; }
 	| KEYWORD_NULLPTR { $$ = "0"; }
 	| doublequoted_string { $$ = $1; }
-	| new_statement { $$ = ""; }
 	| object_reference { $$ = $1; }
 	| self_reference { $$ = $1; }
 	| object_address { $$ = $1; }
 	| pointer_dereference_rvalue { $$ = $1; }
 	| bash_variable { $$ = $1; }
-	| dynamic_cast {$$ = $1; }
 	| supershell { $$ = $1; }
 	| subshell_substitution { $$ = $1; }
-	| subshell_raw { $$ = $1; } // Not actually subshells in the case of rvalues, but array values, as in arr+=("string"). Kind of a hack.
-	| typeof_expression { $$ = $1; }
 	| named_fd { $$ = $1; }
 	;
 

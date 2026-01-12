@@ -72,6 +72,7 @@ struct LexerState {
 	bool bash_for_or_select_variable_received = false;
 	bool bash_for_or_select_input_received = false;
 	bool bash_if_condition_received = false;
+	bool bash_while_or_until_condition_received = false;
 	bool parsed_assignment_operator = false;
 	bool incoming_token_can_be_lvalue = true;
 
@@ -89,6 +90,7 @@ struct LexerState {
 		bash_for_or_select_variable_received = false;
 		bash_for_or_select_input_received = false;
 		bash_if_condition_received = false;
+		bash_while_or_until_condition_received = false;
 		parsed_assignment_operator = false;
 		incoming_token_can_be_lvalue = true;
 	}
@@ -115,6 +117,10 @@ void set_bash_for_or_select_variable_received(bool received) {
 
 void set_bash_if_condition_received(bool received) {
 	lexerState.bash_if_condition_received = received;
+}
+
+void set_bash_while_or_until_condition_received(bool received) {
+	lexerState.bash_while_or_until_condition_received = received;
 }
 
 void set_parsed_assignment_operator(bool parsed) {
@@ -177,6 +183,10 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 		case yy::parser::symbol_kind::S_ARITH_FOR_CONDITION_START:
 		case yy::parser::symbol_kind::S_BASH_CASE_PATTERN_DELIM:
 		case yy::parser::symbol_kind::S_BASH_KEYWORD_DO:
+		case yy::parser::symbol_kind::S_BASH_KEYWORD_IF:
+		case yy::parser::symbol_kind::S_BASH_KEYWORD_ELIF:
+		case yy::parser::symbol_kind::S_BASH_KEYWORD_WHILE:
+		case yy::parser::symbol_kind::S_BASH_KEYWORD_UNTIL:
 			// At the start of a new command string, the next token can be an lvalue
 			lexerState.incoming_token_can_be_lvalue = true;
 			break;
@@ -190,11 +200,6 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 			break;
 		case yy::parser::symbol_kind::S_DEREFERENCE_OPERATOR:
 			// Dereference operator does not change lvalue considerations
-			break;
-		case yy::parser::symbol_kind::S_BASH_KEYWORD_IF:
-		case yy::parser::symbol_kind::S_BASH_KEYWORD_ELIF:
-			// Lvalues follow 'if' and 'elif' keywords
-			lexerState.incoming_token_can_be_lvalue = true;
 			break;
 		default:
 			lexerState.incoming_token_can_be_lvalue = false;
@@ -320,6 +325,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 %s BASH_FOR_OR_SELECT_INPUT_MODE
 
 %s BASH_FOR_OR_SELECT_BODY_MODE
+
+%s BASH_WHILE_OR_UNTIL_BODY_MODE
 
 %s BASH_IF_MODE
 
@@ -669,10 +676,32 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 }
 
+"while"/[ \t\n] {
+	if (lexerState.incoming_token_can_be_lvalue) {
+		// The next token can and should be an lvalue
+		emit(BASH_KEYWORD_WHILE);
+	} else {
+		emit(IDENTIFIER, tokenText);
+	}
+}
+
+"until"/[ \t\n] {
+	if (lexerState.incoming_token_can_be_lvalue) {
+		// The next token can and should be an lvalue
+		emit(BASH_KEYWORD_UNTIL);
+	} else {
+		emit(IDENTIFIER, tokenText);
+	}
+}
+
 "do"/[ \t\n] {
 	if (lexerState.bash_for_or_select_input_received) {
 		lexerState.bash_for_or_select_input_received = false; // Reset for next time
 		modeStack.push(BASH_FOR_OR_SELECT_BODY_MODE);
+		emit(BASH_KEYWORD_DO);
+	} else if (lexerState.bash_while_or_until_condition_received) {
+		lexerState.bash_while_or_until_condition_received = false; // Reset for next time
+		modeStack.push(BASH_WHILE_OR_UNTIL_BODY_MODE);
 		emit(BASH_KEYWORD_DO);
 	} else {
 		emit(IDENTIFIER, tokenText);
@@ -928,9 +957,9 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	"!=" { emit(COMPARISON_OPERATOR, tokenText); }
 }
 
-<BASH_FOR_OR_SELECT_BODY_MODE>{
-	[ \t\n]+done/[^a-zA-Z0-9_] {
-		modeStack.pop(); // Exit BASH_FOR_OR_SELECT_BODY_MODE
+<BASH_FOR_OR_SELECT_BODY_MODE,BASH_WHILE_OR_UNTIL_BODY_MODE>{
+	[ \t\n]*done/[^a-zA-Z0-9_] {
+		modeStack.pop(); // Exit the mode
 		emit(BASH_KEYWORD_DONE);
 	}
 }

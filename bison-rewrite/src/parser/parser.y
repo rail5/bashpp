@@ -26,6 +26,7 @@ void yyerror(const char *s);
 	extern void set_bash_case_input_received(bool received);
 	extern void set_bash_for_or_select_variable_received(bool received);
 	extern void set_bash_if_condition_received(bool received);
+	extern void set_bash_while_or_until_condition_received(bool received);
 	extern void set_parsed_assignment_operator(bool parsed);
 }
 
@@ -74,6 +75,7 @@ void yyerror(const char *s);
 %token <std::string> INTEGER COMPARISON_OPERATOR
 
 %token BASH_KEYWORD_IF BASH_KEYWORD_THEN BASH_KEYWORD_ELIF BASH_KEYWORD_ELSE BASH_KEYWORD_FI
+%token BASH_KEYWORD_WHILE BASH_KEYWORD_UNTIL
 
 /* Handling unrecognized tokens */
 %token <std::string> CATCHALL
@@ -120,6 +122,7 @@ void yyerror(const char *s);
 %type <std::string> shell_command simple_command simple_command_element operative_command_element
 %type <std::string> concatenatable_rvalue concatenated_rvalue
 %type <std::string> bash_if_statement bash_if_condition bash_if_else_branch bash_if_root_branch maybe_bash_if_else_branches
+%type <std::string> bash_while_statement bash_until_statement bash_while_or_until_condition
 
 /**
  * NOTE: A shift/reduce conflict is EXPECTED between 'object_instantiation' and
@@ -194,6 +197,8 @@ shell_command:
 	| bash_for_statement { $$ = $1; }
 	| bash_arithmetic_for_statement { $$ = $1; }
 	| bash_if_statement { $$ = $1; }
+	| bash_while_statement { $$ = $1; }
+	| bash_until_statement { $$ = $1; }
 	;
 
 simple_command:
@@ -1277,7 +1282,7 @@ bash_if_statement:
 	;
 
 bash_if_root_branch:
-	BASH_KEYWORD_IF WS bash_if_condition DELIM maybe_whitespace BASH_KEYWORD_THEN statements {
+	BASH_KEYWORD_IF WS bash_if_condition DELIM maybe_whitespace BASH_KEYWORD_THEN maybe_whitespace statements {
 		std::string ifCondition = $3;
 
 		std::cout << "Parsed bash if root branch" << std::endl;
@@ -1299,7 +1304,7 @@ maybe_bash_if_else_branches:
 	;
 
 bash_if_else_branch:
-	BASH_KEYWORD_ELIF WS bash_if_condition DELIM maybe_whitespace BASH_KEYWORD_THEN statements {
+	BASH_KEYWORD_ELIF WS bash_if_condition DELIM maybe_whitespace BASH_KEYWORD_THEN maybe_whitespace statements {
 		std::string elifCondition = $3;
 
 		std::cout << "Parsed bash elif branch" << std::endl;
@@ -1309,6 +1314,33 @@ bash_if_else_branch:
 	| BASH_KEYWORD_ELSE DELIM maybe_whitespace statements {
 		std::cout << "Parsed bash else branch" << std::endl;
 		$$ = "else\n... statements ...";
+	}
+	;
+
+bash_while_statement:
+	BASH_KEYWORD_WHILE WS bash_while_or_until_condition DELIM maybe_whitespace BASH_KEYWORD_DO maybe_whitespace statements BASH_KEYWORD_DONE {
+		std::string whileCondition = $3;
+
+		std::cout << "Parsed bash while statement" << std::endl;
+
+		$$ = "while " + whileCondition + " do\n... statements ...\ndone";
+	}
+	;
+
+bash_until_statement:
+	BASH_KEYWORD_UNTIL WS bash_while_or_until_condition DELIM maybe_whitespace BASH_KEYWORD_DO maybe_whitespace statements BASH_KEYWORD_DONE {
+		std::string untilCondition = $3;
+
+		std::cout << "Parsed bash until statement" << std::endl;
+
+		$$ = "until " + untilCondition + " do\n... statements ...\ndone";
+	}
+	;
+
+bash_while_or_until_condition:
+	simple_command {
+		set_bash_while_or_until_condition_received(true);
+		$$ = $1;
 	}
 	;
 

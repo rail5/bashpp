@@ -213,6 +213,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 /* Handling Bash shell variables */
 %x BASH_VAR_MODE
 
+%x UNLEXED_PARAMETER_EXPANSION_MODE
+
 %x HEREDOC_CONTENT_MODE
 
 %x BASH_CASE_BODY_MODE
@@ -241,6 +243,10 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 %s SUBSHELL_SUBSTITUTION_MODE
 
 %s DEPRECATED_SUBSHELL_MODE
+
+%s BLOCK_MODE
+
+%s PARAMETER_EXPANSION_MODE
 
 %s HEREDOC_MODE
 
@@ -429,8 +435,13 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 [ \t]*&&                             { emit(DOUBLEAMPERSAND); }
 [ \t]*\|\|                           { emit(DOUBLEPIPE); }
 [ \t]*\|                             { emit(PIPE); }
-{LBRACE}                             { emit(LBRACE); }
-{RBRACE}                             { emit(RBRACE); }
+{LBRACE}                             { modeStack.push(BLOCK_MODE); emit(LBRACE); }
+<BLOCK_MODE>{
+	{RBRACE} {
+		modeStack.pop(); // Exit BLOCK_MODE
+		emit(RBRACE);
+	}
+}
 "+="                                 {
 	if (lexerState.expecting_assignment_operator) {
 		lexerState.expecting_assignment_operator = false;
@@ -449,8 +460,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 }
 [\*]/[@]                             { emit(DEREFERENCE_OPERATOR); }
-[*]                                  { emit(ASTERISK); }
-"&"                                  { emit(AMPERSAND); }
+[&]/[@]                              { emit(AMPERSAND); }
 {IDENTIFIER}                         {
 	if (modeStack.top() == HEREDOC_MODE) {
 		// This IDENTIFIER is the heredoc delimiter
@@ -694,9 +704,9 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		emit(STRING_CONTENT, "@");
 	}
 
-	\\\$ {
-		// Literal dollar sign
-		emit(STRING_CONTENT, "$");
+	\$@ {
+		// Bash variable: '$@'
+		emit(STRING_CONTENT, "$@");
 	}
 
 	\\` {
@@ -727,6 +737,11 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	"$(" {
 		modeStack.push(SUBSHELL_SUBSTITUTION_MODE);
 		emit(SUBSHELL_SUBSTITUTION_START);
+	}
+
+	"${" {
+		modeStack.push(BASH_VAR_MODE);
+		emit(BASH_VAR_START);
 	}
 
 	"$" {
@@ -916,6 +931,10 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		emit(DOT);
 	}
 
+	"\*" {
+		emit(ASTERISK);
+	}
+
 	(.|\n) {
 		modeStack.pop(); // Exit BPP_REFERENCE_MODE if we see anything other than IDENTIFIER or DOT coming up next
 		if (lexerState.currently_lexing_lvalue_reference) {
@@ -993,9 +1012,96 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		emit(ARRAY_INDEX_START);
 	}
 
+	"!" {
+		emit(EXCLAM);
+	}
+
+	":" {
+		modeStack.push(PARAMETER_EXPANSION_MODE);
+		emit(EXPANSION_BEGIN, tokenText);
+	}
+
+	"@" {
+		modeStack.push(PARAMETER_EXPANSION_MODE);
+		emit(EXPANSION_BEGIN, tokenText);
+	}
+
+	"%" {
+		modeStack.push(PARAMETER_EXPANSION_MODE);
+		emit(EXPANSION_BEGIN, tokenText);
+	}
+
+	"-" {
+		modeStack.push(PARAMETER_EXPANSION_MODE);
+		emit(EXPANSION_BEGIN, tokenText);
+	}
+
+	"+" {
+		modeStack.push(PARAMETER_EXPANSION_MODE);
+		emit(EXPANSION_BEGIN, tokenText);
+	}
+
+	"=" {
+		modeStack.push(PARAMETER_EXPANSION_MODE);
+		emit(EXPANSION_BEGIN, tokenText);
+	}
+
+	"?" {
+		modeStack.push(PARAMETER_EXPANSION_MODE);
+		emit(EXPANSION_BEGIN, tokenText);
+	}
+
+	"\*" {
+		modeStack.push(PARAMETER_EXPANSION_MODE);
+		emit(EXPANSION_BEGIN, tokenText);
+	}
+
+	"##" {
+		modeStack.push(PARAMETER_EXPANSION_MODE);
+		emit(EXPANSION_BEGIN, tokenText);
+	}
+
+	"#" {
+		modeStack.push(PARAMETER_EXPANSION_MODE);
+		emit(EXPANSION_BEGIN, tokenText);
+	}
+
+	"^" {
+		modeStack.push(UNLEXED_PARAMETER_EXPANSION_MODE); // TODO: Handle these forms of parameter expansion properly
+		emit(EXPANSION_BEGIN, tokenText);
+	}
+
+	"," {
+		modeStack.push(UNLEXED_PARAMETER_EXPANSION_MODE); // TODO: Handle these forms of parameter expansion properly
+		emit(EXPANSION_BEGIN, tokenText);
+	}
+
+	"/" {
+		modeStack.push(UNLEXED_PARAMETER_EXPANSION_MODE); // TODO: Handle these forms of parameter expansion properly
+		emit(EXPANSION_BEGIN, tokenText);
+	}
+
 	"}" {
 		modeStack.pop(); // Exit BASH_VAR_MODE
 		emit(BASH_VAR_END);
+	}
+}
+
+<PARAMETER_EXPANSION_MODE>{
+	"}" {
+		modeStack.pop();
+		yyless(0); // Reconsume the '}'
+	}
+}
+
+<UNLEXED_PARAMETER_EXPANSION_MODE>{
+	[^}]+ {
+		emit(PARAMETER_EXPANSION_CONTENT, tokenText);
+	}
+
+	"}" {
+		modeStack.pop(); // Exit PARAMETER_EXPANSION_MODE
+		yyless(0); // Reconsume the '}'
 	}
 }
 

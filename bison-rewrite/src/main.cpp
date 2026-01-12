@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
 
 	yyset_in(in, main_lexer);
 
-	modeStack.push(10);
+	modeStack.push(11); // HACK. Setting to SKIP_AFTER_DELIM_MODE before beginning to skip initial whitespace. FIX.
 
 	if (argc >= 3 && std::string(argv[2]) == "--lex") {
 		set_display_lexer_output(true);

@@ -77,6 +77,9 @@ void yyerror(const char *s);
 %token BASH_KEYWORD_IF BASH_KEYWORD_THEN BASH_KEYWORD_ELIF BASH_KEYWORD_ELSE BASH_KEYWORD_FI
 %token BASH_KEYWORD_WHILE BASH_KEYWORD_UNTIL
 
+%token EXCLAM
+%token <std::string> EXPANSION_BEGIN PARAMETER_EXPANSION_CONTENT
+
 /* Handling unrecognized tokens */
 %token <std::string> CATCHALL
 
@@ -90,7 +93,7 @@ void yyerror(const char *s);
 %precedence DEREFERENCE_OPERATOR
 %precedence BASH_VAR_START BASH_VAR
 %precedence SUPERSHELL_START
-%precedence SUBSHELL_SUBSTITUTION_START DEPRECATED_SUBSHELL_START
+%precedence SUBSHELL_SUBSTITUTION_START DEPRECATED_SUBSHELL_START SUBSHELL_START
 %precedence LBRACE
 %precedence CATCHALL
 
@@ -103,7 +106,7 @@ void yyerror(const char *s);
 %type <std::string> maybe_include_type maybe_as_clause maybe_parent_class maybe_default_value
 %type <std::string> valid_rvalue value_assignment assignment_operator
 %type <std::string> doublequoted_string quote_contents
-%type <std::string> object_reference object_reference_lvalue maybe_descend_object_hierarchy maybe_array_index
+%type <std::string> object_reference object_reference_lvalue maybe_descend_object_hierarchy maybe_array_index maybe_parameter_expansion maybe_exclam
 %type <std::string> pointer_declaration_preface
 %type <std::string> instantiation_suffix
 %type <std::string> self_reference self_reference_lvalue
@@ -344,7 +347,6 @@ valid_rvalue:
 	EMPTY_ASSIGNMENT { $$ = ""; }
 	| new_statement { $$ = ""; }
 	| dynamic_cast {$$ = $1; }
-	| subshell_raw { $$ = $1; } // Not actually subshells in the case of rvalues, but array values, as in arr+=("string"). Kind of a hack.
 	| typeof_expression { $$ = $1; }
 	| concatenated_rvalue %prec CONCAT_STOP { $$ = $1; }
 	;
@@ -367,6 +369,7 @@ concatenatable_rvalue:
 	| bash_variable { $$ = $1; }
 	| supershell { $$ = $1; }
 	| subshell_substitution { $$ = $1; }
+	| subshell_raw { $$ = $1; } // Not actually subshells in the case of rvalues, but array values, as in arr+=("string"). Kind of a hack.
 	| named_fd { $$ = $1; }
 	| CATCHALL { $$ = $1; }
 	;
@@ -660,6 +663,7 @@ string_interpolation:
 	| pointer_dereference { $$ = $1; }
 	| supershell { $$ = $1; }
 	| subshell_substitution { $$ = $1; }
+	| bash_variable { $$ = $1; }
 	;
 
 object_reference:
@@ -853,25 +857,52 @@ array_index:
 	| AT { $$ = "@"; } // '@' is a valid array index, as in ${array[@]}
 	;
 
+maybe_exclam:
+	/* empty */ { $$ = ""; }
+	| EXCLAM { $$ = "!"; }
+	;
+
 maybe_hash:
 	/* empty */ { $$ = ""; }
 	| HASH { $$ = "#"; }
 	;
 
 bash_variable:
-	BASH_VAR_START maybe_hash IDENTIFIER maybe_array_index BASH_VAR_END {
-		std::string varName = $3;
-		std::string arrayIndex = $4;
+	BASH_VAR_START maybe_exclam maybe_hash IDENTIFIER maybe_array_index maybe_parameter_expansion BASH_VAR_END {
+		std::string varName = $4;
+		std::string arrayIndex = $5;
+		std::string paramExpansion = $6;
 
 		std::cout << "Parsed Bash variable: Name='" << varName << "'";
 		if (!arrayIndex.empty()) {
 			std::cout << ", ArrayIndex='" << arrayIndex << "'";
 		}
+		if (!paramExpansion.empty()) {
+			std::cout << ", ParameterExpansion='" << paramExpansion << "'";
+		}
 		std::cout << std::endl;
 
-		$$ = "${" + varName + arrayIndex + "}";
+		$$ = "${" + varName + arrayIndex + paramExpansion + "}";
 	}
 	| BASH_VAR { $$ = $1; }
+	;
+
+maybe_parameter_expansion:
+	/* empty */ { $$ = ""; }
+	| EXPANSION_BEGIN valid_rvalue {
+		std::string expansionContent = $2;
+
+		std::cout << "Parsed parameter expansion: Content='" << expansionContent << "'" << std::endl;
+
+		$$ = ":-" + expansionContent;
+	}
+	| EXPANSION_BEGIN PARAMETER_EXPANSION_CONTENT {
+		std::string expansionContent = $2;
+
+		std::cout << "Parsed parameter expansion: Content='" << expansionContent << "'" << std::endl;
+
+		$$ = expansionContent;
+	}
 	;
 
 dynamic_cast:

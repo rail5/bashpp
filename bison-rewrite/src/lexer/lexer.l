@@ -297,6 +297,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
  * And inside the rule for ']', we check the top of the mode stack to see if we're in ARRAY_INDEX_MODE.
  */
 
+%s BPP_CLASS_HEADER_MODE
+
 %s ARRAY_INDEX_MODE
 
 %s SUPERSHELL_MODE
@@ -409,7 +411,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	{KEYWORD_INCLUDE}/[^a-zA-Z0-9_]      { modeStack.pop(); modeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE); }
 	{KEYWORD_INCLUDE_ONCE}/[^a-zA-Z0-9_] { modeStack.pop(); modeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE_ONCE); }
 
-	{KEYWORD_CLASS}/[^a-zA-Z0-9_]        { modeStack.pop(); emit(KEYWORD_CLASS); }
+	{KEYWORD_CLASS}/[^a-zA-Z0-9_]        { modeStack.pop(); modeStack.push(BPP_CLASS_HEADER_MODE); emit(KEYWORD_CLASS); }
 	{KEYWORD_PUBLIC}/[^a-zA-Z0-9_]       { modeStack.pop(); emit(KEYWORD_PUBLIC); }
 	{KEYWORD_PROTECTED}/[^a-zA-Z0-9_]    { modeStack.pop(); emit(KEYWORD_PROTECTED); }
 	{KEYWORD_PRIVATE}/[^a-zA-Z0-9_]      { modeStack.pop(); emit(KEYWORD_PRIVATE); }
@@ -428,6 +430,10 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	"@{"                                 { modeStack.pop(); modeStack.push(BPP_BRACEREFERENCE_MODE); emit(REF_START); }
 	"@("                                 { modeStack.pop(); modeStack.push(SUPERSHELL_MODE); emit(SUPERSHELL_START); }
 	{AT}                                 { modeStack.pop(); modeStack.push(BPP_REFERENCE_MODE); emit(AT); }
+}
+
+<BPP_CLASS_HEADER_MODE>{
+	":" { modeStack.pop(); emit(COLON); }
 }
 
 {DELIM}                              {
@@ -490,7 +496,6 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 {PIPE}                               { emit(PIPE); }
 {LBRACE}                             { emit(LBRACE); }
 {RBRACE}                             { emit(RBRACE); }
-":"                                  { emit(COLON); }
 "+="                                 { emit(PLUS_EQUALS); }
 "="                                  { emit(EQUALS); }
 [\*]/[@]                             { emit(DEREFERENCE_OPERATOR); }

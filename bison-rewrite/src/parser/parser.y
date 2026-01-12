@@ -87,6 +87,7 @@ void yyerror(const char *s);
 %precedence SUPERSHELL_START
 %precedence SUBSHELL_SUBSTITUTION_START DEPRECATED_SUBSHELL_START
 %precedence LBRACE
+%precedence ERROR
 
 
 /* Nonterminal types */
@@ -298,6 +299,7 @@ concatenatable_rvalue:
 	| supershell { $$ = $1; }
 	| subshell_substitution { $$ = $1; }
 	| named_fd { $$ = $1; }
+	| ERROR { $$ = $1; }
 	;
 
 maybe_whitespace:

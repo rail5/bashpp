@@ -10,6 +10,8 @@ ModeStack modeStack;
 extern yy::parser::symbol_type yylex();
 extern void destroyLexer();
 
+extern bool set_display_lexer_output(bool enable);
+
 void lexOnly();
 
 int main(int argc, char* argv[]) {
@@ -34,11 +36,10 @@ int main(int argc, char* argv[]) {
 
 	yyset_in(in, main_lexer);
 
+	modeStack.push(10);
+
 	if (argc >= 3 && std::string(argv[2]) == "--lex") {
-		lexOnly();
-		fclose(in);
-		destroyLexer();
-		return 0;
+		set_display_lexer_output(true);
 	}
 
 	yy::parser parser;

@@ -30,9 +30,26 @@ extern yyscan_t main_lexer;
 #define YY_DECL yy::parser::symbol_type yylex(yyscan_t yyscanner)
 YY_DECL;
 
+static bool display_lexer_output = false;
+
+void set_display_lexer_output(bool enable) {
+	display_lexer_output = enable;
+}
+
 /* For compatibility with Bison's expectations, as documented above */
 yy::parser::symbol_type yylex() {
-	return ::yylex(main_lexer);
+	auto sym = ::yylex(main_lexer);
+	if (display_lexer_output) {
+		std::cout << "Token: " << yy::parser::symbol_name(sym.kind());
+		
+		std::string semantic_value = sym.value.as<std::string>();
+		if (!semantic_value.empty()) {
+			std::cout << ", Text: " << semantic_value;
+		}
+
+		std::cout << std::endl;
+	}
+	return sym;
 }
 
 extern ModeStack modeStack; // Stack to manage lexer modes
@@ -150,6 +167,8 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 		case yy::parser::symbol_kind::S_SUBSHELL_SUBSTITUTION_START:
 		case yy::parser::symbol_kind::S_DEPRECATED_SUBSHELL_START:
 		case yy::parser::symbol_kind::S_ARITH_FOR_CONDITION_START:
+		case yy::parser::symbol_kind::S_BASH_CASE_PATTERN_DELIM:
+		case yy::parser::symbol_kind::S_BASH_KEYWORD_DO:
 			// At the start of a new command string, the next token can be an lvalue
 			lexerState.incoming_token_can_be_lvalue = true;
 			break;
@@ -186,7 +205,7 @@ AT              @
 
 WS              [ \t]+
 
-DELIM           [\n;]
+DELIM           [ \t]*[\n;]
 
 IDENTIFIER              [a-zA-Z_][a-zA-Z0-9_]*
 INTEGER                 [0-9]+
@@ -606,7 +625,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 {INTEGER} { emit(INTEGER, tokenText); }
 
-[\#][^\n]*  { /* Ignore comments */ }
+[ \t]*[\#][^\n]*  { /* Ignore comments */ }
 
 
 <SINGLEQUOTE_MODE>{
@@ -805,12 +824,13 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	")" {
 		// Pattern ends with ')'
 		modeStack.push(BASH_CASE_PATTERN_ACTION_MODE); // Next up is the action following this pattern
+		modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the ')'
 		emit(BASH_CASE_PATTERN_DELIM);
 	}
 }
 
 <BASH_CASE_PATTERN_ACTION_MODE>{
-	";;" {
+	[ \t]*;; {
 		// End of this pattern's action; back to parsing more patterns
 		modeStack.pop(); // Exit BASH_CASE_PATTERN_ACTION_MODE
 		emit(BASH_CASE_PATTERN_TERMINATOR);

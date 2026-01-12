@@ -82,12 +82,13 @@ void yyerror(const char *s);
 %type <std::string> valid_rvalue value_assignment assignment_operator
 %type <std::string> doublequoted_string quote_contents
 %type <std::string> object_reference object_reference_lvalue maybe_descend_object_hierarchy maybe_array_index
+%type <std::string> instantiation_suffix
 %type <std::string> self_reference self_reference_lvalue
 %type <std::string> object_assignment shell_variable_assignment
 %type <std::string> bash_variable
 %type <std::string> dynamic_cast cast_target
 %type <std::string> object_address pointer_dereference pointer_dereference_rvalue pointer_dereference_lvalue
-%type <std::string> supershell subshell subshell_raw subshell_substitution dollar_subshell deprecated_subshell
+%type <std::string> supershell subshell_raw subshell_substitution dollar_subshell deprecated_subshell
 %type <std::string> string_interpolation
 %type <std::string> maybe_hash
 %type <std::string> typeof_expression
@@ -98,7 +99,8 @@ void yyerror(const char *s);
 %type <std::string> bash_for_or_select_header bash_for_or_select_input bash_for_or_select_variable bash_for_or_select_maybe_in_something
 %type <std::string> bash_arithmetic_for_statement arithmetic_for_condition arith_statement increment_decrement_expression arith_operator
 %type <std::string> arith_condition_term comparison_expression comparison_operator
-%type <std::string> redirection redirection_preposition redirection_source redirection_operator named_fd maybe_namedfd_array_index
+%type <std::string> redirection redirection_operator named_fd maybe_namedfd_array_index
+%type <std::string> shell_command simple_command simple_command_element operative_command_element
 
 /**
  * NOTE: A shift/reduce conflict is EXPECTED between 'object_instantiation' and
@@ -153,7 +155,7 @@ statements:
 
 statement:
 	DELIM
-	| WS
+	| shell_command
 	| include_statement
 	| class_definition
 	| datamember_declaration
@@ -162,27 +164,41 @@ statement:
 	| destructor_definition
 	| object_instantiation
 	| pointer_declaration
-	| new_statement
 	| delete_statement
-	| object_reference
-	| object_reference_lvalue
-	| self_reference
-	| self_reference_lvalue
-	| object_address
-	| pointer_dereference
-	| shell_variable_assignment
-	| object_assignment
 	| block
-	| bash_variable
-	| dynamic_cast
-	| supershell
-	| subshell
-	| typeof_expression
-	| bash_case_statement
-	| bash_select_statement
-	| bash_for_statement
-	| bash_arithmetic_for_statement
-	| redirection
+	;
+
+shell_command:
+	simple_command { $$ = $1; }
+	| bash_case_statement { $$ = $1; }
+	| bash_select_statement { $$ = $1; }
+	| bash_for_statement { $$ = $1; }
+	| bash_arithmetic_for_statement { $$ = $1; }
+	;
+
+simple_command:
+	simple_command_element { $$ = $1; }
+	| simple_command WS simple_command_element {
+		$$ = $1 + " " + $3;
+	}
+	;
+
+simple_command_element:
+	shell_variable_assignment { $$ = $1; }
+	| object_assignment { $$ = $1; }
+	| redirection { $$ = $1; }
+	| operative_command_element { $$ = $1; }
+	| valid_rvalue { $$ = $1; }
+	;
+
+// List of LVALUES that can be used as commands
+// e.g., 'echo', '/path/to/executable', '@object.method', etc.
+operative_command_element:
+	IDENTIFIER_LVALUE { $$ = $1; }
+	| object_reference_lvalue { $$ = $1; }
+	| self_reference_lvalue { $$ = $1; }
+	| pointer_dereference_lvalue { $$ = $1; }
+	// todo: expand. This is not NEARLY comprehensive enough
 	;
 
 /**
@@ -195,15 +211,15 @@ statement:
  *   > &@object.address
  */
 redirection:
-	redirection_preposition maybe_whitespace valid_rvalue {
-		std::string redirPreposition = $1;
+	redirection_operator maybe_whitespace valid_rvalue {
+		std::string redirOperator = $1;
 		std::string rvalue = $3;
 
-		std::cout << "Parsed redirection: Preposition='" << redirPreposition << "', RValue='" << rvalue << "'" << std::endl;
+		std::cout << "Parsed redirection: Operator='" << redirOperator << "', RValue='" << rvalue << "'" << std::endl;
 
 		set_incoming_token_can_be_lvalue(true); // Lvalues can follow redirections
 
-		$$ = redirPreposition + rvalue;
+		$$ = redirOperator + rvalue;
 	}
 	| heredoc {
 		std::string heredocContent = $1;
@@ -212,39 +228,6 @@ redirection:
 
 		$$ = $1;
 	}
-	| INTEGER heredoc {
-		std::string fd = $1;
-		std::string heredocContent = $2;
-
-		std::cout << "Parsed heredoc redirection for FD " << fd << " with content: " << heredocContent << std::endl;
-
-		$$ = $1 + $2;
-	}
-	| named_fd heredoc {
-		std::string fd = $1;
-		std::string heredocContent = $2;
-
-		std::cout << "Parsed heredoc redirection for FD " << fd << " with content: " << heredocContent << std::endl;
-
-		$$ = $1 + $2;
-	}
-	;
-
-redirection_preposition:
-	redirection_source redirection_operator {
-		std::string source = $1;
-		std::string redirOp = $2;
-
-		std::cout << "Parsed redirection preposition: Source='" << source << "', Operator='" << redirOp << "'" << std::endl;
-	}
-	| AMPERSAND RANGLE { $$ = "&>"; } // &>
-	| AMPERSAND RANGLE RANGLE { $$ = "&>>"; } // &>>
-	;
-
-redirection_source:
-	/* empty */ { $$ = ""; }
-	| INTEGER { $$ = $1; }
-	| named_fd { $$ = $1; }
 	;
 
 redirection_operator:
@@ -255,6 +238,8 @@ redirection_operator:
 	| RANGLE RANGLE { $$ = ">>"; }
 	| RANGLE AMPERSAND { $$ = ">&"; }
 	| RANGLE PIPE { $$ = ">|"; }
+	| AMPERSAND RANGLE { $$ = "&>"; } // &>
+	| AMPERSAND RANGLE RANGLE { $$ = "&>>"; } // &>>
 	| herestring { $$ = $1; }
 	;
 
@@ -268,7 +253,7 @@ maybe_namedfd_array_index:
 	;
 
 block:
-	LBRACE statements RBRACE
+	LBRACE whitespace_or_delimiter statements RBRACE
 	;
 
 valid_rvalue:
@@ -289,6 +274,7 @@ valid_rvalue:
 	| subshell_substitution { $$ = $1; }
 	| subshell_raw { $$ = $1; } // Not actually subshells in the case of rvalues, but array values, as in arr+=("string"). Kind of a hack.
 	| typeof_expression { $$ = $1; }
+	| named_fd { $$ = $1; }
 	;
 
 maybe_whitespace:
@@ -335,22 +321,23 @@ maybe_as_clause:
 	;
 
 object_instantiation:
-	AT_LVALUE IDENTIFIER WS IDENTIFIER DELIM {
-		std::string className = $2;
-		std::string objectName = $4;
+	AT_LVALUE IDENTIFIER instantiation_suffix {
+		if ($3.empty()) {
+			// Not an object instantiation, but an lvalue object reference
+			std::string objectName = $2;
+			std::cout << "Parsed lvalue object reference: Object='" << objectName << "'" << std::endl;
+		} else {
+			std::string className = $2;
+			std::string objectName = $3;
 
-		std::cout << "Parsed object instantiation: Class='" << className << "', Object='" << objectName << "'" << std::endl;
+			std::cout << "Parsed object instantiation: Class='" << className << "', Object='" << objectName << "'" << std::endl;
+		}
 	}
-	| AT_LVALUE IDENTIFIER WS error {
-		/* TODO(@rail5): Tie this into the compiler's actual error reporting function to display line/col etc */
-		std::cerr << "Syntax error in object instantiation: An object name is required after the class name."
-		<< std::endl
-		<< "If your intention was to call .toPrimitive with arguments, please do so explicitly, as in:"
-		<< std::endl
-		<< "	@" << $2 << ".toPrimitive <arg1> <arg2> ..."
-		<< std::endl;
-		yyerrok;
-	}
+	;
+
+instantiation_suffix:
+	WS IDENTIFIER DELIM { $$ = $2; }
+	| WS { $$ = ""; }
 	;
 
 pointer_declaration:
@@ -931,11 +918,6 @@ supershell:
 	}
 	;
 
-subshell:
-	subshell_raw { $$ = $1; }
-	| subshell_substitution { $$ = $1; }
-	;
-
 subshell_raw:
 	SUBSHELL_START statements SUBSHELL_END {
 		std::cout << "Parsed subshell block" << std::endl;
@@ -982,7 +964,6 @@ heredoc_content:
 	/* empty */ { $$ = ""; }
 	| heredoc_content STRING_CONTENT { $$ = $1 + $2; }
 	| heredoc_content string_interpolation { $$ = $1 + $2; }
-	| heredoc_content heredoc { $$ = $1 + $2; }
 	;
 
 herestring:

@@ -73,6 +73,8 @@ struct LexerState {
 	bool bash_for_or_select_input_received = false;
 	bool bash_if_condition_received = false;
 	bool bash_while_or_until_condition_received = false;
+	bool expecting_assignment_operator = false;
+	bool currently_lexing_lvalue_reference = false;
 	bool parsed_assignment_operator = false;
 	bool incoming_token_can_be_lvalue = true;
 
@@ -91,6 +93,8 @@ struct LexerState {
 		bash_for_or_select_input_received = false;
 		bash_if_condition_received = false;
 		bash_while_or_until_condition_received = false;
+		expecting_assignment_operator = false;
+		currently_lexing_lvalue_reference = false;
 		parsed_assignment_operator = false;
 		incoming_token_can_be_lvalue = true;
 	}
@@ -133,82 +137,10 @@ void set_parsed_assignment_operator(bool parsed) {
  * @param token The current token being processed.
  * @return Either the original token unmodified, or an lvalue variant of the token if applicable.
 */
-yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
-	yy::parser::symbol_kind_type type = token.kind();
-	switch (type) {
-		case yy::parser::symbol_kind::S_AT:
-			// If this AT is the first non-whitespace token of the new command string, it's an lvalue
-			if (lexerState.incoming_token_can_be_lvalue) {
-				lexerState.incoming_token_can_be_lvalue = false; // Next token cannot be an lvalue
-				return yy::parser::make_AT_LVALUE();
-			}
-			break;
-		case yy::parser::symbol_kind::S_REF_START:
-			// Same as above
-			if (lexerState.incoming_token_can_be_lvalue) {
-				lexerState.incoming_token_can_be_lvalue = false;
-				return yy::parser::make_REF_START_LVALUE();
-			}
-			break;
-		case yy::parser::symbol_kind::S_IDENTIFIER:
-			// Same as above
-			if (lexerState.incoming_token_can_be_lvalue) {
-				lexerState.incoming_token_can_be_lvalue = false;
-				std::string text = token.value.as<std::string>();
-				return yy::parser::make_IDENTIFIER_LVALUE(text);
-			}
-			break;
-		case yy::parser::symbol_kind::S_KEYWORD_THIS:
-			// Same as above
-			if (lexerState.incoming_token_can_be_lvalue) {
-				lexerState.incoming_token_can_be_lvalue = false;
-				return yy::parser::make_KEYWORD_THIS_LVALUE();
-			}
-			break;
-		case yy::parser::symbol_kind::S_KEYWORD_SUPER:
-			// Same as above
-			if (lexerState.incoming_token_can_be_lvalue) {
-				lexerState.incoming_token_can_be_lvalue = false;
-				return yy::parser::make_KEYWORD_SUPER_LVALUE();
-			}
-			break;
-		case yy::parser::symbol_kind::S_DELIM:
-		case yy::parser::symbol_kind::S_DOUBLEAMPERSAND:
-		case yy::parser::symbol_kind::S_DOUBLEPIPE:
-		case yy::parser::symbol_kind::S_PIPE:
-		case yy::parser::symbol_kind::S_SUPERSHELL_START:
-		case yy::parser::symbol_kind::S_SUBSHELL_START:
-		case yy::parser::symbol_kind::S_SUBSHELL_SUBSTITUTION_START:
-		case yy::parser::symbol_kind::S_DEPRECATED_SUBSHELL_START:
-		case yy::parser::symbol_kind::S_ARITH_FOR_CONDITION_START:
-		case yy::parser::symbol_kind::S_BASH_CASE_PATTERN_DELIM:
-		case yy::parser::symbol_kind::S_BASH_KEYWORD_DO:
-		case yy::parser::symbol_kind::S_BASH_KEYWORD_IF:
-		case yy::parser::symbol_kind::S_BASH_KEYWORD_ELIF:
-		case yy::parser::symbol_kind::S_BASH_KEYWORD_WHILE:
-		case yy::parser::symbol_kind::S_BASH_KEYWORD_UNTIL:
-			// At the start of a new command string, the next token can be an lvalue
-			lexerState.incoming_token_can_be_lvalue = true;
-			break;
-		case yy::parser::symbol_kind::S_KEYWORD_PUBLIC:
-		case yy::parser::symbol_kind::S_KEYWORD_PROTECTED:
-		case yy::parser::symbol_kind::S_KEYWORD_PRIVATE:
-			// Access specifiers do not change lvalue considerations
-			break;
-		case yy::parser::symbol_kind::S_WS:
-			// Whitespace does not change lvalue considerations
-			break;
-		case yy::parser::symbol_kind::S_DEREFERENCE_OPERATOR:
-			// Dereference operator does not change lvalue considerations
-			break;
-		default:
-			lexerState.incoming_token_can_be_lvalue = false;
-			break;
-	}
-	return token; // If we're here, just return the original token unmodified
-}
+yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token);
 
 void updateLexerState() {
+	lexerState.expecting_assignment_operator = false;
 	lexerState.parsed_assignment_operator = false;
 }
 
@@ -252,10 +184,6 @@ RANGLE                  [>]
 
 LBRACE                  [{]
 RBRACE                  [}]
-
-DOUBLEAMPERSAND         "&&"
-DOUBLEPIPE              "||"
-PIPE                    "|"
 
 /* Tokens only signifcant to @include statements */
 SPECIAL_KEYWORD_DYNAMIC   dynamic
@@ -498,13 +426,28 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
 	emit(DELIM, tokenText);
 }
-{DOUBLEAMPERSAND}                    { emit(DOUBLEAMPERSAND); }
-{DOUBLEPIPE}                         { emit(DOUBLEPIPE); }
-{PIPE}                               { emit(PIPE); }
+[ \t]*&&                             { emit(DOUBLEAMPERSAND); }
+[ \t]*\|\|                           { emit(DOUBLEPIPE); }
+[ \t]*\|                             { emit(PIPE); }
 {LBRACE}                             { emit(LBRACE); }
 {RBRACE}                             { emit(RBRACE); }
-"+="                                 { emit(PLUS_EQUALS); }
-"="                                  { emit(EQUALS); }
+"+="                                 {
+	if (lexerState.expecting_assignment_operator) {
+		lexerState.expecting_assignment_operator = false;
+		emit(PLUS_EQUALS);
+	} else {
+		emit(CATCHALL, tokenText);
+	}
+}
+"="                                  {
+	if (lexerState.expecting_assignment_operator) {
+		lexerState.expecting_assignment_operator = false;
+		emit(EQUALS);
+	} else {
+		std::cout << "Here but not expecting" << std::endl;
+		emit(CATCHALL, tokenText);
+	}
+}
 [\*]/[@]                             { emit(DEREFERENCE_OPERATOR); }
 [*]                                  { emit(ASTERISK); }
 "&"                                  { emit(AMPERSAND); }
@@ -975,6 +918,10 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 	(.|\n) {
 		modeStack.pop(); // Exit BPP_REFERENCE_MODE if we see anything other than IDENTIFIER or DOT coming up next
+		if (lexerState.currently_lexing_lvalue_reference) {
+			lexerState.currently_lexing_lvalue_reference = false;
+			lexerState.expecting_assignment_operator = true;
+		}
 		yyless(0); // Do not consume the character; let the main lexer mode handle it
 	}
 }
@@ -1024,6 +971,10 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	"}" {
 		modeStack.pop(); // Exit BPP_BRACEREFERENCE_MODE
 		lexerState.token_count_inside_bracereference = 0;
+		if (lexerState.currently_lexing_lvalue_reference) {
+			lexerState.currently_lexing_lvalue_reference = false;
+			lexerState.expecting_assignment_operator = true;
+		}
 		emit(REF_END);
 	}
 }
@@ -1096,4 +1047,91 @@ extern void destroyLexer() {
 	modeStack.clear();
 	lexerState.reset();
 	yylex_destroy(main_lexer);
+}
+
+yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
+	yy::parser::symbol_kind_type type = token.kind();
+	switch (type) {
+		case yy::parser::symbol_kind::S_AT:
+			// If this AT is the first non-whitespace token of the new command string, it's an lvalue
+			if (lexerState.incoming_token_can_be_lvalue) {
+				lexerState.incoming_token_can_be_lvalue = false; // Next token cannot be an lvalue
+				if (modeStack.top() == BPP_REFERENCE_MODE) {
+					lexerState.currently_lexing_lvalue_reference = true;
+				}
+				return yy::parser::make_AT_LVALUE();
+			}
+			break;
+		case yy::parser::symbol_kind::S_REF_START:
+			// Same as above
+			if (lexerState.incoming_token_can_be_lvalue) {
+				lexerState.incoming_token_can_be_lvalue = false;
+				lexerState.currently_lexing_lvalue_reference = true;
+				return yy::parser::make_REF_START_LVALUE();
+			}
+			break;
+		case yy::parser::symbol_kind::S_IDENTIFIER:
+			// Same as above
+			if (lexerState.incoming_token_can_be_lvalue) {
+				lexerState.incoming_token_can_be_lvalue = false;
+				std::string text = token.value.as<std::string>();
+				lexerState.expecting_assignment_operator = true; // After an identifier lvalue, we may expect an assignment operator
+				return yy::parser::make_IDENTIFIER_LVALUE(text);
+			}
+			break;
+		case yy::parser::symbol_kind::S_KEYWORD_THIS:
+			// Same as above
+			if (lexerState.incoming_token_can_be_lvalue) {
+				lexerState.incoming_token_can_be_lvalue = false;
+				if (modeStack.top() == BPP_REFERENCE_MODE) {
+					lexerState.currently_lexing_lvalue_reference = true;
+				}
+				return yy::parser::make_KEYWORD_THIS_LVALUE();
+			}
+			break;
+		case yy::parser::symbol_kind::S_KEYWORD_SUPER:
+			// Same as above
+			if (lexerState.incoming_token_can_be_lvalue) {
+				lexerState.incoming_token_can_be_lvalue = false;
+				if (modeStack.top() == BPP_REFERENCE_MODE) {
+					lexerState.currently_lexing_lvalue_reference = true;
+				}
+				return yy::parser::make_KEYWORD_SUPER_LVALUE();
+			}
+			break;
+		case yy::parser::symbol_kind::S_DELIM:
+		case yy::parser::symbol_kind::S_DOUBLEAMPERSAND:
+		case yy::parser::symbol_kind::S_DOUBLEPIPE:
+		case yy::parser::symbol_kind::S_PIPE:
+		case yy::parser::symbol_kind::S_SUPERSHELL_START:
+		case yy::parser::symbol_kind::S_SUBSHELL_START:
+		case yy::parser::symbol_kind::S_SUBSHELL_SUBSTITUTION_START:
+		case yy::parser::symbol_kind::S_DEPRECATED_SUBSHELL_START:
+		case yy::parser::symbol_kind::S_ARITH_FOR_CONDITION_START:
+		case yy::parser::symbol_kind::S_BASH_CASE_PATTERN_DELIM:
+		case yy::parser::symbol_kind::S_BASH_KEYWORD_DO:
+		case yy::parser::symbol_kind::S_BASH_KEYWORD_IF:
+		case yy::parser::symbol_kind::S_BASH_KEYWORD_ELIF:
+		case yy::parser::symbol_kind::S_BASH_KEYWORD_THEN:
+		case yy::parser::symbol_kind::S_BASH_KEYWORD_WHILE:
+		case yy::parser::symbol_kind::S_BASH_KEYWORD_UNTIL:
+			// At the start of a new command string, the next token can be an lvalue
+			lexerState.incoming_token_can_be_lvalue = true;
+			break;
+		case yy::parser::symbol_kind::S_KEYWORD_PUBLIC:
+		case yy::parser::symbol_kind::S_KEYWORD_PROTECTED:
+		case yy::parser::symbol_kind::S_KEYWORD_PRIVATE:
+			// Access specifiers do not change lvalue considerations
+			break;
+		case yy::parser::symbol_kind::S_WS:
+			// Whitespace does not change lvalue considerations
+			break;
+		case yy::parser::symbol_kind::S_DEREFERENCE_OPERATOR:
+			// Dereference operator does not change lvalue considerations
+			break;
+		default:
+			lexerState.incoming_token_can_be_lvalue = false;
+			break;
+	}
+	return token; // If we're here, just return the original token unmodified
 }

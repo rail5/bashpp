@@ -94,6 +94,9 @@ void yyerror(const char *s);
 %precedence LBRACE
 %precedence CATCHALL
 
+%left PIPE
+%left DOUBLEAMPERSAND DOUBLEPIPE
+
 
 /* Nonterminal types */
 %type <int> include_keyword access_modifier access_modifier_keyword
@@ -101,6 +104,7 @@ void yyerror(const char *s);
 %type <std::string> valid_rvalue value_assignment assignment_operator
 %type <std::string> doublequoted_string quote_contents
 %type <std::string> object_reference object_reference_lvalue maybe_descend_object_hierarchy maybe_array_index
+%type <std::string> pointer_declaration_preface
 %type <std::string> instantiation_suffix
 %type <std::string> self_reference self_reference_lvalue
 %type <std::string> object_assignment shell_variable_assignment
@@ -119,7 +123,9 @@ void yyerror(const char *s);
 %type <std::string> bash_arithmetic_for_statement arithmetic_for_condition arith_statement increment_decrement_expression arith_operator
 %type <std::string> arith_condition_term comparison_expression comparison_operator
 %type <std::string> redirection redirection_operator named_fd maybe_namedfd_array_index
-%type <std::string> shell_command simple_command simple_command_element operative_command_element
+%type <std::string> pipeline shell_command_sequence shell_command simple_command simple_command_element operative_command_element
+%type <std::string> simple_pipeline simple_command_sequence
+%type <std::string> logical_connective
 %type <std::string> concatenatable_rvalue concatenated_rvalue
 %type <std::string> bash_if_statement bash_if_condition bash_if_else_branch bash_if_root_branch maybe_bash_if_else_branches
 %type <std::string> bash_while_statement bash_until_statement bash_while_or_until_condition
@@ -177,7 +183,7 @@ statements:
 
 statement:
 	DELIM
-	| shell_command %prec CONCAT_STOP
+	| shell_command_sequence %prec CONCAT_STOP
 	| include_statement
 	| class_definition
 	| datamember_declaration
@@ -190,6 +196,35 @@ statement:
 	| block
 	;
 
+shell_command_sequence:
+	pipeline %prec CONCAT_STOP { $$ = $1; }
+	| shell_command_sequence logical_connective maybe_whitespace pipeline {
+		std::string leftPipeline = $1;
+		std::string connective = $2;
+		std::string rightPipeline = $4;
+
+		std::cout << "Parsed shell command pipeline with connective: LeftPipeline='" << leftPipeline << "', Connective='" << connective << "', RightPipeline='" << rightPipeline << "'" << std::endl;
+		$$ = leftPipeline + " " + connective + " " + rightPipeline;
+	}
+	;
+
+pipeline:
+	shell_command %prec CONCAT_STOP { $$ = $1; }
+	| pipeline PIPE maybe_whitespace shell_command {
+		std::string leftCommand = $1;
+		std::string rightCommand = $4;
+
+		std::cout << "Parsed shell pipeline: LeftCommand='" << leftCommand << "', RightCommand='" << rightCommand << "'" << std::endl;
+
+		$$ = leftCommand + " | " + rightCommand;
+	}
+	;
+
+logical_connective:
+	DOUBLEAMPERSAND { $$ = "&&"; }
+	| DOUBLEPIPE { $$ = "||"; }
+	;
+
 shell_command:
 	simple_command %prec CONCAT_STOP { $$ = $1; }
 	| bash_case_statement { $$ = $1; }
@@ -199,6 +234,30 @@ shell_command:
 	| bash_if_statement { $$ = $1; }
 	| bash_while_statement { $$ = $1; }
 	| bash_until_statement { $$ = $1; }
+	;
+
+simple_command_sequence:
+	simple_pipeline %prec CONCAT_STOP { $$ = $1; }
+	| simple_command_sequence logical_connective maybe_whitespace simple_pipeline {
+		std::string leftPipeline = $1;
+		std::string connective = $2;
+		std::string rightPipeline = $4;
+
+		std::cout << "Parsed simple command sequence with connective: LeftPipeline='" << leftPipeline << "', Connective='" << connective << "', RightPipeline='" << rightPipeline << "'" << std::endl;
+		$$ = leftPipeline + " " + connective + " " + rightPipeline;
+	}
+	;
+
+simple_pipeline:
+	simple_command %prec CONCAT_STOP { $$ = $1; }
+	| simple_pipeline PIPE maybe_whitespace simple_command {
+		std::string leftCommand = $1;
+		std::string rightCommand = $4;
+
+		std::cout << "Parsed simple command pipeline: LeftCommand='" << leftCommand << "', RightCommand='" << rightCommand << "'" << std::endl;
+
+		$$ = leftCommand + " | " + rightCommand;
+	}
 	;
 
 simple_command:
@@ -376,10 +435,10 @@ instantiation_suffix:
 	;
 
 pointer_declaration:
-	AT_LVALUE IDENTIFIER ASTERISK WS IDENTIFIER maybe_default_value DELIM {
-		std::string typeName = $2;
-		std::string pointerName = $5;
-		std::string defaultValue = $6;
+	pointer_declaration_preface WS IDENTIFIER_LVALUE maybe_default_value DELIM {
+		std::string typeName = $1;
+		std::string pointerName = $3;
+		std::string defaultValue = $4;
 
 		std::cout << "Parsed pointer declaration: Type='" << typeName << "', Pointer='" << pointerName << "'";
 		if (!defaultValue.empty()) {
@@ -388,6 +447,15 @@ pointer_declaration:
 		std::cout << std::endl;
 	}
 	;
+
+pointer_declaration_preface:
+	AT_LVALUE IDENTIFIER ASTERISK {
+		std::string typeName = $2;
+
+		set_incoming_token_can_be_lvalue(true); // The following identifier should be an lvalue
+
+		$$ = typeName;
+	}
 
 new_statement:
 	KEYWORD_NEW WS IDENTIFIER {
@@ -1292,7 +1360,7 @@ bash_if_root_branch:
 	;
 
 bash_if_condition:
-	simple_command {
+	simple_command_sequence {
 		set_bash_if_condition_received(true);
 		$$ = $1;
 	}
@@ -1338,7 +1406,7 @@ bash_until_statement:
 	;
 
 bash_while_or_until_condition:
-	simple_command {
+	simple_command_sequence {
 		set_bash_while_or_until_condition_received(true);
 		$$ = $1;
 	}

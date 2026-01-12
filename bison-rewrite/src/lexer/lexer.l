@@ -232,6 +232,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 /* Triggered when we hit an unescaped '@' */
 %x BPP_MODE
 
+%x BPP_REFERENCE_MODE
+
 %x BPP_BRACEREFERENCE_MODE
 
 /* Parsing @include statements */
@@ -363,29 +365,32 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	emit(WS, tokenText);
 }
 
-{KEYWORD_INCLUDE}/[^a-zA-Z0-9_]      { modeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE); }
-{KEYWORD_INCLUDE_ONCE}/[^a-zA-Z0-9_] { modeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE_ONCE); }
+{AT}                                 { modeStack.push(BPP_MODE); yyless(0); }
 
-{KEYWORD_CLASS}/[^a-zA-Z0-9_]        { emit(KEYWORD_CLASS); }
-{KEYWORD_PUBLIC}/[^a-zA-Z0-9_]       { emit(KEYWORD_PUBLIC); }
-{KEYWORD_PROTECTED}/[^a-zA-Z0-9_]    { emit(KEYWORD_PROTECTED); }
-{KEYWORD_PRIVATE}/[^a-zA-Z0-9_]      { emit(KEYWORD_PRIVATE); }
-{KEYWORD_NEW}/[^a-zA-Z0-9_]          { emit(KEYWORD_NEW); }
-{KEYWORD_DELETE}/[^a-zA-Z0-9_]       { emit(KEYWORD_DELETE); }
-{KEYWORD_NULLPTR}/[^a-zA-Z0-9_]      { emit(KEYWORD_NULLPTR); }
-{KEYWORD_METHOD}/[^a-zA-Z0-9_]       { emit(KEYWORD_METHOD); }
-{KEYWORD_VIRTUAL}/[^a-zA-Z0-9_]      { emit(KEYWORD_VIRTUAL); }
-{KEYWORD_CONSTRUCTOR}/[^a-zA-Z0-9_]  { emit(KEYWORD_CONSTRUCTOR); }
-{KEYWORD_DESTRUCTOR}/[^a-zA-Z0-9_]   { emit(KEYWORD_DESTRUCTOR); }
-{KEYWORD_DYNAMIC_CAST}/[^a-zA-Z0-9_] { emit(KEYWORD_DYNAMIC_CAST); }
-{KEYWORD_TYPEOF}/[^a-zA-Z0-9_]       { emit(KEYWORD_TYPEOF); }
+<BPP_MODE>{
+	{KEYWORD_INCLUDE}/[^a-zA-Z0-9_]      { modeStack.pop(); modeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE); }
+	{KEYWORD_INCLUDE_ONCE}/[^a-zA-Z0-9_] { modeStack.pop(); modeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE_ONCE); }
 
-"@{"                                 { modeStack.push(BPP_BRACEREFERENCE_MODE); emit(REF_START); }
+	{KEYWORD_CLASS}/[^a-zA-Z0-9_]        { modeStack.pop(); emit(KEYWORD_CLASS); }
+	{KEYWORD_PUBLIC}/[^a-zA-Z0-9_]       { modeStack.pop(); emit(KEYWORD_PUBLIC); }
+	{KEYWORD_PROTECTED}/[^a-zA-Z0-9_]    { modeStack.pop(); emit(KEYWORD_PROTECTED); }
+	{KEYWORD_PRIVATE}/[^a-zA-Z0-9_]      { modeStack.pop(); emit(KEYWORD_PRIVATE); }
+	{KEYWORD_NEW}/[^a-zA-Z0-9_]          { modeStack.pop(); emit(KEYWORD_NEW); }
+	{KEYWORD_DELETE}/[^a-zA-Z0-9_]       { modeStack.pop(); emit(KEYWORD_DELETE); }
+	{KEYWORD_NULLPTR}/[^a-zA-Z0-9_]      { modeStack.pop(); emit(KEYWORD_NULLPTR); }
+	{KEYWORD_METHOD}/[^a-zA-Z0-9_]       { modeStack.pop(); emit(KEYWORD_METHOD); }
+	{KEYWORD_VIRTUAL}/[^a-zA-Z0-9_]      { modeStack.pop(); emit(KEYWORD_VIRTUAL); }
+	{KEYWORD_CONSTRUCTOR}/[^a-zA-Z0-9_]  { modeStack.pop(); emit(KEYWORD_CONSTRUCTOR); }
+	{KEYWORD_DESTRUCTOR}/[^a-zA-Z0-9_]   { modeStack.pop(); emit(KEYWORD_DESTRUCTOR); }
+	{KEYWORD_DYNAMIC_CAST}/[^a-zA-Z0-9_] { modeStack.pop(); emit(KEYWORD_DYNAMIC_CAST); }
+	{KEYWORD_TYPEOF}/[^a-zA-Z0-9_]       { modeStack.pop(); emit(KEYWORD_TYPEOF); }
+	{KEYWORD_THIS}/[^a-zA-Z0-9_]         { modeStack.pop(); modeStack.push(BPP_REFERENCE_MODE); emit(KEYWORD_THIS); }
+	{KEYWORD_SUPER}/[^a-zA-Z0-9_]        { modeStack.pop(); modeStack.push(BPP_REFERENCE_MODE); emit(KEYWORD_SUPER); }
 
-{AT}                                 { modeStack.push(BPP_MODE); emit(AT); }
-
-{KEYWORD_THIS}/[^a-zA-Z0-9_]         { modeStack.push(BPP_MODE); emit(KEYWORD_THIS); }
-{KEYWORD_SUPER}/[^a-zA-Z0-9_]        { modeStack.push(BPP_MODE); emit(KEYWORD_SUPER); }
+	"@{"                                 { modeStack.pop(); modeStack.push(BPP_BRACEREFERENCE_MODE); emit(REF_START); }
+	"@("                                 { modeStack.pop(); modeStack.push(SUPERSHELL_MODE); emit(SUPERSHELL_START); }
+	{AT}                                 { modeStack.pop(); modeStack.push(BPP_REFERENCE_MODE); emit(AT); }
+}
 
 {DELIM}                              {
 	switch (modeStack.top()) {
@@ -485,11 +490,6 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 			emit(RBRACKET);
 			break;
 	}
-}
-
-"@(" {
-	modeStack.push(SUPERSHELL_MODE);
-	emit(SUPERSHELL_START);
 }
 
 "$(" {
@@ -654,6 +654,11 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		emit(SUPERSHELL_START);
 	}
 
+	"@{" {
+		modeStack.push(BPP_BRACEREFERENCE_MODE);
+		emit(REF_START);
+	}
+
 	"$(" {
 		modeStack.push(SUBSHELL_SUBSTITUTION_MODE);
 		emit(SUBSHELL_SUBSTITUTION_START);
@@ -673,7 +678,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 	{AT} {
 		/* Start of an interpolation */
-		modeStack.push(BPP_MODE);
+		modeStack.push(BPP_REFERENCE_MODE);
 		emit(AT);
 	}
 
@@ -838,7 +843,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 }
 
-<BPP_MODE>{
+<BPP_REFERENCE_MODE>{
 	{IDENTIFIER} {
 		emit(IDENTIFIER, tokenText);
 	}
@@ -848,7 +853,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 
 	(.|\n) {
-		modeStack.pop(); // Exit BPP_MODE if we see anything other than IDENTIFIER or DOT coming up next
+		modeStack.pop(); // Exit BPP_REFERENCE_MODE if we see anything other than IDENTIFIER or DOT coming up next
 		yyless(0); // Do not consume the character; let the main lexer mode handle it
 	}
 }

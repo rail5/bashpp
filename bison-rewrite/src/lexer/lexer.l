@@ -244,6 +244,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 %s DEPRECATED_SUBSHELL_MODE
 
+%s PROCESS_SUBSTITUTION_MODE
+
 %s BLOCK_MODE
 
 %s PARAMETER_EXPANSION_MODE
@@ -470,6 +472,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		emit(IDENTIFIER, tokenText);
 	}
 }
+"<("                                 { modeStack.push(PROCESS_SUBSTITUTION_MODE); emit(PROCESS_SUBSTITUTION_START, tokenText); }
+">("                                 { modeStack.push(PROCESS_SUBSTITUTION_MODE); emit(PROCESS_SUBSTITUTION_START, tokenText); }
 {LANGLE}                             { emit(LANGLE); }
 {RANGLE}                             { emit(RANGLE); }
 
@@ -516,6 +520,10 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		case SUBSHELL_SUBSTITUTION_MODE:
 			modeStack.pop(); // Exit SUBSHELL_SUBSTITUTION_MODE
 			emit(SUBSHELL_SUBSTITUTION_END);
+			break;
+		case PROCESS_SUBSTITUTION_MODE:
+			modeStack.pop(); // Exit PROCESS_SUBSTITUTION_MODE
+			emit(PROCESS_SUBSTITUTION_END);
 			break;
 		default:
 			emit(RPAREN);

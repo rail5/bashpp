@@ -80,6 +80,9 @@ void yyerror(const char *s);
 %token EXCLAM
 %token <std::string> EXPANSION_BEGIN PARAMETER_EXPANSION_CONTENT
 
+%token <std::string> PROCESS_SUBSTITUTION_START
+%token PROCESS_SUBSTITUTION_END
+
 /* Handling unrecognized tokens */
 %token <std::string> CATCHALL
 
@@ -93,7 +96,7 @@ void yyerror(const char *s);
 %precedence DEREFERENCE_OPERATOR
 %precedence BASH_VAR_START BASH_VAR
 %precedence SUPERSHELL_START
-%precedence SUBSHELL_SUBSTITUTION_START DEPRECATED_SUBSHELL_START SUBSHELL_START
+%precedence SUBSHELL_SUBSTITUTION_START DEPRECATED_SUBSHELL_START SUBSHELL_START PROCESS_SUBSTITUTION_START
 %precedence LBRACE
 %precedence CATCHALL
 
@@ -126,6 +129,7 @@ void yyerror(const char *s);
 %type <std::string> bash_arithmetic_for_statement arithmetic_for_condition arith_statement increment_decrement_expression arith_operator
 %type <std::string> arith_condition_term comparison_expression comparison_operator
 %type <std::string> redirection redirection_operator named_fd maybe_namedfd_array_index
+%type <std::string> process_substitution
 %type <std::string> pipeline shell_command_sequence shell_command simple_command simple_command_element operative_command_element
 %type <std::string> simple_pipeline simple_command_sequence
 %type <std::string> logical_connective
@@ -196,7 +200,6 @@ statement:
 	| object_instantiation
 	| pointer_declaration
 	| delete_statement
-	| block
 	;
 
 shell_command_sequence:
@@ -276,6 +279,7 @@ simple_command_element:
 	| redirection { $$ = $1; }
 	| operative_command_element { $$ = $1; }
 	| valid_rvalue %prec CONCAT_STOP { $$ = $1; }
+	| block { $$ = ""; }
 	;
 
 // List of LVALUES that can be used as commands
@@ -370,6 +374,7 @@ concatenatable_rvalue:
 	| supershell { $$ = $1; }
 	| subshell_substitution { $$ = $1; }
 	| subshell_raw { $$ = $1; } // Not actually subshells in the case of rvalues, but array values, as in arr+=("string"). Kind of a hack.
+	| process_substitution { $$ = $1; }
 	| named_fd { $$ = $1; }
 	| CATCHALL { $$ = $1; }
 	;
@@ -1078,6 +1083,13 @@ deprecated_subshell:
 
 		std::cout << "Parsed DEPRECATED subshell block [depth = " << $1 << "]" << std::endl;
 		$$ = "`deprecated_subshell`";
+	}
+	;
+
+process_substitution:
+	PROCESS_SUBSTITUTION_START statements PROCESS_SUBSTITUTION_END {
+		std::string op = $1;
+		$$ = op + "... statements ...)";
 	}
 	;
 

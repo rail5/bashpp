@@ -88,7 +88,7 @@ void yyerror(const char *s);
 
 
 %precedence CONCAT_STOP
-%precedence LANGLE LANGLE_AMPERSAND RANGLE RANGLE_AMPERSAND AMPERSAND_RANGLE
+%precedence LANGLE LANGLE_AMPERSAND RANGLE RANGLE_AMPERSAND AMPERSAND_RANGLE HEREDOC_START HERESTRING_START
 %precedence IDENTIFIER INTEGER SINGLEQUOTED_STRING KEYWORD_NULLPTR
 %precedence QUOTE_BEGIN
 %precedence AT REF_START
@@ -136,6 +136,7 @@ void yyerror(const char *s);
 %type <std::string> concatenatable_rvalue concatenated_rvalue
 %type <std::string> bash_if_statement bash_if_condition bash_if_else_branch bash_if_root_branch maybe_bash_if_else_branches
 %type <std::string> bash_while_statement bash_until_statement bash_while_or_until_condition
+%type <std::string> command_redirections
 
 /**
  * NOTE: A shift/reduce conflict is EXPECTED between 'object_instantiation' and
@@ -233,14 +234,20 @@ logical_connective:
 
 shell_command:
 	simple_command %prec CONCAT_STOP { $$ = $1; }
-	| bash_case_statement { $$ = $1; }
-	| bash_select_statement { $$ = $1; }
-	| bash_for_statement { $$ = $1; }
-	| bash_arithmetic_for_statement { $$ = $1; }
-	| bash_if_statement { $$ = $1; }
-	| bash_while_statement { $$ = $1; }
-	| bash_until_statement { $$ = $1; }
+	| bash_case_statement command_redirections %prec CONCAT_STOP { $$ = $1 + $2; }
+	| bash_select_statement command_redirections %prec CONCAT_STOP { $$ = $1 + $2; }
+	| bash_for_statement command_redirections %prec CONCAT_STOP { $$ = $1 + $2; }
+	| bash_arithmetic_for_statement command_redirections %prec CONCAT_STOP { $$ = $1 + $2; }
+	| bash_if_statement command_redirections %prec CONCAT_STOP { $$ = $1 + $2; }
+	| bash_while_statement command_redirections %prec CONCAT_STOP { $$ = $1 + $2; }
+	| bash_until_statement command_redirections %prec CONCAT_STOP { $$ = $1 + $2; }
 	| heredoc_body { $$ = $1; }
+	;
+
+command_redirections:
+	/* empty */ %prec CONCAT_STOP { $$ = ""; }
+	| command_redirections redirection { $$ = $1 + $2; }
+	| command_redirections WS redirection { $$ = $1 + " " + $3; }
 	;
 
 simple_command_sequence:

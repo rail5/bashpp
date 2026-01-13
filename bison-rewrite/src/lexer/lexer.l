@@ -516,29 +516,29 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	emit(SUBSHELL_START);
 }
 
-")" {
-	switch (modeStack.top()) {
-		case SUPERSHELL_MODE:
-			modeStack.pop(); // Exit SUPERSHELL_MODE
-			emit(SUPERSHELL_END);
-			break;
-		case SUBSHELL_MODE:
-			modeStack.pop(); // Exit SUBSHELL_MODE
-			emit(SUBSHELL_END);
-			break;
-		case SUBSHELL_SUBSTITUTION_MODE:
-			modeStack.pop(); // Exit SUBSHELL_SUBSTITUTION_MODE
-			emit(SUBSHELL_SUBSTITUTION_END);
-			break;
-		case PROCESS_SUBSTITUTION_MODE:
-			modeStack.pop(); // Exit PROCESS_SUBSTITUTION_MODE
-			emit(PROCESS_SUBSTITUTION_END);
-			break;
-		default:
-			emit(RPAREN);
-			break;
+<SUPERSHELL_MODE,SUBSHELL_MODE,SUBSHELL_SUBSTITUTION_MODE,PROCESS_SUBSTITUTION_MODE>{
+	[ \t]*\) {
+		// Absorb preceding whitespace
+		auto current_mode = modeStack.top();
+		modeStack.pop();
+		switch (current_mode) {
+			case SUPERSHELL_MODE:
+				emit(SUPERSHELL_END);
+				break;
+			case SUBSHELL_MODE:
+				emit(SUBSHELL_END);
+				break;
+			case SUBSHELL_SUBSTITUTION_MODE:
+				emit(SUBSHELL_SUBSTITUTION_END);
+				break;
+			case PROCESS_SUBSTITUTION_MODE:
+				emit(PROCESS_SUBSTITUTION_END);
+				break;
+		}
 	}
 }
+
+")" { emit(RPAREN); }
 
 "`" {
 	switch (modeStack.top()) {
@@ -1244,6 +1244,7 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 		case yy::parser::symbol_kind::S_BASH_KEYWORD_UNTIL:
 			// At the start of a new command string, the next token can be an lvalue
 			lexerState.incoming_token_can_be_lvalue = true;
+			modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
 			break;
 		case yy::parser::symbol_kind::S_KEYWORD_PUBLIC:
 		case yy::parser::symbol_kind::S_KEYWORD_PROTECTED:

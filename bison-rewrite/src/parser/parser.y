@@ -95,8 +95,7 @@ void yyerror(const char *s);
 %precedence AMPERSAND
 %precedence DEREFERENCE_OPERATOR
 %precedence BASH_VAR_START BASH_VAR
-%precedence SUPERSHELL_START
-%precedence SUBSHELL_SUBSTITUTION_START DEPRECATED_SUBSHELL_START SUBSHELL_START PROCESS_SUBSTITUTION_START
+%precedence SUPERSHELL_START SUBSHELL_SUBSTITUTION_START DEPRECATED_SUBSHELL_START SUBSHELL_START PROCESS_SUBSTITUTION_START
 %precedence LBRACE
 %precedence CATCHALL
 
@@ -1404,7 +1403,7 @@ bash_if_statement:
 	;
 
 bash_if_root_branch:
-	BASH_KEYWORD_IF WS bash_if_condition DELIM maybe_whitespace BASH_KEYWORD_THEN maybe_whitespace statements {
+	BASH_KEYWORD_IF bash_if_condition DELIM maybe_whitespace BASH_KEYWORD_THEN maybe_whitespace statements {
 		std::string ifCondition = $3;
 
 		std::cout << "Parsed bash if root branch" << std::endl;
@@ -1426,7 +1425,7 @@ maybe_bash_if_else_branches:
 	;
 
 bash_if_else_branch:
-	BASH_KEYWORD_ELIF WS bash_if_condition DELIM maybe_whitespace BASH_KEYWORD_THEN maybe_whitespace statements {
+	BASH_KEYWORD_ELIF bash_if_condition DELIM maybe_whitespace BASH_KEYWORD_THEN maybe_whitespace statements {
 		std::string elifCondition = $3;
 
 		std::cout << "Parsed bash elif branch" << std::endl;
@@ -1440,7 +1439,7 @@ bash_if_else_branch:
 	;
 
 bash_while_statement:
-	BASH_KEYWORD_WHILE WS bash_while_or_until_condition DELIM maybe_whitespace BASH_KEYWORD_DO maybe_whitespace statements BASH_KEYWORD_DONE {
+	BASH_KEYWORD_WHILE bash_while_or_until_condition DELIM maybe_whitespace BASH_KEYWORD_DO maybe_whitespace statements BASH_KEYWORD_DONE {
 		std::string whileCondition = $3;
 
 		std::cout << "Parsed bash while statement" << std::endl;
@@ -1450,7 +1449,7 @@ bash_while_statement:
 	;
 
 bash_until_statement:
-	BASH_KEYWORD_UNTIL WS bash_while_or_until_condition DELIM maybe_whitespace BASH_KEYWORD_DO maybe_whitespace statements BASH_KEYWORD_DONE {
+	BASH_KEYWORD_UNTIL bash_while_or_until_condition DELIM maybe_whitespace BASH_KEYWORD_DO maybe_whitespace statements BASH_KEYWORD_DONE {
 		std::string untilCondition = $3;
 
 		std::cout << "Parsed bash until statement" << std::endl;

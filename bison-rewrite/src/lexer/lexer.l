@@ -80,6 +80,12 @@ struct LexerState {
 	bool parsed_assignment_operator = false;
 	bool incoming_token_can_be_lvalue = true;
 
+	yy::position current_position;
+	yy::position token_beginning;
+	yy::position token_ending;
+	bool utf16_mode = false;
+
+
 	void reset() {
 		singlequote_contents.clear();
 		token_count_inside_bracereference = 0;
@@ -100,10 +106,128 @@ struct LexerState {
 		might_be_lexing_object_instantiation = false;
 		parsed_assignment_operator = false;
 		incoming_token_can_be_lvalue = true;
+
+		current_position.initialize();
+		token_beginning.initialize();
+		token_ending.initialize();
+		utf16_mode = false;
 	}
 };
 
 static LexerState lexerState;
+
+size_t utf8_char_count(const std::string& s) {
+	size_t count = 0;
+	for (unsigned char c : s) {
+		if ((c & 0xC0) != 0x80) {
+			count++; // Skip UTF-8 continuation bytes
+		}
+	}
+	return count;
+}
+
+// This function exists **solely** to accommodate the LSP.
+size_t utf16_char_count(const std::string& s) {
+	size_t count = 0;
+
+	for (size_t i = 0; i < s.size();) {
+		unsigned char c = s[i];
+		uint32_t codepoint;
+		size_t len;
+
+		if ((c & 0x80) == 0) {
+			// 1-byte character (ASCII)
+			codepoint = c;
+			len = 1;
+		} else if ((c & 0xE0) == 0xC0) {
+			// 2-byte character
+			codepoint = (c & 0x1F) << 6 | (s[i + 1] & 0x3F);
+			len = 2;
+		} else if ((c & 0xF0) == 0xE0) {
+			// 3-byte character
+			codepoint = (c & 0x0F) << 12 | (s[i + 1] & 0x3F) << 6 | (s[i + 2] & 0x3F);
+			len = 3;
+		} else if ((c & 0xF8) == 0xF0) {
+			// 4-byte character
+			codepoint = (c & 0x07) << 18 | (s[i + 1] & 0x3F) << 12 | (s[i + 2] & 0x3F) << 6 | (s[i + 3] & 0x3F);
+			len = 4;
+		} else {
+			// Invalid UTF-8 sequence, treat as a single character
+			codepoint = c;
+			len = 1;
+		}
+
+		if (codepoint >= 0x10000) {
+			// Convert to UTF-16 surrogate pair
+			count += 2; // Surrogate pairs count as two UTF-16 code units
+		} else {
+			count++; // Single UTF-16 code unit
+		}
+
+		i += len;
+	}
+
+	return count;
+}
+
+size_t char_count(const std::string& s) {
+	if (lexerState.utf16_mode) {
+		return utf16_char_count(s);
+	}
+
+	return utf8_char_count(s);
+}
+
+void advance_position(const std::string& text) {
+	std::string line;
+	for (char c : text) {
+		switch (c) {
+			case '\n':
+				lexerState.current_position.line++;
+				lexerState.current_position.column = 1;
+				line.clear();
+				break;
+			case '\r':
+				// Ignore carriage returns
+				break;
+			default:
+				line += c;
+				break;
+		}
+	}
+	lexerState.current_position.columns(char_count(line));
+}
+
+void rewind_char_counter_to_match_beginning() {
+	lexerState.current_position = lexerState.token_beginning;
+	lexerState.token_ending = lexerState.token_beginning;
+}
+
+void char_counter_zero_length_match_here() {
+	lexerState.token_beginning = lexerState.current_position;
+	lexerState.token_ending = lexerState.current_position;
+}
+
+yy::location current_match_location() {
+	yy::location result;
+	result.begin = lexerState.token_beginning;
+	result.end = lexerState.token_ending;
+	return result;
+}
+
+#define reconsume_token() \
+	rewind_char_counter_to_match_beginning(); yyless(0);
+
+// YY_USER_ACTION runs for every match
+// Any time we call yyless(0), we have to remember to call rewind_char_counter_to_match_beginning()
+// Therefore we do not call yyless(0), we call the reconsume_token() macro
+#define YY_USER_ACTION do { \
+	lexerState.token_beginning = lexerState.current_position; \
+	advance_position(std::string(yytext, yyleng)); \
+	lexerState.token_ending = lexerState.current_position; \
+} while (false);
+
+#define yyterminate() return yy::parser::make_YYEOF(current_match_location());
 
 /* For external use by the parser
  * After the parser parses an assignment statement,
@@ -290,7 +414,9 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	*/
 	#define emit(tokenType, ...) \
 		updateLexerState(); \
-		return maybe_get_lvalue_token(yy::parser::make_##tokenType(__VA_ARGS__));
+		return maybe_get_lvalue_token(yy::parser::make_##tokenType( \
+			__VA_ARGS__ __VA_OPT__(,) current_match_location() \
+		));
 	
 	/**
 	* Helper to get the text of the current token as a std::string.
@@ -308,7 +434,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	.           {
 		// Any other character means we're done skipping
 		modeStack.pop(); // Exit SKIP_AFTER_DELIM_MODE
-		yyless(0); // Reconsume the character
+		reconsume_token();
 	}
 }
 
@@ -345,13 +471,14 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	if (lexerState.parsed_assignment_operator) {
 		// If whitespace immediately follows an assignment operator,
 		// The rvalue of the assignment is empty
-		yyless(0); // Reconsume the whitespace
+		reconsume_token();
+		char_counter_zero_length_match_here();
 		emit(EMPTY_ASSIGNMENT);
 	}
 	emit(WS, tokenText);
 }
 
-{AT}                                 { modeStack.push(BPP_MODE); yyless(0); }
+{AT}                                 { modeStack.push(BPP_MODE); reconsume_token(); }
 
 <BPP_MODE>{
 	{KEYWORD_INCLUDE}/[^a-zA-Z0-9_]      { modeStack.pop(); modeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE); }
@@ -437,7 +564,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	if (lexerState.parsed_assignment_operator) {
 		// If a DELIM immediately follows an assignment operator,
 		// The rvalue of the assignment is empty
-		yyless(0); // Reconsume the DELIM
+		reconsume_token();
+		char_counter_zero_length_match_here();
 		// Do not push SKIP_AFTER_DELIM_MODE yet, as we need to reconsume the DELIM first
 		emit(EMPTY_ASSIGNMENT);
 	}
@@ -973,7 +1101,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		if (lexerState.currently_lexing_lvalue_reference) {
 			lexerState.might_be_lexing_object_instantiation = true;
 		}
-		yyless(0);
+		reconsume_token();
 	}
 
 	(.|\n) {
@@ -982,7 +1110,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 			lexerState.currently_lexing_lvalue_reference = false;
 			lexerState.expecting_assignment_operator = true;
 		}
-		yyless(0); // Do not consume the character; let the main lexer mode handle it
+		reconsume_token(); // Do not consume the character; let the main lexer mode handle it
 	}
 }
 
@@ -1131,7 +1259,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 <PARAMETER_EXPANSION_MODE>{
 	"}" {
 		modeStack.pop();
-		yyless(0); // Reconsume the '}'
+		reconsume_token();
 	}
 }
 
@@ -1142,7 +1270,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 	"}" {
 		modeStack.pop(); // Exit PARAMETER_EXPANSION_MODE
-		yyless(0); // Reconsume the '}'
+		reconsume_token();
 	}
 }
 
@@ -1201,8 +1329,13 @@ extern void destroyLexer() {
 	yylex_destroy(main_lexer);
 }
 
+extern void set_utf16_mode(bool enabled) {
+	lexerState.utf16_mode = enabled;
+}
+
 yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 	yy::parser::symbol_kind_type type = token.kind();
+	auto location = token.location;
 	switch (type) {
 		case yy::parser::symbol_kind::S_AT:
 			// If this AT is the first non-whitespace token of the new command string, it's an lvalue
@@ -1211,7 +1344,7 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 				if (modeStack.top() == BPP_REFERENCE_MODE) {
 					lexerState.currently_lexing_lvalue_reference = true;
 				}
-				return yy::parser::make_AT_LVALUE();
+				return yy::parser::make_AT_LVALUE(location);
 			}
 			break;
 		case yy::parser::symbol_kind::S_REF_START:
@@ -1219,7 +1352,7 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 			if (lexerState.incoming_token_can_be_lvalue) {
 				lexerState.incoming_token_can_be_lvalue = false;
 				lexerState.currently_lexing_lvalue_reference = true;
-				return yy::parser::make_REF_START_LVALUE();
+				return yy::parser::make_REF_START_LVALUE(location);
 			}
 			break;
 		case yy::parser::symbol_kind::S_IDENTIFIER:
@@ -1228,7 +1361,7 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 				lexerState.incoming_token_can_be_lvalue = false;
 				std::string text = token.value.as<std::string>();
 				lexerState.expecting_assignment_operator = true; // After an identifier lvalue, we may expect an assignment operator
-				return yy::parser::make_IDENTIFIER_LVALUE(text);
+				return yy::parser::make_IDENTIFIER_LVALUE(text, location);
 			} else if (lexerState.might_be_lexing_object_instantiation) {
 				// This is potentially the name of an instantiated object
 				// That means an assignment operator might possibly come next
@@ -1244,7 +1377,7 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 				if (modeStack.top() == BPP_REFERENCE_MODE) {
 					lexerState.currently_lexing_lvalue_reference = true;
 				}
-				return yy::parser::make_KEYWORD_THIS_LVALUE();
+				return yy::parser::make_KEYWORD_THIS_LVALUE(location);
 			}
 			break;
 		case yy::parser::symbol_kind::S_KEYWORD_SUPER:
@@ -1254,7 +1387,7 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 				if (modeStack.top() == BPP_REFERENCE_MODE) {
 					lexerState.currently_lexing_lvalue_reference = true;
 				}
-				return yy::parser::make_KEYWORD_SUPER_LVALUE();
+				return yy::parser::make_KEYWORD_SUPER_LVALUE(location);
 			}
 			break;
 		case yy::parser::symbol_kind::S_DELIM:

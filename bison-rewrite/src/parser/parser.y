@@ -1,5 +1,6 @@
 %language "c++"
 %require "3.2"
+%locations
 
 %code requires {
 #include <memory>
@@ -1481,7 +1482,7 @@ bash_while_or_until_condition:
 %%
 
 namespace yy {
-void parser::error(const std::string& m) {
-	std::cerr << "Parse error: " << m << std::endl;
+void parser::error(const location_type& loc, const std::string& m) {
+	std::cerr << loc << ": " << m << std::endl;
 }
 } // namespace yy

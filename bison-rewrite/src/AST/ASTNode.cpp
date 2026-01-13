@@ -14,6 +14,15 @@ const std::vector<std::shared_ptr<ASTNode>>& ASTNode::getChildren() const {
 	return children;
 }
 
+void ASTNode::setPosition(const AST::FilePosition& pos) {
+	position = pos;
+}
+
+void ASTNode::setPosition(uint32_t line, uint32_t column) {
+	position.line = line;
+	position.column = column;
+}
+
 const AST::FilePosition& ASTNode::getPosition() const {
 	return position;
 }

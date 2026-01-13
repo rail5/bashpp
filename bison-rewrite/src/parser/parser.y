@@ -404,20 +404,6 @@ whitespace_or_delimiter:
 
 include_statement:
 	include_keyword maybe_include_type INCLUDE_PATH maybe_as_clause DELIM {
-		/*std::string includeKeyword = $1 == yy::parser::token::KEYWORD_INCLUDE ? "include" : "include_once";
-		std::string includeType = $2.empty() ? "default" : $2;
-		std::string includePath = $3;
-		std::string asPath = $4.empty() ? "" : $4;
-
-		std::cout << "Parsed include statement: "
-				  << "Keyword='" << includeKeyword << "', "
-				  << "Type='" << includeType << "', "
-				  << "Path='" << includePath << "'";
-		if (!asPath.empty()) {
-			std::cout << ", As='" << asPath << "'";
-		}
-		std::cout << std::endl;*/
-
 		AST::IncludeStatement::IncludeKeyword keyword = $1;
 		AST::IncludeStatement::IncludeType type;
 		if ($2 == "dynamic") {
@@ -440,6 +426,10 @@ include_statement:
 		if (!asPath.empty()) asPath = asPath.substr(1, asPath.length() - 2); // Remove surrounding quotes
 
 		auto node = std::make_shared<AST::IncludeStatement>();
+
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
 		node->setKeyword(keyword);
 		node->setType(type);

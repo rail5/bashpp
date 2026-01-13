@@ -13,10 +13,17 @@ LEXER = $(GENERATEDDIR)/lex.yy.cpp
 PARSER_SRC = $(PARSERDIR)/parser.y
 PARSER = $(GENERATEDDIR)/parser.tab.cpp
 
+ASTDIR = $(SRCDIR)/AST
+AST_SOURCES = $(wildcard $(ASTDIR)/*.cpp)
+
 CXX = g++
 CXXFLAGS = -std=gnu++23 -Wall -Wextra -O2 -s
 
 OBJECTS = $(OBJDIR)/main.o $(OBJDIR)/ModeStack.o $(OBJDIR)/generated/parser.tab.o $(OBJDIR)/generated/lex.yy.o
+OBJECTS += $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(AST_SOURCES))
+
+DEBUGOPTIONS :=
+DEBUGOPTIONS += $(if $(DBG),-Wcounterexamples -v) # Run make DBG=1 to generate parser debug output
 
 all: $(TARGET)
 
@@ -27,7 +34,7 @@ $(LEXER): $(LEXER_SRC)
 	flex --header-file=$(GENERATEDDIR)/lex.yy.hpp -o $(LEXER) $<
 
 $(PARSER): $(PARSER_SRC)
-	bison -o $(PARSER) -d $< -Wcounterexamples
+	bison -o $(PARSER) -d $< $(DEBUGOPTIONS)
 
 $(SRCDIR)/main.cpp: $(LEXER) $(PARSER)
 	@# This target ensures that main.cpp is considered dependent on the generated files

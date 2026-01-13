@@ -40,7 +40,7 @@ void yyerror(const char *s);
 
 %token AT AT_LVALUE
 %token KEYWORD_THIS KEYWORD_THIS_LVALUE KEYWORD_SUPER KEYWORD_SUPER_LVALUE
-%token LBRACE RBRACE LANGLE RANGLE
+%token LBRACE RBRACE LANGLE RANGLE LANGLE_AMPERSAND RANGLE_AMPERSAND AMPERSAND_RANGLE
 %token COLON PLUS_EQUALS EQUALS ASTERISK DEREFERENCE_OPERATOR AMPERSAND DOT
 %token EMPTY_ASSIGNMENT
 
@@ -88,6 +88,7 @@ void yyerror(const char *s);
 
 
 %precedence CONCAT_STOP
+%precedence LANGLE LANGLE_AMPERSAND RANGLE RANGLE_AMPERSAND AMPERSAND_RANGLE
 %precedence IDENTIFIER INTEGER SINGLEQUOTED_STRING KEYWORD_NULLPTR
 %precedence QUOTE_BEGIN
 %precedence AT REF_START
@@ -271,6 +272,9 @@ simple_command:
 	| simple_command WS simple_command_element {
 		$$ = $1 + " " + $3;
 	}
+	| simple_command redirection {
+		$$ = $1 + " " + $2;
+	}
 	;
 
 simple_command_element:
@@ -282,14 +286,11 @@ simple_command_element:
 	| block { $$ = ""; }
 	;
 
-// List of LVALUES that can be used as commands
-// e.g., 'echo', '/path/to/executable', '@object.method', etc.
 operative_command_element:
 	IDENTIFIER_LVALUE { $$ = $1; }
 	| object_reference_lvalue { $$ = $1; }
 	| self_reference_lvalue { $$ = $1; }
 	| pointer_dereference_lvalue { $$ = $1; }
-	// todo: expand. This is not NEARLY comprehensive enough
 	;
 
 /**
@@ -327,13 +328,13 @@ redirection:
 redirection_operator:
 	LANGLE { $$ = "<"; }
 	| LANGLE RANGLE { $$ = "<>"; }
-	| LANGLE AMPERSAND { $$ = "<&"; }
+	| LANGLE_AMPERSAND { $$ = "<&"; }
 	| RANGLE { $$ = ">"; }
 	| RANGLE RANGLE { $$ = ">>"; }
-	| RANGLE AMPERSAND { $$ = ">&"; }
+	| RANGLE_AMPERSAND { $$ = ">&"; }
 	| RANGLE PIPE { $$ = ">|"; }
-	| AMPERSAND RANGLE { $$ = "&>"; } // &>
-	| AMPERSAND RANGLE RANGLE { $$ = "&>>"; } // &>>
+	| AMPERSAND_RANGLE { $$ = "&>"; } // &>
+	| AMPERSAND_RANGLE RANGLE { $$ = "&>>"; } // &>>
 	;
 
 named_fd:

@@ -488,6 +488,9 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 ">("                                 { modeStack.push(PROCESS_SUBSTITUTION_MODE); emit(PROCESS_SUBSTITUTION_START, tokenText); }
 {LANGLE}                             { emit(LANGLE); }
 {RANGLE}                             { emit(RANGLE); }
+"&>"                                 { emit(AMPERSAND_RANGLE); }
+">&"                                 { emit(RANGLE_AMPERSAND); }
+"<&"                                 { emit(LANGLE_AMPERSAND); }
 
 "${"                                 { modeStack.push(BASH_VAR_MODE); emit(BASH_VAR_START); }
 
@@ -1180,6 +1183,11 @@ extern void scanner_pop_state(yyscan_t yyscanner) {
 extern int scanner_current_state(yyscan_t yyscanner) {
 	struct yyguts_t* yyg = (struct yyguts_t*)yyscanner;
 	return YY_START;
+}
+
+extern void initLexer() {
+	modeStack.push(SKIP_AFTER_DELIM_MODE); // Initial mode
+	lexerState.reset();
 }
 
 extern void destroyLexer() {

@@ -8,6 +8,7 @@ yyscan_t main_lexer;
 ModeStack modeStack;
 
 extern yy::parser::symbol_type yylex();
+extern void initLexer();
 extern void destroyLexer();
 
 extern bool set_display_lexer_output(bool enable);
@@ -36,7 +37,7 @@ int main(int argc, char* argv[]) {
 
 	yyset_in(in, main_lexer);
 
-	modeStack.push(11); // HACK. Setting to SKIP_AFTER_DELIM_MODE before beginning to skip initial whitespace. FIX.
+	initLexer();
 
 	if (argc >= 3 && std::string(argv[2]) == "--lex") {
 		set_display_lexer_output(true);

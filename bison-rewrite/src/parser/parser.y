@@ -319,6 +319,9 @@ redirection:
 
 		$$ = $1;
 	}
+	| herestring {
+		$$ = $1;
+	}
 	;
 
 redirection_operator:
@@ -331,7 +334,6 @@ redirection_operator:
 	| RANGLE PIPE { $$ = ">|"; }
 	| AMPERSAND RANGLE { $$ = "&>"; } // &>
 	| AMPERSAND RANGLE RANGLE { $$ = "&>>"; } // &>>
-	| herestring { $$ = $1; }
 	;
 
 named_fd:

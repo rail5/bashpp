@@ -947,6 +947,11 @@ cast_target:
 		std::cout << "Parsed dynamic_cast target type (object reference): " << targetType << std::endl;
 		$$ = targetType;
 	}
+	| self_reference {
+		std::string targetType = $1;
+		std::cout << "Parsed dynamic_cast target type (self reference): " << targetType << std::endl;
+		$$ = targetType;
+	}
 	;
 
 object_assignment:

@@ -440,12 +440,12 @@ object_instantiation:
 	;
 
 instantiation_suffix:
-	WS IDENTIFIER maybe_default_value DELIM { $$ = $2 + "=" + $3; }
+	WS IDENTIFIER maybe_default_value { $$ = $2 + "=" + $3; }
 	| WS { $$ = ""; }
 	;
 
 pointer_declaration:
-	pointer_declaration_preface WS IDENTIFIER_LVALUE maybe_default_value DELIM {
+	pointer_declaration_preface WS IDENTIFIER_LVALUE maybe_default_value {
 		std::string typeName = $1;
 		std::string pointerName = $3;
 		std::string defaultValue = $4;

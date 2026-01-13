@@ -5,6 +5,7 @@
 %code requires {
 #include <memory>
 #include <cassert>
+#include "../AST/Nodes/IncludeStatement.h"
 }
 
 %{
@@ -106,7 +107,8 @@ void yyerror(const char *s);
 
 
 /* Nonterminal types */
-%type <int> include_keyword access_modifier access_modifier_keyword
+%type <AST::IncludeStatement::IncludeKeyword> include_keyword
+%type <int> access_modifier access_modifier_keyword
 %type <std::string> maybe_include_type maybe_as_clause maybe_parent_class maybe_default_value
 %type <std::string> valid_rvalue value_assignment assignment_operator
 %type <std::string> doublequoted_string quote_contents
@@ -402,7 +404,7 @@ whitespace_or_delimiter:
 
 include_statement:
 	include_keyword maybe_include_type INCLUDE_PATH maybe_as_clause DELIM {
-		std::string includeKeyword = $1 == yy::parser::token::KEYWORD_INCLUDE ? "include" : "include_once";
+		/*std::string includeKeyword = $1 == yy::parser::token::KEYWORD_INCLUDE ? "include" : "include_once";
 		std::string includeType = $2.empty() ? "default" : $2;
 		std::string includePath = $3;
 		std::string asPath = $4.empty() ? "" : $4;
@@ -414,13 +416,45 @@ include_statement:
 		if (!asPath.empty()) {
 			std::cout << ", As='" << asPath << "'";
 		}
-		std::cout << std::endl;
+		std::cout << std::endl;*/
+
+		AST::IncludeStatement::IncludeKeyword keyword = $1;
+		AST::IncludeStatement::IncludeType type;
+		if ($2 == "dynamic") {
+			type = AST::IncludeStatement::IncludeType::DYNAMIC;
+		} else {
+			type = AST::IncludeStatement::IncludeType::STATIC;
+		}
+
+		AST::IncludeStatement::PathType pathType;
+		std::string path = $3;
+		if (path.front() == '<') {
+			pathType = AST::IncludeStatement::PathType::ANGLEBRACKET;
+		} else {
+			pathType = AST::IncludeStatement::PathType::QUOTED;
+		}
+
+		path = path.substr(1, path.length() - 2); // Remove surrounding quotes or angle brackets
+
+		std::string asPath = $4;
+		if (!asPath.empty()) asPath = asPath.substr(1, asPath.length() - 2); // Remove surrounding quotes
+
+		auto node = std::make_shared<AST::IncludeStatement>();
+
+		node->setKeyword(keyword);
+		node->setType(type);
+		node->setPathType(pathType);
+		node->setPath(path);
+		node->setAsPath(asPath);
+
+		// Verification (Debug):
+		std::cout << *node;
 	}
 	;
 
 include_keyword:
-	KEYWORD_INCLUDE { $$ = yy::parser::token::KEYWORD_INCLUDE; }
-	| KEYWORD_INCLUDE_ONCE { $$ = yy::parser::token::KEYWORD_INCLUDE_ONCE; }
+	KEYWORD_INCLUDE { $$ = AST::IncludeStatement::IncludeKeyword::INCLUDE; }
+	| KEYWORD_INCLUDE_ONCE { $$ = AST::IncludeStatement::IncludeKeyword::INCLUDE_ONCE; }
 	;
 
 maybe_include_type:

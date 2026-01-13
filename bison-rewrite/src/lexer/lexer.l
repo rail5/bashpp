@@ -336,7 +336,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		lexerState.deprecated_subshell_nesting_depth++;
 		// No need to emit anything yet
 	} else {
-		emit(ESCAPED_CHAR, tokenText);
+		emit(CATCHALL, tokenText);
 	}
 }
 {WS}                                 {

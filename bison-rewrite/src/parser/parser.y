@@ -64,8 +64,8 @@ void yyerror(const char *s);
 %token <std::string> BASH_VAR
 %token BASH_VAR_START BASH_VAR_END
 %token HASH
-%token HEREDOC_START HERESTRING_START
-%token <std::string> HEREDOC_DELIMITER HEREDOC_END
+%token HEREDOC_CONTENT_START HERESTRING_START
+%token <std::string> HEREDOC_START HEREDOC_DELIMITER HEREDOC_END
 
 %token BASH_KEYWORD_CASE BASH_KEYWORD_IN BASH_CASE_PATTERN_DELIM BASH_CASE_PATTERN_TERMINATOR BASH_KEYWORD_ESAC
 %token <std::string> BASH_CASE_BODY_BEGIN
@@ -121,7 +121,7 @@ void yyerror(const char *s);
 %type <std::string> string_interpolation
 %type <std::string> maybe_hash
 %type <std::string> typeof_expression
-%type <std::string> heredoc heredoc_content herestring
+%type <std::string> heredoc_header heredoc_body heredoc_content herestring
 %type <std::string> array_index
 %type <std::string> bash_case_body bash_case_header bash_case_input bash_case_pattern bash_case_statement bash_case_pattern_header
 %type <std::string> bash_select_statement bash_for_statement
@@ -240,6 +240,7 @@ shell_command:
 	| bash_if_statement { $$ = $1; }
 	| bash_while_statement { $$ = $1; }
 	| bash_until_statement { $$ = $1; }
+	| heredoc_body { $$ = $1; }
 	;
 
 simple_command_sequence:
@@ -312,10 +313,10 @@ redirection:
 
 		$$ = redirOperator + rvalue;
 	}
-	| heredoc {
-		std::string heredocContent = $1;
+	| heredoc_header {
+		std::string heredocHeader = $1;
 
-		std::cout << "Parsed heredoc redirection with content: " << heredocContent << std::endl;
+		std::cout << "Parsed heredoc redirection with anticipated delimiter: " << heredocHeader << std::endl;
 
 		$$ = $1;
 	}
@@ -1095,16 +1096,24 @@ process_substitution:
 	}
 	;
 
-heredoc:
-	HEREDOC_START HEREDOC_DELIMITER DELIM heredoc_content HEREDOC_END {
+heredoc_header:
+	HEREDOC_START HEREDOC_DELIMITER {
 		std::string delimiter = $2;
-		std::string content = $4;
 
-		assert($2 == $5 && "Mismatched heredoc delimiters!");
+		std::cout << "Parsed heredoc header with delimiter: " << delimiter << std::endl;
 
-		std::cout << "Parsed heredoc: Delimiter='" << delimiter << "', Content='" << content << "'" << std::endl;
+		$$ = delimiter;
+	}
+	;
 
-		$$ = "<<"+ delimiter + "\n" + content + "\n" + delimiter;
+heredoc_body:
+	HEREDOC_CONTENT_START heredoc_content HEREDOC_END {
+		std::string content = $2;
+		std::string delimiter = $3;
+
+		std::cout << "Parsed heredoc body with content: " << content << std::endl;
+
+		$$ = content + "\n" + delimiter;
 	}
 	;
 

@@ -5,6 +5,7 @@
 #include "../ModeStack.h"
 #include <cstdint>
 #include <stack>
+#include <deque>
 
 /**
 GNU Bison Docs, 10.1.7.2: Complete Symbols
@@ -66,7 +67,7 @@ struct LexerState {
 	uint32_t deprecated_subshell_nesting_depth = 0;
 	uint32_t if_depth = 0;
 	std::stack<uint32_t> deprecated_subshell_nesting_depths;
-	std::string heredoc_delimiter;
+	std::deque<std::string> heredoc_delimiters;
 	bool bash_case_input_received = false;
 	bool bash_case_keyword_in_received = false;
 	bool bash_for_or_select_variable_received = false;
@@ -86,7 +87,7 @@ struct LexerState {
 		while (!deprecated_subshell_nesting_depths.empty()) {
 			deprecated_subshell_nesting_depths.pop();
 		}
-		heredoc_delimiter.clear();
+		heredoc_delimiters.clear();
 		bash_case_input_received = false;
 		bash_case_keyword_in_received = false;
 		bash_for_or_select_variable_received = false;
@@ -381,12 +382,6 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 {DELIM}                              {
 	switch (modeStack.top()) {
-		case HEREDOC_MODE:
-			if (tokenText == "\n") {
-				// Do not push SKIP_AFTER_DELIM_MODE if we're going into a string-type mode like HEREDOC_CONTENT_MODE
-				modeStack.push(HEREDOC_CONTENT_MODE);
-			}
-			break;
 		case BASH_CASE_MODE:
 			if (lexerState.bash_case_keyword_in_received) {
 				// Beginning of the case body
@@ -421,6 +416,19 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 			}
 			break;
 		default:
+			if (!lexerState.heredoc_delimiters.empty() && tokenText == "\n") {
+				// Do not push SKIP_AFTER_DELIM_MODE if we're going into a string-type mode like HEREDOC_CONTENT_MODE
+				for (const auto& delimiter : lexerState.heredoc_delimiters) {
+					// Commands can contain multiple heredocs, as in:
+					// cat <<EOF1 <<EOF2 <<EOF3
+					// These heredocs must then be terminated in the order they're given
+					// I.e., first EOF1, then EOF2, then EOF3
+					// So, we push HEREDOC_CONTENT_MODE for each of the given delimiters
+					// And pop one off for each that we finish
+					modeStack.push(HEREDOC_CONTENT_MODE); 
+				}
+				emit(HEREDOC_CONTENT_START);
+			}
 			break;
 	}
 
@@ -466,7 +474,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 {IDENTIFIER}                         {
 	if (modeStack.top() == HEREDOC_MODE) {
 		// This IDENTIFIER is the heredoc delimiter
-		lexerState.heredoc_delimiter = tokenText;
+		lexerState.heredoc_delimiters.push_back(tokenText);
+		modeStack.pop(); // Exit HEREDOC_MODE
 		emit(HEREDOC_DELIMITER, tokenText);
 	} else {
 		emit(IDENTIFIER, tokenText);
@@ -559,14 +568,14 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 "<<-" {
 	modeStack.push(HEREDOC_MODE);
-	emit(HEREDOC_START);
+	emit(HEREDOC_START, tokenText);
 }
 
 "<<<" { emit(HERESTRING_START); }
 
 "<<" {
 	modeStack.push(HEREDOC_MODE);
-	emit(HEREDOC_START);
+	emit(HEREDOC_START, tokenText);
 }
 
 "case"/[ \t\n] {
@@ -819,12 +828,16 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		// The heredoc delimiter must be at the start of the line
 		// And it must be the only thing on the line
 		std::string id = tokenText;
-		if (lexerState.heredoc_delimiter == id) {
+		if (!lexerState.heredoc_delimiters.empty() && lexerState.heredoc_delimiters.front() == id) {
 			// End of heredoc content
 			modeStack.pop(); // Exit HEREDOC_CONTENT_MODE
-			lexerState.heredoc_delimiter.clear();
-			modeStack.pop(); // Exit HEREDOC_MODE
-			emit(HEREDOC_END, id);
+			lexerState.heredoc_delimiters.pop_front();
+			if (lexerState.heredoc_delimiters.empty()) {
+				emit(HEREDOC_END, id);
+			} else {
+				// If the queue is not yet empty, the heredoc sequence is not yet over
+				emit(STRING_CONTENT, id);
+			}
 		} else {
 			emit(STRING_CONTENT, tokenText);
 		}

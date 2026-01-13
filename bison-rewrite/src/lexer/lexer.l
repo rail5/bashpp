@@ -822,6 +822,11 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		emit(STRING_CONTENT, tokenText);
 	}
 
+	\\["] {
+		/* Escaped doublequote */
+		emit(STRING_CONTENT, "\"");
+	}
+
 	["] {
 		/* Closing doublequote found */
 		modeStack.pop(); // Exit DOUBLEQUOTE_MODE

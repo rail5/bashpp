@@ -440,7 +440,7 @@ object_instantiation:
 	;
 
 instantiation_suffix:
-	WS IDENTIFIER DELIM { $$ = $2; }
+	WS IDENTIFIER maybe_default_value DELIM { $$ = $2 + "=" + $3; }
 	| WS { $$ = ""; }
 	;
 

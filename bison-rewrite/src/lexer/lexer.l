@@ -76,6 +76,7 @@ struct LexerState {
 	bool bash_while_or_until_condition_received = false;
 	bool expecting_assignment_operator = false;
 	bool currently_lexing_lvalue_reference = false;
+	bool might_be_lexing_object_instantiation = false;
 	bool parsed_assignment_operator = false;
 	bool incoming_token_can_be_lvalue = true;
 
@@ -96,6 +97,7 @@ struct LexerState {
 		bash_while_or_until_condition_received = false;
 		expecting_assignment_operator = false;
 		currently_lexing_lvalue_reference = false;
+		might_be_lexing_object_instantiation = false;
 		parsed_assignment_operator = false;
 		incoming_token_can_be_lvalue = true;
 	}
@@ -465,10 +467,11 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		lexerState.expecting_assignment_operator = false;
 		emit(EQUALS);
 	} else {
-		std::cout << "Here but not expecting" << std::endl;
 		emit(CATCHALL, tokenText);
 	}
 }
+\{[0-9]+\.\.[0-9]+\}                 { emit(CATCHALL, tokenText); /* Range expression, e.g., {1..10} */ }
+\{[0-9]+\.\.[0-9]+\.\.[0-9]+\}       { emit(CATCHALL, tokenText); /* Range expression with step, e.g., {1..10..2} */ }
 [\*]/[@]                             { emit(DEREFERENCE_OPERATOR); }
 [&]/[@]                              { emit(AMPERSAND); }
 {IDENTIFIER}                         {
@@ -956,6 +959,15 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		emit(ASTERISK);
 	}
 
+	[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
+		// We see up ahead: whitespace, and then another identifier
+		modeStack.pop();
+		if (lexerState.currently_lexing_lvalue_reference) {
+			lexerState.might_be_lexing_object_instantiation = true;
+		}
+		yyless(0);
+	}
+
 	(.|\n) {
 		modeStack.pop(); // Exit BPP_REFERENCE_MODE if we see anything other than IDENTIFIER or DOT coming up next
 		if (lexerState.currently_lexing_lvalue_reference) {
@@ -1204,6 +1216,12 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 				std::string text = token.value.as<std::string>();
 				lexerState.expecting_assignment_operator = true; // After an identifier lvalue, we may expect an assignment operator
 				return yy::parser::make_IDENTIFIER_LVALUE(text);
+			} else if (lexerState.might_be_lexing_object_instantiation) {
+				// This is potentially the name of an instantiated object
+				// That means an assignment operator might possibly come next
+				lexerState.might_be_lexing_object_instantiation = false;
+				lexerState.expecting_assignment_operator = true;
+				// Carry on from here
 			}
 			break;
 		case yy::parser::symbol_kind::S_KEYWORD_THIS:

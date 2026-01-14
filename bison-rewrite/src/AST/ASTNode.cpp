@@ -1,4 +1,5 @@
 #include "ASTNode.h"
+#include "Nodes/RawText.h"
 
 namespace AST {
 
@@ -7,6 +8,17 @@ AST::NodeType ASTNode::getType() const {
 }
 
 void ASTNode::addChild(const std::shared_ptr<ASTNode>& child) {
+	if (child == nullptr) return;
+	if (child->getType() == AST::NodeType::RawText
+		&& children.size() > 0
+		&& children.back()->getType() == AST::NodeType::RawText
+	) {
+		// Merge with last RawText child
+		auto lastRawText = std::dynamic_pointer_cast<AST::RawText>(children.back());
+		auto newRawText = std::dynamic_pointer_cast<AST::RawText>(child);
+		lastRawText->appendText(newRawText->TEXT());
+		return;
+	}
 	children.push_back(child);
 }
 

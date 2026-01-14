@@ -21,6 +21,7 @@
 #include "../AST/Nodes/Supershell.h"
 #include "../AST/Nodes/SubshellSubstitution.h"
 #include "../AST/Nodes/RawSubshell.h"
+#include "../AST/Nodes/DoublequotedString.h"
 typedef std::shared_ptr<AST::ASTNode> ASTNodePtr;
 }
 
@@ -148,14 +149,14 @@ void yyerror(const char *s);
 
 %type <ASTNodePtr> delete_statement new_statement
 
+%type <ASTNodePtr> doublequoted_string quote_contents string_interpolation
+
 %type <std::string> maybe_include_type maybe_as_clause maybe_parent_class maybe_default_value
 %type <std::string> valid_rvalue value_assignment assignment_operator
-%type <std::string> doublequoted_string quote_contents
 %type <std::string> maybe_array_index maybe_parameter_expansion maybe_exclam
 %type <std::string> object_assignment shell_variable_assignment
 %type <std::string> bash_variable
 %type <std::string> dynamic_cast cast_target
-%type <std::string> string_interpolation
 %type <std::string> maybe_hash
 %type <std::string> typeof_expression
 %type <std::string> heredoc_header heredoc_body heredoc_content herestring
@@ -441,7 +442,10 @@ concatenatable_rvalue:
 	| INTEGER { $$ = $1; }
 	| SINGLEQUOTED_STRING { $$ = $1; }
 	| KEYWORD_NULLPTR { $$ = "0"; }
-	| doublequoted_string { $$ = $1; }
+	| doublequoted_string {
+		auto dqString = std::dynamic_pointer_cast<AST::DoublequotedString>($1);
+		$$ = "\"(doublequoted_string)\""; // PLACEHOLDER
+	}
 	| object_reference {
 		auto objRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
 		$$ = objRef->IDENTIFIER(); // PLACEHOLDER
@@ -819,41 +823,37 @@ destructor_definition:
 
 doublequoted_string:
 	QUOTE_BEGIN quote_contents QUOTE_END {
-		std::cout << "Parsed double-quoted string: " << $2 << std::endl;
-		$$ = "\"" + $2 + "\"";
+		auto node = std::dynamic_pointer_cast<AST::DoublequotedString>($2);
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+
+		$$ = node;
 	}
 	;
 
 quote_contents:
-	/* empty */ { $$ = ""; }
-	| quote_contents STRING_CONTENT { $$ = $1 + $2; }
-	| quote_contents string_interpolation { $$ = $1 + $2; }
+	/* empty */ { $$ = std::make_shared<AST::DoublequotedString>(); }
+	| quote_contents STRING_CONTENT { $$ = $1; std::dynamic_pointer_cast<AST::DoublequotedString>($$)->addText($2); }
+	| quote_contents string_interpolation { $$ = $1; std::dynamic_pointer_cast<AST::DoublequotedString>($$)->addChild($2); }
 	;
 
 string_interpolation:
-	object_reference {
-		auto objRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
-		$$ = objRef->IDENTIFIER(); // PLACEHOLDER
+	object_reference { $$ = $1; }
+	| self_reference { $$ = $1; }
+	| object_address { $$ = $1; }
+	| pointer_dereference { $$ = $1; }
+	| supershell { $$ = $1; }
+	| subshell_substitution { $$ = $1; }
+	| bash_variable {
+		auto node = std::make_shared<AST::RawText>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setText($1);
+
+		$$ = node; // TODO: Change this
 	}
-	| self_reference {
-		auto selfRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
-		$$ = selfRef->IDENTIFIER(); // PLACEHOLDER
-	}
-	| object_address {
-		auto objAddr = std::dynamic_pointer_cast<AST::ObjectReference>($1);
-		$$ = "&" + objAddr->IDENTIFIER(); // PLACEHOLDER
-	}
-	| pointer_dereference {
-		auto ptrDeref = std::dynamic_pointer_cast<AST::ObjectReference>($1);
-		$$ = "*" + ptrDeref->IDENTIFIER(); // PLACEHOLDER
-	}
-	| supershell {
-		$$ = "@(supershell)"; // PLACEHOLDER
-	}
-	| subshell_substitution {
-		$$ = "$(subshell)"; // PLACEHOLDER
-	}
-	| bash_variable { $$ = $1; }
 	;
 
 object_reference:
@@ -1342,7 +1342,9 @@ heredoc_body:
 heredoc_content:
 	/* empty */ { $$ = ""; }
 	| heredoc_content STRING_CONTENT { $$ = $1 + $2; }
-	| heredoc_content string_interpolation { $$ = $1 + $2; }
+	| heredoc_content string_interpolation {
+		$$ = $1 + "{INTERPOLATION}"; // PLACEHOLDER
+		}
 	;
 
 herestring:
@@ -1399,7 +1401,9 @@ bash_case_pattern:
 bash_case_pattern_header:
 	/* empty */ { $$ = ""; }
 	| bash_case_pattern_header STRING_CONTENT { $$ = $1 + $2; }
-	| bash_case_pattern_header string_interpolation { $$ = $1 + $2; }
+	| bash_case_pattern_header string_interpolation {
+		$$ = $1 + "{INTERPOLATION}"; // PLACEHOLDER
+	}
 	;
 
 /**

@@ -31,12 +31,29 @@ const AST::FilePosition& ASTNode::getPosition() const {
 	return position;
 }
 
-void ASTNode::setText(const std::string& txt) {
-	text = txt;
+std::shared_ptr<ASTNode> ASTNode::getChildAt(size_t index) const {
+	if (index < children.size()) {
+		return children[index];
+	}
+	return nullptr;
 }
 
-const std::string& ASTNode::getText() const {
-	return text;
+std::shared_ptr<ASTNode> ASTNode::getFirstChild() const {
+	if (!children.empty()) {
+		return children.front();
+	}
+	return nullptr;
+}
+
+std::shared_ptr<ASTNode> ASTNode::getLastChild() const {
+	if (!children.empty()) {
+		return children.back();
+	}
+	return nullptr;
+}
+
+size_t ASTNode::getChildrenCount() const {
+	return children.size();
 }
 
 void ASTNode::clear() {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <memory>
 #include <vector>
 #include <string>
@@ -29,8 +30,11 @@ class ASTNode {
 		void setPosition(const AST::FilePosition& pos);
 		void setPosition(uint32_t line, uint32_t column);
 		const AST::FilePosition& getPosition() const;
-		void setText(const std::string& txt);
-		const std::string& getText() const;
+		
+		std::shared_ptr<ASTNode> getChildAt(size_t index) const;
+		std::shared_ptr<ASTNode> getFirstChild() const;
+		std::shared_ptr<ASTNode> getLastChild() const;
+		size_t getChildrenCount() const;
 
 		void clear();
 

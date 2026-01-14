@@ -3,6 +3,7 @@
 namespace AST {
 enum class NodeType {
 	Program = 0,
+	RawText,
 	Statement,
 	ShellCommandSequence,
 	Pipeline,

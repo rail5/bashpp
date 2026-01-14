@@ -913,6 +913,18 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		emit(AT);
 	}
 
+	{KEYWORD_THIS}/[^a-zA-Z0-9_] {
+		// Special case: @this
+		modeStack.push(BPP_REFERENCE_MODE);
+		emit(KEYWORD_THIS);
+	}
+
+	{KEYWORD_SUPER}/[^a-zA-Z0-9_] {
+		// Special case: @super
+		modeStack.push(BPP_REFERENCE_MODE);
+		emit(KEYWORD_SUPER);
+	}
+
 	\*/"@(" {
 		// Asterisk followed by a supershell
 		// Not a dereference operator, just a literal '*'
@@ -1151,7 +1163,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 
 	"[" {
-		lexerState.token_count_inside_bracereference++;
+		lexerState.token_count_inside_bracereference = 0; // Reset in case there's another reference inside the array index
 		modeStack.push(ARRAY_INDEX_MODE);
 		emit(ARRAY_INDEX_START);
 	}

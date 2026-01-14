@@ -18,6 +18,9 @@
 #include "../AST/Nodes/ObjectReference.h"
 #include "../AST/Nodes/DeleteStatement.h"
 #include "../AST/Nodes/NewStatement.h"
+#include "../AST/Nodes/Supershell.h"
+#include "../AST/Nodes/SubshellSubstitution.h"
+#include "../AST/Nodes/RawSubshell.h"
 typedef std::shared_ptr<AST::ASTNode> ASTNodePtr;
 }
 
@@ -136,7 +139,7 @@ void yyerror(const char *s);
 
 %type <ASTNodePtr> method_definition constructor_definition destructor_definition
 
-%type <ASTNodePtr> block
+%type <ASTNodePtr> block supershell subshell_raw subshell_substitution dollar_subshell deprecated_subshell
 
 %type <ASTNodePtr> object_instantiation instantiation_suffix
 %type <ASTNodePtr> pointer_declaration pointer_declaration_preface
@@ -152,7 +155,6 @@ void yyerror(const char *s);
 %type <std::string> object_assignment shell_variable_assignment
 %type <std::string> bash_variable
 %type <std::string> dynamic_cast cast_target
-%type <std::string> supershell subshell_raw subshell_substitution dollar_subshell deprecated_subshell
 %type <std::string> string_interpolation
 %type <std::string> maybe_hash
 %type <std::string> typeof_expression
@@ -457,9 +459,16 @@ concatenatable_rvalue:
 		$$ = "*" + ptrDeref->IDENTIFIER(); // PLACEHOLDER
 	}
 	| bash_variable { $$ = $1; }
-	| supershell { $$ = $1; }
-	| subshell_substitution { $$ = $1; }
-	| subshell_raw { $$ = $1; } // Not actually subshells in the case of rvalues, but array values, as in arr+=("string"). Kind of a hack.
+	| supershell {
+		$$ = "@(supershell)"; // PLACEHOLDER
+	}
+	| subshell_substitution {
+		$$ = "$(subshell)"; // PLACEHOLDER
+	}
+	| subshell_raw {
+		// Not actually subshells in the case of rvalues, but array values, as in arr+=("string"). Kind of a hack.
+		$$ = "(array_value)"; // PLACEHOLDER
+	}
 	| process_substitution { $$ = $1; }
 	| named_fd { $$ = $1; }
 	| CATCHALL { $$ = $1; }
@@ -838,8 +847,12 @@ string_interpolation:
 		auto ptrDeref = std::dynamic_pointer_cast<AST::ObjectReference>($1);
 		$$ = "*" + ptrDeref->IDENTIFIER(); // PLACEHOLDER
 	}
-	| supershell { $$ = $1; }
-	| subshell_substitution { $$ = $1; }
+	| supershell {
+		$$ = "@(supershell)"; // PLACEHOLDER
+	}
+	| subshell_substitution {
+		$$ = "$(subshell)"; // PLACEHOLDER
+	}
 	| bash_variable { $$ = $1; }
 	;
 
@@ -1248,15 +1261,23 @@ typeof_expression:
 
 supershell:
 	SUPERSHELL_START statements SUPERSHELL_END {
-		std::cout << "Parsed supershell block" << std::endl;
-		$$ = "@(supershell)";
+		auto node = std::make_shared<AST::Supershell>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChildren($2);
+		$$ = node;
 	}
 	;
 
 subshell_raw:
 	SUBSHELL_START statements SUBSHELL_END {
-		std::cout << "Parsed subshell block" << std::endl;
-		$$ = "(subshell)";
+		auto node = std::make_shared<AST::RawSubshell>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChildren($2);
+		$$ = node;
 	}
 	;
 
@@ -1267,8 +1288,12 @@ subshell_substitution:
 
 dollar_subshell:
 	SUBSHELL_SUBSTITUTION_START statements SUBSHELL_SUBSTITUTION_END {
-		std::cout << "Parsed subshell substitution block" << std::endl;
-		$$ = "$(subshell_substitution)";
+		auto node = std::make_shared<AST::SubshellSubstitution>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChildren($2);
+		$$ = node;
 	}
 	;
 
@@ -1277,8 +1302,12 @@ deprecated_subshell:
 		// NOTE: The nesting depth is stored as the semantic value of the DEPRECATED_SUBSHELL_START token
 		assert($1 == $3 && "Mismatched deprecated subshell nesting depths!");
 
-		std::cout << "Parsed DEPRECATED subshell block [depth = " << $1 << "]" << std::endl;
-		$$ = "`deprecated_subshell`";
+		auto node = std::make_shared<AST::SubshellSubstitution>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChildren($2);
+		$$ = node;
 	}
 	;
 

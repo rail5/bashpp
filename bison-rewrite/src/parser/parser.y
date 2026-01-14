@@ -12,6 +12,9 @@
 #include "../AST/Nodes/DatamemberDeclaration.h"
 #include "../AST/Nodes/ObjectInstantiation.h"
 #include "../AST/Nodes/PointerDeclaration.h"
+#include "../AST/Nodes/ObjectReference.h"
+#include "../AST/Nodes/DeleteStatement.h"
+#include "../AST/Nodes/NewStatement.h"
 typedef std::shared_ptr<AST::ASTNode> ASTNodePtr;
 }
 
@@ -129,12 +132,14 @@ void yyerror(const char *s);
 
 %type <ASTNodePtr> object_instantiation instantiation_suffix
 %type <ASTNodePtr> pointer_declaration pointer_declaration_preface
+%type <ASTNodePtr> maybe_descend_object_hierarchy object_reference object_reference_lvalue self_reference self_reference_lvalue
+
+%type <ASTNodePtr> delete_statement new_statement
 
 %type <std::string> maybe_include_type maybe_as_clause maybe_parent_class maybe_default_value
 %type <std::string> valid_rvalue value_assignment assignment_operator
 %type <std::string> doublequoted_string quote_contents
-%type <std::string> object_reference object_reference_lvalue maybe_descend_object_hierarchy maybe_array_index maybe_parameter_expansion maybe_exclam
-%type <std::string> self_reference self_reference_lvalue
+%type <std::string> maybe_array_index maybe_parameter_expansion maybe_exclam
 %type <std::string> object_assignment shell_variable_assignment
 %type <std::string> bash_variable
 %type <std::string> dynamic_cast cast_target
@@ -228,13 +233,13 @@ statement:
 	| shell_command_sequence %prec CONCAT_STOP
 	| include_statement { $$ = $1; }
 	| class_definition { $$ = $1; }
-	| datamember_declaration
+	| datamember_declaration {  $$ = $1; }
 	| method_definition
 	| constructor_definition
 	| destructor_definition
 	| object_instantiation { $$ = $1; }
 	| pointer_declaration { $$ = $1; }
-	| delete_statement
+	| delete_statement { $$ = $1; }
 	;
 
 shell_command_sequence:
@@ -329,8 +334,14 @@ simple_command_element:
 
 operative_command_element:
 	IDENTIFIER_LVALUE { $$ = $1; }
-	| object_reference_lvalue { $$ = $1; }
-	| self_reference_lvalue { $$ = $1; }
+	| object_reference_lvalue {
+		auto objRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		$$ = objRef->IDENTIFIER(); // PLACEHOLDER
+	}
+	| self_reference_lvalue {
+		auto selfRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		$$ = selfRef->IDENTIFIER(); // PLACEHOLDER
+	}
 	| pointer_dereference_lvalue { $$ = $1; }
 	;
 
@@ -418,8 +429,14 @@ concatenatable_rvalue:
 	| SINGLEQUOTED_STRING { $$ = $1; }
 	| KEYWORD_NULLPTR { $$ = "0"; }
 	| doublequoted_string { $$ = $1; }
-	| object_reference { $$ = $1; }
-	| self_reference { $$ = $1; }
+	| object_reference {
+		auto objRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		$$ = objRef->IDENTIFIER(); // PLACEHOLDER
+	}
+	| self_reference {
+		auto selfRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		$$ = selfRef->IDENTIFIER(); // PLACEHOLDER
+	}
 	| object_address { $$ = $1; }
 	| pointer_dereference_rvalue { $$ = $1; }
 	| bash_variable { $$ = $1; }
@@ -551,23 +568,38 @@ pointer_declaration_preface:
 
 new_statement:
 	KEYWORD_NEW WS IDENTIFIER {
-		std::string className = $3;
+		auto node = std::make_shared<AST::NewStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::cout << "Parsed new statement: Class='" << className << "'" << std::endl;
+		node->setType($3);
+
+		$$ = node;
 	}
 	;
 
 delete_statement:
 	KEYWORD_DELETE WS object_reference {
-		std::string objectRef = $3;
+		auto node = std::make_shared<AST::DeleteStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::cout << "Parsed delete statement: ObjectReference='" << objectRef << "'" << std::endl;
+		node->addChild($3);
+
+		$$ = node;
 	}
 	|
 	KEYWORD_DELETE WS self_reference {
-		std::string selfRef = $3;
+		auto node = std::make_shared<AST::DeleteStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::cout << "Parsed delete statement: SelfReference='" << selfRef << "'" << std::endl;
+		node->addChild($3);
+
+		$$ = node;
 	}
 	;
 
@@ -724,8 +756,14 @@ quote_contents:
 	;
 
 string_interpolation:
-	object_reference { $$ = $1; }
-	| self_reference { $$ = $1; }
+	object_reference {
+		auto objRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		$$ = objRef->IDENTIFIER(); // PLACEHOLDER
+	}
+	| self_reference {
+		auto selfRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		$$ = selfRef->IDENTIFIER(); // PLACEHOLDER
+	}
 	| object_address { $$ = $1; }
 	| pointer_dereference { $$ = $1; }
 	| supershell { $$ = $1; }
@@ -735,180 +773,202 @@ string_interpolation:
 
 object_reference:
 	AT IDENTIFIER maybe_descend_object_hierarchy {
-		std::string objectName = $2;
-		std::string hierarchy = $3;
+		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($3);
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::cout << "Parsed object reference: Object='" << objectName << "'";
-		if (!hierarchy.empty()) {
-			std::cout << ", Hierarchy='" << hierarchy << "'";
-		}
-		std::cout << std::endl;
+		node->setIdentifier($2);
+		node->setLvalue(false);
+		node->setSelfReference(false);
 
-		$$ = "@" + objectName + hierarchy;
+		$$ = node;
 	}
 	| REF_START maybe_hash IDENTIFIER maybe_descend_object_hierarchy maybe_array_index REF_END {
-		std::string objectName = $3;
-		std::string hierarchy = $4;
-		std::string arrayIndex = $5;
+		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($4);
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::cout << "Parsed reference object reference: Object='" << objectName << "'";
-		if (!hierarchy.empty()) {
-			std::cout << ", Hierarchy='" << hierarchy << "'";
-		}
-		if (!arrayIndex.empty()) {
-			std::cout << ", ArrayIndex='" << arrayIndex << "'";
-		}
-		std::cout << std::endl;
+		node->setIdentifier($3);
+		node->setLvalue(false);
+		node->setSelfReference(false);
 
-		$$ = "@" + objectName + hierarchy + arrayIndex;
+		if (!$2.empty()) {
+			node->setHasHashkey(true);
+		}
+		
+		//if ($5) node->addChild($5); // TBD: Add array index node
+
+		$$ = node;
 	}
 	;
 
 object_reference_lvalue:
 	AT_LVALUE IDENTIFIER maybe_descend_object_hierarchy {
-		std::string objectName = $2;
-		std::string hierarchy = $3;
+		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($3);
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::cout << "Parsed lvalue object reference: Object='" << objectName << "'";
-		if (!hierarchy.empty()) {
-			std::cout << ", Hierarchy='" << hierarchy << "'";
-		}
-		std::cout << std::endl;
+		node->setIdentifier($2);
+		node->setLvalue(true);
+		node->setSelfReference(false);
 
-		$$ = "@" + objectName + hierarchy;
+		$$ = node;
 	}
 	| REF_START_LVALUE maybe_hash IDENTIFIER maybe_descend_object_hierarchy maybe_array_index REF_END {
-		std::string objectName = $3;
-		std::string hierarchy = $4;
-		std::string arrayIndex = $5;
+		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($4);
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::cout << "Parsed lvalue reference object reference: Object='" << objectName << "'";
-		if (!hierarchy.empty()) {
-			std::cout << ", Hierarchy='" << hierarchy << "'";
-		}
-		if (!arrayIndex.empty()) {
-			std::cout << ", ArrayIndex='" << arrayIndex << "'";
-		}
-		std::cout << std::endl;
+		node->setIdentifier($3);
+		node->setLvalue(true);
+		node->setSelfReference(false);
 
-		$$ = "@" + objectName + hierarchy + arrayIndex;
+		if (!$2.empty()) {
+			node->setHasHashkey(true);
+		}
+
+		//if ($5) node->addChild($5); // TBD: Add array index node
+
+		$$ = node;
 	}
 	;
 
 self_reference:
 	KEYWORD_THIS maybe_descend_object_hierarchy {
-		std::string hierarchy = $2;
+		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::cout << "Parsed self reference";
-		if (!hierarchy.empty()) {
-			std::cout << ", Hierarchy='" << hierarchy << "'";
-		}
-		std::cout << std::endl;
+		node->setIdentifier("this");
+		node->setLvalue(false);
+		node->setSelfReference(true);
 
-		$$ = "@this" + hierarchy;
+		$$ = node;
 	}
 	| REF_START maybe_hash KEYWORD_THIS maybe_descend_object_hierarchy maybe_array_index REF_END {
-		std::string hierarchy = $4;
-		std::string arrayIndex = $5;
+		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($4);
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::cout << "Parsed reference self reference";
-		if (!hierarchy.empty()) {
-			std::cout << ", Hierarchy='" << hierarchy << "'";
-		}
-		if (!arrayIndex.empty()) {
-			std::cout << ", ArrayIndex='" << arrayIndex << "'";
-		}
-		std::cout << std::endl;
+		node->setIdentifier("this");
+		node->setLvalue(false);
+		node->setSelfReference(true);
 
-		$$ = "@this" + hierarchy + arrayIndex;
+		if (!$2.empty()) {
+			node->setHasHashkey(true);
+		}
+
+		//if ($5) node->addChild($5); // TBD: Add array index node
+
+		$$ = node;
 	}
 	| KEYWORD_SUPER maybe_descend_object_hierarchy {
-		std::string hierarchy = $2;
+		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::cout << "Parsed self reference to super";
-		if (!hierarchy.empty()) {
-			std::cout << ", Hierarchy='" << hierarchy << "'";
-		}
-		std::cout << std::endl;
+		node->setIdentifier("super");
+		node->setLvalue(false);
+		node->setSelfReference(true);
 
-		$$ = "@super" + hierarchy;
+		$$ = node;
 	}
 	| REF_START maybe_hash KEYWORD_SUPER maybe_descend_object_hierarchy maybe_array_index REF_END {
-		std::string hierarchy = $4;
-		std::string arrayIndex = $5;
+		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($4);
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::cout << "Parsed reference self reference to super";
-		if (!hierarchy.empty()) {
-			std::cout << ", Hierarchy='" << hierarchy << "'";
-		}
-		if (!arrayIndex.empty()) {
-			std::cout << ", ArrayIndex='" << arrayIndex << "'";
-		}
-		std::cout << std::endl;
+		node->setIdentifier("super");
+		node->setLvalue(false);
+		node->setSelfReference(true);
 
-		$$ = "@super" + hierarchy + arrayIndex;
+		if (!$2.empty()) {
+			node->setHasHashkey(true);
+		}
+
+		//if ($5) node->addChild($5); // TBD: Add array index node
+
+		$$ = node;
 	}
 	;
 
 self_reference_lvalue:
 	KEYWORD_THIS_LVALUE maybe_descend_object_hierarchy {
-		std::string hierarchy = $2;
+		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::cout << "Parsed lvalue self reference";
-		if (!hierarchy.empty()) {
-			std::cout << ", Hierarchy='" << hierarchy << "'";
-		}
-		std::cout << std::endl;
+		node->setIdentifier("this");
+		node->setLvalue(true);
+		node->setSelfReference(true);
 
-		$$ = "@this" + hierarchy;
+		$$ = node;
 	}
 	| REF_START_LVALUE maybe_hash KEYWORD_THIS maybe_descend_object_hierarchy maybe_array_index REF_END {
-		std::string hierarchy = $4;
-		std::string arrayIndex = $5;
+		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($4);
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::cout << "Parsed lvalue reference self reference";
-		if (!hierarchy.empty()) {
-			std::cout << ", Hierarchy='" << hierarchy << "'";
-		}
-		if (!arrayIndex.empty()) {
-			std::cout << ", ArrayIndex='" << arrayIndex << "'";
-		}
-		std::cout << std::endl;
+		node->setIdentifier("this");
+		node->setLvalue(true);
+		node->setSelfReference(true);
 
-		$$ = "@this" + hierarchy + arrayIndex;
+		if (!$2.empty()) {
+			node->setHasHashkey(true);
+		}
+
+		//if ($5) node->addChild($5); // TBD: Add array index node
+
+		$$ = node;
 	}
 	| KEYWORD_SUPER_LVALUE maybe_descend_object_hierarchy {
-		std::string hierarchy = $2;
+		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::cout << "Parsed lvalue self reference to super";
-		if (!hierarchy.empty()) {
-			std::cout << ", Hierarchy='" << hierarchy << "'";
-		}
-		std::cout << std::endl;
+		node->setIdentifier("super");
+		node->setLvalue(true);
+		node->setSelfReference(true);
 
-		$$ = "@super" + hierarchy;
+		$$ = node;
 	}
 	| REF_START_LVALUE maybe_hash KEYWORD_SUPER maybe_descend_object_hierarchy maybe_array_index REF_END {
-		std::string hierarchy = $4;
-		std::string arrayIndex = $5;
+		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($4);
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::cout << "Parsed lvalue reference self reference to super";
-		if (!hierarchy.empty()) {
-			std::cout << ", Hierarchy='" << hierarchy << "'";
-		}
-		if (!arrayIndex.empty()) {
-			std::cout << ", ArrayIndex='" << arrayIndex << "'";
-		}
-		std::cout << std::endl;
+		node->setIdentifier("super");
+		node->setLvalue(true);
+		node->setSelfReference(true);
 
-		$$ = "@super" + hierarchy + arrayIndex;
+		if (!$2.empty()) {
+			node->setHasHashkey(true);
+		}
+
+		//if ($5) node->addChild($5); // TBD: Add array index node
+
+		$$ = node;
 	}
 	;
 
 maybe_descend_object_hierarchy:
-	/* empty */ { $$ = ""; }
-	| DOT IDENTIFIER maybe_descend_object_hierarchy {
-		$$ = "." + $2 + $3;
+	/* empty */ { $$ = std::make_shared<AST::ObjectReference>(); }
+	| maybe_descend_object_hierarchy DOT IDENTIFIER {
+		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		node->addIdentifier($3);
+		$$ = node;
 	}
 	;
 
@@ -995,37 +1055,37 @@ cast_target:
 		$$ = targetType;
 	}
 	| object_reference {
-		std::string targetType = $1;
-		std::cout << "Parsed dynamic_cast target type (object reference): " << targetType << std::endl;
+		auto objRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		std::string targetType = objRef->IDENTIFIER(); // PLACEHOLDER
 		$$ = targetType;
+		std::cout << "Parsed dynamic_cast target type (object reference): " << targetType << std::endl;
 	}
 	| self_reference {
-		std::string targetType = $1;
-		std::cout << "Parsed dynamic_cast target type (self reference): " << targetType << std::endl;
+		auto selfRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		std::string targetType = selfRef->IDENTIFIER(); // PLACEHOLDER
 		$$ = targetType;
+		std::cout << "Parsed dynamic_cast target type (self reference): " << targetType << std::endl;
 	}
 	;
 
 object_assignment:
 	object_reference_lvalue value_assignment {
-		std::string objectRef = $1;
-		std::string rvalue = $2;
-
-		std::cout << "Parsed object assignment: ObjectReference='" << objectRef << "', RValue='" << rvalue << "'" << std::endl;
-
 		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
 
-		$$ = $1 + "=" + $2;
+		auto objRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		std::string lvalue = objRef->IDENTIFIER(); // PLACEHOLDER
+		std::string rvalue = $2;
+		std::cout << "Parsed object assignment: ObjectReference='" << objRef->IDENTIFIER() << "', RValue='" << rvalue << "'" << std::endl;
+		$$ = lvalue + "=" + rvalue;
 	}
 	| self_reference_lvalue value_assignment {
-		std::string selfRef = $1;
-		std::string rvalue = $2;
-
-		std::cout << "Parsed self assignment: SelfReference='" << selfRef << "', RValue='" << rvalue << "'" << std::endl;
-
 		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
 
-		$$ = $1 + "=" + $2;
+		auto selfRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		std::string lvalue = selfRef->IDENTIFIER(); // PLACEHOLDER
+		std::string rvalue = $2;
+		std::cout << "Parsed self assignment: SelfReference='" << selfRef->IDENTIFIER() << "', RValue='" << rvalue << "'" << std::endl;
+		$$ = lvalue + "=" + rvalue;
 	}
 	| pointer_dereference_lvalue value_assignment {
 		std::string pointerDeref = $1;
@@ -1054,14 +1114,16 @@ shell_variable_assignment:
 
 object_address:
 	AMPERSAND object_reference {
-		std::string objectRef = $2;
+		auto objRef = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		std::string objectRef = objRef->IDENTIFIER(); // PLACEHOLDER
 
 		std::cout << "Parsed object address-of: ObjectReference='" << objectRef << "'" << std::endl;
 
 		$$ = "&" + objectRef;
 	}
 	| AMPERSAND self_reference {
-		std::string selfRef = $2;
+		auto selfRefNode = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		std::string selfRef = selfRefNode->IDENTIFIER(); // PLACEHOLDER
 
 		std::cout << "Parsed self address-of: SelfReference='" << selfRef << "'" << std::endl;
 
@@ -1076,14 +1138,16 @@ pointer_dereference:
 
 pointer_dereference_rvalue:
 	DEREFERENCE_OPERATOR object_reference {
-		std::string objectRef = $2;
+		auto objRef = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		std::string objectRef = objRef->IDENTIFIER(); // PLACEHOLDER
 
 		std::cout << "Parsed pointer dereference: ObjectReference='" << objectRef << "'" << std::endl;
 
 		$$ = "*" + objectRef;
 	}
 	| DEREFERENCE_OPERATOR self_reference {
-		std::string selfRef = $2;
+		auto selfRefNode = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		std::string selfRef = selfRefNode->IDENTIFIER(); // PLACEHOLDER
 
 		std::cout << "Parsed self pointer dereference: SelfReference='" << selfRef << "'" << std::endl;
 
@@ -1093,14 +1157,16 @@ pointer_dereference_rvalue:
 
 pointer_dereference_lvalue:
 	DEREFERENCE_OPERATOR object_reference_lvalue {
-		std::string objectRef = $2;
+		auto objRef = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		std::string objectRef = objRef->IDENTIFIER(); // PLACEHOLDER
 
 		std::cout << "Parsed lvalue pointer dereference: ObjectReference='" << objectRef << "'" << std::endl;
 
 		$$ = "*" + objectRef;
 	}
 	| DEREFERENCE_OPERATOR self_reference_lvalue {
-		std::string selfRef = $2;
+		auto selfRefNode = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		std::string selfRef = selfRefNode->IDENTIFIER(); // PLACEHOLDER
 
 		std::cout << "Parsed lvalue self pointer dereference: SelfReference='" << selfRef << "'" << std::endl;
 
@@ -1401,8 +1467,14 @@ arith_statement:
 	/* empty */ { $$ = ""; }
 	| valid_rvalue { $$ = $1; }
 	| IDENTIFIER_LVALUE { $$ = $1; }
-	| object_reference_lvalue { $$ = $1; }
-	| self_reference_lvalue { $$ = $1; }
+	| object_reference_lvalue {
+		auto objRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		$$ = objRef->IDENTIFIER(); // PLACEHOLDER
+	}
+	| self_reference_lvalue {
+		auto selfRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		$$ = selfRef->IDENTIFIER(); // PLACEHOLDER
+	}
 	| object_assignment { $$ = $1; }
 	| shell_variable_assignment { $$ = $1; }
 	| increment_decrement_expression { $$ = $1; }
@@ -1447,10 +1519,22 @@ comparison_operator:
 	;
 
 arith_condition_term:
-	object_reference { $$ = $1; }
-	| object_reference_lvalue { $$ = $1; }
-	| self_reference { $$ = $1; }
-	| self_reference_lvalue { $$ = $1; }
+	object_reference {
+		auto objRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		$$ = objRef->IDENTIFIER(); // PLACEHOLDER
+	}
+	| object_reference_lvalue {
+		auto objRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		$$ = objRef->IDENTIFIER(); // PLACEHOLDER
+	}
+	| self_reference {
+		auto selfRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		$$ = selfRef->IDENTIFIER(); // PLACEHOLDER
+	}
+	| self_reference_lvalue {
+		auto selfRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		$$ = selfRef->IDENTIFIER(); // PLACEHOLDER
+	}
 	| bash_variable { $$ = $1; }
 	| IDENTIFIER_LVALUE { $$ = $1; }
 	| IDENTIFIER { $$ = $1; }

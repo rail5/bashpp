@@ -4,26 +4,15 @@
 
 namespace AST {
 
-class NewStatement : public ASTNode {
-	protected:
-		std::string m_TYPE;
+class DeleteStatement : public ASTNode {
 	public:
-		NewStatement() {
-			type = AST::NodeType::NewStatement;
-		}
-
-		const std::string& TYPE() const {
-			return m_TYPE;
-		}
-
-		void setType(const std::string& type) {
-			m_TYPE = type;
+		DeleteStatement() {
+			type = AST::NodeType::DeleteStatement;
 		}
 
 		std::ostream& prettyPrint(std::ostream& os, int indentation_level = 0) const override {
 			std::string indent(indentation_level * 2, ' ');
-			os << indent << "(NewStatement\n"
-				<< indent << "  @new " << m_TYPE << "\n";
+			os << indent << "(DeleteStatement\n";
 			for (const auto& child : children) {
 				child->prettyPrint(os, indentation_level + 1);
 			}

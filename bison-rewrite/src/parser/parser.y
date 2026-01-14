@@ -10,6 +10,7 @@
 #include "../AST/Nodes/ClassDefinition.h"
 #include "../AST/Nodes/Block.h"
 #include "../AST/Nodes/DatamemberDeclaration.h"
+#include "../AST/Nodes/MethodDefinition.h"
 #include "../AST/Nodes/ObjectInstantiation.h"
 #include "../AST/Nodes/PointerDeclaration.h"
 #include "../AST/Nodes/ObjectReference.h"
@@ -125,8 +126,13 @@ void yyerror(const char *s);
 %type <ASTNodePtr> include_statement
 
 %type <ASTNodePtr> class_definition
-%type <AST::DatamemberDeclaration::AccessModifier> access_modifier access_modifier_keyword
+%type <AST::AccessModifier> access_modifier access_modifier_keyword
 %type <ASTNodePtr> datamember_declaration
+
+%type <AST::MethodDefinition::Parameter> parameter
+%type <std::vector<AST::MethodDefinition::Parameter>> maybe_parameter_list
+
+%type <ASTNodePtr> method_definition
 
 %type <ASTNodePtr> block
 
@@ -234,7 +240,7 @@ statement:
 	| include_statement { $$ = $1; }
 	| class_definition { $$ = $1; }
 	| datamember_declaration {  $$ = $1; }
-	| method_definition
+	| method_definition { $$ = $1; }
 	| constructor_definition
 	| destructor_definition
 	| object_instantiation { $$ = $1; }
@@ -682,9 +688,9 @@ access_modifier:
 	;
 
 access_modifier_keyword:
-	KEYWORD_PUBLIC { $$ = AST::DatamemberDeclaration::AccessModifier::PUBLIC; }
-	| KEYWORD_PRIVATE { $$ = AST::DatamemberDeclaration::AccessModifier::PRIVATE; }
-	| KEYWORD_PROTECTED { $$ = AST::DatamemberDeclaration::AccessModifier::PROTECTED; }
+	KEYWORD_PUBLIC { $$ = AST::AccessModifier::PUBLIC; }
+	| KEYWORD_PRIVATE { $$ = AST::AccessModifier::PRIVATE; }
+	| KEYWORD_PROTECTED { $$ = AST::AccessModifier::PROTECTED; }
 	;
 
 maybe_default_value:
@@ -716,27 +722,66 @@ assignment_operator:
 
 method_definition:
 	access_modifier KEYWORD_METHOD WS IDENTIFIER WS maybe_parameter_list block {
-		std::string methodName = $4;
+		auto node = std::make_shared<AST::MethodDefinition>();
+		uint32_t line_number = @2.begin.line;
+		uint32_t column_number = @2.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::cout << "Parsed method definition: Name='" << methodName << "'" << std::endl;
+		node->setAccessModifier($1);
+		node->setName($4);
+		node->addParameters($6);
+		node->addChild($7);
+
+		node->setVirtual(false);
+
+		$$ = node;
 	}
 	| KEYWORD_VIRTUAL WS access_modifier KEYWORD_METHOD WS IDENTIFIER WS maybe_parameter_list block {
-		std::string methodName = $6;
+		auto node = std::make_shared<AST::MethodDefinition>();
+		uint32_t line_number = @2.begin.line;
+		uint32_t column_number = @2.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::cout << "Parsed virtual method definition: Name='" << methodName << "'" << std::endl;
+		node->setAccessModifier($3);
+		node->setName($6);
+		node->addParameters($8);
+		node->addChild($9);
+
+		node->setVirtual(true);
+
+		$$ = node;
 	}
 	;
 
 maybe_parameter_list:
-	/* empty */
-	| maybe_parameter_list parameter
+	/* empty */ { $$ = std::vector<AST::MethodDefinition::Parameter>(); }
+	| maybe_parameter_list parameter { $$ = std::move($1); $$.push_back($2); }
 	;
 
 parameter:
-	IDENTIFIER WS { std::cout << "Primitive parameter: " << $1 << std::endl; }
-	| AT IDENTIFIER ASTERISK WS IDENTIFIER WS { std::cout << "Pointer parameter: Type=" << $2 << ", Name=" << $5 << std::endl; }
-	| AT IDENTIFIER WS IDENTIFIER WS /* Actually invalid, but error handling should come later when traversing the AST */
+	IDENTIFIER WS {
+		AST::MethodDefinition::Parameter param;
+		param.type = std::nullopt;
+		param.name = $1;
+		param.pointer = false;
+		$$ = param;
+	}
+	| AT IDENTIFIER ASTERISK WS IDENTIFIER WS {
+		AST::MethodDefinition::Parameter param;
+		param.type = $2;
+		param.name = $5;
+		param.pointer = true;
+		$$ = param;
+	}
+	| AT IDENTIFIER WS IDENTIFIER WS {
+		/* Actually invalid, but error handling should come later when traversing the AST */
 		/* Invalid because methods cannot take non-primitive parameters */
+		AST::MethodDefinition::Parameter param;
+		param.type = $2;
+		param.name = $4;
+		param.pointer = false;
+		$$ = param;
+	}
 	;
 
 constructor_definition:

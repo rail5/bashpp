@@ -1,17 +1,12 @@
 #pragma once
 
 #include "../ASTNode.h"
+#include "../AccessModifier.h"
 #include <optional>
 
 namespace AST {
 
 class DatamemberDeclaration : public ASTNode {
-	public:
-		enum class AccessModifier {
-			PUBLIC,
-			PROTECTED,
-			PRIVATE
-		};
 	protected:
 		AccessModifier m_ACCESSMODIFIER;
 		std::optional<std::string> m_TYPE;

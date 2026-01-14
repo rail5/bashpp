@@ -11,6 +11,7 @@
 #include "../AST/Nodes/Block.h"
 #include "../AST/Nodes/DatamemberDeclaration.h"
 #include "../AST/Nodes/ObjectInstantiation.h"
+#include "../AST/Nodes/PointerDeclaration.h"
 typedef std::shared_ptr<AST::ASTNode> ASTNodePtr;
 }
 
@@ -127,12 +128,12 @@ void yyerror(const char *s);
 %type <ASTNodePtr> block
 
 %type <ASTNodePtr> object_instantiation instantiation_suffix
+%type <ASTNodePtr> pointer_declaration pointer_declaration_preface
 
 %type <std::string> maybe_include_type maybe_as_clause maybe_parent_class maybe_default_value
 %type <std::string> valid_rvalue value_assignment assignment_operator
 %type <std::string> doublequoted_string quote_contents
 %type <std::string> object_reference object_reference_lvalue maybe_descend_object_hierarchy maybe_array_index maybe_parameter_expansion maybe_exclam
-%type <std::string> pointer_declaration_preface
 %type <std::string> self_reference self_reference_lvalue
 %type <std::string> object_assignment shell_variable_assignment
 %type <std::string> bash_variable
@@ -232,7 +233,7 @@ statement:
 	| constructor_definition
 	| destructor_definition
 	| object_instantiation { $$ = $1; }
-	| pointer_declaration
+	| pointer_declaration { $$ = $1; }
 	| delete_statement
 	;
 
@@ -503,6 +504,9 @@ object_instantiation:
 		} else {
 			// Use the ObjectInstantiation node returned by instantiation_suffix
 			auto node = std::dynamic_pointer_cast<AST::ObjectInstantiation>($3);
+			uint32_t line_number = @1.begin.line;
+			uint32_t column_number = @1.begin.column;
+			node->setPosition(line_number, column_number);
 			node->setType($2);
 			$$ = node;
 		}
@@ -522,25 +526,27 @@ instantiation_suffix:
 
 pointer_declaration:
 	pointer_declaration_preface WS IDENTIFIER_LVALUE maybe_default_value {
-		std::string typeName = $1;
-		std::string pointerName = $3;
-		std::string defaultValue = $4;
+		auto node = std::dynamic_pointer_cast<AST::PointerDeclaration>($1);
+		node->setIdentifier($3);
+		//if ($4) node->addChild($4);
+		// TBD: Add value_assignment node
 
-		std::cout << "Parsed pointer declaration: Type='" << typeName << "', Pointer='" << pointerName << "'";
-		if (!defaultValue.empty()) {
-			std::cout << ", Default='" << defaultValue << "'";
-		}
-		std::cout << std::endl;
+		$$ = node;
 	}
 	;
 
 pointer_declaration_preface:
 	AT_LVALUE IDENTIFIER ASTERISK {
-		std::string typeName = $2;
+		set_incoming_token_can_be_lvalue(true); // The following identifier should be an lvalue, let the lexer know
+		
+		auto node = std::make_shared<AST::PointerDeclaration>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
-		set_incoming_token_can_be_lvalue(true); // The following identifier should be an lvalue
+		node->setType($2);
 
-		$$ = typeName;
+		$$ = node;
 	}
 
 new_statement:
@@ -616,23 +622,15 @@ datamember_declaration:
 		$$ = node;
 	}
 	| access_modifier pointer_declaration {
-		std::string accessMod;
-		switch ($1) {
-			case AST::DatamemberDeclaration::AccessModifier::PUBLIC:
-				accessMod = "public";
-				break;
-			case AST::DatamemberDeclaration::AccessModifier::PRIVATE:
-				accessMod = "private";
-				break;
-			case AST::DatamemberDeclaration::AccessModifier::PROTECTED:
-				accessMod = "protected";
-				break;
-			default:
-				accessMod = "unknown";
-				break;
-		}
+		auto node = std::make_shared<AST::DatamemberDeclaration>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::cout << "Parsed pointer declaration with access modifier: Access='" << accessMod << "'" << std::endl;
+		node->setAccessModifier($1);
+		node->addChild($2);
+
+		$$ = node;
 	}
 	;
 

@@ -60,13 +60,13 @@ class DatamemberDeclaration : public ASTNode {
 				<< indent << "  ";
 			switch (m_ACCESSMODIFIER) {
 				case AccessModifier::PUBLIC:
-					os << indent << "@public ";
+					os << "@public ";
 					break;
 				case AccessModifier::PROTECTED:
-					os << indent << "@protected ";
+					os << "@protected ";
 					break;
 				case AccessModifier::PRIVATE:
-					os << indent << "@private ";
+					os << "@private ";
 					break;
 			}
 			if (m_TYPE.has_value()) {

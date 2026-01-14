@@ -73,8 +73,9 @@ class DatamemberDeclaration : public ASTNode {
 				os << "@" << m_TYPE.value() << " ";
 			}
 			if (m_IDENTIFIER.has_value()) {
-				os << m_IDENTIFIER.value() << "\n";
+				os << m_IDENTIFIER.value();
 			}
+			os << "\n";
 			for (const auto& child : children) {
 				child->prettyPrint(os, indentation_level + 1);
 			}

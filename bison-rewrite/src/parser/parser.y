@@ -10,6 +10,7 @@
 #include "../AST/Nodes/ClassDefinition.h"
 #include "../AST/Nodes/Block.h"
 #include "../AST/Nodes/DatamemberDeclaration.h"
+#include "../AST/Nodes/ObjectInstantiation.h"
 typedef std::shared_ptr<AST::ASTNode> ASTNodePtr;
 }
 
@@ -115,19 +116,23 @@ void yyerror(const char *s);
 %type <ASTNodePtr> program
 %type <std::vector<ASTNodePtr>> statements
 %type <ASTNodePtr> statement
+
+%type <AST::IncludeStatement::IncludeKeyword> include_keyword
 %type <ASTNodePtr> include_statement
+
 %type <ASTNodePtr> class_definition
 %type <AST::DatamemberDeclaration::AccessModifier> access_modifier access_modifier_keyword
 %type <ASTNodePtr> datamember_declaration
+
 %type <ASTNodePtr> block
-%type <AST::IncludeStatement::IncludeKeyword> include_keyword
+
+%type <ASTNodePtr> object_instantiation instantiation_suffix
 
 %type <std::string> maybe_include_type maybe_as_clause maybe_parent_class maybe_default_value
 %type <std::string> valid_rvalue value_assignment assignment_operator
 %type <std::string> doublequoted_string quote_contents
 %type <std::string> object_reference object_reference_lvalue maybe_descend_object_hierarchy maybe_array_index maybe_parameter_expansion maybe_exclam
 %type <std::string> pointer_declaration_preface
-%type <std::string> instantiation_suffix
 %type <std::string> self_reference self_reference_lvalue
 %type <std::string> object_assignment shell_variable_assignment
 %type <std::string> bash_variable
@@ -226,7 +231,7 @@ statement:
 	| method_definition
 	| constructor_definition
 	| destructor_definition
-	| object_instantiation
+	| object_instantiation { $$ = $1; }
 	| pointer_declaration
 	| delete_statement
 	;
@@ -491,22 +496,28 @@ maybe_as_clause:
 
 object_instantiation:
 	AT_LVALUE IDENTIFIER instantiation_suffix {
-		if ($3.empty()) {
+		if ($3 == nullptr) {
 			// Not an object instantiation, but an lvalue object reference
 			std::string objectName = $2;
 			std::cout << "Parsed lvalue object reference: Object='" << objectName << "'" << std::endl;
 		} else {
-			std::string className = $2;
-			std::string objectName = $3;
-
-			std::cout << "Parsed object instantiation: Class='" << className << "', Object='" << objectName << "'" << std::endl;
+			// Use the ObjectInstantiation node returned by instantiation_suffix
+			auto node = std::dynamic_pointer_cast<AST::ObjectInstantiation>($3);
+			node->setType($2);
+			$$ = node;
 		}
 	}
 	;
 
 instantiation_suffix:
-	WS IDENTIFIER maybe_default_value { $$ = $2 + "=" + $3; }
-	| WS { $$ = ""; }
+	WS IDENTIFIER maybe_default_value {
+		auto node = std::make_shared<AST::ObjectInstantiation>();
+		node->setIdentifier($2);
+		//if ($3) node->addChild($3);
+		// TBD: Add value_assignment node
+		$$ = node;
+	}
+	| WS { $$ = nullptr; }
 	;
 
 pointer_declaration:
@@ -589,23 +600,20 @@ datamember_declaration:
 		$$ = node;
 	}
 	| access_modifier object_instantiation {
-		std::string accessMod;
-		switch ($1) {
-			case AST::DatamemberDeclaration::AccessModifier::PUBLIC:
-				accessMod = "public";
-				break;
-			case AST::DatamemberDeclaration::AccessModifier::PRIVATE:
-				accessMod = "private";
-				break;
-			case AST::DatamemberDeclaration::AccessModifier::PROTECTED:
-				accessMod = "protected";
-				break;
-			default:
-				accessMod = "unknown";
-				break;
+		auto node = std::make_shared<AST::DatamemberDeclaration>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+
+		if (std::dynamic_pointer_cast<AST::ObjectInstantiation>($2) == nullptr) {
+			// ERROR: `@public @className` is not sufficient to declare a datamember
+			// TBD: Handle this error properly later
 		}
 
-		std::cout << "Parsed object instantiation with access modifier: Access='" << accessMod << "'" << std::endl;
+		node->setAccessModifier($1);
+		node->addChild($2);
+
+		$$ = node;
 	}
 	| access_modifier pointer_declaration {
 		std::string accessMod;

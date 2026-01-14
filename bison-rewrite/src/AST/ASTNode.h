@@ -24,6 +24,7 @@ class ASTNode {
 		AST::NodeType getType() const;
 
 		void addChild(const std::shared_ptr<ASTNode>& child);
+		void addChildren(const std::vector<std::shared_ptr<ASTNode>>& childs);
 		const std::vector<std::shared_ptr<ASTNode>>& getChildren() const;
 		void setPosition(const AST::FilePosition& pos);
 		void setPosition(uint32_t line, uint32_t column);

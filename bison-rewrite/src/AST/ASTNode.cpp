@@ -10,6 +10,10 @@ void ASTNode::addChild(const std::shared_ptr<ASTNode>& child) {
 	children.push_back(child);
 }
 
+void ASTNode::addChildren(const std::vector<std::shared_ptr<ASTNode>>& childs) {
+	children.insert(children.end(), childs.begin(), childs.end());
+}
+
 const std::vector<std::shared_ptr<ASTNode>>& ASTNode::getChildren() const {
 	return children;
 }

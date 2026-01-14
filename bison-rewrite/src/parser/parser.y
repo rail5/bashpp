@@ -6,6 +6,11 @@
 #include <memory>
 #include <cassert>
 #include "../AST/Nodes/IncludeStatement.h"
+#include "../AST/Nodes/Program.h"
+#include "../AST/Nodes/ClassDefinition.h"
+#include "../AST/Nodes/Block.h"
+#include "../AST/Nodes/DatamemberDeclaration.h"
+typedef std::shared_ptr<AST::ASTNode> ASTNodePtr;
 }
 
 %{
@@ -107,8 +112,16 @@ void yyerror(const char *s);
 
 
 /* Nonterminal types */
+%type <ASTNodePtr> program
+%type <std::vector<ASTNodePtr>> statements
+%type <ASTNodePtr> statement
+%type <ASTNodePtr> include_statement
+%type <ASTNodePtr> class_definition
+%type <AST::DatamemberDeclaration::AccessModifier> access_modifier access_modifier_keyword
+%type <ASTNodePtr> datamember_declaration
+%type <ASTNodePtr> block
 %type <AST::IncludeStatement::IncludeKeyword> include_keyword
-%type <int> access_modifier access_modifier_keyword
+
 %type <std::string> maybe_include_type maybe_as_clause maybe_parent_class maybe_default_value
 %type <std::string> valid_rvalue value_assignment assignment_operator
 %type <std::string> doublequoted_string quote_contents
@@ -185,18 +198,30 @@ void yyerror(const char *s);
 
 %%
 
-program: statements;
+program: statements {
+		std::shared_ptr<AST::Program> astRoot = std::make_shared<AST::Program>();
+		astRoot->addChildren($1);
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		astRoot->setPosition(line_number, column_number);
+
+		$$ = astRoot;
+
+		// Verification (Debug):
+		std::cout << *astRoot;
+	}
+	;
 
 statements:
-	/* empty */
-	| statements statement
+	/* empty */ { $$ = std::vector<std::shared_ptr<AST::ASTNode>>(); }
+	| statements statement { $$ = std::move($1); if ($2) $$.push_back($2); }
 	;
 
 statement:
 	DELIM
 	| shell_command_sequence %prec CONCAT_STOP
-	| include_statement
-	| class_definition
+	| include_statement { $$ = $1; }
+	| class_definition { $$ = $1; }
 	| datamember_declaration
 	| method_definition
 	| constructor_definition
@@ -357,7 +382,15 @@ maybe_namedfd_array_index:
 	;
 
 block:
-	LBRACE whitespace_or_delimiter statements RBRACE
+	LBRACE whitespace_or_delimiter statements RBRACE {
+		auto node = std::make_shared<AST::Block>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+
+		node->addChildren($3);
+		$$ = node;
+	}
 	;
 
 valid_rvalue:
@@ -437,8 +470,7 @@ include_statement:
 		node->setPath(path);
 		node->setAsPath(asPath);
 
-		// Verification (Debug):
-		std::cout << *node;
+		$$ = node;
 	}
 	;
 
@@ -524,14 +556,15 @@ delete_statement:
 
 class_definition:
 	KEYWORD_CLASS WS IDENTIFIER maybe_parent_class block {
-		std::string className = $3;
-		std::string parentClass = $4;
+		auto node = std::make_shared<AST::ClassDefinition>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::cout << "Parsed class definition: Name='" << className << "'";
-		if (!parentClass.empty()) {
-			std::cout << ", Parent='" << parentClass << "'";
-		}
-		std::cout << std::endl;
+		node->setClassName($3);
+		node->setParentClassName($4);
+		node->addChild($5);
+		$$ = node;
 	}
 	;
 
@@ -542,41 +575,29 @@ maybe_parent_class:
 
 datamember_declaration:
 	access_modifier IDENTIFIER_LVALUE maybe_default_value DELIM {
-		std::string accessMod;
-		switch ($1) {
-			case yy::parser::token::KEYWORD_PUBLIC:
-				accessMod = "public";
-				break;
-			case yy::parser::token::KEYWORD_PRIVATE:
-				accessMod = "private";
-				break;
-			case yy::parser::token::KEYWORD_PROTECTED:
-				accessMod = "protected";
-				break;
-			default:
-				accessMod = "unknown";
-				break;
-		}
-		std::string memberName = $2;
+		auto node = std::make_shared<AST::DatamemberDeclaration>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::string defaultValue = $3;
+		node->setAccessModifier($1);
+		node->setIdentifier($2);
+		//if ($3) node->addChild($3);
+		// TBD: For now maybe_default_value is just a string, not an AST node
+		// It should return a ValueAssignment node instead
 
-		std::cout << "Parsed data member declaration: Name='" << memberName << "', Access='" << accessMod << "'";
-		if (!defaultValue.empty()) {
-			std::cout << ", Default='" << defaultValue << "'";
-		}
-		std::cout << std::endl;
+		$$ = node;
 	}
 	| access_modifier object_instantiation {
 		std::string accessMod;
 		switch ($1) {
-			case yy::parser::token::KEYWORD_PUBLIC:
+			case AST::DatamemberDeclaration::AccessModifier::PUBLIC:
 				accessMod = "public";
 				break;
-			case yy::parser::token::KEYWORD_PRIVATE:
+			case AST::DatamemberDeclaration::AccessModifier::PRIVATE:
 				accessMod = "private";
 				break;
-			case yy::parser::token::KEYWORD_PROTECTED:
+			case AST::DatamemberDeclaration::AccessModifier::PROTECTED:
 				accessMod = "protected";
 				break;
 			default:
@@ -589,13 +610,13 @@ datamember_declaration:
 	| access_modifier pointer_declaration {
 		std::string accessMod;
 		switch ($1) {
-			case yy::parser::token::KEYWORD_PUBLIC:
+			case AST::DatamemberDeclaration::AccessModifier::PUBLIC:
 				accessMod = "public";
 				break;
-			case yy::parser::token::KEYWORD_PRIVATE:
+			case AST::DatamemberDeclaration::AccessModifier::PRIVATE:
 				accessMod = "private";
 				break;
-			case yy::parser::token::KEYWORD_PROTECTED:
+			case AST::DatamemberDeclaration::AccessModifier::PROTECTED:
 				accessMod = "protected";
 				break;
 			default:
@@ -614,9 +635,9 @@ access_modifier:
 	;
 
 access_modifier_keyword:
-	KEYWORD_PUBLIC { $$ = yy::parser::token::KEYWORD_PUBLIC; }
-	| KEYWORD_PRIVATE { $$ = yy::parser::token::KEYWORD_PRIVATE; }
-	| KEYWORD_PROTECTED { $$ = yy::parser::token::KEYWORD_PROTECTED; }
+	KEYWORD_PUBLIC { $$ = AST::DatamemberDeclaration::AccessModifier::PUBLIC; }
+	| KEYWORD_PRIVATE { $$ = AST::DatamemberDeclaration::AccessModifier::PRIVATE; }
+	| KEYWORD_PROTECTED { $$ = AST::DatamemberDeclaration::AccessModifier::PROTECTED; }
 	;
 
 maybe_default_value:

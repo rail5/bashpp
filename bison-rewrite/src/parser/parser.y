@@ -11,6 +11,8 @@
 #include "../AST/Nodes/Block.h"
 #include "../AST/Nodes/DatamemberDeclaration.h"
 #include "../AST/Nodes/MethodDefinition.h"
+#include "../AST/Nodes/ConstructorDefinition.h"
+#include "../AST/Nodes/DestructorDefinition.h"
 #include "../AST/Nodes/ObjectInstantiation.h"
 #include "../AST/Nodes/PointerDeclaration.h"
 #include "../AST/Nodes/ObjectReference.h"
@@ -132,7 +134,7 @@ void yyerror(const char *s);
 %type <AST::MethodDefinition::Parameter> parameter
 %type <std::vector<AST::MethodDefinition::Parameter>> maybe_parameter_list
 
-%type <ASTNodePtr> method_definition
+%type <ASTNodePtr> method_definition constructor_definition destructor_definition
 
 %type <ASTNodePtr> block
 
@@ -241,8 +243,8 @@ statement:
 	| class_definition { $$ = $1; }
 	| datamember_declaration {  $$ = $1; }
 	| method_definition { $$ = $1; }
-	| constructor_definition
-	| destructor_definition
+	| constructor_definition { $$ = $1; }
+	| destructor_definition { $$ = $1; }
 	| object_instantiation { $$ = $1; }
 	| pointer_declaration { $$ = $1; }
 	| delete_statement { $$ = $1; }
@@ -786,13 +788,23 @@ parameter:
 
 constructor_definition:
 	KEYWORD_CONSTRUCTOR WS block {
-		std::cout << "Parsed constructor definition" << std::endl;
+		auto node = std::make_shared<AST::ConstructorDefinition>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($3);
+		$$ = node;
 	}
 	;
 
 destructor_definition:
 	KEYWORD_DESTRUCTOR WS block {
-		std::cout << "Parsed destructor definition" << std::endl;
+		auto node = std::make_shared<AST::DestructorDefinition>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($3);
+		$$ = node;
 	}
 	;
 

@@ -11,6 +11,8 @@ class ObjectReference : public ASTNode {
 		bool m_has_hashkey = false;
 		bool m_lvalue = false;
 		bool m_self_reference = false;
+		bool m_ptr_dereference = false;
+		bool m_address_of = false;
 	public:
 		ObjectReference() {
 			type = AST::NodeType::ObjectReference;
@@ -51,15 +53,30 @@ class ObjectReference : public ASTNode {
 			return m_self_reference;
 		}
 
+		void setPointerDereference(bool ptr_dereference) {
+			m_ptr_dereference = ptr_dereference;
+		}
+		bool isPointerDereference() const {
+			return m_ptr_dereference;
+		}
+
+		void setAddressOf(bool address_of) {
+			m_address_of = address_of;
+		}
+		bool isAddressOf() const {
+			return m_address_of;
+		}
+
 		std::ostream& prettyPrint(std::ostream& os, int indentation_level = 0) const override {
 			std::string indent(indentation_level * 2, ' ');
-			os << indent << "(ObjectReference [";
-
-			os << (m_lvalue ? "lvalue" : "rvalue");
-			os << (m_self_reference ? ", self" : "");
-
-			os << "]\n"
-				<< indent << "  @";
+			os << indent << "(ObjectReference ["
+				<< (m_lvalue ? "lvalue" : "rvalue")
+				<< (m_self_reference ? ", self" : "")
+				<< "]\n"
+				<< indent << "  "
+				<< (m_address_of ? "&" : "")
+				<< (m_ptr_dereference ? "*" : "")
+				<< "@";
 
 			if (m_has_hashkey) {
 				os << "#";
@@ -71,7 +88,7 @@ class ObjectReference : public ASTNode {
 			}
 
 			os << "\n";
-			
+
 			for (const auto& child : children) {
 				child->prettyPrint(os, indentation_level + 1);
 			}

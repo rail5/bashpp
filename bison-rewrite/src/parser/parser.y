@@ -133,6 +133,7 @@ void yyerror(const char *s);
 %type <ASTNodePtr> object_instantiation instantiation_suffix
 %type <ASTNodePtr> pointer_declaration pointer_declaration_preface
 %type <ASTNodePtr> maybe_descend_object_hierarchy object_reference object_reference_lvalue self_reference self_reference_lvalue
+%type <ASTNodePtr> object_address pointer_dereference pointer_dereference_rvalue pointer_dereference_lvalue
 
 %type <ASTNodePtr> delete_statement new_statement
 
@@ -143,7 +144,6 @@ void yyerror(const char *s);
 %type <std::string> object_assignment shell_variable_assignment
 %type <std::string> bash_variable
 %type <std::string> dynamic_cast cast_target
-%type <std::string> object_address pointer_dereference pointer_dereference_rvalue pointer_dereference_lvalue
 %type <std::string> supershell subshell_raw subshell_substitution dollar_subshell deprecated_subshell
 %type <std::string> string_interpolation
 %type <std::string> maybe_hash
@@ -342,7 +342,10 @@ operative_command_element:
 		auto selfRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
 		$$ = selfRef->IDENTIFIER(); // PLACEHOLDER
 	}
-	| pointer_dereference_lvalue { $$ = $1; }
+	| pointer_dereference_lvalue {
+		auto ptrDeref = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		$$ = "*" + ptrDeref->IDENTIFIER(); // PLACEHOLDER
+	}
 	;
 
 /**
@@ -437,8 +440,14 @@ concatenatable_rvalue:
 		auto selfRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
 		$$ = selfRef->IDENTIFIER(); // PLACEHOLDER
 	}
-	| object_address { $$ = $1; }
-	| pointer_dereference_rvalue { $$ = $1; }
+	| object_address {
+		auto objAddr = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		$$ = "&" + objAddr->IDENTIFIER(); // PLACEHOLDER
+	}
+	| pointer_dereference_rvalue {
+		auto ptrDeref = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		$$ = "*" + ptrDeref->IDENTIFIER(); // PLACEHOLDER
+	}
 	| bash_variable { $$ = $1; }
 	| supershell { $$ = $1; }
 	| subshell_substitution { $$ = $1; }
@@ -764,8 +773,14 @@ string_interpolation:
 		auto selfRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
 		$$ = selfRef->IDENTIFIER(); // PLACEHOLDER
 	}
-	| object_address { $$ = $1; }
-	| pointer_dereference { $$ = $1; }
+	| object_address {
+		auto objAddr = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		$$ = "&" + objAddr->IDENTIFIER(); // PLACEHOLDER
+	}
+	| pointer_dereference {
+		auto ptrDeref = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		$$ = "*" + ptrDeref->IDENTIFIER(); // PLACEHOLDER
+	}
 	| supershell { $$ = $1; }
 	| subshell_substitution { $$ = $1; }
 	| bash_variable { $$ = $1; }
@@ -1088,14 +1103,13 @@ object_assignment:
 		$$ = lvalue + "=" + rvalue;
 	}
 	| pointer_dereference_lvalue value_assignment {
-		std::string pointerDeref = $1;
-		std::string rvalue = $2;
-
-		std::cout << "Parsed pointer dereference assignment: PointerDereference='" << pointerDeref << "', RValue='" << rvalue << "'" << std::endl;
-
 		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
 
-		$$ = $1 + "=" + $2;
+		auto ptrDeref = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		std::string lvalue = "*" + ptrDeref->IDENTIFIER(); // PLACEHOLDER
+		std::string rvalue = $2;
+		std::cout << "Parsed pointer dereference assignment: PointerDereference='" << lvalue << "', RValue='" << rvalue << "'" << std::endl;
+		$$ = lvalue + "=" + rvalue;
 	}
 	;
 
@@ -1114,20 +1128,20 @@ shell_variable_assignment:
 
 object_address:
 	AMPERSAND object_reference {
-		auto objRef = std::dynamic_pointer_cast<AST::ObjectReference>($2);
-		std::string objectRef = objRef->IDENTIFIER(); // PLACEHOLDER
+		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '&' token
 
-		std::cout << "Parsed object address-of: ObjectReference='" << objectRef << "'" << std::endl;
+		node->setAddressOf(true);
 
-		$$ = "&" + objectRef;
+		$$ = node;
 	}
 	| AMPERSAND self_reference {
-		auto selfRefNode = std::dynamic_pointer_cast<AST::ObjectReference>($2);
-		std::string selfRef = selfRefNode->IDENTIFIER(); // PLACEHOLDER
+		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '&' token
 
-		std::cout << "Parsed self address-of: SelfReference='" << selfRef << "'" << std::endl;
+		node->setAddressOf(true);
 
-		$$ = "&" + selfRef;
+		$$ = node;
 	}
 	;
 
@@ -1138,39 +1152,31 @@ pointer_dereference:
 
 pointer_dereference_rvalue:
 	DEREFERENCE_OPERATOR object_reference {
-		auto objRef = std::dynamic_pointer_cast<AST::ObjectReference>($2);
-		std::string objectRef = objRef->IDENTIFIER(); // PLACEHOLDER
-
-		std::cout << "Parsed pointer dereference: ObjectReference='" << objectRef << "'" << std::endl;
-
-		$$ = "*" + objectRef;
+		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '*' token
+		node->setPointerDereference(true);
+		$$ = node;
 	}
 	| DEREFERENCE_OPERATOR self_reference {
-		auto selfRefNode = std::dynamic_pointer_cast<AST::ObjectReference>($2);
-		std::string selfRef = selfRefNode->IDENTIFIER(); // PLACEHOLDER
-
-		std::cout << "Parsed self pointer dereference: SelfReference='" << selfRef << "'" << std::endl;
-
-		$$ = "*" + selfRef;
+		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '*' token
+		node->setPointerDereference(true);
+		$$ = node;
 	}
 	;
 
 pointer_dereference_lvalue:
 	DEREFERENCE_OPERATOR object_reference_lvalue {
-		auto objRef = std::dynamic_pointer_cast<AST::ObjectReference>($2);
-		std::string objectRef = objRef->IDENTIFIER(); // PLACEHOLDER
-
-		std::cout << "Parsed lvalue pointer dereference: ObjectReference='" << objectRef << "'" << std::endl;
-
-		$$ = "*" + objectRef;
+		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '*' token
+		node->setPointerDereference(true);
+		$$ = node;
 	}
 	| DEREFERENCE_OPERATOR self_reference_lvalue {
-		auto selfRefNode = std::dynamic_pointer_cast<AST::ObjectReference>($2);
-		std::string selfRef = selfRefNode->IDENTIFIER(); // PLACEHOLDER
-
-		std::cout << "Parsed lvalue self pointer dereference: SelfReference='" << selfRef << "'" << std::endl;
-
-		$$ = "*" + selfRef;
+		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '*' token
+		node->setPointerDereference(true);
+		$$ = node;
 	}
 	;
 

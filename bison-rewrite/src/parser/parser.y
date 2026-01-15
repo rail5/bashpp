@@ -546,8 +546,18 @@ object_instantiation:
 	AT_LVALUE IDENTIFIER instantiation_suffix {
 		if ($3 == nullptr) {
 			// Not an object instantiation, but an lvalue object reference
-			std::string objectName = $2;
-			std::cout << "Parsed lvalue object reference: Object='" << objectName << "'" << std::endl;
+			auto node = std::make_shared<AST::ObjectReference>();
+			uint32_t line_number = @1.begin.line;
+			uint32_t column_number = @1.begin.column;
+			node->setPosition(line_number, column_number);
+
+			node->setIdentifier($2);
+			node->setLvalue(true);
+			node->setAddressOf(false);
+			node->setPointerDereference(false);
+			node->setSelfReference(false);
+
+			$$ = node;
 		} else {
 			// Use the ObjectInstantiation node returned by instantiation_suffix
 			auto node = std::dynamic_pointer_cast<AST::ObjectInstantiation>($3);

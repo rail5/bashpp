@@ -47,6 +47,7 @@
 #include "../AST/Nodes/BashArithmeticStatement.h"
 #include "../AST/Nodes/BashArithmeticForCondition.h"
 #include "../AST/Nodes/BashArithmeticForStatement.h"
+#include "../AST/Nodes/BashRedirection.h"
 typedef std::shared_ptr<AST::ASTNode> ASTNodePtr;
 }
 
@@ -72,6 +73,8 @@ void yyerror(const char *s);
 	extern void set_bash_if_condition_received(bool received);
 	extern void set_bash_while_or_until_condition_received(bool received);
 	extern void set_parsed_assignment_operator(bool parsed);
+
+	bool current_command_can_receive_lvalues = true;
 }
 
 %token <std::string> ESCAPED_CHAR WS DELIM
@@ -84,7 +87,8 @@ void yyerror(const char *s);
 
 %token AT AT_LVALUE
 %token KEYWORD_THIS KEYWORD_THIS_LVALUE KEYWORD_SUPER KEYWORD_SUPER_LVALUE
-%token LBRACE RBRACE LANGLE RANGLE LANGLE_AMPERSAND RANGLE_AMPERSAND AMPERSAND_RANGLE
+%token LBRACE RBRACE
+%token <std::string> LANGLE RANGLE LANGLE_AMPERSAND RANGLE_AMPERSAND AMPERSAND_RANGLE
 %token COLON PLUS_EQUALS EQUALS ASTERISK DEREFERENCE_OPERATOR AMPERSAND DOT
 %token EMPTY_ASSIGNMENT
 
@@ -184,7 +188,7 @@ void yyerror(const char *s);
 %type <ASTNodePtr> dynamic_cast cast_target
 %type <ASTNodePtr> bash_variable maybe_array_index maybe_parameter_expansion array_index
 
-%type <ASTNodePtr> process_substitution named_fd maybe_namedfd_array_index
+%type <ASTNodePtr> process_substitution
 %type <ASTNodePtr> heredoc_body heredoc_content herestring
 
 %type <ASTNodePtr> bash_for_statement bash_select_statement bash_for_or_select_header
@@ -272,7 +276,7 @@ logical_connective:
 	;
 
 shell_command:
-	simple_command %prec CONCAT_STOP { $$ = $1; }
+	simple_command %prec CONCAT_STOP { current_command_can_receive_lvalues = true; $$ = $1; }
 	| bash_case_statement command_redirections %prec CONCAT_STOP { $$ = $1 + $2; }
 	| bash_select_statement command_redirections %prec CONCAT_STOP { $$ = $1 + $2; }
 	| bash_for_statement command_redirections %prec CONCAT_STOP { $$ = $1 + $2; }
@@ -302,10 +306,11 @@ simple_command_sequence:
 	;
 
 simple_pipeline:
-	simple_command %prec CONCAT_STOP { $$ = $1; }
+	simple_command %prec CONCAT_STOP { current_command_can_receive_lvalues = true; $$ = $1; }
 	| simple_pipeline PIPE maybe_whitespace simple_command {
 		std::string leftCommand = $1;
 		std::string rightCommand = $4;
+		current_command_can_receive_lvalues = true;
 
 		std::cout << "Parsed simple command pipeline: LeftCommand='" << leftCommand << "', RightCommand='" << rightCommand << "'" << std::endl;
 
@@ -327,9 +332,9 @@ simple_command_element:
 	shell_variable_assignment { $$ = $1; }
 	| object_assignment { $$ = $1; }
 	| redirection { $$ = $1; }
-	| operative_command_element { $$ = $1; }
-	| valid_rvalue %prec CONCAT_STOP { $$ = $1; }
-	| block { $$ = $1; }
+	| operative_command_element { current_command_can_receive_lvalues = false; $$ = $1; }
+	| valid_rvalue %prec CONCAT_STOP { current_command_can_receive_lvalues = false; $$ = $1; }
+	| block { current_command_can_receive_lvalues = false; $$ = $1; }
 	;
 
 operative_command_element:
@@ -355,7 +360,14 @@ redirection:
 
 		std::cout << "Parsed redirection: Operator='" << redirOperator << "', RValue='" << rvalue << "'" << std::endl;
 
-		set_incoming_token_can_be_lvalue(true); // Lvalues can follow redirections
+		// Lvalues can follow redirections iff we have not yet received the operative command element
+		// E.g.:
+		// >file var=value echo hi
+		// 'var' is properly an lvalue here. By the time we hit '>file', we hadn't yet seen 'echo', so lvalues are still allowed
+		// But:
+		// echo hi >file var=value
+		// In this case, 'var=value' is a simple string. Because we had already seen 'echo', lvalues are no longer allowed
+		set_incoming_token_can_be_lvalue(current_command_can_receive_lvalues);
 
 		$$ = redirOperator + rvalue;
 	}
@@ -372,34 +384,15 @@ redirection:
 	;
 
 redirection_operator:
-	LANGLE { $$ = "<"; }
-	| LANGLE RANGLE { $$ = "<>"; }
-	| LANGLE_AMPERSAND { $$ = "<&"; }
-	| RANGLE { $$ = ">"; }
-	| RANGLE RANGLE { $$ = ">>"; }
-	| RANGLE_AMPERSAND { $$ = ">&"; }
-	| RANGLE PIPE { $$ = ">|"; }
-	| AMPERSAND_RANGLE { $$ = "&>"; }
-	| AMPERSAND_RANGLE RANGLE { $$ = "&>>"; }
-	;
-
-named_fd:
-	LBRACE IDENTIFIER maybe_namedfd_array_index RBRACE {
-		auto node = std::make_shared<AST::NamedFD>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
-		node->setPosition(line_number, column_number);
-		node->addText("{");
-		node->addText($2);
-		node->addChild($3);
-		node->addText("}");
-		$$ = node;
-	}
-	;
-
-maybe_namedfd_array_index:
-	/* empty */ { $$ = nullptr; }
-	| LBRACKET array_index RBRACKET { $$ = $2; } // Since LBRACKET/RBRACKET don't get matched as ARRAY_INDEX_START/_END in normal lexer mode
+	LANGLE { $$ = $1; }
+	| LANGLE RANGLE { $$ = $1 + $2; }
+	| LANGLE_AMPERSAND { $$ = $1; }
+	| RANGLE { $$ = $1; }
+	| RANGLE RANGLE { $$ = $1 + $2; }
+	| RANGLE_AMPERSAND { $$ = $1; }
+	| RANGLE PIPE { $$ = $1 + "|"; }
+	| AMPERSAND_RANGLE { $$ = $1; }
+	| AMPERSAND_RANGLE RANGLE { $$ = $1 + $2; }
 	;
 
 block:
@@ -517,7 +510,6 @@ concatenatable_rvalue:
 	| subshell_substitution { $$ = $1; }
 	| subshell_raw { $$ = $1; }
 	| process_substitution { $$ = $1; }
-	| named_fd { $$ = $1; }
 	;
 
 maybe_whitespace:

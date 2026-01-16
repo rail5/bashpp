@@ -612,13 +612,13 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		emit(IDENTIFIER, tokenText);
 	}
 }
-"<("                                 { modeStack.push(PROCESS_SUBSTITUTION_MODE); emit(PROCESS_SUBSTITUTION_START, tokenText); }
-">("                                 { modeStack.push(PROCESS_SUBSTITUTION_MODE); emit(PROCESS_SUBSTITUTION_START, tokenText); }
-{LANGLE}                             { emit(LANGLE); }
-{RANGLE}                             { emit(RANGLE); }
-"&>"                                 { emit(AMPERSAND_RANGLE); }
-">&"                                 { emit(RANGLE_AMPERSAND); }
-"<&"                                 { emit(LANGLE_AMPERSAND); }
+"<("                                      { modeStack.push(PROCESS_SUBSTITUTION_MODE); emit(PROCESS_SUBSTITUTION_START, tokenText); }
+">("                                      { modeStack.push(PROCESS_SUBSTITUTION_MODE); emit(PROCESS_SUBSTITUTION_START, tokenText); }
+([0-9]+|\{[a-zA-Z_][a-zA-Z_0-9]*\})?\<    { emit(LANGLE, tokenText); }
+([0-9]+|\{[a-zA-Z_][a-zA-Z_0-9]*\})?\>    { emit(RANGLE, tokenText); }
+([0-9]+|\{[a-zA-Z_][a-zA-Z_0-9]*\})?\&\>  { emit(AMPERSAND_RANGLE, tokenText); }
+([0-9]+|\{[a-zA-Z_][a-zA-Z_0-9]*\})?\>\&  { emit(RANGLE_AMPERSAND, tokenText); }
+([0-9]+|\{[a-zA-Z_][a-zA-Z_0-9]*\})?\<\&  { emit(LANGLE_AMPERSAND, tokenText); }
 
 "${"                                 { modeStack.push(BASH_VAR_MODE); emit(BASH_VAR_START); }
 

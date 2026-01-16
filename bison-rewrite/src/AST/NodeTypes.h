@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Nodes/BashRedirection.h"
 namespace AST {
 enum class NodeType {
 	Program = 0,
@@ -10,6 +11,7 @@ enum class NodeType {
 	SimpleCommandSequence,
 	SimplePipeline,
 	SimpleCommand,
+	BashRedirection,
 	Rvalue,
 	ValueAssignment,
 	ProcessSubstitution,
@@ -34,7 +36,6 @@ enum class NodeType {
 	BashVariable,
 	ArrayIndex,
 	ParameterExpansion,
-	NamedFD,
 	HeredocBody,
 	HereString,
 	ObjectAssignment,

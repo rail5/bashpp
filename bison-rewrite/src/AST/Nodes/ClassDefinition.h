@@ -41,11 +41,11 @@ class ClassDefinition : public ASTNode {
 			if (m_PARENTCLASSNAME.has_value()) {
 				os << " : " << m_PARENTCLASSNAME.value();
 			}
-			os << "\n";
 			for (const auto& child : children) {
+				os << std::endl;
 				child->prettyPrint(os, indentation_level + 1);
 			}
-			os << indent << ")" << std::endl;
+			os << ")" << std::flush;
 			return os;
 		}
 };

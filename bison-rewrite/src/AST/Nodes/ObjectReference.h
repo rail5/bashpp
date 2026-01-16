@@ -87,12 +87,11 @@ class ObjectReference : public ASTNode {
 				os << "." << id;
 			}
 
-			os << "\n";
-
 			for (const auto& child : children) {
+				os << std::endl;
 				child->prettyPrint(os, indentation_level + 1);
 			}
-			os << indent << ")" << std::endl;
+			os << ")" << std::flush;
 			return os;
 		}
 };

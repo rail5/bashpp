@@ -22,11 +22,12 @@ class BashRedirection : public StringType {
 
 		std::ostream& prettyPrint(std::ostream& os, int indentation_level = 0) const override {
 			std::string indent(indentation_level * 2, ' ');
-			os << indent << "(BashRedirection " << m_OPERATOR << "\n";
+			os << indent << "(BashRedirection " << m_OPERATOR;
 			for (const auto& child : children) {
+				os << std::endl;
 				child->prettyPrint(os, indentation_level + 1);
 			}
-			os << indent << ")" << std::endl;
+			os << ")" << std::flush;
 			return os;
 		}
 };

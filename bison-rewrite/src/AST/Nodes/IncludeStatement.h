@@ -88,8 +88,7 @@ class IncludeStatement : public ASTNode {
 			std::string aspath_string = m_ASPATH.has_value() ? " as \"" + m_ASPATH.value() + "\"" : "";
 
 			return os << indent << "(IncludeStatement\n"
-				<< indent << "  @" << keyword_string << " " << type_string << " " << path_string << aspath_string << "\n"
-				<< indent << ")" << std::endl;
+				<< indent << "  @" << keyword_string << " " << type_string << " " << path_string << aspath_string << ")" << std::flush;
 		}
 };
 

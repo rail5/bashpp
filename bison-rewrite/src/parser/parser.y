@@ -47,6 +47,16 @@
 #include "../AST/Nodes/BashArithmeticForCondition.h"
 #include "../AST/Nodes/BashArithmeticForStatement.h"
 #include "../AST/Nodes/BashRedirection.h"
+#include "../AST/Nodes/BashCommand.h"
+#include "../AST/Nodes/BashPipeline.h"
+#include "../AST/Nodes/BashCommandSequence.h"
+#include "../AST/Nodes/BashIfStatement.h"
+#include "../AST/Nodes/BashIfCondition.h"
+#include "../AST/Nodes/BashIfRootBranch.h"
+#include "../AST/Nodes/BashIfElseBranch.h"
+#include "../AST/Nodes/BashWhileStatement.h"
+#include "../AST/Nodes/BashWhileOrUntilCondition.h"
+#include "../AST/Nodes/BashUntilStatement.h"
 typedef std::shared_ptr<AST::ASTNode> ASTNodePtr;
 }
 
@@ -190,12 +200,21 @@ void yyerror(const char *s);
 %type <ASTNodePtr> process_substitution
 %type <ASTNodePtr> heredoc_body heredoc_content herestring
 %type <ASTNodePtr> redirection
+%type <ASTNodePtr> operative_command_element simple_command_element simple_command simple_pipeline simple_command_sequence
+%type <ASTNodePtr> pipeline shell_command_sequence shell_command
+
+%type <std::vector<ASTNodePtr>> command_redirections
+
+%type <ASTNodePtr> bash_if_statement bash_if_condition bash_if_root_branch bash_if_else_branch
+%type <std::vector<ASTNodePtr>> maybe_bash_if_else_branches
 
 %type <ASTNodePtr> bash_for_statement bash_select_statement bash_for_or_select_header
 %type <ASTNodePtr> bash_for_or_select_maybe_in_something bash_for_or_select_input
 %type <ASTNodePtr> bash_case_statement bash_case_header bash_case_input bash_case_pattern bash_case_pattern_header
-%type <std::vector<std::shared_ptr<AST::BashCasePattern>>> bash_case_body
+%type <std::vector<ASTNodePtr>> bash_case_body
 %type <ASTNodePtr> bash_arithmetic_for_statement arithmetic_for_condition arith_statement increment_decrement_expression arith_condition_term comparison_expression
+
+%type <ASTNodePtr> bash_while_statement bash_until_statement bash_while_or_until_condition
 
 %type <std::string> maybe_include_type maybe_as_clause maybe_parent_class
 %type <std::string> assignment_operator
@@ -205,12 +224,7 @@ void yyerror(const char *s);
 %type <std::string> bash_for_or_select_variable
 %type <std::string> arith_operator comparison_operator
 %type <std::string> redirection_operator
-%type <std::string> pipeline shell_command_sequence shell_command simple_command simple_command_element operative_command_element
-%type <std::string> simple_pipeline simple_command_sequence
 %type <std::string> logical_connective
-%type <std::string> bash_if_statement bash_if_condition bash_if_else_branch bash_if_root_branch maybe_bash_if_else_branches
-%type <std::string> bash_while_statement bash_until_statement bash_while_or_until_condition
-%type <std::string> command_redirections
 
 %%
 
@@ -233,8 +247,15 @@ statements:
 	;
 
 statement:
-	DELIM
-	| shell_command_sequence %prec CONCAT_STOP
+	DELIM {
+		auto node = std::make_shared<AST::RawText>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setText($1);
+		$$ = node;
+	}
+	| shell_command_sequence %prec CONCAT_STOP { $$ = $1; }
 	| include_statement { $$ = $1; }
 	| class_definition { $$ = $1; }
 	| datamember_declaration {  $$ = $1; }
@@ -247,26 +268,36 @@ statement:
 	;
 
 shell_command_sequence:
-	pipeline %prec CONCAT_STOP { $$ = $1; }
+	pipeline %prec CONCAT_STOP {
+		auto node = std::make_shared<AST::BashCommandSequence>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		$$ = node;
+	}
 	| shell_command_sequence logical_connective maybe_whitespace pipeline {
-		std::string leftPipeline = $1;
-		std::string connective = $2;
-		std::string rightPipeline = $4;
-
-		std::cout << "Parsed shell command pipeline with connective: LeftPipeline='" << leftPipeline << "', Connective='" << connective << "', RightPipeline='" << rightPipeline << "'" << std::endl;
-		$$ = leftPipeline + " " + connective + " " + rightPipeline;
+		auto commandSequence = std::dynamic_pointer_cast<AST::BashCommandSequence>($1);
+		commandSequence->addText(" " + $2 + " "); // Preserve connective with surrounding spaces
+		commandSequence->addChild($4);
+		$$ = commandSequence;
 	}
 	;
 
 pipeline:
-	shell_command %prec CONCAT_STOP { $$ = $1; }
+	shell_command %prec CONCAT_STOP {
+		auto node = std::make_shared<AST::BashPipeline>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		$$ = node;
+	}
 	| pipeline PIPE maybe_whitespace shell_command {
-		std::string leftCommand = $1;
-		std::string rightCommand = $4;
-
-		std::cout << "Parsed shell pipeline: LeftCommand='" << leftCommand << "', RightCommand='" << rightCommand << "'" << std::endl;
-
-		$$ = leftCommand + " | " + rightCommand;
+		auto pipeline = std::dynamic_pointer_cast<AST::BashPipeline>($1);
+		pipeline->addText(" | "); // Preserve pipe symbol
+		pipeline->addChild($4);
+		$$ = pipeline;
 	}
 	;
 
@@ -277,54 +308,133 @@ logical_connective:
 
 shell_command:
 	simple_command %prec CONCAT_STOP { current_command_can_receive_lvalues = true; $$ = $1; }
-	| bash_case_statement command_redirections %prec CONCAT_STOP { $$ = $1 + $2; }
-	| bash_select_statement command_redirections %prec CONCAT_STOP { $$ = $1 + $2; }
-	| bash_for_statement command_redirections %prec CONCAT_STOP { $$ = $1 + $2; }
-	| bash_arithmetic_for_statement command_redirections %prec CONCAT_STOP { $$ = $1 + $2; }
-	| bash_if_statement command_redirections %prec CONCAT_STOP { $$ = $1 + $2; }
-	| bash_while_statement command_redirections %prec CONCAT_STOP { $$ = $1 + $2; }
-	| bash_until_statement command_redirections %prec CONCAT_STOP { $$ = $1 + $2; }
+	| bash_case_statement command_redirections %prec CONCAT_STOP {
+		auto node = std::make_shared<AST::BashCommand>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		node->addChildren($2);
+		$$ = node;
+	}
+	| bash_select_statement command_redirections %prec CONCAT_STOP {
+		auto node = std::make_shared<AST::BashCommand>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		node->addChildren($2);
+		$$ = node;
+	}
+	| bash_for_statement command_redirections %prec CONCAT_STOP {
+		auto node = std::make_shared<AST::BashCommand>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		node->addChildren($2);
+		$$ = node;
+	}
+	| bash_arithmetic_for_statement command_redirections %prec CONCAT_STOP {
+		auto node = std::make_shared<AST::BashCommand>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		node->addChildren($2);
+		$$ = node;
+	}
+	| bash_if_statement command_redirections %prec CONCAT_STOP {
+		auto node = std::make_shared<AST::BashCommand>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		node->addChildren($2);
+		$$ = node;
+	}
+	| bash_while_statement command_redirections %prec CONCAT_STOP {
+		auto node = std::make_shared<AST::BashCommand>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		node->addChildren($2);
+		$$ = node;
+	}
+	| bash_until_statement command_redirections %prec CONCAT_STOP {
+		auto node = std::make_shared<AST::BashCommand>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		node->addChildren($2);
+		$$ = node;
+	}
 	| heredoc_body { $$ = $1; }
 	;
 
 command_redirections:
-	/* empty */ %prec CONCAT_STOP { $$ = ""; }
-	| command_redirections redirection { $$ = $1 + $2; }
-	| command_redirections WS redirection { $$ = $1 + " " + $3; }
+	/* empty */ %prec CONCAT_STOP { $$ = std::vector<ASTNodePtr>(); }
+	| command_redirections redirection { $$ = std::move($1); $$.push_back($2); }
+	| command_redirections WS redirection { $$ = std::move($1); $$.push_back($3); }
 	;
 
 simple_command_sequence:
-	simple_pipeline %prec CONCAT_STOP { $$ = $1; }
+	simple_pipeline %prec CONCAT_STOP {
+		auto node = std::make_shared<AST::BashCommandSequence>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		$$ = node;
+	}
 	| simple_command_sequence logical_connective maybe_whitespace simple_pipeline {
-		std::string leftPipeline = $1;
-		std::string connective = $2;
-		std::string rightPipeline = $4;
-
-		std::cout << "Parsed simple command sequence with connective: LeftPipeline='" << leftPipeline << "', Connective='" << connective << "', RightPipeline='" << rightPipeline << "'" << std::endl;
-		$$ = leftPipeline + " " + connective + " " + rightPipeline;
+		auto commandSequence = std::dynamic_pointer_cast<AST::BashCommandSequence>($1);
+		commandSequence->addText(" " + $2 + " "); // Preserve connective with surrounding spaces
+		commandSequence->addChild($4);
+		$$ = commandSequence;
 	}
 	;
 
 simple_pipeline:
-	simple_command %prec CONCAT_STOP { current_command_can_receive_lvalues = true; $$ = $1; }
+	simple_command %prec CONCAT_STOP {
+		current_command_can_receive_lvalues = true;
+		auto node = std::make_shared<AST::BashPipeline>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		$$ = node;
+	}
 	| simple_pipeline PIPE maybe_whitespace simple_command {
-		std::string leftCommand = $1;
-		std::string rightCommand = $4;
 		current_command_can_receive_lvalues = true;
 
-		std::cout << "Parsed simple command pipeline: LeftCommand='" << leftCommand << "', RightCommand='" << rightCommand << "'" << std::endl;
-
-		$$ = leftCommand + " | " + rightCommand;
+		auto pipeline = std::dynamic_pointer_cast<AST::BashPipeline>($1);
+		pipeline->addText(" | "); // Preserve pipe symbol
+		pipeline->addChild($4);
+		$$ = pipeline;
 	}
 	;
 
 simple_command:
-	simple_command_element { $$ = $1; }
+	simple_command_element {
+		auto node = std::make_shared<AST::BashCommand>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		$$ = node;
+	}
 	| simple_command WS simple_command_element {
-		$$ = $1 + " " + $3;
+		auto command = std::dynamic_pointer_cast<AST::BashCommand>($1);
+		command->addText(" "); // Preserve whitespace
+		command->addChild($3);
+		$$ = command;
 	}
 	| simple_command redirection {
-		$$ = $1 + " " + $2;
+		$1->addChild($2);
+		$$ = $1;
 	}
 	;
 
@@ -338,19 +448,17 @@ simple_command_element:
 	;
 
 operative_command_element:
-	IDENTIFIER_LVALUE { $$ = $1; }
-	| object_reference_lvalue {
-		auto objRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
-		$$ = objRef->IDENTIFIER(); // PLACEHOLDER
+	IDENTIFIER_LVALUE {
+		auto node = std::make_shared<AST::RawText>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setText($1);
+		$$ = node;
 	}
-	| self_reference_lvalue {
-		auto selfRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
-		$$ = selfRef->IDENTIFIER(); // PLACEHOLDER
-	}
-	| pointer_dereference_lvalue {
-		auto ptrDeref = std::dynamic_pointer_cast<AST::ObjectReference>($1);
-		$$ = "*" + ptrDeref->IDENTIFIER(); // PLACEHOLDER
-	}
+	| object_reference_lvalue { $$ = $1; }
+	| self_reference_lvalue { $$ = $1; }
+	| pointer_dereference_lvalue { $$ = $1; }
 	;
 
 redirection:
@@ -1485,7 +1593,7 @@ bash_case_input:
 	;
 
 bash_case_body:
-	/* empty */ { $$ = std::vector<std::shared_ptr<AST::BashCasePattern>>(); }
+	/* empty */ { $$ = std::vector<ASTNodePtr>(); }
 	| bash_case_body bash_case_pattern { $$ = std::move($1); $$.push_back($2); }
 	;
 
@@ -1874,69 +1982,105 @@ arith_operator:
 	;
 
 bash_if_statement:
-	bash_if_root_branch maybe_bash_if_else_branches BASH_KEYWORD_FI {}
+	bash_if_root_branch maybe_bash_if_else_branches BASH_KEYWORD_FI {
+		auto node = std::dynamic_pointer_cast<AST::BashIfStatement>($1);
+		node->addChildren($2); // elif / else branches
+		$$ = node;
+	}
 	;
 
 bash_if_root_branch:
 	BASH_KEYWORD_IF bash_if_condition DELIM maybe_whitespace BASH_KEYWORD_THEN maybe_whitespace statements {
-		std::string ifCondition = $3;
+		auto node = std::make_shared<AST::BashIfStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::cout << "Parsed bash if root branch" << std::endl;
+		node->addChild($2); // condition
 
-		$$ = "if " + ifCondition + " then\n... statements ...";
+		auto rootBranch = std::make_shared<AST::BashIfRootBranch>();
+		rootBranch->setPosition(@5.begin.line, @5.begin.column);
+		rootBranch->addChildren($7); // statements
+		
+		node->addChild(rootBranch);
+		$$ = node;
 	}
 	;
 
 bash_if_condition:
 	simple_command_sequence {
 		set_bash_if_condition_received(true);
-		$$ = $1;
+		auto node = std::make_shared<AST::BashIfCondition>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		$$ = node;
 	}
 	;
 
 maybe_bash_if_else_branches:
-	/* empty */ { $$ = ""; }
-	| maybe_bash_if_else_branches bash_if_else_branch { $$ = $1 + $2; }
+	/* empty */ { $$ = std::vector<ASTNodePtr>(); }
+	| maybe_bash_if_else_branches bash_if_else_branch { $$ = std::move($1); $$.push_back($2); }
 	;
 
 bash_if_else_branch:
 	BASH_KEYWORD_ELIF bash_if_condition DELIM maybe_whitespace BASH_KEYWORD_THEN maybe_whitespace statements {
-		std::string elifCondition = $3;
+		auto node = std::make_shared<AST::BashIfElseBranch>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::cout << "Parsed bash elif branch" << std::endl;
+		node->addChild($2); // condition
+		node->addChildren($7); // statements
 
-		$$ = "elif " + elifCondition + " then\n... statements ...";
+		$$ = node;
 	}
 	| BASH_KEYWORD_ELSE DELIM maybe_whitespace statements {
-		std::cout << "Parsed bash else branch" << std::endl;
-		$$ = "else\n... statements ...";
+		auto node = std::make_shared<AST::BashIfElseBranch>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		// 'else' branch has no condition
+		node->addChildren($4); // statements
+
+		$$ = node;
 	}
 	;
 
 bash_while_statement:
 	BASH_KEYWORD_WHILE bash_while_or_until_condition DELIM maybe_whitespace BASH_KEYWORD_DO maybe_whitespace statements BASH_KEYWORD_DONE {
-		std::string whileCondition = $3;
-
-		std::cout << "Parsed bash while statement" << std::endl;
-
-		$$ = "while " + whileCondition + " do\n... statements ...\ndone";
+		auto node = std::make_shared<AST::BashWhileStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($2); // condition
+		node->addChildren($7); // statements
+		$$ = node;
 	}
 	;
 
 bash_until_statement:
 	BASH_KEYWORD_UNTIL bash_while_or_until_condition DELIM maybe_whitespace BASH_KEYWORD_DO maybe_whitespace statements BASH_KEYWORD_DONE {
-		std::string untilCondition = $3;
-
-		std::cout << "Parsed bash until statement" << std::endl;
-
-		$$ = "until " + untilCondition + " do\n... statements ...\ndone";
+		auto node = std::make_shared<AST::BashUntilStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($2); // condition
+		node->addChildren($7); // statements
+		$$ = node;
 	}
 	;
 
 bash_while_or_until_condition:
 	simple_command_sequence {
 		set_bash_while_or_until_condition_received(true);
-		$$ = $1;
+		auto node = std::make_shared<AST::BashWhileOrUntilCondition>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		$$ = node;
 	}
 	;
 

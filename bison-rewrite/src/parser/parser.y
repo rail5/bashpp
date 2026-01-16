@@ -211,16 +211,15 @@ void yyerror(const char *s);
 %%
 
 program: statements {
-		std::shared_ptr<AST::Program> astRoot = std::make_shared<AST::Program>();
-		astRoot->addChildren($1);
+		std::shared_ptr<AST::Program> program = std::make_shared<AST::Program>();
+		program->addChildren($1);
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
-		astRoot->setPosition(line_number, column_number);
-
-		$$ = astRoot;
+		program->setPosition(line_number, column_number);
+		$$ = program;
 
 		// Verification (Debug):
-		std::cout << *astRoot;
+		std::cout << *program;
 	}
 	;
 

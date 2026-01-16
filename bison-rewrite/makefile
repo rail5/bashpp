@@ -16,11 +16,15 @@ PARSER = $(GENERATEDDIR)/parser.tab.cpp
 ASTDIR = $(SRCDIR)/AST
 AST_SOURCES = $(wildcard $(ASTDIR)/*.cpp)
 
+LISTENERDIR = $(ASTDIR)/Listener
+LISTENER_SOURCES = $(wildcard $(LISTENERDIR)/*.cpp)
+
 CXX = g++
 CXXFLAGS = -std=gnu++23 -Wall -Wextra -O2 -s
 
 OBJECTS = $(OBJDIR)/main.o $(OBJDIR)/ModeStack.o $(OBJDIR)/generated/parser.tab.o $(OBJDIR)/generated/lex.yy.o
 OBJECTS += $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(AST_SOURCES))
+OBJECTS += $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(LISTENER_SOURCES))
 
 DEBUGOPTIONS :=
 DEBUGOPTIONS += $(if $(DBG),-Wcounterexamples -v) # Run make DBG=1 to generate parser debug output

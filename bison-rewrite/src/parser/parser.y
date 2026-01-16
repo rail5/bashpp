@@ -19,6 +19,7 @@ typedef std::shared_ptr<AST::ASTNode> ASTNodePtr;
 void yyerror(const char *s);
 %}
 
+%parse-param { std::shared_ptr<AST::Program>& program }
 
 %define parse.error verbose
 
@@ -182,15 +183,17 @@ void yyerror(const char *s);
 %%
 
 program: statements {
-		std::shared_ptr<AST::Program> program = std::make_shared<AST::Program>();
-		program->addChildren($1);
+		std::shared_ptr<AST::Program> astRoot = std::make_shared<AST::Program>();
+		astRoot->addChildren($1);
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
-		program->setPosition(line_number, column_number);
-		$$ = program;
+		astRoot->setPosition(line_number, column_number);
+		$$ = astRoot;
 
 		// Verification (Debug):
-		std::cout << *program;
+		std::cout << *astRoot << std::endl;
+
+		program = astRoot;
 	}
 	;
 

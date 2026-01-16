@@ -1,3 +1,8 @@
+/**
+ * Copyright (C) 2025 Andrew S. Rightenburg
+ * Bash++: Bash with classes
+ */
+
 #pragma once
 
 #include <cstddef>

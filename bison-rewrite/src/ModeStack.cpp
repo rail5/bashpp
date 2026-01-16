@@ -1,3 +1,8 @@
+/**
+ * Copyright (C) 2025 Andrew S. Rightenburg
+ * Bash++: Bash with classes
+ */
+
 #include "ModeStack.h"
 
 extern void scanner_push_state(int state, yyscan_t yyscanner);

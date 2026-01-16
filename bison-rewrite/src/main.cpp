@@ -1,3 +1,8 @@
+/**
+ * Copyright (C) 2025 Andrew S. Rightenburg
+ * Bash++: Bash with classes
+ */
+
 #include <iostream>
 #include "generated/parser.tab.hpp"
 #include "generated/lex.yy.hpp"

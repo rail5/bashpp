@@ -1,6 +1,10 @@
 
 
 %{
+/**
+ * Copyright (C) 2025 Andrew S. Rightenburg
+ * Bash++: Bash with classes
+ */
 #include "parser.tab.hpp" // Bison header for token types
 #include "../ModeStack.h"
 #include <cstdint>

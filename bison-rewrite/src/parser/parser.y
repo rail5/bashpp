@@ -3,6 +3,10 @@
 %locations
 
 %code requires {
+/**
+ * Copyright (C) 2025 Andrew S. Rightenburg
+ * Bash++: Bash with classes
+ */
 #include <memory>
 #include <cassert>
 #include "../AST/Nodes/IncludeStatement.h"

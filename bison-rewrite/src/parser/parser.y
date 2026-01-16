@@ -44,6 +44,9 @@
 #include "../AST/Nodes/BashCasePattern.h"
 #include "../AST/Nodes/BashCasePatternHeader.h"
 #include "../AST/Nodes/BashCasePatternAction.h"
+#include "../AST/Nodes/BashArithmeticStatement.h"
+#include "../AST/Nodes/BashArithmeticForCondition.h"
+#include "../AST/Nodes/BashArithmeticForStatement.h"
 typedef std::shared_ptr<AST::ASTNode> ASTNodePtr;
 }
 
@@ -188,6 +191,7 @@ void yyerror(const char *s);
 %type <ASTNodePtr> bash_for_or_select_maybe_in_something bash_for_or_select_input
 %type <ASTNodePtr> bash_case_statement bash_case_header bash_case_input bash_case_pattern bash_case_pattern_header
 %type <std::vector<std::shared_ptr<AST::BashCasePattern>>> bash_case_body
+%type <ASTNodePtr> bash_arithmetic_for_statement arithmetic_for_condition arith_statement increment_decrement_expression arith_condition_term comparison_expression
 
 %type <std::string> maybe_include_type maybe_as_clause maybe_parent_class
 %type <std::string> assignment_operator
@@ -195,8 +199,7 @@ void yyerror(const char *s);
 %type <std::string> maybe_hash
 %type <std::string> heredoc_header
 %type <std::string> bash_for_or_select_variable
-%type <std::string> bash_arithmetic_for_statement arithmetic_for_condition arith_statement increment_decrement_expression arith_operator
-%type <std::string> arith_condition_term comparison_expression comparison_operator
+%type <std::string> arith_operator comparison_operator
 %type <std::string> redirection redirection_operator
 %type <std::string> pipeline shell_command_sequence shell_command simple_command simple_command_element operative_command_element
 %type <std::string> simple_pipeline simple_command_sequence
@@ -1676,44 +1679,53 @@ bash_for_statement:
  */
 bash_arithmetic_for_statement:
 	BASH_KEYWORD_FOR WS arithmetic_for_condition BASH_KEYWORD_DO statements BASH_KEYWORD_DONE {
-		std::string forCondition = $3;
-
-		std::cout << "Parsed bash arithmetic for statement" << std::endl;
-
-		$$ = "for " + forCondition + " do\n... statements ...\ndone";
+		auto node = std::make_shared<AST::BashArithmeticForStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($3); // for condition
+		node->addChildren($5); // statements
+		$$ = node;
 	}
 	| BASH_KEYWORD_FOR WS arithmetic_for_condition DELIM maybe_whitespace BASH_KEYWORD_DO statements BASH_KEYWORD_DONE {
-		std::string forCondition = $3;
-
-		std::cout << "Parsed bash arithmetic for statement" << std::endl;
-
-		$$ = "for " + forCondition + " do\n... statements ...\ndone";
+		auto node = std::make_shared<AST::BashArithmeticForStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($3); // for condition
+		node->addChildren($7); // statements
+		$$ = node;
 	}
 	| BASH_KEYWORD_FOR WS arithmetic_for_condition block {
-		std::string forCondition = $3;
-
-		std::cout << "Parsed bash arithmetic for statement with block" << std::endl;
-
-		$$ = "for " + forCondition + " {\n... statements ...\n}";
+		auto node = std::make_shared<AST::BashArithmeticForStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($3); // for condition
+		node->addChild($4); // block
+		$$ = node;
 	}
 	| BASH_KEYWORD_FOR WS arithmetic_for_condition DELIM maybe_whitespace block {
-		std::string forCondition = $3;
-
-		std::cout << "Parsed bash arithmetic for statement with block" << std::endl;
-
-		$$ = "for " + forCondition + " {\n... statements ...\n}";
+		auto node = std::make_shared<AST::BashArithmeticForStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($3); // for condition
+		node->addChild($6); // block
+		$$ = node;
 	}
 	;
 
 arithmetic_for_condition:
 	ARITH_FOR_CONDITION_START arith_statement DELIM arith_statement DELIM arith_statement ARITH_FOR_CONDITION_END maybe_whitespace {
-		std::string initExpr = $2;
-		std::string condExpr = $4;
-		std::string iterExpr = $6;
-
-		std::cout << "Parsed bash arithmetic for condition: Init='" << initExpr << "', Condition='" << condExpr << "', Iteration='" << iterExpr << "'" << std::endl;
-
-		$$ = "((" + initExpr + "; " + condExpr + "; " + iterExpr + "))";
+		auto node = std::make_shared<AST::BashArithmeticForCondition>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($2); // first expression
+		node->addChild($4); // second expression
+		node->addChild($6); // third expression
+		$$ = node;
 	}
 	;
 
@@ -1725,51 +1737,93 @@ arithmetic_for_condition:
  * - Increment/decrement operators applied to object references or shell variables (e.g., i++, ++i, i--, --i)
  */
 arith_statement:
-	/* empty */ { $$ = ""; }
-	| valid_rvalue { $$ = $1; }
-	| IDENTIFIER_LVALUE { $$ = $1; }
+	/* empty */ { $$ = std::make_shared<AST::BashArithmeticStatement>(); }
+	| valid_rvalue {
+		auto node = std::make_shared<AST::BashArithmeticStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		$$ = node;
+	}
+	| IDENTIFIER_LVALUE {
+		auto node = std::make_shared<AST::BashArithmeticStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		auto rawText = std::make_shared<AST::RawText>();
+		rawText->setPosition(line_number, column_number);
+		rawText->setText($1);
+		node->addChild(rawText);
+		$$ = node;
+	}
 	| object_reference_lvalue {
-		auto objRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
-		$$ = objRef->IDENTIFIER(); // PLACEHOLDER
+		auto node = std::make_shared<AST::BashArithmeticStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		$$ = node;
 	}
 	| self_reference_lvalue {
-		auto selfRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
-		$$ = selfRef->IDENTIFIER(); // PLACEHOLDER
+		auto node = std::make_shared<AST::BashArithmeticStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		$$ = node;
 	}
-	| object_assignment { $$ = $1; }
-	| shell_variable_assignment { $$ = $1; }
+	| object_assignment {
+		auto node = std::make_shared<AST::BashArithmeticStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		$$ = node;
+	}
+	| shell_variable_assignment {
+		auto node = std::make_shared<AST::BashArithmeticStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		$$ = node;
+	}
 	| increment_decrement_expression { $$ = $1; }
 	| comparison_expression { $$ = $1; }
 	;
 
 increment_decrement_expression:
 	arith_condition_term arith_operator {
-		std::string ref = $1;
-		std::string op = $2;
-
-		std::cout << "Parsed increment/decrement expression: Reference='" << ref << "', Operator='" << op << "'" << std::endl;
-
-		$$ = ref + op;
+		auto node = std::make_shared<AST::BashArithmeticStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		node->addText($2);
+		$$ = node;
 	}
 	| arith_operator arith_condition_term {
-		std::string op = $1;
-		std::string ref = $2;
-
-		std::cout << "Parsed increment/decrement expression: Operator='" << op << "', Reference='" << ref << "'" << std::endl;
-
-		$$ = op + ref;
+		auto node = std::make_shared<AST::BashArithmeticStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addText($1);
+		node->addChild($2);
+		$$ = node;
 	}
 	;
 
 comparison_expression:
 	arith_condition_term maybe_whitespace comparison_operator maybe_whitespace arith_condition_term {
-		std::string leftTerm = $1;
-		std::string compOp = $3;
-		std::string rightTerm = $5;
-
-		std::cout << "Parsed comparison expression: LeftTerm='" << leftTerm << "', Operator='" << compOp << "', RightTerm='" << rightTerm << "'" << std::endl;
-
-		$$ = leftTerm + " " + compOp + " " + rightTerm;
+		auto node = std::make_shared<AST::BashArithmeticStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		node->addText($3);
+		node->addChild($5);
+		$$ = node;
 	}
 	;
 
@@ -1780,27 +1834,43 @@ comparison_operator:
 	;
 
 arith_condition_term:
-	object_reference {
-		auto objRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
-		$$ = objRef->IDENTIFIER(); // PLACEHOLDER
-	}
-	| object_reference_lvalue {
-		auto objRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
-		$$ = objRef->IDENTIFIER(); // PLACEHOLDER
-	}
-	| self_reference {
-		auto selfRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
-		$$ = selfRef->IDENTIFIER(); // PLACEHOLDER
-	}
-	| self_reference_lvalue {
-		auto selfRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
-		$$ = selfRef->IDENTIFIER(); // PLACEHOLDER
-	}
+	object_reference { $$ = $1; }
+	| object_reference_lvalue { $$ = $1; }
+	| self_reference { $$ = $1;}
+	| self_reference_lvalue {$$ = $1; }
 	| bash_variable { $$ = $1; }
-	| IDENTIFIER_LVALUE { $$ = $1; }
-	| IDENTIFIER { $$ = $1; }
-	| INTEGER { $$ = $1; }
-	| KEYWORD_NULLPTR { $$ = "0"; }
+	| IDENTIFIER_LVALUE {
+		auto node = std::make_shared<AST::RawText>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setText($1);
+		$$ = node;
+	}
+	| IDENTIFIER {
+		auto node = std::make_shared<AST::RawText>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setText($1);
+		$$ = node;
+	}
+	| INTEGER {
+		auto node = std::make_shared<AST::RawText>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setText($1);
+		$$ = node;
+	}
+	| KEYWORD_NULLPTR {
+		auto node = std::make_shared<AST::RawText>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setText("0");
+		$$ = node;
+	}
 	;
 
 arith_operator:

@@ -58,6 +58,9 @@ enum class NodeType {
 	BashWhileStatement,
 	BashUntilStatement,
 	BashArithmeticForStatement,
+	BashArithmeticForCondition,
+	BashArithmeticStatement,
+	BashArithmeticExpression,
 	ERROR_TYPE
 };
 } // namespace AST

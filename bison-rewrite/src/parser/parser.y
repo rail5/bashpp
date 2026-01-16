@@ -22,6 +22,28 @@
 #include "../AST/Nodes/SubshellSubstitution.h"
 #include "../AST/Nodes/RawSubshell.h"
 #include "../AST/Nodes/DoublequotedString.h"
+#include "../AST/Nodes/Rvalue.h"
+#include "../AST/Nodes/ValueAssignment.h"
+#include "../AST/Nodes/ParameterExpansion.h"
+#include "../AST/Nodes/ArrayIndex.h"
+#include "../AST/Nodes/BashVariable.h"
+#include "../AST/Nodes/DynamicCast.h"
+#include "../AST/Nodes/DynamicCastTarget.h"
+#include "../AST/Nodes/ProcessSubstitution.h"
+#include "../AST/Nodes/TypeofExpression.h"
+#include "../AST/Nodes/NamedFD.h"
+#include "../AST/Nodes/PrimitiveAssignment.h"
+#include "../AST/Nodes/ObjectAssignment.h"
+#include "../AST/Nodes/HeredocBody.h"
+#include "../AST/Nodes/HereString.h"
+#include "../AST/Nodes/BashForStatement.h"
+#include "../AST/Nodes/BashSelectStatement.h"
+#include "../AST/Nodes/BashInCondition.h"
+#include "../AST/Nodes/BashCaseStatement.h"
+#include "../AST/Nodes/BashCaseInput.h"
+#include "../AST/Nodes/BashCasePattern.h"
+#include "../AST/Nodes/BashCasePatternHeader.h"
+#include "../AST/Nodes/BashCasePatternAction.h"
 typedef std::shared_ptr<AST::ASTNode> ASTNodePtr;
 }
 
@@ -151,72 +173,37 @@ void yyerror(const char *s);
 
 %type <ASTNodePtr> doublequoted_string quote_contents string_interpolation
 
-%type <std::string> maybe_include_type maybe_as_clause maybe_parent_class maybe_default_value
-%type <std::string> valid_rvalue value_assignment assignment_operator
-%type <std::string> maybe_array_index maybe_parameter_expansion maybe_exclam
-%type <std::string> object_assignment shell_variable_assignment
-%type <std::string> bash_variable
-%type <std::string> dynamic_cast cast_target
+%type <ASTNodePtr> valid_rvalue concatenatable_rvalue concatenated_rvalue
+%type <ASTNodePtr> value_assignment maybe_default_value
+%type <ASTNodePtr> object_assignment shell_variable_assignment
+
+%type <ASTNodePtr> typeof_expression
+%type <ASTNodePtr> dynamic_cast cast_target
+%type <ASTNodePtr> bash_variable maybe_array_index maybe_parameter_expansion array_index
+
+%type <ASTNodePtr> process_substitution named_fd maybe_namedfd_array_index
+%type <ASTNodePtr> heredoc_body heredoc_content herestring
+
+%type <ASTNodePtr> bash_for_statement bash_select_statement bash_for_or_select_header
+%type <ASTNodePtr> bash_for_or_select_maybe_in_something bash_for_or_select_input
+%type <ASTNodePtr> bash_case_statement bash_case_header bash_case_input bash_case_pattern bash_case_pattern_header
+%type <std::vector<std::shared_ptr<AST::BashCasePattern>>> bash_case_body
+
+%type <std::string> maybe_include_type maybe_as_clause maybe_parent_class
+%type <std::string> assignment_operator
+%type <std::string> maybe_exclam
 %type <std::string> maybe_hash
-%type <std::string> typeof_expression
-%type <std::string> heredoc_header heredoc_body heredoc_content herestring
-%type <std::string> array_index
-%type <std::string> bash_case_body bash_case_header bash_case_input bash_case_pattern bash_case_statement bash_case_pattern_header
-%type <std::string> bash_select_statement bash_for_statement
-%type <std::string> bash_for_or_select_header bash_for_or_select_input bash_for_or_select_variable bash_for_or_select_maybe_in_something
+%type <std::string> heredoc_header
+%type <std::string> bash_for_or_select_variable
 %type <std::string> bash_arithmetic_for_statement arithmetic_for_condition arith_statement increment_decrement_expression arith_operator
 %type <std::string> arith_condition_term comparison_expression comparison_operator
-%type <std::string> redirection redirection_operator named_fd maybe_namedfd_array_index
-%type <std::string> process_substitution
+%type <std::string> redirection redirection_operator
 %type <std::string> pipeline shell_command_sequence shell_command simple_command simple_command_element operative_command_element
 %type <std::string> simple_pipeline simple_command_sequence
 %type <std::string> logical_connective
-%type <std::string> concatenatable_rvalue concatenated_rvalue
 %type <std::string> bash_if_statement bash_if_condition bash_if_else_branch bash_if_root_branch maybe_bash_if_else_branches
 %type <std::string> bash_while_statement bash_until_statement bash_while_or_until_condition
 %type <std::string> command_redirections
-
-/**
- * NOTE: A shift/reduce conflict is EXPECTED between 'object_instantiation' and
- * 'object_reference_lvalue' on the WS token.
- *
- * This is because, with only 1 token of lookahead, the parser cannot determine
- * whether the WS is between the class name and object name in an object
- * instantiation, or if instead it's AFTER a complete object reference
- * (e.g., @objectReference unrelatedToken, which would make 'unrelatedToken' an
- * argument to the implicit .toPrimitive call).
- *
- * The parser doesn't know whether to SHIFT (i.e., treat the WS as part of the
- * current statement and keep going), or REDUCE (i.e., take the opportunity to
- * say "I've now scanned enough tokens to know which statement type this is").
- *
- * However, this conflict is benign, and the default behavior (shifting the WS
- * and treating it as part of an object instantiation) is the desired one.
- *
- * In other words, there is an INHERENT AMBIGUITY in the Bash++ grammar that
- * cannot be resolved with an LALR(1) parser.
- *
- *     @ID ID
- * Is obviously an object instantiation, right?
- *
- * However: Bash++ grammar also says explicitly that:
- *     A reference to a non-primitive object in a place where a primitive is
- *     expected is implicitly a call to the .toPrimitive method of that object.
- *
- * So, the same statement could reasonably be interpreted as @ID.toPrimitive
- * with the second 'ID' as an argument
- *
- * Our resolution to this is to say simply that no arguments can be passed to
- * .toPrimitive IFF it is only IMPLIED by referencing the object directly in a
- * primitive context.
- *
- * If the user actually wants to call .toPrimitive with arguments, they must do
- * so explicitly, as in:
- *    @object.toPrimitive argument1 argument2
- *
- * The default behavior of Bison in the presence of this shift/reduce conflict
- * is to favor shifting, which is exactly what we want.
- */
 
 %%
 
@@ -340,7 +327,7 @@ simple_command_element:
 	| redirection { $$ = $1; }
 	| operative_command_element { $$ = $1; }
 	| valid_rvalue %prec CONCAT_STOP { $$ = $1; }
-	| block { $$ = ""; }
+	| block { $$ = $1; }
 	;
 
 operative_command_element:
@@ -359,15 +346,6 @@ operative_command_element:
 	}
 	;
 
-/**
- * NOTE: A shift/reduce conflict is expected on AMPERSAND
- * Example redirection: >&@object.reference
- * Ambiguity: In this case, is it > &@object.address? Or is it >& @object.reference?
- * Our resolution to this is to prefer the parser's default behavior of shifting
- *   which would resolve to >& @object.reference
- * If you want to redirect to an object address, whitespace is required before the address-of operator, as in:
- *   > &@object.address
- */
 redirection:
 	redirection_operator maybe_whitespace valid_rvalue {
 		std::string redirOperator = $1;
@@ -399,17 +377,27 @@ redirection_operator:
 	| RANGLE RANGLE { $$ = ">>"; }
 	| RANGLE_AMPERSAND { $$ = ">&"; }
 	| RANGLE PIPE { $$ = ">|"; }
-	| AMPERSAND_RANGLE { $$ = "&>"; } // &>
-	| AMPERSAND_RANGLE RANGLE { $$ = "&>>"; } // &>>
+	| AMPERSAND_RANGLE { $$ = "&>"; }
+	| AMPERSAND_RANGLE RANGLE { $$ = "&>>"; }
 	;
 
 named_fd:
-	LBRACE IDENTIFIER maybe_namedfd_array_index RBRACE { $$ = "{" + $2 + $3 + "}"; }
+	LBRACE IDENTIFIER maybe_namedfd_array_index RBRACE {
+		auto node = std::make_shared<AST::NamedFD>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addText("{");
+		node->addText($2);
+		node->addChild($3);
+		node->addText("}");
+		$$ = node;
+	}
 	;
 
 maybe_namedfd_array_index:
-	/* empty */ { $$ = ""; }
-	| LBRACKET array_index RBRACKET { $$ = "[" + $2 + "]"; } // Since LBRACKET/RBRACKET don't get matched as ARRAY_INDEX_START/_END in normal lexer mode
+	/* empty */ { $$ = nullptr; }
+	| LBRACKET array_index RBRACKET { $$ = $2; } // Since LBRACKET/RBRACKET don't get matched as ARRAY_INDEX_START/_END in normal lexer mode
 	;
 
 block:
@@ -425,57 +413,109 @@ block:
 	;
 
 valid_rvalue:
-	EMPTY_ASSIGNMENT { $$ = ""; }
-	| new_statement { $$ = ""; }
-	| dynamic_cast {$$ = $1; }
-	| typeof_expression { $$ = $1; }
+	EMPTY_ASSIGNMENT {
+		auto node = std::make_shared<AST::Rvalue>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addText("");
+		$$ = node;
+	}
+	| new_statement {
+		auto node = std::make_shared<AST::Rvalue>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		$$ = node;
+	}
+	| dynamic_cast {
+		auto node = std::make_shared<AST::Rvalue>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		$$ = node;
+	}
+	| typeof_expression {
+		auto node = std::make_shared<AST::Rvalue>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		$$ = node;
+	}
 	| concatenated_rvalue %prec CONCAT_STOP { $$ = $1; }
 	;
 
 concatenated_rvalue:
-	concatenatable_rvalue %prec CONCAT_STOP { $$ = $1; }
-	| concatenated_rvalue concatenatable_rvalue { $$ = $1 + $2; }
+	concatenatable_rvalue %prec CONCAT_STOP {
+		auto rvalue = std::make_shared<AST::Rvalue>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		rvalue->setPosition(line_number, column_number);
+		rvalue->addChild($1);
+		$$ = rvalue;
+	}
+	| concatenated_rvalue concatenatable_rvalue {
+		auto rvalue = std::dynamic_pointer_cast<AST::Rvalue>($1);
+		rvalue->addChild($2);
+		$$ = rvalue;
+	}
 	;
 
 concatenatable_rvalue:
-	IDENTIFIER { $$ = $1; }
-	| INTEGER { $$ = $1; }
-	| SINGLEQUOTED_STRING { $$ = $1; }
-	| KEYWORD_NULLPTR { $$ = "0"; }
-	| doublequoted_string {
-		auto dqString = std::dynamic_pointer_cast<AST::DoublequotedString>($1);
-		$$ = "\"(doublequoted_string)\""; // PLACEHOLDER
+	IDENTIFIER {
+		auto node = std::make_shared<AST::RawText>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setText($1);
+		$$ = node;
 	}
-	| object_reference {
-		auto objRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
-		$$ = objRef->IDENTIFIER(); // PLACEHOLDER
+	| INTEGER {
+		auto node = std::make_shared<AST::RawText>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setText($1);
+		$$ = node;
 	}
-	| self_reference {
-		auto selfRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
-		$$ = selfRef->IDENTIFIER(); // PLACEHOLDER
+	| SINGLEQUOTED_STRING {
+		auto node = std::make_shared<AST::RawText>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setText($1);
+		$$ = node;
 	}
-	| object_address {
-		auto objAddr = std::dynamic_pointer_cast<AST::ObjectReference>($1);
-		$$ = "&" + objAddr->IDENTIFIER(); // PLACEHOLDER
+	| KEYWORD_NULLPTR {
+		auto node = std::make_shared<AST::RawText>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setText("0"); // Represent nullptr as 0
+		$$ = node;
 	}
-	| pointer_dereference_rvalue {
-		auto ptrDeref = std::dynamic_pointer_cast<AST::ObjectReference>($1);
-		$$ = "*" + ptrDeref->IDENTIFIER(); // PLACEHOLDER
+	| CATCHALL { 
+		auto node = std::make_shared<AST::RawText>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setText($1);
+		$$ = node;
 	}
+	| doublequoted_string { $$ = $1; }
+	| object_reference { $$ = $1; }
+	| self_reference { $$ = $1; }
+	| object_address { $$ = $1; }
+	| pointer_dereference_rvalue { $$ = $1; }
 	| bash_variable { $$ = $1; }
-	| supershell {
-		$$ = "@(supershell)"; // PLACEHOLDER
-	}
-	| subshell_substitution {
-		$$ = "$(subshell)"; // PLACEHOLDER
-	}
-	| subshell_raw {
-		// Not actually subshells in the case of rvalues, but array values, as in arr+=("string"). Kind of a hack.
-		$$ = "(array_value)"; // PLACEHOLDER
-	}
+	| supershell { $$ = $1; }
+	| subshell_substitution { $$ = $1; }
+	| subshell_raw { $$ = $1; }
 	| process_substitution { $$ = $1; }
 	| named_fd { $$ = $1; }
-	| CATCHALL { $$ = $1; }
 	;
 
 maybe_whitespace:
@@ -574,8 +614,7 @@ instantiation_suffix:
 	WS IDENTIFIER maybe_default_value {
 		auto node = std::make_shared<AST::ObjectInstantiation>();
 		node->setIdentifier($2);
-		//if ($3) node->addChild($3);
-		// TBD: Add value_assignment node
+		node->addChild($3);
 		$$ = node;
 	}
 	| WS { $$ = nullptr; }
@@ -585,8 +624,7 @@ pointer_declaration:
 	pointer_declaration_preface WS IDENTIFIER_LVALUE maybe_default_value {
 		auto node = std::dynamic_pointer_cast<AST::PointerDeclaration>($1);
 		node->setIdentifier($3);
-		//if ($4) node->addChild($4);
-		// TBD: Add value_assignment node
+		node->addChild($4);
 
 		$$ = node;
 	}
@@ -671,9 +709,7 @@ datamember_declaration:
 
 		node->setAccessModifier($1);
 		node->setIdentifier($2);
-		//if ($3) node->addChild($3);
-		// TBD: For now maybe_default_value is just a string, not an AST node
-		// It should return a ValueAssignment node instead
+		node->addChild($3);
 
 		$$ = node;
 	}
@@ -719,18 +755,21 @@ access_modifier_keyword:
 	;
 
 maybe_default_value:
-	maybe_whitespace { $$ = ""; }
+	maybe_whitespace { $$ = nullptr; }
 	| value_assignment { $$ = $1; }
 	;
 
 value_assignment:
 	assignment_operator valid_rvalue {
-		std::string assignOp = $1;
-		std::string rvalue = $2;
+		auto node = std::make_shared<AST::ValueAssignment>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::cout << "Parsed value assignment: Operator='" << assignOp << "', RValue='" << rvalue << "'" << std::endl;
+		node->setOperator($1);
+		node->addChild($2);
 
-		$$ = $2;
+		$$ = node;
 	}
 	;
 
@@ -855,15 +894,7 @@ string_interpolation:
 	| pointer_dereference { $$ = $1; }
 	| supershell { $$ = $1; }
 	| subshell_substitution { $$ = $1; }
-	| bash_variable {
-		auto node = std::make_shared<AST::RawText>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
-		node->setPosition(line_number, column_number);
-		node->setText($1);
-
-		$$ = node; // TODO: Change this
-	}
+	| bash_variable { $$ = $1; }
 	;
 
 object_reference:
@@ -893,7 +924,7 @@ object_reference:
 			node->setHasHashkey(true);
 		}
 		
-		//if ($5) node->addChild($5); // TBD: Add array index node
+		node->addChild($5);
 
 		$$ = node;
 	}
@@ -926,7 +957,7 @@ object_reference_lvalue:
 			node->setHasHashkey(true);
 		}
 
-		//if ($5) node->addChild($5); // TBD: Add array index node
+		node->addChild($5);
 
 		$$ = node;
 	}
@@ -959,7 +990,7 @@ self_reference:
 			node->setHasHashkey(true);
 		}
 
-		//if ($5) node->addChild($5); // TBD: Add array index node
+		node->addChild($5);
 
 		$$ = node;
 	}
@@ -989,7 +1020,7 @@ self_reference:
 			node->setHasHashkey(true);
 		}
 
-		//if ($5) node->addChild($5); // TBD: Add array index node
+		node->addChild($5);
 
 		$$ = node;
 	}
@@ -1022,7 +1053,7 @@ self_reference_lvalue:
 			node->setHasHashkey(true);
 		}
 
-		//if ($5) node->addChild($5); // TBD: Add array index node
+		node->addChild($5);
 
 		$$ = node;
 	}
@@ -1052,7 +1083,7 @@ self_reference_lvalue:
 			node->setHasHashkey(true);
 		}
 
-		//if ($5) node->addChild($5); // TBD: Add array index node
+		node->addChild($5);
 
 		$$ = node;
 	}
@@ -1068,15 +1099,36 @@ maybe_descend_object_hierarchy:
 	;
 
 maybe_array_index:
-	/* empty */ { $$ = ""; }
+	/* empty */ { $$ = nullptr; }
 	| ARRAY_INDEX_START array_index ARRAY_INDEX_END {
-		$$ = "[" + $2 + "]";
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		$2->setPosition(line_number, column_number);
+		$$ = $2;
 	}
 	;
 
 array_index:
-	valid_rvalue { $$ = $1; }
-	| AT { $$ = "@"; } // '@' is a valid array index, as in ${array[@]}
+	valid_rvalue {
+		auto node = std::make_shared<AST::ArrayIndex>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		$$ = node;
+	}
+	| AT {
+		// '@' is a valid array index, as in ${array[@]}
+		auto node = std::make_shared<AST::ArrayIndex>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		auto atNode = std::make_shared<AST::RawText>();
+		atNode->setPosition(line_number, column_number);
+		atNode->setText("@");
+		node->addChild(atNode);
+		$$ = node;
+	}
 	;
 
 maybe_exclam:
@@ -1091,75 +1143,100 @@ maybe_hash:
 
 bash_variable:
 	BASH_VAR_START maybe_exclam maybe_hash IDENTIFIER maybe_array_index maybe_parameter_expansion BASH_VAR_END {
-		std::string varName = $4;
-		std::string arrayIndex = $5;
-		std::string paramExpansion = $6;
+		auto node = std::make_shared<AST::BashVariable>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
 
-		std::cout << "Parsed Bash variable: Name='" << varName << "'";
-		if (!arrayIndex.empty()) {
-			std::cout << ", ArrayIndex='" << arrayIndex << "'";
-		}
-		if (!paramExpansion.empty()) {
-			std::cout << ", ParameterExpansion='" << paramExpansion << "'";
-		}
-		std::cout << std::endl;
-
-		$$ = "${" + varName + arrayIndex + paramExpansion + "}";
+		std::string text = $2 + $3 + $4; // Remember to re-enclose in ${...} later
+		node->setText(text);
+		node->addChild($5);
+		node->addChild($6);
+		$$ = node;
 	}
-	| BASH_VAR { $$ = $1; }
+	| BASH_VAR {
+		auto node = std::make_shared<AST::BashVariable>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+
+		node->setText($1); // Just the simple $VAR form
+		$$ = node;
+	}
 	;
 
 maybe_parameter_expansion:
-	/* empty */ { $$ = ""; }
+	/* empty */ { $$ = nullptr; }
 	| EXPANSION_BEGIN valid_rvalue {
-		std::string expansionContent = $2;
-
-		std::cout << "Parsed parameter expansion: Content='" << expansionContent << "'" << std::endl;
-
-		$$ = ":-" + expansionContent;
+		auto node = std::make_shared<AST::ParameterExpansion>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setExpansionBegin($1);
+		node->addChild($2);
+		$$ = node;
 	}
 	| EXPANSION_BEGIN PARAMETER_EXPANSION_CONTENT {
-		std::string expansionContent = $2;
-
-		std::cout << "Parsed parameter expansion: Content='" << expansionContent << "'" << std::endl;
-
-		$$ = expansionContent;
+		auto node = std::make_shared<AST::ParameterExpansion>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setExpansionBegin($1);
+		auto contentNode = std::make_shared<AST::RawText>();
+		contentNode->setPosition(@2.begin.line, @2.begin.column);
+		contentNode->setText($2);
+		node->addChild(contentNode);
+		$$ = node;
 	}
 	;
 
 dynamic_cast:
 	KEYWORD_DYNAMIC_CAST LANGLE cast_target RANGLE WS valid_rvalue {
-		std::string targetType = $3;
-		std::string expression = $6;
-
-		std::cout << "Parsed dynamic_cast: TargetType='" << targetType << "', Expression='" << expression << "'" << std::endl;
-
-		$$ = "dynamic_cast<" + targetType + ">(" + expression + ")";
+		auto node = std::make_shared<AST::DynamicCast>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($3); // cast_target
+		node->addChild($6); // valid_rvalue
+		$$ = node;
 	}
 	;
 
 cast_target:
 	IDENTIFIER {
-		std::string targetType = $1;
-		std::cout << "Parsed dynamic_cast target type: " << targetType << std::endl;
-		$$ = targetType;
+		auto node = std::make_shared<AST::DynamicCastTarget>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		auto rawTextTarget = std::make_shared<AST::RawText>();
+		rawTextTarget->setPosition(line_number, column_number);
+		rawTextTarget->setText($1);
+		node->addChild(rawTextTarget);
+		$$ = node;
 	}
 	| bash_variable {
-		std::string targetType = $1;
-		std::cout << "Parsed dynamic_cast target type (Bash variable): " << targetType << std::endl;
-		$$ = targetType;
+		auto node = std::make_shared<AST::DynamicCastTarget>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		$$ = node;
 	}
 	| object_reference {
-		auto objRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
-		std::string targetType = objRef->IDENTIFIER(); // PLACEHOLDER
-		$$ = targetType;
-		std::cout << "Parsed dynamic_cast target type (object reference): " << targetType << std::endl;
+		auto node = std::make_shared<AST::DynamicCastTarget>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		$$ = node;
 	}
 	| self_reference {
-		auto selfRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
-		std::string targetType = selfRef->IDENTIFIER(); // PLACEHOLDER
-		$$ = targetType;
-		std::cout << "Parsed dynamic_cast target type (self reference): " << targetType << std::endl;
+		auto node = std::make_shared<AST::DynamicCastTarget>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		$$ = node;
 	}
 	;
 
@@ -1167,42 +1244,47 @@ object_assignment:
 	object_reference_lvalue value_assignment {
 		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
 
-		auto objRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
-		std::string lvalue = objRef->IDENTIFIER(); // PLACEHOLDER
-		std::string rvalue = $2;
-		std::cout << "Parsed object assignment: ObjectReference='" << objRef->IDENTIFIER() << "', RValue='" << rvalue << "'" << std::endl;
-		$$ = lvalue + "=" + rvalue;
+		auto node = std::make_shared<AST::ObjectAssignment>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		node->addChild($2);
+		$$ = node;
 	}
 	| self_reference_lvalue value_assignment {
 		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
 
-		auto selfRef = std::dynamic_pointer_cast<AST::ObjectReference>($1);
-		std::string lvalue = selfRef->IDENTIFIER(); // PLACEHOLDER
-		std::string rvalue = $2;
-		std::cout << "Parsed self assignment: SelfReference='" << selfRef->IDENTIFIER() << "', RValue='" << rvalue << "'" << std::endl;
-		$$ = lvalue + "=" + rvalue;
+		auto node = std::make_shared<AST::ObjectAssignment>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		node->addChild($2);
+		$$ = node;
 	}
 	| pointer_dereference_lvalue value_assignment {
 		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
 
-		auto ptrDeref = std::dynamic_pointer_cast<AST::ObjectReference>($1);
-		std::string lvalue = "*" + ptrDeref->IDENTIFIER(); // PLACEHOLDER
-		std::string rvalue = $2;
-		std::cout << "Parsed pointer dereference assignment: PointerDereference='" << lvalue << "', RValue='" << rvalue << "'" << std::endl;
-		$$ = lvalue + "=" + rvalue;
+		auto node = std::make_shared<AST::ObjectAssignment>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		node->addChild($2);
+		$$ = node;
 	}
 	;
 
 shell_variable_assignment:
 	IDENTIFIER_LVALUE value_assignment {
-		std::string varName = $1;
-		std::string rvalue = $2;
-
-		std::cout << "Parsed shell variable assignment: Variable='" << varName << "', RValue='" << rvalue << "'" << std::endl;
-
-		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
-
-		$$ = varName + "=" + rvalue;
+		auto node = std::make_shared<AST::PrimitiveAssignment>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setIdentifier($1);
+		node->addChild($2);
+		$$ = node;
 	}
 	;
 
@@ -1262,11 +1344,12 @@ pointer_dereference_lvalue:
 
 typeof_expression:
 	KEYWORD_TYPEOF WS valid_rvalue {
-		std::string expression = $3;
-
-		std::cout << "Parsed typeof expression: Expression='" << expression << "'" << std::endl;
-
-		$$ = "typeof(" + expression + ")";
+		auto node = std::make_shared<AST::TypeofExpression>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($3);
+		$$ = node;
 	}
 
 supershell:
@@ -1323,96 +1406,119 @@ deprecated_subshell:
 
 process_substitution:
 	PROCESS_SUBSTITUTION_START statements PROCESS_SUBSTITUTION_END {
-		std::string op = $1;
-		$$ = op + "... statements ...)";
+		auto node = std::make_shared<AST::ProcessSubstitution>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setSubstitutionStart($1);
+		node->addChildren($2);
+		$$ = node;
 	}
 	;
 
 heredoc_header:
 	HEREDOC_START HEREDOC_DELIMITER {
-		std::string delimiter = $2;
-
-		std::cout << "Parsed heredoc header with delimiter: " << delimiter << std::endl;
-
-		$$ = delimiter;
+		$$ = $1;
 	}
 	;
 
 heredoc_body:
 	HEREDOC_CONTENT_START heredoc_content HEREDOC_END {
-		std::string content = $2;
-		std::string delimiter = $3;
-
-		std::cout << "Parsed heredoc body with content: " << content << std::endl;
-
-		$$ = content + "\n" + delimiter;
+		auto node = std::dynamic_pointer_cast<AST::HeredocBody>($2);
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setDelimiter($3);
+		$$ = node;
 	}
 	;
 
 heredoc_content:
-	/* empty */ { $$ = ""; }
-	| heredoc_content STRING_CONTENT { $$ = $1 + $2; }
+	/* empty */ { $$ = std::make_shared<AST::HeredocBody>(); }
+	| heredoc_content STRING_CONTENT {
+		auto node = std::dynamic_pointer_cast<AST::HeredocBody>($1);
+		node->addText($2);
+		$$ = node;
+	}
 	| heredoc_content string_interpolation {
-		$$ = $1 + "{INTERPOLATION}"; // PLACEHOLDER
+		auto node = std::dynamic_pointer_cast<AST::HeredocBody>($1);
+		node->addChild($2);
+		$$ = node;
 		}
 	;
 
 herestring:
 	HERESTRING_START maybe_whitespace valid_rvalue {
-		std::string rvalue = $3;
-
-		std::cout << "Parsed herestring: RValue='" << rvalue << "'" << std::endl;
-
-		$$ = "<<< " + rvalue;
+		auto node = std::make_shared<AST::HereString>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($3);
+		$$ = node;
 	}
 	;
 
 bash_case_statement:
 	BASH_KEYWORD_CASE WS bash_case_header bash_case_body BASH_KEYWORD_ESAC {
-		std::string caseHeader = $3;
-		std::string caseBody = $4;
-
-		std::cout << "Parsed bash case statement" << std::endl;
-
-		$$ = "case " + caseHeader + " in\n" + caseBody + "\nesac";
+		auto node = std::make_shared<AST::BashCaseStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($3); // bash_case_input
+		node->addChildren($4); // bash_case_body
+		$$ = node;
 	}
 	;
 
 bash_case_header:
-	bash_case_input WS BASH_KEYWORD_IN BASH_CASE_BODY_BEGIN {
-		std::string caseInput = $1;
-		std::cout << "Parsed bash case header: Input='" << caseInput << "'" << std::endl;
-		$$ = caseInput;
-	}
+	bash_case_input WS BASH_KEYWORD_IN BASH_CASE_BODY_BEGIN { $$ = $1; }
 	;
 
 bash_case_input:
 	valid_rvalue {
 		set_bash_case_input_received(true);
-		$$ = $1;
+		auto node = std::make_shared<AST::BashCaseInput>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		$$ = node;
 	}
 	;
 
 bash_case_body:
-	/* empty */ { $$ = ""; }
-	| bash_case_body bash_case_pattern { $$ = $1 + $2; }
+	/* empty */ { $$ = std::vector<std::shared_ptr<AST::BashCasePattern>>(); }
+	| bash_case_body bash_case_pattern { $$ = std::move($1); $$.push_back($2); }
 	;
 
 bash_case_pattern:
 	bash_case_pattern_header BASH_CASE_PATTERN_DELIM statements BASH_CASE_PATTERN_TERMINATOR {
-		std::string pattern = $1;
+		auto node = std::make_shared<AST::BashCasePattern>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1); // pattern header
 
-		std::cout << "Parsed bash case pattern: Pattern='" << pattern << "'" << std::endl;
+		auto action = std::make_shared<AST::BashCasePatternAction>();
+		action->setPosition(@3.begin.line, @3.begin.column);
+		action->addChildren($3); // statements
 
-		$$ = pattern + "... statements ...;;";
+		node->addChild(action);
+		$$ = node;
 	}
 	;
 
 bash_case_pattern_header:
-	/* empty */ { $$ = ""; }
-	| bash_case_pattern_header STRING_CONTENT { $$ = $1 + $2; }
+	/* empty */ { $$ = std::make_shared<AST::BashCasePatternHeader>(); }
+	| bash_case_pattern_header STRING_CONTENT {
+		auto node = std::dynamic_pointer_cast<AST::BashCasePatternHeader>($1);
+		node->addText($2);
+		$$ = node;
+	}
 	| bash_case_pattern_header string_interpolation {
-		$$ = $1 + "{INTERPOLATION}"; // PLACEHOLDER
+		auto node = std::dynamic_pointer_cast<AST::BashCasePatternHeader>($1);
+		node->addChild($2);
+		$$ = node;
 	}
 	;
 
@@ -1427,62 +1533,95 @@ bash_case_pattern_header:
  */
 bash_select_statement:
 	BASH_KEYWORD_SELECT WS bash_for_or_select_header DELIM maybe_whitespace BASH_KEYWORD_DO statements BASH_KEYWORD_DONE {
-		std::string selectHeader = $3;
-
-		std::cout << "Parsed bash select statement" << std::endl;
-
-		$$ = "select " + selectHeader + " do\n... statements ...\ndone";
+		auto forStatement = std::dynamic_pointer_cast<AST::BashForStatement>($3);
+		auto selectStatement = std::make_shared<AST::BashSelectStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		selectStatement->setPosition(line_number, column_number);
+		// Earlier, we assumed it was a 'for' statement by default
+		if (!forStatement) {
+			// This should not happen, but just in case
+			selectStatement = std::dynamic_pointer_cast<AST::BashSelectStatement>($3);
+		} else {
+			selectStatement->setVariable(forStatement->VARIABLE());
+			selectStatement->addChildren(forStatement->getChildren());
+		}
+		selectStatement->addChildren($7);
+		$$ = selectStatement;
 	}
 	| BASH_KEYWORD_SELECT WS bash_for_or_select_header DELIM maybe_whitespace block {
-		std::string selectHeader = $3;
-
-		std::cout << "Parsed bash select statement with block" << std::endl;
-
-		$$ = "select " + selectHeader + " {\n... statements ...\n}";
+		auto forStatement = std::dynamic_pointer_cast<AST::BashForStatement>($3);
+		auto selectStatement = std::make_shared<AST::BashSelectStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		selectStatement->setPosition(line_number, column_number);
+		// Earlier, we assumed it was a 'for' statement by default
+		if (!forStatement) {
+			// This should not happen, but just in case
+			selectStatement = std::dynamic_pointer_cast<AST::BashSelectStatement>($3);
+		} else {
+			selectStatement->setVariable(forStatement->VARIABLE());
+			selectStatement->addChildren(forStatement->getChildren());
+		}
+		selectStatement->addChild($6);
+		$$ = selectStatement;
 	}
 	;
 
 bash_for_or_select_header:
 	bash_for_or_select_variable bash_for_or_select_maybe_in_something {
-		std::string varName = $1;
-		std::string inSomething = $2;
-
-		std::cout << "Parsed bash for/select header: Variable='" << varName << "'" << std::endl;
-
-		$$ = varName + inSomething;
+		// Here, we assume that it's a 'for' statement by default
+		// 'for' is much more common than 'select'
+		// If it winds up being 'select' instead, the AST node will be updated later
+		// When we're in the bash_select_statement rule
+		auto forStatement = std::make_shared<AST::BashForStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		forStatement->setPosition(line_number, column_number);
+		forStatement->setVariable($1);
+		forStatement->addChild($2);
+		$$ = forStatement;
 	}
 	;
 
 bash_for_or_select_maybe_in_something:
-	maybe_whitespace { 
-		std::cout << "Parsed bash for/select header with no 'in'" << std::endl;
-		$$ = "";
-	}
+	maybe_whitespace { $$ = nullptr; }
 	| WS BASH_KEYWORD_IN WS bash_for_or_select_input {
-		std::string selectInput = $4;
-
-		std::cout << "Parsed bash for/select header with input: Input='" << selectInput << "'" << std::endl;
-
-		$$ = " in " + selectInput;
+		auto inCondition = std::dynamic_pointer_cast<AST::BashInCondition>($4);
+		inCondition->setPosition(@2.begin.line, @2.begin.column); // Move position to 'in' token
+		$$ = inCondition;
 	}
 	| WS BASH_KEYWORD_IN maybe_whitespace {
-		std::cout << "Parsed bash for/select header with no input" << std::endl;
-		$$ = " in";
+		auto node = std::make_shared<AST::BashInCondition>();
+		uint32_t line_number = @2.begin.line;
+		uint32_t column_number = @2.begin.column;
+		node->setPosition(line_number, column_number);
+		$$ = node; // 'in' with no input, valid in Bash
 	}
 	;
 
 bash_for_or_select_variable:
 	IDENTIFIER {
 		set_bash_for_or_select_variable_received(true);
-		std::string varName = $1;
-		std::cout << "Parsed bash for/select variable: Name='" << varName << "'" << std::endl;
-		$$ = varName;
+		$$ = $1;
 	}
 	;
 
 bash_for_or_select_input:
-	valid_rvalue { $$ = $1; }
-	| bash_for_or_select_input WS valid_rvalue { $$ = $1 + " " + $3; }
+	valid_rvalue {
+		auto node = std::make_shared<AST::BashInCondition>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->addChild($1);
+		$$ = node;
+	}
+	| bash_for_or_select_input WS valid_rvalue {
+		auto inCondition = std::dynamic_pointer_cast<AST::BashInCondition>($1);
+		inCondition->addText(" "); // Preserve whitespace between items
+		inCondition->addChild($3);
+		$$ = inCondition;
+	}
 	| bash_for_or_select_input WS { $$ = $1; } /* Allow trailing whitespace */
 	;
 
@@ -1497,18 +1636,34 @@ bash_for_or_select_input:
  */
 bash_for_statement:
 	BASH_KEYWORD_FOR WS bash_for_or_select_header DELIM maybe_whitespace BASH_KEYWORD_DO statements BASH_KEYWORD_DONE {
-		std::string forHeader = $3;
-
-		std::cout << "Parsed bash for statement" << std::endl;
-
-		$$ = "for " + forHeader + " do\n... statements ...\ndone";
+		auto forStatement = std::dynamic_pointer_cast<AST::BashForStatement>($3);
+		if (!forStatement) {
+			// This should not happen, but just in case
+			auto selectStatement = std::dynamic_pointer_cast<AST::BashSelectStatement>($3);
+			forStatement = std::make_shared<AST::BashForStatement>();
+			forStatement->setVariable(selectStatement->VARIABLE());
+			forStatement->addChildren(selectStatement->getChildren());
+		}
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		forStatement->setPosition(line_number, column_number);
+		forStatement->addChildren($7);
+		$$ = forStatement;
 	}
 	| BASH_KEYWORD_FOR WS bash_for_or_select_header DELIM maybe_whitespace block {
-		std::string forHeader = $3;
-
-		std::cout << "Parsed bash for statement with block" << std::endl;
-
-		$$ = "for " + forHeader + " {\n... statements ...\n}";
+		auto forStatement = std::dynamic_pointer_cast<AST::BashForStatement>($3);
+		if (!forStatement) {
+			// This should not happen, but just in case
+			auto selectStatement = std::dynamic_pointer_cast<AST::BashSelectStatement>($3);
+			forStatement = std::make_shared<AST::BashForStatement>();
+			forStatement->setVariable(selectStatement->VARIABLE());
+			forStatement->addChildren(selectStatement->getChildren());
+		}
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		forStatement->setPosition(line_number, column_number);
+		forStatement->addChild($6);
+		$$ = forStatement;
 	}
 	;
 

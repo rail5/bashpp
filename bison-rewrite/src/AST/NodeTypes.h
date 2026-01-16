@@ -1,0 +1,65 @@
+/**
+ * Copyright (C) 2025 Andrew S. Rightenburg
+ * Bash++: Bash with classes
+ */
+
+#pragma once
+
+namespace AST {
+enum class NodeType {
+	Program = 0,
+	ArrayIndex,
+	BashArithmeticForCondition,
+	BashArithmeticForStatement,
+	BashArithmeticStatement,
+	BashCaseInput,
+	BashCasePattern,
+	BashCasePatternAction,
+	BashCasePatternHeader,
+	BashCaseStatement,
+	BashCommand,
+	BashCommandSequence,
+	BashForStatement,
+	BashIfCondition,
+	BashIfElseBranch,
+	BashIfRootBranch,
+	BashIfStatement,
+	BashInCondition,
+	BashPipeline,
+	BashRedirection,
+	BashSelectStatement,
+	BashUntilStatement,
+	BashVariable,
+	BashWhileOrUntilCondition,
+	BashWhileStatement,
+	Block,
+	ClassDefinition,
+	ConstructorDefinition,
+	DatamemberDeclaration,
+	DeleteStatement,
+	DestructorDefinition,
+	DoublequotedString,
+	DynamicCast,
+	DynamicCastTarget,
+	HeredocBody,
+	HereString,
+	IncludeStatement,
+	MethodDefinition,
+	NewStatement,
+	ObjectAssignment,
+	ObjectInstantiation,
+	ObjectReference,
+	ParameterExpansion,
+	PointerDeclaration,
+	PrimitiveAssignment,
+	ProcessSubstitution,
+	RawSubshell,
+	RawText,
+	Rvalue,
+	SubshellSubstitution,
+	Supershell,
+	TypeofExpression,
+	ValueAssignment,
+	ERROR_TYPE
+};
+} // namespace AST

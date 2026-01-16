@@ -31,7 +31,6 @@
 #include "../AST/Nodes/DynamicCastTarget.h"
 #include "../AST/Nodes/ProcessSubstitution.h"
 #include "../AST/Nodes/TypeofExpression.h"
-#include "../AST/Nodes/NamedFD.h"
 #include "../AST/Nodes/PrimitiveAssignment.h"
 #include "../AST/Nodes/ObjectAssignment.h"
 #include "../AST/Nodes/HeredocBody.h"
@@ -190,6 +189,7 @@ void yyerror(const char *s);
 
 %type <ASTNodePtr> process_substitution
 %type <ASTNodePtr> heredoc_body heredoc_content herestring
+%type <ASTNodePtr> redirection
 
 %type <ASTNodePtr> bash_for_statement bash_select_statement bash_for_or_select_header
 %type <ASTNodePtr> bash_for_or_select_maybe_in_something bash_for_or_select_input
@@ -204,7 +204,7 @@ void yyerror(const char *s);
 %type <std::string> heredoc_header
 %type <std::string> bash_for_or_select_variable
 %type <std::string> arith_operator comparison_operator
-%type <std::string> redirection redirection_operator
+%type <std::string> redirection_operator
 %type <std::string> pipeline shell_command_sequence shell_command simple_command simple_command_element operative_command_element
 %type <std::string> simple_pipeline simple_command_sequence
 %type <std::string> logical_connective
@@ -355,11 +355,6 @@ operative_command_element:
 
 redirection:
 	redirection_operator maybe_whitespace valid_rvalue {
-		std::string redirOperator = $1;
-		std::string rvalue = $3;
-
-		std::cout << "Parsed redirection: Operator='" << redirOperator << "', RValue='" << rvalue << "'" << std::endl;
-
 		// Lvalues can follow redirections iff we have not yet received the operative command element
 		// E.g.:
 		// >file var=value echo hi
@@ -369,16 +364,25 @@ redirection:
 		// In this case, 'var=value' is a simple string. Because we had already seen 'echo', lvalues are no longer allowed
 		set_incoming_token_can_be_lvalue(current_command_can_receive_lvalues);
 
-		$$ = redirOperator + rvalue;
+		auto node = std::make_shared<AST::BashRedirection>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setOperator($1);
+		node->addChild($3);
+		$$ = node;
 	}
 	| heredoc_header {
-		std::string heredocHeader = $1;
-
-		std::cout << "Parsed heredoc redirection with anticipated delimiter: " << heredocHeader << std::endl;
-
-		$$ = $1;
+		set_incoming_token_can_be_lvalue(current_command_can_receive_lvalues);
+		auto node = std::make_shared<AST::RawText>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setText($1);
+		$$ = node;
 	}
 	| herestring {
+		set_incoming_token_can_be_lvalue(current_command_can_receive_lvalues);
 		$$ = $1;
 	}
 	;

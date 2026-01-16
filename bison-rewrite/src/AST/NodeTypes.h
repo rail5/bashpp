@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Nodes/BashRedirection.h"
 namespace AST {
 enum class NodeType {
 	Program = 0,

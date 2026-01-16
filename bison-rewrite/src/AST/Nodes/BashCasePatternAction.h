@@ -4,16 +4,20 @@
 
 namespace AST {
 
-class TypeofExpression : public ASTNode {
+/**
+ * @class BashCasePatternAction
+ * @brief Represents the action to be taken for a specific case pattern in a Bash case statement.
+ * 
+ */
+class BashCasePatternAction : public ASTNode {
 	public:
-		TypeofExpression() {
-			type = AST::NodeType::TypeofExpression;
+		BashCasePatternAction() {
+			type = AST::NodeType::BashCasePatternAction;
 		}
 
 		std::ostream& prettyPrint(std::ostream& os, int indentation_level = 0) const override {
 			std::string indent(indentation_level * 2, ' ');
-			os << indent << "(TypeofExpression\n"
-				<< indent << "  @typeof" << "\n";
+			os << indent << "(BashCasePatternAction\n";
 			for (const auto& child : children) {
 				child->prettyPrint(os, indentation_level + 1);
 			}

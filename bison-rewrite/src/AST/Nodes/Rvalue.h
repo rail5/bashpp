@@ -1,19 +1,19 @@
 #pragma once
 
 #include "../ASTNode.h"
+#include "StringType.h"
 
 namespace AST {
 
-class TypeofExpression : public ASTNode {
+class Rvalue : public StringType {
 	public:
-		TypeofExpression() {
-			type = AST::NodeType::TypeofExpression;
+		Rvalue() {
+			type = AST::NodeType::Rvalue;
 		}
 
 		std::ostream& prettyPrint(std::ostream& os, int indentation_level = 0) const override {
 			std::string indent(indentation_level * 2, ' ');
-			os << indent << "(TypeofExpression\n"
-				<< indent << "  @typeof" << "\n";
+			os << indent << "(Rvalue \n";
 			for (const auto& child : children) {
 				child->prettyPrint(os, indentation_level + 1);
 			}

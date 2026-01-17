@@ -5,7 +5,7 @@
 
 #include "../BashppListener.h"
 
-void BashppListener::enterNew_statement(BashppParser::New_statementContext *ctx) {
+void BashppListener::enterNewStatement(std::shared_ptr<AST::NewStatement> node) {
 	skip_syntax_errors
 	/**
 	 * New statements take the form
@@ -18,21 +18,21 @@ void BashppListener::enterNew_statement(BashppParser::New_statementContext *ctx)
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(ctx->KEYWORD_NEW(), "New statement outside of code entity");
+		throw_syntax_error(node, "New statement outside of code entity");
 	}
 
 	// Verify that the class actually exists
-	std::string class_name = ctx->IDENTIFIER()->getText();
+	std::string class_name = node->TYPE().getValue();
 	std::shared_ptr<bpp::bpp_class> new_class = current_code_entity->get_class(class_name);
 
 	if (new_class == nullptr) {
-		throw_syntax_error(ctx->IDENTIFIER(), "Class not found: " + class_name);
+		throw_syntax_error(node->TYPE(), "Class not found: " + class_name);
 	}
 
 	new_class->add_reference(
 		source_file,
-		ctx->IDENTIFIER()->getSymbol()->getLine() - 1,
-		ctx->IDENTIFIER()->getSymbol()->getCharPositionInLine()
+		node->TYPE().getLine() - 1,
+		node->TYPE().getCharPositionInLine()
 	);
 
 	// Call the class's "new" method in a supershell and substitute the result
@@ -60,6 +60,6 @@ void BashppListener::enterNew_statement(BashppParser::New_statementContext *ctx)
 	current_code_entity->add_code("${" + tmp_storage_var + "}");
 }
 
-void BashppListener::exitNew_statement(BashppParser::New_statementContext *ctx) {
+void BashppListener::exitNewStatement(std::shared_ptr<AST::NewStatement> node) {
 	skip_syntax_errors
 }

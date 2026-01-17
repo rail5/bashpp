@@ -5,7 +5,7 @@
 
 #include "../BashppListener.h"
 
-void BashppListener::enterSupershell(BashppParser::SupershellContext *ctx) {
+void BashppListener::enterSupershell(std::shared_ptr<AST::Supershell> node) {
 	skip_syntax_errors
 	/**
 	 * Supershells take the form
@@ -19,7 +19,7 @@ void BashppListener::enterSupershell(BashppParser::SupershellContext *ctx) {
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(ctx->SUPERSHELL_START(), "Supershell outside of a code entity");
+		throw_syntax_error(node, "Supershell outside of a code entity");
 	}
 
 	std::shared_ptr<bpp::bpp_string> supershell_entity = std::make_shared<bpp::bpp_string>();
@@ -29,16 +29,16 @@ void BashppListener::enterSupershell(BashppParser::SupershellContext *ctx) {
 
 	supershell_entity->set_definition_position(
 		source_file,
-		ctx->SUPERSHELL_START()->getSymbol()->getLine() - 1,
-		ctx->SUPERSHELL_START()->getSymbol()->getCharPositionInLine()
+		node->getLine() - 1,
+		node->getCharPositionInLine()
 	);
 }
 
-void BashppListener::exitSupershell(BashppParser::SupershellContext *ctx) {
+void BashppListener::exitSupershell(std::shared_ptr<AST::Supershell> node) {
 	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_string> supershell_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 	if (supershell_entity == nullptr) {
-		throw internal_error("Supershell context was not found in the entity stack", ctx);
+		throw internal_error("Supershell context was not found in the entity stack");
 	}
 
 	entity_stack.pop();
@@ -47,15 +47,15 @@ void BashppListener::exitSupershell(BashppParser::SupershellContext *ctx) {
 		source_file,
 		supershell_entity->get_initial_definition().line,
 		supershell_entity->get_initial_definition().column,
-		ctx->SUPERSHELL_END()->getSymbol()->getLine() - 1,
-		ctx->SUPERSHELL_END()->getSymbol()->getCharPositionInLine(),
+		node->getEndPosition().line - 1,
+		node->getEndPosition().column,
 		supershell_entity
 	);
 
 	// Carry objects, classes, etc from the supershell to the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw internal_error("Current code entity was not found in the entity stack", ctx);
+		throw internal_error("Current code entity was not found in the entity stack");
 	}
 	current_code_entity->inherit(supershell_entity);
 

@@ -5,7 +5,7 @@
 
 #include "../BashppListener.h"
 
-void BashppListener::enterTypeof_statement(BashppParser::Typeof_statementContext *ctx) {
+void BashppListener::enterTypeofExpression(std::shared_ptr<AST::TypeofExpression> node) {
 	skip_syntax_errors
 	/**
 	 * The typeof statement is used to determine the type of a value at runtime.
@@ -15,7 +15,7 @@ void BashppListener::enterTypeof_statement(BashppParser::Typeof_statementContext
 	 */
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(ctx->KEYWORD_TYPEOF(), "typeof statement outside of code entity");
+		throw_syntax_error(node, "Typeof expression outside of code entity");
 	}
 
 	std::shared_ptr<bpp::bpp_string> typeof_entity = std::make_shared<bpp::bpp_string>();
@@ -25,18 +25,18 @@ void BashppListener::enterTypeof_statement(BashppParser::Typeof_statementContext
 	entity_stack.push(typeof_entity);
 }
 
-void BashppListener::exitTypeof_statement(BashppParser::Typeof_statementContext *ctx) {
+void BashppListener::exitTypeofExpression(std::shared_ptr<AST::TypeofExpression> node) {
 	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_string> typeof_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 	if (typeof_entity == nullptr) {
-		throw internal_error("Typeof context was not found in the entity stack", ctx);
+		throw internal_error("Typeof context was not found in the entity stack");
 	}
 
 	entity_stack.pop();
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw internal_error("Current code entity was not found in the entity stack", ctx);
+		throw internal_error("Current code entity was not found in the entity stack");
 	}
 
 	code_segment typeof_code = bpp::generate_typeof_code(typeof_entity->get_code(), program);

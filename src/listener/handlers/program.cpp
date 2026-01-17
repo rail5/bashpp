@@ -3,15 +3,13 @@
 * Bash++: Bash with classes
 */
 
-#include <filesystem>
-#include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include "../BashppListener.h"
 #include "../../exit_code.h"
 
 #include <iostream>
-void BashppListener::enterProgram(BashppParser::ProgramContext *ctx) {
+void BashppListener::enterProgram(std::shared_ptr<AST::Program> node) {
 	program->set_output_stream(code_buffer);
 	program->set_include_paths(include_paths);
 	program->set_target_bash_version(target_bash_version.first, target_bash_version.second);
@@ -36,12 +34,12 @@ void BashppListener::enterProgram(BashppParser::ProgramContext *ctx) {
 	primitive = program->get_primitive_class();	
 }
 
-void BashppListener::exitProgram(BashppParser::ProgramContext *ctx) {
+void BashppListener::exitProgram(std::shared_ptr<AST::Program> node) {
 	program->flush_code_buffers();
 
 	entity_stack.pop();
 	if (!entity_stack.empty()) {
-		throw internal_error("entity_stack is not empty after exiting program", ctx);
+		throw internal_error("entity_stack is not empty after exiting program");
 	}
 
 	if (included) {
@@ -62,7 +60,7 @@ void BashppListener::exitProgram(BashppParser::ProgramContext *ctx) {
 	// Copy the contents of the code stream to the output stream
 	std::shared_ptr<std::ostringstream> cd = std::dynamic_pointer_cast<std::ostringstream>(code_buffer);
 	if (cd == nullptr) {
-		throw internal_error("code_buffer is not a stringstream", ctx);
+		throw internal_error("code_buffer is not a stringstream");
 	}
 	*output_stream << cd->str() << std::flush;
 	cd->clear();

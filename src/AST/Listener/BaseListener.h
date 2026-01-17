@@ -247,112 +247,112 @@ class BaseListener {
 
 		void walk(std::shared_ptr<AST::ASTNode> node);
 
-		virtual void enterProgram(std::shared_ptr<AST::Program> node) {}
-		virtual void exitProgram(std::shared_ptr<AST::Program> node) {}
-		virtual void enterArrayIndex(std::shared_ptr<AST::ArrayIndex> node) {}
-		virtual void exitArrayIndex(std::shared_ptr<AST::ArrayIndex> node) {}
-		virtual void enterBashArithmeticForCondition(std::shared_ptr<AST::BashArithmeticForCondition> node) {}
-		virtual void exitBashArithmeticForCondition(std::shared_ptr<AST::BashArithmeticForCondition> node) {}
-		virtual void enterBashArithmeticForStatement(std::shared_ptr<AST::BashArithmeticForStatement> node) {}
-		virtual void exitBashArithmeticForStatement(std::shared_ptr<AST::BashArithmeticForStatement> node) {}
-		virtual void enterBashArithmeticStatement(std::shared_ptr<AST::BashArithmeticStatement> node) {}
-		virtual void exitBashArithmeticStatement(std::shared_ptr<AST::BashArithmeticStatement> node) {}
-		virtual void enterBashCaseInput(std::shared_ptr<AST::BashCaseInput> node) {}
-		virtual void exitBashCaseInput(std::shared_ptr<AST::BashCaseInput> node) {}
-		virtual void enterBashCasePatternAction(std::shared_ptr<AST::BashCasePatternAction> node) {}
-		virtual void exitBashCasePatternAction(std::shared_ptr<AST::BashCasePatternAction> node) {}
-		virtual void enterBashCasePattern(std::shared_ptr<AST::BashCasePattern> node) {}
-		virtual void exitBashCasePattern(std::shared_ptr<AST::BashCasePattern> node) {}
-		virtual void enterBashCasePatternHeader(std::shared_ptr<AST::BashCasePatternHeader> node) {}
-		virtual void exitBashCasePatternHeader(std::shared_ptr<AST::BashCasePatternHeader> node) {}
-		virtual void enterBashCaseStatement(std::shared_ptr<AST::BashCaseStatement> node) {}
-		virtual void exitBashCaseStatement(std::shared_ptr<AST::BashCaseStatement> node) {}
-		virtual void enterBashCommand(std::shared_ptr<AST::BashCommand> node) {}
-		virtual void exitBashCommand(std::shared_ptr<AST::BashCommand> node) {}
-		virtual void enterBashCommandSequence(std::shared_ptr<AST::BashCommandSequence> node) {}
-		virtual void exitBashCommandSequence(std::shared_ptr<AST::BashCommandSequence> node) {}
-		virtual void enterBashForStatement(std::shared_ptr<AST::BashForStatement> node) {}
-		virtual void exitBashForStatement(std::shared_ptr<AST::BashForStatement> node) {}
-		virtual void enterBashIfCondition(std::shared_ptr<AST::BashIfCondition> node) {}
-		virtual void exitBashIfCondition(std::shared_ptr<AST::BashIfCondition> node) {}
-		virtual void enterBashIfElseBranch(std::shared_ptr<AST::BashIfElseBranch> node) {}
-		virtual void exitBashIfElseBranch(std::shared_ptr<AST::BashIfElseBranch> node) {}
-		virtual void enterBashIfRootBranch(std::shared_ptr<AST::BashIfRootBranch> node) {}
-		virtual void exitBashIfRootBranch(std::shared_ptr<AST::BashIfRootBranch> node) {}
-		virtual void enterBashIfStatement(std::shared_ptr<AST::BashIfStatement> node) {}
-		virtual void exitBashIfStatement(std::shared_ptr<AST::BashIfStatement> node) {}
-		virtual void enterBashInCondition(std::shared_ptr<AST::BashInCondition> node) {}
-		virtual void exitBashInCondition(std::shared_ptr<AST::BashInCondition> node) {}
-		virtual void enterBashPipeline(std::shared_ptr<AST::BashPipeline> node) {}
-		virtual void exitBashPipeline(std::shared_ptr<AST::BashPipeline> node) {}
-		virtual void enterBashRedirection(std::shared_ptr<AST::BashRedirection> node) {}
-		virtual void exitBashRedirection(std::shared_ptr<AST::BashRedirection> node) {}
-		virtual void enterBashSelectStatement(std::shared_ptr<AST::BashSelectStatement> node) {}
-		virtual void exitBashSelectStatement(std::shared_ptr<AST::BashSelectStatement> node) {}
-		virtual void enterBashUntilStatement(std::shared_ptr<AST::BashUntilStatement> node) {}
-		virtual void exitBashUntilStatement(std::shared_ptr<AST::BashUntilStatement> node) {}
-		virtual void enterBashVariable(std::shared_ptr<AST::BashVariable> node) {}
-		virtual void exitBashVariable(std::shared_ptr<AST::BashVariable> node) {}
-		virtual void enterBashWhileOrUntilCondition(std::shared_ptr<AST::BashWhileOrUntilCondition> node) {}
-		virtual void exitBashWhileOrUntilCondition(std::shared_ptr<AST::BashWhileOrUntilCondition> node) {}
-		virtual void enterBashWhileStatement(std::shared_ptr<AST::BashWhileStatement> node) {}
-		virtual void exitBashWhileStatement(std::shared_ptr<AST::BashWhileStatement> node) {}
-		virtual void enterBlock(std::shared_ptr<AST::Block> node) {}
-		virtual void exitBlock(std::shared_ptr<AST::Block> node) {}
-		virtual void enterClassDefinition(std::shared_ptr<AST::ClassDefinition> node) {}
-		virtual void exitClassDefinition(std::shared_ptr<AST::ClassDefinition> node) {}
-		virtual void enterConstructorDefinition(std::shared_ptr<AST::ConstructorDefinition> node) {}
-		virtual void exitConstructorDefinition(std::shared_ptr<AST::ConstructorDefinition> node) {}
-		virtual void enterDatamemberDeclaration(std::shared_ptr<AST::DatamemberDeclaration> node) {}
-		virtual void exitDatamemberDeclaration(std::shared_ptr<AST::DatamemberDeclaration> node) {}
-		virtual void enterDeleteStatement(std::shared_ptr<AST::DeleteStatement> node) {}
-		virtual void exitDeleteStatement(std::shared_ptr<AST::DeleteStatement> node) {}
-		virtual void enterDestructorDefinition(std::shared_ptr<AST::DestructorDefinition> node) {}
-		virtual void exitDestructorDefinition(std::shared_ptr<AST::DestructorDefinition> node) {}
-		virtual void enterDoublequotedString(std::shared_ptr<AST::DoublequotedString> node) {}
-		virtual void exitDoublequotedString(std::shared_ptr<AST::DoublequotedString> node) {}
-		virtual void enterDynamicCast(std::shared_ptr<AST::DynamicCast> node) {}
-		virtual void exitDynamicCast(std::shared_ptr<AST::DynamicCast> node) {}
-		virtual void enterDynamicCastTarget(std::shared_ptr<AST::DynamicCastTarget> node) {}
-		virtual void exitDynamicCastTarget(std::shared_ptr<AST::DynamicCastTarget> node) {}
-		virtual void enterHeredocBody(std::shared_ptr<AST::HeredocBody> node) {}
-		virtual void exitHeredocBody(std::shared_ptr<AST::HeredocBody> node) {}
-		virtual void enterHereString(std::shared_ptr<AST::HereString> node) {}
-		virtual void exitHereString(std::shared_ptr<AST::HereString> node) {}
-		virtual void enterIncludeStatement(std::shared_ptr<AST::IncludeStatement> node) {}
-		virtual void exitIncludeStatement(std::shared_ptr<AST::IncludeStatement> node) {}
-		virtual void enterMethodDefinition(std::shared_ptr<AST::MethodDefinition> node) {}
-		virtual void exitMethodDefinition(std::shared_ptr<AST::MethodDefinition> node) {}
-		virtual void enterNewStatement(std::shared_ptr<AST::NewStatement> node) {}
-		virtual void exitNewStatement(std::shared_ptr<AST::NewStatement> node) {}
-		virtual void enterObjectAssignment(std::shared_ptr<AST::ObjectAssignment> node) {}
-		virtual void exitObjectAssignment(std::shared_ptr<AST::ObjectAssignment> node) {}
-		virtual void enterObjectInstantiation(std::shared_ptr<AST::ObjectInstantiation> node) {}
-		virtual void exitObjectInstantiation(std::shared_ptr<AST::ObjectInstantiation> node) {}
-		virtual void enterObjectReference(std::shared_ptr<AST::ObjectReference> node) {}
-		virtual void exitObjectReference(std::shared_ptr<AST::ObjectReference> node) {}
-		virtual void enterParameterExpansion(std::shared_ptr<AST::ParameterExpansion> node) {}
-		virtual void exitParameterExpansion(std::shared_ptr<AST::ParameterExpansion> node) {}
-		virtual void enterPointerDeclaration(std::shared_ptr<AST::PointerDeclaration> node) {}
-		virtual void exitPointerDeclaration(std::shared_ptr<AST::PointerDeclaration> node) {}
-		virtual void enterPrimitiveAssignment(std::shared_ptr<AST::PrimitiveAssignment> node) {}
-		virtual void exitPrimitiveAssignment(std::shared_ptr<AST::PrimitiveAssignment> node) {}
-		virtual void enterProcessSubstitution(std::shared_ptr<AST::ProcessSubstitution> node) {}
-		virtual void exitProcessSubstitution(std::shared_ptr<AST::ProcessSubstitution> node) {}
-		virtual void enterRawSubshell(std::shared_ptr<AST::RawSubshell> node) {}
-		virtual void exitRawSubshell(std::shared_ptr<AST::RawSubshell> node) {}
-		virtual void enterRawText(std::shared_ptr<AST::RawText> node) {}
-		virtual void exitRawText(std::shared_ptr<AST::RawText> node) {}
-		virtual void enterRvalue(std::shared_ptr<AST::Rvalue> node) {}
-		virtual void exitRvalue(std::shared_ptr<AST::Rvalue> node) {}
-		virtual void enterSubshellSubstitution(std::shared_ptr<AST::SubshellSubstitution> node) {}
-		virtual void exitSubshellSubstitution(std::shared_ptr<AST::SubshellSubstitution> node) {}
-		virtual void enterSupershell(std::shared_ptr<AST::Supershell> node) {}
-		virtual void exitSupershell(std::shared_ptr<AST::Supershell> node) {}
-		virtual void enterTypeofExpression(std::shared_ptr<AST::TypeofExpression> node) {}
-		virtual void exitTypeofExpression(std::shared_ptr<AST::TypeofExpression> node) {}
-		virtual void enterValueAssignment(std::shared_ptr<AST::ValueAssignment> node) {}
-		virtual void exitValueAssignment(std::shared_ptr<AST::ValueAssignment> node) {}
+		virtual void enterProgram([[maybe_unused]] std::shared_ptr<AST::Program> node) {}
+		virtual void exitProgram([[maybe_unused]] std::shared_ptr<AST::Program> node) {}
+		virtual void enterArrayIndex([[maybe_unused]] std::shared_ptr<AST::ArrayIndex> node) {}
+		virtual void exitArrayIndex([[maybe_unused]] std::shared_ptr<AST::ArrayIndex> node) {}
+		virtual void enterBashArithmeticForCondition([[maybe_unused]] std::shared_ptr<AST::BashArithmeticForCondition> node) {}
+		virtual void exitBashArithmeticForCondition([[maybe_unused]] std::shared_ptr<AST::BashArithmeticForCondition> node) {}
+		virtual void enterBashArithmeticForStatement([[maybe_unused]] std::shared_ptr<AST::BashArithmeticForStatement> node) {}
+		virtual void exitBashArithmeticForStatement([[maybe_unused]] std::shared_ptr<AST::BashArithmeticForStatement> node) {}
+		virtual void enterBashArithmeticStatement([[maybe_unused]] std::shared_ptr<AST::BashArithmeticStatement> node) {}
+		virtual void exitBashArithmeticStatement([[maybe_unused]] std::shared_ptr<AST::BashArithmeticStatement> node) {}
+		virtual void enterBashCaseInput([[maybe_unused]] std::shared_ptr<AST::BashCaseInput> node) {}
+		virtual void exitBashCaseInput([[maybe_unused]] std::shared_ptr<AST::BashCaseInput> node) {}
+		virtual void enterBashCasePatternAction([[maybe_unused]] std::shared_ptr<AST::BashCasePatternAction> node) {}
+		virtual void exitBashCasePatternAction([[maybe_unused]] std::shared_ptr<AST::BashCasePatternAction> node) {}
+		virtual void enterBashCasePattern([[maybe_unused]] std::shared_ptr<AST::BashCasePattern> node) {}
+		virtual void exitBashCasePattern([[maybe_unused]] std::shared_ptr<AST::BashCasePattern> node) {}
+		virtual void enterBashCasePatternHeader([[maybe_unused]] std::shared_ptr<AST::BashCasePatternHeader> node) {}
+		virtual void exitBashCasePatternHeader([[maybe_unused]] std::shared_ptr<AST::BashCasePatternHeader> node) {}
+		virtual void enterBashCaseStatement([[maybe_unused]] std::shared_ptr<AST::BashCaseStatement> node) {}
+		virtual void exitBashCaseStatement([[maybe_unused]] std::shared_ptr<AST::BashCaseStatement> node) {}
+		virtual void enterBashCommand([[maybe_unused]] std::shared_ptr<AST::BashCommand> node) {}
+		virtual void exitBashCommand([[maybe_unused]] std::shared_ptr<AST::BashCommand> node) {}
+		virtual void enterBashCommandSequence([[maybe_unused]] std::shared_ptr<AST::BashCommandSequence> node) {}
+		virtual void exitBashCommandSequence([[maybe_unused]] std::shared_ptr<AST::BashCommandSequence> node) {}
+		virtual void enterBashForStatement([[maybe_unused]] std::shared_ptr<AST::BashForStatement> node) {}
+		virtual void exitBashForStatement([[maybe_unused]] std::shared_ptr<AST::BashForStatement> node) {}
+		virtual void enterBashIfCondition([[maybe_unused]] std::shared_ptr<AST::BashIfCondition> node) {}
+		virtual void exitBashIfCondition([[maybe_unused]] std::shared_ptr<AST::BashIfCondition> node) {}
+		virtual void enterBashIfElseBranch([[maybe_unused]] std::shared_ptr<AST::BashIfElseBranch> node) {}
+		virtual void exitBashIfElseBranch([[maybe_unused]] std::shared_ptr<AST::BashIfElseBranch> node) {}
+		virtual void enterBashIfRootBranch([[maybe_unused]] std::shared_ptr<AST::BashIfRootBranch> node) {}
+		virtual void exitBashIfRootBranch([[maybe_unused]] std::shared_ptr<AST::BashIfRootBranch> node) {}
+		virtual void enterBashIfStatement([[maybe_unused]] std::shared_ptr<AST::BashIfStatement> node) {}
+		virtual void exitBashIfStatement([[maybe_unused]] std::shared_ptr<AST::BashIfStatement> node) {}
+		virtual void enterBashInCondition([[maybe_unused]] std::shared_ptr<AST::BashInCondition> node) {}
+		virtual void exitBashInCondition([[maybe_unused]] std::shared_ptr<AST::BashInCondition> node) {}
+		virtual void enterBashPipeline([[maybe_unused]] std::shared_ptr<AST::BashPipeline> node) {}
+		virtual void exitBashPipeline([[maybe_unused]] std::shared_ptr<AST::BashPipeline> node) {}
+		virtual void enterBashRedirection([[maybe_unused]] std::shared_ptr<AST::BashRedirection> node) {}
+		virtual void exitBashRedirection([[maybe_unused]] std::shared_ptr<AST::BashRedirection> node) {}
+		virtual void enterBashSelectStatement([[maybe_unused]] std::shared_ptr<AST::BashSelectStatement> node) {}
+		virtual void exitBashSelectStatement([[maybe_unused]] std::shared_ptr<AST::BashSelectStatement> node) {}
+		virtual void enterBashUntilStatement([[maybe_unused]] std::shared_ptr<AST::BashUntilStatement> node) {}
+		virtual void exitBashUntilStatement([[maybe_unused]] std::shared_ptr<AST::BashUntilStatement> node) {}
+		virtual void enterBashVariable([[maybe_unused]] std::shared_ptr<AST::BashVariable> node) {}
+		virtual void exitBashVariable([[maybe_unused]] std::shared_ptr<AST::BashVariable> node) {}
+		virtual void enterBashWhileOrUntilCondition([[maybe_unused]] std::shared_ptr<AST::BashWhileOrUntilCondition> node) {}
+		virtual void exitBashWhileOrUntilCondition([[maybe_unused]] std::shared_ptr<AST::BashWhileOrUntilCondition> node) {}
+		virtual void enterBashWhileStatement([[maybe_unused]] std::shared_ptr<AST::BashWhileStatement> node) {}
+		virtual void exitBashWhileStatement([[maybe_unused]] std::shared_ptr<AST::BashWhileStatement> node) {}
+		virtual void enterBlock([[maybe_unused]] std::shared_ptr<AST::Block> node) {}
+		virtual void exitBlock([[maybe_unused]] std::shared_ptr<AST::Block> node) {}
+		virtual void enterClassDefinition([[maybe_unused]] std::shared_ptr<AST::ClassDefinition> node) {}
+		virtual void exitClassDefinition([[maybe_unused]] std::shared_ptr<AST::ClassDefinition> node) {}
+		virtual void enterConstructorDefinition([[maybe_unused]] std::shared_ptr<AST::ConstructorDefinition> node) {}
+		virtual void exitConstructorDefinition([[maybe_unused]] std::shared_ptr<AST::ConstructorDefinition> node) {}
+		virtual void enterDatamemberDeclaration([[maybe_unused]] std::shared_ptr<AST::DatamemberDeclaration> node) {}
+		virtual void exitDatamemberDeclaration([[maybe_unused]] std::shared_ptr<AST::DatamemberDeclaration> node) {}
+		virtual void enterDeleteStatement([[maybe_unused]] std::shared_ptr<AST::DeleteStatement> node) {}
+		virtual void exitDeleteStatement([[maybe_unused]] std::shared_ptr<AST::DeleteStatement> node) {}
+		virtual void enterDestructorDefinition([[maybe_unused]] std::shared_ptr<AST::DestructorDefinition> node) {}
+		virtual void exitDestructorDefinition([[maybe_unused]] std::shared_ptr<AST::DestructorDefinition> node) {}
+		virtual void enterDoublequotedString([[maybe_unused]] std::shared_ptr<AST::DoublequotedString> node) {}
+		virtual void exitDoublequotedString([[maybe_unused]] std::shared_ptr<AST::DoublequotedString> node) {}
+		virtual void enterDynamicCast([[maybe_unused]] std::shared_ptr<AST::DynamicCast> node) {}
+		virtual void exitDynamicCast([[maybe_unused]] std::shared_ptr<AST::DynamicCast> node) {}
+		virtual void enterDynamicCastTarget([[maybe_unused]] std::shared_ptr<AST::DynamicCastTarget> node) {}
+		virtual void exitDynamicCastTarget([[maybe_unused]] std::shared_ptr<AST::DynamicCastTarget> node) {}
+		virtual void enterHeredocBody([[maybe_unused]] std::shared_ptr<AST::HeredocBody> node) {}
+		virtual void exitHeredocBody([[maybe_unused]] std::shared_ptr<AST::HeredocBody> node) {}
+		virtual void enterHereString([[maybe_unused]] std::shared_ptr<AST::HereString> node) {}
+		virtual void exitHereString([[maybe_unused]] std::shared_ptr<AST::HereString> node) {}
+		virtual void enterIncludeStatement([[maybe_unused]] std::shared_ptr<AST::IncludeStatement> node) {}
+		virtual void exitIncludeStatement([[maybe_unused]] std::shared_ptr<AST::IncludeStatement> node) {}
+		virtual void enterMethodDefinition([[maybe_unused]] std::shared_ptr<AST::MethodDefinition> node) {}
+		virtual void exitMethodDefinition([[maybe_unused]] std::shared_ptr<AST::MethodDefinition> node) {}
+		virtual void enterNewStatement([[maybe_unused]] std::shared_ptr<AST::NewStatement> node) {}
+		virtual void exitNewStatement([[maybe_unused]] std::shared_ptr<AST::NewStatement> node) {}
+		virtual void enterObjectAssignment([[maybe_unused]] std::shared_ptr<AST::ObjectAssignment> node) {}
+		virtual void exitObjectAssignment([[maybe_unused]] std::shared_ptr<AST::ObjectAssignment> node) {}
+		virtual void enterObjectInstantiation([[maybe_unused]] std::shared_ptr<AST::ObjectInstantiation> node) {}
+		virtual void exitObjectInstantiation([[maybe_unused]] std::shared_ptr<AST::ObjectInstantiation> node) {}
+		virtual void enterObjectReference([[maybe_unused]] std::shared_ptr<AST::ObjectReference> node) {}
+		virtual void exitObjectReference([[maybe_unused]] std::shared_ptr<AST::ObjectReference> node) {}
+		virtual void enterParameterExpansion([[maybe_unused]] std::shared_ptr<AST::ParameterExpansion> node) {}
+		virtual void exitParameterExpansion([[maybe_unused]] std::shared_ptr<AST::ParameterExpansion> node) {}
+		virtual void enterPointerDeclaration([[maybe_unused]] std::shared_ptr<AST::PointerDeclaration> node) {}
+		virtual void exitPointerDeclaration([[maybe_unused]] std::shared_ptr<AST::PointerDeclaration> node) {}
+		virtual void enterPrimitiveAssignment([[maybe_unused]] std::shared_ptr<AST::PrimitiveAssignment> node) {}
+		virtual void exitPrimitiveAssignment([[maybe_unused]] std::shared_ptr<AST::PrimitiveAssignment> node) {}
+		virtual void enterProcessSubstitution([[maybe_unused]] std::shared_ptr<AST::ProcessSubstitution> node) {}
+		virtual void exitProcessSubstitution([[maybe_unused]] std::shared_ptr<AST::ProcessSubstitution> node) {}
+		virtual void enterRawSubshell([[maybe_unused]] std::shared_ptr<AST::RawSubshell> node) {}
+		virtual void exitRawSubshell([[maybe_unused]] std::shared_ptr<AST::RawSubshell> node) {}
+		virtual void enterRawText([[maybe_unused]] std::shared_ptr<AST::RawText> node) {}
+		virtual void exitRawText([[maybe_unused]] std::shared_ptr<AST::RawText> node) {}
+		virtual void enterRvalue([[maybe_unused]] std::shared_ptr<AST::Rvalue> node) {}
+		virtual void exitRvalue([[maybe_unused]] std::shared_ptr<AST::Rvalue> node) {}
+		virtual void enterSubshellSubstitution([[maybe_unused]] std::shared_ptr<AST::SubshellSubstitution> node) {}
+		virtual void exitSubshellSubstitution([[maybe_unused]] std::shared_ptr<AST::SubshellSubstitution> node) {}
+		virtual void enterSupershell([[maybe_unused]] std::shared_ptr<AST::Supershell> node) {}
+		virtual void exitSupershell([[maybe_unused]] std::shared_ptr<AST::Supershell> node) {}
+		virtual void enterTypeofExpression([[maybe_unused]] std::shared_ptr<AST::TypeofExpression> node) {}
+		virtual void exitTypeofExpression([[maybe_unused]] std::shared_ptr<AST::TypeofExpression> node) {}
+		virtual void enterValueAssignment([[maybe_unused]] std::shared_ptr<AST::ValueAssignment> node) {}
+		virtual void exitValueAssignment([[maybe_unused]] std::shared_ptr<AST::ValueAssignment> node) {}
 };
 
 } // namespace AST

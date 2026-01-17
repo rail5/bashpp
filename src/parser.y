@@ -1347,10 +1347,7 @@ cast_target:
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
-		auto rawTextTarget = std::make_shared<AST::RawText>();
-		rawTextTarget->setPosition(line_number, column_number);
-		rawTextTarget->setText($1);
-		node->addChild(rawTextTarget);
+		node->setTargetType($1);
 		$$ = node;
 	}
 	| bash_variable {

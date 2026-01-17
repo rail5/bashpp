@@ -9,12 +9,11 @@
 #include <string>
 #include <cstdint>
 
-#include "../../antlr/BashppLexer.h"
-#include "../../antlr/BashppParser.h"
+#include "../../AST/ASTNode.h"
 #include "../../bpp_include/bpp_codegen.h"
 #include "explode.h"
 
-antlr4::tree::ParseTree* find_node_at_column(antlr4::tree::ParseTree* single_line_node, uint32_t column);
+std::shared_ptr<AST::ASTNode> find_node_at_column(std::shared_ptr<AST::ASTNode> single_line_node, uint32_t column);
 
 /**
  * @brief Resolves the entity referenced at the given line and column in the specified file.

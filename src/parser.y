@@ -40,23 +40,23 @@ void yyerror(const char *s);
 	bool current_command_can_receive_lvalues = true;
 }
 
-%token <std::string> ESCAPED_CHAR WS DELIM
+%token <AST::Token<std::string>> ESCAPED_CHAR WS DELIM
 %token DOUBLEAMPERSAND DOUBLEPIPE PIPE
 
-%token <std::string> SINGLEQUOTED_STRING
+%token <AST::Token<std::string>> SINGLEQUOTED_STRING
 
 %token QUOTE_BEGIN QUOTE_END
-%token <std::string> STRING_CONTENT
+%token <AST::Token<std::string>> STRING_CONTENT
 
 %token AT AT_LVALUE
 %token KEYWORD_THIS KEYWORD_THIS_LVALUE KEYWORD_SUPER KEYWORD_SUPER_LVALUE
 %token LBRACE RBRACE
-%token <std::string> LANGLE RANGLE LANGLE_AMPERSAND RANGLE_AMPERSAND AMPERSAND_RANGLE
+%token <AST::Token<std::string>> LANGLE RANGLE LANGLE_AMPERSAND RANGLE_AMPERSAND AMPERSAND_RANGLE
 %token COLON PLUS_EQUALS EQUALS ASTERISK DEREFERENCE_OPERATOR AMPERSAND DOT
 %token EMPTY_ASSIGNMENT
 
 %token KEYWORD_INCLUDE KEYWORD_INCLUDE_ONCE KEYWORD_AS KEYWORD_DYNAMIC_CAST
-%token <std::string> INCLUDE_TYPE INCLUDE_PATH
+%token <AST::Token<std::string>> INCLUDE_TYPE INCLUDE_PATH
 
 %token SUPERSHELL_START SUPERSHELL_END SUBSHELL_START SUBSHELL_END SUBSHELL_SUBSTITUTION_START SUBSHELL_SUBSTITUTION_END
 %token <int> DEPRECATED_SUBSHELL_START DEPRECATED_SUBSHELL_END
@@ -65,37 +65,34 @@ void yyerror(const char *s);
 %token KEYWORD_CLASS KEYWORD_VIRTUAL KEYWORD_METHOD KEYWORD_CONSTRUCTOR KEYWORD_DESTRUCTOR
 %token KEYWORD_NEW KEYWORD_DELETE KEYWORD_NULLPTR
 
-%token <std::string> IDENTIFIER IDENTIFIER_LVALUE
-
+%token <AST::Token<std::string>> IDENTIFIER IDENTIFIER_LVALUE
 %token KEYWORD_PUBLIC KEYWORD_PRIVATE KEYWORD_PROTECTED
 %token KEYWORD_TYPEOF
 
 %token ARRAY_INDEX_START ARRAY_INDEX_END LBRACKET RBRACKET
 %token REF_START REF_START_LVALUE REF_END
-%token <std::string> BASH_VAR
+%token <AST::Token<std::string>> BASH_VAR
 %token BASH_VAR_START BASH_VAR_END
 %token HASH
 %token HEREDOC_CONTENT_START HERESTRING_START
-%token <std::string> HEREDOC_START HEREDOC_DELIMITER HEREDOC_END
-
+%token <AST::Token<std::string>> HEREDOC_START HEREDOC_DELIMITER HEREDOC_END
 %token BASH_KEYWORD_CASE BASH_KEYWORD_IN BASH_CASE_PATTERN_DELIM BASH_CASE_PATTERN_TERMINATOR BASH_KEYWORD_ESAC
-%token <std::string> BASH_CASE_BODY_BEGIN
+%token <AST::Token<std::string>> BASH_CASE_BODY_BEGIN
 %token BASH_KEYWORD_SELECT BASH_KEYWORD_FOR BASH_KEYWORD_DO BASH_KEYWORD_DONE
 %token ARITH_FOR_CONDITION_START ARITH_FOR_CONDITION_END
 %token INCREMENT_OPERATOR DECREMENT_OPERATOR
-%token <std::string> INTEGER COMPARISON_OPERATOR
-
+%token <AST::Token<std::string>> INTEGER COMPARISON_OPERATOR
 %token BASH_KEYWORD_IF BASH_KEYWORD_THEN BASH_KEYWORD_ELIF BASH_KEYWORD_ELSE BASH_KEYWORD_FI
 %token BASH_KEYWORD_WHILE BASH_KEYWORD_UNTIL
 
 %token EXCLAM
-%token <std::string> EXPANSION_BEGIN PARAMETER_EXPANSION_CONTENT
+%token <AST::Token<std::string>> EXPANSION_BEGIN PARAMETER_EXPANSION_CONTENT
 
-%token <std::string> PROCESS_SUBSTITUTION_START
+%token <AST::Token<std::string>> PROCESS_SUBSTITUTION_START
 %token PROCESS_SUBSTITUTION_END
 
 /* Handling unrecognized tokens */
-%token <std::string> CATCHALL
+%token <AST::Token<std::string>> CATCHALL
 
 
 %precedence CONCAT_STOP
@@ -120,16 +117,15 @@ void yyerror(const char *s);
 %type <std::vector<ASTNodePtr>> statements
 %type <ASTNodePtr> statement
 
-%type <AST::IncludeStatement::IncludeKeyword> include_keyword
+%type <AST::Token<AST::IncludeStatement::IncludeKeyword>> include_keyword
 %type <ASTNodePtr> include_statement
 
 %type <ASTNodePtr> class_definition
-%type <AST::AccessModifier> access_modifier access_modifier_keyword
+%type <AST::Token<AST::AccessModifier>> access_modifier access_modifier_keyword
 %type <ASTNodePtr> datamember_declaration
 
-%type <AST::MethodDefinition::Parameter> parameter
-%type <std::vector<AST::MethodDefinition::Parameter>> maybe_parameter_list
-
+%type <AST::Token<AST::MethodDefinition::Parameter>> parameter
+%type <std::vector<AST::Token<AST::MethodDefinition::Parameter>>> maybe_parameter_list
 %type <ASTNodePtr> method_definition constructor_definition destructor_definition
 
 %type <ASTNodePtr> block supershell subshell_raw subshell_substitution dollar_subshell deprecated_subshell
@@ -170,15 +166,15 @@ void yyerror(const char *s);
 
 %type <ASTNodePtr> bash_while_statement bash_until_statement bash_while_or_until_condition
 
-%type <std::string> maybe_include_type maybe_as_clause maybe_parent_class
-%type <std::string> assignment_operator
-%type <std::string> maybe_exclam
-%type <std::string> maybe_hash
-%type <std::string> heredoc_header
-%type <std::string> bash_for_or_select_variable
-%type <std::string> arith_operator comparison_operator
-%type <std::string> redirection_operator
-%type <std::string> logical_connective
+%type <AST::Token<std::string>> maybe_include_type maybe_as_clause maybe_parent_class
+%type <AST::Token<std::string>> assignment_operator
+%type <AST::Token<std::string>> maybe_exclam
+%type <AST::Token<std::string>> maybe_hash
+%type <AST::Token<std::string>> heredoc_header
+%type <AST::Token<std::string>> bash_for_or_select_variable
+%type <AST::Token<std::string>> arith_operator comparison_operator
+%type <AST::Token<std::string>> redirection_operator
+%type <AST::Token<std::string>> logical_connective
 
 %%
 
@@ -189,10 +185,6 @@ program: statements {
 		uint32_t column_number = @1.begin.column;
 		astRoot->setPosition(line_number, column_number);
 		$$ = astRoot;
-
-		// Verification (Debug):
-		std::cout << *astRoot << std::endl;
-
 		program = astRoot;
 	}
 	;
@@ -234,7 +226,7 @@ shell_command_sequence:
 	}
 	| shell_command_sequence logical_connective maybe_whitespace pipeline {
 		auto commandSequence = std::dynamic_pointer_cast<AST::BashCommandSequence>($1);
-		commandSequence->addText(" " + $2 + " "); // Preserve connective with surrounding spaces
+		commandSequence->addText(" " + $2.getValue() + " "); // Preserve connective with surrounding spaces
 		commandSequence->addChild($4);
 		$$ = commandSequence;
 	}
@@ -347,7 +339,7 @@ simple_command_sequence:
 	}
 	| simple_command_sequence logical_connective maybe_whitespace simple_pipeline {
 		auto commandSequence = std::dynamic_pointer_cast<AST::BashCommandSequence>($1);
-		commandSequence->addText(" " + $2 + " "); // Preserve connective with surrounding spaces
+		commandSequence->addText(" " + $2.getValue() + " "); // Preserve connective with surrounding spaces
 		commandSequence->addChild($4);
 		$$ = commandSequence;
 	}
@@ -453,14 +445,14 @@ redirection:
 
 redirection_operator:
 	LANGLE { $$ = $1; }
-	| LANGLE RANGLE { $$ = $1 + $2; }
+	| LANGLE RANGLE { $$ = AST::Token<std::string>($1.getValue() + $2.getValue(), @1.begin.line, @1.begin.column); }
 	| LANGLE_AMPERSAND { $$ = $1; }
 	| RANGLE { $$ = $1; }
-	| RANGLE RANGLE { $$ = $1 + $2; }
+	| RANGLE RANGLE { $$ = AST::Token<std::string>($1.getValue() + $2.getValue(), @1.begin.line, @1.begin.column); }
 	| RANGLE_AMPERSAND { $$ = $1; }
-	| RANGLE PIPE { $$ = $1 + "|"; }
+	| RANGLE PIPE { $$ = AST::Token<std::string>($1.getValue() + "|", @1.begin.line, @1.begin.column); }
 	| AMPERSAND_RANGLE { $$ = $1; }
-	| AMPERSAND_RANGLE RANGLE { $$ = $1 + $2; }
+	| AMPERSAND_RANGLE RANGLE { $$ = AST::Token<std::string>($1.getValue() + $2.getValue(), @1.begin.line, @1.begin.column); }
 	;
 
 block:
@@ -557,7 +549,7 @@ concatenatable_rvalue:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
-		node->setText("0"); // Represent nullptr as 0
+		node->setText(AST::Token<std::string>("0", line_number, column_number)); // Represent nullptr as 0
 		$$ = node;
 	}
 	| CATCHALL { 
@@ -592,26 +584,33 @@ whitespace_or_delimiter:
 
 include_statement:
 	include_keyword maybe_include_type INCLUDE_PATH maybe_as_clause DELIM {
-		AST::IncludeStatement::IncludeKeyword keyword = $1;
-		AST::IncludeStatement::IncludeType type;
+		AST::Token<AST::IncludeStatement::IncludeKeyword> keyword = $1;
+		AST::Token<AST::IncludeStatement::IncludeType> type;
+		type.setLine(@2.begin.line);
+		type.setCharPositionInLine(@2.begin.column);
 		if ($2 == "dynamic") {
-			type = AST::IncludeStatement::IncludeType::DYNAMIC;
+			type.setValue(AST::IncludeStatement::IncludeType::DYNAMIC);
 		} else {
-			type = AST::IncludeStatement::IncludeType::STATIC;
+			type.setValue(AST::IncludeStatement::IncludeType::STATIC);
 		}
 
 		AST::IncludeStatement::PathType pathType;
-		std::string path = $3;
-		if (path.front() == '<') {
+		std::string pathText = $3;
+		if (pathText.front() == '<') {
 			pathType = AST::IncludeStatement::PathType::ANGLEBRACKET;
 		} else {
 			pathType = AST::IncludeStatement::PathType::QUOTED;
 		}
 
-		path = path.substr(1, path.length() - 2); // Remove surrounding quotes or angle brackets
+		pathText = pathText.substr(1, pathText.length() - 2); // Remove surrounding quotes or angle brackets
 
-		std::string asPath = $4;
-		if (!asPath.empty()) asPath = asPath.substr(1, asPath.length() - 2); // Remove surrounding quotes
+		AST::Token<std::string> path(pathText, @3.begin.line, @3.begin.column);
+
+		std::string asPathText = $4;
+		uint32_t asPathLine = $4.getLine();
+		uint32_t asPathColumn = $4.getCharPositionInLine();
+		if (!asPathText.empty()) asPathText = asPathText.substr(1, asPathText.length() - 2); // Remove surrounding quotes
+		AST::Token<std::string> asPath(asPathText, asPathLine, asPathColumn);
 
 		auto node = std::make_shared<AST::IncludeStatement>();
 
@@ -880,7 +879,7 @@ method_definition:
 	;
 
 maybe_parameter_list:
-	/* empty */ { $$ = std::vector<AST::MethodDefinition::Parameter>(); }
+	/* empty */ { $$ = std::vector<AST::Token<AST::MethodDefinition::Parameter>>(); }
 	| maybe_parameter_list parameter { $$ = std::move($1); $$.push_back($2); }
 	;
 
@@ -982,7 +981,7 @@ object_reference:
 		node->setLvalue(false);
 		node->setSelfReference(false);
 
-		if (!$2.empty()) {
+		if (!$2.getValue().empty()) {
 			node->setHasHashkey(true);
 		}
 		
@@ -1015,7 +1014,7 @@ object_reference_lvalue:
 		node->setLvalue(true);
 		node->setSelfReference(false);
 
-		if (!$2.empty()) {
+		if (!$2.getValue().empty()) {
 			node->setHasHashkey(true);
 		}
 
@@ -1032,7 +1031,7 @@ self_reference:
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 
-		node->setIdentifier("this");
+		node->setIdentifier(AST::Token<std::string>("this", @1.begin.line, @1.begin.column));
 		node->setLvalue(false);
 		node->setSelfReference(true);
 
@@ -1044,11 +1043,11 @@ self_reference:
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 
-		node->setIdentifier("this");
+		node->setIdentifier(AST::Token<std::string>("this", @3.begin.line, @3.begin.column));
 		node->setLvalue(false);
 		node->setSelfReference(true);
 
-		if (!$2.empty()) {
+		if (!$2.getValue().empty()) {
 			node->setHasHashkey(true);
 		}
 
@@ -1062,7 +1061,7 @@ self_reference:
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 
-		node->setIdentifier("super");
+		node->setIdentifier(AST::Token<std::string>("super", @1.begin.line, @1.begin.column));
 		node->setLvalue(false);
 		node->setSelfReference(true);
 
@@ -1074,11 +1073,11 @@ self_reference:
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 
-		node->setIdentifier("super");
+		node->setIdentifier(AST::Token<std::string>("super", @3.begin.line, @3.begin.column));
 		node->setLvalue(false);
 		node->setSelfReference(true);
 
-		if (!$2.empty()) {
+		if (!$2.getValue().empty()) {
 			node->setHasHashkey(true);
 		}
 
@@ -1095,7 +1094,7 @@ self_reference_lvalue:
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 
-		node->setIdentifier("this");
+		node->setIdentifier(AST::Token<std::string>("this", @1.begin.line, @1.begin.column));
 		node->setLvalue(true);
 		node->setSelfReference(true);
 
@@ -1107,11 +1106,11 @@ self_reference_lvalue:
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 
-		node->setIdentifier("this");
+		node->setIdentifier(AST::Token<std::string>("this", @3.begin.line, @3.begin.column));
 		node->setLvalue(true);
 		node->setSelfReference(true);
 
-		if (!$2.empty()) {
+		if (!$2.getValue().empty()) {
 			node->setHasHashkey(true);
 		}
 
@@ -1125,7 +1124,7 @@ self_reference_lvalue:
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 
-		node->setIdentifier("super");
+		node->setIdentifier(AST::Token<std::string>("super", @1.begin.line, @1.begin.column));
 		node->setLvalue(true);
 		node->setSelfReference(true);
 
@@ -1137,11 +1136,11 @@ self_reference_lvalue:
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 
-		node->setIdentifier("super");
+		node->setIdentifier(AST::Token<std::string>("super", @3.begin.line, @3.begin.column));
 		node->setLvalue(true);
 		node->setSelfReference(true);
 
-		if (!$2.empty()) {
+		if (!$2.getValue().empty()) {
 			node->setHasHashkey(true);
 		}
 
@@ -1187,7 +1186,7 @@ array_index:
 		node->setPosition(line_number, column_number);
 		auto atNode = std::make_shared<AST::RawText>();
 		atNode->setPosition(line_number, column_number);
-		atNode->setText("@");
+		atNode->setText(AST::Token<std::string>("@", line_number, column_number));
 		node->addChild(atNode);
 		$$ = node;
 	}
@@ -1210,7 +1209,10 @@ bash_variable:
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 
-		std::string text = $2 + $3 + $4; // Remember to re-enclose in ${...} later
+		AST::Token<std::string> text;
+		text.setLine(@2.begin.line);
+		text.setCharPositionInLine(@2.begin.column);
+		text.setValue($2.getValue() + $3.getValue() + $4.getValue());
 		node->setText(text);
 		node->addChild($5);
 		node->addChild($6);
@@ -1927,7 +1929,7 @@ arith_condition_term:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
-		node->setText("0");
+		node->setText(AST::Token<std::string>("0", line_number, column_number));
 		$$ = node;
 	}
 	;

@@ -11,17 +11,17 @@ namespace AST {
 
 class PrimitiveAssignment : public ASTNode {
 	protected:
-		std::string m_IDENTIFIER;
+		AST::Token<std::string> m_IDENTIFIER;
 	public:
 		PrimitiveAssignment() {
 			type = AST::NodeType::PrimitiveAssignment;
 		}
 
-		const std::string& IDENTIFIER() const {
+		const AST::Token<std::string>& IDENTIFIER() const {
 			return m_IDENTIFIER;
 		}
 
-		void setIdentifier(const std::string& identifier) {
+		void setIdentifier(const AST::Token<std::string>& identifier) {
 			m_IDENTIFIER = identifier;
 		}
 

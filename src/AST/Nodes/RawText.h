@@ -11,10 +11,10 @@ namespace AST {
 
 class RawText : public ASTNode {
 	protected:
-		std::string m_TEXT;
+		AST::Token<std::string> m_TEXT;
 		const std::string getEscapedText() const {
 			std::string escaped;
-			for (char c : m_TEXT) {
+			for (char c : m_TEXT.getValue()) {
 				switch (c) {
 					case '\n': escaped += "\\n"; break;
 					case '\t': escaped += "\\t"; break;
@@ -29,10 +29,10 @@ class RawText : public ASTNode {
 			type = AST::NodeType::RawText;
 		}
 
-		const std::string& TEXT() const {
+		const AST::Token<std::string>& TEXT() const {
 			return m_TEXT;
 		}
-		void setText(const std::string& text) {
+		void setText(const AST::Token<std::string>& text) {
 			m_TEXT = text;
 		}
 		void appendText(const std::string& text) {

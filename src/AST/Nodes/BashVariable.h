@@ -11,17 +11,17 @@ namespace AST {
 
 class BashVariable : public ASTNode {
 	protected:
-		std::string m_TEXT;
+		AST::Token<std::string> m_TEXT;
 	public:
 		BashVariable() {
 			type = AST::NodeType::BashVariable;
 		}
 
-		const std::string& TEXT() const {
+		const AST::Token<std::string>& TEXT() const {
 			return m_TEXT;
 		}
 
-		void setText(const std::string& text) {
+		void setText(const AST::Token<std::string>& text) {
 			m_TEXT = text;
 		}
 

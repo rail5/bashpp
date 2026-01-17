@@ -11,16 +11,16 @@ namespace AST {
 
 class ProcessSubstitution : public ASTNode {
 	protected:
-		std::string m_SUBSTITUTIONSTART;
+		AST::Token<std::string> m_SUBSTITUTIONSTART;
 	public:
 		ProcessSubstitution() {
 			type = AST::NodeType::ProcessSubstitution;
 		}
 
-		const std::string& SUBSTITUTIONSTART() const {
+		const AST::Token<std::string>& SUBSTITUTIONSTART() const {
 			return m_SUBSTITUTIONSTART;
 		}
-		void setSubstitutionStart(const std::string& substitutionStart) {
+		void setSubstitutionStart(const AST::Token<std::string>& substitutionStart) {
 			m_SUBSTITUTIONSTART = substitutionStart;
 		}
 

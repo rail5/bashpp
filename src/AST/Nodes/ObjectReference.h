@@ -11,8 +11,8 @@ namespace AST {
 
 class ObjectReference : public ASTNode {
 	protected:
-		std::string m_IDENTIFIER;
-		std::vector<std::string> m_IDENTIFIERS;
+		AST::Token<std::string> m_IDENTIFIER;
+		std::vector<AST::Token<std::string>> m_IDENTIFIERS;
 		bool m_has_hashkey = false;
 		bool m_lvalue = false;
 		bool m_self_reference = false;
@@ -23,17 +23,17 @@ class ObjectReference : public ASTNode {
 			type = AST::NodeType::ObjectReference;
 		}
 
-		void setIdentifier(const std::string& identifier) {
+		void setIdentifier(const AST::Token<std::string>& identifier) {
 			m_IDENTIFIER = identifier;
 		}
-		const std::string& IDENTIFIER() const {
+		const AST::Token<std::string>& IDENTIFIER() const {
 			return m_IDENTIFIER;
 		}
 
-		void addIdentifier(const std::string& identifier) {
+		void addIdentifier(const AST::Token<std::string>& identifier) {
 			m_IDENTIFIERS.push_back(identifier);
 		}
-		const std::vector<std::string>& IDENTIFIERS() const {
+		const std::vector<AST::Token<std::string>>& IDENTIFIERS() const {
 			return m_IDENTIFIERS;
 		}
 

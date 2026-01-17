@@ -14,6 +14,7 @@
 
 #include "NodeTypes.h"
 #include "Position.h"
+#include "Token.h"
 
 namespace AST {
 

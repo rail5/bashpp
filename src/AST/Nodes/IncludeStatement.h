@@ -27,58 +27,54 @@ class IncludeStatement : public ASTNode {
 			QUOTED
 		};
 	protected:
-		IncludeKeyword m_KEYWORD;
-
-		IncludeType m_TYPE;
-
+		AST::Token<IncludeKeyword> m_KEYWORD;
+		AST::Token<IncludeType> m_TYPE;
 		PathType m_PATHTYPE;
-
-		std::string m_PATH;
-
-		std::optional<std::string> m_ASPATH;
+		AST::Token<std::string> m_PATH;
+		std::optional<AST::Token<std::string>> m_ASPATH;
 	public:
 		IncludeStatement() {
 			type = AST::NodeType::IncludeStatement;
 		}
 
-		IncludeKeyword KEYWORD() const {
+		const AST::Token<IncludeKeyword>& KEYWORD() const {
 			return m_KEYWORD;
 		}
 
-		void setKeyword(IncludeKeyword keyword) {
+		void setKeyword(const AST::Token<IncludeKeyword>& keyword) {
 			m_KEYWORD = keyword;
 		}
 
-		IncludeType TYPE() const {
+		const AST::Token<IncludeType>& TYPE() const {
 			return m_TYPE;
 		}
 
-		void setType(IncludeType type) {
+		void setType(const AST::Token<IncludeType>& type) {
 			m_TYPE = type;
 		}
 
-		PathType PATHTYPE() const {
+		const PathType& PATHTYPE() const {
 			return m_PATHTYPE;
 		}
 
-		void setPathType(PathType pathtype) {
+		void setPathType(const PathType& pathtype) {
 			m_PATHTYPE = pathtype;
 		}
 
-		const std::string& PATH() const {
+		const AST::Token<std::string>& PATH() const {
 			return m_PATH;
 		}
 
-		void setPath(const std::string& path) {
+		void setPath(const AST::Token<std::string>& path) {
 			m_PATH = path;
 		}
 
-		const std::optional<std::string>& ASPATH() const {
+		const std::optional<AST::Token<std::string>>& ASPATH() const {
 			return m_ASPATH;
 		}
 
-		void setAsPath(const std::string& aspath) {
-			if (!aspath.empty()) m_ASPATH = aspath;
+		void setAsPath(const AST::Token<std::string>& aspath) {
+			if (!aspath.getValue().empty()) m_ASPATH = aspath;
 		}
 
 		void clearAsPath() {
@@ -87,13 +83,16 @@ class IncludeStatement : public ASTNode {
 
 		std::ostream& prettyPrint(std::ostream& os, int indentation_level = 0) const override {
 			std::string indent(indentation_level * 2, ' ');
-			std::string keyword_string = (m_KEYWORD == IncludeKeyword::INCLUDE) ? "include" : "include_once";
-			std::string type_string = (m_TYPE == IncludeType::STATIC) ? "static" : "dynamic";
-			std::string path_string = (m_PATHTYPE == PathType::ANGLEBRACKET) ? "<" + m_PATH + ">" : "\"" + m_PATH + "\"";
-			std::string aspath_string = m_ASPATH.has_value() ? " as \"" + m_ASPATH.value() + "\"" : "";
-
-			return os << indent << "(IncludeStatement\n"
-				<< indent << "  @" << keyword_string << " " << type_string << " " << path_string << aspath_string << ")" << std::flush;
+			os << indent << "(IncludeStatement\n"
+				<< indent << "  @" << ((m_KEYWORD.getValue() == IncludeKeyword::INCLUDE) ? "include" : "include_once") << " "
+				<< ((m_TYPE.getValue() == IncludeType::STATIC) ? "static" : "dynamic") << " "
+				<< ((m_PATHTYPE == PathType::ANGLEBRACKET) ? "<" : "\"") << m_PATH
+				<< ((m_PATHTYPE == PathType::ANGLEBRACKET) ? ">" : "\"");
+			if (m_ASPATH.has_value()) {
+				os << " as \"" << m_ASPATH.value() << "\"";
+			}
+			os << ")" << std::flush;
+			return os;
 		}
 };
 

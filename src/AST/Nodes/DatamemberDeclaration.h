@@ -13,41 +13,41 @@ namespace AST {
 
 class DatamemberDeclaration : public ASTNode {
 	protected:
-		AccessModifier m_ACCESSMODIFIER;
-		std::optional<std::string> m_TYPE;
-		std::optional<std::string> m_IDENTIFIER;
+		AST::Token<AccessModifier> m_ACCESSMODIFIER;
+		std::optional<AST::Token<std::string>> m_TYPE;
+		std::optional<AST::Token<std::string>> m_IDENTIFIER;
 
 	public:
 		DatamemberDeclaration() {
 			type = AST::NodeType::DatamemberDeclaration;
 		}
 
-		AccessModifier ACCESSMODIFIER() const {
+		const AST::Token<AccessModifier>& ACCESSMODIFIER() const {
 			return m_ACCESSMODIFIER;
 		}
 
-		void setAccessModifier(AccessModifier accessmodifier) {
+		void setAccessModifier(const AST::Token<AccessModifier>& accessmodifier) {
 			m_ACCESSMODIFIER = accessmodifier;
 		}
 
-		const std::optional<std::string>& TYPE() const {
+		const std::optional<AST::Token<std::string>>& TYPE() const {
 			return m_TYPE;
 		}
 
-		void setType(const std::string& type) {
-			if (!type.empty()) m_TYPE = type;
+		void setType(const AST::Token<std::string>& type) {
+			if (!type.getValue().empty()) m_TYPE = type;
 		}
 
 		void clearType() {
 			m_TYPE = std::nullopt;
 		}
 
-		const std::optional<std::string>& IDENTIFIER() const {
+		const std::optional<AST::Token<std::string>>& IDENTIFIER() const {
 			return m_IDENTIFIER;
 		}
 
-		void setIdentifier(const std::string& identifier) {
-			if (!identifier.empty()) m_IDENTIFIER = identifier;
+		void setIdentifier(const AST::Token<std::string>& identifier) {
+			if (!identifier.getValue().empty()) m_IDENTIFIER = identifier;
 		}
 
 		void clearIdentifier() {

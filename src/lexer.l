@@ -6,6 +6,7 @@
  * Bash++: Bash with classes
  */
 #include "parser.tab.hpp" // Bison header for token types
+#include "../AST/Token.h" // For AST::Token<T>
 #include "../ModeStack.h"
 #include <cstdint>
 #include <stack>
@@ -70,6 +71,8 @@ struct LexerState {
 	uint32_t token_count_inside_bracereference = 0;
 	uint32_t deprecated_subshell_nesting_depth = 0;
 	uint32_t if_depth = 0;
+	uint32_t singlequote_start_line = 0;
+	uint32_t singlequote_start_column = 0;
 	std::stack<uint32_t> deprecated_subshell_nesting_depths;
 	std::deque<std::string> heredoc_delimiters;
 	bool bash_case_input_received = false;
@@ -92,6 +95,8 @@ struct LexerState {
 
 	void reset() {
 		singlequote_contents.clear();
+		singlequote_start_line = 0;
+		singlequote_start_column = 0;
 		token_count_inside_bracereference = 0;
 		deprecated_subshell_nesting_depth = 0;
 		if_depth = 0;
@@ -425,7 +430,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	/**
 	* Helper to get the text of the current token as a std::string.
 	*/
-	#define tokenText std::string(yytext, yyleng)
+	#define tokenText AST::Token<std::string>(std::string(yytext, yyleng), lexerState.token_beginning.line, lexerState.token_beginning.column)
 %}
 
 <*>{
@@ -697,6 +702,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	modeStack.push(SINGLEQUOTE_MODE);
 	lexerState.singlequote_contents.clear();
 	lexerState.singlequote_contents += '\'';
+	lexerState.singlequote_start_line = lexerState.token_beginning.line;
+	lexerState.singlequote_start_column = lexerState.token_beginning.column;
 }
 
 ["] {
@@ -848,7 +855,11 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		/* Closing singlequote found */
 		modeStack.pop(); // Exit SINGLEQUOTE_MODE
 		lexerState.singlequote_contents += '\'';
-		emit(SINGLEQUOTED_STRING, lexerState.singlequote_contents);
+		uint32_t start_line = lexerState.singlequote_start_line;
+		uint32_t start_column = lexerState.singlequote_start_column;
+		lexerState.singlequote_start_line = 0;
+		lexerState.singlequote_start_column = 0;
+		emit(SINGLEQUOTED_STRING, AST::Token<std::string>(lexerState.singlequote_contents, start_line, start_column));
 	}
 }
 
@@ -856,27 +867,27 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	/* The following rules are for handling string interpolations */
 	\\@ {
 		// Literal '@'
-		emit(STRING_CONTENT, "@");
+		emit(STRING_CONTENT, AST::Token<std::string>("@", lexerState.token_beginning.line, lexerState.token_beginning.column));
 	}
 
 	\$@ {
 		// Bash variable: '$@'
-		emit(STRING_CONTENT, "$@");
+		emit(STRING_CONTENT, tokenText);
 	}
 
 	\\` {
 		// Literal backtick
-		emit(STRING_CONTENT, "`");
+		emit(STRING_CONTENT, tokenText);
 	}
 
 	\\[\*&] {
 		// Literal '*' or '&'
-		emit(STRING_CONTENT, tokenText.substr(1, 1));
+		emit(STRING_CONTENT, tokenText);
 	}
 
 	\\ {
 		// Literal backslash
-		emit(STRING_CONTENT, "\\");
+		emit(STRING_CONTENT, tokenText);
 	}
 
 	"@(" {
@@ -901,7 +912,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 	"$" {
 		// Solitary $
-		emit(STRING_CONTENT, "$");
+		emit(STRING_CONTENT, tokenText);
 	}
 
 	"`" {
@@ -933,14 +944,14 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		// Asterisk followed by a supershell
 		// Not a dereference operator, just a literal '*'
 		// Supershells cannot be dereferenced
-		emit(STRING_CONTENT, "*");
+		emit(STRING_CONTENT, tokenText);
 	}
 
 	&/"@(" {
 		// Ampersand followed by a supershell
 		// Not an address-of operator, just a literal '&'
 		// Supershells cannot have their address taken
-		emit(STRING_CONTENT, "&");
+		emit(STRING_CONTENT, tokenText);
 	}
 
 	\*/"@" {
@@ -968,7 +979,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 	\\["] {
 		/* Escaped doublequote */
-		emit(STRING_CONTENT, "\"");
+		emit(STRING_CONTENT, tokenText);
 	}
 
 	["] {
@@ -982,8 +993,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	^[a-zA-Z_][a-zA-Z_0-9]*$ {
 		// The heredoc delimiter must be at the start of the line
 		// And it must be the only thing on the line
-		std::string id = tokenText;
-		if (!lexerState.heredoc_delimiters.empty() && lexerState.heredoc_delimiters.front() == id) {
+		AST::Token<std::string> id = tokenText;
+		if (!lexerState.heredoc_delimiters.empty() && lexerState.heredoc_delimiters.front() == id.getValue()) {
 			// End of heredoc content
 			modeStack.pop(); // Exit HEREDOC_CONTENT_MODE
 			lexerState.heredoc_delimiters.pop_front();
@@ -1295,10 +1306,10 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		emit(WS, tokenText);
 	}
 	{SPECIAL_KEYWORD_DYNAMIC} {
-		emit(INCLUDE_TYPE, "dynamic");
+		emit(INCLUDE_TYPE, tokenText);
 	}
 	{SPECIAL_KEYWORD_STATIC} {
-		emit(INCLUDE_TYPE, "static");
+		emit(INCLUDE_TYPE, tokenText);
 	}
 	{SPECIAL_KEYWORD_AS} {
 		emit(KEYWORD_AS);
@@ -1376,8 +1387,9 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 			if (lexerState.incoming_token_can_be_lvalue) {
 				lexerState.incoming_token_can_be_lvalue = false;
 				std::string text = token.value.as<std::string>();
+				AST::Token<std::string> text_token(text, location.begin.line, location.begin.column);
 				lexerState.expecting_assignment_operator = true; // After an identifier lvalue, we may expect an assignment operator
-				return yy::parser::make_IDENTIFIER_LVALUE(text, location);
+				return yy::parser::make_IDENTIFIER_LVALUE(text_token, location);
 			} else if (lexerState.might_be_lexing_object_instantiation) {
 				// This is potentially the name of an instantiated object
 				// That means an assignment operator might possibly come next

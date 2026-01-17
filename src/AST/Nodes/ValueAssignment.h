@@ -11,17 +11,17 @@ namespace AST {
 
 class ValueAssignment : public ASTNode {
 	protected:
-		std::string m_OPERATOR;
+		AST::Token<std::string> m_OPERATOR;
 	public:
 		ValueAssignment() {
 			type = AST::NodeType::ValueAssignment;
 		}
 
-		const std::string& OPERATOR() const {
+		const AST::Token<std::string>& OPERATOR() const {
 			return m_OPERATOR;
 		}
 
-		void setOperator(const std::string& op) {
+		void setOperator(const AST::Token<std::string>& op) {
 			m_OPERATOR = op;
 		}
 

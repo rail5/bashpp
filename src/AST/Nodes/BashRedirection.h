@@ -12,16 +12,16 @@ namespace AST {
 
 class BashRedirection : public StringType {
 	protected:
-		std::string m_OPERATOR;
+		AST::Token<std::string> m_OPERATOR;
 	public:
 		BashRedirection() {
 			type = AST::NodeType::BashRedirection;
 		}
 
-		const std::string& OPERATOR() const {
+		const AST::Token<std::string>& OPERATOR() const {
 			return m_OPERATOR;
 		}
-		void setOperator(const std::string& op) {
+		void setOperator(const AST::Token<std::string>& op) {
 			m_OPERATOR = op;
 		}
 

@@ -11,17 +11,17 @@ namespace AST {
 
 class BashSelectStatement : public ASTNode {
 	protected:
-		std::string m_VARIABLE;
+		AST::Token<std::string> m_VARIABLE;
 	public:
 		BashSelectStatement() {
 			type = AST::NodeType::BashSelectStatement;
 		}
 
-		const std::string& VARIABLE() const {
+		const AST::Token<std::string>& VARIABLE() const {
 			return m_VARIABLE;
 		}
 
-		void setVariable(const std::string& variable) {
+		void setVariable(const AST::Token<std::string>& variable) {
 			m_VARIABLE = variable;
 		}
 

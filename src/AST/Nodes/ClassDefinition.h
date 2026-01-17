@@ -12,27 +12,27 @@ namespace AST {
 
 class ClassDefinition : public ASTNode {
 	protected:
-		std::string m_CLASSNAME;
-		std::optional<std::string> m_PARENTCLASSNAME;
+		AST::Token<std::string> m_CLASSNAME;
+		std::optional<AST::Token<std::string>> m_PARENTCLASSNAME;
 	public:
 		ClassDefinition() {
 			type = AST::NodeType::ClassDefinition;
 		}
 
-		const std::string& CLASSNAME() const {
+		const AST::Token<std::string>& CLASSNAME() const {
 			return m_CLASSNAME;
 		}
 
-		void setClassName(const std::string& classname) {
+		void setClassName(const AST::Token<std::string>& classname) {
 			m_CLASSNAME = classname;
 		}
 
-		const std::optional<std::string>& PARENTCLASSNAME() const {
+		const std::optional<AST::Token<std::string>>& PARENTCLASSNAME() const {
 			return m_PARENTCLASSNAME;
 		}
 
-		void setParentClassName(const std::string& parentclassname) {
-			if (!parentclassname.empty()) m_PARENTCLASSNAME = parentclassname;
+		void setParentClassName(const AST::Token<std::string>& parentclassname) {
+			if (!parentclassname.getValue().empty()) m_PARENTCLASSNAME = parentclassname;
 		}
 
 		void clearParentClassName() {

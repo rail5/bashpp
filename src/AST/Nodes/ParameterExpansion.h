@@ -12,17 +12,17 @@ namespace AST {
 
 class ParameterExpansion : public StringType {
 	protected:
-		std::string m_EXPANSIONBEGIN;
+		AST::Token<std::string> m_EXPANSIONBEGIN;
 	public:
 		ParameterExpansion() {
 			type = AST::NodeType::ParameterExpansion;
 		}
 
-		const std::string& EXPANSIONBEGIN() const {
+		const AST::Token<std::string>& EXPANSIONBEGIN() const {
 			return m_EXPANSIONBEGIN;
 		}
 
-		void setExpansionBegin(const std::string& expansionBegin) {
+		void setExpansionBegin(const AST::Token<std::string>& expansionBegin) {
 			m_EXPANSIONBEGIN = expansionBegin;
 		}
 

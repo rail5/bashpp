@@ -1,0 +1,64 @@
+/**
+ * Copyright (C) 2025 Andrew S. Rightenburg
+ * Bash++: Bash with classes
+ */
+
+#pragma once
+
+#include <iostream>
+#include <cstdint>
+
+namespace AST {
+
+template <class T>
+class Token {
+	private:
+		T value;
+		uint32_t line;
+		uint32_t column;
+	public:
+		Token() = default;
+		Token(const T& value, uint32_t line, uint32_t column) : value(value), line(line), column(column) {}
+		const T& getValue() const {
+			return value;
+		}
+		uint32_t getLine() const {
+			return line;
+		}
+		uint32_t getCharPositionInLine() const {
+			return column;
+		}
+
+		void setValue(const T& new_value) {
+			value = new_value;
+		}
+		void setLine(uint32_t new_line) {
+			line = new_line;
+		}
+		void setCharPositionInLine(uint32_t new_column) {
+			column = new_column;
+		}
+
+		operator T() const {
+			return value;
+		}
+		void operator=(const T& new_value) {
+			value = new_value;
+		}
+		void operator+=(const T& append_value) {
+			value += append_value;
+		}
+		bool operator==(const T& other) const {
+			return value == other;
+		}
+		bool operator!=(const T& other) const {
+			return value != other;
+		}
+
+		friend std::ostream& operator<<(std::ostream& os, const Token<T>& token) {
+			os << token.value;
+			return os;
+		}
+};
+
+} // namespace AST

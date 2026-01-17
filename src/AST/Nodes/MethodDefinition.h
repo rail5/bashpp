@@ -14,25 +14,25 @@ namespace AST {
 class MethodDefinition : public ASTNode {
 	public:
 		struct Parameter {
-			std::optional<std::string> type;
-			std::string name;
+			std::optional<AST::Token<std::string>> type;
+			AST::Token<std::string> name;
 			bool pointer = true; // Required. Methods cannot accept non-primitive objects as arguments
 		};
 	protected:
 		bool m_VIRTUAL = false;
-		AccessModifier m_ACCESSMODIFIER;
-		std::string m_NAME;
-		std::vector<Parameter> m_PARAMETERS;
+		AST::Token<AccessModifier> m_ACCESSMODIFIER;
+		AST::Token<std::string> m_NAME;
+		std::vector<AST::Token<Parameter>> m_PARAMETERS;
 
 	public:
 		MethodDefinition() {
 			type = AST::NodeType::MethodDefinition;
 		}
 
-		const std::string& NAME() const {
+		const AST::Token<std::string>& NAME() const {
 			return m_NAME;
 		}
-		void setName(const std::string& name) {
+		void setName(const AST::Token<std::string>& name) {
 			m_NAME = name;
 		}
 
@@ -43,20 +43,20 @@ class MethodDefinition : public ASTNode {
 			m_VIRTUAL = is_virtual;
 		}
 
-		AccessModifier ACCESSMODIFIER() const {
+		const AST::Token<AccessModifier>& ACCESSMODIFIER() const {
 			return m_ACCESSMODIFIER;
 		}
-		void setAccessModifier(AccessModifier accessmodifier) {
+		void setAccessModifier(const AST::Token<AccessModifier>& accessmodifier) {
 			m_ACCESSMODIFIER = accessmodifier;
 		}
 
-		const std::vector<Parameter>& PARAMETERS() const {
+		const std::vector<AST::Token<Parameter>>& PARAMETERS() const {
 			return m_PARAMETERS;
 		}
-		void addParameter(const Parameter& parameter) {
+		void addParameter(const AST::Token<Parameter>& parameter) {
 			m_PARAMETERS.push_back(parameter);
 		}
-		void addParameters(const std::vector<Parameter>& parameters) {
+		void addParameters(const std::vector<AST::Token<Parameter>>& parameters) {
 			m_PARAMETERS.insert(m_PARAMETERS.end(), parameters.begin(), parameters.end());
 		}
 
@@ -78,10 +78,10 @@ class MethodDefinition : public ASTNode {
 			os << "@method " << m_NAME;
 			for (const auto& param : m_PARAMETERS) {
 				os << " ";
-				if (param.type.has_value()) {
-					os << "@" << param.type.value() << (param.pointer ? "*" : "") << " ";
+				if (param.getValue().type.has_value()) {
+					os << "@" << param.getValue().type.value() << (param.getValue().pointer ? "*" : "") << " ";
 				}
-				os << param.name;
+				os << param.getValue().name;
 			}
 			for (const auto& child : children) {
 				os << std::endl;

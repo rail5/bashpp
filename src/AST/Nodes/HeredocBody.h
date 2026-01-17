@@ -12,16 +12,16 @@ namespace AST {
 
 class HeredocBody : public StringType {
 	protected:
-		std::string m_DELIMITER;
+		AST::Token<std::string> m_DELIMITER;
 	public:
 		HeredocBody() {
 			type = AST::NodeType::HeredocBody;
 		}
 
-		const std::string& DELIMITER() const {
+		const AST::Token<std::string>& DELIMITER() const {
 			return m_DELIMITER;
 		}
-		void setDelimiter(const std::string& delimiter) {
+		void setDelimiter(const AST::Token<std::string>& delimiter) {
 			m_DELIMITER = delimiter;
 		}
 

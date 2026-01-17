@@ -11,26 +11,26 @@ namespace AST {
 
 class ObjectInstantiation : public ASTNode {
 	protected:
-		std::string m_TYPE;
-		std::string m_IDENTIFIER;
+		AST::Token<std::string> m_TYPE;
+		AST::Token<std::string> m_IDENTIFIER;
 	public:
 		ObjectInstantiation() {
 			type = AST::NodeType::ObjectInstantiation;
 		}
 
-		void setType(const std::string& type) {
+		void setType(const AST::Token<std::string>& type) {
 			m_TYPE = type;
 		}
 
-		std::string TYPE() const {
+		const AST::Token<std::string>& TYPE() const {
 			return m_TYPE;
 		}
 
-		void setIdentifier(const std::string& identifier) {
+		void setIdentifier(const AST::Token<std::string>& identifier) {
 			m_IDENTIFIER = identifier;
 		}
 
-		std::string IDENTIFIER() const {
+		const AST::Token<std::string>& IDENTIFIER() const {
 			return m_IDENTIFIER;
 		}
 

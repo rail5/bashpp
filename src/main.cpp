@@ -20,26 +20,33 @@ volatile int bpp_exit_code = 0;
 
 #include <iostream>
 #include <fstream>
-#include <vector>
 #include <filesystem>
 #include <cstring>
 #include <memory>
-#include <antlr4-runtime.h>
 #include <getopt.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <cstdio>
 
 #include "version.h"
 #include "updated_year.h"
 
 #include "include/parse_arguments.h"
 
-#include "antlr/BashppLexer.h"
-#include "antlr/BashppParser.h"
+#include "flexbison/parser.tab.hpp"
+#include "flexbison/lex.yy.hpp"
+#include "ModeStack.h"
 
 #include "listener/BashppListener.h"
 
 #include "internal_error.h"
+
+yyscan_t main_lexer;
+ModeStack modeStack;
+extern yy::parser::symbol_type yylex();
+extern void initLexer();
+extern void destroyLexer();
+extern bool set_display_lexer_output(bool enable);
 
 int main(int argc, char* argv[]) {
 	std::shared_ptr<std::ostream> output_stream(&std::cout, [](std::ostream*){});
@@ -69,8 +76,7 @@ int main(int argc, char* argv[]) {
 		run_on_exit = true; // If no output file was given, we run the program on exit
 	}
 
-	std::ifstream file_stream;
-	std::istream* stream = &std::cin;
+	FILE* input_file = stdin;
 
 	if (args.input_file.has_value()) {
 		// Verify that the file exists, is readable, and is a regular file
@@ -82,52 +88,49 @@ int main(int argc, char* argv[]) {
 			std::cerr << program_name << ": Error: Source file '" << args.input_file.value() << "' is not a regular file" << std::endl;
 			return 1;
 		}
-		file_stream.open(args.input_file.value());
-		if (!file_stream.is_open()) {
+		input_file = fopen(args.input_file.value().c_str(), "r");
+		if (input_file == nullptr) {
 			std::cerr << program_name << ": Error: Could not open source file '" << args.input_file.value() << "'" << std::endl;
 			return 1;
 		}
-		stream = &file_stream;
 	}
 
-	if (!stream) {
+	if (input_file == nullptr) {
 		std::cerr << program_name << ": Error: Could not open source file" << std::endl;
 		return 1;
 	}
 
 	/* If the user didn't provide input, let them know, rather than just hang waiting for cin */
-	if (stream->rdbuf() == std::cin.rdbuf() && isatty(fileno(stdin))) {
+	if (input_file == stdin && isatty(fileno(stdin))) {
 		std::cerr << program_name << " " << bpp_compiler_version << std::endl << help_string;
 		return 1;
 	}
 
-	antlr4::ANTLRInputStream input(*stream);
-	BashppLexer lexer(&input);
-	antlr4::CommonTokenStream tokens(&lexer);
-
-	tokens.fill();
-
-	if (args.display_tokens) {
-		for (auto token : tokens.getTokens()) {
-			std::cout << "Token: " << token->getText() 
-					  << ", Type: " << lexer.getVocabulary().getSymbolicName(token->getType()) 
-					  << std::endl;
-		}
-		if (!args.display_parse_tree) {
-			return bpp_exit_code;
-		}
+	if (yylex_init(&main_lexer) != 0) {
+		std::cerr << program_name << ": Error: Could not initialize lexer" << std::endl;
+		return 1;
 	}
 
-	BashppParser parser(&tokens);
+	modeStack.bind(main_lexer);
+	yyset_in(input_file, main_lexer);
+	initLexer();
+	set_display_lexer_output(args.display_tokens);
 
-	// Remove default error listeners
-	parser.removeErrorListeners();
-	// Add diagnostic error listener
-	std::unique_ptr<antlr4::DiagnosticErrorListener> error_listener = std::make_unique<antlr4::DiagnosticErrorListener>();
-	parser.addErrorListener(error_listener.get());
+	std::shared_ptr<AST::Program> program = nullptr;
+	yy::parser parser(program);
+	int parseResult = parser.parse();
+	fclose(input_file);
 
-	// Enable the parser to use diagnostic messages
-	parser.setErrorHandler(std::make_shared<antlr4::BailErrorStrategy>());
+	if (args.display_parse_tree) {
+		// '-p' given, exit after displaying the parse tree
+		destroyLexer();
+		std::cout << *program << std::endl;
+		return parseResult;
+	} else if (args.display_tokens) {
+		// '-t' given (lexer tokens displayed), exit now even if we didn't display the parse tree
+		destroyLexer();
+		return parseResult;
+	}
 
 	if (run_on_exit) {
 		// Create a temporary file to store the program
@@ -150,17 +153,8 @@ int main(int argc, char* argv[]) {
 		args.output_file = std::string(temp_file_vec.data());
 	}
 
-	antlr4::tree::ParseTree* tree = nullptr;
 	try {
-		tree = parser.program();
-
-		if (args.display_parse_tree) {
-			std::cout << tree->toStringTree(&parser, true) << std::endl;
-			return bpp_exit_code;
-		}
-
 		// Walk the tree
-		antlr4::tree::ParseTreeWalker walker;
 		std::unique_ptr<BashppListener> listener = std::make_unique<BashppListener>();
 		std::string full_path;
 		char resolved_path[PATH_MAX];
@@ -183,12 +177,8 @@ int main(int argc, char* argv[]) {
 		listener->set_suppress_warnings(args.suppress_warnings);
 		listener->set_target_bash_version(args.target_bash_version.first, args.target_bash_version.second);
 		listener->set_arguments(args.program_arguments);
-		walker.walk(listener.get(), tree);
+		listener->walk(program);
 
-	} catch (const antlr4::EmptyStackException& e) {
-		std::cerr << "EmptyStackException: " << e.what() << std::endl;
-	} catch (const antlr4::RecognitionException& e) {
-		std::cerr << "Recognition exception: " << e.what() << std::endl;
 	} catch (const internal_error& e) {
 		std::cerr << "Internal error: " << e.what() << std::endl;
 	} catch (const std::exception& e) {
@@ -199,5 +189,6 @@ int main(int argc, char* argv[]) {
 		std::cerr << "Unknown exception occurred" << std::endl;
 	}
 
+	destroyLexer();
 	return bpp_exit_code;
 }

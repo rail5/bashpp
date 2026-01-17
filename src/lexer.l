@@ -31,34 +31,9 @@ GNU Bison Docs, 10.1.7.2: Complete Symbols
 > additional arguments.
 
 */
-extern yyscan_t main_lexer;
 
-#define YY_DECL yy::parser::symbol_type yylex(yyscan_t yyscanner)
+#define YY_DECL yy::parser::symbol_type yylex_impl(yyscan_t yyscanner)
 YY_DECL;
-
-static bool display_lexer_output = false;
-
-void set_display_lexer_output(bool enable) {
-	display_lexer_output = enable;
-}
-
-/* For compatibility with Bison's expectations, as documented above */
-yy::parser::symbol_type yylex() {
-	auto sym = ::yylex(main_lexer);
-	if (display_lexer_output) {
-		std::cout << "Token: " << yy::parser::symbol_name(sym.kind());
-		
-		std::string semantic_value = sym.value.as<std::string>();
-		if (!semantic_value.empty()) {
-			std::cout << ", Text: " << semantic_value;
-		}
-
-		std::cout << std::endl;
-	}
-	return sym;
-}
-
-extern ModeStack modeStack; // Stack to manage lexer modes
 
 /**
  * @struct LexerState
@@ -123,7 +98,39 @@ struct LexerState {
 	}
 };
 
-static LexerState lexerState;
+struct LexerExtra {
+	LexerState lexerState;
+	ModeStack modeStack;
+	bool display_lexer_output = false;
+};
+
+extern LexerExtra* yyget_extra(yyscan_t yyscanner);
+extern void yyset_extra(LexerExtra* extra, yyscan_t yyscanner);
+
+static inline LexerExtra* get_lexer_extra(yyscan_t yyscanner) {
+	return static_cast<LexerExtra*>(yyget_extra(yyscanner));
+}
+
+/* For compatibility with Bison's expectations, as documented above */
+yy::parser::symbol_type yylex(yyscan_t yyscanner) {
+	auto sym = yylex_impl(yyscanner);
+	auto* extra = get_lexer_extra(yyscanner);
+	if (extra && extra->display_lexer_output) {
+		std::cout << "Token: " << yy::parser::symbol_name(sym.kind());
+		
+		std::string semantic_value = sym.value.as<std::string>();
+		if (!semantic_value.empty()) {
+			std::cout << ", Text: " << semantic_value;
+		}
+
+		std::cout << std::endl;
+	}
+	return sym;
+}
+
+void set_display_lexer_output(bool enable, yyscan_t yyscanner) {
+	get_lexer_extra(yyscanner)->display_lexer_output = enable;
+}
 
 size_t utf8_char_count(const std::string& s) {
 	size_t count = 0;
@@ -179,21 +186,21 @@ size_t utf16_char_count(const std::string& s) {
 	return count;
 }
 
-size_t char_count(const std::string& s) {
-	if (lexerState.utf16_mode) {
+size_t char_count(const std::string& s, yyscan_t yyscanner) {
+	if (get_lexer_extra(yyscanner)->lexerState.utf16_mode) {
 		return utf16_char_count(s);
 	}
 
 	return utf8_char_count(s);
 }
 
-void advance_position(const std::string& text) {
+void advance_position(const std::string& text, yyscan_t yyscanner) {
 	std::string line;
 	for (char c : text) {
 		switch (c) {
 			case '\n':
-				lexerState.current_position.line++;
-				lexerState.current_position.column = 1;
+				get_lexer_extra(yyscanner)->lexerState.current_position.line++;
+				get_lexer_extra(yyscanner)->lexerState.current_position.column = 1;
 				line.clear();
 				break;
 			case '\r':
@@ -204,67 +211,67 @@ void advance_position(const std::string& text) {
 				break;
 		}
 	}
-	lexerState.current_position.columns(char_count(line));
+	get_lexer_extra(yyscanner)->lexerState.current_position.columns(char_count(line, yyscanner));
 }
 
-void rewind_char_counter_to_match_beginning() {
-	lexerState.current_position = lexerState.token_beginning;
-	lexerState.token_ending = lexerState.token_beginning;
+void rewind_char_counter_to_match_beginning(yyscan_t yyscanner) {
+	get_lexer_extra(yyscanner)->lexerState.current_position = get_lexer_extra(yyscanner)->lexerState.token_beginning;
+	get_lexer_extra(yyscanner)->lexerState.token_ending = get_lexer_extra(yyscanner)->lexerState.token_beginning;
 }
 
-void char_counter_zero_length_match_here() {
-	lexerState.token_beginning = lexerState.current_position;
-	lexerState.token_ending = lexerState.current_position;
+void char_counter_zero_length_match_here(yyscan_t yyscanner) {
+	get_lexer_extra(yyscanner)->lexerState.token_beginning = get_lexer_extra(yyscanner)->lexerState.current_position;
+	get_lexer_extra(yyscanner)->lexerState.token_ending = get_lexer_extra(yyscanner)->lexerState.current_position;
 }
 
-yy::location current_match_location() {
+yy::location current_match_location(yyscan_t yyscanner) {
 	yy::location result;
-	result.begin = lexerState.token_beginning;
-	result.end = lexerState.token_ending;
+	result.begin = get_lexer_extra(yyscanner)->lexerState.token_beginning;
+	result.end = get_lexer_extra(yyscanner)->lexerState.token_ending;
 	return result;
 }
 
 #define reconsume_token() \
-	rewind_char_counter_to_match_beginning(); yyless(0);
+	rewind_char_counter_to_match_beginning(yyscanner); yyless(0);
 
 // YY_USER_ACTION runs for every match
 // Any time we call yyless(0), we have to remember to call rewind_char_counter_to_match_beginning()
 // Therefore we do not call yyless(0), we call the reconsume_token() macro
 #define YY_USER_ACTION do { \
-	lexerState.token_beginning = lexerState.current_position; \
-	advance_position(std::string(yytext, yyleng)); \
-	lexerState.token_ending = lexerState.current_position; \
+	get_lexer_extra(yyscanner)->lexerState.token_beginning = get_lexer_extra(yyscanner)->lexerState.current_position; \
+	advance_position(std::string(yytext, yyleng), yyscanner); \
+	get_lexer_extra(yyscanner)->lexerState.token_ending = get_lexer_extra(yyscanner)->lexerState.current_position; \
 } while (false);
 
-#define yyterminate() return yy::parser::make_YYEOF(current_match_location());
+#define yyterminate() return yy::parser::make_YYEOF(current_match_location(yyscanner));
 
 /* For external use by the parser
  * After the parser parses an assignment statement,
  * It can use this function to signal back to the lexer
  * That the next token could be an lvalue
  */
-void set_incoming_token_can_be_lvalue(bool canBeLvalue) {
-	lexerState.incoming_token_can_be_lvalue = canBeLvalue;
+void set_incoming_token_can_be_lvalue(bool canBeLvalue, yyscan_t yyscanner) {
+	get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue = canBeLvalue;
 }
 
-void set_bash_case_input_received(bool received) {
-	lexerState.bash_case_input_received = received;
+void set_bash_case_input_received(bool received, yyscan_t yyscanner) {
+	get_lexer_extra(yyscanner)->lexerState.bash_case_input_received = received;
 }
 
-void set_bash_for_or_select_variable_received(bool received) {
-	lexerState.bash_for_or_select_variable_received = received;
+void set_bash_for_or_select_variable_received(bool received, yyscan_t yyscanner) {
+	get_lexer_extra(yyscanner)->lexerState.bash_for_or_select_variable_received = received;
 }
 
-void set_bash_if_condition_received(bool received) {
-	lexerState.bash_if_condition_received = received;
+void set_bash_if_condition_received(bool received, yyscan_t yyscanner) {
+	get_lexer_extra(yyscanner)->lexerState.bash_if_condition_received = received;
 }
 
-void set_bash_while_or_until_condition_received(bool received) {
-	lexerState.bash_while_or_until_condition_received = received;
+void set_bash_while_or_until_condition_received(bool received, yyscan_t yyscanner) {
+	get_lexer_extra(yyscanner)->lexerState.bash_while_or_until_condition_received = received;
 }
 
-void set_parsed_assignment_operator(bool parsed) {
-	lexerState.parsed_assignment_operator = parsed;
+void set_parsed_assignment_operator(bool parsed, yyscan_t yyscanner) {
+	get_lexer_extra(yyscanner)->lexerState.parsed_assignment_operator = parsed;
 }
 
 /**
@@ -273,11 +280,11 @@ void set_parsed_assignment_operator(bool parsed) {
  * @param token The current token being processed.
  * @return Either the original token unmodified, or an lvalue variant of the token if applicable.
 */
-yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token);
+yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token, yyscan_t yyscanner);
 
-void updateLexerState() {
-	lexerState.expecting_assignment_operator = false;
-	lexerState.parsed_assignment_operator = false;
+void updateLexerState(yyscan_t yyscanner) {
+	get_lexer_extra(yyscanner)->lexerState.expecting_assignment_operator = false;
+	get_lexer_extra(yyscanner)->lexerState.parsed_assignment_operator = false;
 }
 
 %}
@@ -285,6 +292,7 @@ void updateLexerState() {
 %option noyywrap
 %option stack
 %option reentrant
+%option extra-type="LexerExtra*"
 
 ESCAPED_CHAR    \\(.|\n)
 AT              @
@@ -422,15 +430,15 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	*  return yy::parser::make_AT();
 	*/
 	#define emit(tokenType, ...) \
-		updateLexerState(); \
+		updateLexerState(yyscanner); \
 		return maybe_get_lvalue_token(yy::parser::make_##tokenType( \
-			__VA_ARGS__ __VA_OPT__(,) current_match_location() \
-		));
+			__VA_ARGS__ __VA_OPT__(,) current_match_location(yyscanner) \
+		), yyscanner);
 	
 	/**
 	* Helper to get the text of the current token as a std::string.
 	*/
-	#define tokenText AST::Token<std::string>(std::string(yytext, yyleng), lexerState.token_beginning.line, lexerState.token_beginning.column)
+	#define tokenText AST::Token<std::string>(std::string(yytext, yyleng), get_lexer_extra(yyscanner)->lexerState.token_beginning.line, get_lexer_extra(yyscanner)->lexerState.token_beginning.column)
 %}
 
 <*>{
@@ -442,166 +450,166 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	[\#][^\n]*  { /* Ignore comments */ }
 	.           {
 		// Any other character means we're done skipping
-		modeStack.pop(); // Exit SKIP_AFTER_DELIM_MODE
+		get_lexer_extra(yyscanner)->modeStack.pop(); // Exit SKIP_AFTER_DELIM_MODE
 		reconsume_token();
 	}
 }
 
 {ESCAPED_CHAR}                       {
 	std::string sequence = tokenText;
-	if (modeStack.top() == DEPRECATED_SUBSHELL_MODE && sequence[1] == '`') {
+	if (get_lexer_extra(yyscanner)->modeStack.top() == DEPRECATED_SUBSHELL_MODE && sequence[1] == '`') {
 		// Is this starting a nested subshell or is it finishing a nested subshell?
-		lexerState.deprecated_subshell_nesting_depth++; // Include the latest backslash
+		get_lexer_extra(yyscanner)->lexerState.deprecated_subshell_nesting_depth++; // Include the latest backslash
 		if (
-			!lexerState.deprecated_subshell_nesting_depths.empty()
-			&& lexerState.deprecated_subshell_nesting_depth == lexerState.deprecated_subshell_nesting_depths.top()
+			!get_lexer_extra(yyscanner)->lexerState.deprecated_subshell_nesting_depths.empty()
+			&& get_lexer_extra(yyscanner)->lexerState.deprecated_subshell_nesting_depth == get_lexer_extra(yyscanner)->lexerState.deprecated_subshell_nesting_depths.top()
 		) {
 			// Finishing a nested subshell
-			modeStack.pop();
-			uint32_t depth = lexerState.deprecated_subshell_nesting_depth;
-			lexerState.deprecated_subshell_nesting_depths.pop();
-			lexerState.deprecated_subshell_nesting_depth = 0;
+			get_lexer_extra(yyscanner)->modeStack.pop();
+			uint32_t depth = get_lexer_extra(yyscanner)->lexerState.deprecated_subshell_nesting_depth;
+			get_lexer_extra(yyscanner)->lexerState.deprecated_subshell_nesting_depths.pop();
+			get_lexer_extra(yyscanner)->lexerState.deprecated_subshell_nesting_depth = 0;
 			emit(DEPRECATED_SUBSHELL_END, depth);
 		} else {
 			// Starting a new nested subshell
-			modeStack.push(DEPRECATED_SUBSHELL_MODE);
-			lexerState.deprecated_subshell_nesting_depths.push(lexerState.deprecated_subshell_nesting_depth);
-			lexerState.deprecated_subshell_nesting_depth = 0;
-			emit(DEPRECATED_SUBSHELL_START, lexerState.deprecated_subshell_nesting_depths.top());
+			get_lexer_extra(yyscanner)->modeStack.push(DEPRECATED_SUBSHELL_MODE);
+			get_lexer_extra(yyscanner)->lexerState.deprecated_subshell_nesting_depths.push(get_lexer_extra(yyscanner)->lexerState.deprecated_subshell_nesting_depth);
+			get_lexer_extra(yyscanner)->lexerState.deprecated_subshell_nesting_depth = 0;
+			emit(DEPRECATED_SUBSHELL_START, get_lexer_extra(yyscanner)->lexerState.deprecated_subshell_nesting_depths.top());
 		}
-	} else if (modeStack.top() == DEPRECATED_SUBSHELL_MODE && sequence[1] == '\\') {
-		lexerState.deprecated_subshell_nesting_depth++;
+	} else if (get_lexer_extra(yyscanner)->modeStack.top() == DEPRECATED_SUBSHELL_MODE && sequence[1] == '\\') {
+		get_lexer_extra(yyscanner)->lexerState.deprecated_subshell_nesting_depth++;
 		// No need to emit anything yet
 	} else {
 		emit(CATCHALL, tokenText);
 	}
 }
 {WS}                                 {
-	if (lexerState.parsed_assignment_operator) {
+	if (get_lexer_extra(yyscanner)->lexerState.parsed_assignment_operator) {
 		// If whitespace immediately follows an assignment operator,
 		// The rvalue of the assignment is empty
 		reconsume_token();
-		char_counter_zero_length_match_here();
+		char_counter_zero_length_match_here(yyscanner);
 		emit(EMPTY_ASSIGNMENT);
 	}
 	emit(WS, tokenText);
 }
 
-{AT}                                 { modeStack.push(BPP_MODE); reconsume_token(); }
+{AT}                                 { get_lexer_extra(yyscanner)->modeStack.push(BPP_MODE); reconsume_token(); }
 
 <BPP_MODE>{
-	{KEYWORD_INCLUDE}/[^a-zA-Z0-9_]      { modeStack.pop(); modeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE); }
-	{KEYWORD_INCLUDE_ONCE}/[^a-zA-Z0-9_] { modeStack.pop(); modeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE_ONCE); }
+	{KEYWORD_INCLUDE}/[^a-zA-Z0-9_]      { get_lexer_extra(yyscanner)->modeStack.pop(); get_lexer_extra(yyscanner)->modeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE); }
+	{KEYWORD_INCLUDE_ONCE}/[^a-zA-Z0-9_] { get_lexer_extra(yyscanner)->modeStack.pop(); get_lexer_extra(yyscanner)->modeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE_ONCE); }
 
-	{KEYWORD_CLASS}/[^a-zA-Z0-9_]        { modeStack.pop(); modeStack.push(BPP_CLASS_HEADER_MODE); emit(KEYWORD_CLASS); }
-	{KEYWORD_PUBLIC}/[^a-zA-Z0-9_]       { modeStack.pop(); emit(KEYWORD_PUBLIC); }
-	{KEYWORD_PROTECTED}/[^a-zA-Z0-9_]    { modeStack.pop(); emit(KEYWORD_PROTECTED); }
-	{KEYWORD_PRIVATE}/[^a-zA-Z0-9_]      { modeStack.pop(); emit(KEYWORD_PRIVATE); }
-	{KEYWORD_NEW}/[^a-zA-Z0-9_]          { modeStack.pop(); emit(KEYWORD_NEW); }
-	{KEYWORD_DELETE}/[^a-zA-Z0-9_]       { modeStack.pop(); emit(KEYWORD_DELETE); }
-	{KEYWORD_NULLPTR}/[^a-zA-Z0-9_]      { modeStack.pop(); emit(KEYWORD_NULLPTR); }
-	{KEYWORD_METHOD}/[^a-zA-Z0-9_]       { modeStack.pop(); emit(KEYWORD_METHOD); }
-	{KEYWORD_VIRTUAL}/[^a-zA-Z0-9_]      { modeStack.pop(); emit(KEYWORD_VIRTUAL); }
-	{KEYWORD_CONSTRUCTOR}/[^a-zA-Z0-9_]  { modeStack.pop(); emit(KEYWORD_CONSTRUCTOR); }
-	{KEYWORD_DESTRUCTOR}/[^a-zA-Z0-9_]   { modeStack.pop(); emit(KEYWORD_DESTRUCTOR); }
-	{KEYWORD_DYNAMIC_CAST}/[^a-zA-Z0-9_] { modeStack.pop(); emit(KEYWORD_DYNAMIC_CAST); }
-	{KEYWORD_TYPEOF}/[^a-zA-Z0-9_]       { modeStack.pop(); emit(KEYWORD_TYPEOF); }
-	{KEYWORD_THIS}/[^a-zA-Z0-9_]         { modeStack.pop(); modeStack.push(BPP_REFERENCE_MODE); emit(KEYWORD_THIS); }
-	{KEYWORD_SUPER}/[^a-zA-Z0-9_]        { modeStack.pop(); modeStack.push(BPP_REFERENCE_MODE); emit(KEYWORD_SUPER); }
+	{KEYWORD_CLASS}/[^a-zA-Z0-9_]        { get_lexer_extra(yyscanner)->modeStack.pop(); get_lexer_extra(yyscanner)->modeStack.push(BPP_CLASS_HEADER_MODE); emit(KEYWORD_CLASS); }
+	{KEYWORD_PUBLIC}/[^a-zA-Z0-9_]       { get_lexer_extra(yyscanner)->modeStack.pop(); emit(KEYWORD_PUBLIC); }
+	{KEYWORD_PROTECTED}/[^a-zA-Z0-9_]    { get_lexer_extra(yyscanner)->modeStack.pop(); emit(KEYWORD_PROTECTED); }
+	{KEYWORD_PRIVATE}/[^a-zA-Z0-9_]      { get_lexer_extra(yyscanner)->modeStack.pop(); emit(KEYWORD_PRIVATE); }
+	{KEYWORD_NEW}/[^a-zA-Z0-9_]          { get_lexer_extra(yyscanner)->modeStack.pop(); emit(KEYWORD_NEW); }
+	{KEYWORD_DELETE}/[^a-zA-Z0-9_]       { get_lexer_extra(yyscanner)->modeStack.pop(); emit(KEYWORD_DELETE); }
+	{KEYWORD_NULLPTR}/[^a-zA-Z0-9_]      { get_lexer_extra(yyscanner)->modeStack.pop(); emit(KEYWORD_NULLPTR); }
+	{KEYWORD_METHOD}/[^a-zA-Z0-9_]       { get_lexer_extra(yyscanner)->modeStack.pop(); emit(KEYWORD_METHOD); }
+	{KEYWORD_VIRTUAL}/[^a-zA-Z0-9_]      { get_lexer_extra(yyscanner)->modeStack.pop(); emit(KEYWORD_VIRTUAL); }
+	{KEYWORD_CONSTRUCTOR}/[^a-zA-Z0-9_]  { get_lexer_extra(yyscanner)->modeStack.pop(); emit(KEYWORD_CONSTRUCTOR); }
+	{KEYWORD_DESTRUCTOR}/[^a-zA-Z0-9_]   { get_lexer_extra(yyscanner)->modeStack.pop(); emit(KEYWORD_DESTRUCTOR); }
+	{KEYWORD_DYNAMIC_CAST}/[^a-zA-Z0-9_] { get_lexer_extra(yyscanner)->modeStack.pop(); emit(KEYWORD_DYNAMIC_CAST); }
+	{KEYWORD_TYPEOF}/[^a-zA-Z0-9_]       { get_lexer_extra(yyscanner)->modeStack.pop(); emit(KEYWORD_TYPEOF); }
+	{KEYWORD_THIS}/[^a-zA-Z0-9_]         { get_lexer_extra(yyscanner)->modeStack.pop(); get_lexer_extra(yyscanner)->modeStack.push(BPP_REFERENCE_MODE); emit(KEYWORD_THIS); }
+	{KEYWORD_SUPER}/[^a-zA-Z0-9_]        { get_lexer_extra(yyscanner)->modeStack.pop(); get_lexer_extra(yyscanner)->modeStack.push(BPP_REFERENCE_MODE); emit(KEYWORD_SUPER); }
 
-	"@{"                                 { modeStack.pop(); modeStack.push(BPP_BRACEREFERENCE_MODE); emit(REF_START); }
-	"@("                                 { modeStack.pop(); modeStack.push(SUPERSHELL_MODE); emit(SUPERSHELL_START); }
-	{AT}                                 { modeStack.pop(); modeStack.push(BPP_REFERENCE_MODE); emit(AT); }
+	"@{"                                 { get_lexer_extra(yyscanner)->modeStack.pop(); get_lexer_extra(yyscanner)->modeStack.push(BPP_BRACEREFERENCE_MODE); emit(REF_START); }
+	"@("                                 { get_lexer_extra(yyscanner)->modeStack.pop(); get_lexer_extra(yyscanner)->modeStack.push(SUPERSHELL_MODE); emit(SUPERSHELL_START); }
+	{AT}                                 { get_lexer_extra(yyscanner)->modeStack.pop(); get_lexer_extra(yyscanner)->modeStack.push(BPP_REFERENCE_MODE); emit(AT); }
 }
 
 <BPP_CLASS_HEADER_MODE>{
-	":" { modeStack.pop(); emit(COLON); }
+	":" { get_lexer_extra(yyscanner)->modeStack.pop(); emit(COLON); }
 }
 
 {DELIM}                              {
-	switch (modeStack.top()) {
+	switch (get_lexer_extra(yyscanner)->modeStack.top()) {
 		case BASH_CASE_MODE:
-			if (lexerState.bash_case_keyword_in_received) {
+			if (get_lexer_extra(yyscanner)->lexerState.bash_case_keyword_in_received) {
 				// Beginning of the case body
-				modeStack.pop(); // Exit BASH_CASE_MODE
-				modeStack.push(BASH_CASE_BODY_MODE);
-				lexerState.bash_case_keyword_in_received = false; // Reset for next time
-				lexerState.bash_case_input_received = false; // Reset for next time
-				modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
+				get_lexer_extra(yyscanner)->modeStack.pop(); // Exit BASH_CASE_MODE
+				get_lexer_extra(yyscanner)->modeStack.push(BASH_CASE_BODY_MODE);
+				get_lexer_extra(yyscanner)->lexerState.bash_case_keyword_in_received = false; // Reset for next time
+				get_lexer_extra(yyscanner)->lexerState.bash_case_input_received = false; // Reset for next time
+				get_lexer_extra(yyscanner)->modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
 				emit(BASH_CASE_BODY_BEGIN, tokenText); // NOTE: CHANGE THIS IF emit() MACRO CHANGES
 				// We are VERY MUCH relying on emit() returning immediately
 			} else {
-				modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
+				get_lexer_extra(yyscanner)->modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
 				emit(WS, tokenText);
 			}
 			break;
 		case BASH_FOR_OR_SELECT_INPUT_MODE:
-			modeStack.pop(); // Exit BASH_FOR_OR_SELECT_INPUT_MODE
-			lexerState.bash_for_or_select_input_received = true; // So that we know 'do' can be a keyword
-			lexerState.bash_for_or_select_variable_received = false; // Reset for next time
-			modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
+			get_lexer_extra(yyscanner)->modeStack.pop(); // Exit BASH_FOR_OR_SELECT_INPUT_MODE
+			get_lexer_extra(yyscanner)->lexerState.bash_for_or_select_input_received = true; // So that we know 'do' can be a keyword
+			get_lexer_extra(yyscanner)->lexerState.bash_for_or_select_variable_received = false; // Reset for next time
+			get_lexer_extra(yyscanner)->modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
 			emit(DELIM, tokenText); // NOTE: CHANGE THIS IF emit() MACRO CHANGES
 			// Same deal as above
 			break;
 		case BASH_FOR_OR_SELECT_MODE:
-			if (lexerState.bash_for_or_select_variable_received) {
+			if (get_lexer_extra(yyscanner)->lexerState.bash_for_or_select_variable_received) {
 				// No 'in' keyword; proceed to body directly
-				modeStack.pop(); // Exit BASH_FOR_OR_SELECT_MODE
-				lexerState.bash_for_or_select_input_received = true; // So that we know 'do' can be a keyword
-				lexerState.bash_for_or_select_variable_received = false; // Reset for next time
-				modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
+				get_lexer_extra(yyscanner)->modeStack.pop(); // Exit BASH_FOR_OR_SELECT_MODE
+				get_lexer_extra(yyscanner)->lexerState.bash_for_or_select_input_received = true; // So that we know 'do' can be a keyword
+				get_lexer_extra(yyscanner)->lexerState.bash_for_or_select_variable_received = false; // Reset for next time
+				get_lexer_extra(yyscanner)->modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
 				emit(DELIM, tokenText); // NOTE: CHANGE THIS IF emit() MACRO CHANGES
 			}
 			break;
 		default:
-			if (!lexerState.heredoc_delimiters.empty() && tokenText == "\n") {
+			if (!get_lexer_extra(yyscanner)->lexerState.heredoc_delimiters.empty() && tokenText == "\n") {
 				// Do not push SKIP_AFTER_DELIM_MODE if we're going into a string-type mode like HEREDOC_CONTENT_MODE
-				for (const auto& delimiter : lexerState.heredoc_delimiters) {
+				for (const auto& delimiter : get_lexer_extra(yyscanner)->lexerState.heredoc_delimiters) {
 					// Commands can contain multiple heredocs, as in:
 					// cat <<EOF1 <<EOF2 <<EOF3
 					// These heredocs must then be terminated in the order they're given
 					// I.e., first EOF1, then EOF2, then EOF3
 					// So, we push HEREDOC_CONTENT_MODE for each of the given delimiters
 					// And pop one off for each that we finish
-					modeStack.push(HEREDOC_CONTENT_MODE); 
+					get_lexer_extra(yyscanner)->modeStack.push(HEREDOC_CONTENT_MODE); 
 				}
 				emit(HEREDOC_CONTENT_START);
 			}
 			break;
 	}
 
-	if (lexerState.parsed_assignment_operator) {
+	if (get_lexer_extra(yyscanner)->lexerState.parsed_assignment_operator) {
 		// If a DELIM immediately follows an assignment operator,
 		// The rvalue of the assignment is empty
 		reconsume_token();
-		char_counter_zero_length_match_here();
+		char_counter_zero_length_match_here(yyscanner);
 		// Do not push SKIP_AFTER_DELIM_MODE yet, as we need to reconsume the DELIM first
 		emit(EMPTY_ASSIGNMENT);
 	}
-	modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
+	get_lexer_extra(yyscanner)->modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
 	emit(DELIM, tokenText);
 }
 [ \t]*&&                             { emit(DOUBLEAMPERSAND); }
 [ \t]*\|\|                           { emit(DOUBLEPIPE); }
 [ \t]*\|                             { emit(PIPE); }
-{LBRACE}                             { modeStack.push(BLOCK_MODE); emit(LBRACE); }
+{LBRACE}                             { get_lexer_extra(yyscanner)->modeStack.push(BLOCK_MODE); emit(LBRACE); }
 <BLOCK_MODE>{
 	{RBRACE} {
-		modeStack.pop(); // Exit BLOCK_MODE
+		get_lexer_extra(yyscanner)->modeStack.pop(); // Exit BLOCK_MODE
 		emit(RBRACE);
 	}
 }
 "+="                                 {
-	if (lexerState.expecting_assignment_operator) {
-		lexerState.expecting_assignment_operator = false;
+	if (get_lexer_extra(yyscanner)->lexerState.expecting_assignment_operator) {
+		get_lexer_extra(yyscanner)->lexerState.expecting_assignment_operator = false;
 		emit(PLUS_EQUALS);
 	} else {
 		emit(CATCHALL, tokenText);
 	}
 }
 "="                                  {
-	if (lexerState.expecting_assignment_operator) {
-		lexerState.expecting_assignment_operator = false;
+	if (get_lexer_extra(yyscanner)->lexerState.expecting_assignment_operator) {
+		get_lexer_extra(yyscanner)->lexerState.expecting_assignment_operator = false;
 		emit(EQUALS);
 	} else {
 		emit(CATCHALL, tokenText);
@@ -612,24 +620,24 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 [\*]/[@]                             { emit(DEREFERENCE_OPERATOR); }
 [&]/[@]                              { emit(AMPERSAND); }
 {IDENTIFIER}                         {
-	if (modeStack.top() == HEREDOC_MODE) {
+	if (get_lexer_extra(yyscanner)->modeStack.top() == HEREDOC_MODE) {
 		// This IDENTIFIER is the heredoc delimiter
-		lexerState.heredoc_delimiters.push_back(tokenText);
-		modeStack.pop(); // Exit HEREDOC_MODE
+		get_lexer_extra(yyscanner)->lexerState.heredoc_delimiters.push_back(tokenText);
+		get_lexer_extra(yyscanner)->modeStack.pop(); // Exit HEREDOC_MODE
 		emit(HEREDOC_DELIMITER, tokenText);
 	} else {
 		emit(IDENTIFIER, tokenText);
 	}
 }
-"<("                                      { modeStack.push(PROCESS_SUBSTITUTION_MODE); emit(PROCESS_SUBSTITUTION_START, tokenText); }
-">("                                      { modeStack.push(PROCESS_SUBSTITUTION_MODE); emit(PROCESS_SUBSTITUTION_START, tokenText); }
+"<("                                      { get_lexer_extra(yyscanner)->modeStack.push(PROCESS_SUBSTITUTION_MODE); emit(PROCESS_SUBSTITUTION_START, tokenText); }
+">("                                      { get_lexer_extra(yyscanner)->modeStack.push(PROCESS_SUBSTITUTION_MODE); emit(PROCESS_SUBSTITUTION_START, tokenText); }
 ([0-9]+|\{[a-zA-Z_][a-zA-Z_0-9]*\})?\<    { emit(LANGLE, tokenText); }
 ([0-9]+|\{[a-zA-Z_][a-zA-Z_0-9]*\})?\>    { emit(RANGLE, tokenText); }
 ([0-9]+|\{[a-zA-Z_][a-zA-Z_0-9]*\})?\&\>  { emit(AMPERSAND_RANGLE, tokenText); }
 ([0-9]+|\{[a-zA-Z_][a-zA-Z_0-9]*\})?\>\&  { emit(RANGLE_AMPERSAND, tokenText); }
 ([0-9]+|\{[a-zA-Z_][a-zA-Z_0-9]*\})?\<\&  { emit(LANGLE_AMPERSAND, tokenText); }
 
-"${"                                 { modeStack.push(BASH_VAR_MODE); emit(BASH_VAR_START); }
+"${"                                 { get_lexer_extra(yyscanner)->modeStack.push(BASH_VAR_MODE); emit(BASH_VAR_START); }
 
 \${IDENTIFIER}                       { emit(BASH_VAR, tokenText); }
 \$[\@\#\*\-\$\!\?]                   { emit(BASH_VAR, tokenText); }
@@ -638,9 +646,9 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 \$\{{INTEGER}\}                      { emit(BASH_VAR, tokenText); }
 
 "]"                                  {
-	switch (modeStack.top()) {
+	switch (get_lexer_extra(yyscanner)->modeStack.top()) {
 		case ARRAY_INDEX_MODE:
-			modeStack.pop(); // Exit ARRAY_INDEX_MODE
+			get_lexer_extra(yyscanner)->modeStack.pop(); // Exit ARRAY_INDEX_MODE
 			emit(ARRAY_INDEX_END);
 			break;
 		default:
@@ -650,20 +658,20 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 }
 
 "$(" {
-	modeStack.push(SUBSHELL_SUBSTITUTION_MODE);
+	get_lexer_extra(yyscanner)->modeStack.push(SUBSHELL_SUBSTITUTION_MODE);
 	emit(SUBSHELL_SUBSTITUTION_START);
 }
 
 "(" {
-	modeStack.push(SUBSHELL_MODE);
+	get_lexer_extra(yyscanner)->modeStack.push(SUBSHELL_MODE);
 	emit(SUBSHELL_START);
 }
 
 <SUPERSHELL_MODE,SUBSHELL_MODE,SUBSHELL_SUBSTITUTION_MODE,PROCESS_SUBSTITUTION_MODE>{
 	[ \t]*\) {
 		// Absorb preceding whitespace
-		auto current_mode = modeStack.top();
-		modeStack.pop();
+		auto current_mode = get_lexer_extra(yyscanner)->modeStack.top();
+		get_lexer_extra(yyscanner)->modeStack.pop();
 		switch (current_mode) {
 			case SUPERSHELL_MODE:
 				emit(SUPERSHELL_END);
@@ -684,49 +692,49 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 ")" { emit(RPAREN); }
 
 "`" {
-	switch (modeStack.top()) {
+	switch (get_lexer_extra(yyscanner)->modeStack.top()) {
 		case DEPRECATED_SUBSHELL_MODE:
-			modeStack.pop(); // Exit DEPRECATED_SUBSHELL_MODE
+			get_lexer_extra(yyscanner)->modeStack.pop(); // Exit DEPRECATED_SUBSHELL_MODE
 			emit(DEPRECATED_SUBSHELL_END, 0);
 			break;
 		default:
-			modeStack.push(DEPRECATED_SUBSHELL_MODE);
-			lexerState.deprecated_subshell_nesting_depths.push(0);
-			lexerState.deprecated_subshell_nesting_depth = 0;
+			get_lexer_extra(yyscanner)->modeStack.push(DEPRECATED_SUBSHELL_MODE);
+			get_lexer_extra(yyscanner)->lexerState.deprecated_subshell_nesting_depths.push(0);
+			get_lexer_extra(yyscanner)->lexerState.deprecated_subshell_nesting_depth = 0;
 			emit(DEPRECATED_SUBSHELL_START, 0);
 			break;
 	}
 }
 
 ['] {
-	modeStack.push(SINGLEQUOTE_MODE);
-	lexerState.singlequote_contents.clear();
-	lexerState.singlequote_contents += '\'';
-	lexerState.singlequote_start_line = lexerState.token_beginning.line;
-	lexerState.singlequote_start_column = lexerState.token_beginning.column;
+	get_lexer_extra(yyscanner)->modeStack.push(SINGLEQUOTE_MODE);
+	get_lexer_extra(yyscanner)->lexerState.singlequote_contents.clear();
+	get_lexer_extra(yyscanner)->lexerState.singlequote_contents += '\'';
+	get_lexer_extra(yyscanner)->lexerState.singlequote_start_line = get_lexer_extra(yyscanner)->lexerState.token_beginning.line;
+	get_lexer_extra(yyscanner)->lexerState.singlequote_start_column = get_lexer_extra(yyscanner)->lexerState.token_beginning.column;
 }
 
 ["] {
-	modeStack.push(DOUBLEQUOTE_MODE);
+	get_lexer_extra(yyscanner)->modeStack.push(DOUBLEQUOTE_MODE);
 	emit(QUOTE_BEGIN);
 }
 
 "<<-" {
-	modeStack.push(HEREDOC_MODE);
+	get_lexer_extra(yyscanner)->modeStack.push(HEREDOC_MODE);
 	emit(HEREDOC_START, tokenText);
 }
 
 "<<<" { emit(HERESTRING_START); }
 
 "<<" {
-	modeStack.push(HEREDOC_MODE);
+	get_lexer_extra(yyscanner)->modeStack.push(HEREDOC_MODE);
 	emit(HEREDOC_START, tokenText);
 }
 
 "case"/[ \t\n] {
-	if (lexerState.incoming_token_can_be_lvalue) {
-		lexerState.incoming_token_can_be_lvalue = false;
-		modeStack.push(BASH_CASE_MODE);
+	if (get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue) {
+		get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue = false;
+		get_lexer_extra(yyscanner)->modeStack.push(BASH_CASE_MODE);
 		emit(BASH_KEYWORD_CASE);
 	} else {
 		emit(IDENTIFIER, tokenText);
@@ -734,9 +742,9 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 }
 
 "select"/[ \t\n] {
-	if (lexerState.incoming_token_can_be_lvalue) {
-		lexerState.incoming_token_can_be_lvalue = false;
-		modeStack.push(BASH_FOR_OR_SELECT_MODE);
+	if (get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue) {
+		get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue = false;
+		get_lexer_extra(yyscanner)->modeStack.push(BASH_FOR_OR_SELECT_MODE);
 		emit(BASH_KEYWORD_SELECT);
 	} else {
 		emit(IDENTIFIER, tokenText);
@@ -744,9 +752,9 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 }
 
 "for"/[ \t\n] {
-	if (lexerState.incoming_token_can_be_lvalue) {
-		lexerState.incoming_token_can_be_lvalue = false;
-		modeStack.push(BASH_FOR_OR_SELECT_MODE);
+	if (get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue) {
+		get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue = false;
+		get_lexer_extra(yyscanner)->modeStack.push(BASH_FOR_OR_SELECT_MODE);
 		emit(BASH_KEYWORD_FOR);
 	} else {
 		emit(IDENTIFIER, tokenText);
@@ -754,10 +762,10 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 }
 
 "if"/[ \t\n] {
-	if (lexerState.incoming_token_can_be_lvalue) {
+	if (get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue) {
 		// The next token can and should be an lvalue
-		modeStack.push(BASH_IF_MODE);
-		lexerState.if_depth++;
+		get_lexer_extra(yyscanner)->modeStack.push(BASH_IF_MODE);
+		get_lexer_extra(yyscanner)->lexerState.if_depth++;
 		emit(BASH_KEYWORD_IF);
 	} else {
 		emit(IDENTIFIER, tokenText);
@@ -765,8 +773,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 }
 
 "fi"/[ \t\n] {
-	if (lexerState.if_depth > 0) {
-		lexerState.if_depth--;
+	if (get_lexer_extra(yyscanner)->lexerState.if_depth > 0) {
+		get_lexer_extra(yyscanner)->lexerState.if_depth--;
 		emit(BASH_KEYWORD_FI);
 	} else {
 		emit(IDENTIFIER, tokenText);
@@ -774,9 +782,9 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 }
 
 "elif"/[ \t\n] {
-	if (lexerState.if_depth > 0) {
+	if (get_lexer_extra(yyscanner)->lexerState.if_depth > 0) {
 		// The next token can and should be an lvalue
-		modeStack.push(BASH_IF_MODE);
+		get_lexer_extra(yyscanner)->modeStack.push(BASH_IF_MODE);
 		emit(BASH_KEYWORD_ELIF);
 	} else {
 		emit(IDENTIFIER, tokenText);
@@ -784,7 +792,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 }
 
 "else"/[ \t\n] {
-	if (lexerState.if_depth > 0) {
+	if (get_lexer_extra(yyscanner)->lexerState.if_depth > 0) {
 		emit(BASH_KEYWORD_ELSE);
 	} else {
 		emit(IDENTIFIER, tokenText);
@@ -792,7 +800,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 }
 
 "while"/[ \t\n] {
-	if (lexerState.incoming_token_can_be_lvalue) {
+	if (get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue) {
 		// The next token can and should be an lvalue
 		emit(BASH_KEYWORD_WHILE);
 	} else {
@@ -801,7 +809,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 }
 
 "until"/[ \t\n] {
-	if (lexerState.incoming_token_can_be_lvalue) {
+	if (get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue) {
 		// The next token can and should be an lvalue
 		emit(BASH_KEYWORD_UNTIL);
 	} else {
@@ -810,13 +818,13 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 }
 
 "do"/[ \t\n] {
-	if (lexerState.bash_for_or_select_input_received) {
-		lexerState.bash_for_or_select_input_received = false; // Reset for next time
-		modeStack.push(BASH_FOR_OR_SELECT_BODY_MODE);
+	if (get_lexer_extra(yyscanner)->lexerState.bash_for_or_select_input_received) {
+		get_lexer_extra(yyscanner)->lexerState.bash_for_or_select_input_received = false; // Reset for next time
+		get_lexer_extra(yyscanner)->modeStack.push(BASH_FOR_OR_SELECT_BODY_MODE);
 		emit(BASH_KEYWORD_DO);
-	} else if (lexerState.bash_while_or_until_condition_received) {
-		lexerState.bash_while_or_until_condition_received = false; // Reset for next time
-		modeStack.push(BASH_WHILE_OR_UNTIL_BODY_MODE);
+	} else if (get_lexer_extra(yyscanner)->lexerState.bash_while_or_until_condition_received) {
+		get_lexer_extra(yyscanner)->lexerState.bash_while_or_until_condition_received = false; // Reset for next time
+		get_lexer_extra(yyscanner)->modeStack.push(BASH_WHILE_OR_UNTIL_BODY_MODE);
 		emit(BASH_KEYWORD_DO);
 	} else {
 		emit(IDENTIFIER, tokenText);
@@ -829,10 +837,10 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 <BASH_IF_MODE>{
 	"then"/[ \t\n] {
-		if (lexerState.bash_if_condition_received) {
-			lexerState.bash_if_condition_received = false; // Reset for next time
-			modeStack.pop(); // Exit BASH_IF_MODE
-			modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
+		if (get_lexer_extra(yyscanner)->lexerState.bash_if_condition_received) {
+			get_lexer_extra(yyscanner)->lexerState.bash_if_condition_received = false; // Reset for next time
+			get_lexer_extra(yyscanner)->modeStack.pop(); // Exit BASH_IF_MODE
+			get_lexer_extra(yyscanner)->modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
 			emit(BASH_KEYWORD_THEN);
 		} else {
 			emit(IDENTIFIER, tokenText);
@@ -843,23 +851,23 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 <SINGLEQUOTE_MODE>{
 	[^'\\]+ {
 		/* Consume all characters until closing singlequote */
-		lexerState.singlequote_contents += tokenText;
+		get_lexer_extra(yyscanner)->lexerState.singlequote_contents += tokenText;
 	}
 
 	{ESCAPED_CHAR} {
 		/* If it's an escaped singlequote, it's not the end of the string */
-		lexerState.singlequote_contents += tokenText;
+		get_lexer_extra(yyscanner)->lexerState.singlequote_contents += tokenText;
 	}
 
 	"'" {
 		/* Closing singlequote found */
-		modeStack.pop(); // Exit SINGLEQUOTE_MODE
-		lexerState.singlequote_contents += '\'';
-		uint32_t start_line = lexerState.singlequote_start_line;
-		uint32_t start_column = lexerState.singlequote_start_column;
-		lexerState.singlequote_start_line = 0;
-		lexerState.singlequote_start_column = 0;
-		emit(SINGLEQUOTED_STRING, AST::Token<std::string>(lexerState.singlequote_contents, start_line, start_column));
+		get_lexer_extra(yyscanner)->modeStack.pop(); // Exit SINGLEQUOTE_MODE
+		get_lexer_extra(yyscanner)->lexerState.singlequote_contents += '\'';
+		uint32_t start_line = get_lexer_extra(yyscanner)->lexerState.singlequote_start_line;
+		uint32_t start_column = get_lexer_extra(yyscanner)->lexerState.singlequote_start_column;
+		get_lexer_extra(yyscanner)->lexerState.singlequote_start_line = 0;
+		get_lexer_extra(yyscanner)->lexerState.singlequote_start_column = 0;
+		emit(SINGLEQUOTED_STRING, AST::Token<std::string>(get_lexer_extra(yyscanner)->lexerState.singlequote_contents, start_line, start_column));
 	}
 }
 
@@ -867,7 +875,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	/* The following rules are for handling string interpolations */
 	\\@ {
 		// Literal '@'
-		emit(STRING_CONTENT, AST::Token<std::string>("@", lexerState.token_beginning.line, lexerState.token_beginning.column));
+		emit(STRING_CONTENT, AST::Token<std::string>("@", get_lexer_extra(yyscanner)->lexerState.token_beginning.line, get_lexer_extra(yyscanner)->lexerState.token_beginning.column));
 	}
 
 	\$@ {
@@ -891,22 +899,22 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 
 	"@(" {
-		modeStack.push(SUPERSHELL_MODE);
+		get_lexer_extra(yyscanner)->modeStack.push(SUPERSHELL_MODE);
 		emit(SUPERSHELL_START);
 	}
 
 	"@{" {
-		modeStack.push(BPP_BRACEREFERENCE_MODE);
+		get_lexer_extra(yyscanner)->modeStack.push(BPP_BRACEREFERENCE_MODE);
 		emit(REF_START);
 	}
 
 	"$(" {
-		modeStack.push(SUBSHELL_SUBSTITUTION_MODE);
+		get_lexer_extra(yyscanner)->modeStack.push(SUBSHELL_SUBSTITUTION_MODE);
 		emit(SUBSHELL_SUBSTITUTION_START);
 	}
 
 	"${" {
-		modeStack.push(BASH_VAR_MODE);
+		get_lexer_extra(yyscanner)->modeStack.push(BASH_VAR_MODE);
 		emit(BASH_VAR_START);
 	}
 
@@ -916,27 +924,27 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 
 	"`" {
-		modeStack.push(DEPRECATED_SUBSHELL_MODE);
-		lexerState.deprecated_subshell_nesting_depths.push(0);
-		lexerState.deprecated_subshell_nesting_depth = 0;
+		get_lexer_extra(yyscanner)->modeStack.push(DEPRECATED_SUBSHELL_MODE);
+		get_lexer_extra(yyscanner)->lexerState.deprecated_subshell_nesting_depths.push(0);
+		get_lexer_extra(yyscanner)->lexerState.deprecated_subshell_nesting_depth = 0;
 		emit(DEPRECATED_SUBSHELL_START, 0);
 	}
 
 	{AT} {
 		/* Start of an interpolation */
-		modeStack.push(BPP_REFERENCE_MODE);
+		get_lexer_extra(yyscanner)->modeStack.push(BPP_REFERENCE_MODE);
 		emit(AT);
 	}
 
 	{KEYWORD_THIS}/[^a-zA-Z0-9_] {
 		// Special case: @this
-		modeStack.push(BPP_REFERENCE_MODE);
+		get_lexer_extra(yyscanner)->modeStack.push(BPP_REFERENCE_MODE);
 		emit(KEYWORD_THIS);
 	}
 
 	{KEYWORD_SUPER}/[^a-zA-Z0-9_] {
 		// Special case: @super
-		modeStack.push(BPP_REFERENCE_MODE);
+		get_lexer_extra(yyscanner)->modeStack.push(BPP_REFERENCE_MODE);
 		emit(KEYWORD_SUPER);
 	}
 
@@ -984,7 +992,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 	["] {
 		/* Closing doublequote found */
-		modeStack.pop(); // Exit DOUBLEQUOTE_MODE
+		get_lexer_extra(yyscanner)->modeStack.pop(); // Exit DOUBLEQUOTE_MODE
 		emit(QUOTE_END);
 	}
 }
@@ -994,11 +1002,11 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		// The heredoc delimiter must be at the start of the line
 		// And it must be the only thing on the line
 		AST::Token<std::string> id = tokenText;
-		if (!lexerState.heredoc_delimiters.empty() && lexerState.heredoc_delimiters.front() == id.getValue()) {
+		if (!get_lexer_extra(yyscanner)->lexerState.heredoc_delimiters.empty() && get_lexer_extra(yyscanner)->lexerState.heredoc_delimiters.front() == id.getValue()) {
 			// End of heredoc content
-			modeStack.pop(); // Exit HEREDOC_CONTENT_MODE
-			lexerState.heredoc_delimiters.pop_front();
-			if (lexerState.heredoc_delimiters.empty()) {
+			get_lexer_extra(yyscanner)->modeStack.pop(); // Exit HEREDOC_CONTENT_MODE
+			get_lexer_extra(yyscanner)->lexerState.heredoc_delimiters.pop_front();
+			if (get_lexer_extra(yyscanner)->lexerState.heredoc_delimiters.empty()) {
 				emit(HEREDOC_END, id);
 			} else {
 				// If the queue is not yet empty, the heredoc sequence is not yet over
@@ -1024,9 +1032,9 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 <BASH_CASE_MODE>{
 	"in"/[ \t\n] {
-		if (lexerState.bash_case_input_received) {
+		if (get_lexer_extra(yyscanner)->lexerState.bash_case_input_received) {
 			// This is only the special 'in' KEYWORD if we've received input for the case already
-			lexerState.bash_case_keyword_in_received = true;
+			get_lexer_extra(yyscanner)->lexerState.bash_case_keyword_in_received = true;
 			emit(BASH_KEYWORD_IN);
 		} else {
 			emit(IDENTIFIER, tokenText);
@@ -1034,12 +1042,12 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 
 	[ \t]+\n {
-		if (lexerState.bash_case_keyword_in_received) {
+		if (get_lexer_extra(yyscanner)->lexerState.bash_case_keyword_in_received) {
 			// Beginning of the case body
-			modeStack.pop(); // Exit BASH_CASE_MODE
-			modeStack.push(BASH_CASE_BODY_MODE);
-			lexerState.bash_case_keyword_in_received = false; // Reset for next time
-			lexerState.bash_case_input_received = false; // Reset for next time
+			get_lexer_extra(yyscanner)->modeStack.pop(); // Exit BASH_CASE_MODE
+			get_lexer_extra(yyscanner)->modeStack.push(BASH_CASE_BODY_MODE);
+			get_lexer_extra(yyscanner)->lexerState.bash_case_keyword_in_received = false; // Reset for next time
+			get_lexer_extra(yyscanner)->lexerState.bash_case_input_received = false; // Reset for next time
 			emit(BASH_CASE_BODY_BEGIN, tokenText);
 		} else {
 			emit(WS, tokenText);
@@ -1049,7 +1057,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 <BASH_CASE_BODY_MODE>{
 	[ \t\n]+esac/[^a-zA-Z0-9_] {
-		modeStack.pop(); // Exit BASH_CASE_BODY_MODE
+		get_lexer_extra(yyscanner)->modeStack.pop(); // Exit BASH_CASE_BODY_MODE
 		emit(BASH_KEYWORD_ESAC);
 	}
 
@@ -1065,8 +1073,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 	")" {
 		// Pattern ends with ')'
-		modeStack.push(BASH_CASE_PATTERN_ACTION_MODE); // Next up is the action following this pattern
-		modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the ')'
+		get_lexer_extra(yyscanner)->modeStack.push(BASH_CASE_PATTERN_ACTION_MODE); // Next up is the action following this pattern
+		get_lexer_extra(yyscanner)->modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the ')'
 		emit(BASH_CASE_PATTERN_DELIM);
 	}
 }
@@ -1074,17 +1082,17 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 <BASH_CASE_PATTERN_ACTION_MODE>{
 	[ \t]*;; {
 		// End of this pattern's action; back to parsing more patterns
-		modeStack.pop(); // Exit BASH_CASE_PATTERN_ACTION_MODE
+		get_lexer_extra(yyscanner)->modeStack.pop(); // Exit BASH_CASE_PATTERN_ACTION_MODE
 		emit(BASH_CASE_PATTERN_TERMINATOR);
 	}
 }
 
 <BASH_FOR_OR_SELECT_MODE>{
 	"in"/[^a-zA-Z0-9_] {
-		if (lexerState.bash_for_or_select_variable_received) {
+		if (get_lexer_extra(yyscanner)->lexerState.bash_for_or_select_variable_received) {
 			// This is only the special 'in' KEYWORD if we've received the select variable already
-			modeStack.pop(); // Exit BASH_FOR_OR_SELECT_MODE
-			modeStack.push(BASH_FOR_OR_SELECT_INPUT_MODE);
+			get_lexer_extra(yyscanner)->modeStack.pop(); // Exit BASH_FOR_OR_SELECT_MODE
+			get_lexer_extra(yyscanner)->modeStack.push(BASH_FOR_OR_SELECT_INPUT_MODE);
 			emit(BASH_KEYWORD_IN);
 		} else {
 			emit(IDENTIFIER, tokenText);
@@ -1092,7 +1100,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 
 	"((" { emit(ARITH_FOR_CONDITION_START); }
-	"))" { lexerState.bash_for_or_select_variable_received = true; emit(ARITH_FOR_CONDITION_END); }
+	"))" { get_lexer_extra(yyscanner)->lexerState.bash_for_or_select_variable_received = true; emit(ARITH_FOR_CONDITION_END); }
 	"++" { emit(INCREMENT_OPERATOR); }
 	"--" { emit(DECREMENT_OPERATOR); }
 
@@ -1104,7 +1112,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 <BASH_FOR_OR_SELECT_BODY_MODE,BASH_WHILE_OR_UNTIL_BODY_MODE>{
 	[ \t\n]*done/[^a-zA-Z0-9_] {
-		modeStack.pop(); // Exit the mode
+		get_lexer_extra(yyscanner)->modeStack.pop(); // Exit the mode
 		emit(BASH_KEYWORD_DONE);
 	}
 }
@@ -1124,18 +1132,18 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 	[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 		// We see up ahead: whitespace, and then another identifier
-		modeStack.pop();
-		if (lexerState.currently_lexing_lvalue_reference) {
-			lexerState.might_be_lexing_object_instantiation = true;
+		get_lexer_extra(yyscanner)->modeStack.pop();
+		if (get_lexer_extra(yyscanner)->lexerState.currently_lexing_lvalue_reference) {
+			get_lexer_extra(yyscanner)->lexerState.might_be_lexing_object_instantiation = true;
 		}
 		reconsume_token();
 	}
 
 	(.|\n) {
-		modeStack.pop(); // Exit BPP_REFERENCE_MODE if we see anything other than IDENTIFIER or DOT coming up next
-		if (lexerState.currently_lexing_lvalue_reference) {
-			lexerState.currently_lexing_lvalue_reference = false;
-			lexerState.expecting_assignment_operator = true;
+		get_lexer_extra(yyscanner)->modeStack.pop(); // Exit BPP_REFERENCE_MODE if we see anything other than IDENTIFIER or DOT coming up next
+		if (get_lexer_extra(yyscanner)->lexerState.currently_lexing_lvalue_reference) {
+			get_lexer_extra(yyscanner)->lexerState.currently_lexing_lvalue_reference = false;
+			get_lexer_extra(yyscanner)->lexerState.expecting_assignment_operator = true;
 		}
 		reconsume_token(); // Do not consume the character; let the main lexer mode handle it
 	}
@@ -1145,7 +1153,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	"this" {
 		// If the 'this' is the very FIRST token inside the brace reference, it's the 'this' keyword
 		// Otherwise, it's just an identifier
-		if (lexerState.token_count_inside_bracereference++ == 0) {
+		if (get_lexer_extra(yyscanner)->lexerState.token_count_inside_bracereference++ == 0) {
 			emit(KEYWORD_THIS);
 		} else {
 			emit(IDENTIFIER, tokenText);
@@ -1154,7 +1162,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 	"super" {
 		// Likewise
-		if (lexerState.token_count_inside_bracereference++ == 0) {
+		if (get_lexer_extra(yyscanner)->lexerState.token_count_inside_bracereference++ == 0) {
 			emit(KEYWORD_SUPER);
 		} else {
 			emit(IDENTIFIER, tokenText);
@@ -1162,7 +1170,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 
 	{IDENTIFIER} {
-		lexerState.token_count_inside_bracereference++;
+		get_lexer_extra(yyscanner)->lexerState.token_count_inside_bracereference++;
 		emit(IDENTIFIER, tokenText);
 	}
 
@@ -1173,22 +1181,22 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 
 	"\." {
-		lexerState.token_count_inside_bracereference++;
+		get_lexer_extra(yyscanner)->lexerState.token_count_inside_bracereference++;
 		emit(DOT);
 	}
 
 	"[" {
-		lexerState.token_count_inside_bracereference = 0; // Reset in case there's another reference inside the array index
-		modeStack.push(ARRAY_INDEX_MODE);
+		get_lexer_extra(yyscanner)->lexerState.token_count_inside_bracereference = 0; // Reset in case there's another reference inside the array index
+		get_lexer_extra(yyscanner)->modeStack.push(ARRAY_INDEX_MODE);
 		emit(ARRAY_INDEX_START);
 	}
 
 	"}" {
-		modeStack.pop(); // Exit BPP_BRACEREFERENCE_MODE
-		lexerState.token_count_inside_bracereference = 0;
-		if (lexerState.currently_lexing_lvalue_reference) {
-			lexerState.currently_lexing_lvalue_reference = false;
-			lexerState.expecting_assignment_operator = true;
+		get_lexer_extra(yyscanner)->modeStack.pop(); // Exit BPP_BRACEREFERENCE_MODE
+		get_lexer_extra(yyscanner)->lexerState.token_count_inside_bracereference = 0;
+		if (get_lexer_extra(yyscanner)->lexerState.currently_lexing_lvalue_reference) {
+			get_lexer_extra(yyscanner)->lexerState.currently_lexing_lvalue_reference = false;
+			get_lexer_extra(yyscanner)->lexerState.expecting_assignment_operator = true;
 		}
 		emit(REF_END);
 	}
@@ -1204,7 +1212,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 	
 	"[" {
-		modeStack.push(ARRAY_INDEX_MODE);
+		get_lexer_extra(yyscanner)->modeStack.push(ARRAY_INDEX_MODE);
 		emit(ARRAY_INDEX_START);
 	}
 
@@ -1213,79 +1221,79 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 
 	":" {
-		modeStack.push(PARAMETER_EXPANSION_MODE);
+		get_lexer_extra(yyscanner)->modeStack.push(PARAMETER_EXPANSION_MODE);
 		emit(EXPANSION_BEGIN, tokenText);
 	}
 
 	"@" {
-		modeStack.push(PARAMETER_EXPANSION_MODE);
+		get_lexer_extra(yyscanner)->modeStack.push(PARAMETER_EXPANSION_MODE);
 		emit(EXPANSION_BEGIN, tokenText);
 	}
 
 	"%" {
-		modeStack.push(PARAMETER_EXPANSION_MODE);
+		get_lexer_extra(yyscanner)->modeStack.push(PARAMETER_EXPANSION_MODE);
 		emit(EXPANSION_BEGIN, tokenText);
 	}
 
 	"-" {
-		modeStack.push(PARAMETER_EXPANSION_MODE);
+		get_lexer_extra(yyscanner)->modeStack.push(PARAMETER_EXPANSION_MODE);
 		emit(EXPANSION_BEGIN, tokenText);
 	}
 
 	"+" {
-		modeStack.push(PARAMETER_EXPANSION_MODE);
+		get_lexer_extra(yyscanner)->modeStack.push(PARAMETER_EXPANSION_MODE);
 		emit(EXPANSION_BEGIN, tokenText);
 	}
 
 	"=" {
-		modeStack.push(PARAMETER_EXPANSION_MODE);
+		get_lexer_extra(yyscanner)->modeStack.push(PARAMETER_EXPANSION_MODE);
 		emit(EXPANSION_BEGIN, tokenText);
 	}
 
 	"?" {
-		modeStack.push(PARAMETER_EXPANSION_MODE);
+		get_lexer_extra(yyscanner)->modeStack.push(PARAMETER_EXPANSION_MODE);
 		emit(EXPANSION_BEGIN, tokenText);
 	}
 
 	"\*" {
-		modeStack.push(PARAMETER_EXPANSION_MODE);
+		get_lexer_extra(yyscanner)->modeStack.push(PARAMETER_EXPANSION_MODE);
 		emit(EXPANSION_BEGIN, tokenText);
 	}
 
 	"##" {
-		modeStack.push(PARAMETER_EXPANSION_MODE);
+		get_lexer_extra(yyscanner)->modeStack.push(PARAMETER_EXPANSION_MODE);
 		emit(EXPANSION_BEGIN, tokenText);
 	}
 
 	"#" {
-		modeStack.push(PARAMETER_EXPANSION_MODE);
+		get_lexer_extra(yyscanner)->modeStack.push(PARAMETER_EXPANSION_MODE);
 		emit(EXPANSION_BEGIN, tokenText);
 	}
 
 	"^" {
-		modeStack.push(UNLEXED_PARAMETER_EXPANSION_MODE); // TODO: Handle these forms of parameter expansion properly
+		get_lexer_extra(yyscanner)->modeStack.push(UNLEXED_PARAMETER_EXPANSION_MODE); // TODO: Handle these forms of parameter expansion properly
 		emit(EXPANSION_BEGIN, tokenText);
 	}
 
 	"," {
-		modeStack.push(UNLEXED_PARAMETER_EXPANSION_MODE); // TODO: Handle these forms of parameter expansion properly
+		get_lexer_extra(yyscanner)->modeStack.push(UNLEXED_PARAMETER_EXPANSION_MODE); // TODO: Handle these forms of parameter expansion properly
 		emit(EXPANSION_BEGIN, tokenText);
 	}
 
 	"/" {
-		modeStack.push(UNLEXED_PARAMETER_EXPANSION_MODE); // TODO: Handle these forms of parameter expansion properly
+		get_lexer_extra(yyscanner)->modeStack.push(UNLEXED_PARAMETER_EXPANSION_MODE); // TODO: Handle these forms of parameter expansion properly
 		emit(EXPANSION_BEGIN, tokenText);
 	}
 
 	"}" {
-		modeStack.pop(); // Exit BASH_VAR_MODE
+		get_lexer_extra(yyscanner)->modeStack.pop(); // Exit BASH_VAR_MODE
 		emit(BASH_VAR_END);
 	}
 }
 
 <PARAMETER_EXPANSION_MODE>{
 	"}" {
-		modeStack.pop();
+		get_lexer_extra(yyscanner)->modeStack.pop();
 		reconsume_token();
 	}
 }
@@ -1296,7 +1304,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 
 	"}" {
-		modeStack.pop(); // Exit PARAMETER_EXPANSION_MODE
+		get_lexer_extra(yyscanner)->modeStack.pop(); // Exit PARAMETER_EXPANSION_MODE
 		reconsume_token();
 	}
 }
@@ -1321,7 +1329,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		emit(INCLUDE_PATH, tokenText);
 	}
 	[\n] {
-		modeStack.pop(); // Exit BPP_INCLUDE_MODE
+		get_lexer_extra(yyscanner)->modeStack.pop(); // Exit BPP_INCLUDE_MODE
 		emit(DELIM, tokenText);
 	}
 }
@@ -1345,75 +1353,84 @@ extern int scanner_current_state(yyscan_t yyscanner) {
 	return YY_START;
 }
 
-extern void initLexer() {
-	modeStack.push(SKIP_AFTER_DELIM_MODE); // Initial mode
-	lexerState.reset();
+extern void initLexer(yyscan_t yyscanner) {
+	if (yyget_extra(yyscanner) == nullptr) {
+		yyset_extra(new LexerExtra(), yyscanner);
+	}
+	get_lexer_extra(yyscanner)->modeStack.clear();
+	get_lexer_extra(yyscanner)->modeStack.bind(yyscanner);
+	get_lexer_extra(yyscanner)->modeStack.push(SKIP_AFTER_DELIM_MODE); // Initial mode
+	get_lexer_extra(yyscanner)->lexerState.reset();
 }
 
-extern void destroyLexer() {
-	modeStack.clear();
-	lexerState.reset();
-	yylex_destroy(main_lexer);
+extern void destroyLexer(yyscan_t yyscanner) {
+	if (yyget_extra(yyscanner) != nullptr) {
+		get_lexer_extra(yyscanner)->modeStack.clear();
+		get_lexer_extra(yyscanner)->lexerState.reset();
+		delete get_lexer_extra(yyscanner);
+		yyset_extra(nullptr, yyscanner);
+	}
+	yylex_destroy(yyscanner);
 }
 
-extern void set_utf16_mode(bool enabled) {
-	lexerState.utf16_mode = enabled;
+extern void set_utf16_mode(bool enabled, yyscan_t yyscanner) {
+	get_lexer_extra(yyscanner)->lexerState.utf16_mode = enabled;
 }
 
-yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
+yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token, yyscan_t yyscanner) {
 	yy::parser::symbol_kind_type type = token.kind();
 	auto location = token.location;
 	switch (type) {
 		case yy::parser::symbol_kind::S_AT:
 			// If this AT is the first non-whitespace token of the new command string, it's an lvalue
-			if (lexerState.incoming_token_can_be_lvalue) {
-				lexerState.incoming_token_can_be_lvalue = false; // Next token cannot be an lvalue
-				if (modeStack.top() == BPP_REFERENCE_MODE) {
-					lexerState.currently_lexing_lvalue_reference = true;
+			if (get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue) {
+				get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue = false; // Next token cannot be an lvalue
+				if (get_lexer_extra(yyscanner)->modeStack.top() == BPP_REFERENCE_MODE) {
+					get_lexer_extra(yyscanner)->lexerState.currently_lexing_lvalue_reference = true;
 				}
 				return yy::parser::make_AT_LVALUE(location);
 			}
 			break;
 		case yy::parser::symbol_kind::S_REF_START:
 			// Same as above
-			if (lexerState.incoming_token_can_be_lvalue) {
-				lexerState.incoming_token_can_be_lvalue = false;
-				lexerState.currently_lexing_lvalue_reference = true;
+			if (get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue) {
+				get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue = false;
+				get_lexer_extra(yyscanner)->lexerState.currently_lexing_lvalue_reference = true;
 				return yy::parser::make_REF_START_LVALUE(location);
 			}
 			break;
 		case yy::parser::symbol_kind::S_IDENTIFIER:
 			// Same as above
-			if (lexerState.incoming_token_can_be_lvalue) {
-				lexerState.incoming_token_can_be_lvalue = false;
+			if (get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue) {
+				get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue = false;
 				std::string text = token.value.as<std::string>();
 				AST::Token<std::string> text_token(text, location.begin.line, location.begin.column);
-				lexerState.expecting_assignment_operator = true; // After an identifier lvalue, we may expect an assignment operator
+				get_lexer_extra(yyscanner)->lexerState.expecting_assignment_operator = true; // After an identifier lvalue, we may expect an assignment operator
 				return yy::parser::make_IDENTIFIER_LVALUE(text_token, location);
-			} else if (lexerState.might_be_lexing_object_instantiation) {
+			} else if (get_lexer_extra(yyscanner)->lexerState.might_be_lexing_object_instantiation) {
 				// This is potentially the name of an instantiated object
 				// That means an assignment operator might possibly come next
-				lexerState.might_be_lexing_object_instantiation = false;
-				lexerState.expecting_assignment_operator = true;
+				get_lexer_extra(yyscanner)->lexerState.might_be_lexing_object_instantiation = false;
+				get_lexer_extra(yyscanner)->lexerState.expecting_assignment_operator = true;
 				// Carry on from here
 			}
 			break;
 		case yy::parser::symbol_kind::S_KEYWORD_THIS:
 			// Same as above
-			if (lexerState.incoming_token_can_be_lvalue) {
-				lexerState.incoming_token_can_be_lvalue = false;
-				if (modeStack.top() == BPP_REFERENCE_MODE) {
-					lexerState.currently_lexing_lvalue_reference = true;
+			if (get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue) {
+				get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue = false;
+				if (get_lexer_extra(yyscanner)->modeStack.top() == BPP_REFERENCE_MODE) {
+					get_lexer_extra(yyscanner)->lexerState.currently_lexing_lvalue_reference = true;
 				}
 				return yy::parser::make_KEYWORD_THIS_LVALUE(location);
 			}
 			break;
 		case yy::parser::symbol_kind::S_KEYWORD_SUPER:
 			// Same as above
-			if (lexerState.incoming_token_can_be_lvalue) {
-				lexerState.incoming_token_can_be_lvalue = false;
-				if (modeStack.top() == BPP_REFERENCE_MODE) {
-					lexerState.currently_lexing_lvalue_reference = true;
+			if (get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue) {
+				get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue = false;
+				if (get_lexer_extra(yyscanner)->modeStack.top() == BPP_REFERENCE_MODE) {
+					get_lexer_extra(yyscanner)->lexerState.currently_lexing_lvalue_reference = true;
 				}
 				return yy::parser::make_KEYWORD_SUPER_LVALUE(location);
 			}
@@ -1435,8 +1452,8 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 		case yy::parser::symbol_kind::S_BASH_KEYWORD_WHILE:
 		case yy::parser::symbol_kind::S_BASH_KEYWORD_UNTIL:
 			// At the start of a new command string, the next token can be an lvalue
-			lexerState.incoming_token_can_be_lvalue = true;
-			modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
+			get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue = true;
+			get_lexer_extra(yyscanner)->modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
 			break;
 		case yy::parser::symbol_kind::S_KEYWORD_PUBLIC:
 		case yy::parser::symbol_kind::S_KEYWORD_PROTECTED:
@@ -1450,7 +1467,7 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token) {
 			// Dereference operator does not change lvalue considerations
 			break;
 		default:
-			lexerState.incoming_token_can_be_lvalue = false;
+			get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue = false;
 			break;
 	}
 	return token; // If we're here, just return the original token unmodified

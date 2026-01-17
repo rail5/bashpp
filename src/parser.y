@@ -11,6 +11,7 @@
 #include <cassert>
 #include "../AST/Nodes/Nodes.h"
 typedef std::shared_ptr<AST::ASTNode> ASTNodePtr;
+typedef void* yyscan_t;
 }
 
 %{
@@ -19,7 +20,8 @@ typedef std::shared_ptr<AST::ASTNode> ASTNodePtr;
 void yyerror(const char *s);
 %}
 
-%parse-param { std::shared_ptr<AST::Program>& program }
+%lex-param { yyscan_t yyscanner }
+%parse-param { std::shared_ptr<AST::Program>& program } { yyscan_t yyscanner }
 
 %define parse.error verbose
 
@@ -28,14 +30,14 @@ void yyerror(const char *s);
 %code {
 	#include "parser.tab.hpp"
 
-	yy::parser::symbol_type yylex();
+	yy::parser::symbol_type yylex(yyscan_t yyscanner);
 
-	extern void set_incoming_token_can_be_lvalue(bool canBeLvalue);
-	extern void set_bash_case_input_received(bool received);
-	extern void set_bash_for_or_select_variable_received(bool received);
-	extern void set_bash_if_condition_received(bool received);
-	extern void set_bash_while_or_until_condition_received(bool received);
-	extern void set_parsed_assignment_operator(bool parsed);
+	extern void set_incoming_token_can_be_lvalue(bool canBeLvalue, yyscan_t yyscanner);
+	extern void set_bash_case_input_received(bool received, yyscan_t yyscanner);
+	extern void set_bash_for_or_select_variable_received(bool received, yyscan_t yyscanner);
+	extern void set_bash_if_condition_received(bool received, yyscan_t yyscanner);
+	extern void set_bash_while_or_until_condition_received(bool received, yyscan_t yyscanner);
+	extern void set_parsed_assignment_operator(bool parsed, yyscan_t yyscanner);
 
 	bool current_command_can_receive_lvalues = true;
 }
@@ -439,7 +441,7 @@ redirection:
 		// But:
 		// echo hi >file var=value
 		// In this case, 'var=value' is a simple string. Because we had already seen 'echo', lvalues are no longer allowed
-		set_incoming_token_can_be_lvalue(current_command_can_receive_lvalues);
+		set_incoming_token_can_be_lvalue(current_command_can_receive_lvalues, yyscanner);
 
 		auto node = std::make_shared<AST::BashRedirection>();
 		uint32_t line_number = @1.begin.line;
@@ -451,7 +453,7 @@ redirection:
 		$$ = node;
 	}
 	| heredoc_header {
-		set_incoming_token_can_be_lvalue(current_command_can_receive_lvalues);
+		set_incoming_token_can_be_lvalue(current_command_can_receive_lvalues, yyscanner);
 		auto node = std::make_shared<AST::RawText>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
@@ -461,7 +463,7 @@ redirection:
 		$$ = node;
 	}
 	| herestring {
-		set_incoming_token_can_be_lvalue(current_command_can_receive_lvalues);
+		set_incoming_token_can_be_lvalue(current_command_can_receive_lvalues, yyscanner);
 		$$ = $1;
 	}
 	;
@@ -729,7 +731,7 @@ pointer_declaration:
 
 pointer_declaration_preface:
 	AT_LVALUE IDENTIFIER ASTERISK {
-		set_incoming_token_can_be_lvalue(true); // The following identifier should be an lvalue, let the lexer know
+		set_incoming_token_can_be_lvalue(true, yyscanner); // The following identifier should be an lvalue, let the lexer know
 		
 		auto node = std::make_shared<AST::PointerDeclaration>();
 		uint32_t line_number = @1.begin.line;
@@ -875,11 +877,11 @@ value_assignment:
 
 assignment_operator:
 	EQUALS {
-		set_parsed_assignment_operator(true);
+		set_parsed_assignment_operator(true, yyscanner);
 		$$ = "=";
 	}
 	| PLUS_EQUALS {
-		set_parsed_assignment_operator(true);
+		set_parsed_assignment_operator(true, yyscanner);
 		$$ = "+=";
 	}
 	;
@@ -1382,7 +1384,7 @@ cast_target:
 
 object_assignment:
 	object_reference_lvalue value_assignment {
-		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
+		set_incoming_token_can_be_lvalue(true, yyscanner); // Lvalues can follow assignments
 
 		auto node = std::make_shared<AST::ObjectAssignment>();
 		uint32_t line_number = @1.begin.line;
@@ -1394,7 +1396,7 @@ object_assignment:
 		$$ = node;
 	}
 	| self_reference_lvalue value_assignment {
-		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
+		set_incoming_token_can_be_lvalue(true, yyscanner); // Lvalues can follow assignments
 
 		auto node = std::make_shared<AST::ObjectAssignment>();
 		uint32_t line_number = @1.begin.line;
@@ -1406,7 +1408,7 @@ object_assignment:
 		$$ = node;
 	}
 	| pointer_dereference_lvalue value_assignment {
-		set_incoming_token_can_be_lvalue(true); // Lvalues can follow assignments
+		set_incoming_token_can_be_lvalue(true, yyscanner); // Lvalues can follow assignments
 
 		auto node = std::make_shared<AST::ObjectAssignment>();
 		uint32_t line_number = @1.begin.line;
@@ -1635,7 +1637,7 @@ bash_case_header:
 
 bash_case_input:
 	valid_rvalue {
-		set_bash_case_input_received(true);
+		set_bash_case_input_received(true, yyscanner);
 		auto node = std::make_shared<AST::BashCaseInput>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
@@ -1772,7 +1774,7 @@ bash_for_or_select_maybe_in_something:
 
 bash_for_or_select_variable:
 	IDENTIFIER {
-		set_bash_for_or_select_variable_received(true);
+		set_bash_for_or_select_variable_received(true, yyscanner);
 		$$ = $1;
 	}
 	;
@@ -2098,7 +2100,7 @@ bash_if_root_branch:
 
 bash_if_condition:
 	simple_command_sequence {
-		set_bash_if_condition_received(true);
+		set_bash_if_condition_received(true, yyscanner);
 		auto node = std::make_shared<AST::BashIfCondition>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
@@ -2168,7 +2170,7 @@ bash_until_statement:
 
 bash_while_or_until_condition:
 	simple_command_sequence {
-		set_bash_while_or_until_condition_received(true);
+		set_bash_while_or_until_condition_received(true, yyscanner);
 		auto node = std::make_shared<AST::BashWhileOrUntilCondition>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;

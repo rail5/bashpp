@@ -17,7 +17,7 @@ typedef void* yyscan_t;
 class ModeStack {
 	private:
 		std::stack<int> modeStack;
-		yyscan_t relevant_lexer;
+		yyscan_t relevant_lexer = nullptr;
 
 		bool inSync() const;
 	public:

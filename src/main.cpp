@@ -33,13 +33,6 @@ volatile int bpp_exit_code = 0;
 
 #include "include/parse_arguments.h"
 
-#include "flexbison/parser.tab.hpp"
-#include "flexbison/lex.yy.hpp"
-
-#include "listener/BashppListener.h"
-
-#include "internal_error.h"
-
 typedef void* yyscan_t;
 
 struct LexerExtra;
@@ -53,6 +46,13 @@ extern void initLexer(yyscan_t yyscanner);
 extern void destroyLexer(yyscan_t yyscanner);
 
 extern bool set_display_lexer_output(bool enable, yyscan_t yyscanner);
+
+#include "flexbison/parser.tab.hpp"
+#include "flexbison/lex.yy.hpp"
+
+#include "listener/BashppListener.h"
+
+#include "internal_error.h"
 
 int main(int argc, char* argv[]) {
 	std::shared_ptr<std::ostream> output_stream(&std::cout, [](std::ostream*){});
@@ -122,7 +122,7 @@ int main(int argc, char* argv[]) {
 	initLexer(main_lexer);
 	set_display_lexer_output(args.display_tokens, main_lexer);
 	std::shared_ptr<AST::Program> program = nullptr;
-	yy::parser parser(program);
+	yy::parser parser(program, main_lexer);
 	int parseResult = parser.parse();
 	fclose(input_file);
 

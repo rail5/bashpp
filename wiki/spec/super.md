@@ -4,7 +4,7 @@ title: Super
 ---
 # NAME
 
-@super - Call a method from a parent class
+@super - Change context to a parent class
 
 # SYNOPSIS
 
@@ -16,9 +16,11 @@ title: Super
 
 The `@super` keyword can be used to call a parent class's version of an overridden method from within a child class. This is used when extending parent method functionality while preserving the original behavior.
 
+The actual behavior of `@super` is **only** to change the context to the parent class of the current object before descending the object hierarchy. This means that any method or property accessed via `@super` will be resolved in the context of the parent class.
+
 Key behaviors:
 
- - **Static Resolution**: The method is resolved at compile-time, meaning it will always call the parent class's method, even if the child class overrides it.
+ - **Static Resolution**: Any referenced method is resolved at compile-time, meaning it will always call the parent class's method, even if the child class overrides it.
  
  - **Context Change**: It temporarily changes the context to the parent class of the current object before descending the object hierarchy.
 

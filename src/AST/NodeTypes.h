@@ -6,7 +6,7 @@
 #pragma once
 
 namespace AST {
-enum class NodeType {
+enum class NodeType : int {
 	Program = 0,
 	ArrayIndex,
 	BashArithmeticForCondition,

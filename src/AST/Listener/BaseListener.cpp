@@ -4,7 +4,7 @@
  */
 
 #include "BaseListener.h"
-#include <stdexcept>
+#include "../../internal_error.h"
 
 void AST::BaseListener::walk(std::shared_ptr<AST::ASTNode> node) {
 	if (node == nullptr) return;
@@ -17,7 +17,9 @@ void AST::BaseListener::walk(std::shared_ptr<AST::ASTNode> node) {
 		enterFunc = it->second.first;
 		exitFunc = it->second.second;
 	} else {
-		throw std::runtime_error("No enter/exit functions defined for node type in BaseListener.");
+		throw internal_error("No enter/exit functions defined for node type "
+			+ std::to_string(static_cast<int>(node->getType()))
+			+ " in BaseListener.");
 	}
 
 	// Enter this node, walk children, then exit this node

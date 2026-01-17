@@ -13,6 +13,8 @@
 #include <memory>
 #include <stack>
 #include <optional>
+#include <concepts>
+#include <fstream>
 
 #include "../AST/Listener/BaseListener.h"
 
@@ -34,6 +36,16 @@ using bpp::generate_dynamic_cast_code;
 		error_thrown = false; \
 		return; \
 		}
+
+template <typename T>
+concept ASTNodePtr = std::is_same_v<std::shared_ptr<AST::ASTNode>, T> ||
+	std::is_base_of_v<AST::ASTNode, typename T::element_type>;
+
+template <typename T>
+concept ASTToken = std::is_same_v<AST::Token<std::string>, T>;
+
+template <typename T>
+concept ASTNodePtrORToken = ASTNodePtr<T> || ASTToken<T>;
 
 /**
  * @class BashppListener
@@ -148,10 +160,47 @@ class BashppListener : public AST::BaseListener, std::enable_shared_from_this<Ba
 
 		bool program_has_errors = false;
 
-		void output_syntax_error(const AST::Token<std::string>& error_ctx, const std::string& msg) {
-			int line = static_cast<int>(error_ctx.getLine());
-			int column = static_cast<int>(error_ctx.getCharPositionInLine());
-			std::string text = error_ctx.getValue();
+		template <ASTNodePtrORToken T>
+		void output_syntax_error(const T& error_ctx, const std::string& msg) {
+			int line;
+			int column;
+			std::string text;
+
+			if constexpr (ASTNodePtr<T>) {
+				line = static_cast<int>(error_ctx->getPosition().line);
+				column = static_cast<int>(error_ctx->getPosition().column);
+				// For the text:
+				// Read from source_file the text corresponding to the node's position
+				// I.e., between line/column and end_line/end_column
+
+				std::ifstream infile(source_file);
+				if (!infile.is_open()) {
+					text = "<READ_ERROR>";
+				} else {
+					std::string line_content;
+					uint32_t current_line = 0;
+					while (std::getline(infile, line_content)) {
+						if (current_line == static_cast<uint32_t>(line)) {
+							// We're at the starting line
+							if (line == error_ctx->getEndPosition().line) {
+								// Single-line node
+								text = line_content.substr(
+									static_cast<size_t>(column),
+									static_cast<size_t>(error_ctx->getEndPosition().column - column)
+								);
+							} else {
+								// Multi-line node
+								// Only report to the end of this line
+								text = line_content.substr(static_cast<size_t>(column));
+							}
+						}
+					}
+				}
+			} else if constexpr (ASTToken<T>) {
+				line = static_cast<int>(error_ctx.getLine());
+				column = static_cast<int>(error_ctx.getCharPositionInLine());
+				text = error_ctx.getValue();
+			}
 			print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), program);
 			program_has_errors = true;
 		}

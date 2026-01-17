@@ -13,7 +13,11 @@
 typedef void* yyscan_t;
 #endif
 
-
+/**
+ * @class ModeStack
+ * @brief A stack to manage lexer modes for the Bash++ lexer.
+ * 
+ */
 class ModeStack {
 	private:
 		std::stack<int> modeStack;

@@ -17,10 +17,18 @@ namespace AST {
 /**
  * @class BaseListener
  * @brief The base class for the Bash++ AST listener.
+ * This class provides empty implementations for all enter and exit methods for each AST node type.
+ * Each method can be overridden in derived classes to implement custom behavior when entering or exiting specific AST nodes.
+ * The class also contains a non-virtual method `walk()` that dispatches to the appropriate enter and exit methods based on the node type.
  * 
  */
 class BaseListener {
 	private:
+		/**
+		 * @var enterExitMap
+		 * @brief A fully constexpr map of AST node types to their corresponding enter and exit functions.
+		 * 
+		 */
 		frozen::unordered_map<
 			AST::NodeType,
 			std::pair<

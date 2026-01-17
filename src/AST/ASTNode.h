@@ -18,13 +18,18 @@
 
 namespace AST {
 
+/**
+ * @class ASTNode
+ * @brief The base class for all non-terminal nodes in the Bash++ AST.
+ * Each ASTNode contains information about its type, children, and position in the source code.
+ * 
+ */
 class ASTNode {
 	protected:
 		AST::NodeType type = AST::NodeType::ERROR_TYPE;
 		std::vector<std::shared_ptr<ASTNode>> children;
 		AST::FilePosition position;
 		AST::FilePosition end_position;
-		std::string text;
 
 	public:
 		ASTNode() = default;

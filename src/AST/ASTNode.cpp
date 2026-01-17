@@ -141,7 +141,6 @@ size_t ASTNode::getChildrenCount() const {
 
 void ASTNode::clear() {
 	children.clear();
-	text.clear();
 	position = FilePosition{};
 }
 

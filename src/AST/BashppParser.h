@@ -17,6 +17,7 @@ namespace AST {
 /**
  * @class BashppParser
  * @brief A driver class to wrap around the Bison-generated parser for Bash++.
+ * This class manages both the lexer and parser state, and provides methods to set the input source
  * 
  */
 class BashppParser {

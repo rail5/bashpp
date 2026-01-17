@@ -6,6 +6,13 @@
 #include "BaseListener.h"
 #include "../../internal_error.h"
 
+/**
+ * @brief Walk the AST starting from the given node, calling enter and exit methods for each node.
+ * This method dispatches to the appropriate enter and exit methods based on the node type,
+ * walking the tree in a depth-first manner.
+ * 
+ * @param node The AST node to start walking from.
+ */
 void AST::BaseListener::walk(std::shared_ptr<AST::ASTNode> node) {
 	if (node == nullptr) return;
 

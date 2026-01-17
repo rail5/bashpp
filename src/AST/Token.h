@@ -10,6 +10,13 @@
 
 namespace AST {
 
+/**
+ * @class Token
+ * @brief A class representing a token in the Bash++ AST.
+ * Tokens store their value along with line and column information.
+ * 
+ * @tparam T The type of the token's value.
+ */
 template <class T>
 class Token {
 	private:

@@ -3,14 +3,24 @@
  * Bash++: Bash with classes
  */
 
-#include <fstream>
-#include <antlr4-runtime.h>
-
 #include "ProgramPool.h"
 
+typedef void* yyscan_t;
+
+struct LexerExtra;
+
+extern int yylex_init(yyscan_t* scanner);
+extern int yylex_destroy(yyscan_t scanner);
+extern void yyset_in(FILE* in_str, yyscan_t scanner);
+
+extern void initLexer(yyscan_t yyscanner);
+extern void destroyLexer(yyscan_t yyscanner);
+extern void set_utf16_mode(bool enable, yyscan_t yyscanner);
+
+#include "../flexbison/parser.tab.hpp"
+#include "../flexbison/lex.yy.hpp"
 #include "../listener/BashppListener.h"
-#include "../antlr/BashppLexer.h"
-#include "../antlr/BashppParser.h"
+
 #include "include/NullStream.h"
 
 ProgramPool::ProgramPool(size_t max_programs) : max_programs(max_programs) {
@@ -118,34 +128,29 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::_parse_program(
 			listener.set_replacement_file_contents(replacement_file_contents->first, replacement_file_contents->second);
 		}
 
-		// Create a new ANTLR input stream
-		antlr4::ANTLRInputStream input;
-		if (!replacement_file_contents.has_value() || replacement_file_contents->first != file_path) {
-			std::ifstream file_stream(file_path);
-			input = antlr4::ANTLRInputStream(file_stream);
-		} else {
-			// If we have replacement file contents for this file, use those instead
-			input = antlr4::ANTLRInputStream(replacement_file_contents->second);
+		yyscan_t lexer;
+		if (yylex_init(&lexer) != 0) {
+			throw std::runtime_error("Could not initialize lexer");
 		}
-		BashppLexer lexer(&input);
-		lexer.utf16_mode = utf16_mode;
-		antlr4::CommonTokenStream tokens(&lexer);
-		tokens.fill();
+		FILE* input_file = fopen(file_path.c_str(), "r");
+		if (input_file == nullptr) {
+			throw std::runtime_error("Could not open source file: " + file_path);
+		}
+		yyset_in(input_file, lexer);
+		initLexer(lexer);
+		::set_utf16_mode(utf16_mode, lexer);
+		std::shared_ptr<AST::Program> program = nullptr;
+		yy::parser parser(program, lexer);
+		int parse_result = parser.parse();
+		fclose(input_file);
+		destroyLexer(lexer);
 
-		BashppParser parser(&tokens);
-		parser.removeErrorListeners();
-		std::unique_ptr<antlr4::DiagnosticErrorListener> error_listener = std::make_unique<antlr4::DiagnosticErrorListener>();
-		parser.addErrorListener(error_listener.get());
-		parser.setErrorHandler(std::make_shared<antlr4::BailErrorStrategy>());
-		antlr4::tree::ParseTree* tree = parser.program();
-		if (tree == nullptr) {
+		if (parse_result != 0 || program == nullptr) {
 			throw std::runtime_error("Failed to parse program");
 		}
 
 		// Walk the tree
-		antlr4::tree::ParseTreeWalker walker;
-		walker.walk(&listener, tree);
-
+		listener.walk(program);
 		return listener.get_program();
 	} catch (const std::exception& e) {
 		std::cerr << "Error while parsing program: " << e.what() << std::endl;

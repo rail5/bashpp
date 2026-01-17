@@ -23,6 +23,7 @@ class ASTNode {
 		AST::NodeType type = AST::NodeType::ERROR_TYPE;
 		std::vector<std::shared_ptr<ASTNode>> children;
 		AST::FilePosition position;
+		AST::FilePosition end_position;
 		std::string text;
 
 	public:
@@ -36,6 +37,9 @@ class ASTNode {
 		void setPosition(const AST::FilePosition& pos);
 		void setPosition(uint32_t line, uint32_t column);
 		const AST::FilePosition& getPosition() const;
+		void setEndPosition(const AST::FilePosition& pos);
+		void setEndPosition(uint32_t line, uint32_t column);
+		const AST::FilePosition& getEndPosition() const;
 
 		uint32_t getLine() const;
 		uint32_t getCharPositionInLine() const;

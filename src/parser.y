@@ -184,6 +184,7 @@ program: statements {
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		astRoot->setPosition(line_number, column_number);
+		astRoot->setEndPosition(@1.end.line, @1.end.column);
 		$$ = astRoot;
 		program = astRoot;
 	}
@@ -200,6 +201,7 @@ statement:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText($1);
 		$$ = node;
 	}
@@ -221,6 +223,7 @@ shell_command_sequence:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
 		$$ = node;
 	}
@@ -228,6 +231,7 @@ shell_command_sequence:
 		auto commandSequence = std::dynamic_pointer_cast<AST::BashCommandSequence>($1);
 		commandSequence->addText(" " + $2.getValue() + " "); // Preserve connective with surrounding spaces
 		commandSequence->addChild($4);
+		commandSequence->setEndPosition(@4.end.line, @4.end.column);
 		$$ = commandSequence;
 	}
 	;
@@ -238,6 +242,7 @@ pipeline:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
 		$$ = node;
 	}
@@ -245,6 +250,7 @@ pipeline:
 		auto pipeline = std::dynamic_pointer_cast<AST::BashPipeline>($1);
 		pipeline->addText(" | "); // Preserve pipe symbol
 		pipeline->addChild($4);
+		pipeline->setEndPosition(@4.end.line, @4.end.column);
 		$$ = pipeline;
 	}
 	;
@@ -261,6 +267,7 @@ shell_command:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($1);
 		node->addChildren($2);
 		$$ = node;
@@ -270,6 +277,7 @@ shell_command:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($1);
 		node->addChildren($2);
 		$$ = node;
@@ -279,6 +287,7 @@ shell_command:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($1);
 		node->addChildren($2);
 		$$ = node;
@@ -288,6 +297,7 @@ shell_command:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($1);
 		node->addChildren($2);
 		$$ = node;
@@ -297,6 +307,7 @@ shell_command:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($1);
 		node->addChildren($2);
 		$$ = node;
@@ -306,6 +317,7 @@ shell_command:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($1);
 		node->addChildren($2);
 		$$ = node;
@@ -315,6 +327,7 @@ shell_command:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($1);
 		node->addChildren($2);
 		$$ = node;
@@ -334,6 +347,7 @@ simple_command_sequence:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
 		$$ = node;
 	}
@@ -341,6 +355,7 @@ simple_command_sequence:
 		auto commandSequence = std::dynamic_pointer_cast<AST::BashCommandSequence>($1);
 		commandSequence->addText(" " + $2.getValue() + " "); // Preserve connective with surrounding spaces
 		commandSequence->addChild($4);
+		commandSequence->setEndPosition(@4.end.line, @4.end.column);
 		$$ = commandSequence;
 	}
 	;
@@ -352,6 +367,7 @@ simple_pipeline:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
 		$$ = node;
 	}
@@ -361,6 +377,7 @@ simple_pipeline:
 		auto pipeline = std::dynamic_pointer_cast<AST::BashPipeline>($1);
 		pipeline->addText(" | "); // Preserve pipe symbol
 		pipeline->addChild($4);
+		pipeline->setEndPosition(@4.end.line, @4.end.column);
 		$$ = pipeline;
 	}
 	;
@@ -371,6 +388,7 @@ simple_command:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
 		$$ = node;
 	}
@@ -378,10 +396,12 @@ simple_command:
 		auto command = std::dynamic_pointer_cast<AST::BashCommand>($1);
 		command->addText(" "); // Preserve whitespace
 		command->addChild($3);
+		command->setEndPosition(@3.end.line, @3.end.column);
 		$$ = command;
 	}
 	| simple_command redirection {
 		$1->addChild($2);
+		$1->setEndPosition(@2.end.line, @2.end.column);
 		$$ = $1;
 	}
 	;
@@ -401,6 +421,7 @@ operative_command_element:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText($1);
 		$$ = node;
 	}
@@ -424,6 +445,7 @@ redirection:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@3.end.line, @3.end.column);
 		node->setOperator($1);
 		node->addChild($3);
 		$$ = node;
@@ -434,6 +456,7 @@ redirection:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText($1);
 		$$ = node;
 	}
@@ -461,7 +484,7 @@ block:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
-
+		node->setEndPosition(@4.end.line, @4.end.column);
 		node->addChildren($3);
 		$$ = node;
 	}
@@ -473,6 +496,7 @@ valid_rvalue:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(line_number, column_number); // EMPTY_ASSIGNMENT is a zero-length token
 		node->addText("");
 		$$ = node;
 	}
@@ -481,6 +505,7 @@ valid_rvalue:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
 		$$ = node;
 	}
@@ -489,6 +514,7 @@ valid_rvalue:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
 		$$ = node;
 	}
@@ -497,6 +523,7 @@ valid_rvalue:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
 		$$ = node;
 	}
@@ -509,12 +536,14 @@ concatenated_rvalue:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		rvalue->setPosition(line_number, column_number);
+		rvalue->setEndPosition(@1.end.line, @1.end.column);
 		rvalue->addChild($1);
 		$$ = rvalue;
 	}
 	| concatenated_rvalue concatenatable_rvalue {
 		auto rvalue = std::dynamic_pointer_cast<AST::Rvalue>($1);
 		rvalue->addChild($2);
+		rvalue->setEndPosition(@2.end.line, @2.end.column);
 		$$ = rvalue;
 	}
 	;
@@ -525,6 +554,7 @@ concatenatable_rvalue:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText($1);
 		$$ = node;
 	}
@@ -533,6 +563,7 @@ concatenatable_rvalue:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText($1);
 		$$ = node;
 	}
@@ -541,6 +572,7 @@ concatenatable_rvalue:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText($1);
 		$$ = node;
 	}
@@ -549,6 +581,7 @@ concatenatable_rvalue:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText(AST::Token<std::string>("0", line_number, column_number)); // Represent nullptr as 0
 		$$ = node;
 	}
@@ -557,6 +590,7 @@ concatenatable_rvalue:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText($1);
 		$$ = node;
 	}
@@ -617,7 +651,7 @@ include_statement:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
-
+		node->setEndPosition(@5.end.line, @5.end.column);
 		node->setKeyword(keyword);
 		node->setType(type);
 		node->setPathType(pathType);
@@ -651,7 +685,7 @@ object_instantiation:
 			uint32_t line_number = @1.begin.line;
 			uint32_t column_number = @1.begin.column;
 			node->setPosition(line_number, column_number);
-
+			node->setEndPosition(@2.end.line, @2.end.column);
 			node->setIdentifier($2);
 			node->setLvalue(true);
 			node->setAddressOf(false);
@@ -665,6 +699,7 @@ object_instantiation:
 			uint32_t line_number = @1.begin.line;
 			uint32_t column_number = @1.begin.column;
 			node->setPosition(line_number, column_number);
+			node->setEndPosition(@3.end.line, @3.end.column);
 			node->setType($2);
 			$$ = node;
 		}
@@ -685,6 +720,7 @@ pointer_declaration:
 	pointer_declaration_preface WS IDENTIFIER_LVALUE maybe_default_value {
 		auto node = std::dynamic_pointer_cast<AST::PointerDeclaration>($1);
 		node->setIdentifier($3);
+		node->setEndPosition(@4.end.line, @4.end.column);
 		node->addChild($4);
 
 		$$ = node;
@@ -711,7 +747,7 @@ new_statement:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
-
+		node->setEndPosition(@3.end.line, @3.end.column);
 		node->setType($3);
 
 		$$ = node;
@@ -724,7 +760,7 @@ delete_statement:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
-
+		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChild($3);
 
 		$$ = node;
@@ -735,7 +771,7 @@ delete_statement:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
-
+		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChild($3);
 
 		$$ = node;
@@ -748,7 +784,7 @@ class_definition:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
-
+		node->setEndPosition(@5.end.line, @5.end.column);
 		node->setClassName($3);
 		node->setParentClassName($4);
 		node->addChild($5);
@@ -767,7 +803,7 @@ datamember_declaration:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
-
+		node->setEndPosition(@3.end.line, @3.end.column);
 		node->setAccessModifier($1);
 		node->setIdentifier($2);
 		node->addChild($3);
@@ -779,6 +815,7 @@ datamember_declaration:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
 
 		if (std::dynamic_pointer_cast<AST::ObjectInstantiation>($2) == nullptr) {
 			// ERROR: `@public @className` is not sufficient to declare a datamember
@@ -795,6 +832,7 @@ datamember_declaration:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
 
 		node->setAccessModifier($1);
 		node->addChild($2);
@@ -826,6 +864,7 @@ value_assignment:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
 
 		node->setOperator($1);
 		node->addChild($2);
@@ -848,9 +887,10 @@ assignment_operator:
 method_definition:
 	access_modifier KEYWORD_METHOD WS IDENTIFIER WS maybe_parameter_list block {
 		auto node = std::make_shared<AST::MethodDefinition>();
-		uint32_t line_number = @2.begin.line;
-		uint32_t column_number = @2.begin.column;
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@7.end.line, @7.end.column);
 
 		node->setAccessModifier($1);
 		node->setName($4);
@@ -863,9 +903,10 @@ method_definition:
 	}
 	| KEYWORD_VIRTUAL WS access_modifier KEYWORD_METHOD WS IDENTIFIER WS maybe_parameter_list block {
 		auto node = std::make_shared<AST::MethodDefinition>();
-		uint32_t line_number = @2.begin.line;
-		uint32_t column_number = @2.begin.column;
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@9.end.line, @9.end.column);
 
 		node->setAccessModifier($3);
 		node->setName($6);
@@ -915,6 +956,7 @@ constructor_definition:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChild($3);
 		$$ = node;
 	}
@@ -926,6 +968,7 @@ destructor_definition:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChild($3);
 		$$ = node;
 	}
@@ -937,6 +980,7 @@ doublequoted_string:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@3.end.line, @3.end.column);
 
 		$$ = node;
 	}
@@ -944,8 +988,16 @@ doublequoted_string:
 
 quote_contents:
 	/* empty */ { $$ = std::make_shared<AST::DoublequotedString>(); }
-	| quote_contents STRING_CONTENT { $$ = $1; std::dynamic_pointer_cast<AST::DoublequotedString>($$)->addText($2); }
-	| quote_contents string_interpolation { $$ = $1; std::dynamic_pointer_cast<AST::DoublequotedString>($$)->addChild($2); }
+	| quote_contents STRING_CONTENT {
+		$$ = $1;
+		$$->setEndPosition(@2.end.line, @2.end.column);
+		std::dynamic_pointer_cast<AST::DoublequotedString>($$)->addText($2);
+	}
+	| quote_contents string_interpolation {
+		$$ = $1;
+		$$->setEndPosition(@2.end.line, @2.end.column);
+		std::dynamic_pointer_cast<AST::DoublequotedString>($$)->addChild($2);
+	}
 	;
 
 string_interpolation:
@@ -964,6 +1016,7 @@ object_reference:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@3.end.line, @3.end.column);
 
 		node->setIdentifier($2);
 		node->setLvalue(false);
@@ -976,6 +1029,7 @@ object_reference:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@6.end.line, @6.end.column);
 
 		node->setIdentifier($3);
 		node->setLvalue(false);
@@ -997,6 +1051,7 @@ object_reference_lvalue:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@3.end.line, @3.end.column);
 
 		node->setIdentifier($2);
 		node->setLvalue(true);
@@ -1009,6 +1064,7 @@ object_reference_lvalue:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@6.end.line, @6.end.column);
 
 		node->setIdentifier($3);
 		node->setLvalue(true);
@@ -1030,6 +1086,7 @@ self_reference:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
 
 		node->setIdentifier(AST::Token<std::string>("this", @1.begin.line, @1.begin.column));
 		node->setLvalue(false);
@@ -1042,6 +1099,7 @@ self_reference:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@6.end.line, @6.end.column);
 
 		node->setIdentifier(AST::Token<std::string>("this", @3.begin.line, @3.begin.column));
 		node->setLvalue(false);
@@ -1060,6 +1118,7 @@ self_reference:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
 
 		node->setIdentifier(AST::Token<std::string>("super", @1.begin.line, @1.begin.column));
 		node->setLvalue(false);
@@ -1072,6 +1131,7 @@ self_reference:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@6.end.line, @6.end.column);
 
 		node->setIdentifier(AST::Token<std::string>("super", @3.begin.line, @3.begin.column));
 		node->setLvalue(false);
@@ -1093,6 +1153,7 @@ self_reference_lvalue:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
 
 		node->setIdentifier(AST::Token<std::string>("this", @1.begin.line, @1.begin.column));
 		node->setLvalue(true);
@@ -1105,6 +1166,7 @@ self_reference_lvalue:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@6.end.line, @6.end.column);
 
 		node->setIdentifier(AST::Token<std::string>("this", @3.begin.line, @3.begin.column));
 		node->setLvalue(true);
@@ -1123,6 +1185,7 @@ self_reference_lvalue:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
 
 		node->setIdentifier(AST::Token<std::string>("super", @1.begin.line, @1.begin.column));
 		node->setLvalue(true);
@@ -1135,6 +1198,7 @@ self_reference_lvalue:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@6.end.line, @6.end.column);
 
 		node->setIdentifier(AST::Token<std::string>("super", @3.begin.line, @3.begin.column));
 		node->setLvalue(true);
@@ -1165,6 +1229,7 @@ maybe_array_index:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		$2->setPosition(line_number, column_number);
+		$2->setEndPosition(@3.end.line, @3.end.column);
 		$$ = $2;
 	}
 	;
@@ -1175,6 +1240,7 @@ array_index:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
 		$$ = node;
 	}
@@ -1184,6 +1250,7 @@ array_index:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		auto atNode = std::make_shared<AST::RawText>();
 		atNode->setPosition(line_number, column_number);
 		atNode->setText(AST::Token<std::string>("@", line_number, column_number));
@@ -1208,6 +1275,7 @@ bash_variable:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@7.end.line, @7.end.column);
 
 		AST::Token<std::string> text;
 		text.setLine(@2.begin.line);
@@ -1223,6 +1291,7 @@ bash_variable:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 
 		node->setText($1); // Just the simple $VAR form
 		$$ = node;
@@ -1236,6 +1305,7 @@ maybe_parameter_expansion:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
 		node->setExpansionBegin($1);
 		node->addChild($2);
 		$$ = node;
@@ -1245,6 +1315,7 @@ maybe_parameter_expansion:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
 		node->setExpansionBegin($1);
 		auto contentNode = std::make_shared<AST::RawText>();
 		contentNode->setPosition(@2.begin.line, @2.begin.column);
@@ -1260,6 +1331,7 @@ dynamic_cast:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@6.end.line, @6.end.column);
 		node->addChild($3); // cast_target
 		node->addChild($6); // valid_rvalue
 		$$ = node;
@@ -1272,6 +1344,7 @@ cast_target:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		auto rawTextTarget = std::make_shared<AST::RawText>();
 		rawTextTarget->setPosition(line_number, column_number);
 		rawTextTarget->setText($1);
@@ -1283,6 +1356,7 @@ cast_target:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
 		$$ = node;
 	}
@@ -1291,6 +1365,7 @@ cast_target:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
 		$$ = node;
 	}
@@ -1299,6 +1374,7 @@ cast_target:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
 		$$ = node;
 	}
@@ -1312,6 +1388,7 @@ object_assignment:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($1);
 		node->addChild($2);
 		$$ = node;
@@ -1323,6 +1400,7 @@ object_assignment:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($1);
 		node->addChild($2);
 		$$ = node;
@@ -1334,6 +1412,7 @@ object_assignment:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($1);
 		node->addChild($2);
 		$$ = node;
@@ -1346,6 +1425,7 @@ shell_variable_assignment:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
 		node->setIdentifier($1);
 		node->addChild($2);
 		$$ = node;
@@ -1356,6 +1436,7 @@ object_address:
 	AMPERSAND object_reference {
 		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
 		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '&' token
+		node->setEndPosition(@2.end.line, @2.end.column);
 
 		node->setAddressOf(true);
 
@@ -1364,6 +1445,7 @@ object_address:
 	| AMPERSAND self_reference {
 		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
 		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '&' token
+		node->setEndPosition(@2.end.line, @2.end.column);
 
 		node->setAddressOf(true);
 
@@ -1380,12 +1462,14 @@ pointer_dereference_rvalue:
 	DEREFERENCE_OPERATOR object_reference {
 		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
 		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '*' token
+		node->setEndPosition(@2.end.line, @2.end.column);
 		node->setPointerDereference(true);
 		$$ = node;
 	}
 	| DEREFERENCE_OPERATOR self_reference {
 		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
 		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '*' token
+		node->setEndPosition(@2.end.line, @2.end.column);
 		node->setPointerDereference(true);
 		$$ = node;
 	}
@@ -1395,12 +1479,14 @@ pointer_dereference_lvalue:
 	DEREFERENCE_OPERATOR object_reference_lvalue {
 		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
 		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '*' token
+		node->setEndPosition(@2.end.line, @2.end.column);
 		node->setPointerDereference(true);
 		$$ = node;
 	}
 	| DEREFERENCE_OPERATOR self_reference_lvalue {
 		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
 		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '*' token
+		node->setEndPosition(@2.end.line, @2.end.column);
 		node->setPointerDereference(true);
 		$$ = node;
 	}
@@ -1412,6 +1498,7 @@ typeof_expression:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChild($3);
 		$$ = node;
 	}
@@ -1422,6 +1509,7 @@ supershell:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChildren($2);
 		$$ = node;
 	}
@@ -1433,6 +1521,7 @@ subshell_raw:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChildren($2);
 		$$ = node;
 	}
@@ -1449,6 +1538,7 @@ dollar_subshell:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChildren($2);
 		$$ = node;
 	}
@@ -1463,6 +1553,7 @@ deprecated_subshell:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChildren($2);
 		$$ = node;
 	}
@@ -1474,6 +1565,7 @@ process_substitution:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@3.end.line, @3.end.column);
 		node->setSubstitutionStart($1);
 		node->addChildren($2);
 		$$ = node;
@@ -1492,6 +1584,7 @@ heredoc_body:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@3.end.line, @3.end.column);
 		node->setDelimiter($3);
 		$$ = node;
 	}
@@ -1517,6 +1610,7 @@ herestring:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChild($3);
 		$$ = node;
 	}
@@ -1528,6 +1622,7 @@ bash_case_statement:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@5.end.line, @5.end.column);
 		node->addChild($3); // bash_case_input
 		node->addChildren($4); // bash_case_body
 		$$ = node;
@@ -1545,6 +1640,7 @@ bash_case_input:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
 		$$ = node;
 	}
@@ -1561,10 +1657,12 @@ bash_case_pattern:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@4.end.line, @4.end.column);
 		node->addChild($1); // pattern header
 
 		auto action = std::make_shared<AST::BashCasePatternAction>();
 		action->setPosition(@3.begin.line, @3.begin.column);
+		action->setEndPosition(@3.end.line, @3.end.column);
 		action->addChildren($3); // statements
 
 		node->addChild(action);
@@ -1576,11 +1674,15 @@ bash_case_pattern_header:
 	/* empty */ { $$ = std::make_shared<AST::BashCasePatternHeader>(); }
 	| bash_case_pattern_header STRING_CONTENT {
 		auto node = std::dynamic_pointer_cast<AST::BashCasePatternHeader>($1);
+		node->setPosition(@1.begin.line, @1.begin.column);
+		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addText($2);
 		$$ = node;
 	}
 	| bash_case_pattern_header string_interpolation {
 		auto node = std::dynamic_pointer_cast<AST::BashCasePatternHeader>($1);
+		node->setPosition(@1.begin.line, @1.begin.column);
+		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($2);
 		$$ = node;
 	}
@@ -1602,6 +1704,7 @@ bash_select_statement:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		selectStatement->setPosition(line_number, column_number);
+		selectStatement->setEndPosition(@8.end.line, @8.end.column);
 		// Earlier, we assumed it was a 'for' statement by default
 		if (!forStatement) {
 			// This should not happen, but just in case
@@ -1619,6 +1722,7 @@ bash_select_statement:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		selectStatement->setPosition(line_number, column_number);
+		selectStatement->setEndPosition(@6.end.line, @6.end.column);
 		// Earlier, we assumed it was a 'for' statement by default
 		if (!forStatement) {
 			// This should not happen, but just in case
@@ -1653,6 +1757,7 @@ bash_for_or_select_maybe_in_something:
 	| WS BASH_KEYWORD_IN WS bash_for_or_select_input {
 		auto inCondition = std::dynamic_pointer_cast<AST::BashInCondition>($4);
 		inCondition->setPosition(@2.begin.line, @2.begin.column); // Move position to 'in' token
+		inCondition->setEndPosition(@4.end.line, @4.end.column);
 		$$ = inCondition;
 	}
 	| WS BASH_KEYWORD_IN maybe_whitespace {
@@ -1660,6 +1765,7 @@ bash_for_or_select_maybe_in_something:
 		uint32_t line_number = @2.begin.line;
 		uint32_t column_number = @2.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
 		$$ = node; // 'in' with no input, valid in Bash
 	}
 	;
@@ -1677,6 +1783,7 @@ bash_for_or_select_input:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
 		$$ = node;
 	}
@@ -1684,6 +1791,7 @@ bash_for_or_select_input:
 		auto inCondition = std::dynamic_pointer_cast<AST::BashInCondition>($1);
 		inCondition->addText(" "); // Preserve whitespace between items
 		inCondition->addChild($3);
+		inCondition->setEndPosition(@3.end.line, @3.end.column);
 		$$ = inCondition;
 	}
 	| bash_for_or_select_input WS { $$ = $1; } /* Allow trailing whitespace */
@@ -1711,6 +1819,7 @@ bash_for_statement:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		forStatement->setPosition(line_number, column_number);
+		forStatement->setEndPosition(@8.end.line, @8.end.column);
 		forStatement->addChildren($7);
 		$$ = forStatement;
 	}
@@ -1726,6 +1835,7 @@ bash_for_statement:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		forStatement->setPosition(line_number, column_number);
+		forStatement->setEndPosition(@6.end.line, @6.end.column);
 		forStatement->addChild($6);
 		$$ = forStatement;
 	}
@@ -1744,6 +1854,7 @@ bash_arithmetic_for_statement:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@6.end.line, @6.end.column);
 		node->addChild($3); // for condition
 		node->addChildren($5); // statements
 		$$ = node;
@@ -1753,6 +1864,7 @@ bash_arithmetic_for_statement:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@8.end.line, @8.end.column);
 		node->addChild($3); // for condition
 		node->addChildren($7); // statements
 		$$ = node;
@@ -1762,6 +1874,7 @@ bash_arithmetic_for_statement:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@4.end.line, @4.end.column);
 		node->addChild($3); // for condition
 		node->addChild($4); // block
 		$$ = node;
@@ -1771,6 +1884,7 @@ bash_arithmetic_for_statement:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@6.end.line, @6.end.column);
 		node->addChild($3); // for condition
 		node->addChild($6); // block
 		$$ = node;
@@ -1783,6 +1897,7 @@ arithmetic_for_condition:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@7.end.line, @7.end.column);
 		node->addChild($2); // first expression
 		node->addChild($4); // second expression
 		node->addChild($6); // third expression
@@ -1804,6 +1919,7 @@ arith_statement:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
 		$$ = node;
 	}
@@ -1812,8 +1928,10 @@ arith_statement:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		auto rawText = std::make_shared<AST::RawText>();
 		rawText->setPosition(line_number, column_number);
+		rawText->setEndPosition(@1.end.line, @1.end.column);
 		rawText->setText($1);
 		node->addChild(rawText);
 		$$ = node;
@@ -1823,6 +1941,7 @@ arith_statement:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
 		$$ = node;
 	}
@@ -1831,6 +1950,7 @@ arith_statement:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
 		$$ = node;
 	}
@@ -1839,6 +1959,7 @@ arith_statement:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
 		$$ = node;
 	}
@@ -1847,6 +1968,7 @@ arith_statement:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
 		$$ = node;
 	}
@@ -1860,6 +1982,7 @@ increment_decrement_expression:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($1);
 		node->addText($2);
 		$$ = node;
@@ -1869,6 +1992,7 @@ increment_decrement_expression:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addText($1);
 		node->addChild($2);
 		$$ = node;
@@ -1881,6 +2005,7 @@ comparison_expression:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@5.end.line, @5.end.column);
 		node->addChild($1);
 		node->addText($3);
 		node->addChild($5);
@@ -1905,6 +2030,7 @@ arith_condition_term:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText($1);
 		$$ = node;
 	}
@@ -1913,6 +2039,7 @@ arith_condition_term:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText($1);
 		$$ = node;
 	}
@@ -1921,6 +2048,7 @@ arith_condition_term:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText($1);
 		$$ = node;
 	}
@@ -1929,6 +2057,7 @@ arith_condition_term:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText(AST::Token<std::string>("0", line_number, column_number));
 		$$ = node;
 	}
@@ -1942,6 +2071,7 @@ arith_operator:
 bash_if_statement:
 	bash_if_root_branch maybe_bash_if_else_branches BASH_KEYWORD_FI {
 		auto node = std::dynamic_pointer_cast<AST::BashIfStatement>($1);
+		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChildren($2); // elif / else branches
 		$$ = node;
 	}
@@ -1958,6 +2088,7 @@ bash_if_root_branch:
 
 		auto rootBranch = std::make_shared<AST::BashIfRootBranch>();
 		rootBranch->setPosition(@5.begin.line, @5.begin.column);
+		rootBranch->setEndPosition(@7.end.line, @7.end.column);
 		rootBranch->addChildren($7); // statements
 		
 		node->addChild(rootBranch);
@@ -1972,6 +2103,7 @@ bash_if_condition:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
 		$$ = node;
 	}
@@ -1988,6 +2120,7 @@ bash_if_else_branch:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@7.end.line, @7.end.column);
 
 		node->addChild($2); // condition
 		node->addChildren($7); // statements
@@ -1999,6 +2132,7 @@ bash_if_else_branch:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@4.end.line, @4.end.column);
 		// 'else' branch has no condition
 		node->addChildren($4); // statements
 
@@ -2012,6 +2146,7 @@ bash_while_statement:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@8.end.line, @8.end.column);
 		node->addChild($2); // condition
 		node->addChildren($7); // statements
 		$$ = node;
@@ -2024,6 +2159,7 @@ bash_until_statement:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@8.end.line, @8.end.column);
 		node->addChild($2); // condition
 		node->addChildren($7); // statements
 		$$ = node;
@@ -2037,6 +2173,7 @@ bash_while_or_until_condition:
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
 		$$ = node;
 	}

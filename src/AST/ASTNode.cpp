@@ -5,6 +5,7 @@
 
 #include "ASTNode.h"
 #include "Nodes/RawText.h"
+#include "Position.h"
 
 namespace AST {
 
@@ -86,6 +87,23 @@ void ASTNode::setPosition(uint32_t line, uint32_t column) {
 
 const AST::FilePosition& ASTNode::getPosition() const {
 	return position;
+}
+
+void ASTNode::setEndPosition(const AST::FilePosition& pos) {
+	end_position = pos;
+}
+
+void ASTNode::setEndPosition(uint32_t line, uint32_t column) {
+	end_position.line = line;
+	end_position.column = column;
+}
+
+const AST::FilePosition& ASTNode::getEndPosition() const {
+	if (end_position.line == 0 && end_position.column == 0) {
+		// If end_position is not set, return position instead
+		return position;
+	}
+	return end_position;
 }
 
 uint32_t ASTNode::getLine() const {

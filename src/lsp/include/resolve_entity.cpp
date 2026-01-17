@@ -127,12 +127,10 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 			return nullptr; // No node found at the specified column
 		}
 
-		bool is_object_reference = false;
 		std::deque<std::string> identifiers;
 
 		// First, check if it's an object reference
 		if (node->getType() == AST::NodeType::ObjectReference) {
-				is_object_reference = true;
 				auto object_ref_ctx = std::dynamic_pointer_cast<AST::ObjectReference>(node);
 				if (!object_ref_ctx) {
 					return nullptr; // Not a valid object reference context

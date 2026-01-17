@@ -306,12 +306,12 @@ code_segment inline_new(
 entity_reference resolve_reference_impl(
 	const std::string& file,
 	std::shared_ptr<bpp::bpp_entity> context,
-	std::deque<antlr4::tree::TerminalNode*>* nodes,
+	std::deque<AST::Token<std::string>>* nodes,
 	std::deque<std::string>* identifiers,
 	bool declare_local,
 	std::shared_ptr<bpp::bpp_program> program
 ) {
-	std::deque<antlr4::tree::TerminalNode*> nds = static_cast<std::deque<antlr4::tree::TerminalNode*>>(*nodes);
+	std::deque<AST::Token<std::string>> nds = static_cast<std::deque<AST::Token<std::string>>>(*nodes);
 	std::deque<std::string> ids = static_cast<std::deque<std::string>>(*identifiers);
 
 	bool self_reference = ids.front() == "this" || ids.front() == "super";
@@ -327,7 +327,7 @@ entity_reference resolve_reference_impl(
 	// If this is a request from the language server,
 	// Ie, after all the analysis has already been done,
 	// Then a deque of strings is perfectly fine -- we don't need to track positions.
-	antlr4::tree::TerminalNode* error_token = nullptr;
+	std::optional<AST::Token<std::string>> error_token = std::nullopt;
 
 	entity_reference result;
 
@@ -367,8 +367,8 @@ entity_reference resolve_reference_impl(
 		if (!nds.empty()) {
 			object->add_reference(
 				file,
-				nds.front()->getSymbol()->getLine() - 1,
-				nds.front()->getSymbol()->getCharPositionInLine()
+				nds.front().getLine() - 1,
+				nds.front().getCharPositionInLine()
 			);
 		}
 	}
@@ -421,7 +421,7 @@ entity_reference resolve_reference_impl(
 	}
 
 	while (!ids.empty()) {
-		error_token = nds.empty() ? nullptr : nds.front();
+		error_token = nds.empty() ? std::nullopt : std::make_optional(nds.front());
 
 		if (result.created_first_temporary_variable) {
 			encase_open = "${";
@@ -479,8 +479,8 @@ entity_reference resolve_reference_impl(
 			if (!nds.empty()) {
 				method->add_reference(
 					file,
-					nds.front()->getSymbol()->getLine() - 1,
-					nds.front()->getSymbol()->getCharPositionInLine()
+					nds.front().getLine() - 1,
+					nds.front().getCharPositionInLine()
 				);
 			}
 		} else if (datamember != nullptr) {
@@ -505,8 +505,8 @@ entity_reference resolve_reference_impl(
 			if (!nds.empty()) {
 				datamember->add_reference(
 					file,
-					nds.front()->getSymbol()->getLine() - 1,
-					nds.front()->getSymbol()->getCharPositionInLine()
+					nds.front().getLine() - 1,
+					nds.front().getCharPositionInLine()
 				);
 			}
 		} else {

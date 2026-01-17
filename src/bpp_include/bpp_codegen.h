@@ -11,11 +11,10 @@
 #include <optional>
 #include <deque>
 #include <type_traits>
-#include <antlr4-runtime.h>
 
 #include "bpp.h"
-#include "../antlr/BashppLexer.h"
 #include "../internal_error.h"
+#include "../AST/ASTNode.h"
 
 namespace bpp {
 // Minimal forward declarations
@@ -102,7 +101,7 @@ struct entity_reference {
 	
 	struct reference_error {
 		std::string message;
-		antlr4::tree::TerminalNode* token = nullptr;
+		std::optional<AST::Token<std::string>> token;
 	};
 
 	std::optional<reference_error> error;
@@ -111,7 +110,7 @@ struct entity_reference {
 entity_reference resolve_reference_impl(
 	const std::string& file,
 	std::shared_ptr<bpp::bpp_entity> context,
-	std::deque<antlr4::tree::TerminalNode*>* identifiers,
+	std::deque<AST::Token<std::string>>* identifiers,
 	std::deque<std::string>* identifier_texts,
 	bool declare_local,
 	std::shared_ptr<bpp::bpp_program> program
@@ -126,13 +125,13 @@ inline entity_reference resolve_reference(
 ) {
 	// identifiers should be either:
 	// 1. A pointer to a container of strings (eg, std::deque<std::string>*)
-	// 2. A pointer to a container of antlr4::tree::TerminalNode* (eg, std::deque<antlr4::tree::TerminalNode*>*)
+	// 2. A pointer to a container of AST::Token<std::string> (eg, std::deque<AST::Token<std::string>>*)
 
 	using ident_t = std::remove_cvref_t<decltype(identifiers)>;
 	using container_t = std::remove_pointer_t<ident_t>;
 	using value_t = typename container_t::value_type;
 
-	std::deque<antlr4::tree::TerminalNode*> node_deque;
+	std::deque<AST::Token<std::string>> node_deque;
 	std::deque<std::string> text_deque;
 
 	if constexpr (std::is_convertible_v<value_t, std::string>) {
@@ -141,13 +140,13 @@ inline entity_reference resolve_reference(
 			text_deque.push_back(id);
 		}
 		return resolve_reference_impl(file, context, &node_deque, &text_deque, declare_local, program);
-	} else if constexpr (std::is_convertible_v<value_t, antlr4::tree::TerminalNode*>) {
+	} else if constexpr (std::is_convertible_v<value_t, AST::Token<std::string>>) {
 		// identifiers: deque<TerminalNode*>*
 		for (const auto& node : *identifiers) {
 			node_deque.push_back(node);
 		}
 		for (const auto& node : node_deque) {
-			text_deque.push_back(node->getText());
+			text_deque.push_back(node.getValue());
 		}
 		return resolve_reference_impl(file, context, &node_deque, &text_deque, declare_local, program);
 	} else {

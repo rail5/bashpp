@@ -13,9 +13,8 @@
 #include <memory>
 #include <stack>
 #include <optional>
-#include <antlr4-runtime.h>
 
-#include "../antlr/BashppParserBaseListener.h"
+#include "../AST/Listener/BaseListener.h"
 
 class BashppListener;
 
@@ -32,10 +31,7 @@ using bpp::generate_dynamic_cast_code;
 #include "../internal_error.h"
 
 #define skip_syntax_errors if (error_thrown) { \
-		if (error_context == ctx) { \
-			error_thrown = false; \
-			error_context = nullptr; \
-		} \
+		error_thrown = false; \
 		return; \
 		}
 
@@ -59,7 +55,7 @@ using bpp::generate_dynamic_cast_code;
  * When we enter a node in the parse tree, we execute the enter* function for that node.
  * When we exit a node in the parse tree, we execute the exit* function for that node.
  */
-class BashppListener : public BashppParserBaseListener, std::enable_shared_from_this<BashppListener> {
+class BashppListener : public AST::BaseListener, std::enable_shared_from_this<BashppListener> {
 	private:
 		/**
 		 * @var source_file
@@ -149,76 +145,34 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 		std::shared_ptr<bpp::bpp_class> primitive;
 
 		bool error_thrown = false;
-		antlr4::ParserRuleContext* error_context = nullptr;
 
 		bool program_has_errors = false;
 
-		#define set_error_context error_thrown = true; error_context = ctx;
-
-		template<class T>
-		static constexpr bool dependent_false_v = false;
-		
-		template<typename Sym>
-		void output_syntax_error(Sym* error_ctx, const std::string& msg) {
-			if constexpr(std::is_base_of<antlr4::ParserRuleContext, Sym>::value) {
-				// A ParserRuleContext has been passed
-				int line = static_cast<int>(error_ctx->getStart()->getLine());
-				int column = static_cast<int>(error_ctx->getStart()->getCharPositionInLine());
-				std::string text = error_ctx->getText();
-				print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), program);
-			} else if constexpr(std::is_base_of<antlr4::tree::TerminalNode, Sym>::value) {
-				// A token has been passed directly
-				antlr4::Token* symbol = error_ctx->getSymbol();
-				antlr4::CommonToken* token = dynamic_cast<antlr4::CommonToken*>(symbol);
-				int line;
-				int column;
-				std::string text;
-				if (token == nullptr) {
-					line = static_cast<int>(symbol->getLine());
-					column = static_cast<int>(symbol->getCharPositionInLine());
-					text = symbol->getText();
-				} else {
-					line = static_cast<int>(token->getLine());
-					column = static_cast<int>(token->getCharPositionInLine());
-					text = token->getText();
-				}
-				print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), program);
-			} else if constexpr(std::is_base_of<antlr4::Token, Sym>::value) {
-				// A symbol has been passed
-				int line = static_cast<int>(error_ctx->getLine());
-				int column = static_cast<int>(error_ctx->getCharPositionInLine());
-				std::string text = error_ctx->getText();
-				print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), program);
-			} else {
-				static_assert(dependent_false_v<Sym>, "output_syntax_error<Sym>: Sym must be a ParserRuleContext*, TerminalNode*, or Token*.");
-			}
+		void output_syntax_error(const AST::Token<std::string>& error_ctx, const std::string& msg) {
+			int line = static_cast<int>(error_ctx.getLine());
+			int column = static_cast<int>(error_ctx.getCharPositionInLine());
+			std::string text = error_ctx.getValue();
+			print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), program);
 			program_has_errors = true;
 		}
 
-		#define throw_syntax_error_sym(symbol, msg) \
-			output_syntax_error(symbol, msg); \
-			set_error_context \
-			return;
-
 		#define throw_syntax_error(token, msg) \
-			throw_syntax_error_sym(token, msg) \
-			set_error_context \
+			output_syntax_error(token, msg); \
+			error_thrown = true; /* Mark error_thrown so we know to skip the exit rule */ \
+			node->clearChildren(); /* Skip traversing children */ \
 			return;
 
 		#define throw_syntax_error_from_exitRule(token, msg) \
 			output_syntax_error(token, msg); \
 			return;
 		
-		#define show_warning_sym(symbol, msg) \
+		#define show_warning(token, msg) \
 			if (!suppress_warnings) { \
-				int line = static_cast<int>(symbol->getLine()); \
-				int column = static_cast<int>(symbol->getCharPositionInLine()); \
-				std::string text = symbol->getText(); \
+				int line = static_cast<int>(token.getLine()); \
+				int column = static_cast<int>(token.getCharPositionInLine()); \
+				std::string text = token.getValue(); \
 				print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), program, true); \
 			}
-		
-		#define show_warning(token, msg) antlr4::Token* symbol = token->getSymbol(); \
-			show_warning_sym(symbol, msg)
 
 	public:
 
@@ -244,165 +198,112 @@ class BashppListener : public BashppParserBaseListener, std::enable_shared_from_
 
 	std::shared_ptr<bpp::bpp_code_entity> latest_code_entity();
 
-	void enterProgram(BashppParser::ProgramContext *ctx) override;
-	void exitProgram(BashppParser::ProgramContext *ctx) override;
-
-	void enterInclude_statement(BashppParser::Include_statementContext *ctx) override;
-	void exitInclude_statement(BashppParser::Include_statementContext *ctx) override;
-
-	void enterClass_definition(BashppParser::Class_definitionContext *ctx) override;
-	void exitClass_definition(BashppParser::Class_definitionContext *ctx) override;
-
-	void enterMember_declaration(BashppParser::Member_declarationContext *ctx) override;
-	void exitMember_declaration(BashppParser::Member_declarationContext *ctx) override;
-
-	void enterObject_instantiation(BashppParser::Object_instantiationContext *ctx) override;
-	void exitObject_instantiation(BashppParser::Object_instantiationContext *ctx) override;
-
-	void enterPointer_declaration(BashppParser::Pointer_declarationContext *ctx) override;
-	void exitPointer_declaration(BashppParser::Pointer_declarationContext *ctx) override;
-
-	void enterValue_assignment(BashppParser::Value_assignmentContext *ctx) override;
-	void exitValue_assignment(BashppParser::Value_assignmentContext *ctx) override;
-
-	void enterMethod_definition(BashppParser::Method_definitionContext *ctx) override;
-	void exitMethod_definition(BashppParser::Method_definitionContext *ctx) override;
-
-	void enterConstructor_definition(BashppParser::Constructor_definitionContext *ctx) override;
-	void exitConstructor_definition(BashppParser::Constructor_definitionContext *ctx) override;
-
-	void enterDestructor_definition(BashppParser::Destructor_definitionContext *ctx) override;
-	void exitDestructor_definition(BashppParser::Destructor_definitionContext *ctx) override;
-
-	void enterSelf_reference(BashppParser::Self_referenceContext *ctx) override;
-	void exitSelf_reference(BashppParser::Self_referenceContext *ctx) override;
-
-	void enterSelf_reference_as_lvalue(BashppParser::Self_reference_as_lvalueContext *ctx) override;
-	void exitSelf_reference_as_lvalue(BashppParser::Self_reference_as_lvalueContext *ctx) override;
-
-	void enterStatement(BashppParser::StatementContext *ctx) override;
-	void exitStatement(BashppParser::StatementContext *ctx) override;
-
-	void enterClass_body_statement(BashppParser::Class_body_statementContext *ctx) override;
-	void exitClass_body_statement(BashppParser::Class_body_statementContext *ctx) override;
-
-	void enterGeneral_statement(BashppParser::General_statementContext *ctx) override;
-	void exitGeneral_statement(BashppParser::General_statementContext *ctx) override;
-
-	void enterObject_assignment(BashppParser::Object_assignmentContext *ctx) override;
-
-	void exitObject_assignment(BashppParser::Object_assignmentContext *ctx) override;
-
-	void enterPointer_dereference(BashppParser::Pointer_dereferenceContext *ctx) override;
-	void exitPointer_dereference(BashppParser::Pointer_dereferenceContext *ctx) override;
-
-	void enterObject_address(BashppParser::Object_addressContext *ctx) override;
-	void exitObject_address(BashppParser::Object_addressContext *ctx) override;
-
-	void enterObject_reference(BashppParser::Object_referenceContext *ctx) override;
-	void exitObject_reference(BashppParser::Object_referenceContext *ctx) override;
-
-	void enterObject_reference_as_lvalue(BashppParser::Object_reference_as_lvalueContext *ctx) override;
-	void exitObject_reference_as_lvalue(BashppParser::Object_reference_as_lvalueContext *ctx) override;
-
-	void enterNullptr_ref(BashppParser::Nullptr_refContext *ctx) override;
-	void exitNullptr_ref(BashppParser::Nullptr_refContext *ctx) override;
-
-	void enterNew_statement(BashppParser::New_statementContext *ctx) override;
-	void exitNew_statement(BashppParser::New_statementContext *ctx) override;
-
-	void enterDelete_statement(BashppParser::Delete_statementContext *ctx) override;
-	void exitDelete_statement(BashppParser::Delete_statementContext *ctx) override;
-
-	void enterDynamic_cast_statement(BashppParser::Dynamic_cast_statementContext *ctx) override;
-	void exitDynamic_cast_statement(BashppParser::Dynamic_cast_statementContext *ctx) override;
-
-	void enterDynamic_cast_target(BashppParser::Dynamic_cast_targetContext *ctx) override;
-	void exitDynamic_cast_target(BashppParser::Dynamic_cast_targetContext *ctx) override;
-
-	void enterTypeof_statement(BashppParser::Typeof_statementContext *ctx) override;
-	void exitTypeof_statement(BashppParser::Typeof_statementContext *ctx) override;
-
-	void enterSupershell(BashppParser::SupershellContext *ctx) override;
-	void exitSupershell(BashppParser::SupershellContext *ctx) override;
-
-	void enterSubshell(BashppParser::SubshellContext *ctx) override;
-	void exitSubshell(BashppParser::SubshellContext *ctx) override;
-
-	void enterDeprecated_subshell(BashppParser::Deprecated_subshellContext *ctx) override;
-	void exitDeprecated_subshell(BashppParser::Deprecated_subshellContext *ctx) override;
-
-	void enterBash_arithmetic(BashppParser::Bash_arithmeticContext *ctx) override;
-	void exitBash_arithmetic(BashppParser::Bash_arithmeticContext *ctx) override;
-
-	void enterString(BashppParser::StringContext *ctx) override;
-	void exitString(BashppParser::StringContext *ctx) override;
-
-	void enterSinglequote_string(BashppParser::Singlequote_stringContext *ctx) override;
-	void exitSinglequote_string(BashppParser::Singlequote_stringContext *ctx) override;
-
-	void enterParameter(BashppParser::ParameterContext *ctx) override;
-	void exitParameter(BashppParser::ParameterContext *ctx) override;
-
-	void enterOther_statement(BashppParser::Other_statementContext *ctx) override;
-	void exitOther_statement(BashppParser::Other_statementContext *ctx) override;
-
-	void enterRaw_rvalue(BashppParser::Raw_rvalueContext *ctx) override;
-	void exitRaw_rvalue(BashppParser::Raw_rvalueContext *ctx) override;
-
-	void enterArray_value(BashppParser::Array_valueContext *ctx) override;
-	void exitArray_value(BashppParser::Array_valueContext *ctx) override;
-
-	void enterArray_index(BashppParser::Array_indexContext *ctx) override;
-	void exitArray_index(BashppParser::Array_indexContext *ctx) override;
-
-	void enterBash_if_statement(BashppParser::Bash_if_statementContext *ctx) override;
-	void exitBash_if_statement(BashppParser::Bash_if_statementContext *ctx) override;
-
-	void enterBash_if_root_branch(BashppParser::Bash_if_root_branchContext *ctx) override;
-	void exitBash_if_root_branch(BashppParser::Bash_if_root_branchContext *ctx) override;
-
-	void enterBash_if_else_branch(BashppParser::Bash_if_else_branchContext *ctx) override;
-	void exitBash_if_else_branch(BashppParser::Bash_if_else_branchContext *ctx) override;
-
-	void enterBash_if_condition(BashppParser::Bash_if_conditionContext *ctx) override;
-	void exitBash_if_condition(BashppParser::Bash_if_conditionContext *ctx) override;
-
-	void enterBash_case_statement(BashppParser::Bash_case_statementContext *ctx) override;
-	void exitBash_case_statement(BashppParser::Bash_case_statementContext *ctx) override;
-
-	void enterBash_case_pattern(BashppParser::Bash_case_patternContext *ctx) override;
-	void exitBash_case_pattern(BashppParser::Bash_case_patternContext *ctx) override;
-
-	void enterBash_case_pattern_header(BashppParser::Bash_case_pattern_headerContext *ctx) override;
-	void exitBash_case_pattern_header(BashppParser::Bash_case_pattern_headerContext *ctx) override;
-
-	void enterBash_while_loop(BashppParser::Bash_while_loopContext *ctx) override;
-	void exitBash_while_loop(BashppParser::Bash_while_loopContext *ctx) override;
-
-	void enterBash_while_condition(BashppParser::Bash_while_conditionContext *ctx) override;
-	void exitBash_while_condition(BashppParser::Bash_while_conditionContext *ctx) override;
-
-	void enterBash_for_loop(BashppParser::Bash_for_loopContext *ctx) override;
-	void exitBash_for_loop(BashppParser::Bash_for_loopContext *ctx) override;
-
-	void enterBash_for_header(BashppParser::Bash_for_headerContext *ctx) override;
-	void exitBash_for_header(BashppParser::Bash_for_headerContext *ctx) override;
-
-	void enterBash_function(BashppParser::Bash_functionContext *ctx) override;
-	void exitBash_function(BashppParser::Bash_functionContext *ctx) override;
-
-	void enterHeredoc(BashppParser::HeredocContext *ctx) override;
-	void exitHeredoc(BashppParser::HeredocContext *ctx) override;
-
-	void enterHeredoc_header(BashppParser::Heredoc_headerContext *ctx) override;
-	void exitHeredoc_header(BashppParser::Heredoc_headerContext *ctx) override;
-
-	void enterExtra_statement(BashppParser::Extra_statementContext *ctx) override;
-	void exitExtra_statement(BashppParser::Extra_statementContext *ctx) override;
-
-	void enterTerminal_token(BashppParser::Terminal_tokenContext *ctx) override;
-	void exitTerminal_token(BashppParser::Terminal_tokenContext *ctx) override;
+	void enterProgram(std::shared_ptr<AST::Program> node) override;
+	void exitProgram(std::shared_ptr<AST::Program> node) override;
+	void enterArrayIndex(std::shared_ptr<AST::ArrayIndex> node) override;
+	void exitArrayIndex(std::shared_ptr<AST::ArrayIndex> node) override;
+	void enterBashArithmeticForCondition(std::shared_ptr<AST::BashArithmeticForCondition> node) override;
+	void exitBashArithmeticForCondition(std::shared_ptr<AST::BashArithmeticForCondition> node) override;
+	void enterBashArithmeticForStatement(std::shared_ptr<AST::BashArithmeticForStatement> node) override;
+	void exitBashArithmeticForStatement(std::shared_ptr<AST::BashArithmeticForStatement> node) override;
+	void enterBashArithmeticStatement(std::shared_ptr<AST::BashArithmeticStatement> node) override;
+	void exitBashArithmeticStatement(std::shared_ptr<AST::BashArithmeticStatement> node) override;
+	void enterBashCaseInput(std::shared_ptr<AST::BashCaseInput> node) override;
+	void exitBashCaseInput(std::shared_ptr<AST::BashCaseInput> node) override;
+	void enterBashCasePatternAction(std::shared_ptr<AST::BashCasePatternAction> node) override;
+	void exitBashCasePatternAction(std::shared_ptr<AST::BashCasePatternAction> node) override;
+	void enterBashCasePattern(std::shared_ptr<AST::BashCasePattern> node) override;
+	void exitBashCasePattern(std::shared_ptr<AST::BashCasePattern> node) override;
+	void enterBashCasePatternHeader(std::shared_ptr<AST::BashCasePatternHeader> node) override;
+	void exitBashCasePatternHeader(std::shared_ptr<AST::BashCasePatternHeader> node) override;
+	void enterBashCaseStatement(std::shared_ptr<AST::BashCaseStatement> node) override;
+	void exitBashCaseStatement(std::shared_ptr<AST::BashCaseStatement> node) override;
+	void enterBashCommand(std::shared_ptr<AST::BashCommand> node) override;
+	void exitBashCommand(std::shared_ptr<AST::BashCommand> node) override;
+	void enterBashCommandSequence(std::shared_ptr<AST::BashCommandSequence> node) override;
+	void exitBashCommandSequence(std::shared_ptr<AST::BashCommandSequence> node) override;
+	void enterBashForStatement(std::shared_ptr<AST::BashForStatement> node) override;
+	void exitBashForStatement(std::shared_ptr<AST::BashForStatement> node) override;
+	void enterBashIfCondition(std::shared_ptr<AST::BashIfCondition> node) override;
+	void exitBashIfCondition(std::shared_ptr<AST::BashIfCondition> node) override;
+	void enterBashIfElseBranch(std::shared_ptr<AST::BashIfElseBranch> node) override;
+	void exitBashIfElseBranch(std::shared_ptr<AST::BashIfElseBranch> node) override;
+	void enterBashIfRootBranch(std::shared_ptr<AST::BashIfRootBranch> node) override;
+	void exitBashIfRootBranch(std::shared_ptr<AST::BashIfRootBranch> node) override;
+	void enterBashIfStatement(std::shared_ptr<AST::BashIfStatement> node) override;
+	void exitBashIfStatement(std::shared_ptr<AST::BashIfStatement> node) override;
+	void enterBashInCondition(std::shared_ptr<AST::BashInCondition> node) override;
+	void exitBashInCondition(std::shared_ptr<AST::BashInCondition> node) override;
+	void enterBashPipeline(std::shared_ptr<AST::BashPipeline> node) override;
+	void exitBashPipeline(std::shared_ptr<AST::BashPipeline> node) override;
+	void enterBashRedirection(std::shared_ptr<AST::BashRedirection> node) override;
+	void exitBashRedirection(std::shared_ptr<AST::BashRedirection> node) override;
+	void enterBashSelectStatement(std::shared_ptr<AST::BashSelectStatement> node) override;
+	void exitBashSelectStatement(std::shared_ptr<AST::BashSelectStatement> node) override;
+	void enterBashUntilStatement(std::shared_ptr<AST::BashUntilStatement> node) override;
+	void exitBashUntilStatement(std::shared_ptr<AST::BashUntilStatement> node) override;
+	void enterBashVariable(std::shared_ptr<AST::BashVariable> node) override;
+	void exitBashVariable(std::shared_ptr<AST::BashVariable> node) override;
+	void enterBashWhileOrUntilCondition(std::shared_ptr<AST::BashWhileOrUntilCondition> node) override;
+	void exitBashWhileOrUntilCondition(std::shared_ptr<AST::BashWhileOrUntilCondition> node) override;
+	void enterBashWhileStatement(std::shared_ptr<AST::BashWhileStatement> node) override;
+	void exitBashWhileStatement(std::shared_ptr<AST::BashWhileStatement> node) override;
+	void enterBlock(std::shared_ptr<AST::Block> node) override;
+	void exitBlock(std::shared_ptr<AST::Block> node) override;
+	void enterClassDefinition(std::shared_ptr<AST::ClassDefinition> node) override;
+	void exitClassDefinition(std::shared_ptr<AST::ClassDefinition> node) override;
+	void enterConstructorDefinition(std::shared_ptr<AST::ConstructorDefinition> node) override;
+	void exitConstructorDefinition(std::shared_ptr<AST::ConstructorDefinition> node) override;
+	void enterDatamemberDeclaration(std::shared_ptr<AST::DatamemberDeclaration> node) override;
+	void exitDatamemberDeclaration(std::shared_ptr<AST::DatamemberDeclaration> node) override;
+	void enterDeleteStatement(std::shared_ptr<AST::DeleteStatement> node) override;
+	void exitDeleteStatement(std::shared_ptr<AST::DeleteStatement> node) override;
+	void enterDestructorDefinition(std::shared_ptr<AST::DestructorDefinition> node) override;
+	void exitDestructorDefinition(std::shared_ptr<AST::DestructorDefinition> node) override;
+	void enterDoublequotedString(std::shared_ptr<AST::DoublequotedString> node) override;
+	void exitDoublequotedString(std::shared_ptr<AST::DoublequotedString> node) override;
+	void enterDynamicCast(std::shared_ptr<AST::DynamicCast> node) override;
+	void exitDynamicCast(std::shared_ptr<AST::DynamicCast> node) override;
+	void enterDynamicCastTarget(std::shared_ptr<AST::DynamicCastTarget> node) override;
+	void exitDynamicCastTarget(std::shared_ptr<AST::DynamicCastTarget> node) override;
+	void enterHeredocBody(std::shared_ptr<AST::HeredocBody> node) override;
+	void exitHeredocBody(std::shared_ptr<AST::HeredocBody> node) override;
+	void enterHereString(std::shared_ptr<AST::HereString> node) override;
+	void exitHereString(std::shared_ptr<AST::HereString> node) override;
+	void enterIncludeStatement(std::shared_ptr<AST::IncludeStatement> node) override;
+	void exitIncludeStatement(std::shared_ptr<AST::IncludeStatement> node) override;
+	void enterMethodDefinition(std::shared_ptr<AST::MethodDefinition> node) override;
+	void exitMethodDefinition(std::shared_ptr<AST::MethodDefinition> node) override;
+	void enterNewStatement(std::shared_ptr<AST::NewStatement> node) override;
+	void exitNewStatement(std::shared_ptr<AST::NewStatement> node) override;
+	void enterObjectAssignment(std::shared_ptr<AST::ObjectAssignment> node) override;
+	void exitObjectAssignment(std::shared_ptr<AST::ObjectAssignment> node) override;
+	void enterObjectInstantiation(std::shared_ptr<AST::ObjectInstantiation> node) override;
+	void exitObjectInstantiation(std::shared_ptr<AST::ObjectInstantiation> node) override;
+	void enterObjectReference(std::shared_ptr<AST::ObjectReference> node) override;
+	void exitObjectReference(std::shared_ptr<AST::ObjectReference> node) override;
+	void enterParameterExpansion(std::shared_ptr<AST::ParameterExpansion> node) override;
+	void exitParameterExpansion(std::shared_ptr<AST::ParameterExpansion> node) override;
+	void enterPointerDeclaration(std::shared_ptr<AST::PointerDeclaration> node) override;
+	void exitPointerDeclaration(std::shared_ptr<AST::PointerDeclaration> node) override;
+	void enterPrimitiveAssignment(std::shared_ptr<AST::PrimitiveAssignment> node) override;
+	void exitPrimitiveAssignment(std::shared_ptr<AST::PrimitiveAssignment> node) override;
+	void enterProcessSubstitution(std::shared_ptr<AST::ProcessSubstitution> node) override;
+	void exitProcessSubstitution(std::shared_ptr<AST::ProcessSubstitution> node) override;
+	void enterRawSubshell(std::shared_ptr<AST::RawSubshell> node) override;
+	void exitRawSubshell(std::shared_ptr<AST::RawSubshell> node) override;
+	void enterRawText(std::shared_ptr<AST::RawText> node) override;
+	void exitRawText(std::shared_ptr<AST::RawText> node) override;
+	void enterRvalue(std::shared_ptr<AST::Rvalue> node) override;
+	void exitRvalue(std::shared_ptr<AST::Rvalue> node) override;
+	void enterSubshellSubstitution(std::shared_ptr<AST::SubshellSubstitution> node) override;
+	void exitSubshellSubstitution(std::shared_ptr<AST::SubshellSubstitution> node) override;
+	void enterSupershell(std::shared_ptr<AST::Supershell> node) override;
+	void exitSupershell(std::shared_ptr<AST::Supershell> node) override;
+	void enterTypeofExpression(std::shared_ptr<AST::TypeofExpression> node) override;
+	void exitTypeofExpression(std::shared_ptr<AST::TypeofExpression> node) override;
+	void enterValueAssignment(std::shared_ptr<AST::ValueAssignment> node) override;
+	void exitValueAssignment(std::shared_ptr<AST::ValueAssignment> node) override;
 
 };
 

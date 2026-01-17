@@ -36,6 +36,9 @@ class ASTNode {
 		void setPosition(const AST::FilePosition& pos);
 		void setPosition(uint32_t line, uint32_t column);
 		const AST::FilePosition& getPosition() const;
+
+		uint32_t getLine() const;
+		uint32_t getCharPositionInLine() const;
 		
 		std::shared_ptr<ASTNode> getChildAt(size_t index) const;
 		std::shared_ptr<ASTNode> getFirstChild() const;
@@ -43,6 +46,7 @@ class ASTNode {
 		size_t getChildrenCount() const;
 
 		void clear();
+		void clearChildren();
 
 		virtual std::ostream& prettyPrint(std::ostream& os, int indentation_level = 0) const = 0;
 		friend std::ostream& operator<<(std::ostream& os, const ASTNode& node) {

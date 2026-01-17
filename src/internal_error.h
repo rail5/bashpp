@@ -7,7 +7,6 @@
 #define SRC_INTERNAL_ERROR_H_
 
 #include <stdexcept>
-#include <antlr4-runtime.h>
 
 /**
  * @struct internal_error
@@ -18,7 +17,6 @@
  * They are indicative of a bug in the Bash++ compiler, and halt compilation.
  */
 struct internal_error : public std::runtime_error {
-	internal_error(const std::string& msg, antlr4::tree::ParseTree* location);
 	explicit internal_error(const std::string& msg);
 };
 

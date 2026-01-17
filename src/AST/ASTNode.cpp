@@ -88,6 +88,14 @@ const AST::FilePosition& ASTNode::getPosition() const {
 	return position;
 }
 
+uint32_t ASTNode::getLine() const {
+	return position.line;
+}
+
+uint32_t ASTNode::getCharPositionInLine() const {
+	return position.column;
+}
+
 std::shared_ptr<ASTNode> ASTNode::getChildAt(size_t index) const {
 	if (index < children.size()) {
 		return children[index];
@@ -117,6 +125,10 @@ void ASTNode::clear() {
 	children.clear();
 	text.clear();
 	position = FilePosition{};
+}
+
+void ASTNode::clearChildren() {
+	children.clear();
 }
 
 } // namespace AST

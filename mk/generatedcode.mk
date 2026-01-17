@@ -1,25 +1,24 @@
 include mk/config.mk
 
-# ANTLR4 PARSER GENERATION
-ANTLR4_LOCK = .antlr4.lock
+# FLEX/BISON LEXER/PARSER GENERATION
+FLEXBISON_LOCK = .flexbison.lock
 
-$(ANTLR4_STAMP): $(SRCDIR)/BashppLexer.g4 $(SRCDIR)/BashppParser.g4
-	@if [ ! -f $(ANTLR4_LOCK) ]; then \
-		touch $(ANTLR4_LOCK); \
-		echo "Generating ANTLR4 parser..."; \
-		mkdir -p $(ANTLR4DIR); \
-		cd $(SRCDIR); \
-		$(ANTLR4) -Dlanguage=Cpp BashppLexer.g4 BashppParser.g4 -o antlr; \
-		cd - >/dev/null; \
+$(FLEXBISON_STAMP): $(SRCDIR)/lexer.l $(SRCDIR)/parser.y
+	@if [ ! -f $(FLEXBISON_LOCK) ]; then \
+		touch $(FLEXBISON_LOCK); \
+		echo "Generating lexer and parser..."; \
+		mkdir -p $(FLEXBISONDIR); \
+		flex --header-file=$(FLEXBISONDIR)/lex.yy.hpp -o $(FLEXBISONDIR)/lex.yy.cpp src/lexer.l; \
+		bison -o $(FLEXBISONDIR)/parser.tab.cpp -d src/parser.y; \
 		touch $@; \
-		rm -f $(ANTLR4_LOCK); \
+		rm -f $(FLEXBISON_LOCK); \
 	else \
-		while [ -f $(ANTLR4_LOCK) ]; do \
+		while [ -f $(FLEXBISON_LOCK) ]; do \
 			sleep 0.1; \
 		done; \
 	fi
 
-$(ANTLR4DIR)/%.cpp: $(ANTLR4_STAMP)
+$(FLEXBISONDIR)/%.cpp: $(FLEXBISON_STAMP)
 	@:
 
 # LSP CLASSES GENERATION
@@ -47,12 +46,10 @@ $(SRCDIR)/updated_year.h:
 		echo "#define bpp_compiler_updated_year \"2025\"" > $@; \
 	fi
 
-clean-antlr:
-	@rm -rf $(ANTLR4DIR)
-	@rm -rf $(SRCDIR)/.antlr
-	@rm -f $(ANTLR4_LOCK)
-	@echo "Cleaned up ANTLR4-generated files."
-
+clean-flexbison:
+	@rm -rf $(FLEXBISONDIR)
+	@rm -f $(FLEXBISON_LOCK)
+	@echo "Cleaned up Flex/Bison-generated files."
 clean-lsp:
 	@rm -f $(wildcard $(LSP_GENERATEDDIR)/*)
 	@echo "Cleaned up LSP-generated files."
@@ -61,4 +58,4 @@ clean-meta:
 	@rm -f $(SRCDIR)/version.h $(SRCDIR)/updated_year.h
 	@echo "Cleaned up meta files."
 
-.PHONY: clean-antlr clean-lsp clean-meta
+.PHONY: clean-flexbison clean-lsp clean-meta

@@ -1,12 +1,6 @@
-# ANTLR4 CONFIG
-ANTLR4 = antlr4
-ANTLR4_HEADERS = /usr/include/antlr4-runtime
-ANTLR4_RUNTIME_LIBRARY = $(shell (find /usr -name libantlr4-runtime.a || find /usr -name libantlr4-runtime.so) | head -n 1)
-
 # C++ CONFIG
 CXX = g++
 CXXFLAGS = -std=gnu++23 -O2 -s -Wall -MMD -MP
-INCLUDEFLAGS = -isystem $(ANTLR4_HEADERS)
 
 # Can we parse debian/changelog?
 PARSECHANGELOG := $(shell command -v dpkg-parsechangelog 2>/dev/null)
@@ -24,7 +18,7 @@ BINDIR = bin
 OBJDIR = $(BINDIR)/obj
 
 BPP_OBJDIR = $(OBJDIR)/bpp
-ANTLR4_OBJDIR = $(OBJDIR)/antlr4
+FLEXBISON_OBJDIR = $(OBJDIR)/flexbison
 LISTENER_OBJDIR = $(OBJDIR)/listener
 COMPILER_HANDLERS_OBJDIR = $(LISTENER_OBJDIR)/handlers
 EXTRA_OBJDIR = $(OBJDIR)/extra
@@ -80,10 +74,10 @@ LSP_MAIN = $(SRCDIR)/bpp-lsp.cpp
 LSP_MAIN_OBJ = $(OBJDIR)/bpp-lsp.o
 
 # GENERATED CODE LOCATIONS
-ANTLR4DIR = $(SRCDIR)/antlr
-ANTLR4_STAMP = $(ANTLR4DIR)/.antlr4.stamp
-ANTLR4_SRCS = $(ANTLR4DIR)/BashppParser.cpp $(ANTLR4DIR)/BashppLexer.cpp
-ANTLR4_OBJS = $(patsubst $(ANTLR4DIR)/%.cpp,$(ANTLR4_OBJDIR)/%.o,$(ANTLR4_SRCS))
+FLEXBISONDIR = $(SRCDIR)/flexbison
+FLEXBISON_STAMP = $(FLEXBISONDIR)/.stamp
+FLEXBISON_SRCS = $(FLEXBISONDIR)/parser.tab.cpp $(FLEXBISONDIR)/lex.yy.cpp
+FLEXBISON_OBJS = $(patsubst $(FLEXBISONDIR)/%.cpp,$(FLEXBISON_OBJDIR)/%.o,$(FLEXBISON_SRCS))
 
 LSP_GENERATEDDIR = $(LSPDIR)/generated
 LSP_GENERATED_STAMP = $(LSP_GENERATEDDIR)/.stamp

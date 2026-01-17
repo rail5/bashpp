@@ -1,7 +1,6 @@
 stdlib/*.sh
 bin
-src/antlr
-src/.antlr
+src/flexbison
 src/updated_year.h
 src/version.h
 src/lsp/generated

@@ -21,7 +21,7 @@ clean-vscode:
 	@cd vscode && $(MAKE) --no-print-directory clean
 	@echo "Cleaned up VSCode extension files."
 
-clean: clean-antlr clean-lsp clean-meta clean-objects clean-bin clean-std clean-manual clean-technical-docs clean-vscode
+clean: clean-flexbison clean-lsp clean-meta clean-objects clean-bin clean-std clean-manual clean-technical-docs clean-vscode
 
 .PHONY: all test vscode clean-vscode
 

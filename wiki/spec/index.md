@@ -4,6 +4,12 @@ Manuals for various features of the Bash++ language are provided in this section
 
 These manuals are also available as part of the Bash++ compiler and can be accessed via `man` commands. For example, to view the manual for the `@include` directive, run: `man bpp-include`.
 
+## General
+
+A Bash++ source file must be a valid UTF-8 encoded text file with Unix-style line endings (LF, `\n`). The file may optionally begin with a shebang line (e.g., `#!/usr/bin/env bpp`) to allow execution as a script. It is suggested to use the `.bpp` file extension for Bash++ source files, although not required.
+
+In general, since Bash++ is a superset of Bash, the details of Bash syntax and semantics apply unless otherwise specified in the Bash++ documentation. All valid Bash scripts that do not contain unescaped AT symbols (`@`) are also valid Bash++ scripts with identical behavior. Any case in which there exists a deviation from Bash behavior that is not documented should be reported as a bug.
+
 ## Contents
 
 {% assign spec_pages = site.pages | where_exp: "page", "page.path contains 'spec/'" %}

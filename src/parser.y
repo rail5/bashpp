@@ -21,7 +21,7 @@ void yyerror(const char *s);
 %}
 
 %lex-param { yyscan_t yyscanner }
-%parse-param { std::shared_ptr<AST::Program>& program } { yyscan_t yyscanner }
+%parse-param { std::shared_ptr<AST::Program>& program } { bool& current_command_can_receive_lvalues } { yyscan_t yyscanner }
 
 %define parse.error verbose
 
@@ -38,8 +38,6 @@ void yyerror(const char *s);
 	extern void set_bash_if_condition_received(bool received, yyscan_t yyscanner);
 	extern void set_bash_while_or_until_condition_received(bool received, yyscan_t yyscanner);
 	extern void set_parsed_assignment_operator(bool parsed, yyscan_t yyscanner);
-
-	bool current_command_can_receive_lvalues = true;
 }
 
 %token <AST::Token<std::string>> ESCAPED_CHAR WS DELIM

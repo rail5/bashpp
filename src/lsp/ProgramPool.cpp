@@ -5,20 +5,7 @@
 
 #include "ProgramPool.h"
 
-typedef void* yyscan_t;
-
-struct LexerExtra;
-
-extern int yylex_init(yyscan_t* scanner);
-extern int yylex_destroy(yyscan_t scanner);
-extern void yyset_in(FILE* in_str, yyscan_t scanner);
-
-extern void initLexer(yyscan_t yyscanner);
-extern void destroyLexer(yyscan_t yyscanner);
-extern void set_utf16_mode(bool enable, yyscan_t yyscanner);
-
-#include "../flexbison/parser.tab.hpp"
-#include "../flexbison/lex.yy.hpp"
+#include "../AST/BashppParser.h"
 #include "../listener/BashppListener.h"
 
 #include "include/NullStream.h"
@@ -128,25 +115,13 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::_parse_program(
 			listener.set_replacement_file_contents(replacement_file_contents->first, replacement_file_contents->second);
 		}
 
-		yyscan_t lexer;
-		if (yylex_init(&lexer) != 0) {
-			throw std::runtime_error("Could not initialize lexer");
-		}
-		FILE* input_file = fopen(file_path.c_str(), "r");
-		if (input_file == nullptr) {
-			throw std::runtime_error("Could not open source file: " + file_path);
-		}
-		yyset_in(input_file, lexer);
-		initLexer(lexer);
-		::set_utf16_mode(utf16_mode, lexer);
-		std::shared_ptr<AST::Program> program = nullptr;
-		yy::parser parser(program, lexer);
-		int parse_result = parser.parse();
-		fclose(input_file);
-		destroyLexer(lexer);
+		AST::BashppParser parser;
+		parser.setUTF16Mode(utf16_mode);
+		parser.setInputFromFilePath(file_path);
 
-		if (parse_result != 0 || program == nullptr) {
-			throw std::runtime_error("Failed to parse program");
+		auto program = parser.program();
+		if (program == nullptr) {
+			return nullptr; // Parsing failed
 		}
 
 		// Walk the tree

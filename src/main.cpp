@@ -35,18 +35,24 @@ volatile int bpp_exit_code = 0;
 
 #include "flexbison/parser.tab.hpp"
 #include "flexbison/lex.yy.hpp"
-#include "ModeStack.h"
 
 #include "listener/BashppListener.h"
 
 #include "internal_error.h"
 
-yyscan_t main_lexer;
-ModeStack modeStack;
-extern yy::parser::symbol_type yylex();
-extern void initLexer();
-extern void destroyLexer();
-extern bool set_display_lexer_output(bool enable);
+typedef void* yyscan_t;
+
+struct LexerExtra;
+
+extern int yylex_init(yyscan_t* scanner);
+extern int yylex_destroy(yyscan_t scanner);
+extern void yyset_in(FILE* in_str, yyscan_t scanner);
+
+extern yy::parser::symbol_type yylex(yyscan_t yyscanner);
+extern void initLexer(yyscan_t yyscanner);
+extern void destroyLexer(yyscan_t yyscanner);
+
+extern bool set_display_lexer_output(bool enable, yyscan_t yyscanner);
 
 int main(int argc, char* argv[]) {
 	std::shared_ptr<std::ostream> output_stream(&std::cout, [](std::ostream*){});
@@ -106,16 +112,15 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
+	yyscan_t main_lexer;
 	if (yylex_init(&main_lexer) != 0) {
 		std::cerr << program_name << ": Error: Could not initialize lexer" << std::endl;
 		return 1;
 	}
-
-	modeStack.bind(main_lexer);
+	
 	yyset_in(input_file, main_lexer);
-	initLexer();
-	set_display_lexer_output(args.display_tokens);
-
+	initLexer(main_lexer);
+	set_display_lexer_output(args.display_tokens, main_lexer);
 	std::shared_ptr<AST::Program> program = nullptr;
 	yy::parser parser(program);
 	int parseResult = parser.parse();
@@ -123,12 +128,12 @@ int main(int argc, char* argv[]) {
 
 	if (args.display_parse_tree) {
 		// '-p' given, exit after displaying the parse tree
-		destroyLexer();
+		destroyLexer(main_lexer);
 		std::cout << *program << std::endl;
 		return parseResult;
 	} else if (args.display_tokens) {
 		// '-t' given (lexer tokens displayed), exit now even if we didn't display the parse tree
-		destroyLexer();
+		destroyLexer(main_lexer);
 		return parseResult;
 	}
 
@@ -189,6 +194,6 @@ int main(int argc, char* argv[]) {
 		std::cerr << "Unknown exception occurred" << std::endl;
 	}
 
-	destroyLexer();
+	destroyLexer(main_lexer);
 	return bpp_exit_code;
 }

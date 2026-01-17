@@ -38,14 +38,14 @@ using bpp::generate_dynamic_cast_code;
 		}
 
 template <typename T>
-concept ASTNodePtr = std::is_same_v<std::shared_ptr<AST::ASTNode>, T> ||
+concept ASTNodePtrType = std::is_same_v<std::shared_ptr<AST::ASTNode>, T> ||
 	std::is_base_of_v<AST::ASTNode, typename T::element_type>;
 
 template <typename T>
 concept ASTToken = std::is_same_v<AST::Token<std::string>, T>;
 
 template <typename T>
-concept ASTNodePtrORToken = ASTNodePtr<T> || ASTToken<T>;
+concept ASTNodePtrORToken = ASTNodePtrType<T> || ASTToken<T>;
 
 /**
  * @class BashppListener
@@ -166,7 +166,7 @@ class BashppListener : public AST::BaseListener, std::enable_shared_from_this<Ba
 			int column;
 			std::string text;
 
-			if constexpr (ASTNodePtr<T>) {
+			if constexpr (ASTNodePtrType<T>) {
 				line = static_cast<int>(error_ctx->getPosition().line);
 				column = static_cast<int>(error_ctx->getPosition().column);
 				// For the text:

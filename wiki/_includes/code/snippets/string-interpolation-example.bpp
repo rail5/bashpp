@@ -1,0 +1,5 @@
+echo "Hello, @user.name!"
+
+shell_variable="@{object.array[2]} is the third element."
+
+@object.member="A string with @(@this.method arg1 arg2) supershell interpolation"

@@ -62,13 +62,13 @@ Pre-built packages are available for **amd64** and **arm64**. The .debs can also
  - `bash`
  - `make`
  - `g++`
- - `antlr4`
- - Antlr4 C++ runtime
+ - `flex`
+ - `bison`
  - `libutfcpp-dev`
+ - `libfrozen-dev`
 
 Language server-specific prerequisites:
  - `nlohmann-json3-dev`
- - `libfrozen-dev`
 
 Optional:
  - `pandoc` and `perl` for building the documentation
@@ -78,7 +78,7 @@ On Debian-based systems, you can install the prerequisites with:
 
 ```bash
 $ sudo apt update
-$ sudo apt install build-essential antlr4 libantlr4-runtime-dev libutfcpp-dev pandoc perl debhelper nlohmann-json3-dev libfrozen-dev
+$ sudo apt install build-essential flex bison libutfcpp-dev libfrozen-dev pandoc perl debhelper nlohmann-json3-dev
 ```
 
 #### Building
@@ -101,8 +101,6 @@ $ bpp -v # Display version
 ```
 
 Any arguments given *after* the input file will be passed to the compiled program.
-
-It's strongly recommended to use the `-o` flag to specify an output file. If you don't, you'll be re-compiling your programs every time you run them, which could take some time, especially for larger programs. Using `-o` and running the compiled program is much faster for subsequent runs.
 
 ## Debugging
 

@@ -100,7 +100,7 @@ void print_syntax_error_or_warning(
 			source_file,
 			is_warning ? bpp::diagnostic_type::DIAGNOSTIC_WARNING : bpp::diagnostic_type::DIAGNOSTIC_ERROR,
 			msg,
-			static_cast<uint32_t>(line) - 1, // 0-indexed. Antlr4 uses 1-indexed line numbers
+			static_cast<uint32_t>(line) - 1, // 0-indexed. Flex/Bison use 1-indexed line numbers
 			static_cast<uint32_t>(column),
 			static_cast<uint32_t>(line) - 1,
 			static_cast<uint32_t>(column + text.length())

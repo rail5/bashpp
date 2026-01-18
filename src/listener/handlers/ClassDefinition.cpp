@@ -5,7 +5,7 @@
 
 #include "../BashppListener.h"
 
-void BashppListener::enterClass_definition(BashppParser::Class_definitionContext *ctx) {
+void BashppListener::enterClassDefinition(std::shared_ptr<AST::ClassDefinition> node) {
 	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_class> new_class = std::make_shared<bpp::bpp_class>();
 	new_class->inherit(program);
@@ -15,63 +15,63 @@ void BashppListener::enterClass_definition(BashppParser::Class_definitionContext
 
 	new_class->set_definition_position(
 		source_file,
-		ctx->IDENTIFIER(0)->getSymbol()->getLine() - 1,
-		ctx->IDENTIFIER(0)->getSymbol()->getCharPositionInLine()
+		node->getLine() - 1,
+		node->getCharPositionInLine()
 	);
 
 	// Get the class name
-	std::string class_name = ctx->IDENTIFIER(0)->getText();
+	std::string class_name = node->CLASSNAME().getValue();
 
 	// Verify that the class name is valid
 	if (!bpp::is_valid_identifier(class_name)) {
 		entity_stack.pop();
-		//throw_syntax_error(ctx->IDENTIFIER(0), "Invalid class name: " + class_name);
 		// If, specifically, it contains a double underscore, we can provide a more specific error message
 		if (class_name.find("__") != std::string::npos) {
-			throw_syntax_error(ctx->IDENTIFIER(0), "Invalid class name: " + class_name + "\nBash++ identifiers cannot contain double underscores");
+			throw_syntax_error(node->CLASSNAME(), "Invalid class name: " + class_name + "\nBash++ identifiers cannot contain double underscores");
 		} else {
-			throw_syntax_error(ctx->IDENTIFIER(0), "Invalid class name: " + class_name);
+			throw_syntax_error(node->CLASSNAME(), "Invalid class name: " + class_name);
 		}
 	}
 
 	// Verify that the class name is not already in use
 	if (program->get_class(class_name) != nullptr) {
 		entity_stack.pop();
-		throw_syntax_error(ctx->IDENTIFIER(0), "Class already exists: " + class_name);
+		throw_syntax_error(node->CLASSNAME(), "Class already exists: " + class_name);
 	}
 
 	if (program->get_object(class_name) != nullptr) {
 		entity_stack.pop();
-		throw_syntax_error(ctx->IDENTIFIER(0), "Object already exists: " + class_name);
+		throw_syntax_error(node->CLASSNAME(), "Object already exists: " + class_name);
 	}
 
 	new_class->set_name(class_name);
 	program->prepare_class(new_class);
 
 	// Inherit from a parent class if specified
-	if (ctx->IDENTIFIER().size() > 1) {
-		std::string parent_class_name = ctx->IDENTIFIER(1)->getText();
+	if (node->PARENTCLASSNAME().has_value()) {
+		auto parent_class_node = node->PARENTCLASSNAME().value();
+		std::string parent_class_name = parent_class_node.getValue();
 		std::shared_ptr<bpp::bpp_class> parent_class = program->get_class(parent_class_name);
 		if (parent_class == nullptr) {
 			entity_stack.pop();
-			throw_syntax_error(ctx->IDENTIFIER(1), "Parent class not found: " + parent_class_name);
+			throw_syntax_error(node->PARENTCLASSNAME().value(), "Parent class not found: " + parent_class_name);
 		}
 		new_class->inherit(parent_class);
 
 		parent_class->add_reference(
 			source_file,
-			ctx->IDENTIFIER(1)->getSymbol()->getLine() - 1,
-			ctx->IDENTIFIER(1)->getSymbol()->getCharPositionInLine()
+			parent_class_node.getLine() - 1,
+			parent_class_node.getCharPositionInLine()
 		);
 	}
 }
 
-void BashppListener::exitClass_definition(BashppParser::Class_definitionContext *ctx) {
+void BashppListener::exitClassDefinition(std::shared_ptr<AST::ClassDefinition> node) {
 	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_class> new_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 
 	if (new_class == nullptr) {
-		throw internal_error("entity_stack top is not a bpp_class", ctx);
+		throw internal_error("entity_stack top is not a bpp_class");
 	}
 
 	entity_stack.pop();
@@ -88,8 +88,8 @@ void BashppListener::exitClass_definition(BashppParser::Class_definitionContext 
 		source_file,
 		new_class->get_initial_definition().line,
 		new_class->get_initial_definition().column,
-		ctx->CLASS_END()->getSymbol()->getLine() - 1,
-		ctx->CLASS_END()->getSymbol()->getCharPositionInLine(),
+		node->getEndPosition().line - 1,
+		node->getEndPosition().column,
 		new_class
 	);
 

@@ -13,9 +13,8 @@ class BashFunction : public ASTNode {
 	protected:
 		AST::Token<std::string> m_NAME;
 	public:
-		BashFunction() {
-			type = AST::NodeType::BashFunction;
-		}
+		static constexpr AST::NodeType static_type = AST::NodeType::BashFunction;
+		constexpr AST::NodeType getType() const override { return static_type; }
 
 		const AST::Token<std::string>& NAME() const {
 			return m_NAME;

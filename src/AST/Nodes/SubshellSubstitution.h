@@ -11,9 +11,8 @@ namespace AST {
 
 class SubshellSubstitution : public ASTNode {
 	public:
-		SubshellSubstitution() {
-			type = AST::NodeType::SubshellSubstitution;
-		}
+		static constexpr AST::NodeType static_type = AST::NodeType::SubshellSubstitution;
+		constexpr AST::NodeType getType() const override { return static_type; }
 
 		std::ostream& prettyPrint(std::ostream& os, int indentation_level = 0) const override {
 			std::string indent(indentation_level * 2, ' ');

@@ -11,9 +11,8 @@ namespace AST {
 
 class BashIfRootBranch : public ASTNode {
 	public:
-		BashIfRootBranch() {
-			type = AST::NodeType::BashIfRootBranch;
-		}
+		static constexpr AST::NodeType static_type = AST::NodeType::BashIfRootBranch;
+		constexpr AST::NodeType getType() const override { return static_type; }
 
 		std::ostream& prettyPrint(std::ostream& os, int indentation_level = 0) const override {
 			std::string indent(indentation_level * 2, ' ');

@@ -15,9 +15,8 @@ class ClassDefinition : public ASTNode {
 		AST::Token<std::string> m_CLASSNAME;
 		std::optional<AST::Token<std::string>> m_PARENTCLASSNAME;
 	public:
-		ClassDefinition() {
-			type = AST::NodeType::ClassDefinition;
-		}
+		static constexpr AST::NodeType static_type = AST::NodeType::ClassDefinition;
+		constexpr AST::NodeType getType() const override { return static_type; }
 
 		const AST::Token<std::string>& CLASSNAME() const {
 			return m_CLASSNAME;

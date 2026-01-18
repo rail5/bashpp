@@ -9,10 +9,6 @@
 
 namespace AST {
 
-AST::NodeType ASTNode::getType() const {
-	return type;
-}
-
 /**
  * @brief Add a child node to this AST node.
  * This function also:

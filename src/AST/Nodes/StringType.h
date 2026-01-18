@@ -21,10 +21,6 @@ namespace AST {
  */
 class StringType : public ASTNode {
 	public:
-		StringType() {
-			type = AST::NodeType::ERROR_TYPE;
-		}
-
 		/**
 		 * @brief Adds text to the string, either by appending to the last RawText child or creating a new one.
 		 * The result should be that the node contains an alternating sequence of RawText nodes and interpolations,

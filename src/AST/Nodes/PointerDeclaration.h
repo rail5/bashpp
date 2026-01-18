@@ -14,9 +14,8 @@ class PointerDeclaration : public ASTNode {
 		AST::Token<std::string> m_TYPE;
 		AST::Token<std::string> m_IDENTIFIER;
 	public:
-		PointerDeclaration() {
-			type = AST::NodeType::PointerDeclaration;
-		}
+		static constexpr AST::NodeType static_type = AST::NodeType::PointerDeclaration;
+		constexpr AST::NodeType getType() const override { return static_type; }
 
 		void setType(const AST::Token<std::string>& type) {
 			m_TYPE = type;

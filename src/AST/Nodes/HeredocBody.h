@@ -14,9 +14,8 @@ class HeredocBody : public StringType {
 	protected:
 		AST::Token<std::string> m_DELIMITER;
 	public:
-		HeredocBody() {
-			type = AST::NodeType::HeredocBody;
-		}
+		static constexpr AST::NodeType static_type = AST::NodeType::HeredocBody;
+		constexpr AST::NodeType getType() const override { return static_type; }
 
 		const AST::Token<std::string>& DELIMITER() const {
 			return m_DELIMITER;

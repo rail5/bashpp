@@ -18,9 +18,8 @@ class DatamemberDeclaration : public ASTNode {
 		std::optional<AST::Token<std::string>> m_IDENTIFIER;
 
 	public:
-		DatamemberDeclaration() {
-			type = AST::NodeType::DatamemberDeclaration;
-		}
+		static constexpr AST::NodeType static_type = AST::NodeType::DatamemberDeclaration;
+		constexpr AST::NodeType getType() const override { return static_type; }
 
 		const AST::Token<AccessModifier>& ACCESSMODIFIER() const {
 			return m_ACCESSMODIFIER;

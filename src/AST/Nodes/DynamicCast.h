@@ -11,9 +11,8 @@ namespace AST {
 
 class DynamicCast : public ASTNode {
 	public:
-		DynamicCast() {
-			type = AST::NodeType::DynamicCast;
-		}
+		static constexpr AST::NodeType static_type = AST::NodeType::DynamicCast;
+		constexpr AST::NodeType getType() const override { return static_type; }
 
 		std::ostream& prettyPrint(std::ostream& os, int indentation_level = 0) const override {
 			std::string indent(indentation_level * 2, ' ');

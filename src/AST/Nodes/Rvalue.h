@@ -12,9 +12,8 @@ namespace AST {
 
 class Rvalue : public StringType {
 	public:
-		Rvalue() {
-			type = AST::NodeType::Rvalue;
-		}
+		static constexpr AST::NodeType static_type = AST::NodeType::Rvalue;
+		constexpr AST::NodeType getType() const override { return static_type; }
 
 		std::ostream& prettyPrint(std::ostream& os, int indentation_level = 0) const override {
 			std::string indent(indentation_level * 2, ' ');

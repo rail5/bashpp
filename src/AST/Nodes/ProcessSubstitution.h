@@ -13,9 +13,8 @@ class ProcessSubstitution : public ASTNode {
 	protected:
 		AST::Token<std::string> m_SUBSTITUTIONSTART;
 	public:
-		ProcessSubstitution() {
-			type = AST::NodeType::ProcessSubstitution;
-		}
+		static constexpr AST::NodeType static_type = AST::NodeType::ProcessSubstitution;
+		constexpr AST::NodeType getType() const override { return static_type; }
 
 		const AST::Token<std::string>& SUBSTITUTIONSTART() const {
 			return m_SUBSTITUTIONSTART;

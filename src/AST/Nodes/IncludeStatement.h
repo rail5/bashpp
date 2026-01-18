@@ -33,9 +33,8 @@ class IncludeStatement : public ASTNode {
 		AST::Token<std::string> m_PATH;
 		std::optional<AST::Token<std::string>> m_ASPATH;
 	public:
-		IncludeStatement() {
-			type = AST::NodeType::IncludeStatement;
-		}
+		static constexpr AST::NodeType static_type = AST::NodeType::IncludeStatement;
+		constexpr AST::NodeType getType() const override { return static_type; }
 
 		const AST::Token<IncludeKeyword>& KEYWORD() const {
 			return m_KEYWORD;

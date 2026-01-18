@@ -14,9 +14,8 @@ class BashRedirection : public StringType {
 	protected:
 		AST::Token<std::string> m_OPERATOR;
 	public:
-		BashRedirection() {
-			type = AST::NodeType::BashRedirection;
-		}
+		static constexpr AST::NodeType static_type = AST::NodeType::BashRedirection;
+		constexpr AST::NodeType getType() const override { return static_type; }
 
 		const AST::Token<std::string>& OPERATOR() const {
 			return m_OPERATOR;

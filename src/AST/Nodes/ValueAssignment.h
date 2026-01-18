@@ -13,9 +13,8 @@ class ValueAssignment : public ASTNode {
 	protected:
 		AST::Token<std::string> m_OPERATOR;
 	public:
-		ValueAssignment() {
-			type = AST::NodeType::ValueAssignment;
-		}
+		static constexpr AST::NodeType static_type = AST::NodeType::ValueAssignment;
+		constexpr AST::NodeType getType() const override { return static_type; }
 
 		const AST::Token<std::string>& OPERATOR() const {
 			return m_OPERATOR;

@@ -13,9 +13,8 @@ class BashVariable : public ASTNode {
 	protected:
 		AST::Token<std::string> m_TEXT;
 	public:
-		BashVariable() {
-			type = AST::NodeType::BashVariable;
-		}
+		static constexpr AST::NodeType static_type = AST::NodeType::BashVariable;
+		constexpr AST::NodeType getType() const override { return static_type; }
 
 		const AST::Token<std::string>& TEXT() const {
 			return m_TEXT;

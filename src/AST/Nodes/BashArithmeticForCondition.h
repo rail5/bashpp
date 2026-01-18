@@ -18,9 +18,8 @@ namespace AST {
  */
 class BashArithmeticForCondition : public ASTNode {
 	public:
-		BashArithmeticForCondition() {
-			type = AST::NodeType::BashArithmeticForCondition;
-		}
+		static constexpr AST::NodeType static_type = AST::NodeType::BashArithmeticForCondition;
+		constexpr AST::NodeType getType() const override { return static_type; }
 
 		std::ostream& prettyPrint(std::ostream& os, int indentation_level = 0) const override {
 			std::string indent(indentation_level * 2, ' ');

@@ -14,9 +14,8 @@ class DynamicCastTarget : public ASTNode {
 	protected:
 		std::optional<AST::Token<std::string>> m_TARGETTYPE;
 	public:
-		DynamicCastTarget() {
-			type = AST::NodeType::DynamicCastTarget;
-		}
+		static constexpr AST::NodeType static_type = AST::NodeType::DynamicCastTarget;
+		constexpr AST::NodeType getType() const override { return static_type; }
 
 		void setTargetType(const AST::Token<std::string>& target_type) {
 			m_TARGETTYPE = target_type;

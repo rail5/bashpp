@@ -5,7 +5,7 @@
 
 #include "../BashppListener.h"
 
-void BashppListener::enterConstructor_definition(BashppParser::Constructor_definitionContext *ctx) {
+void BashppListener::enterConstructorDefinition(std::shared_ptr<AST::ConstructorDefinition> node) {
 	skip_syntax_errors
 	/**
 	 * Constructor definitions take the form
@@ -16,7 +16,7 @@ void BashppListener::enterConstructor_definition(BashppParser::Constructor_defin
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 
 	if (current_class == nullptr) {
-		throw_syntax_error(ctx->KEYWORD_CONSTRUCTOR(), "Constructor definition outside of class");
+		throw_syntax_error(node, "Constructor definition outside of class");
 	}
 
 	std::shared_ptr<bpp::bpp_method> constructor = std::make_shared<bpp::bpp_method>();
@@ -29,16 +29,16 @@ void BashppListener::enterConstructor_definition(BashppParser::Constructor_defin
 
 	constructor->set_definition_position(
 		source_file,
-		ctx->KEYWORD_CONSTRUCTOR()->getSymbol()->getLine() - 1,
-		ctx->KEYWORD_CONSTRUCTOR()->getSymbol()->getCharPositionInLine()
+		node->getLine() - 1,
+		node->getCharPositionInLine()
 	);
 }
 
-void BashppListener::exitConstructor_definition(BashppParser::Constructor_definitionContext *ctx) {
+void BashppListener::exitConstructorDefinition(std::shared_ptr<AST::ConstructorDefinition> node) {
 	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_method> constructor = std::dynamic_pointer_cast<bpp::bpp_method>(entity_stack.top());
 	if (constructor == nullptr) {
-		throw internal_error("Constructor definition not found on the entity stack", ctx);
+		throw internal_error("Constructor definition not found on the entity stack");
 	}
 
 	entity_stack.pop();
@@ -50,19 +50,19 @@ void BashppListener::exitConstructor_definition(BashppParser::Constructor_defini
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 
 	if (current_class == nullptr) {
-		throw internal_error("Class not found on the entity stack", ctx);
+		throw internal_error("Class not found on the entity stack");
 	}
 
 	program->mark_entity(
 		source_file,
 		constructor->get_initial_definition().line,
 		constructor->get_initial_definition().column,
-		ctx->RBRACE()->getSymbol()->getLine() - 1,
-		ctx->RBRACE()->getSymbol()->getCharPositionInLine(),
+		node->getEndPosition().line - 1,
+		node->getEndPosition().column,
 		constructor
 	);
 
 	if (!current_class->add_method(constructor)) {
-		throw_syntax_error_from_exitRule(ctx->KEYWORD_CONSTRUCTOR(), "Constructor already defined");
+		throw_syntax_error_from_exitRule(node, "Constructor already defined");
 	}
 }

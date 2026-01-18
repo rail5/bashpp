@@ -412,6 +412,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 %s BASH_IF_MODE
 
+%s BASH_ARITHMETIC_MODE
+
 %%
 
 %{
@@ -700,6 +702,18 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 		default:
 			emit(CATCHALL, tokenText);
 			break;
+	}
+}
+
+"$((" {
+	get_lexer_extra(yyscanner)->modeStack.push(BASH_ARITHMETIC_MODE);
+	emit(BASH_ARITHMETIC_START);
+}
+
+<BASH_ARITHMETIC_MODE>{
+	[ \t]*\)\) {
+		get_lexer_extra(yyscanner)->modeStack.pop(); // Exit BASH_ARITHMETIC_MODE
+		emit(BASH_ARITHMETIC_END);
 	}
 }
 

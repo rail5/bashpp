@@ -9,6 +9,7 @@
 #include "BashArithmeticForCondition.h"
 #include "BashArithmeticForStatement.h"
 #include "BashArithmeticStatement.h"
+#include "BashArithmeticSubstitution.h"
 #include "BashCaseInput.h"
 #include "BashCasePatternAction.h"
 #include "BashCasePattern.h"

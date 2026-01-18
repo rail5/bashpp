@@ -273,6 +273,8 @@ class BashppListener : public AST::BaseListener, std::enable_shared_from_this<Ba
 	void exitBashArithmeticForStatement(std::shared_ptr<AST::BashArithmeticForStatement> node) override;
 	void enterBashArithmeticStatement(std::shared_ptr<AST::BashArithmeticStatement> node) override;
 	void exitBashArithmeticStatement(std::shared_ptr<AST::BashArithmeticStatement> node) override;
+	void enterBashArithmeticSubstitution(std::shared_ptr<AST::BashArithmeticSubstitution> node) override;
+	void exitBashArithmeticSubstitution(std::shared_ptr<AST::BashArithmeticSubstitution> node) override;
 	void enterBashCaseInput(std::shared_ptr<AST::BashCaseInput> node) override;
 	void exitBashCaseInput(std::shared_ptr<AST::BashCaseInput> node) override;
 	void enterBashCasePatternAction(std::shared_ptr<AST::BashCasePatternAction> node) override;

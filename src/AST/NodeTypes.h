@@ -12,6 +12,7 @@ enum class NodeType : int {
 	BashArithmeticForCondition,
 	BashArithmeticForStatement,
 	BashArithmeticStatement,
+	BashArithmeticSubstitution,
 	BashCaseInput,
 	BashCasePattern,
 	BashCasePatternAction,

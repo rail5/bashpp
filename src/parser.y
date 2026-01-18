@@ -92,13 +92,14 @@ void yyerror(const char *s);
 
 %token <AST::Token<std::string>> PROCESS_SUBSTITUTION_START
 %token PROCESS_SUBSTITUTION_END
+%token BASH_ARITHMETIC_START BASH_ARITHMETIC_END
 
 /* Handling unrecognized tokens */
 %token <AST::Token<std::string>> CATCHALL
 
 
 %precedence CONCAT_STOP
-%precedence LANGLE LANGLE_AMPERSAND RANGLE RANGLE_AMPERSAND AMPERSAND_RANGLE HEREDOC_START HERESTRING_START
+%precedence LANGLE LANGLE_AMPERSAND RANGLE RANGLE_AMPERSAND AMPERSAND_RANGLE HEREDOC_START HERESTRING_START BASH_ARITHMETIC_START
 %precedence IDENTIFIER INTEGER SINGLEQUOTED_STRING KEYWORD_NULLPTR
 %precedence QUOTE_BEGIN
 %precedence AT REF_START
@@ -167,7 +168,7 @@ void yyerror(const char *s);
 %type <ASTNodePtr> bash_arithmetic_for_statement arithmetic_for_condition arith_statement increment_decrement_expression arith_condition_term comparison_expression
 
 %type <ASTNodePtr> bash_while_statement bash_until_statement bash_while_or_until_condition
-%type <ASTNodePtr> bash_function
+%type <ASTNodePtr> bash_function bash_arithmetic_substitution
 
 %type <AST::Token<std::string>> maybe_include_type maybe_as_clause maybe_parent_class
 %type <AST::Token<std::string>> assignment_operator
@@ -608,6 +609,7 @@ concatenatable_rvalue:
 	| subshell_substitution { $$ = $1; }
 	| subshell_raw { $$ = $1; }
 	| process_substitution { $$ = $1; }
+	| bash_arithmetic_substitution { $$ = $1; }
 	;
 
 maybe_whitespace:
@@ -2068,6 +2070,17 @@ arith_operator:
 	INCREMENT_OPERATOR { $$ = "++"; }
 	| DECREMENT_OPERATOR { $$ = "--"; }
 	;
+
+bash_arithmetic_substitution:
+	BASH_ARITHMETIC_START statements BASH_ARITHMETIC_END {
+		auto node = std::make_shared<AST::BashArithmeticSubstitution>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setEndPosition(@3.end.line, @3.end.column);
+		node->addChildren($2);
+		$$ = node;
+	}
 
 bash_if_statement:
 	bash_if_root_branch maybe_bash_if_else_branches BASH_KEYWORD_FI {

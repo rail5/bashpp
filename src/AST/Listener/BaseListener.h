@@ -35,7 +35,7 @@ class BaseListener {
 				std::function<void(std::shared_ptr<AST::ASTNode>)>,
 				std::function<void(std::shared_ptr<AST::ASTNode>)>
 			>,
-			54
+			55
 		> enterExitMap = {
 			{ AST::NodeType::ArrayIndex, { 
 				[this](std::shared_ptr<AST::ASTNode> node) { enterArrayIndex(std::dynamic_pointer_cast<AST::ArrayIndex>(node)); },
@@ -52,6 +52,11 @@ class BaseListener {
 			{ AST::NodeType::BashArithmeticStatement, { 
 				[this](std::shared_ptr<AST::ASTNode> node) { enterBashArithmeticStatement(std::dynamic_pointer_cast<AST::BashArithmeticStatement>(node)); },
 				[this](std::shared_ptr<AST::ASTNode> node) { exitBashArithmeticStatement(std::dynamic_pointer_cast<AST::BashArithmeticStatement>(node)); }
+			} },
+			{
+				AST::NodeType::BashArithmeticSubstitution, { 
+				[this](std::shared_ptr<AST::ASTNode> node) { enterBashArithmeticSubstitution(std::dynamic_pointer_cast<AST::BashArithmeticSubstitution>(node)); },
+				[this](std::shared_ptr<AST::ASTNode> node) { exitBashArithmeticSubstitution(std::dynamic_pointer_cast<AST::BashArithmeticSubstitution>(node)); }
 			} },
 			{ AST::NodeType::BashCaseInput, { 
 				[this](std::shared_ptr<AST::ASTNode> node) { enterBashCaseInput(std::dynamic_pointer_cast<AST::BashCaseInput>(node)); },
@@ -270,6 +275,8 @@ class BaseListener {
 		virtual void exitBashArithmeticForStatement([[maybe_unused]] std::shared_ptr<AST::BashArithmeticForStatement> node) {}
 		virtual void enterBashArithmeticStatement([[maybe_unused]] std::shared_ptr<AST::BashArithmeticStatement> node) {}
 		virtual void exitBashArithmeticStatement([[maybe_unused]] std::shared_ptr<AST::BashArithmeticStatement> node) {}
+		virtual void enterBashArithmeticSubstitution([[maybe_unused]] std::shared_ptr<AST::BashArithmeticSubstitution> node) {}
+		virtual void exitBashArithmeticSubstitution([[maybe_unused]] std::shared_ptr<AST::BashArithmeticSubstitution> node) {}
 		virtual void enterBashCaseInput([[maybe_unused]] std::shared_ptr<AST::BashCaseInput> node) {}
 		virtual void exitBashCaseInput([[maybe_unused]] std::shared_ptr<AST::BashCaseInput> node) {}
 		virtual void enterBashCasePatternAction([[maybe_unused]] std::shared_ptr<AST::BashCasePatternAction> node) {}

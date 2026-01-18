@@ -5,7 +5,7 @@
 
 #include "../BashppListener.h"
 
-void BashppListener::enterDestructor_definition(BashppParser::Destructor_definitionContext *ctx) {
+void BashppListener::enterDestructorDefinition(std::shared_ptr<AST::DestructorDefinition> node) {
 	skip_syntax_errors
 	/**
 	 * Destructor definitions take the form
@@ -16,7 +16,7 @@ void BashppListener::enterDestructor_definition(BashppParser::Destructor_definit
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 
 	if (current_class == nullptr) {
-		throw_syntax_error(ctx->KEYWORD_DESTRUCTOR(), "Destructor definition outside of class");
+		throw_syntax_error(node, "Destructor definition outside of class");
 	}
 
 	std::shared_ptr<bpp::bpp_method> destructor = std::make_shared<bpp::bpp_method>();
@@ -29,16 +29,16 @@ void BashppListener::enterDestructor_definition(BashppParser::Destructor_definit
 
 	destructor->set_definition_position(
 		source_file,
-		ctx->KEYWORD_DESTRUCTOR()->getSymbol()->getLine() - 1,
-		ctx->KEYWORD_DESTRUCTOR()->getSymbol()->getCharPositionInLine()
+		node->getLine() - 1,
+		node->getCharPositionInLine()
 	);
 }
 
-void BashppListener::exitDestructor_definition(BashppParser::Destructor_definitionContext *ctx) {
+void BashppListener::exitDestructorDefinition(std::shared_ptr<AST::DestructorDefinition> node) {
 	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_method> destructor = std::dynamic_pointer_cast<bpp::bpp_method>(entity_stack.top());
 	if (destructor == nullptr) {
-		throw internal_error("Destructor definition not found on the entity stack", ctx);
+		throw internal_error("Destructor definition not found on the entity stack");
 	}
 
 	entity_stack.pop();
@@ -50,19 +50,19 @@ void BashppListener::exitDestructor_definition(BashppParser::Destructor_definiti
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 
 	if (current_class == nullptr) {
-		throw internal_error("Class not found on the entity stack", ctx);
+		throw internal_error("Class not found on the entity stack");
 	}
 
 	program->mark_entity(
 		source_file,
 		destructor->get_initial_definition().line,
 		destructor->get_initial_definition().column,
-		ctx->RBRACE()->getSymbol()->getLine() - 1,
-		ctx->RBRACE()->getSymbol()->getCharPositionInLine(),
+		node->getEndPosition().line - 1,
+		node->getEndPosition().column,
 		destructor
 	);
 
 	if (!current_class->add_method(destructor)) {
-		throw_syntax_error_from_exitRule(ctx->KEYWORD_DESTRUCTOR(), "Destructor already defined");
+		throw_syntax_error_from_exitRule(node, "Destructor already defined");
 	}
 }

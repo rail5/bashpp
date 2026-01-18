@@ -42,10 +42,13 @@ concept ASTNodePtrType = std::is_same_v<std::shared_ptr<AST::ASTNode>, T> ||
 	std::is_base_of_v<AST::ASTNode, typename T::element_type>;
 
 template <typename T>
-concept ASTToken = std::is_same_v<AST::Token<std::string>, T>;
+concept ASTStringToken = std::is_same_v<AST::Token<std::string>, T>;
 
 template <typename T>
-concept ASTNodePtrORToken = ASTNodePtrType<T> || ASTToken<T>;
+concept ASTParameterToken = std::is_same_v<AST::Token<AST::MethodDefinition::Parameter>, T>;
+
+template <typename T>
+concept ASTNodePtrORToken = ASTNodePtrType<T> || ASTStringToken<T> || ASTParameterToken<T>;
 
 /**
  * @class BashppListener
@@ -196,10 +199,22 @@ class BashppListener : public AST::BaseListener, std::enable_shared_from_this<Ba
 						}
 					}
 				}
-			} else if constexpr (ASTToken<T>) {
+			} else if constexpr (ASTStringToken<T>) {
 				line = static_cast<int>(error_ctx.getLine());
 				column = static_cast<int>(error_ctx.getCharPositionInLine());
 				text = error_ctx.getValue();
+			} else if constexpr (ASTParameterToken<T>) {
+				// Special case: Error reporting on a declared method parameter
+				// FIXME(@rail5): Kind of hacky to handle special cases. Would prefer a general solution.
+				line = static_cast<int>(error_ctx.getLine());
+				column = static_cast<int>(error_ctx.getCharPositionInLine());
+				if (error_ctx.type.has_value()) {
+					text = "@" + error_ctx.type.value();
+					if (error_ctx.pointer) text += "*";
+					text += " " + error_ctx.name->getText();
+				} else {
+					text = error_ctx.name->getText();
+				}
 			}
 			print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), program);
 			program_has_errors = true;

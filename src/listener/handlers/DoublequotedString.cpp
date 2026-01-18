@@ -5,14 +5,14 @@
 
 #include "../BashppListener.h"
 
-void BashppListener::enterString(BashppParser::StringContext *ctx) {
+void BashppListener::enterDoublequotedString(std::shared_ptr<AST::DoublequotedString> node) {
 	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_class> current_class = entity_stack.top()->get_containing_class().lock();
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(ctx->QUOTE(), "String outside of code entity");
+		throw_syntax_error(node, "String outside of code entity");
 	}
 
 	std::shared_ptr<bpp::bpp_string> string_code_entity = std::make_shared<bpp::bpp_string>();
@@ -27,13 +27,13 @@ void BashppListener::enterString(BashppParser::StringContext *ctx) {
 	}
 }
 
-void BashppListener::exitString(BashppParser::StringContext *ctx) {
+void BashppListener::exitDoublequotedString(std::shared_ptr<AST::DoublequotedString> node) {
 	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_code_entity> string_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	entity_stack.pop();
 
 	if (string_code_entity == nullptr) {
-		throw internal_error("String context was not found in the entity stack", ctx);
+		throw internal_error("String context was not found in the entity stack");
 	}
 
 	// If we're not in a broader context, simply add the current string contents + a close quote to the current code entity

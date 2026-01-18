@@ -5,7 +5,7 @@
 
 #include "../BashppListener.h"
 
-void BashppListener::enterBash_arithmetic(BashppParser::Bash_arithmeticContext *ctx) {
+void BashppListener::enterBashArithmeticSubstitution(std::shared_ptr<AST::BashArithmeticSubstitution> node) {
 	skip_syntax_errors
 	/**
 	 * Bash arithmetic is a series of arithmetic operations
@@ -18,7 +18,7 @@ void BashppListener::enterBash_arithmetic(BashppParser::Bash_arithmeticContext *
 	std::shared_ptr<bpp::bpp_code_entity> code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	if (code_entity == nullptr) {
-		throw_syntax_error(ctx->BASH_ARITH_START(), "Bash arithmetic outside of code entity");
+		throw_syntax_error(node, "Bash arithmetic outside of code entity");
 	}
 
 	// Create a new code entity for the arithmetic expression
@@ -30,12 +30,12 @@ void BashppListener::enterBash_arithmetic(BashppParser::Bash_arithmeticContext *
 	entity_stack.push(arithmetic_entity);
 }
 
-void BashppListener::exitBash_arithmetic(BashppParser::Bash_arithmeticContext *ctx) {
+void BashppListener::exitBashArithmeticSubstitution(std::shared_ptr<AST::BashArithmeticSubstitution> node) {
 	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_string> arithmetic_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 
 	if (arithmetic_entity == nullptr) {
-		throw internal_error("Bash arithmetic context was not found in the entity stack", ctx);
+		throw internal_error("Bash arithmetic context was not found in the entity stack");
 	}
 
 	entity_stack.pop();
@@ -44,5 +44,5 @@ void BashppListener::exitBash_arithmetic(BashppParser::Bash_arithmeticContext *c
 
 	current_code_entity->add_code_to_previous_line(arithmetic_entity->get_pre_code());
 	current_code_entity->add_code_to_next_line(arithmetic_entity->get_post_code());
-	current_code_entity->add_code(ctx->BASH_ARITH_START()->getText() + arithmetic_entity->get_code() + "))");
+	current_code_entity->add_code("$((" + arithmetic_entity->get_code() + "))");
 }

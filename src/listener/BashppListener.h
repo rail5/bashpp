@@ -130,7 +130,8 @@ class BashppListener : public AST::BaseListener, std::enable_shared_from_this<Ba
 
 		bool in_class = false;
 		bool in_supershell = false;
-		bool in_bash_function = false;
+		std::stack<std::monostate> bash_function_stack;
+		bool should_declare_local() const;
 
 		/**
 		 * @var entity_stack
@@ -312,6 +313,8 @@ class BashppListener : public AST::BaseListener, std::enable_shared_from_this<Ba
 	void exitBashWhileOrUntilCondition(std::shared_ptr<AST::BashWhileOrUntilCondition> node) override;
 	void enterBashWhileStatement(std::shared_ptr<AST::BashWhileStatement> node) override;
 	void exitBashWhileStatement(std::shared_ptr<AST::BashWhileStatement> node) override;
+	void enterBashFunction(std::shared_ptr<AST::BashFunction> node) override;
+	void exitBashFunction(std::shared_ptr<AST::BashFunction> node) override;
 	void enterBlock(std::shared_ptr<AST::Block> node) override;
 	void exitBlock(std::shared_ptr<AST::Block> node) override;
 	void enterClassDefinition(std::shared_ptr<AST::ClassDefinition> node) override;

@@ -5,7 +5,7 @@
 
 #include "../BashppListener.h"
 
-void BashppListener::enterBash_function(BashppParser::Bash_functionContext *ctx) {
+void BashppListener::enterBashFunction(std::shared_ptr<AST::BashFunction> node) {
 	skip_syntax_errors
 	/**
 	 * Bash functions take the format:
@@ -19,27 +19,21 @@ void BashppListener::enterBash_function(BashppParser::Bash_functionContext *ctx)
 	 * function_name() { ... }
 	 */
 
-	in_bash_function = true;
-
-	// What's the first token in the statement?
-	antlr4::tree::TerminalNode* first_token = ctx->BASH_KEYWORD_FUNCTION() != nullptr ? ctx->BASH_KEYWORD_FUNCTION() : ctx->IDENTIFIER_LVALUE();
+	bash_function_stack.push({});
 
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(first_token, "Function definition outside of code entity");
+		throw_syntax_error(node, "Function definition outside of code entity");
 	}
 
 	// What's the name of the function?
-	antlr4::tree::TerminalNode* function_name_node = ctx->IDENTIFIER_LVALUE() != nullptr ? ctx->IDENTIFIER_LVALUE() : ctx->IDENTIFIER();
-	if (function_name_node == nullptr) {
-		throw internal_error("Function name not found in function definition", ctx);
-	}
+	auto function_name_token = node->NAME();
 	
 	// Create a new code entity for the function
 	std::shared_ptr<bpp::bash_function> function_entity = std::make_shared<bpp::bash_function>();
-	function_entity->set_name(function_name_node->getText());
+	function_entity->set_name(function_name_token.getValue());
 	function_entity->set_containing_class(current_code_entity->get_containing_class());
 	function_entity->inherit(current_code_entity);
 
@@ -48,24 +42,24 @@ void BashppListener::enterBash_function(BashppParser::Bash_functionContext *ctx)
 
 	function_entity->set_definition_position(
 		source_file,
-		first_token->getSymbol()->getLine() - 1,
-		first_token->getSymbol()->getCharPositionInLine()
+		node->getLine() - 1,
+		node->getCharPositionInLine()
 	);
 }
 
-void BashppListener::exitBash_function(BashppParser::Bash_functionContext *ctx) {
+void BashppListener::exitBashFunction(std::shared_ptr<AST::BashFunction> node) {
 	skip_syntax_errors
 
 	std::shared_ptr<bpp::bash_function> function_entity = std::dynamic_pointer_cast<bpp::bash_function>(entity_stack.top());
 	if (function_entity == nullptr) {
-		throw internal_error("Function context was not found in the entity stack", ctx);
+		throw internal_error("Function context was not found in the entity stack");
 	}
 	entity_stack.pop();
 
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw internal_error("Couldn't find the current code entity", ctx);
+		throw internal_error("Couldn't find the current code entity");
 	}
 
 	// Add the function to the current code entity
@@ -86,10 +80,10 @@ void BashppListener::exitBash_function(BashppParser::Bash_functionContext *ctx) 
 		source_file,
 		function_entity->get_initial_definition().line,
 		function_entity->get_initial_definition().column,
-		ctx->getStop()->getLine() - 1,
-		ctx->getStop()->getCharPositionInLine(),
+		node->getEndPosition().line - 1,
+		node->getEndPosition().column,
 		function_entity
 	);
 
-	in_bash_function = false;
+	bash_function_stack.pop();
 }

@@ -18,7 +18,7 @@ std::shared_ptr<AST::ASTNode> find_node_at_column(std::shared_ptr<AST::ASTNode> 
 /**
  * @brief Resolves the entity referenced at the given line and column in the specified file.
  * 
- * This function uses the ANTLR4 parser to parse the line content and find the entity which is referenced at the specified column.
+ * This function uses the parser to parse the line content and find the entity which is referenced at the specified column.
  * It returns a shared pointer to the resolved entity, or nullptr if no entity is found.
  * 
  * E.g, if the segment pointed to by the position contains `@MyClass myObject`, we will return a pointer to the `MyClass` class.

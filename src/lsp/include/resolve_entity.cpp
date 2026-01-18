@@ -8,21 +8,7 @@
 #include <regex>
 #include <unistd.h>
 
-typedef void* yyscan_t;
-
-struct LexerExtra;
-
-extern int yylex_init(yyscan_t* scanner);
-extern int yylex_destroy(yyscan_t scanner);
-extern void yyset_in(FILE* in_str, yyscan_t scanner);
-
-extern void initLexer(yyscan_t yyscanner);
-extern void destroyLexer(yyscan_t yyscanner);
-
-extern void set_utf16_mode(bool enable, yyscan_t yyscanner);
-
-#include "../../flexbison/lex.yy.hpp"
-#include "../../flexbison/parser.tab.hpp"
+#include "../../AST/BashppParser.h"
 
 std::shared_ptr<AST::ASTNode> find_node_at_column(std::shared_ptr<AST::ASTNode> single_line_node, uint32_t column) {
 	if (single_line_node == nullptr) return nullptr;
@@ -95,29 +81,11 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 
 	// Run the parser on this one line
 	try {
-		const char* buffer = line_content.c_str();
-		size_t size = line_content.size();
-		FILE* line_stream = fmemopen(reinterpret_cast<void*>(const_cast<char*>(buffer)), size, "r");
-		if (line_stream == nullptr) {
-			return nullptr; // Could not open memory stream
-		}
-
-		yyscan_t lexer;
-		if (yylex_init(&lexer) != 0) {
-			fclose(line_stream);
-			return nullptr; // Could not initialize lexer
-		}
-		yyset_in(line_stream, lexer);
-		initLexer(lexer);
-		::set_utf16_mode(utf16_mode, lexer);
-
-		std::shared_ptr<AST::Program> astRoot = nullptr;
-		yy::parser parser(astRoot, lexer);
-		int parse_result = parser.parse();
-		fclose(line_stream);
-		destroyLexer(lexer);
-
-		if (parse_result != 0 || astRoot == nullptr) {
+		AST::BashppParser parser;
+		parser.setUTF16Mode(utf16_mode);
+		parser.setInputFromStringContents(line_content);
+		auto astRoot = parser.program();
+		if (astRoot == nullptr) {
 			return nullptr; // Parsing failed
 		}
 		

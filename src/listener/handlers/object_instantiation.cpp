@@ -5,7 +5,7 @@
 
 #include "../BashppListener.h"
 
-void BashppListener::enterObject_instantiation(BashppParser::Object_instantiationContext *ctx) {
+void BashppListener::enterObjectInstantiation(std::shared_ptr<AST::ObjectInstantiation> node) {
 	skip_syntax_errors
 	/**
 	 * The object type will be stored in one of either IDENTIFIER_LVALUE or IDENTIFIER(0)
@@ -16,26 +16,15 @@ void BashppListener::enterObject_instantiation(BashppParser::Object_instantiatio
 	// Verify that we're in a place where an object *can* be instantiated
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 
-	antlr4::tree::TerminalNode* object_type = nullptr;
-	antlr4::tree::TerminalNode* object_name = nullptr;
-
-	if (ctx->IDENTIFIER_LVALUE() != nullptr) {
-		// The object type is in IDENTIFIER_LVALUE
-		object_type = ctx->IDENTIFIER_LVALUE();
-		object_name = ctx->IDENTIFIER(0);
-	} else {
-		// The object type is in IDENTIFIER(0)
-		object_type = ctx->IDENTIFIER(0);
-		object_name = ctx->IDENTIFIER(1);
-	}
+	auto object_type = node->TYPE();
+	auto object_name = node->IDENTIFIER();
 
 	if (current_class != nullptr) {
-		throw_syntax_error(object_type, "Stray object instantiation inside class body.\nDid you mean to declare a data member?\nIf so, start by declaring the data member with a visibility keyword (@public, @private, @protected)");
+		throw_syntax_error(node, "Stray object instantiation inside class body.\nDid you mean to declare a data member?\nIf so, start by declaring the data member with a visibility keyword (@public, @private, @protected)");
 	}
 
-	std::string object_type_text = object_type->getText();
-	std::string object_name_text = object_name->getText();
-
+	std::string object_type_text = object_type.getValue();
+	std::string object_name_text = object_name.getValue();
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = latest_code_entity();
 
@@ -44,8 +33,8 @@ void BashppListener::enterObject_instantiation(BashppParser::Object_instantiatio
 
 	new_object->set_definition_position(
 		source_file,
-		object_name->getSymbol()->getLine() - 1,
-		object_name->getSymbol()->getCharPositionInLine()
+		object_name.getLine() - 1,
+		object_name.getCharPositionInLine()
 	);
 
 	std::shared_ptr<bpp::bpp_class> object_class = current_code_entity->get_class(object_type_text);
@@ -53,15 +42,15 @@ void BashppListener::enterObject_instantiation(BashppParser::Object_instantiatio
 	// Verify that the object's class exists
 	if (object_class == nullptr) {
 		entity_stack.pop();
-		throw_syntax_error(object_type, "Class not found: " + object_type->getText());
+		throw_syntax_error(object_type, "Class not found: " + object_type_text);
 	}
 
 	new_object->set_class(object_class);
 
 	object_class->add_reference(
 		source_file,
-		object_type->getSymbol()->getLine() - 1,
-		object_type->getSymbol()->getCharPositionInLine()
+		object_type.getLine() - 1,
+		object_type.getCharPositionInLine()
 	);
 
 	new_object->set_containing_class(current_code_entity->get_containing_class());
@@ -94,11 +83,11 @@ void BashppListener::enterObject_instantiation(BashppParser::Object_instantiatio
 	}
 }
 
-void BashppListener::exitObject_instantiation(BashppParser::Object_instantiationContext *ctx) {
+void BashppListener::exitObjectInstantiation(std::shared_ptr<AST::ObjectInstantiation> node) {
 	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_object> new_object = std::dynamic_pointer_cast<bpp::bpp_object>(entity_stack.top());
 	if (new_object == nullptr) {
-		throw internal_error("entity_stack top is not a bpp_object", ctx);
+		throw internal_error("entity_stack top is not a bpp_object");
 	}
 
 	entity_stack.pop();

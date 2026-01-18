@@ -35,7 +35,7 @@ class BaseListener {
 				std::function<void(std::shared_ptr<AST::ASTNode>)>,
 				std::function<void(std::shared_ptr<AST::ASTNode>)>
 			>,
-			53
+			54
 		> enterExitMap = {
 			{ AST::NodeType::ArrayIndex, { 
 				[this](std::shared_ptr<AST::ASTNode> node) { enterArrayIndex(std::dynamic_pointer_cast<AST::ArrayIndex>(node)); },
@@ -132,6 +132,11 @@ class BaseListener {
 			{ AST::NodeType::BashWhileStatement, { 
 				[this](std::shared_ptr<AST::ASTNode> node) { enterBashWhileStatement(std::dynamic_pointer_cast<AST::BashWhileStatement>(node)); },
 				[this](std::shared_ptr<AST::ASTNode> node) { exitBashWhileStatement(std::dynamic_pointer_cast<AST::BashWhileStatement>(node)); }
+			} },
+			{
+				AST::NodeType::BashFunction, { 
+				[this](std::shared_ptr<AST::ASTNode> node) { enterBashFunction(std::dynamic_pointer_cast<AST::BashFunction>(node)); },
+				[this](std::shared_ptr<AST::ASTNode> node) { exitBashFunction(std::dynamic_pointer_cast<AST::BashFunction>(node)); }
 			} },
 			{ AST::NodeType::Block, { 
 				[this](std::shared_ptr<AST::ASTNode> node) { enterBlock(std::dynamic_pointer_cast<AST::Block>(node)); },
@@ -305,6 +310,8 @@ class BaseListener {
 		virtual void exitBashWhileOrUntilCondition([[maybe_unused]] std::shared_ptr<AST::BashWhileOrUntilCondition> node) {}
 		virtual void enterBashWhileStatement([[maybe_unused]] std::shared_ptr<AST::BashWhileStatement> node) {}
 		virtual void exitBashWhileStatement([[maybe_unused]] std::shared_ptr<AST::BashWhileStatement> node) {}
+		virtual void enterBashFunction([[maybe_unused]] std::shared_ptr<AST::BashFunction> node) {}
+		virtual void exitBashFunction([[maybe_unused]] std::shared_ptr<AST::BashFunction> node) {}
 		virtual void enterBlock([[maybe_unused]] std::shared_ptr<AST::Block> node) {}
 		virtual void exitBlock([[maybe_unused]] std::shared_ptr<AST::Block> node) {}
 		virtual void enterClassDefinition([[maybe_unused]] std::shared_ptr<AST::ClassDefinition> node) {}

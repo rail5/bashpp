@@ -32,6 +32,7 @@ enum class NodeType : int {
 	BashVariable,
 	BashWhileOrUntilCondition,
 	BashWhileStatement,
+	BashFunction,
 	Block,
 	ClassDefinition,
 	ConstructorDefinition,

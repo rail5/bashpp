@@ -84,6 +84,8 @@ void yyerror(const char *s);
 %token <AST::Token<std::string>> INTEGER COMPARISON_OPERATOR
 %token BASH_KEYWORD_IF BASH_KEYWORD_THEN BASH_KEYWORD_ELIF BASH_KEYWORD_ELSE BASH_KEYWORD_FI
 %token BASH_KEYWORD_WHILE BASH_KEYWORD_UNTIL
+%token BASH_KEYWORD_FUNCTION BASH_FUNCTION_OPEN
+%token <AST::Token<std::string>> BASH_FUNCTION_LABEL
 
 %token EXCLAM
 %token <AST::Token<std::string>> EXPANSION_BEGIN PARAMETER_EXPANSION_CONTENT
@@ -165,6 +167,7 @@ void yyerror(const char *s);
 %type <ASTNodePtr> bash_arithmetic_for_statement arithmetic_for_condition arith_statement increment_decrement_expression arith_condition_term comparison_expression
 
 %type <ASTNodePtr> bash_while_statement bash_until_statement bash_while_or_until_condition
+%type <ASTNodePtr> bash_function
 
 %type <AST::Token<std::string>> maybe_include_type maybe_as_clause maybe_parent_class
 %type <AST::Token<std::string>> assignment_operator
@@ -215,6 +218,7 @@ statement:
 	| object_instantiation { $$ = $1; }
 	| pointer_declaration { $$ = $1; }
 	| delete_statement { $$ = $1; }
+	| bash_function { $$ = $1; }
 	;
 
 shell_command_sequence:
@@ -2175,6 +2179,43 @@ bash_while_or_until_condition:
 		$$ = node;
 	}
 	;
+/*
+ * Valid declaration forms for functions as parsed by Bash:
+ * 1. function name { ... }
+ * 2. function name() { ... }
+ * 3. name() { ... }
+ */
+bash_function:
+	BASH_KEYWORD_FUNCTION BASH_FUNCTION_LABEL block {
+		auto node = std::make_shared<AST::BashFunction>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setEndPosition(@3.end.line, @3.end.column);
+		node->setName($2);
+		node->addChild($3);
+		$$ = node;
+	}
+	| BASH_KEYWORD_FUNCTION BASH_FUNCTION_LABEL BASH_FUNCTION_OPEN block {
+		auto node = std::make_shared<AST::BashFunction>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setEndPosition(@4.end.line, @4.end.column);
+		node->setName($2);
+		node->addChild($4);
+		$$ = node;
+	}
+	| BASH_FUNCTION_LABEL BASH_FUNCTION_OPEN block {
+		auto node = std::make_shared<AST::BashFunction>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setEndPosition(@3.end.line, @3.end.column);
+		node->setName($1);
+		node->addChild($3);
+		$$ = node;
+	}
 
 %%
 

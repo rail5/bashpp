@@ -29,6 +29,7 @@
 #include "BashVariable.h"
 #include "BashWhileOrUntilCondition.h"
 #include "BashWhileStatement.h"
+#include "BashFunction.h"
 #include "Block.h"
 #include "ClassDefinition.h"
 #include "ConstructorDefinition.h"

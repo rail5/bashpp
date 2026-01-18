@@ -363,6 +363,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 %x BASH_CASE_BODY_MODE
 
+%x BASH_FUNCTION_MODE
+
 %x SKIP_AFTER_DELIM_MODE
 
 /* INCLUSIVE start conditions
@@ -619,6 +621,49 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 \{[0-9]+\.\.[0-9]+\.\.[0-9]+\}       { emit(CATCHALL, tokenText); /* Range expression with step, e.g., {1..10..2} */ }
 [\*]/[@]                             { emit(DEREFERENCE_OPERATOR); }
 [&]/[@]                              { emit(AMPERSAND); }
+
+<BASH_FUNCTION_MODE>{
+	[ \t\n]+ { /* Ignore whitespace in this mode */ }
+
+	[a-zA-Z_][a-zA-Z_0-9]* {
+		emit(BASH_FUNCTION_LABEL, tokenText);
+	}
+
+	[ \t\n]*\([ \t\n]*\) {
+		emit(BASH_FUNCTION_OPEN);
+	}
+
+	{LBRACE} {
+		get_lexer_extra(yyscanner)->modeStack.pop(); // Exit BASH_FUNCTION_MODE
+		get_lexer_extra(yyscanner)->modeStack.push(BLOCK_MODE);
+		emit(LBRACE);
+	}
+}
+
+function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
+	if (get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue) {
+		get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue = false;
+		get_lexer_extra(yyscanner)->modeStack.push(BASH_FUNCTION_MODE);
+		emit(BASH_KEYWORD_FUNCTION);
+	} else {
+		emit(IDENTIFIER, tokenText);
+	}
+}
+
+[a-zA-Z_][a-zA-Z_0-9]*/[ \t]*\([ \t]*\) {
+	// This matches a function declaration without the 'function' keyword
+	// The meaning of the regular expression is:
+	// An identifier, iff that identifier is followed by ()
+	// Where whitespace may precede the LPAREN, and whitespace may be between the parentheses
+	if (get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue) {
+		get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue = false;
+		get_lexer_extra(yyscanner)->modeStack.push(BASH_FUNCTION_MODE);
+		emit(BASH_FUNCTION_LABEL, tokenText);
+	} else {
+		emit(IDENTIFIER, tokenText);
+	}
+}
+
 {IDENTIFIER}                         {
 	if (get_lexer_extra(yyscanner)->modeStack.top() == HEREDOC_MODE) {
 		// This IDENTIFIER is the heredoc delimiter
@@ -629,6 +674,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		emit(IDENTIFIER, tokenText);
 	}
 }
+
 "<("                                      { get_lexer_extra(yyscanner)->modeStack.push(PROCESS_SUBSTITUTION_MODE); emit(PROCESS_SUBSTITUTION_START, tokenText); }
 ">("                                      { get_lexer_extra(yyscanner)->modeStack.push(PROCESS_SUBSTITUTION_MODE); emit(PROCESS_SUBSTITUTION_START, tokenText); }
 ([0-9]+|\{[a-zA-Z_][a-zA-Z_0-9]*\})?\<    { emit(LANGLE, tokenText); }

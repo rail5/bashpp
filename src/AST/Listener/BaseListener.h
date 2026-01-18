@@ -24,241 +24,183 @@ namespace AST {
  */
 class BaseListener {
 	private:
+		void _enterArrayIndex(std::shared_ptr<AST::ASTNode> node);
+		void _exitArrayIndex(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashArithmeticForCondition(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashArithmeticForCondition(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashArithmeticForStatement(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashArithmeticForStatement(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashArithmeticStatement(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashArithmeticStatement(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashArithmeticSubstitution(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashArithmeticSubstitution(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashCaseInput(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashCaseInput(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashCasePatternAction(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashCasePatternAction(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashCasePattern(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashCasePattern(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashCasePatternHeader(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashCasePatternHeader(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashCaseStatement(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashCaseStatement(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashCommand(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashCommand(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashCommandSequence(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashCommandSequence(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashForStatement(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashForStatement(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashFunction(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashFunction(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashIfCondition(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashIfCondition(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashIfElseBranch(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashIfElseBranch(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashIfRootBranch(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashIfRootBranch(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashIfStatement(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashIfStatement(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashInCondition(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashInCondition(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashPipeline(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashPipeline(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashRedirection(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashRedirection(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashSelectStatement(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashSelectStatement(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashUntilStatement(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashUntilStatement(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashVariable(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashVariable(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashWhileOrUntilCondition(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashWhileOrUntilCondition(std::shared_ptr<AST::ASTNode> node);
+		void _enterBashWhileStatement(std::shared_ptr<AST::ASTNode> node);
+		void _exitBashWhileStatement(std::shared_ptr<AST::ASTNode> node);
+		void _enterBlock(std::shared_ptr<AST::ASTNode> node);
+		void _exitBlock(std::shared_ptr<AST::ASTNode> node);
+		void _enterClassDefinition(std::shared_ptr<AST::ASTNode> node);
+		void _exitClassDefinition(std::shared_ptr<AST::ASTNode> node);
+		void _enterConstructorDefinition(std::shared_ptr<AST::ASTNode> node);
+		void _exitConstructorDefinition(std::shared_ptr<AST::ASTNode> node);
+		void _enterDatamemberDeclaration(std::shared_ptr<AST::ASTNode> node);
+		void _exitDatamemberDeclaration(std::shared_ptr<AST::ASTNode> node);
+		void _enterDeleteStatement(std::shared_ptr<AST::ASTNode> node);
+		void _exitDeleteStatement(std::shared_ptr<AST::ASTNode> node);
+		void _enterDestructorDefinition(std::shared_ptr<AST::ASTNode> node);
+		void _exitDestructorDefinition(std::shared_ptr<AST::ASTNode> node);
+		void _enterDoublequotedString(std::shared_ptr<AST::ASTNode> node);
+		void _exitDoublequotedString(std::shared_ptr<AST::ASTNode> node);
+		void _enterDynamicCast(std::shared_ptr<AST::ASTNode> node);
+		void _exitDynamicCast(std::shared_ptr<AST::ASTNode> node);
+		void _enterDynamicCastTarget(std::shared_ptr<AST::ASTNode> node);
+		void _exitDynamicCastTarget(std::shared_ptr<AST::ASTNode> node);
+		void _enterHeredocBody(std::shared_ptr<AST::ASTNode> node);
+		void _exitHeredocBody(std::shared_ptr<AST::ASTNode> node);
+		void _enterHereString(std::shared_ptr<AST::ASTNode> node);
+		void _exitHereString(std::shared_ptr<AST::ASTNode> node);
+		void _enterIncludeStatement(std::shared_ptr<AST::ASTNode> node);
+		void _exitIncludeStatement(std::shared_ptr<AST::ASTNode> node);
+		void _enterMethodDefinition(std::shared_ptr<AST::ASTNode> node);
+		void _exitMethodDefinition(std::shared_ptr<AST::ASTNode> node);
+		void _enterNewStatement(std::shared_ptr<AST::ASTNode> node);
+		void _exitNewStatement(std::shared_ptr<AST::ASTNode> node);
+		void _enterObjectAssignment(std::shared_ptr<AST::ASTNode> node);
+		void _exitObjectAssignment(std::shared_ptr<AST::ASTNode> node);
+		void _enterObjectInstantiation(std::shared_ptr<AST::ASTNode> node);
+		void _exitObjectInstantiation(std::shared_ptr<AST::ASTNode> node);
+		void _enterObjectReference(std::shared_ptr<AST::ASTNode> node);
+		void _exitObjectReference(std::shared_ptr<AST::ASTNode> node);
+		void _enterParameterExpansion(std::shared_ptr<AST::ASTNode> node);
+		void _exitParameterExpansion(std::shared_ptr<AST::ASTNode> node);
+		void _enterPointerDeclaration(std::shared_ptr<AST::ASTNode> node);
+		void _exitPointerDeclaration(std::shared_ptr<AST::ASTNode> node);
+		void _enterPrimitiveAssignment(std::shared_ptr<AST::ASTNode> node);
+		void _exitPrimitiveAssignment(std::shared_ptr<AST::ASTNode> node);
+		void _enterProcessSubstitution(std::shared_ptr<AST::ASTNode> node);
+		void _exitProcessSubstitution(std::shared_ptr<AST::ASTNode> node);
+		void _enterProgram(std::shared_ptr<AST::ASTNode> node);
+		void _exitProgram(std::shared_ptr<AST::ASTNode> node);
+		void _enterRawSubshell(std::shared_ptr<AST::ASTNode> node);
+		void _exitRawSubshell(std::shared_ptr<AST::ASTNode> node);
+		void _enterRawText(std::shared_ptr<AST::ASTNode> node);
+		void _exitRawText(std::shared_ptr<AST::ASTNode> node);
+		void _enterRvalue(std::shared_ptr<AST::ASTNode> node);
+		void _exitRvalue(std::shared_ptr<AST::ASTNode> node);
+		void _enterSubshellSubstitution(std::shared_ptr<AST::ASTNode> node);
+		void _exitSubshellSubstitution(std::shared_ptr<AST::ASTNode> node);
+		void _enterSupershell(std::shared_ptr<AST::ASTNode> node);
+		void _exitSupershell(std::shared_ptr<AST::ASTNode> node);
+		void _enterTypeofExpression(std::shared_ptr<AST::ASTNode> node);
+		void _exitTypeofExpression(std::shared_ptr<AST::ASTNode> node);
+		void _enterValueAssignment(std::shared_ptr<AST::ASTNode> node);
+		void _exitValueAssignment(std::shared_ptr<AST::ASTNode> node);
+
 		/**
-		 * @var enterExitMap
 		 * @brief A fully constexpr map of AST node types to their corresponding enter and exit functions.
-		 * 
 		 */
-		frozen::unordered_map<
+		static constexpr frozen::unordered_map<
 			AST::NodeType,
 			std::pair<
-				std::function<void(std::shared_ptr<AST::ASTNode>)>,
-				std::function<void(std::shared_ptr<AST::ASTNode>)>
+				void (BaseListener::*)(std::shared_ptr<AST::ASTNode>),
+				void (BaseListener::*)(std::shared_ptr<AST::ASTNode>)
 			>,
 			55
 		> enterExitMap = {
-			{ AST::NodeType::ArrayIndex, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterArrayIndex(std::dynamic_pointer_cast<AST::ArrayIndex>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitArrayIndex(std::dynamic_pointer_cast<AST::ArrayIndex>(node)); }
-			} },
-			{ AST::NodeType::BashArithmeticForCondition, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashArithmeticForCondition(std::dynamic_pointer_cast<AST::BashArithmeticForCondition>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashArithmeticForCondition(std::dynamic_pointer_cast<AST::BashArithmeticForCondition>(node)); }
-			} },
-			{ AST::NodeType::BashArithmeticForStatement, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashArithmeticForStatement(std::dynamic_pointer_cast<AST::BashArithmeticForStatement>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashArithmeticForStatement(std::dynamic_pointer_cast<AST::BashArithmeticForStatement>(node)); }
-			} },
-			{ AST::NodeType::BashArithmeticStatement, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashArithmeticStatement(std::dynamic_pointer_cast<AST::BashArithmeticStatement>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashArithmeticStatement(std::dynamic_pointer_cast<AST::BashArithmeticStatement>(node)); }
-			} },
-			{
-				AST::NodeType::BashArithmeticSubstitution, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashArithmeticSubstitution(std::dynamic_pointer_cast<AST::BashArithmeticSubstitution>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashArithmeticSubstitution(std::dynamic_pointer_cast<AST::BashArithmeticSubstitution>(node)); }
-			} },
-			{ AST::NodeType::BashCaseInput, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashCaseInput(std::dynamic_pointer_cast<AST::BashCaseInput>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashCaseInput(std::dynamic_pointer_cast<AST::BashCaseInput>(node)); }
-			} },
-			{ AST::NodeType::BashCasePatternAction, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashCasePatternAction(std::dynamic_pointer_cast<AST::BashCasePatternAction>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashCasePatternAction(std::dynamic_pointer_cast<AST::BashCasePatternAction>(node)); }
-			} },
-			{ AST::NodeType::BashCasePattern, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashCasePattern(std::dynamic_pointer_cast<AST::BashCasePattern>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashCasePattern(std::dynamic_pointer_cast<AST::BashCasePattern>(node)); }
-			} },
-			{ AST::NodeType::BashCasePatternHeader, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashCasePatternHeader(std::dynamic_pointer_cast<AST::BashCasePatternHeader>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashCasePatternHeader(std::dynamic_pointer_cast<AST::BashCasePatternHeader>(node)); }
-			} },
-			{ AST::NodeType::BashCaseStatement, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashCaseStatement(std::dynamic_pointer_cast<AST::BashCaseStatement>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashCaseStatement(std::dynamic_pointer_cast<AST::BashCaseStatement>(node)); }
-			} },
-			{ AST::NodeType::BashCommand, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashCommand(std::dynamic_pointer_cast<AST::BashCommand>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashCommand(std::dynamic_pointer_cast<AST::BashCommand>(node)); }
-			} },
-			{ AST::NodeType::BashCommandSequence, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashCommandSequence(std::dynamic_pointer_cast<AST::BashCommandSequence>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashCommandSequence(std::dynamic_pointer_cast<AST::BashCommandSequence>(node)); }
-			} },
-			{ AST::NodeType::BashForStatement, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashForStatement(std::dynamic_pointer_cast<AST::BashForStatement>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashForStatement(std::dynamic_pointer_cast<AST::BashForStatement>(node)); }
-			} },
-			{ AST::NodeType::BashIfCondition, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashIfCondition(std::dynamic_pointer_cast<AST::BashIfCondition>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashIfCondition(std::dynamic_pointer_cast<AST::BashIfCondition>(node)); }
-			} },
-			{ AST::NodeType::BashIfElseBranch, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashIfElseBranch(std::dynamic_pointer_cast<AST::BashIfElseBranch>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashIfElseBranch(std::dynamic_pointer_cast<AST::BashIfElseBranch>(node)); }
-			} },
-			{ AST::NodeType::BashIfRootBranch, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashIfRootBranch(std::dynamic_pointer_cast<AST::BashIfRootBranch>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashIfRootBranch(std::dynamic_pointer_cast<AST::BashIfRootBranch>(node)); }
-			} },
-			{ AST::NodeType::BashIfStatement, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashIfStatement(std::dynamic_pointer_cast<AST::BashIfStatement>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashIfStatement(std::dynamic_pointer_cast<AST::BashIfStatement>(node)); }
-			} },
-			{ AST::NodeType::BashInCondition, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashInCondition(std::dynamic_pointer_cast<AST::BashInCondition>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashInCondition(std::dynamic_pointer_cast<AST::BashInCondition>(node)); }
-			} },
-			{ AST::NodeType::BashPipeline, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashPipeline(std::dynamic_pointer_cast<AST::BashPipeline>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashPipeline(std::dynamic_pointer_cast<AST::BashPipeline>(node)); }
-			} },
-			{ AST::NodeType::BashRedirection, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashRedirection(std::dynamic_pointer_cast<AST::BashRedirection>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashRedirection(std::dynamic_pointer_cast<AST::BashRedirection>(node)); }
-			} },
-			{ AST::NodeType::BashSelectStatement, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashSelectStatement(std::dynamic_pointer_cast<AST::BashSelectStatement>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashSelectStatement(std::dynamic_pointer_cast<AST::BashSelectStatement>(node)); }
-			} },
-			{ AST::NodeType::BashUntilStatement, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashUntilStatement(std::dynamic_pointer_cast<AST::BashUntilStatement>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashUntilStatement(std::dynamic_pointer_cast<AST::BashUntilStatement>(node)); }
-			} },
-			{ AST::NodeType::BashVariable, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashVariable(std::dynamic_pointer_cast<AST::BashVariable>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashVariable(std::dynamic_pointer_cast<AST::BashVariable>(node)); }
-			} },
-			{ AST::NodeType::BashWhileOrUntilCondition, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashWhileOrUntilCondition(std::dynamic_pointer_cast<AST::BashWhileOrUntilCondition>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashWhileOrUntilCondition(std::dynamic_pointer_cast<AST::BashWhileOrUntilCondition>(node)); }
-			} },
-			{ AST::NodeType::BashWhileStatement, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashWhileStatement(std::dynamic_pointer_cast<AST::BashWhileStatement>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashWhileStatement(std::dynamic_pointer_cast<AST::BashWhileStatement>(node)); }
-			} },
-			{
-				AST::NodeType::BashFunction, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBashFunction(std::dynamic_pointer_cast<AST::BashFunction>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBashFunction(std::dynamic_pointer_cast<AST::BashFunction>(node)); }
-			} },
-			{ AST::NodeType::Block, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterBlock(std::dynamic_pointer_cast<AST::Block>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitBlock(std::dynamic_pointer_cast<AST::Block>(node)); }
-			} },
-			{ AST::NodeType::ClassDefinition, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterClassDefinition(std::dynamic_pointer_cast<AST::ClassDefinition>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitClassDefinition(std::dynamic_pointer_cast<AST::ClassDefinition>(node)); }
-			} },
-			{ AST::NodeType::ConstructorDefinition, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterConstructorDefinition(std::dynamic_pointer_cast<AST::ConstructorDefinition>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitConstructorDefinition(std::dynamic_pointer_cast<AST::ConstructorDefinition>(node)); }
-			} },
-			{ AST::NodeType::DatamemberDeclaration, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterDatamemberDeclaration(std::dynamic_pointer_cast<AST::DatamemberDeclaration>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitDatamemberDeclaration(std::dynamic_pointer_cast<AST::DatamemberDeclaration>(node)); }
-			} },
-			{ AST::NodeType::DeleteStatement, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterDeleteStatement(std::dynamic_pointer_cast<AST::DeleteStatement>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitDeleteStatement(std::dynamic_pointer_cast<AST::DeleteStatement>(node)); }
-			} },
-			{ AST::NodeType::DestructorDefinition, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterDestructorDefinition(std::dynamic_pointer_cast<AST::DestructorDefinition>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitDestructorDefinition(std::dynamic_pointer_cast<AST::DestructorDefinition>(node)); }
-			} },
-			{ AST::NodeType::DoublequotedString, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterDoublequotedString(std::dynamic_pointer_cast<AST::DoublequotedString>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitDoublequotedString(std::dynamic_pointer_cast<AST::DoublequotedString>(node)); }
-			} },
-			{ AST::NodeType::DynamicCast, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterDynamicCast(std::dynamic_pointer_cast<AST::DynamicCast>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitDynamicCast(std::dynamic_pointer_cast<AST::DynamicCast>(node)); }
-			} },
-			{ AST::NodeType::DynamicCastTarget, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterDynamicCastTarget(std::dynamic_pointer_cast<AST::DynamicCastTarget>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitDynamicCastTarget(std::dynamic_pointer_cast<AST::DynamicCastTarget>(node)); }
-			} },
-			{ AST::NodeType::HeredocBody, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterHeredocBody(std::dynamic_pointer_cast<AST::HeredocBody>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitHeredocBody(std::dynamic_pointer_cast<AST::HeredocBody>(node)); }
-			} },
-			{ AST::NodeType::HereString, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterHereString(std::dynamic_pointer_cast<AST::HereString>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitHereString(std::dynamic_pointer_cast<AST::HereString>(node)); }
-			} },
-			{ AST::NodeType::IncludeStatement, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterIncludeStatement(std::dynamic_pointer_cast<AST::IncludeStatement>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitIncludeStatement(std::dynamic_pointer_cast<AST::IncludeStatement>(node)); }
-			} },
-			{ AST::NodeType::MethodDefinition, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterMethodDefinition(std::dynamic_pointer_cast<AST::MethodDefinition>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitMethodDefinition(std::dynamic_pointer_cast<AST::MethodDefinition>(node)); }
-			} },
-			{ AST::NodeType::NewStatement, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterNewStatement(std::dynamic_pointer_cast<AST::NewStatement>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitNewStatement(std::dynamic_pointer_cast<AST::NewStatement>(node)); }
-			} },
-			{ AST::NodeType::ObjectAssignment, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterObjectAssignment(std::dynamic_pointer_cast<AST::ObjectAssignment>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitObjectAssignment(std::dynamic_pointer_cast<AST::ObjectAssignment>(node)); }
-			} },
-			{ AST::NodeType::ObjectInstantiation, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterObjectInstantiation(std::dynamic_pointer_cast<AST::ObjectInstantiation>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitObjectInstantiation(std::dynamic_pointer_cast<AST::ObjectInstantiation>(node)); }
-			} },
-			{ AST::NodeType::ObjectReference, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterObjectReference(std::dynamic_pointer_cast<AST::ObjectReference>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitObjectReference(std::dynamic_pointer_cast<AST::ObjectReference>(node)); }
-			} },
-			{ AST::NodeType::ParameterExpansion, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterParameterExpansion(std::dynamic_pointer_cast<AST::ParameterExpansion>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitParameterExpansion(std::dynamic_pointer_cast<AST::ParameterExpansion>(node)); }
-			} },
-			{ AST::NodeType::PointerDeclaration, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterPointerDeclaration(std::dynamic_pointer_cast<AST::PointerDeclaration>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitPointerDeclaration(std::dynamic_pointer_cast<AST::PointerDeclaration>(node)); }
-			} },
-			{ AST::NodeType::PrimitiveAssignment, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterPrimitiveAssignment(std::dynamic_pointer_cast<AST::PrimitiveAssignment>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitPrimitiveAssignment(std::dynamic_pointer_cast<AST::PrimitiveAssignment>(node)); }
-			} },
-			{ AST::NodeType::ProcessSubstitution, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterProcessSubstitution(std::dynamic_pointer_cast<AST::ProcessSubstitution>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitProcessSubstitution(std::dynamic_pointer_cast<AST::ProcessSubstitution>(node)); }
-			} },
-			{ AST::NodeType::Program, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterProgram(std::dynamic_pointer_cast<AST::Program>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitProgram(std::dynamic_pointer_cast<AST::Program>(node)); }
-			} },
-			{ AST::NodeType::RawSubshell, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterRawSubshell(std::dynamic_pointer_cast<AST::RawSubshell>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitRawSubshell(std::dynamic_pointer_cast<AST::RawSubshell>(node)); }
-			} },
-			{ AST::NodeType::RawText, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterRawText(std::dynamic_pointer_cast<AST::RawText>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitRawText(std::dynamic_pointer_cast<AST::RawText>(node)); }
-			} },
-			{ AST::NodeType::Rvalue, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterRvalue(std::dynamic_pointer_cast<AST::Rvalue>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitRvalue(std::dynamic_pointer_cast<AST::Rvalue>(node)); }
-			} },
-			{ AST::NodeType::SubshellSubstitution, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterSubshellSubstitution(std::dynamic_pointer_cast<AST::SubshellSubstitution>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitSubshellSubstitution(std::dynamic_pointer_cast<AST::SubshellSubstitution>(node)); }
-			} },
-			{ AST::NodeType::Supershell, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterSupershell(std::dynamic_pointer_cast<AST::Supershell>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitSupershell(std::dynamic_pointer_cast<AST::Supershell>(node)); }
-			} },
-			{ AST::NodeType::TypeofExpression, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterTypeofExpression(std::dynamic_pointer_cast<AST::TypeofExpression>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitTypeofExpression(std::dynamic_pointer_cast<AST::TypeofExpression>(node)); }
-			} },
-			{ AST::NodeType::ValueAssignment, { 
-				[this](std::shared_ptr<AST::ASTNode> node) { enterValueAssignment(std::dynamic_pointer_cast<AST::ValueAssignment>(node)); },
-				[this](std::shared_ptr<AST::ASTNode> node) { exitValueAssignment(std::dynamic_pointer_cast<AST::ValueAssignment>(node)); }
-			} }
+			{ AST::NodeType::ArrayIndex, { &BaseListener::_enterArrayIndex, &BaseListener::_exitArrayIndex } },
+		{ AST::NodeType::BashArithmeticForCondition, { &BaseListener::_enterBashArithmeticForCondition, &BaseListener::_exitBashArithmeticForCondition } },
+		{ AST::NodeType::BashArithmeticForStatement, { &BaseListener::_enterBashArithmeticForStatement, &BaseListener::_exitBashArithmeticForStatement } },
+		{ AST::NodeType::BashArithmeticStatement, { &BaseListener::_enterBashArithmeticStatement, &BaseListener::_exitBashArithmeticStatement } },
+		{ AST::NodeType::BashArithmeticSubstitution, { &BaseListener::_enterBashArithmeticSubstitution, &BaseListener::_exitBashArithmeticSubstitution } },
+		{ AST::NodeType::BashCaseInput, { &BaseListener::_enterBashCaseInput, &BaseListener::_exitBashCaseInput } },
+		{ AST::NodeType::BashCasePatternAction, { &BaseListener::_enterBashCasePatternAction, &BaseListener::_exitBashCasePatternAction } },
+		{ AST::NodeType::BashCasePattern, { &BaseListener::_enterBashCasePattern, &BaseListener::_exitBashCasePattern } },
+		{ AST::NodeType::BashCasePatternHeader, { &BaseListener::_enterBashCasePatternHeader, &BaseListener::_exitBashCasePatternHeader } },
+		{ AST::NodeType::BashCaseStatement, { &BaseListener::_enterBashCaseStatement, &BaseListener::_exitBashCaseStatement } },
+		{ AST::NodeType::BashCommand, { &BaseListener::_enterBashCommand, &BaseListener::_exitBashCommand } },
+		{ AST::NodeType::BashCommandSequence, { &BaseListener::_enterBashCommandSequence, &BaseListener::_exitBashCommandSequence } },
+		{ AST::NodeType::BashForStatement, { &BaseListener::_enterBashForStatement, &BaseListener::_exitBashForStatement } },
+		{ AST::NodeType::BashFunction, { &BaseListener::_enterBashFunction, &BaseListener::_exitBashFunction } },
+		{ AST::NodeType::BashIfCondition, { &BaseListener::_enterBashIfCondition, &BaseListener::_exitBashIfCondition } },
+		{ AST::NodeType::BashIfElseBranch, { &BaseListener::_enterBashIfElseBranch, &BaseListener::_exitBashIfElseBranch } },
+		{ AST::NodeType::BashIfRootBranch, { &BaseListener::_enterBashIfRootBranch, &BaseListener::_exitBashIfRootBranch } },
+		{ AST::NodeType::BashIfStatement, { &BaseListener::_enterBashIfStatement, &BaseListener::_exitBashIfStatement } },
+		{ AST::NodeType::BashInCondition, { &BaseListener::_enterBashInCondition, &BaseListener::_exitBashInCondition } },
+		{ AST::NodeType::BashPipeline, { &BaseListener::_enterBashPipeline, &BaseListener::_exitBashPipeline } },
+		{ AST::NodeType::BashRedirection, { &BaseListener::_enterBashRedirection, &BaseListener::_exitBashRedirection } },
+		{ AST::NodeType::BashSelectStatement, { &BaseListener::_enterBashSelectStatement, &BaseListener::_exitBashSelectStatement } },
+		{ AST::NodeType::BashUntilStatement, { &BaseListener::_enterBashUntilStatement, &BaseListener::_exitBashUntilStatement } },
+		{ AST::NodeType::BashVariable, { &BaseListener::_enterBashVariable, &BaseListener::_exitBashVariable } },
+		{ AST::NodeType::BashWhileOrUntilCondition, { &BaseListener::_enterBashWhileOrUntilCondition, &BaseListener::_exitBashWhileOrUntilCondition } },
+		{ AST::NodeType::BashWhileStatement, { &BaseListener::_enterBashWhileStatement, &BaseListener::_exitBashWhileStatement } },
+		{ AST::NodeType::Block, { &BaseListener::_enterBlock, &BaseListener::_exitBlock } },
+		{ AST::NodeType::ClassDefinition, { &BaseListener::_enterClassDefinition, &BaseListener::_exitClassDefinition } },
+		{ AST::NodeType::ConstructorDefinition, { &BaseListener::_enterConstructorDefinition, &BaseListener::_exitConstructorDefinition } },
+		{ AST::NodeType::DatamemberDeclaration, { &BaseListener::_enterDatamemberDeclaration, &BaseListener::_exitDatamemberDeclaration } },
+		{ AST::NodeType::DeleteStatement, { &BaseListener::_enterDeleteStatement, &BaseListener::_exitDeleteStatement } },
+		{ AST::NodeType::DestructorDefinition, { &BaseListener::_enterDestructorDefinition, &BaseListener::_exitDestructorDefinition } },
+		{ AST::NodeType::DoublequotedString, { &BaseListener::_enterDoublequotedString, &BaseListener::_exitDoublequotedString } },
+		{ AST::NodeType::DynamicCast, { &BaseListener::_enterDynamicCast, &BaseListener::_exitDynamicCast } },
+		{ AST::NodeType::DynamicCastTarget, { &BaseListener::_enterDynamicCastTarget, &BaseListener::_exitDynamicCastTarget } },
+		{ AST::NodeType::HeredocBody, { &BaseListener::_enterHeredocBody, &BaseListener::_exitHeredocBody } },
+		{ AST::NodeType::HereString, { &BaseListener::_enterHereString, &BaseListener::_exitHereString } },
+		{ AST::NodeType::IncludeStatement, { &BaseListener::_enterIncludeStatement, &BaseListener::_exitIncludeStatement } },
+		{ AST::NodeType::MethodDefinition, { &BaseListener::_enterMethodDefinition, &BaseListener::_exitMethodDefinition } },
+		{ AST::NodeType::NewStatement, { &BaseListener::_enterNewStatement, &BaseListener::_exitNewStatement } },
+		{ AST::NodeType::ObjectAssignment, { &BaseListener::_enterObjectAssignment, &BaseListener::_exitObjectAssignment } },
+		{ AST::NodeType::ObjectInstantiation, { &BaseListener::_enterObjectInstantiation, &BaseListener::_exitObjectInstantiation } },
+		{ AST::NodeType::ObjectReference, { &BaseListener::_enterObjectReference, &BaseListener::_exitObjectReference } },
+		{ AST::NodeType::ParameterExpansion, { &BaseListener::_enterParameterExpansion, &BaseListener::_exitParameterExpansion } },
+		{ AST::NodeType::PointerDeclaration, { &BaseListener::_enterPointerDeclaration, &BaseListener::_exitPointerDeclaration } },
+		{ AST::NodeType::PrimitiveAssignment, { &BaseListener::_enterPrimitiveAssignment, &BaseListener::_exitPrimitiveAssignment } },
+		{ AST::NodeType::ProcessSubstitution, { &BaseListener::_enterProcessSubstitution, &BaseListener::_exitProcessSubstitution } },
+		{ AST::NodeType::Program, { &BaseListener::_enterProgram, &BaseListener::_exitProgram } },
+		{ AST::NodeType::RawSubshell, { &BaseListener::_enterRawSubshell, &BaseListener::_exitRawSubshell } },
+		{ AST::NodeType::RawText, { &BaseListener::_enterRawText, &BaseListener::_exitRawText } },
+		{ AST::NodeType::Rvalue, { &BaseListener::_enterRvalue, &BaseListener::_exitRvalue } },
+		{ AST::NodeType::SubshellSubstitution, { &BaseListener::_enterSubshellSubstitution, &BaseListener::_exitSubshellSubstitution } },
+		{ AST::NodeType::Supershell, { &BaseListener::_enterSupershell, &BaseListener::_exitSupershell } },
+		{ AST::NodeType::TypeofExpression, { &BaseListener::_enterTypeofExpression, &BaseListener::_exitTypeofExpression } },
+		{ AST::NodeType::ValueAssignment, { &BaseListener::_enterValueAssignment, &BaseListener::_exitValueAssignment } }
 		};
 	public:
 		virtual ~BaseListener() = default;

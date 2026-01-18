@@ -5,7 +5,7 @@
 
 #include "../BashppListener.h"
 
-void BashppListener::enterDelete_statement(BashppParser::Delete_statementContext *ctx) {
+void BashppListener::enterDeleteStatement(std::shared_ptr<AST::DeleteStatement> node) {
 	skip_syntax_errors
 	/**
 	 * Delete statements take the form
@@ -26,12 +26,12 @@ void BashppListener::enterDelete_statement(BashppParser::Delete_statementContext
 	entity_stack.push(delete_entity);
 }
 
-void BashppListener::exitDelete_statement(BashppParser::Delete_statementContext *ctx) {
+void BashppListener::exitDeleteStatement(std::shared_ptr<AST::DeleteStatement> node) {
 	skip_syntax_errors
 	// Get the delete entity from the entity stack
 	std::shared_ptr<bpp::bpp_delete_statement> delete_entity = std::dynamic_pointer_cast<bpp::bpp_delete_statement>(entity_stack.top());
 	if (delete_entity == nullptr) {
-		throw internal_error("Delete statement not found on the entity stack", ctx);
+		throw internal_error("Delete statement not found on the entity stack");
 	}
 
 	entity_stack.pop();
@@ -39,10 +39,19 @@ void BashppListener::exitDelete_statement(BashppParser::Delete_statementContext 
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> code_entity = latest_code_entity();
 
-	std::string object_ref_name = ctx->ref_rvalue()->getText();
-
 	if (delete_entity->get_object_to_delete() == nullptr) {
-		throw_syntax_error_from_exitRule(ctx->KEYWORD_DELETE(), "Object not found: " + object_ref_name);
+		auto objectReferenceEntity = std::dynamic_pointer_cast<AST::ObjectReference>(node->getFirstChild());
+
+		if (!objectReferenceEntity) {
+			throw internal_error("Delete statement does not contain a valid object reference");
+		}
+
+		std::string object_ref_name = "@" + objectReferenceEntity->IDENTIFIER().getValue();
+		for (const auto& id : objectReferenceEntity->IDENTIFIERS()) {
+			object_ref_name += "." + id.getValue();
+		}
+
+		throw_syntax_error_from_exitRule(node, "Object not found: " + object_ref_name);
 	}
 
 	// Generate the delete code

@@ -5,7 +5,7 @@
 
 #include "../BashppListener.h"
 
-void BashppListener::enterMember_declaration(BashppParser::Member_declarationContext *ctx) {
+void BashppListener::enterDatamemberDeclaration(std::shared_ptr<AST::DatamemberDeclaration> node) {
 	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 
@@ -13,28 +13,11 @@ void BashppListener::enterMember_declaration(BashppParser::Member_declarationCon
 	new_datamember->set_containing_class(current_class);
 	entity_stack.push(new_datamember);
 
-	antlr4::tree::TerminalNode* scope_keyword = nullptr;
-
-	// Get visibility
-	BashppParser::Class_member_or_methodContext* parent = dynamic_cast<BashppParser::Class_member_or_methodContext*>(ctx->parent);
-	if (parent == nullptr) {
-		throw internal_error("Parent context is not a Class_member_or_methodContext", ctx);
-	}
-	// One of KEYWORD_PUBLIC, KEYWORD_PRIVATE, KEYWORD_PROTECTED will be set
-	if (parent->KEYWORD_PUBLIC() != nullptr) {
-		new_datamember->set_scope(bpp::SCOPE_PUBLIC);
-		scope_keyword = parent->KEYWORD_PUBLIC();
-	} else if (parent->KEYWORD_PRIVATE() != nullptr) {
-		new_datamember->set_scope(bpp::SCOPE_PRIVATE);
-		scope_keyword = parent->KEYWORD_PRIVATE();
-	} else if (parent->KEYWORD_PROTECTED() != nullptr) {
-		new_datamember->set_scope(bpp::SCOPE_PROTECTED);
-		scope_keyword = parent->KEYWORD_PROTECTED();
-	}
+	auto scope = node->ACCESSMODIFIER();
 
 	if (current_class == nullptr) {
 		entity_stack.pop();
-		throw_syntax_error(scope_keyword, "Member declaration outside of class");
+		throw_syntax_error(node, "Member declaration outside of class");
 	}
 
 	/**
@@ -49,30 +32,32 @@ void BashppListener::enterMember_declaration(BashppParser::Member_declarationCon
 
 	new_datamember->set_class(primitive); // Set the class to primitive by default (until changed by another parser rule)
 
-	if (ctx->IDENTIFIER() != nullptr) {
+	auto id = node->IDENTIFIER();
+
+	if (id.has_value()) {
 		// It's a primitive
-		std::string member_name = ctx->IDENTIFIER()->getText();
+		std::string member_name = id.value().getValue();
 		new_datamember->set_name(member_name);
 
 		new_datamember->set_definition_position(
 			source_file,
-			ctx->IDENTIFIER()->getSymbol()->getLine() - 1,
-			ctx->IDENTIFIER()->getSymbol()->getCharPositionInLine()
+			id.value().getLine() - 1,
+			id.value().getCharPositionInLine()
 		);
 
 		// Verify the name doesn't contain a double underscore
 		if (member_name.find("__") != std::string::npos) {
 			entity_stack.pop();
-			throw_syntax_error(ctx->IDENTIFIER(), "Invalid member name: " + member_name + "\nBash++ identifiers cannot contain double underscores");
+			throw_syntax_error(id.value(), "Invalid member name: " + member_name + "\nBash++ identifiers cannot contain double underscores");
 		}
 	}
 }
 
-void BashppListener::exitMember_declaration(BashppParser::Member_declarationContext *ctx) {
+void BashppListener::exitDatamemberDeclaration(std::shared_ptr<AST::DatamemberDeclaration> node) {
 	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_datamember> new_datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(entity_stack.top());
 	if (new_datamember == nullptr) {
-		throw internal_error("entity_stack top is not a bpp_datamember", ctx);
+		throw internal_error("entity_stack top is not a bpp_datamember");
 	}
 
 	entity_stack.pop();

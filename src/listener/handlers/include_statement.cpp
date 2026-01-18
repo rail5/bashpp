@@ -4,8 +4,7 @@
 */
 
 #include "../BashppListener.h"
-#include "../../antlr/BashppLexer.h"
-#include "../../antlr/BashppParser.h"
+#include "../../AST/BashppParser.h"
 
 #include <unistd.h>
 
@@ -26,75 +25,51 @@
  * 
  * @include "Stack.bpp"
  */
-void BashppListener::enterInclude_statement(BashppParser::Include_statementContext *ctx) {
+void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement> node) {
 	skip_syntax_errors
-	if (ctx->JUNK().size() > 0) {
-		throw_syntax_error(ctx->JUNK(0), "Include statement not understood");
-	}
-
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_program> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_program>(entity_stack.top());
 
-	antlr4::tree::TerminalNode* initial_node = nullptr;
-	antlr4::tree::TerminalNode* sourcePath_node = nullptr;
-	antlr4::tree::TerminalNode* asPath_node = nullptr;
+	bool local_include = node->PATHTYPE() == AST::IncludeStatement::PathType::QUOTED;
+	bool dynamic_linking = node->TYPE() == AST::IncludeStatement::IncludeType::DYNAMIC;
+	bool include_once = node->KEYWORD() == AST::IncludeStatement::IncludeKeyword::INCLUDE_ONCE;
 
-	bool local_include = false;
-	bool dynamic_linking = ctx->INCLUDE_DYNAMIC() != nullptr;
+	auto source_path = node->PATH();
+	auto as_path = node->ASPATH();
 
-	if (ctx->KEYWORD_INCLUDE() != nullptr) {
-		initial_node = ctx->KEYWORD_INCLUDE();
-	} else if (ctx->KEYWORD_INCLUDE_ONCE() != nullptr) {
-		initial_node = ctx->KEYWORD_INCLUDE_ONCE();
-	}
+	std::string resolved_source_path = source_path.getValue();
 
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(initial_node, "Include statements can only be used at the top level of a program");
+		throw_syntax_error(node, "Include statements can only be used at the top level of a program");
 	}
-
-	if (ctx->SYSTEM_INCLUDE_PATH() != nullptr) {
-		sourcePath_node = ctx->SYSTEM_INCLUDE_PATH();
-		if (ctx->LOCAL_INCLUDE_PATH(0) != nullptr) {
-			asPath_node = ctx->LOCAL_INCLUDE_PATH(0);
-		}
-	} else {
-		sourcePath_node = ctx->LOCAL_INCLUDE_PATH(0);
-		local_include = true;
-		if (ctx->LOCAL_INCLUDE_PATH(1) != nullptr) {
-			asPath_node = ctx->LOCAL_INCLUDE_PATH(1);
-		}
-	}
-
-	// Trim the first and last characters (either quote-marks or '<' and '>') from the path
-	std::string source_filename = sourcePath_node->getText();
-	source_filename = source_filename.substr(1, source_filename.length() - 2);
 
 	if (!local_include) {
 		// Search for the file in the include paths
 		bool found = false;
 		for (const std::string& include_path : *include_paths) {
-			std::string full_path = include_path + "/" + source_filename;
+			std::string full_path = include_path + "/" + source_path.getValue();
 			if (access(full_path.c_str(), F_OK) == 0) {
-				source_filename = full_path;
+				resolved_source_path = full_path;
 				found = true;
 				break;
 			}
 		}
 		if (!found) {
-			throw_syntax_error(initial_node, "File not found: " + source_filename);
+			throw_syntax_error(source_path, "File not found: " + source_path.getValue());
 		}
 	} else {
 		// This is a "local" include -- meaning we should start scanning from the same directory as the current source file
 		// Unless the path given is an absolute path (starting with '/')
 		// NOT NECESSARILY the same as the current working directory
-		if (source_filename[0] != '/') {
+		bool absolute_path = source_path.getValue().size() > 0 && source_path.getValue()[0] == '/';
+		if (!absolute_path) {
 			// Get the directory of the current source file
 			// If the program is being read from stdin, we should use the current working directory
 			std::string current_directory;
 			if (source_file == "<stdin>") {
 				char current_working_directory[PATH_MAX];
 				if (getcwd(current_working_directory, PATH_MAX) == nullptr) {
-					throw internal_error("Could not get current working directory", ctx);
+					throw internal_error("Could not get current working directory");
 				}
 				current_directory = current_working_directory;
 			} else {
@@ -102,19 +77,18 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 			}
 
 			// Append the source_filename to the directory
-			source_filename = current_directory + "/" + source_filename;
+			resolved_source_path = current_directory + "/" + source_path.getValue();
 		}
 	}
 	// Get the full path of the file
 	char full_path[PATH_MAX];
-	if (realpath(source_filename.c_str(), full_path) == nullptr) {
-		throw_syntax_error(initial_node, "File not found: " + source_filename);
+	if (realpath(resolved_source_path.c_str(), full_path) == nullptr) {
+		throw_syntax_error(source_path, "File not found: " + resolved_source_path);
 	}
 
 	auto result = included_files->insert(full_path);
-	if (result.second == false && ctx->KEYWORD_INCLUDE_ONCE() != nullptr) {
+	if (result.second == false && include_once) {
 		// If the file was already included and this is an @include_once, skip it
-		ctx->children.clear();
 		return;
 	}
 
@@ -142,43 +116,20 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 	}
 	listener.set_output_file("");
 
-	// Create a new ANTLR input stream
-	antlr4::ANTLRInputStream input;
+	// Create a new parser
+	AST::BashppParser parser; // TODO(@rail5): Propagation of UTF16 flag from the language server?
 	if (!replacement_file_contents.has_value() || replacement_file_contents->first != full_path) {
-		std::ifstream file_stream(full_path);
-		input = antlr4::ANTLRInputStream(file_stream);
+		parser.setInputFromFilePath(full_path);
 	} else {
 		// If we have replacement file contents for this file, use those instead
-		input = antlr4::ANTLRInputStream(replacement_file_contents->second);
+		parser.setInputFromStringContents(replacement_file_contents->second);
 	}
-	BashppLexer lexer(&input);
-	antlr4::CommonTokenStream tokens(&lexer);
 
-	tokens.fill();
-
-	BashppParser parser(&tokens);
-
-	// Remove default error listeners
-	parser.removeErrorListeners();
-	// Add diagnostic error listener
-	std::unique_ptr<antlr4::DiagnosticErrorListener> error_listener = std::make_unique<antlr4::DiagnosticErrorListener>();
-	parser.addErrorListener(error_listener.get());
-
-	// Enable the parser to use diagnostic messages
-	parser.setErrorHandler(std::make_shared<antlr4::BailErrorStrategy>());
-
-	antlr4::tree::ParseTree* tree = nullptr;
+	std::shared_ptr<AST::Program> tree = nullptr;
 	try {
 		tree = parser.program();
 		// Walk the tree
-		antlr4::tree::ParseTreeWalker walker;
-		walker.walk(&listener, tree);
-	} catch (const antlr4::EmptyStackException& e) {
-		std::cerr << "Empty stack exception from included file '" << full_path << "'" << std::endl;
-		throw antlr4::EmptyStackException(e);
-	} catch (const antlr4::RecognitionException& e) {
-		std::cerr << "Recognition exception from included file '" << full_path << "'" << std::endl;
-		throw antlr4::RecognitionException(e);
+		listener.walk(tree);
 	} catch (const internal_error& e) {
 		std::cerr << "Internal error from included file '" << full_path << "'" << std::endl;
 		throw internal_error(e);
@@ -191,15 +142,13 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 	}
 
 	// The objects, classes, etc should all have been added to the current program by the included program's new listener
-	ctx->children.clear();
-
 	// Recover our original output stream
 	program->set_output_stream(code_buffer);
 
 	// If we're linking statically, the code was also added
 	// If we're linking dynamically, we need to add a little source directive here
 	if (dynamic_linking) {
-		if (asPath_node == nullptr) {
+		if (!as_path.has_value()) {
 			// If the 'full path' has an extension, we should remove it
 			std::string full_path_str = full_path;
 			// Get the file basename
@@ -220,13 +169,11 @@ void BashppListener::enterInclude_statement(BashppParser::Include_statementConte
 			current_code_entity->add_code("source \"" + directory + "/" + basename + "\"\n");
 		} else {
 			// If the 'as' path is given, we should use that instead
-			std::string asPath = asPath_node->getText();
-			asPath = asPath.substr(1, asPath.length() - 2);
-			current_code_entity->add_code("source \"" + asPath + "\"\n");
+			current_code_entity->add_code("source \"" + as_path.value().getValue() + "\"\n");
 		}
 	}
 }
 
-void BashppListener::exitInclude_statement(BashppParser::Include_statementContext *ctx) {
+void BashppListener::exitIncludeStatement(std::shared_ptr<AST::IncludeStatement> node) {
 	skip_syntax_errors
 }

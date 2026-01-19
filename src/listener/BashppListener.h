@@ -125,7 +125,7 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 		std::shared_ptr<bpp::bpp_program> program = std::make_shared<bpp::bpp_program>();
 
 		bool in_while_condition = false;
-		std::shared_ptr<bpp::bash_while_condition> current_while_condition = nullptr;
+		std::shared_ptr<bpp::bash_while_or_until_condition> current_while_or_until_condition = nullptr;
 		bool in_method = false;
 
 		bool in_class = false;

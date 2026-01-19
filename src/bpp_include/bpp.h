@@ -61,8 +61,8 @@ class bpp_datamember;
 class bpp_program;
 
 // Statement types
-class bash_while_loop;
-class bash_while_condition;
+class bash_while_or_until_loop;
+class bash_while_or_until_condition;
 class bash_if;
 class bash_if_branch;
 class bash_case;
@@ -605,27 +605,27 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 };
 
 /**
- * @class bash_while_loop
+ * @class bash_while_or_until_loop
  * 
- * @brief A while loop in Bash++
+ * @brief A while/until loop in Bash++
  * 
- * This entity gets pushed onto the entity stack when a while loop is encountered in Bash++ code.
- * It contains a bash_while_condition object which holds the condition for the while loop
+ * This entity gets pushed onto the entity stack when a while loop or an until loop is encountered in Bash++ code.
+ * It contains a bash_while_or_until_condition object which holds the condition for the loop
  * 
- * The reason for this is that the condition for the while loop may contain references which need to be resolved
+ * The reason for this is that the condition for the loop may contain references which need to be resolved
  * And the pre- and post-code for those references need to be added in specific places in the compiled code.
  * E.g., supershells must be re-evaluated for each iteration of the loop
  * 
  * The 'bash_' prefix signifies that this is used to parse ordinary Bash code, not anything specific to Bash++
  */
-class bash_while_loop : public bpp_code_entity {
+class bash_while_or_until_loop : public bpp_code_entity {
 	private:
-		std::shared_ptr<bpp::bash_while_condition> while_condition;
+		std::shared_ptr<bpp::bash_while_or_until_condition> condition;
 	public:
-		bash_while_loop();
+		bash_while_or_until_loop();
 
-		void set_while_condition(std::shared_ptr<bpp::bash_while_condition> while_condition);
-		std::shared_ptr<bpp::bash_while_condition> get_while_condition() const;
+		void set_condition(std::shared_ptr<bpp::bash_while_or_until_condition> condition);
+		std::shared_ptr<bpp::bash_while_or_until_condition> get_condition() const;
 
 		std::string get_code() const override;
 		std::string get_pre_code() const override;
@@ -633,18 +633,18 @@ class bash_while_loop : public bpp_code_entity {
 };
 
 /**
- * @class bash_while_condition
+ * @class bash_while_or_until_condition
  * 
- * @brief The condition for a while loop in Bash++
+ * @brief The condition for a while/until loop in Bash++
  * 
  * The 'bash_' prefix signifies that this is used to parse ordinary Bash code, not anything specific to Bash++
  */
-class bash_while_condition : public bpp_string {
+class bash_while_or_until_condition : public bpp_string {
 	private:
 		int supershell_count = 0;
 		std::vector<std::string> supershell_function_calls = {};
 	public:
-		bash_while_condition();
+		bash_while_or_until_condition();
 
 		void increment_supershell_count();
 		void add_supershell_function_call(const std::string& function_call);
@@ -659,7 +659,7 @@ class bash_while_condition : public bpp_string {
  * This entity gets pushed onto the entity stack when an if statement is encountered in Bash++ code.
  * It contains a vector of conditional branches, each of which contains a condition and a branch of code
  * 
- * The reason this requires its own entity type is similar to the reason for bash_while_loop:
+ * The reason this requires its own entity type is similar to the reason for bash_while_or_until_loop:
  * The conditions for the if statement may contain references which need to be resolved,
  * And the pre- and post-code for those references need to be added in specific places in the compiled code.
  * 

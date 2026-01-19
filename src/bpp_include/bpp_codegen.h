@@ -19,7 +19,7 @@
 namespace bpp {
 // Minimal forward declarations
 class bpp_program;
-class bash_while_condition;
+class bash_while_or_until_condition;
 class bpp_class;
 class bpp_object;
 
@@ -54,7 +54,7 @@ struct code_segment {
 code_segment generate_supershell_code(
 	const std::string&						code_to_run,
 	bool									in_while_condition,
-	std::shared_ptr<bash_while_condition>	current_while_condition,
+	std::shared_ptr<bash_while_or_until_condition>	current_while_condition,
 	std::shared_ptr<bpp::bpp_program>		program
 	);
 

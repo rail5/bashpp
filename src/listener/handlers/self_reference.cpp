@@ -114,7 +114,7 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 			self_reference_entity->add_code(method_call_code.code);
 		} else {
 			// Call the method in a supershell, and substitute the result in place of the self-reference
-			code_segment method_code = generate_supershell_code(method_call_code.full_code(), in_while_condition, current_while_condition, program);
+			code_segment method_code = generate_supershell_code(method_call_code.full_code(), in_while_condition, current_while_or_until_condition, program);
 			self_reference_entity->add_code_to_previous_line(method_code.pre_code);
 			self_reference_entity->add_code_to_next_line(method_code.post_code);
 			self_reference_entity->add_code(method_code.code);
@@ -179,7 +179,7 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 					// Call .toPrimitive in a supershell and substitute the result
 					code_segment method_call_code = generate_method_call_code("${" + indirection + ref.reference_code.code + "}", "toPrimitive", ref.entity->get_class(), force_static_reference, program);
 
-					code_segment method_code = generate_supershell_code(method_call_code.full_code(), in_while_condition, current_while_condition, program);
+					code_segment method_code = generate_supershell_code(method_call_code.full_code(), in_while_condition, current_while_or_until_condition, program);
 					self_reference_entity->add_code_to_previous_line(method_code.pre_code);
 					self_reference_entity->add_code_to_next_line(method_code.post_code);
 					self_reference_entity->add_code(method_code.code);
@@ -267,7 +267,7 @@ void BashppListener::exitSelf_reference(BashppParser::Self_referenceContext *ctx
 		indirection = (ref.created_second_temporary_variable && !hasPoundKey) ? "!" : "";
 		code_segment method_call_code = generate_method_call_code("${" + indirection + ref.reference_code.code + "}", "toPrimitive", ref.entity->get_class(), false, program);
 
-		code_segment method_code = generate_supershell_code(method_call_code.full_code(), in_while_condition, current_while_condition, program);
+		code_segment method_code = generate_supershell_code(method_call_code.full_code(), in_while_condition, current_while_or_until_condition, program);
 		self_reference_entity->add_code_to_previous_line(method_code.pre_code);
 		self_reference_entity->add_code_to_next_line(method_code.post_code);
 		self_reference_entity->add_code(method_code.code);

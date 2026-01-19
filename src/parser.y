@@ -234,7 +234,13 @@ shell_command_sequence:
 	}
 	| shell_command_sequence logical_connective maybe_whitespace pipeline {
 		auto commandSequence = std::dynamic_pointer_cast<AST::BashCommandSequence>($1);
-		commandSequence->addText(" " + $2.getValue() + " "); // Preserve connective with surrounding spaces
+		auto connective = std::make_shared<AST::Connective>();
+		if ($2.getValue() == "&&") {
+			connective->setType(AST::Connective::ConnectiveType::AND);
+		} else {
+			connective->setType(AST::Connective::ConnectiveType::OR);
+		}
+		commandSequence->addChild(connective);
 		commandSequence->addChild($4);
 		commandSequence->setEndPosition(@4.end.line, @4.end.column);
 		$$ = commandSequence;
@@ -358,7 +364,13 @@ simple_command_sequence:
 	}
 	| simple_command_sequence logical_connective maybe_whitespace simple_pipeline {
 		auto commandSequence = std::dynamic_pointer_cast<AST::BashCommandSequence>($1);
-		commandSequence->addText(" " + $2.getValue() + " "); // Preserve connective with surrounding spaces
+		auto connective = std::make_shared<AST::Connective>();
+		if ($2.getValue() == "&&") {
+			connective->setType(AST::Connective::ConnectiveType::AND);
+		} else {
+			connective->setType(AST::Connective::ConnectiveType::OR);
+		}
+		commandSequence->addChild(connective);
 		commandSequence->addChild($4);
 		commandSequence->setEndPosition(@4.end.line, @4.end.column);
 		$$ = commandSequence;

@@ -67,7 +67,7 @@ class bash_if;
 class bash_if_branch;
 class bash_case;
 class bash_case_pattern;
-class bash_for;
+class bash_for_or_select;
 class bash_function;
 class bpp_delete_statement;
 class bpp_dynamic_cast_statement;
@@ -759,21 +759,21 @@ class bash_case_pattern : public bpp_code_entity {
 };
 
 /**
- * @class bash_for
+ * @class bash_for_or_select
  * 
- * @brief A for loop in Bash++
+ * @brief A for loop or select statement in Bash++
  * 
- * This entity gets pushed onto the entity stack when a for loop is encountered in Bash++ code.
+ * This entity gets pushed onto the entity stack when a for loop or select statement is encountered in Bash++ code.
  * 
  * The 'bash_' prefix signifies that this is used to parse ordinary Bash code, not anything specific to Bash++
  */
-class bash_for : public bpp_code_entity {
+class bash_for_or_select : public bpp_code_entity {
 	private:
 		std::string header_pre_code = "";
 		std::string header_post_code = "";
 		std::string header_code = "";
 	public:
-		bash_for();
+		bash_for_or_select();
 
 		void set_header_pre_code(const std::string& pre_code);
 		void set_header_post_code(const std::string& post_code);

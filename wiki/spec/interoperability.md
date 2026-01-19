@@ -14,13 +14,32 @@ Certain Bash features are incompatible with Bash++'s object model and runtime gu
 
 The `eval` command is a Bash built-in that executes its arguments as a Bash command. In Bash++, using `eval` can lead to unexpected behavior, especially when dealing with objects and methods, because it bypasses the Bash++ compiler altogether. It may interfere with scope tracking, scope safety, object lifetimes, and method resolution.
 
-## set -e
+Because the arguments passed to `eval` are interpreted by Bash directly, the Bash++ compiler is unable to enforce any of its guarantees on code executed via `eval`.
 
-The `set -e` command in Bash causes the shell to exit immediately if any command exits with a non-zero status. In Bash++, this can lead to premature termination of the program, especially if an object method fails or if an error occurs in a constructor or destructor. This can result in objects not being properly cleaned up, as the program may terminate before destructors are called. It is recommended to avoid using `set -e` in Bash++ programs, or to use it with caution, ensuring that error handling is properly implemented.
+The behavior of `eval` is therefore undefined in Bash++ programs.
 
-## set -u
+## set
 
-The `set -u` command in Bash treats unset variables as an error when substituting. In Bash++, this can lead to issues when accessing object properties or methods that may not be initialized or set. If an object property is accessed before it is initialized, it may cause the program to exit unexpectedly. It is advisable to ensure that all object properties are properly initialized before use, or to avoid using `set -u` in Bash++ programs.
+The `set` command in Bash is used to change shell options and positional parameters. In Bash++, using `set` to modify shell options can conflict with the assumptions made by the Bash++ runtime about the execution environment. This can lead to undefined behavior, especially if options that affect error handling or command execution are altered.
+
+In particular, changing options like `-e` (exit on error) or `-u` (treat unset variables as an error) can lead to premature termination of the program, or unexpected errors when accessing object properties, and will almost certainly break the guarantees provided by Bash++ (e.g., object lifetimes and destructors).
+
+The behavior of `set` is therefore undefined in Bash++ programs.
+
+## $?
+
+The special variable `$?` in Bash holds the exit status of the last executed command. The Bash++ compiler however routinely interposes housekeeping commands between source lines to implement many object-oriented features. As a result, the `$?` variable may hold the exit status of an internal housekeeping command rather than the one you intended to check.
+
+For example:
+
+```bash
+@object.method
+exitStatus=$?
+```
+
+In this example, `exitStatus` will **NOT** contain the exit status of `@object.method`, because the Bash++ compiler will have inserted additional commands between the method call and the assignment to `exitStatus`. If you would like to check the exit status of a method call, you should instead wrap it in an `if` statement, as in `if @object.method; then ... fi`.
+
+The behavior of `$?` is therefore undefined in Bash++ programs.
 
 # NOTES
 

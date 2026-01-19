@@ -5,7 +5,7 @@
 
 #include "../BashppListener.h"
 
-void BashppListener::enterObject_assignment(BashppParser::Object_assignmentContext *ctx) {
+void BashppListener::enterObjectAssignment(std::shared_ptr<AST::ObjectAssignment> node) {
 	skip_syntax_errors
 
 	std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::make_shared<bpp::bpp_object_assignment>();
@@ -14,13 +14,13 @@ void BashppListener::enterObject_assignment(BashppParser::Object_assignmentConte
 	entity_stack.push(object_assignment);
 }
 
-void BashppListener::exitObject_assignment(BashppParser::Object_assignmentContext *ctx) {
+void BashppListener::exitObjectAssignment(std::shared_ptr<AST::ObjectAssignment> node) {
 	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(entity_stack.top());
 	entity_stack.pop();
 
 	if (object_assignment == nullptr) {
-		throw internal_error("Object assignment context was not found in the entity stack", ctx);
+		throw internal_error("Object assignment context was not found in the entity stack");
 	}
 
 	bool is_nonprimitive_copy = object_assignment->lvalue_is_nonprimitive() && object_assignment->rvalue_is_nonprimitive();
@@ -31,15 +31,15 @@ void BashppListener::exitObject_assignment(BashppParser::Object_assignmentContex
 		std::shared_ptr<bpp::bpp_entity> lvalue_object = object_assignment->get_lvalue_object();
 		std::shared_ptr<bpp::bpp_entity> rvalue_object = object_assignment->get_rvalue_object();
 		if (lvalue_object == nullptr || rvalue_object == nullptr) {
-			throw internal_error("Objects are null", ctx);
+			throw internal_error("Objects are null");
 		}
 
 		if (lvalue_object->get_class() == nullptr || rvalue_object->get_class() == nullptr) {
-			throw internal_error("Objects have no class", ctx);
+			throw internal_error("Objects have no class");
 		}
 
 		if (lvalue_object->get_class()->get_name() != rvalue_object->get_class()->get_name()) {
-			throw_syntax_error_from_exitRule(ctx, "Cannot copy objects of different classes");
+			throw_syntax_error_from_exitRule(node, "Cannot copy objects of different classes");
 		}
 
 		// Call the __copy method
@@ -60,7 +60,7 @@ void BashppListener::exitObject_assignment(BashppParser::Object_assignmentContex
 	}
 
 	if (object_assignment->lvalue_is_nonprimitive() && !object_assignment->rvalue_is_nonprimitive()) {
-		throw_syntax_error_from_exitRule(ctx->value_assignment(), "Cannot assign a primitive value to a nonprimitive object");
+		throw_syntax_error_from_exitRule(node, "Cannot assign a primitive value to a nonprimitive object");
 	}
 
 	std::string object_assignment_lvalue = object_assignment->get_lvalue();

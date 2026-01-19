@@ -5,7 +5,7 @@
 
 #include "../BashppListener.h"
 
-void BashppListener::enterValue_assignment(BashppParser::Value_assignmentContext *ctx) {
+void BashppListener::enterValueAssignment(std::shared_ptr<AST::ValueAssignment> node) {
 	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_value_assignment> value_assignment_entity = std::make_shared<bpp::bpp_value_assignment>();
 	value_assignment_entity->set_containing_class(entity_stack.top()->get_containing_class());
@@ -16,13 +16,14 @@ void BashppListener::enterValue_assignment(BashppParser::Value_assignmentContext
 	if (object_assignment != nullptr) {
 		value_assignment_entity->set_lvalue_nonprimitive(object_assignment->lvalue_is_nonprimitive());
 	}
-
-	value_assignment_entity->set_adding(ctx->PLUS() != nullptr);
+	
+	auto op = node->OPERATOR();
+	value_assignment_entity->set_adding(op.getValue() == "+=");
 
 	entity_stack.push(value_assignment_entity);
 }
 
-void BashppListener::exitValue_assignment(BashppParser::Value_assignmentContext *ctx) {
+void BashppListener::exitValueAssignment(std::shared_ptr<AST::ValueAssignment> node) {
 	skip_syntax_errors
 	/**
 	 * Value assignments will appear in the following contexts:
@@ -36,7 +37,7 @@ void BashppListener::exitValue_assignment(BashppParser::Value_assignmentContext 
 	entity_stack.pop();
 
 	if (value_assignment_entity == nullptr) {
-		throw internal_error("Value assignment context was not found in the entity stack", ctx);
+		throw internal_error("Value assignment context was not found in the entity stack");
 	}
 
 	// Check if we're in a member declaration
@@ -69,7 +70,7 @@ void BashppListener::exitValue_assignment(BashppParser::Value_assignmentContext 
 			std::string rvalue;
 			std::shared_ptr<bpp::bpp_object> rvalue_object = std::dynamic_pointer_cast<bpp::bpp_object>(value_assignment_entity->get_nonprimitive_object());
 			if (rvalue_object == nullptr) {
-				throw internal_error("Rvalue object not found for copy", ctx);
+				throw internal_error("Rvalue object not found for copy");
 			}
 			current_object_assignment->set_rvalue(rvalue_object->get_address());
 		}
@@ -87,7 +88,7 @@ void BashppListener::exitValue_assignment(BashppParser::Value_assignmentContext 
 		} else if (!value_assignment_entity->is_nonprimitive_assignment()) {
 			// The object we're assigning to is not a pointer, and yet we're trying to assign a primitive to it
 			// Throw an error
-			throw_syntax_error_from_exitRule(ctx, "Cannot assign a primitive value to a nonprimitive object");
+			throw_syntax_error_from_exitRule(node, "Cannot assign a primitive value to a nonprimitive object");
 		}
 	}
 }

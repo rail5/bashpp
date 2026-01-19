@@ -209,12 +209,13 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 				// FIXME(@rail5): Kind of hacky to handle special cases. Would prefer a general solution.
 				line = static_cast<int>(error_ctx.getLine());
 				column = static_cast<int>(error_ctx.getCharPositionInLine());
-				if (error_ctx.type.has_value()) {
-					text = "@" + error_ctx.type.value();
-					if (error_ctx.pointer) text += "*";
-					text += " " + error_ctx.name->getText();
+				auto param = error_ctx.getValue();
+				if (param.type.has_value()) {
+					text = "@" + param.type.value().getValue();
+					if (param.pointer) text += "*";
+					text += " " + param.name.getValue();
 				} else {
-					text = error_ctx.name->getText();
+					text = param.name.getValue();
 				}
 			}
 			print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), program);

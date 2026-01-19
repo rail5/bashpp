@@ -6,11 +6,10 @@
 #pragma once
 
 #include "../ASTNode.h"
-#include "StringType.h"
 
 namespace AST {
 
-class BashCommandSequence : public StringType {
+class BashCommandSequence : public ASTNode {
 	public:
 		static constexpr AST::NodeType static_type = AST::NodeType::BashCommandSequence;
 		constexpr AST::NodeType getType() const override { return static_type; }

@@ -36,6 +36,7 @@ enum class NodeType : int {
 	BashFunction,
 	Block,
 	ClassDefinition,
+	Connective,
 	ConstructorDefinition,
 	DatamemberDeclaration,
 	DeleteStatement,

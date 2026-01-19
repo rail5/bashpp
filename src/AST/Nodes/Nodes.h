@@ -33,6 +33,7 @@
 #include "BashFunction.h"
 #include "Block.h"
 #include "ClassDefinition.h"
+#include "Connective.h"
 #include "ConstructorDefinition.h"
 #include "DatamemberDeclaration.h"
 #include "DeleteStatement.h"

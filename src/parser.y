@@ -1674,13 +1674,7 @@ bash_case_pattern:
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@4.end.line, @4.end.column);
 		node->addChild($1); // pattern header
-
-		auto action = std::make_shared<AST::BashCasePatternAction>();
-		action->setPosition(@3.begin.line, @3.begin.column);
-		action->setEndPosition(@3.end.line, @3.end.column);
-		action->addChildren($3); // statements
-
-		node->addChild(action);
+		node->addChildren($3); // statements
 		$$ = node;
 	}
 	;

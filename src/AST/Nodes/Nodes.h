@@ -11,7 +11,6 @@
 #include "BashArithmeticStatement.h"
 #include "BashArithmeticSubstitution.h"
 #include "BashCaseInput.h"
-#include "BashCasePatternAction.h"
 #include "BashCasePattern.h"
 #include "BashCasePatternHeader.h"
 #include "BashCaseStatement.h"

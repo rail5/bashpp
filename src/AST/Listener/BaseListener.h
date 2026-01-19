@@ -27,7 +27,6 @@ namespace AST {
 	X(BashArithmeticSubstitution) \
 	X(BashCaseInput) \
 	X(BashCasePattern) \
-	X(BashCasePatternAction) \
 	X(BashCasePatternHeader) \
 	X(BashCaseStatement) \
 	X(BashCommand) \

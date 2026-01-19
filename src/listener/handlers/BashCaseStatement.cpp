@@ -5,14 +5,14 @@
 
 /**
 * This file contains parser rules for all of:
-* 		1. Bash_case_statement
-* 		2. Bash_case_pattern
-* 		3. Bash_case_pattern_header
+* 		1. BashCaseStatement
+* 		2. BashCasePattern
+* 		3. BashCasePatternHeader
 */
 
 #include "../BashppListener.h"
 
-void BashppListener::enterBash_case_statement(BashppParser::Bash_case_statementContext *ctx) {
+void BashppListener::enterBashCaseStatement(std::shared_ptr<AST::BashCaseStatement> node) {
 	skip_syntax_errors
 	/**
 	 * Bash case statements take the form
@@ -22,18 +22,12 @@ void BashppListener::enterBash_case_statement(BashppParser::Bash_case_statementC
 	 * 				;;
 	 * 			...
 	 * 		esac
-	 * 
-	 * The code to handle each pattern will be caught by the Bash_case_pattern context
-	 * 	These will be children of the Bash_case_statement context in the parse tree
-	 * 
-	 * The patterns to be matched will be caught by the Bash_case_pattern_header context
-	 * 	These will be children of the Bash_case_pattern context in the parse tree
 	 */
 
 	 std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	 if (current_code_entity == nullptr) {
-		 throw_syntax_error(ctx->BASH_KEYWORD_CASE(), "Case statement outside of code entity");
+		 throw_syntax_error(node, "Case statement outside of code entity");
 	 }
 
 	 std::shared_ptr<bpp::bash_case> case_statement_entity = std::make_shared<bpp::bash_case>();
@@ -43,12 +37,12 @@ void BashppListener::enterBash_case_statement(BashppParser::Bash_case_statementC
 	 entity_stack.push(case_statement_entity);
 }
 
-void BashppListener::exitBash_case_statement(BashppParser::Bash_case_statementContext *ctx) {
+void BashppListener::exitBashCaseStatement(std::shared_ptr<AST::BashCaseStatement> node) {
 	skip_syntax_errors
 	std::shared_ptr<bpp::bash_case> case_statement_entity = std::dynamic_pointer_cast<bpp::bash_case>(entity_stack.top());
 
 	if (case_statement_entity == nullptr) {
-		throw internal_error("Case statement entity not found in the entity stack", ctx);
+		throw internal_error("Case statement entity not found in the entity stack");
 	}
 
 	entity_stack.pop();
@@ -56,7 +50,7 @@ void BashppListener::exitBash_case_statement(BashppParser::Bash_case_statementCo
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	if (current_code_entity == nullptr) {
-		throw internal_error("Current code entity not found in the entity stack", ctx);
+		throw internal_error("Current code entity not found in the entity stack");
 	}
 
 	current_code_entity->add_code_to_previous_line(case_statement_entity->get_pre_code());
@@ -64,12 +58,16 @@ void BashppListener::exitBash_case_statement(BashppParser::Bash_case_statementCo
 	current_code_entity->add_code("case " + case_statement_entity->get_code() + " in\n" + case_statement_entity->get_cases() + "\nesac\n");
 }
 
-void BashppListener::enterBash_case_pattern(BashppParser::Bash_case_patternContext *ctx) {
+// It's not necessary to handle BashCaseInput nodes specially.
+// Their inner nodes will simply call ->add_code on the containing case statement entity,
+// Which will correctly place their content as the input to the case statement.
+
+void BashppListener::enterBashCasePattern(std::shared_ptr<AST::BashCasePattern> node) {
 	skip_syntax_errors
 	std::shared_ptr<bpp::bash_case> case_statement_entity = std::dynamic_pointer_cast<bpp::bash_case>(entity_stack.top());
 
 	if (case_statement_entity == nullptr) {
-		throw internal_error("Case statement entity not found in the entity stack", ctx);
+		throw internal_error("Case statement entity not found in the entity stack");
 	}
 
 	std::shared_ptr<bpp::bash_case_pattern> case_pattern_entity = std::make_shared<bpp::bash_case_pattern>();
@@ -82,17 +80,17 @@ void BashppListener::enterBash_case_pattern(BashppParser::Bash_case_patternConte
 
 	case_pattern_entity->set_definition_position(
 		source_file,
-		ctx->start->getLine() - 1,
-		ctx->start->getCharPositionInLine()
+		node->getLine() - 1,
+		node->getCharPositionInLine()
 	);
 }
 
-void BashppListener::exitBash_case_pattern(BashppParser::Bash_case_patternContext *ctx) {
+void BashppListener::exitBashCasePattern(std::shared_ptr<AST::BashCasePattern> node) {
 	skip_syntax_errors
 	std::shared_ptr<bpp::bash_case_pattern> case_pattern_entity = std::dynamic_pointer_cast<bpp::bash_case_pattern>(entity_stack.top());
 
 	if (case_pattern_entity == nullptr) {
-		throw internal_error("Case pattern entity not found in the entity stack", ctx);
+		throw internal_error("Case pattern entity not found in the entity stack");
 	}
 
 	entity_stack.pop();
@@ -100,7 +98,7 @@ void BashppListener::exitBash_case_pattern(BashppParser::Bash_case_patternContex
 	std::shared_ptr<bpp::bash_case> case_statement_entity = std::dynamic_pointer_cast<bpp::bash_case>(entity_stack.top());
 
 	if (case_statement_entity == nullptr) {
-		throw internal_error("Case statement entity not found in the entity stack", ctx);
+		throw internal_error("Case statement entity not found in the entity stack");
 	}
 
 	case_statement_entity->add_case(case_pattern_entity->get_pattern() + ")\n"
@@ -113,18 +111,18 @@ void BashppListener::exitBash_case_pattern(BashppParser::Bash_case_patternContex
 		source_file,
 		case_pattern_entity->get_initial_definition().line,
 		case_pattern_entity->get_initial_definition().column,
-		ctx->BASH_CASE_PATTERN_DELIM()->getSymbol()->getLine() - 1,
-		ctx->BASH_CASE_PATTERN_DELIM()->getSymbol()->getCharPositionInLine(),
+		node->getEndPosition().line - 1,
+		node->getEndPosition().column,
 		case_pattern_entity
 	);
 }
 
-void BashppListener::enterBash_case_pattern_header(BashppParser::Bash_case_pattern_headerContext *ctx) {
+void BashppListener::enterBashCasePatternHeader(std::shared_ptr<AST::BashCasePatternHeader> node) {
 	skip_syntax_errors
 	std::shared_ptr<bpp::bash_case_pattern> case_pattern_entity = std::dynamic_pointer_cast<bpp::bash_case_pattern>(entity_stack.top());
 
 	if (case_pattern_entity == nullptr) {
-		throw internal_error("Case pattern entity not found in the entity stack", ctx);
+		throw internal_error("Case pattern entity not found in the entity stack");
 	}
 
 	std::shared_ptr<bpp::bpp_string> case_pattern_header_entity = std::make_shared<bpp::bpp_string>();
@@ -134,12 +132,12 @@ void BashppListener::enterBash_case_pattern_header(BashppParser::Bash_case_patte
 	entity_stack.push(case_pattern_header_entity);
 }
 
-void BashppListener::exitBash_case_pattern_header(BashppParser::Bash_case_pattern_headerContext *ctx) {
+void BashppListener::exitBashCasePatternHeader(std::shared_ptr<AST::BashCasePatternHeader> node) {
 	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_string> case_pattern_header_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 
 	if (case_pattern_header_entity == nullptr) {
-		throw internal_error("Case pattern header entity not found in the entity stack", ctx);
+		throw internal_error("Case pattern header entity not found in the entity stack");
 	}
 
 	entity_stack.pop();
@@ -147,7 +145,7 @@ void BashppListener::exitBash_case_pattern_header(BashppParser::Bash_case_patter
 	std::shared_ptr<bpp::bash_case_pattern> case_pattern_entity = std::dynamic_pointer_cast<bpp::bash_case_pattern>(entity_stack.top());
 
 	if (case_pattern_entity == nullptr) {
-		throw internal_error("Case pattern entity not found in the entity stack", ctx);
+		throw internal_error("Case pattern entity not found in the entity stack");
 	}
 
 	case_pattern_entity->get_containing_case()->add_code_to_previous_line(case_pattern_header_entity->get_pre_code());

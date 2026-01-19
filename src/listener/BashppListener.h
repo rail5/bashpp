@@ -275,10 +275,8 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 	void exitBashArithmeticStatement(std::shared_ptr<AST::BashArithmeticStatement> node);
 	void enterBashArithmeticSubstitution(std::shared_ptr<AST::BashArithmeticSubstitution> node);
 	void exitBashArithmeticSubstitution(std::shared_ptr<AST::BashArithmeticSubstitution> node);
-	void enterBashCaseInput(std::shared_ptr<AST::BashCaseInput> node);
-	void exitBashCaseInput(std::shared_ptr<AST::BashCaseInput> node);
-	void enterBashCasePatternAction(std::shared_ptr<AST::BashCasePatternAction> node);
-	void exitBashCasePatternAction(std::shared_ptr<AST::BashCasePatternAction> node);
+	//void enterBashCaseInput(std::shared_ptr<AST::BashCaseInput> node);
+	//void exitBashCaseInput(std::shared_ptr<AST::BashCaseInput> node);
 	void enterBashCasePattern(std::shared_ptr<AST::BashCasePattern> node);
 	void exitBashCasePattern(std::shared_ptr<AST::BashCasePattern> node);
 	void enterBashCasePatternHeader(std::shared_ptr<AST::BashCasePatternHeader> node);

@@ -1908,7 +1908,9 @@ arithmetic_for_condition:
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@7.end.line, @7.end.column);
 		node->addChild($2); // first expression
+		node->addText(" ; ");    // first delimiter
 		node->addChild($4); // second expression
+		node->addText(" ; ");    // second delimiter
 		node->addChild($6); // third expression
 		$$ = node;
 	}

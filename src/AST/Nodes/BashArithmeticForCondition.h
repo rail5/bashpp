@@ -6,6 +6,7 @@
 #pragma once
 
 #include "../ASTNode.h"
+#include "StringType.h"
 
 namespace AST {
 
@@ -16,7 +17,7 @@ namespace AST {
  * Each of the three components would be represented by BashArithmeticStatement nodes as its children.
  * 
  */
-class BashArithmeticForCondition : public ASTNode {
+class BashArithmeticForCondition : public StringType {
 	public:
 		static constexpr AST::NodeType static_type = AST::NodeType::BashArithmeticForCondition;
 		constexpr AST::NodeType getType() const override { return static_type; }

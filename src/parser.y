@@ -2147,7 +2147,7 @@ bash_if_else_branch:
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@7.end.line, @7.end.column);
-
+		node->setHasCondition(true);
 		node->addChild($2); // condition
 		node->addChildren($7); // statements
 
@@ -2160,6 +2160,7 @@ bash_if_else_branch:
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@4.end.line, @4.end.column);
 		// 'else' branch has no condition
+		node->setHasCondition(false);
 		node->addChildren($4); // statements
 
 		$$ = node;

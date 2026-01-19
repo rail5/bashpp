@@ -700,6 +700,7 @@ class bash_if : public bpp_string {
 class bash_if_branch : public bpp_code_entity {
 	private:
 		std::shared_ptr<bpp::bash_if> if_statement;
+		bool root_branch = false;
 	public:
 		bash_if_branch();
 
@@ -709,6 +710,9 @@ class bash_if_branch : public bpp_code_entity {
 		std::string get_code() const override;
 		std::string get_pre_code() const override;
 		std::string get_post_code() const override;
+
+		bool is_root_branch() const;
+		void set_root_branch(bool is_root);
 };
 
 /**

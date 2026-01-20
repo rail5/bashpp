@@ -31,7 +31,7 @@ void BashppListener::enterNewStatement(std::shared_ptr<AST::NewStatement> node) 
 
 	new_class->add_reference(
 		source_file,
-		node->TYPE().getLine() - 1,
+		node->TYPE().getLine(),
 		node->TYPE().getCharPositionInLine()
 	);
 

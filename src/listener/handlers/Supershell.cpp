@@ -29,7 +29,7 @@ void BashppListener::enterSupershell(std::shared_ptr<AST::Supershell> node) {
 
 	supershell_entity->set_definition_position(
 		source_file,
-		node->getLine() - 1,
+		node->getLine(),
 		node->getCharPositionInLine()
 	);
 }
@@ -47,7 +47,7 @@ void BashppListener::exitSupershell(std::shared_ptr<AST::Supershell> node) {
 		source_file,
 		supershell_entity->get_initial_definition().line,
 		supershell_entity->get_initial_definition().column,
-		node->getEndPosition().line - 1,
+		node->getEndPosition().line,
 		node->getEndPosition().column,
 		supershell_entity
 	);

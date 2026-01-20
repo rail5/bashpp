@@ -41,7 +41,7 @@ void BashppListener::enterDatamemberDeclaration(std::shared_ptr<AST::DatamemberD
 
 		new_datamember->set_definition_position(
 			source_file,
-			id.value().getLine() - 1,
+			id.value().getLine(),
 			id.value().getCharPositionInLine()
 		);
 

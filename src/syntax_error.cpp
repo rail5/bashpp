@@ -77,9 +77,9 @@ void print_syntax_error_or_warning(
 	file.close();
 
 	// Print the line with the error
-	std::string line_before_error = utf8_substr(line_content, 0, column);
-	std::string error_portion = utf8_substr(line_content, column, utf8_length(text));
-	std::string line_after_error = utf8_substr(line_content, column + utf8_length(text), 0);
+	std::string line_before_error = utf8_substr(line_content, 0, column - 1);
+	std::string error_portion = utf8_substr(line_content, column - 1, utf8_length(text));
+	std::string line_after_error = utf8_substr(line_content, column - 1 + utf8_length(text), 0);
 	
 	std::cerr << line1_prefix
 		<< line_before_error
@@ -100,9 +100,9 @@ void print_syntax_error_or_warning(
 			source_file,
 			is_warning ? bpp::diagnostic_type::DIAGNOSTIC_WARNING : bpp::diagnostic_type::DIAGNOSTIC_ERROR,
 			msg,
-			static_cast<uint32_t>(line) - 1, // 0-indexed. Flex/Bison use 1-indexed line numbers
+			static_cast<uint32_t>(line),
 			static_cast<uint32_t>(column),
-			static_cast<uint32_t>(line) - 1,
+			static_cast<uint32_t>(line),
 			static_cast<uint32_t>(column + text.length())
 		);
 	}

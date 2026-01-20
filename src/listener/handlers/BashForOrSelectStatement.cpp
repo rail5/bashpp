@@ -59,7 +59,7 @@ void BashppListener::exitBashForStatement(std::shared_ptr<AST::BashForStatement>
 		source_file,
 		for_loop->get_initial_definition().line,
 		for_loop->get_initial_definition().column,
-		node->getEndPosition().line - 1,
+		node->getEndPosition().line,
 		node->getEndPosition().column,
 		for_loop
 	);
@@ -112,7 +112,7 @@ void BashppListener::exitBashSelectStatement(std::shared_ptr<AST::BashSelectStat
 		source_file,
 		select_statement->get_initial_definition().line,
 		select_statement->get_initial_definition().column,
-		node->getEndPosition().line - 1,
+		node->getEndPosition().line,
 		node->getEndPosition().column,
 		select_statement
 	);

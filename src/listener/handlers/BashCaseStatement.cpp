@@ -80,7 +80,7 @@ void BashppListener::enterBashCasePattern(std::shared_ptr<AST::BashCasePattern> 
 
 	case_pattern_entity->set_definition_position(
 		source_file,
-		node->getLine() - 1,
+		node->getLine(),
 		node->getCharPositionInLine()
 	);
 }
@@ -111,7 +111,7 @@ void BashppListener::exitBashCasePattern(std::shared_ptr<AST::BashCasePattern> n
 		source_file,
 		case_pattern_entity->get_initial_definition().line,
 		case_pattern_entity->get_initial_definition().column,
-		node->getEndPosition().line - 1,
+		node->getEndPosition().line,
 		node->getEndPosition().column,
 		case_pattern_entity
 	);

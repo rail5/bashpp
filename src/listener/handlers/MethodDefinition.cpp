@@ -22,7 +22,7 @@ void BashppListener::enterMethodDefinition(std::shared_ptr<AST::MethodDefinition
 
 	method->set_definition_position(
 		source_file,
-		node->NAME().getLine() - 1,
+		node->NAME().getLine(),
 		node->NAME().getCharPositionInLine()
 	);
 
@@ -74,7 +74,7 @@ void BashppListener::enterMethodDefinition(std::shared_ptr<AST::MethodDefinition
 
 			type->add_reference(
 				source_file,
-				p.getLine() - 1,
+				p.getLine(),
 				p.getCharPositionInLine()
 			);
 
@@ -105,7 +105,7 @@ void BashppListener::enterMethodDefinition(std::shared_ptr<AST::MethodDefinition
 
 		parameter->set_definition_position(
 			source_file,
-			param.name.getLine() - 1,
+			param.name.getLine(),
 			param.name.getCharPositionInLine()
 		);
 
@@ -141,7 +141,7 @@ void BashppListener::exitMethodDefinition(std::shared_ptr<AST::MethodDefinition>
 		source_file,
 		method->get_initial_definition().line,
 		method->get_initial_definition().column,
-		node->getEndPosition().line - 1,
+		node->getEndPosition().line,
 		node->getEndPosition().column,
 		method
 	);

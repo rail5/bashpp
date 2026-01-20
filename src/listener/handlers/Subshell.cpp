@@ -24,7 +24,7 @@ void BashppListener::enterSubshellSubstitution(std::shared_ptr<AST::SubshellSubs
 
 	subshell_entity->set_definition_position(
 		source_file,
-		node->getLine() - 1,
+		node->getLine(),
 		node->getCharPositionInLine()
 	);
 }
@@ -49,7 +49,7 @@ void BashppListener::exitSubshellSubstitution(std::shared_ptr<AST::SubshellSubst
 		source_file,
 		subshell_entity->get_initial_definition().line,
 		subshell_entity->get_initial_definition().column,
-		node->getEndPosition().line - 1,
+		node->getEndPosition().line,
 		node->getEndPosition().column,
 		subshell_entity
 	);
@@ -74,7 +74,7 @@ void BashppListener::enterRawSubshell(std::shared_ptr<AST::RawSubshell> node) {
 
 	subshell_entity->set_definition_position(
 		source_file,
-		node->getLine() - 1,
+		node->getLine(),
 		node->getCharPositionInLine()
 	);
 }
@@ -99,7 +99,7 @@ void BashppListener::exitRawSubshell(std::shared_ptr<AST::RawSubshell> node) {
 		source_file,
 		subshell_entity->get_initial_definition().line,
 		subshell_entity->get_initial_definition().column,
-		node->getEndPosition().line - 1,
+		node->getEndPosition().line,
 		node->getEndPosition().column,
 		subshell_entity
 	);

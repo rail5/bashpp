@@ -50,7 +50,7 @@ void BashppListener::exitDynamicCastTarget(std::shared_ptr<AST::DynamicCastTarge
 		} else {
 			cast_class->add_reference(
 				source_file,
-				node->TARGETTYPE().value().getLine() - 1,
+				node->TARGETTYPE().value().getLine(),
 				node->TARGETTYPE().value().getCharPositionInLine()
 			);
 		}

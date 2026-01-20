@@ -29,7 +29,7 @@ void BashppListener::enterDestructorDefinition(std::shared_ptr<AST::DestructorDe
 
 	destructor->set_definition_position(
 		source_file,
-		node->getLine() - 1,
+		node->getLine(),
 		node->getCharPositionInLine()
 	);
 }
@@ -57,7 +57,7 @@ void BashppListener::exitDestructorDefinition(std::shared_ptr<AST::DestructorDef
 		source_file,
 		destructor->get_initial_definition().line,
 		destructor->get_initial_definition().column,
-		node->getEndPosition().line - 1,
+		node->getEndPosition().line,
 		node->getEndPosition().column,
 		destructor
 	);

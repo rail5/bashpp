@@ -42,7 +42,7 @@ void BashppListener::enterBashFunction(std::shared_ptr<AST::BashFunction> node) 
 
 	function_entity->set_definition_position(
 		source_file,
-		node->getLine() - 1,
+		node->getLine(),
 		node->getCharPositionInLine()
 	);
 }
@@ -80,7 +80,7 @@ void BashppListener::exitBashFunction(std::shared_ptr<AST::BashFunction> node) {
 		source_file,
 		function_entity->get_initial_definition().line,
 		function_entity->get_initial_definition().column,
-		node->getEndPosition().line - 1,
+		node->getEndPosition().line,
 		node->getEndPosition().column,
 		function_entity
 	);

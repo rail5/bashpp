@@ -133,7 +133,7 @@ void BashppListener::enterBashIfRootBranch(std::shared_ptr<AST::BashIfRootBranch
 
 	branch_entity->set_definition_position(
 		source_file,
-		node->getLine() - 1,
+		node->getLine(),
 		node->getCharPositionInLine()
 	);
 }
@@ -160,7 +160,7 @@ void BashppListener::exitBashIfRootBranch(std::shared_ptr<AST::BashIfRootBranch>
 		source_file,
 		branch_entity->get_initial_definition().line,
 		branch_entity->get_initial_definition().column,
-		node->getEndPosition().line - 1,
+		node->getEndPosition().line,
 		node->getEndPosition().column,
 		branch_entity
 	);
@@ -192,7 +192,7 @@ void BashppListener::enterBashIfElseBranch(std::shared_ptr<AST::BashIfElseBranch
 
 	branch_entity->set_definition_position(
 		source_file,
-		node->getLine() - 1,
+		node->getLine(),
 		node->getCharPositionInLine()
 	);
 }
@@ -219,7 +219,7 @@ void BashppListener::exitBashIfElseBranch(std::shared_ptr<AST::BashIfElseBranch>
 		source_file,
 		branch_entity->get_initial_definition().line,
 		branch_entity->get_initial_definition().column,
-		node->getEndPosition().line - 1,
+		node->getEndPosition().line,
 		node->getEndPosition().column,
 		branch_entity
 	);

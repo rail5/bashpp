@@ -15,7 +15,7 @@ void BashppListener::enterClassDefinition(std::shared_ptr<AST::ClassDefinition> 
 
 	new_class->set_definition_position(
 		source_file,
-		node->getLine() - 1,
+		node->getLine(),
 		node->getCharPositionInLine()
 	);
 
@@ -60,7 +60,7 @@ void BashppListener::enterClassDefinition(std::shared_ptr<AST::ClassDefinition> 
 
 		parent_class->add_reference(
 			source_file,
-			parent_class_node.getLine() - 1,
+			parent_class_node.getLine(),
 			parent_class_node.getCharPositionInLine()
 		);
 	}
@@ -88,7 +88,7 @@ void BashppListener::exitClassDefinition(std::shared_ptr<AST::ClassDefinition> n
 		source_file,
 		new_class->get_initial_definition().line,
 		new_class->get_initial_definition().column,
-		node->getEndPosition().line - 1,
+		node->getEndPosition().line,
 		node->getEndPosition().column,
 		new_class
 	);

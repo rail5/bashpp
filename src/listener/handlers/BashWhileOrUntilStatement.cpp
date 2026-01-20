@@ -28,7 +28,7 @@ void BashppListener::enterBashWhileStatement(std::shared_ptr<AST::BashWhileState
 
 	while_statement->set_definition_position(
 		source_file,
-		node->getLine() - 1,
+		node->getLine(),
 		node->getCharPositionInLine()
 	);
 }
@@ -76,7 +76,7 @@ void BashppListener::exitBashWhileStatement(std::shared_ptr<AST::BashWhileStatem
 		source_file,
 		while_statement->get_initial_definition().line,
 		while_statement->get_initial_definition().column,
-		node->getEndPosition().line - 1,
+		node->getEndPosition().line,
 		node->getEndPosition().column,
 		while_statement
 	);
@@ -97,7 +97,7 @@ void BashppListener::enterBashUntilStatement(std::shared_ptr<AST::BashUntilState
 
 	until_statement->set_definition_position(
 		source_file,
-		node->getLine() - 1,
+		node->getLine(),
 		node->getCharPositionInLine()
 	);
 }
@@ -145,7 +145,7 @@ void BashppListener::exitBashUntilStatement(std::shared_ptr<AST::BashUntilStatem
 		source_file,
 		until_statement->get_initial_definition().line,
 		until_statement->get_initial_definition().column,
-		node->getEndPosition().line - 1,
+		node->getEndPosition().line,
 		node->getEndPosition().column,
 		until_statement
 	);

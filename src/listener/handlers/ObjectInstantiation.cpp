@@ -33,7 +33,7 @@ void BashppListener::enterObjectInstantiation(std::shared_ptr<AST::ObjectInstant
 
 	new_object->set_definition_position(
 		source_file,
-		object_name.getLine() - 1,
+		object_name.getLine(),
 		object_name.getCharPositionInLine()
 	);
 
@@ -49,7 +49,7 @@ void BashppListener::enterObjectInstantiation(std::shared_ptr<AST::ObjectInstant
 
 	object_class->add_reference(
 		source_file,
-		object_type.getLine() - 1,
+		object_type.getLine(),
 		object_type.getCharPositionInLine()
 	);
 

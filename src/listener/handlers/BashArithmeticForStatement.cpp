@@ -40,7 +40,7 @@ void BashppListener::exitBashArithmeticForStatement(std::shared_ptr<AST::BashAri
 		source_file,
 		for_statement->get_initial_definition().line,
 		for_statement->get_initial_definition().column,
-		node->getEndPosition().line - 1,
+		node->getEndPosition().line,
 		node->getEndPosition().column,
 		for_statement
 	);

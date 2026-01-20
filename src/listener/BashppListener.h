@@ -33,7 +33,10 @@ using bpp::generate_dynamic_cast_code;
 #include "../internal_error.h"
 
 #define skip_syntax_errors if (error_thrown) { \
-		error_thrown = false; \
+		if (error_node == node) { \
+			error_thrown = false; \
+			error_node = nullptr; \
+		} \
 		return; \
 		}
 
@@ -161,18 +164,19 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 		std::shared_ptr<bpp::bpp_class> primitive;
 
 		bool error_thrown = false;
+		std::shared_ptr<AST::ASTNode> error_node = nullptr;
 
 		bool program_has_errors = false;
 
 		template <ASTNodePtrORToken T>
 		void output_syntax_error(const T& error_ctx, const std::string& msg) {
-			int line;
-			int column;
+			uint32_t line;
+			uint32_t column;
 			std::string text;
 
 			if constexpr (ASTNodePtrType<T>) {
-				line = static_cast<int>(error_ctx->getPosition().line);
-				column = static_cast<int>(error_ctx->getPosition().column);
+				line = error_ctx->getPosition().line;
+				column = error_ctx->getPosition().column;
 				// For the text:
 				// Read from source_file the text corresponding to the node's position
 				// I.e., between line/column and end_line/end_column
@@ -188,27 +192,24 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 							// We're at the starting line
 							if (line == error_ctx->getEndPosition().line) {
 								// Single-line node
-								text = line_content.substr(
-									static_cast<size_t>(column),
-									static_cast<size_t>(error_ctx->getEndPosition().column - column)
-								);
+								text = line_content.substr(column, error_ctx->getEndPosition().column - column);
 							} else {
 								// Multi-line node
 								// Only report to the end of this line
-								text = line_content.substr(static_cast<size_t>(column));
+								text = line_content.substr(column);
 							}
 						}
 					}
 				}
 			} else if constexpr (ASTStringToken<T>) {
-				line = static_cast<int>(error_ctx.getLine());
-				column = static_cast<int>(error_ctx.getCharPositionInLine());
+				line = error_ctx.getLine();
+				column = error_ctx.getCharPositionInLine();
 				text = error_ctx.getValue();
 			} else if constexpr (ASTParameterToken<T>) {
 				// Special case: Error reporting on a declared method parameter
 				// FIXME(@rail5): Kind of hacky to handle special cases. Would prefer a general solution.
-				line = static_cast<int>(error_ctx.getLine());
-				column = static_cast<int>(error_ctx.getCharPositionInLine());
+				line = error_ctx.getLine();
+				column = error_ctx.getCharPositionInLine();
 				auto param = error_ctx.getValue();
 				if (param.type.has_value()) {
 					text = "@" + param.type.value().getValue();
@@ -224,7 +225,8 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 
 		#define throw_syntax_error(token, msg) \
 			output_syntax_error(token, msg); \
-			error_thrown = true; /* Mark error_thrown so we know to skip the exit rule */ \
+			error_thrown = true; \
+			error_node = node; \
 			node->clearChildren(); /* Skip traversing children */ \
 			return;
 
@@ -280,8 +282,8 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 	void exitBashCasePatternHeader(std::shared_ptr<AST::BashCasePatternHeader> node);
 	void enterBashCaseStatement(std::shared_ptr<AST::BashCaseStatement> node);
 	void exitBashCaseStatement(std::shared_ptr<AST::BashCaseStatement> node);
-	void enterBashCommand(std::shared_ptr<AST::BashCommand> node);
-	void exitBashCommand(std::shared_ptr<AST::BashCommand> node);
+	//void enterBashCommand(std::shared_ptr<AST::BashCommand> node);
+	//void exitBashCommand(std::shared_ptr<AST::BashCommand> node);
 	void enterBashCommandSequence(std::shared_ptr<AST::BashCommandSequence> node);
 	void exitBashCommandSequence(std::shared_ptr<AST::BashCommandSequence> node);
 	void enterBashForStatement(std::shared_ptr<AST::BashForStatement> node);
@@ -298,22 +300,22 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 	void exitBashInCondition(std::shared_ptr<AST::BashInCondition> node);
 	void enterBashPipeline(std::shared_ptr<AST::BashPipeline> node);
 	void exitBashPipeline(std::shared_ptr<AST::BashPipeline> node);
-	void enterBashRedirection(std::shared_ptr<AST::BashRedirection> node);
-	void exitBashRedirection(std::shared_ptr<AST::BashRedirection> node);
+	//void enterBashRedirection(std::shared_ptr<AST::BashRedirection> node);
+	//void exitBashRedirection(std::shared_ptr<AST::BashRedirection> node);
 	void enterBashSelectStatement(std::shared_ptr<AST::BashSelectStatement> node);
 	void exitBashSelectStatement(std::shared_ptr<AST::BashSelectStatement> node);
 	void enterBashUntilStatement(std::shared_ptr<AST::BashUntilStatement> node);
 	void exitBashUntilStatement(std::shared_ptr<AST::BashUntilStatement> node);
-	void enterBashVariable(std::shared_ptr<AST::BashVariable> node);
-	void exitBashVariable(std::shared_ptr<AST::BashVariable> node);
+	//void enterBashVariable(std::shared_ptr<AST::BashVariable> node);
+	//void exitBashVariable(std::shared_ptr<AST::BashVariable> node);
 	void enterBashWhileOrUntilCondition(std::shared_ptr<AST::BashWhileOrUntilCondition> node);
 	void exitBashWhileOrUntilCondition(std::shared_ptr<AST::BashWhileOrUntilCondition> node);
 	void enterBashWhileStatement(std::shared_ptr<AST::BashWhileStatement> node);
 	void exitBashWhileStatement(std::shared_ptr<AST::BashWhileStatement> node);
 	void enterBashFunction(std::shared_ptr<AST::BashFunction> node);
 	void exitBashFunction(std::shared_ptr<AST::BashFunction> node);
-	void enterBlock(std::shared_ptr<AST::Block> node);
-	void exitBlock(std::shared_ptr<AST::Block> node);
+	//void enterBlock(std::shared_ptr<AST::Block> node);
+	//void exitBlock(std::shared_ptr<AST::Block> node);
 	void enterClassDefinition(std::shared_ptr<AST::ClassDefinition> node);
 	void exitClassDefinition(std::shared_ptr<AST::ClassDefinition> node);
 	void enterConnective(std::shared_ptr<AST::Connective> node);
@@ -348,20 +350,20 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 	void exitObjectInstantiation(std::shared_ptr<AST::ObjectInstantiation> node);
 	void enterObjectReference(std::shared_ptr<AST::ObjectReference> node);
 	void exitObjectReference(std::shared_ptr<AST::ObjectReference> node);
-	void enterParameterExpansion(std::shared_ptr<AST::ParameterExpansion> node);
-	void exitParameterExpansion(std::shared_ptr<AST::ParameterExpansion> node);
+	//void enterParameterExpansion(std::shared_ptr<AST::ParameterExpansion> node);
+	//void exitParameterExpansion(std::shared_ptr<AST::ParameterExpansion> node);
 	void enterPointerDeclaration(std::shared_ptr<AST::PointerDeclaration> node);
 	void exitPointerDeclaration(std::shared_ptr<AST::PointerDeclaration> node);
-	void enterPrimitiveAssignment(std::shared_ptr<AST::PrimitiveAssignment> node);
-	void exitPrimitiveAssignment(std::shared_ptr<AST::PrimitiveAssignment> node);
-	void enterProcessSubstitution(std::shared_ptr<AST::ProcessSubstitution> node);
-	void exitProcessSubstitution(std::shared_ptr<AST::ProcessSubstitution> node);
+	//void enterPrimitiveAssignment(std::shared_ptr<AST::PrimitiveAssignment> node);
+	//void exitPrimitiveAssignment(std::shared_ptr<AST::PrimitiveAssignment> node);
+	//void enterProcessSubstitution(std::shared_ptr<AST::ProcessSubstitution> node);
+	//void exitProcessSubstitution(std::shared_ptr<AST::ProcessSubstitution> node);
 	void enterRawSubshell(std::shared_ptr<AST::RawSubshell> node);
 	void exitRawSubshell(std::shared_ptr<AST::RawSubshell> node);
 	void enterRawText(std::shared_ptr<AST::RawText> node);
 	void exitRawText(std::shared_ptr<AST::RawText> node);
-	void enterRvalue(std::shared_ptr<AST::Rvalue> node);
-	void exitRvalue(std::shared_ptr<AST::Rvalue> node);
+	//void enterRvalue(std::shared_ptr<AST::Rvalue> node);
+	//void exitRvalue(std::shared_ptr<AST::Rvalue> node);
 	void enterSubshellSubstitution(std::shared_ptr<AST::SubshellSubstitution> node);
 	void exitSubshellSubstitution(std::shared_ptr<AST::SubshellSubstitution> node);
 	void enterSupershell(std::shared_ptr<AST::Supershell> node);

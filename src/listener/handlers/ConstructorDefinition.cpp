@@ -29,7 +29,7 @@ void BashppListener::enterConstructorDefinition(std::shared_ptr<AST::Constructor
 
 	constructor->set_definition_position(
 		source_file,
-		node->getLine() - 1,
+		node->getLine(),
 		node->getCharPositionInLine()
 	);
 }
@@ -57,7 +57,7 @@ void BashppListener::exitConstructorDefinition(std::shared_ptr<AST::ConstructorD
 		source_file,
 		constructor->get_initial_definition().line,
 		constructor->get_initial_definition().column,
-		node->getEndPosition().line - 1,
+		node->getEndPosition().line,
 		node->getEndPosition().column,
 		constructor
 	);

@@ -352,7 +352,7 @@ class bash_command_sequence : public bpp_string {
 
 		void join();
 	public:
-		bash_command_sequence();
+		bash_command_sequence() = default;
 
 		void add_connective(bool is_and);
 

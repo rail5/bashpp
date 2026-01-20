@@ -327,7 +327,7 @@ entity_reference resolve_reference_impl(
 	// If this is a request from the language server,
 	// Ie, after all the analysis has already been done,
 	// Then a deque of strings is perfectly fine -- we don't need to track positions.
-	std::optional<AST::Token<std::string>> error_token = std::nullopt;
+	AST::Token<std::string> error_token;
 
 	entity_reference result;
 
@@ -421,7 +421,7 @@ entity_reference resolve_reference_impl(
 	}
 
 	while (!ids.empty()) {
-		error_token = nds.empty() ? std::nullopt : std::make_optional(nds.front());
+		if (!nds.empty()) error_token = nds.front();
 
 		if (result.created_first_temporary_variable) {
 			encase_open = "${";

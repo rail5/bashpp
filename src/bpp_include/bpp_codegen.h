@@ -101,7 +101,7 @@ struct entity_reference {
 	
 	struct reference_error {
 		std::string message;
-		std::optional<AST::Token<std::string>> token;
+		AST::Token<std::string> token;
 	};
 
 	std::optional<reference_error> error;

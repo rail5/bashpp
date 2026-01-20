@@ -111,6 +111,7 @@ int main(int argc, char* argv[]) {
 	if (args.display_parse_tree) {
 		// '-p' given, exit after displaying the parse tree
 		std::cout << *program << std::endl;
+		return 0;
 	} else if (args.display_tokens) {
 		// '-t' given (lexer tokens displayed), exit now even if we didn't display the parse tree
 		return 0;

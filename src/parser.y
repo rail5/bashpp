@@ -2106,11 +2106,10 @@ bash_if_root_branch:
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 
-		node->addChild($2); // condition
-
 		auto rootBranch = std::make_shared<AST::BashIfRootBranch>();
 		rootBranch->setPosition(@5.begin.line, @5.begin.column);
 		rootBranch->setEndPosition(@7.end.line, @7.end.column);
+		rootBranch->addChild($2); // condition
 		rootBranch->addChildren($7); // statements
 		
 		node->addChild(rootBranch);

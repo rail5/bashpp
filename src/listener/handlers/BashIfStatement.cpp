@@ -7,7 +7,8 @@
 * This file contains parser rules for all of:
 * 		1. BashIfStatement
 * 		2. BashIfCondition
-* 		3. BashIfElseBranch
+* 		3. BashIfRootBranch
+* 		4. BashIfElseBranch
 */
 
 #include "../BashppListener.h"
@@ -83,24 +84,6 @@ void BashppListener::enterBashIfStatement(std::shared_ptr<AST::BashIfStatement> 
 
 	// Push the entity onto the stack
 	entity_stack.push(if_statement_entity);
-
-	// Create a "branch" entity for the root branch
-	if_statement_entity->new_branch();
-	if_statement_entity->add_condition_code("if ");
-
-	std::shared_ptr<bpp::bash_if_branch> condition_entity = std::make_shared<bpp::bash_if_branch>();
-	condition_entity->set_containing_class(if_statement_entity->get_containing_class());
-	condition_entity->inherit(if_statement_entity);
-	condition_entity->set_if_statement(if_statement_entity);
-	condition_entity->set_root_branch(true);
-	// This condition entity will be popped off the stack by the exitBashIfCondition handler
-	entity_stack.push(condition_entity);
-
-	condition_entity->set_definition_position(
-		source_file,
-		node->getLine() - 1,
-		node->getCharPositionInLine()
-	);
 }
 
 void BashppListener::exitBashIfStatement(std::shared_ptr<AST::BashIfStatement> node) {
@@ -131,6 +114,58 @@ void BashppListener::exitBashIfStatement(std::shared_ptr<AST::BashIfStatement> n
 	current_code_entity->add_code(if_statement_entity->get_conditional_branch_post_code());
 }
 
+void BashppListener::enterBashIfRootBranch(std::shared_ptr<AST::BashIfRootBranch> node) {
+	skip_syntax_errors
+	auto if_statement_entity = std::dynamic_pointer_cast<bpp::bash_if>(entity_stack.top());
+	if (if_statement_entity == nullptr) {
+		throw internal_error("If statement entity not found in the entity stack");
+	}
+
+	if_statement_entity->new_branch();
+	if_statement_entity->add_condition_code("if ");
+
+	auto branch_entity = std::make_shared<bpp::bash_if_branch>();
+	branch_entity->set_containing_class(if_statement_entity->get_containing_class());
+	branch_entity->inherit(if_statement_entity);
+	branch_entity->set_if_statement(if_statement_entity);
+	
+	entity_stack.push(branch_entity);
+
+	branch_entity->set_definition_position(
+		source_file,
+		node->getLine() - 1,
+		node->getCharPositionInLine()
+	);
+}
+
+void BashppListener::exitBashIfRootBranch(std::shared_ptr<AST::BashIfRootBranch> node) {
+	skip_syntax_errors
+	auto branch_entity = std::dynamic_pointer_cast<bpp::bash_if_branch>(entity_stack.top());
+	if (branch_entity == nullptr) {
+		throw internal_error("Root branch entity not found in the entity stack");
+	}
+
+	entity_stack.pop();
+
+	auto if_statement_entity = branch_entity->get_if_statement();
+	if (if_statement_entity == nullptr) {
+		throw internal_error("If statement entity not found");
+	}
+
+	if_statement_entity->add_branch_code(branch_entity->get_pre_code());
+	if_statement_entity->add_branch_code(branch_entity->get_code());
+	if_statement_entity->add_branch_code(branch_entity->get_post_code());
+
+	program->mark_entity(
+		source_file,
+		branch_entity->get_initial_definition().line,
+		branch_entity->get_initial_definition().column,
+		node->getEndPosition().line - 1,
+		node->getEndPosition().column,
+		branch_entity
+	);
+}
+
 
 void BashppListener::enterBashIfElseBranch(std::shared_ptr<AST::BashIfElseBranch> node) {
 	skip_syntax_errors
@@ -148,14 +183,14 @@ void BashppListener::enterBashIfElseBranch(std::shared_ptr<AST::BashIfElseBranch
 		if_statement_entity->add_condition_code("else\n");
 	}
 
-	std::shared_ptr<bpp::bash_if_branch> condition_entity = std::make_shared<bpp::bash_if_branch>();
-	condition_entity->set_containing_class(if_statement_entity->get_containing_class());
-	condition_entity->inherit(if_statement_entity);
-	condition_entity->set_if_statement(if_statement_entity);
+	std::shared_ptr<bpp::bash_if_branch> branch_entity = std::make_shared<bpp::bash_if_branch>();
+	branch_entity->set_containing_class(if_statement_entity->get_containing_class());
+	branch_entity->inherit(if_statement_entity);
+	branch_entity->set_if_statement(if_statement_entity);
 
-	entity_stack.push(condition_entity);
+	entity_stack.push(branch_entity);
 
-	condition_entity->set_definition_position(
+	branch_entity->set_definition_position(
 		source_file,
 		node->getLine() - 1,
 		node->getCharPositionInLine()
@@ -164,29 +199,29 @@ void BashppListener::enterBashIfElseBranch(std::shared_ptr<AST::BashIfElseBranch
 
 void BashppListener::exitBashIfElseBranch(std::shared_ptr<AST::BashIfElseBranch> node) {
 	skip_syntax_errors
-	std::shared_ptr<bpp::bash_if_branch> condition_entity = std::dynamic_pointer_cast<bpp::bash_if_branch>(entity_stack.top());
-	if (condition_entity == nullptr) {
+	std::shared_ptr<bpp::bash_if_branch> branch_entity = std::dynamic_pointer_cast<bpp::bash_if_branch>(entity_stack.top());
+	if (branch_entity == nullptr) {
 		throw internal_error("Condition entity not found in the entity stack");
 	}
 
 	entity_stack.pop();
 
-	std::shared_ptr<bpp::bash_if> if_statement_entity = condition_entity->get_if_statement();
+	std::shared_ptr<bpp::bash_if> if_statement_entity = branch_entity->get_if_statement();
 	if (if_statement_entity == nullptr) {
 		throw internal_error("If statement entity not found");
 	}
 
-	if_statement_entity->add_branch_code(condition_entity->get_pre_code());
-	if_statement_entity->add_branch_code(condition_entity->get_code());
-	if_statement_entity->add_branch_code(condition_entity->get_post_code());
+	if_statement_entity->add_branch_code(branch_entity->get_pre_code());
+	if_statement_entity->add_branch_code(branch_entity->get_code());
+	if_statement_entity->add_branch_code(branch_entity->get_post_code());
 
 	program->mark_entity(
 		source_file,
-		condition_entity->get_initial_definition().line,
-		condition_entity->get_initial_definition().column,
+		branch_entity->get_initial_definition().line,
+		branch_entity->get_initial_definition().column,
 		node->getEndPosition().line - 1,
 		node->getEndPosition().column,
-		condition_entity
+		branch_entity
 	);
 }
 
@@ -226,25 +261,6 @@ void BashppListener::exitBashIfCondition(std::shared_ptr<AST::BashIfCondition> n
 	std::shared_ptr<bpp::bash_if> if_statement_entity = if_branch_entity->get_if_statement();
 	if (if_statement_entity == nullptr) {
 		throw internal_error("If statement entity not found");
-	}
-
-	if (if_branch_entity->is_root_branch()) {
-		entity_stack.pop(); // Make sure the if_statement entity is on top of the stack
-
-		if_statement_entity->add_branch_code(condition_entity->get_pre_code());
-		if_statement_entity->add_branch_code(condition_entity->get_code());
-		if_statement_entity->add_branch_code(condition_entity->get_post_code());
-
-		program->mark_entity(
-			source_file,
-			condition_entity->get_initial_definition().line,
-			condition_entity->get_initial_definition().column,
-			node->getEndPosition().line,
-			node->getEndPosition().column,
-			if_branch_entity
-		);
-
-		return;
 	}
 
 	// If we're here, it's not the root branch

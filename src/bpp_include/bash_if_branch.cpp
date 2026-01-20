@@ -33,12 +33,4 @@ std::string bash_if_branch::get_post_code() const {
 	return postline_buffer;
 }
 
-bool bash_if_branch::is_root_branch() const {
-	return root_branch;
-}
-
-void bash_if_branch::set_root_branch(bool is_root) {
-	root_branch = is_root;
-}
-
 } // namespace bpp

@@ -186,19 +186,20 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 					text = "<READ_ERROR>";
 				} else {
 					std::string line_content;
-					uint32_t current_line = 0;
+					uint32_t current_line = 1;
 					while (std::getline(infile, line_content)) {
 						if (current_line == static_cast<uint32_t>(line)) {
 							// We're at the starting line
 							if (line == error_ctx->getEndPosition().line) {
 								// Single-line node
-								text = line_content.substr(column, error_ctx->getEndPosition().column - column);
+								text = line_content.substr(column - 1, error_ctx->getEndPosition().column - column);
 							} else {
 								// Multi-line node
 								// Only report to the end of this line
-								text = line_content.substr(column);
+								text = line_content.substr(column - 1);
 							}
 						}
+						current_line++;
 					}
 				}
 			} else if constexpr (ASTStringToken<T>) {

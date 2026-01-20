@@ -31,8 +31,8 @@ void bash_command_sequence::join() {
 
 	joined_code += enclose_open
 		+ (pre_code.empty() ? "" : pre_code + "\n")
-		+ (main_code.empty() ? "" : main_code + "\n")
-		+ (post_code.empty() ? "" : post_code + "\n")
+		+ (main_code.empty() ? "" : main_code)
+		+ (post_code.empty() ? "" : "\n" + post_code)
 		+ enclose_close;
 }
 

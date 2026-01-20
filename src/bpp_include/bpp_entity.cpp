@@ -97,11 +97,6 @@ std::list<bpp::SymbolPosition> bpp_entity::get_references() const {
  * @param parent The parent entity to inherit from
  */
 void bpp_entity::inherit(std::shared_ptr<bpp_entity> parent) {
-	for (auto& p : parent->parents) {
-		parents.push_back(p);
-	}
-	parents.push_back(parent->get_class());
-
 	for (auto& c : parent->get_classes()) {
 		classes[c.first] = c.second;
 	}

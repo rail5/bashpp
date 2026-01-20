@@ -18,7 +18,7 @@
 
 void print_syntax_error_or_warning(
 	std::string source_file,
-	int line, int column,
+	uint32_t line, uint32_t column,
 	const std::string& text,
 	const std::string& msg,
 	std::stack<std::string> include_chain,
@@ -71,7 +71,7 @@ void print_syntax_error_or_warning(
 
 	// Read the line with the error
 	std::string line_content;
-	for (int i = 0; i < line; i++) {
+	for (uint32_t i = 0; i < line; i++) {
 		std::getline(file, line_content);
 	}
 	file.close();
@@ -108,11 +108,11 @@ void print_syntax_error_or_warning(
 	}
 }
 
-std::string utf8_substr(const std::string& str, int start, int length) {
+std::string utf8_substr(const std::string& str, uint32_t start, uint32_t length) {
 	std::string::const_iterator it = str.begin();
 	
 	// Fast-forward the iterator to the start position
-	for (int i = 0; i < start && it != str.end(); ++i) {
+	for (uint32_t i = 0; i < start && it != str.end(); ++i) {
 		try {
 			utf8::next(it, str.end());
 		} catch (const utf8::invalid_utf8&) {
@@ -143,8 +143,8 @@ std::string utf8_substr(const std::string& str, int start, int length) {
 	return result;
 }
 
-int utf8_length(const std::string& str) {
-	int length = 0;
+uint32_t utf8_length(const std::string& str) {
+	uint32_t length = 0;
 	std::string::const_iterator it = str.begin();
 	while (it != str.end()) {
 		try {

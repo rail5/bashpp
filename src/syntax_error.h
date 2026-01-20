@@ -9,6 +9,7 @@
 #include <string>
 #include <stack>
 #include <memory>
+#include <cstdint>
 #include "bpp_include/bpp.h"
 
 /**
@@ -23,8 +24,8 @@
  */
 void print_syntax_error_or_warning(
 	std::string source_file,
-	int line,
-	int column,
+	uint32_t line,
+	uint32_t column,
 	const std::string& text,
 	const std::string& msg,
 	std::stack<std::string> include_chain,
@@ -33,8 +34,8 @@ void print_syntax_error_or_warning(
 
 // Helper functions
 // Should probably be moved to a separate file or somehow better organized
-std::string utf8_substr(const std::string& str, int start, int length);
-int utf8_length(const std::string& str);
+std::string utf8_substr(const std::string& str, uint32_t start, uint32_t length);
+uint32_t utf8_length(const std::string& str);
 std::string equal_width_padding(const std::string& str, char padding_char = ' ');
 
 #endif // SRC_SYNTAX_ERROR_H_

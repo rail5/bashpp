@@ -122,12 +122,6 @@ std::string utf8_substr(const std::string& str, uint32_t start, uint32_t length)
 
 	std::string result;
 
-	// If length is 0, return the entire substring from start
-	if (length == 0) {
-		result = std::string(it, str.end());
-		return result;
-	}
-
 	while (it != str.end() && length > 0) {
 		uint32_t cp;
 		try {

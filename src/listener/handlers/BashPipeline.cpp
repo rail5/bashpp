@@ -37,4 +37,8 @@ void BashppListener::exitBashPipeline(std::shared_ptr<AST::BashPipeline> node) {
 	current_code_entity->add_code_to_previous_line(pipeline->get_pre_code());
 	current_code_entity->add_code_to_next_line(pipeline->get_post_code());
 	current_code_entity->add_code(pipeline->get_code());
+	
+	// Pass any instantiated objects etc up the chain
+	// (A pipeline is not a closed scope)
+	current_code_entity->inherit(pipeline);
 }

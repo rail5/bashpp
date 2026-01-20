@@ -118,10 +118,12 @@ void BashppListener::exitPointerDeclaration(std::shared_ptr<AST::PointerDeclarat
 
 	// Add the object to the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	if (current_code_entity != nullptr) {
-		current_code_entity->add_code_to_previous_line(new_object->get_pre_access_code());
-		current_code_entity->add_code_to_next_line(new_object->get_post_access_code());
-		current_code_entity->add_object(new_object, in_method);
-		return;
+	if (current_code_entity == nullptr) {
+		throw_syntax_error_from_exitRule(node, "Pointer declaration outside of code entity");
 	}
+	
+	current_code_entity->add_code_to_previous_line(new_object->get_pre_access_code());
+	current_code_entity->add_code_to_next_line(new_object->get_post_access_code());
+	current_code_entity->add_object(new_object, in_method);
+	return;
 }

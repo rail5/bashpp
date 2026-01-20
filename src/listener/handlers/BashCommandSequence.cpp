@@ -37,4 +37,8 @@ void BashppListener::exitBashCommandSequence(std::shared_ptr<AST::BashCommandSeq
 	// The pre-code and post-code for the command sequence have already been joined into the sequence's main code buffer
 	// Therefore no need to call add_code_to_previous_line or add_code_to_next_line here
 	current_code_entity->add_code(command_sequence_entity->get_code());
+
+	// Pass any instantiated objects etc up the chain
+	// (A command sequence is not a closed scope)
+	current_code_entity->inherit(command_sequence_entity);
 }

@@ -14,6 +14,17 @@ void BashppListener::enterDatamemberDeclaration(std::shared_ptr<AST::DatamemberD
 	entity_stack.push(new_datamember);
 
 	auto scope = node->ACCESSMODIFIER();
+	switch (scope.getValue()) {
+		case AST::AccessModifier::PUBLIC:
+			new_datamember->set_scope(bpp::bpp_scope::SCOPE_PUBLIC);
+			break;
+		case AST::AccessModifier::PROTECTED:
+			new_datamember->set_scope(bpp::bpp_scope::SCOPE_PROTECTED);
+			break;
+		case AST::AccessModifier::PRIVATE:
+			new_datamember->set_scope(bpp::bpp_scope::SCOPE_PRIVATE);
+			break;
+	}
 
 	if (current_class == nullptr) {
 		entity_stack.pop();

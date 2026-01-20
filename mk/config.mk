@@ -21,6 +21,7 @@ BPP_OBJDIR = $(OBJDIR)/bpp
 FLEXBISON_OBJDIR = $(OBJDIR)/flexbison
 LISTENER_OBJDIR = $(OBJDIR)/listener
 COMPILER_HANDLERS_OBJDIR = $(LISTENER_OBJDIR)/handlers
+AST_OBJDIR = $(OBJDIR)/AST
 EXTRA_OBJDIR = $(OBJDIR)/extra
 
 LSP_OBJDIR = $(OBJDIR)/lsp
@@ -45,7 +46,11 @@ COMPILER_HANDLERS_SRCDIR = $(LISTENER_SRCDIR)/handlers
 COMPILER_HANDLERS_SRCS = $(wildcard $(COMPILER_HANDLERS_SRCDIR)/*.cpp)
 COMPILER_HANDLERS_OBJS = $(patsubst $(COMPILER_HANDLERS_SRCDIR)/%.cpp,$(COMPILER_HANDLERS_OBJDIR)/%.o,$(COMPILER_HANDLERS_SRCS))
 
-EXTRA_SRCS = $(SRCDIR)/internal_error.cpp $(SRCDIR)/syntax_error.cpp
+AST_SRCDIR = $(SRCDIR)/AST
+AST_SRCS = $(wildcard $(AST_SRCDIR)/*.cpp)
+AST_OBJS = $(patsubst $(AST_SRCDIR)/%.cpp,$(AST_OBJDIR)/%.o,$(AST_SRCS))
+
+EXTRA_SRCS = $(SRCDIR)/internal_error.cpp $(SRCDIR)/syntax_error.cpp $(SRCDIR)/ModeStack.cpp
 EXTRA_OBJS = $(patsubst $(SRCDIR)/%.cpp,$(EXTRA_OBJDIR)/%.o,$(EXTRA_SRCS))
 
 MAIN = $(SRCDIR)/main.cpp

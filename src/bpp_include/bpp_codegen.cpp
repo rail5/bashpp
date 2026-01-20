@@ -367,7 +367,7 @@ entity_reference resolve_reference_impl(
 		if (!nds.empty()) {
 			object->add_reference(
 				file,
-				nds.front().getLine() - 1,
+				nds.front().getLine(),
 				nds.front().getCharPositionInLine()
 			);
 		}
@@ -479,7 +479,7 @@ entity_reference resolve_reference_impl(
 			if (!nds.empty()) {
 				method->add_reference(
 					file,
-					nds.front().getLine() - 1,
+					nds.front().getLine(),
 					nds.front().getCharPositionInLine()
 				);
 			}
@@ -505,7 +505,7 @@ entity_reference resolve_reference_impl(
 			if (!nds.empty()) {
 				datamember->add_reference(
 					file,
-					nds.front().getLine() - 1,
+					nds.front().getLine(),
 					nds.front().getCharPositionInLine()
 				);
 			}

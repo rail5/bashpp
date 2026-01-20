@@ -134,19 +134,20 @@ inline entity_reference resolve_reference(
 	std::deque<AST::Token<std::string>> node_deque;
 	std::deque<std::string> text_deque;
 
-	if constexpr (std::is_convertible_v<value_t, std::string>) {
-		// identifiers: deque<string>*
-		for (const auto& id : *identifiers) {
-			text_deque.push_back(id);
-		}
-		return resolve_reference_impl(file, context, &node_deque, &text_deque, declare_local, program);
-	} else if constexpr (std::is_convertible_v<value_t, AST::Token<std::string>>) {
+	
+	if constexpr (std::is_convertible_v<value_t, AST::Token<std::string>>) {
 		// identifiers: deque<TerminalNode*>*
 		for (const auto& node : *identifiers) {
 			node_deque.push_back(node);
 		}
 		for (const auto& node : node_deque) {
 			text_deque.push_back(node.getValue());
+		}
+		return resolve_reference_impl(file, context, &node_deque, &text_deque, declare_local, program);
+	} else if constexpr (std::is_convertible_v<value_t, std::string>) {
+		// identifiers: deque<string>*
+		for (const auto& id : *identifiers) {
+			text_deque.push_back(id);
 		}
 		return resolve_reference_impl(file, context, &node_deque, &text_deque, declare_local, program);
 	} else {

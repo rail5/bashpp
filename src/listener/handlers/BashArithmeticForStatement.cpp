@@ -15,6 +15,7 @@ void BashppListener::enterBashArithmeticForStatement(std::shared_ptr<AST::BashAr
 	std::shared_ptr<bpp::bash_for_or_select> for_statement = std::make_shared<bpp::bash_for_or_select>();
 	for_statement->set_containing_class(current_code_entity->get_containing_class());
 	for_statement->inherit(current_code_entity);
+	entity_stack.push(for_statement);
 }
 
 void BashppListener::exitBashArithmeticForStatement(std::shared_ptr<AST::BashArithmeticForStatement> node) {
@@ -38,8 +39,8 @@ void BashppListener::exitBashArithmeticForStatement(std::shared_ptr<AST::BashAri
 
 	program->mark_entity(
 		source_file,
-		for_statement->get_initial_definition().line,
-		for_statement->get_initial_definition().column,
+		node->getLine(),
+		node->getCharPositionInLine(),
 		node->getEndPosition().line,
 		node->getEndPosition().column,
 		for_statement

@@ -77,6 +77,12 @@ namespace AST {
 	X(TypeofExpression) \
 	X(ValueAssignment) \
 
+#define COUNT_NODE_TYPE(Name) +1
+
+#define TOTAL_NODE_TYPES (0 AST_LISTENER_NODE_LIST(COUNT_NODE_TYPE)) // Gives the total number of node types
+
+#undef COUNT_NODE_TYPE
+
 /**
  * @class BaseListener
  * @brief CRTP base class for AST listeners.
@@ -143,7 +149,7 @@ class BaseListener {
 				void (BaseListener::*)(std::shared_ptr<AST::ASTNode>),
 				void (BaseListener::*)(std::shared_ptr<AST::ASTNode>)
 			>,
-			55
+			TOTAL_NODE_TYPES
 		> enterExitMap = {
 			AST_LISTENER_NODE_LIST(AST_MAKE_MAP_ENTRY)
 		};
@@ -173,6 +179,7 @@ class BaseListener {
 		}
 
 		#undef AST_LISTENER_NODE_LIST
+		#undef TOTAL_NODE_TYPES
 };
 
 } // namespace AST

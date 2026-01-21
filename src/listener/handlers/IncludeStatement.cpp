@@ -118,6 +118,9 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 
 	// Create a new parser
 	AST::BashppParser parser; // TODO(@rail5): Propagation of UTF16 flag from the language server?
+	std::stack<std::string> new_include_stack = this->include_stack;
+	new_include_stack.push(source_file);
+	parser.setIncludeChain(new_include_stack);
 	if (!replacement_file_contents.has_value() || replacement_file_contents->first != full_path) {
 		parser.setInputFromFilePath(full_path);
 	} else {
@@ -125,9 +128,18 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 		parser.setInputFromStringContents(replacement_file_contents->second);
 	}
 
-	std::shared_ptr<AST::Program> tree = nullptr;
+	auto tree = parser.program();
+	if (tree == nullptr) {
+		auto nodeCopy = source_path;
+		nodeCopy.setValue(nodeCopy.getValue() + "  "); // HACK
+		// The parser removes the surrounding quote-marks or angle-brackets from the included path before passing it to us
+		// And the error reporter takes the length of the error token's string to know what to highlight in its reporting to the user
+		// Bad design, should just take a length to begin with
+		// Until then, this hack adds two characters to the error token's string so highlighting works
+		// TODO(@rail5): FIX THIS
+		throw_syntax_error(nodeCopy, "Failed to parse included file: " + std::string(full_path));
+	}
 	try {
-		tree = parser.program();
 		// Walk the tree
 		listener.walk(tree);
 	} catch (const internal_error& e) {

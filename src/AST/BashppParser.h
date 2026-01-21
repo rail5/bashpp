@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <variant>
+#include <stack>
 #include "ASTNode.h"
 #include "Nodes/Nodes.h"
 
@@ -28,6 +29,9 @@ class BashppParser {
 
 		bool utf16_mode = false; // Whether to use UTF-16 mode for character counting
 		bool display_lexer_output = false;
+
+		std::string input_file_path = "<stdin>";
+		std::stack<std::string> include_chain;
 		
 		enum class InputType {
 			FILEPATH,
@@ -52,8 +56,10 @@ class BashppParser {
 		bool getDisplayLexerOutput() const;
 
 		void setInputFromFilePath(const std::string& file_path);
-		void setInputFromFilePtr(FILE* file_ptr);
+		void setInputFromFilePtr(FILE* file_ptr, const std::string& file_path);
 		void setInputFromStringContents(const std::string& contents);
+
+		void setIncludeChain(const std::stack<std::string>& includes);
 
 		std::shared_ptr<AST::Program> program();
 };

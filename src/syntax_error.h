@@ -32,6 +32,25 @@ void print_syntax_error_or_warning(
 	std::shared_ptr<bpp::bpp_program> program,
 	bool is_warning = false);
 
+void print_syntax_error_or_warning(
+	std::string source_file,
+	uint32_t line,
+	uint32_t column,
+	uint32_t error_portion_length,
+	const std::string& msg,
+	std::stack<std::string> include_chain,
+	std::shared_ptr<bpp::bpp_program> program,
+	bool is_warning = false);
+
+void print_syntax_error_from_parser(
+	std::string source_file,
+	uint32_t line,
+	uint32_t start_column,
+	uint32_t end_column,
+	const std::string& msg,
+	std::stack<std::string> include_chain
+);
+
 // Helper functions
 // Should probably be moved to a separate file or somehow better organized
 std::string utf8_substr(const std::string& str, uint32_t start, uint32_t length);

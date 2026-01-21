@@ -66,6 +66,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	FILE* input_file = stdin;
+	std::string input_file_path = "<stdin>";
 
 	if (args.input_file.has_value()) {
 		// Verify that the file exists, is readable, and is a regular file
@@ -78,6 +79,7 @@ int main(int argc, char* argv[]) {
 			return 1;
 		}
 		input_file = fopen(args.input_file.value().c_str(), "r");
+		input_file_path = args.input_file.value();
 		if (input_file == nullptr) {
 			std::cerr << program_name << ": Error: Could not open source file '" << args.input_file.value() << "'" << std::endl;
 			return 1;
@@ -99,7 +101,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	AST::BashppParser parser;
-	parser.setInputFromFilePtr(input_file);
+	parser.setInputFromFilePtr(input_file, input_file_path);
 	parser.setDisplayLexerOutput(args.display_tokens);
 	
 	auto program = parser.program();

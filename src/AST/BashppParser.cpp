@@ -79,11 +79,12 @@ void AST::BashppParser::_parse() {
 	_initialize_lexer();
 
 	try {
-		yy::parser parser(m_program, current_command_can_receive_lvalues, lexer);
+		yy::parser parser(m_program,
+			current_command_can_receive_lvalues,
+			input_file_path,
+			include_chain,
+			lexer);
 		int parse_result = parser.parse();
-		if (parse_result != 0 || m_program == nullptr) {
-			throw internal_error("Failed to parse program");
-		}
 	} catch (...) {
 		_destroy_lexer();
 		throw;
@@ -109,16 +110,22 @@ bool AST::BashppParser::getDisplayLexerOutput() const {
 void AST::BashppParser::setInputFromFilePath(const std::string& file_path) {
 	input_type = InputType::FILEPATH;
 	input_source = file_path;
+	input_file_path = file_path;
 }
 
-void AST::BashppParser::setInputFromFilePtr(FILE* file_ptr) {
+void AST::BashppParser::setInputFromFilePtr(FILE* file_ptr, const std::string& file_path) {
 	input_type = InputType::FILEPTR;
 	input_source = file_ptr;
+	input_file_path = file_path;
 }
 
 void AST::BashppParser::setInputFromStringContents(const std::string& contents) {
 	input_type = InputType::STRING_CONTENTS;
 	input_source = contents;
+}
+
+void AST::BashppParser::setIncludeChain(const std::stack<std::string>& includes) {
+	include_chain = includes;
 }
 
 std::shared_ptr<AST::Program> AST::BashppParser::program() {

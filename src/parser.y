@@ -10,6 +10,7 @@
 #include <memory>
 #include <cassert>
 #include "../AST/Nodes/Nodes.h"
+#include "../syntax_error.h"
 typedef std::shared_ptr<AST::ASTNode> ASTNodePtr;
 typedef void* yyscan_t;
 }
@@ -21,7 +22,7 @@ void yyerror(const char *s);
 %}
 
 %lex-param { yyscan_t yyscanner }
-%parse-param { std::shared_ptr<AST::Program>& program } { bool& current_command_can_receive_lvalues } { yyscan_t yyscanner }
+%parse-param { std::shared_ptr<AST::Program>& program } { bool& current_command_can_receive_lvalues } { const std::string& source_file } { const std::stack<std::string>& include_chain } { yyscan_t yyscanner }
 
 %define parse.error verbose
 
@@ -2242,6 +2243,13 @@ bash_function:
 
 namespace yy {
 void parser::error(const location_type& loc, const std::string& m) {
-	std::cerr << loc << ": " << m << std::endl;
+	print_syntax_error_from_parser(
+		source_file,
+		loc.begin.line,
+		loc.begin.column,
+		loc.end.column,
+		m,
+		include_chain
+	);
 }
 } // namespace yy

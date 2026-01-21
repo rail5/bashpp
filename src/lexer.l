@@ -705,7 +705,7 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 	}
 }
 
-"$((" {
+\$\(\([ \t]* {
 	get_lexer_extra(yyscanner)->modeStack.push(BASH_ARITHMETIC_MODE);
 	emit(BASH_ARITHMETIC_START);
 }

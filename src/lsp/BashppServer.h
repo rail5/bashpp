@@ -77,20 +77,6 @@ class BashppServer {
 		static std::mutex output_mutex; // Mutex for thread-safe output
 		static std::mutex log_mutex; // Mutex for thread-safe logging
 		
-		using RequestHandler = GenericResponseMessage (BashppServer::*)(const GenericRequestMessage&);
-		using NotificationHandler = void (BashppServer::*)(const GenericNotificationMessage&);
-		/**
-		 * @brief Maps request types to the functions that handle them.
-		 * 
-		 */
-		static const frozen::unordered_map<frozen::string, RequestHandler, 8> request_handlers;
-
-		/**
-		 * @brief Maps notification types to the functions that handle them.
-		 * 
-		 */
-		static const frozen::unordered_map<frozen::string, NotificationHandler, 4> notification_handlers;
-
 		static const GenericResponseMessage invalidRequestHandler(const GenericRequestMessage& request);
 		static void invalidNotificationHandler(const GenericNotificationMessage& request);
 
@@ -150,6 +136,36 @@ class BashppServer {
 			((printValue(log_file, std::forward<Args>(args))), ...);
 			log_file << std::endl;
 		}
+
+	private:
+		using RequestHandler = GenericResponseMessage (BashppServer::*)(const GenericRequestMessage&);
+		using NotificationHandler = void (BashppServer::*)(const GenericNotificationMessage&);
+
+		/**
+		 * @brief Maps request types to the functions that handle them.
+		 * 
+		 */
+		static constexpr frozen::unordered_map<frozen::string, RequestHandler, 8> request_handlers = {
+			{frozen::string("initialize"), &BashppServer::handleInitialize},
+			{frozen::string("textDocument/definition"), &BashppServer::handleDefinition},
+			{frozen::string("textDocument/completion"), &BashppServer::handleCompletion},
+			{frozen::string("textDocument/hover"), &BashppServer::handleHover},
+			{frozen::string("textDocument/documentSymbol"), &BashppServer::handleDocumentSymbol},
+			{frozen::string("textDocument/rename"), &BashppServer::handleRename},
+			{frozen::string("textDocument/references"), &BashppServer::handleReferences},
+			{frozen::string("shutdown"), &BashppServer::shutdown}
+		};
+
+		/**
+		 * @brief Maps notification types to the functions that handle them.
+		 * 
+		 */
+		static constexpr frozen::unordered_map<frozen::string, NotificationHandler, 4> notification_handlers = {
+			{"textDocument/didOpen", &BashppServer::handleDidOpen},
+			{"textDocument/didChange", &BashppServer::handleDidChange},
+			{"workspace/didChangeWatchedFiles", &BashppServer::handleDidChangeWatchedFiles},
+			{"textDocument/didClose", &BashppServer::handleDidClose}
+		};
 };
 
 } // namespace bpp

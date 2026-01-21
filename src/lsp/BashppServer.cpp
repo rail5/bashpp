@@ -12,24 +12,6 @@
 std::mutex bpp::BashppServer::output_mutex;
 std::mutex bpp::BashppServer::log_mutex;
 
-const frozen::unordered_map<frozen::string, bpp::BashppServer::RequestHandler, 8> bpp::BashppServer::request_handlers = {
-	{frozen::string("initialize"), &BashppServer::handleInitialize},
-	{frozen::string("textDocument/definition"), &BashppServer::handleDefinition},
-	{frozen::string("textDocument/completion"), &BashppServer::handleCompletion},
-	{frozen::string("textDocument/hover"), &BashppServer::handleHover},
-	{frozen::string("textDocument/documentSymbol"), &BashppServer::handleDocumentSymbol},
-	{frozen::string("textDocument/rename"), &BashppServer::handleRename},
-	{frozen::string("textDocument/references"), &BashppServer::handleReferences},
-	{frozen::string("shutdown"), &BashppServer::shutdown}
-};
-
-const frozen::unordered_map<frozen::string, bpp::BashppServer::NotificationHandler, 4> bpp::BashppServer::notification_handlers = {
-	{"textDocument/didOpen", &BashppServer::handleDidOpen},
-	{"textDocument/didChange", &BashppServer::handleDidChange},
-	{"workspace/didChangeWatchedFiles", &BashppServer::handleDidChangeWatchedFiles},
-	{"textDocument/didClose", &BashppServer::handleDidClose}
-};
-
 bpp::BashppServer::BashppServer() {
 	log("Bash++ Language Server initialized.");
 	log("Using ", thread_pool.getThreadCount(), " threads for processing requests.");

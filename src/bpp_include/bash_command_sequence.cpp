@@ -70,7 +70,7 @@ void bash_command_sequence::join() {
  */
 void bash_command_sequence::add_connective(bool is_and) {
 	if (!contains_multiple_commands) {
-		joined_code = "{\n" + joined_code + "}";
+		joined_code = "{\n" + joined_code + "\n}";
 		contains_multiple_commands = true;
 	}
 	joined_code += (is_and ? " && " : " || ");

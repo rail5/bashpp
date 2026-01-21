@@ -7,12 +7,6 @@
 
 void BashppListener::enterPointerDeclaration(std::shared_ptr<AST::PointerDeclaration> node) {
 	skip_syntax_errors
-	/**
-	 * The pointer type will be stored in one of either IDENTIFIER_LVALUE or IDENTIFIER(0)
-	 * If IDENTIFIER_LVALUE, then the pointer name will be in IDENTIFIER(0)
-	 * If IDENTIFIER(0), then the pointer name will be in IDENTIFIER(1)
-	 */
-
 	auto object_type = node->TYPE();
 	auto object_name = node->IDENTIFIER();
 
@@ -121,7 +115,7 @@ void BashppListener::exitPointerDeclaration(std::shared_ptr<AST::PointerDeclarat
 	if (current_code_entity == nullptr) {
 		throw_syntax_error_from_exitRule(node, "Pointer declaration outside of code entity");
 	}
-	
+
 	current_code_entity->add_code_to_previous_line(new_object->get_pre_access_code());
 	current_code_entity->add_code_to_next_line(new_object->get_post_access_code());
 	current_code_entity->add_object(new_object, in_method);

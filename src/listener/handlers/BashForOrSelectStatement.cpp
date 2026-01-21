@@ -30,7 +30,7 @@ void BashppListener::enterBashForStatement(std::shared_ptr<AST::BashForStatement
 
 	for_statement->set_definition_position(
 		source_file,
-		node->getLine() -1,
+		node->getLine(),
 		node->getCharPositionInLine()
 	);
 }
@@ -83,7 +83,7 @@ void BashppListener::enterBashSelectStatement(std::shared_ptr<AST::BashSelectSta
 
 	select_statement->set_definition_position(
 		source_file,
-		node->getLine() -1,
+		node->getLine(),
 		node->getCharPositionInLine()
 	);
 }

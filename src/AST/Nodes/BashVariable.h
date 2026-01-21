@@ -25,7 +25,7 @@ class BashVariable : public ASTNode {
 		}
 
 		std::ostream& prettyPrint(std::ostream& os, int indentation_level = 0) const override {
-			std::string indent(indentation_level * 2, ' ');
+			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashVariable\n"
 				<< indent << "  ${" << m_TEXT;
 			for (const auto& child : children) {

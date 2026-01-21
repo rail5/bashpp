@@ -11,10 +11,11 @@
 #include <string>
 #include <iostream>
 
-
 #include "NodeTypes.h"
 #include "Position.h"
 #include "Token.h"
+
+#define PRETTYPRINT_INDENTATION_AMOUNT 4
 
 namespace AST {
 

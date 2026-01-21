@@ -25,7 +25,7 @@ class DynamicCastTarget : public ASTNode {
 		}
 
 		std::ostream& prettyPrint(std::ostream& os, int indentation_level = 0) const override {
-			std::string indent(indentation_level * 2, ' ');
+			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(DynamicCastTarget"
 				<< (m_TARGETTYPE.has_value() ? " " + m_TARGETTYPE->getValue() : "");
 			for (const auto& child : children) {

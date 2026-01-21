@@ -94,6 +94,7 @@ void yyerror(const char *s);
 %token <AST::Token<std::string>> PROCESS_SUBSTITUTION_START
 %token PROCESS_SUBSTITUTION_END
 %token BASH_ARITHMETIC_START BASH_ARITHMETIC_END
+%token BASH_53_NATIVE_SUPERSHELL_END
 
 /* Handling unrecognized tokens */
 %token <AST::Token<std::string>> CATCHALL
@@ -170,6 +171,7 @@ void yyerror(const char *s);
 
 %type <ASTNodePtr> bash_while_statement bash_until_statement bash_while_or_until_condition
 %type <ASTNodePtr> bash_function bash_arithmetic_substitution
+%type <ASTNodePtr> bash_53_native_supershell
 
 %type <AST::Token<std::string>> maybe_include_type maybe_as_clause maybe_parent_class
 %type <AST::Token<std::string>> assignment_operator
@@ -623,6 +625,7 @@ concatenatable_rvalue:
 	| subshell_raw { $$ = $1; }
 	| process_substitution { $$ = $1; }
 	| bash_arithmetic_substitution { $$ = $1; }
+	| bash_53_native_supershell { $$ = $1; }
 	;
 
 maybe_whitespace:
@@ -2236,6 +2239,17 @@ bash_function:
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->setName($1);
 		node->addChild($3);
+		$$ = node;
+	}
+
+bash_53_native_supershell:
+	BASH_VAR_START WS statements BASH_53_NATIVE_SUPERSHELL_END {
+		auto node = std::make_shared<AST::Bash53NativeSupershell>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setEndPosition(@4.end.line, @4.end.column);
+		node->addChildren($3);
 		$$ = node;
 	}
 

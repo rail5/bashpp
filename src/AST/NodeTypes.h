@@ -13,6 +13,7 @@ enum class NodeType : int {
 	BashArithmeticForStatement,
 	BashArithmeticStatement,
 	BashArithmeticSubstitution,
+	Bash53NativeSupershell,
 	BashCaseInput,
 	BashCasePattern,
 	BashCasePatternHeader,

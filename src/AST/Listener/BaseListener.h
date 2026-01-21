@@ -21,6 +21,7 @@ namespace AST {
 // Single source of truth for node list (used to generate wrappers + map)
 #define AST_LISTENER_NODE_LIST(X) \
 	X(ArrayIndex) \
+	X(Bash53NativeSupershell) \
 	X(BashArithmeticForCondition) \
 	X(BashArithmeticForStatement) \
 	X(BashArithmeticStatement) \

@@ -414,6 +414,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 %s BASH_ARITHMETIC_MODE
 
+%s BASH_53_NATIVE_SUPERSHELL_MODE
+
 %%
 
 %{
@@ -601,6 +603,12 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	{RBRACE} {
 		get_lexer_extra(yyscanner)->modeStack.pop(); // Exit BLOCK_MODE
 		emit(RBRACE);
+	}
+}
+<BASH_53_NATIVE_SUPERSHELL_MODE>{
+	{RBRACE} {
+		get_lexer_extra(yyscanner)->modeStack.pop(); // Exit BASH_53_NATIVE_SUPERSHELL_MODE
+		emit(BASH_53_NATIVE_SUPERSHELL_END);
 	}
 }
 "+="                                 {
@@ -1265,6 +1273,18 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 <BASH_VAR_MODE>{
 	{IDENTIFIER} {
 		emit(IDENTIFIER, tokenText);
+	}
+
+	{WS} {
+		// Replace BASH_VAR_MODE with BASH_53_NATIVE_SUPERSHELL_MODE
+		// Bash 5.3's native supershell syntax is roughly ${ statements ; }
+		// Equivalent to our original @(statements)
+		// (Make no mistake, this was originally developed & released in Bash++, and was added to Bash a full year later)
+		get_lexer_extra(yyscanner)->modeStack.pop();
+		get_lexer_extra(yyscanner)->modeStack.push(BASH_53_NATIVE_SUPERSHELL_MODE);
+		get_lexer_extra(yyscanner)->lexerState.currently_lexing_lvalue_reference = false;
+		get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue = true;
+		emit(WS, tokenText);
 	}
 
 	"#" {

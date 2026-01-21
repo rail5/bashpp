@@ -81,8 +81,6 @@ namespace AST {
 
 #define TOTAL_NODE_TYPES (0 AST_LISTENER_NODE_LIST(COUNT_NODE_TYPE)) // Gives the total number of node types
 
-#undef COUNT_NODE_TYPE
-
 /**
  * @class BaseListener
  * @brief CRTP base class for AST listeners.
@@ -178,8 +176,9 @@ class BaseListener {
 			std::invoke(exitFunc, this, node);
 		}
 
-		#undef AST_LISTENER_NODE_LIST
 		#undef TOTAL_NODE_TYPES
+		#undef COUNT_NODE_TYPE
+		#undef AST_LISTENER_NODE_LIST
 };
 
 } // namespace AST

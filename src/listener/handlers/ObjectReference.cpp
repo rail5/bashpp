@@ -53,6 +53,9 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 
 	auto current_class = current_code_entity->get_containing_class().lock();
 
+	// @super forces static method resolution
+	bool force_static_resolution = node->IDENTIFIER().getValue() == "super";
+
 	bool lvalue = node->isLvalue();
 	bool self_reference = node->isSelfReference();
 	bool pointer_dereference = node->isPointerDereference();
@@ -99,9 +102,6 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 		throw_syntax_error_from_exitRule(ref.error->token, ref.error->message);
 	}
 
-	object_reference_entity->add_code_to_previous_line(ref.reference_code.pre_code);
-	object_reference_entity->add_code_to_next_line(ref.reference_code.post_code);
-
 	bpp::reference_type reference_type;
 
 	std::shared_ptr<bpp::bpp_method> method = std::dynamic_pointer_cast<bpp::bpp_method>(ref.entity);
@@ -127,5 +127,92 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 	encase_close = ref.created_first_temporary_variable ? "}" : "";
 	indirection = ref.created_second_temporary_variable ? "!" : "";
 
+	// First, determine: If the final-referenced entity is a pointer to a non-primitive object,
+	// And pointer_dereference == true,
+	// Then from here on we should treat that pointer as though it were the object it refers to directly
+	if (reference_type == bpp::reference_type::ref_object
+		&& object->is_pointer()
+		&& pointer_dereference
+	) {
+		// Create a temporary copy of the object entity that is not marked as a pointer
+		// This is sufficient because the runtime automatically dereferences pointers as needed
+		// So the only thing we need to change is how we treat this entity within the compiler, not within the runtime
+		auto dereferenced_object = std::make_shared<bpp::bpp_object>(*object);
+		dereferenced_object->set_pointer(false);
+		// Work with this copy from here on
+		ref.entity = dereferenced_object;
+		object = dereferenced_object;
+	}
 
+	// Next, determine: Have we referenced a non-primitive object in a place where a primitive is expected?
+	// If so, we need to replace the referenced entity with the object's .toPrimitive method entity
+	if (reference_type == bpp::reference_type::ref_object
+		&& !object->is_pointer()
+		&& !object_address
+		&& !context_expectations_stack.canTakeObject()
+	) {
+		// Re-call resolve_reference to get the .toPrimitive method
+		std::deque<std::string> to_primitive_ids; // By pushing strings instead of tokens, we avoid duplicating diagnostics & reference counters
+		for (const auto& id : ids) {
+			to_primitive_ids.push_back(id.getValue());
+		}
+		to_primitive_ids.push_back("toPrimitive");
+
+		ref = bpp::resolve_reference(
+			source_file,
+			current_code_entity,
+			&to_primitive_ids,
+			should_declare_local(),
+			program
+		);
+
+		reference_type = bpp::reference_type::ref_method;
+		object = nullptr;
+		method = std::dynamic_pointer_cast<bpp::bpp_method>(ref.entity);
+		if (method == nullptr) {
+			throw internal_error("toPrimitive method not found for class " + ref.class_containing_the_method->get_name());
+		}
+	}
+
+	// Add the pre- and post- code necessary to resolve the object reference
+	object_reference_entity->add_code_to_previous_line(ref.reference_code.pre_code);
+	object_reference_entity->add_code_to_next_line(ref.reference_code.post_code);
+
+	// 1. Is it a method?
+	if (reference_type == bpp::reference_type::ref_method) {
+		auto method_call = bpp::generate_method_call_code(
+			ref.reference_code.code,
+			method->get_name(),
+			ref.class_containing_the_method,
+			force_static_resolution,
+			program
+		);
+
+		// Add the pre- and post- code necessary to call the method
+		object_reference_entity->add_code_to_previous_line(method_call.pre_code);
+		object_reference_entity->add_code_to_next_line(method_call.post_code);
+
+		std::string code_to_add = method_call.code;
+
+		// If this is an rvalue reference, the method call must be run in a supershell
+		if (!lvalue) {
+			auto supershell = bpp::generate_supershell_code(
+				method_call.code,
+				in_while_condition,
+				current_while_or_until_condition,
+				program
+			);
+			// Add the pre- and post- code necessary to run a supershell
+			object_reference_entity->add_code_to_previous_line(supershell.pre_code);
+			object_reference_entity->add_code_to_next_line(supershell.post_code);
+
+			code_to_add = supershell.code;
+		}
+
+		object_reference_entity->add_code(code_to_add);
+	}
+
+	current_code_entity->add_code_to_previous_line(object_reference_entity->get_pre_code());
+	current_code_entity->add_code_to_next_line(object_reference_entity->get_post_code());
+	current_code_entity->add_code(object_reference_entity->get_code());
 }

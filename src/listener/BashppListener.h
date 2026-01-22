@@ -28,6 +28,7 @@ using bpp::generate_method_call_code;
 using bpp::generate_dynamic_cast_code;
 
 #include "../bpp_include/bpp.h"
+#include "ContextExpectations.h"
 
 #include "../syntax_error.h"
 #include "../internal_error.h"
@@ -135,6 +136,8 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 		bool in_supershell = false;
 		std::stack<std::monostate> bash_function_stack;
 		bool should_declare_local() const;
+
+		ExpectationsStack context_expectations_stack;
 
 		/**
 		 * @var entity_stack

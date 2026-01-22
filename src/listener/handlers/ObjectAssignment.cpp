@@ -12,12 +12,14 @@ void BashppListener::enterObjectAssignment(std::shared_ptr<AST::ObjectAssignment
 	object_assignment->set_containing_class(entity_stack.top()->get_containing_class());
 	object_assignment->inherit(latest_code_entity());
 	entity_stack.push(object_assignment);
+	context_expectations_stack.push({true, true}); // The lvalue of an object assignment can take both primitives and objects
 }
 
 void BashppListener::exitObjectAssignment(std::shared_ptr<AST::ObjectAssignment> node) {
 	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(entity_stack.top());
 	entity_stack.pop();
+	context_expectations_stack.pop();
 
 	if (object_assignment == nullptr) {
 		throw internal_error("Object assignment context was not found in the entity stack");

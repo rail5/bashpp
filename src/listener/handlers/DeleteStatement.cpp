@@ -24,6 +24,7 @@ void BashppListener::enterDeleteStatement(std::shared_ptr<AST::DeleteStatement> 
 	delete_entity->set_containing_class(entity_stack.top()->get_containing_class());
 	delete_entity->inherit(latest_code_entity());
 	entity_stack.push(delete_entity);
+	context_expectations_stack.push({true, true}); // @delete can take both primitives and objects
 }
 
 void BashppListener::exitDeleteStatement(std::shared_ptr<AST::DeleteStatement> node) {
@@ -35,6 +36,7 @@ void BashppListener::exitDeleteStatement(std::shared_ptr<AST::DeleteStatement> n
 	}
 
 	entity_stack.pop();
+	context_expectations_stack.pop();
 
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> code_entity = latest_code_entity();

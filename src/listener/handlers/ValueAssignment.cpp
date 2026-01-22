@@ -12,15 +12,22 @@ void BashppListener::enterValueAssignment(std::shared_ptr<AST::ValueAssignment> 
 	value_assignment_entity->inherit(latest_code_entity());
 
 	// If we're in an object assignment context, determine whether the lvalue is primitive or nonprimitive
+	bool lvalue_nonprimitive = false;
 	std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(entity_stack.top());
 	if (object_assignment != nullptr) {
 		value_assignment_entity->set_lvalue_nonprimitive(object_assignment->lvalue_is_nonprimitive());
+		lvalue_nonprimitive = object_assignment->lvalue_is_nonprimitive();
 	}
 	
 	auto op = node->OPERATOR();
 	value_assignment_entity->set_adding(op.getValue() == "+=");
 
 	entity_stack.push(value_assignment_entity);
+	if (lvalue_nonprimitive) {
+		context_expectations_stack.push({false, true}); // Nonprimitive lvalue: rvalue must be nonprimitive
+	} else {
+		context_expectations_stack.push({true, false}); // Primitive lvalue: rvalue must be primitive
+	}
 }
 
 void BashppListener::exitValueAssignment(std::shared_ptr<AST::ValueAssignment> node) {
@@ -35,6 +42,7 @@ void BashppListener::exitValueAssignment(std::shared_ptr<AST::ValueAssignment> n
 
 	std::shared_ptr<bpp::bpp_value_assignment> value_assignment_entity = std::dynamic_pointer_cast<bpp::bpp_value_assignment>(entity_stack.top());
 	entity_stack.pop();
+	context_expectations_stack.pop();
 
 	if (value_assignment_entity == nullptr) {
 		throw internal_error("Value assignment context was not found in the entity stack");

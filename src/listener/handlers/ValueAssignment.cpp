@@ -18,6 +18,13 @@ void BashppListener::enterValueAssignment(std::shared_ptr<AST::ValueAssignment> 
 		value_assignment_entity->set_lvalue_nonprimitive(object_assignment->lvalue_is_nonprimitive());
 		lvalue_nonprimitive = object_assignment->lvalue_is_nonprimitive();
 	}
+
+	// If this value assignment is attached to an object instantiation, the lvalue is of course nonprimitive
+	std::shared_ptr<bpp::bpp_object> object_instantiation = std::dynamic_pointer_cast<bpp::bpp_object>(entity_stack.top());
+	if (object_instantiation != nullptr) {
+		value_assignment_entity->set_lvalue_nonprimitive(true);
+		lvalue_nonprimitive = true;
+	}
 	
 	auto op = node->OPERATOR();
 	value_assignment_entity->set_adding(op.getValue() == "+=");

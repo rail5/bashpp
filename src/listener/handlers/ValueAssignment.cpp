@@ -98,5 +98,16 @@ void BashppListener::exitValueAssignment(std::shared_ptr<AST::ValueAssignment> n
 			// Throw an error
 			throw_syntax_error_from_exitRule(node, "Cannot assign a primitive value to a nonprimitive object");
 		}
+		return;
 	}
+
+	// Default case: just send it up the chain
+	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
+	if (current_code_entity == nullptr) {
+		throw internal_error("Current code entity was not found in the entity stack");
+	}
+
+	current_code_entity->add_code_to_previous_line(value_assignment_entity->get_pre_code());
+	current_code_entity->add_code_to_next_line(value_assignment_entity->get_post_code());
+	current_code_entity->add_code(value_assignment_entity->get_code());
 }

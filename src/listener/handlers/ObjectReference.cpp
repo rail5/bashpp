@@ -123,7 +123,7 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 		reference_type = bpp::reference_type::ref_object;
 		object = std::make_shared<bpp::bpp_object>();
 		object->set_class(class_); // Could be either current_class or its parent class if @super
-		object->set_address("${__this}"); // CAREFUL: This relies on the this pointer being stored in __this
+		object->set_address("__this"); // CAREFUL: This relies on the this pointer being stored in __this
 		object->set_pointer(true);
 	} else {
 		throw internal_error("Referenced entity is not an object, datamember or method");
@@ -184,6 +184,7 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 
 	// 1. Is it a method?
 	if (reference_type == bpp::reference_type::ref_method) {
+		if (ref.reference_code.code == "__this") ref.reference_code.code = "${__this}"; // Kind of a hack to ensure that "this" references work correctly
 		auto method_call = bpp::generate_method_call_code(
 			ref.reference_code.code,
 			method->get_name(),
@@ -237,6 +238,7 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 		auto delete_entity = std::dynamic_pointer_cast<bpp::bpp_delete_statement>(entity_stack.top());
 		if (delete_entity != nullptr) {
 			delete_entity->set_object_to_delete(object);
+			object_reference_entity->add_code(ref.reference_code.code);
 		}
 
 		// Is this the lvalue of an object assignment?
@@ -245,6 +247,7 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 			object_assignment_entity->set_lvalue_object(object);
 			object_assignment_entity->set_lvalue_nonprimitive(true);
 			object_assignment_entity->set_lvalue(ref.reference_code.code);
+			object_reference_entity->add_code(ref.reference_code.code);
 		}
 
 		// Is this the rvalue of an object assignment?
@@ -252,10 +255,32 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 		if (value_assignment_entity != nullptr && !object->is_pointer()) {
 			value_assignment_entity->set_nonprimitive_object(object);
 			value_assignment_entity->set_nonprimitive_assignment(true);
+			object_reference_entity->add_code(ref.reference_code.code);
+		}
+		// That's all 3 of the special cases in which non-primitive objects are directly acceptable.
+	}
+
+	// 3. Is it a primitive? (Or a pointer)
+	if (reference_type == bpp::reference_type::ref_primitive
+		|| (reference_type == bpp::reference_type::ref_object && object->is_pointer())
+	) {
+		std::string encase_open, encase_close, indirection;
+		encase_open = ref.created_first_temporary_variable ? "${" : "";
+		encase_close = ref.created_first_temporary_variable ? "}" : "";
+		indirection = ref.created_second_temporary_variable ? "!" : "";
+
+		std::string encased_reference_code = encase_open + indirection + ref.reference_code.code + encase_close;
+
+		// Is this the lvalue of an object assignment?
+		auto object_assignment_entity = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(entity_stack.top());
+		if (object_assignment_entity != nullptr) {
+			indirection = ""; // No indirection for assignment lvalues
+			encased_reference_code = encase_open + indirection + ref.reference_code.code + encase_close;
+			object_assignment_entity->set_lvalue(encased_reference_code);
+			object_assignment_entity->set_lvalue_nonprimitive(false);
 		}
 
-		// That's all 3 of the special cases in which non-primitive objects are directly acceptable.
-		object_reference_entity->add_code(ref.reference_code.code);
+		object_reference_entity->add_code(encased_reference_code);
 	}
 
 	current_code_entity->add_code_to_previous_line(object_reference_entity->get_pre_code());

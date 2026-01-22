@@ -524,10 +524,6 @@ entity_reference resolve_reference_impl(
 		}
 	}
 
-	if (result.reference_code.code == "__this") {
-		result.reference_code.code = "${__this}";
-	}
-
 	// Having finished iterating over all the identifiers
 	// And determining precisely which entity is referred to
 	// We can now return

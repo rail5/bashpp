@@ -45,8 +45,7 @@ void BashppListener::exitObjectAssignment(std::shared_ptr<AST::ObjectAssignment>
 		}
 
 		// Call the __copy method
-		// Form: bpp__CLASSNAME____copy copyFromAddress copyToAddress copyFromIsPointer copyToIsPointer
-		// Since we'll always pass pointers, the last two arguments will always be 1 here
+		// Form: bpp__CLASSNAME____copy copyFromAddress copyToAddress
 		std::string method_call = "bpp__" + lvalue_object->get_class()->get_name() + "____copy ";
 
 		// Get the addresses of the objects

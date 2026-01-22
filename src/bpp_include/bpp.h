@@ -828,23 +828,6 @@ class bpp_dynamic_cast_statement : public bpp_string {
 };
 
 /**
- * @class bpp_pointer_dereference
- * 
- * @brief A pointer dereference in Bash++
- * 
- * The 'bpp_' prefix signifies that this is used to parse a statement type which is unique to Bash++
- */
-class bpp_pointer_dereference : public bpp_string {
-	private:
-		std::shared_ptr<bpp::bpp_value_assignment> value_assignment;
-	public:
-		bpp_pointer_dereference();
-
-		void set_value_assignment(std::shared_ptr<bpp::bpp_value_assignment> value_assignment);
-		std::shared_ptr<bpp::bpp_value_assignment> get_value_assignment() const;
-};
-
-/**
  * @class bpp_value_assignment
  * 
  * @brief A value assignment statement in Bash++
@@ -931,18 +914,6 @@ class bpp_object_reference : public bpp_string {
 		void set_array_index(const std::string& array_index);
 		bpp::reference_type get_reference_type() const;
 		std::string get_array_index() const;
-};
-
-/**
- * @class bpp_object_address
- * 
- * @brief A statement which takes the address of an object in Bash++
- * 
- * The 'bpp_' prefix signifies that this is used to parse a statement type which is unique to Bash++
- */
-class bpp_object_address : public bpp_string {
-	public:
-		bpp_object_address() = default;
 };
 
 } // namespace bpp

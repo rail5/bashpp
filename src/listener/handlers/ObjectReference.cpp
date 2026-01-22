@@ -104,9 +104,10 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 
 	bpp::reference_type reference_type;
 
-	std::shared_ptr<bpp::bpp_method> method = std::dynamic_pointer_cast<bpp::bpp_method>(ref.entity);
-	std::shared_ptr<bpp::bpp_datamember> datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(ref.entity);
-	std::shared_ptr<bpp::bpp_object> object = std::dynamic_pointer_cast<bpp::bpp_object>(ref.entity);
+	auto method = std::dynamic_pointer_cast<bpp::bpp_method>(ref.entity);
+	auto datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(ref.entity);
+	auto object = std::dynamic_pointer_cast<bpp::bpp_object>(ref.entity);
+	auto class_ = std::dynamic_pointer_cast<bpp::bpp_class>(ref.entity);
 
 	if (method != nullptr) {
 		reference_type = bpp::reference_type::ref_method;
@@ -116,16 +117,19 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 			: bpp::reference_type::ref_object;
 	} else if (object != nullptr) {
 		reference_type = bpp::reference_type::ref_object;
+	} else if (self_reference && class_ != nullptr) {
+		// Self-reference to a class (eg, @this or @super)
+		// Treat this as an object reference, create a temporary object representing "this"
+		reference_type = bpp::reference_type::ref_object;
+		object = std::make_shared<bpp::bpp_object>();
+		object->set_class(class_); // Could be either current_class or its parent class if @super
+		object->set_address("${__this}"); // CAREFUL: This relies on the this pointer being stored in __this
+		object->set_pointer(true);
 	} else {
 		throw internal_error("Referenced entity is not an object, datamember or method");
 	}
 
 	object_reference_entity->set_reference_type(reference_type);
-
-	std::string encase_open, encase_close, indirection;
-	encase_open = ref.created_first_temporary_variable ? "${" : "";
-	encase_close = ref.created_first_temporary_variable ? "}" : "";
-	indirection = ref.created_second_temporary_variable ? "!" : "";
 
 	// First, determine: If the final-referenced entity is a pointer to a non-primitive object,
 	// And pointer_dereference == true,
@@ -225,6 +229,17 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 		// for the same reason that `echo hello` and `var="echo"; $var hello` are equivalent in bash.
 
 		object_reference_entity->add_code(code_to_add);
+	}
+
+	// 2. Is it a non-primitive object?
+	if (reference_type == bpp::reference_type::ref_object) {
+		// Are we in a @delete statement?
+		auto delete_entity = std::dynamic_pointer_cast<bpp::bpp_delete_statement>(entity_stack.top());
+		if (delete_entity != nullptr) {
+			delete_entity->set_object_to_delete(object);
+		}
+
+		object_reference_entity->add_code(ref.reference_code.code);
 	}
 
 	current_code_entity->add_code_to_previous_line(object_reference_entity->get_pre_code());

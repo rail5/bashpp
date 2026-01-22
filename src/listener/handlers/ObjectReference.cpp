@@ -195,7 +195,7 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 		std::string code_to_add = method_call.code;
 
 		// If this is an rvalue reference, the method call must be run in a supershell
-		if (!lvalue) {
+		if (!lvalue && !object_address) {
 			auto supershell = bpp::generate_supershell_code(
 				method_call.code,
 				in_while_condition,
@@ -208,6 +208,21 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 
 			code_to_add = supershell.code;
 		}
+
+		// NOTE: If object_address is true here, we are taking the address of the method
+		//
+		// The "address" of an object's method is:
+		//  - The function name
+		//  - The object's address (the "this" pointer) as the method's implicit first argument
+		//
+		// We do not need to handle it specially in this case, apart from the above check
+		// `if (!lvalue && !object_address)`
+		// Which ensures that if we are taking the address of the method, we do not run it in a supershell,
+		// but instead just output the method call code directly.
+		//
+		// Incidentally, taking a method's address in an lvalue reference is semantically equivalent
+		// to simply calling the method (i.e., to **not** taking its address at all)
+		// for the same reason that `echo hello` and `var="echo"; $var hello` are equivalent in bash.
 
 		object_reference_entity->add_code(code_to_add);
 	}

@@ -20,7 +20,7 @@
  */
 
 
-static const char* bpp_supershell_function = R"EOF(function bpp____initsupershell() {
+[[maybe_unused]] static const char* bpp_supershell_function = R"EOF(function bpp____initsupershell() {
 	local bpp____supershellDirectory="/dev/shm/"
 	if [[ ! -d "${bpp____supershellDirectory}" ]]; then
 		bpp____supershellDirectory="${TMPDIR:-/tmp/}"
@@ -42,7 +42,11 @@ function bpp____supershell() {
 }
 )EOF";
 
-static const char* bpp_vtable_lookup = R"EOF(function bpp____vTable__lookup() {
+[[maybe_unused]] static const char* bpp_repeat_status = R"EOF(function bpp____repeat__status() {
+	return $1
+})EOF";
+
+[[maybe_unused]] static const char* bpp_vtable_lookup = R"EOF(function bpp____vTable__lookup() {
 	local __this="$1" __method="$2" __outputVar="$3"
 	([[ -z "${__this}" ]] || [[ -z "${__method}" ]] || [[ -z "${__outputVar}" ]]) && >&2 echo "Bash++: Error: Invalid vTable lookup" && exit 1
 	while : ; do
@@ -62,7 +66,7 @@ static const char* bpp_vtable_lookup = R"EOF(function bpp____vTable__lookup() {
 }
 )EOF";
 
-static const char* bpp_dynamic_cast = R"EOF(function bpp____dynamic__cast() {
+[[maybe_unused]] static const char* bpp_dynamic_cast = R"EOF(function bpp____dynamic__cast() {
 	local __type="$1" __outputVar="$2" __this="$3"
 	([[ -z "${__type}" ]] || [[ -z "${__outputVar}" ]]) && >&2 echo "Bash++: Error: Invalid dynamic_cast" && exit 1
 	eval "${__outputVar}=0"
@@ -85,7 +89,7 @@ static const char* bpp_dynamic_cast = R"EOF(function bpp____dynamic__cast() {
 }
 )EOF";
 
-static const char* bpp_typeof_function = R"EOF(function bpp____typeof() {
+[[maybe_unused]] static const char* bpp_typeof_function = R"EOF(function bpp____typeof() {
 	local __this="$1" __outputVar="$2"
 	[[ -z "${__this}" ]] && >&2 echo "Bash++: Error: Invalid type name request" && exit 1
 	while : ; do
@@ -106,7 +110,7 @@ static const char* bpp_typeof_function = R"EOF(function bpp____typeof() {
 }
 )EOF";
 
-static const char* template_new_function = R"EOF(function bpp__%CLASS%____new() {
+[[maybe_unused]] static const char* template_new_function = R"EOF(function bpp__%CLASS%____new() {
 	local __this="$1"
 	if [[ "${__this}" == "" ]]; then
 		while : ; do
@@ -121,7 +125,7 @@ static const char* template_new_function = R"EOF(function bpp__%CLASS%____new() 
 }
 )EOF";
 
-static const char* template_copy_function = R"EOF(function bpp__%CLASS%____copy() {
+[[maybe_unused]] static const char* template_copy_function = R"EOF(function bpp__%CLASS%____copy() {
 	local __copyFromAddress="$1" __copyToAddress="$2"
 	while : ; do
 		if ! eval "declare -p \"${__copyFromAddress}\"" &>/dev/null; then
@@ -155,7 +159,7 @@ static const char* template_copy_function = R"EOF(function bpp__%CLASS%____copy(
 }
 )EOF";
 
-static const char* template_method = R"EOF(function bpp__%CLASS%__%SIGNATURE%() {
+[[maybe_unused]] static const char* template_method = R"EOF(function bpp__%CLASS%__%SIGNATURE%() {
 	local __this="$1"
 	shift 1
 	%PARAMS%

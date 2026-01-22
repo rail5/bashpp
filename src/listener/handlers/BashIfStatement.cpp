@@ -25,8 +25,8 @@ void BashppListener::enterBashIfStatement(std::shared_ptr<AST::BashIfStatement> 
 	 * 		...
 	 * 	fi
 	 * 
-	 * The elif/else branches will be caught by the Bash_if_root_branch and Bash_if_else_branch contexts
-	 * 	Both of those will be children of the Bash_if_statement context in the parse tree
+	 * The elif/else branches will be caught by the BashIfRootBranch and BashIfElseBranch contexts
+	 * 	Both of those will be children of the BashIfStatement context in the parse tree
 	 * 
 	 * The only thing that we need to be careful about is this:
 	 * 		All of the pre-code which is generated INSIDE of the if CONDITION
@@ -263,8 +263,7 @@ void BashppListener::exitBashIfCondition(std::shared_ptr<AST::BashIfCondition> n
 		throw internal_error("If statement entity not found");
 	}
 
-	// If we're here, it's not the root branch
 	if_statement_entity->add_conditional_branch_pre_code(condition_entity->get_pre_code());
 	if_statement_entity->add_conditional_branch_post_code(condition_entity->get_post_code());
-	if_statement_entity->add_condition_code(condition_entity->get_code() + "; then\n");
+	if_statement_entity->add_condition_code("{\n" + condition_entity->get_code() + "\n}; then\n");
 }

@@ -7,8 +7,8 @@
 #include <unistd.h>
 #include "../BashppListener.h"
 #include "../../exit_code.h"
+#include "../../bpp_include/templates.h"
 
-#include <iostream>
 void BashppListener::enterProgram(std::shared_ptr<AST::Program> node) {
 	program->set_output_stream(code_buffer);
 	program->set_include_paths(include_paths);
@@ -28,6 +28,7 @@ void BashppListener::enterProgram(std::shared_ptr<AST::Program> node) {
 		included_files = included_from->get_included_files();
 	} else {
 		program->add_code("#!/usr/bin/env bash\n");
+		program->add_code(bpp_repeat_status);
 	}
 
 	entity_stack.push(program);

@@ -1440,6 +1440,8 @@ object_assignment:
 
 shell_variable_assignment:
 	IDENTIFIER_LVALUE value_assignment {
+		set_incoming_token_can_be_lvalue(true, yyscanner); // Lvalues can follow assignments
+		
 		auto node = std::make_shared<AST::PrimitiveAssignment>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;

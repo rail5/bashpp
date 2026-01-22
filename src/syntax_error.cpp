@@ -79,7 +79,8 @@ void print_syntax_error_or_warning(
 	// Print the line with the error
 	std::string line_before_error = utf8_substr(line_content, 0, column - 1);
 	std::string error_portion = utf8_substr(line_content, column - 1, utf8_length(text));
-	std::string line_after_error = utf8_substr(line_content, column - 1 + utf8_length(text), 0);
+	uint32_t line_after_error_length = utf8_length(line_content) - (utf8_length(line_before_error) + utf8_length(error_portion));
+	std::string line_after_error = utf8_substr(line_content, column - 1 + utf8_length(text), line_after_error_length);
 	
 	std::cerr << line1_prefix
 		<< line_before_error

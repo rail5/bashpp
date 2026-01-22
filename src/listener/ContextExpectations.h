@@ -12,24 +12,22 @@
  * @brief Represents the expectations for the current parsing context.
  *
  * can_take_primitive: Whether a primitive value is acceptable in the current context
- * can_take_object: Whether a non-primitive object is acceptable in the current
+ * can_take_object: Whether a non-primitive object is acceptable in the current context
  *
  * In the event that a non-primitive object is referenced in a place where only a primitive is acceptable,
  * The Bash++ spec says that the .toPrimitive method should be called automatically.
  *
  * Further:
- * There are only four cases in which a non-primitive object can be used directly (without conversion to a primitive),
+ * There are only three cases in which a non-primitive object can be used directly (without conversion to a primitive),
  * And there is only one case in which a primitive cannot be used directly.
  *
- * The four cases in which a non-primitive object can be used directly are:
+ * The three cases in which a non-primitive object can be used directly are:
  *
  *   1. In @delete statements
  *
- *   2. In non-primitive copies (rvalue) [the right-hand side of an assignment iff the left-hand was non-primitive]
+ *   2. In non-primitive copies (lvalue) [the left-hand side of an assignment, always]
  *
- *   3. In non-primitive copies (lvalue) [the left-hand side of an assignment, always]
- *
- *   4. When preceded by the '&' operator to get the object's address
+ *   3. In non-primitive copies (rvalue) [the right-hand side of an assignment iff the left-hand was non-primitive]
  *
  * The one case in which a primitive cannot be used directly is as the rvalue in a non-primitive assignment.
  *  I.e., @nonPrimitiveObject="primitive value"

@@ -125,6 +125,12 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 		object->set_class(class_); // Could be either current_class or its parent class if @super
 		object->set_address("__this"); // CAREFUL: This relies on the this pointer being stored in __this
 		object->set_pointer(true);
+
+		// Extra checks:
+		auto object_assignment_entity = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(entity_stack.top());
+		if (object_assignment_entity != nullptr) {
+			throw_syntax_error_from_exitRule(node, "Cannot assign to '@this'");
+		}
 	} else {
 		throw internal_error("Referenced entity is not an object, datamember or method");
 	}

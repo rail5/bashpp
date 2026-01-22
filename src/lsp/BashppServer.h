@@ -146,14 +146,14 @@ class BashppServer {
 		 * 
 		 */
 		static constexpr frozen::unordered_map<frozen::string, RequestHandler, 8> request_handlers = {
-			{frozen::string("initialize"), &BashppServer::handleInitialize},
-			{frozen::string("textDocument/definition"), &BashppServer::handleDefinition},
-			{frozen::string("textDocument/completion"), &BashppServer::handleCompletion},
-			{frozen::string("textDocument/hover"), &BashppServer::handleHover},
-			{frozen::string("textDocument/documentSymbol"), &BashppServer::handleDocumentSymbol},
-			{frozen::string("textDocument/rename"), &BashppServer::handleRename},
-			{frozen::string("textDocument/references"), &BashppServer::handleReferences},
-			{frozen::string("shutdown"), &BashppServer::shutdown}
+			{"initialize", &BashppServer::handleInitialize},
+			{"textDocument/definition", &BashppServer::handleDefinition},
+			{"textDocument/completion", &BashppServer::handleCompletion},
+			{"textDocument/hover", &BashppServer::handleHover},
+			{"textDocument/documentSymbol", &BashppServer::handleDocumentSymbol},
+			{"textDocument/rename", &BashppServer::handleRename},
+			{"textDocument/references", &BashppServer::handleReferences},
+			{"shutdown", &BashppServer::shutdown}
 		};
 
 		/**

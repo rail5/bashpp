@@ -56,6 +56,10 @@ void BashppListener::exitDeleteStatement(std::shared_ptr<AST::DeleteStatement> n
 		throw_syntax_error_from_exitRule(node, "Object not found: " + object_ref_name);
 	}
 
+	if (delete_entity->get_object_to_delete()->get_address() == "${__this}") {
+		throw_syntax_error_from_exitRule(node, "Cannot call @delete on '@this'");
+	}
+
 	// Generate the delete code
 	code_segment delete_code = generate_delete_code(delete_entity->get_object_to_delete(), delete_entity->get_code(), program);
 

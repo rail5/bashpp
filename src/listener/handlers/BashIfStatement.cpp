@@ -103,15 +103,12 @@ void BashppListener::exitBashIfStatement(std::shared_ptr<AST::BashIfStatement> n
 		throw internal_error("Code entity not found in the entity stack");
 	}
 
-	current_code_entity->add_code_to_previous_line(if_statement_entity->get_conditional_branch_pre_code());
-
 	for (const auto& branch : if_statement_entity->get_conditional_branches()) {
 		current_code_entity->add_code(branch.first);
 		current_code_entity->add_code(branch.second);
 	}
 
 	current_code_entity->add_code("fi\n");
-	current_code_entity->add_code(if_statement_entity->get_conditional_branch_post_code());
 }
 
 void BashppListener::enterBashIfRootBranch(std::shared_ptr<AST::BashIfRootBranch> node) {
@@ -263,7 +260,11 @@ void BashppListener::exitBashIfCondition(std::shared_ptr<AST::BashIfCondition> n
 		throw internal_error("If statement entity not found");
 	}
 
-	if_statement_entity->add_conditional_branch_pre_code(condition_entity->get_pre_code());
-	if_statement_entity->add_conditional_branch_post_code(condition_entity->get_post_code());
-	if_statement_entity->add_condition_code("{\n" + condition_entity->get_code() + "\n}; then\n");
+	std::string condition_code = condition_entity->get_pre_code();
+	if (!condition_code.empty() && condition_code.back() != '\n') condition_code += "\n";
+	condition_code += condition_entity->get_code();
+	std::string condition_post_code = condition_entity->get_post_code();
+	if (!condition_post_code.empty() && condition_code.back() != '\n') condition_code += "\n" + condition_post_code;
+
+	if_statement_entity->add_condition_code("{\n" + condition_code + "\n}; then\n");
 }

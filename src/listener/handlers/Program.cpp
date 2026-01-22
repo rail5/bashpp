@@ -28,7 +28,7 @@ void BashppListener::enterProgram(std::shared_ptr<AST::Program> node) {
 		included_files = included_from->get_included_files();
 	} else {
 		program->add_code("#!/usr/bin/env bash\n");
-		program->add_code(bpp_repeat_status);
+		program->add_code(bpp_repeat);
 	}
 
 	entity_stack.push(program);

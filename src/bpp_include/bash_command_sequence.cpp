@@ -32,7 +32,7 @@ void bash_command_sequence::join() {
 	joined_code += enclose_open
 		+ (pre_code.empty() ? "" : pre_code + "\n")
 		+ (main_code.empty() ? "" : main_code)
-		+ (post_code.empty() ? "" : "\n____ret=$?\n" + post_code + "\nbpp____repeat__status $____ret")
+		+ (post_code.empty() ? "" : "\n____ret=$?\n" + post_code + "\nbpp____repeat $____ret")
 		+ enclose_close;
 }
 

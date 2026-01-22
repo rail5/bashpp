@@ -42,7 +42,7 @@ function bpp____supershell() {
 }
 )EOF";
 
-[[maybe_unused]] static const char* bpp_repeat_status = R"EOF(function bpp____repeat__status() {
+[[maybe_unused]] static const char* bpp_repeat = R"EOF(function bpp____repeat() {
 	return $1
 })EOF";
 

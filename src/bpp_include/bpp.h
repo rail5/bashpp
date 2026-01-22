@@ -671,19 +671,13 @@ class bash_while_or_until_condition : public bpp_string {
  */
 class bash_if : public bpp_string {
 	private:
-		std::string conditional_branch_pre_code = "";
-		std::string conditional_branch_post_code = "";
 		std::vector<std::pair<std::string, std::string>> conditional_branches = {};
 	public:
 		bash_if();
 
-		void add_conditional_branch_pre_code(const std::string& pre_code);
-		void add_conditional_branch_post_code(const std::string& post_code);
 		void new_branch();
 		void add_condition_code(const std::string& condition_code);
 		void add_branch_code(const std::string& branch_code);
-		std::string get_conditional_branch_pre_code() const;
-		std::string get_conditional_branch_post_code() const;
 		const std::vector<std::pair<std::string, std::string>>& get_conditional_branches() const;
 };
 

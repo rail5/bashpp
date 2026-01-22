@@ -135,6 +135,7 @@ void BashppListener::exitMethodDefinition(std::shared_ptr<AST::MethodDefinition>
 
 	// Call destructors for any objects created in the method before we exit it
 	method->destruct_local_objects(program);
+	method->flush_code_buffers();
 	in_method = false;
 
 	program->mark_entity(

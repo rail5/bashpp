@@ -239,6 +239,23 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 			delete_entity->set_object_to_delete(object);
 		}
 
+		// Is this the lvalue of an object assignment?
+		auto object_assignment_entity = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(entity_stack.top());
+		if (object_assignment_entity != nullptr) {
+			object_assignment_entity->set_lvalue_object(object);
+			object_assignment_entity->set_lvalue_nonprimitive(true);
+			object_assignment_entity->set_lvalue(ref.reference_code.code);
+		}
+
+		// Is this the rvalue of an object assignment?
+		auto value_assignment_entity = std::dynamic_pointer_cast<bpp::bpp_value_assignment>(entity_stack.top());
+		if (value_assignment_entity != nullptr) {
+			value_assignment_entity->set_nonprimitive_object(object);
+			value_assignment_entity->set_nonprimitive_assignment(true);
+		}
+
+		// That's all 3 of the special cases in which non-primitive objects are directly acceptable.
+
 		object_reference_entity->add_code(ref.reference_code.code);
 	}
 

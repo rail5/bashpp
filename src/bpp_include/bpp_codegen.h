@@ -88,6 +88,7 @@ code_segment inline_new(
 	std::shared_ptr<bpp::bpp_class>		new_class
 	);
 
+std::string get_encased_ref(const std::string& ref, size_t indirection_level);
 
 
 // Entity reference resolution

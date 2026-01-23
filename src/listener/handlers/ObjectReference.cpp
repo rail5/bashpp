@@ -270,18 +270,18 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 	if (reference_type == bpp::reference_type::ref_primitive
 		|| (reference_type == bpp::reference_type::ref_object && object->is_pointer())
 	) {
-		std::string encase_open, encase_close, indirection;
-		encase_open = ref.created_first_temporary_variable ? "${" : "";
-		encase_close = ref.created_first_temporary_variable ? "}" : "";
-		indirection = ref.created_second_temporary_variable ? "!" : "";
 
-		std::string encased_reference_code = encase_open + indirection + ref.reference_code.code + encase_close;
+		size_t indirection_level = 0;
+		if (ref.created_first_temporary_variable) indirection_level++;
+		if (ref.created_second_temporary_variable) indirection_level++;
+
+		std::string encased_reference_code = bpp::get_encased_ref(ref.reference_code.code, indirection_level);
 
 		// Is this the lvalue of an object assignment?
 		auto object_assignment_entity = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(entity_stack.top());
 		if (object_assignment_entity != nullptr) {
-			indirection = ""; // No indirection for assignment lvalues
-			encased_reference_code = encase_open + indirection + ref.reference_code.code + encase_close;
+			indirection_level--; // Lvalue assignments reduce indirection level by 1
+			encased_reference_code = bpp::get_encased_ref(ref.reference_code.code, indirection_level);
 			object_assignment_entity->set_lvalue(encased_reference_code);
 			object_assignment_entity->set_lvalue_nonprimitive(false);
 		}

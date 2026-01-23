@@ -277,6 +277,46 @@ code_segment inline_new(
 }
 
 /**
+ * @brief Encases a temporary variable reference with the appropriate level of indirection
+ *
+ * This function takes a std::string which is the name of a shell variable we would like to use,
+ * (for example, a temporary variable created during reference resolution),
+ * and an indirection level (0, 1, or 2),
+ * and returns the variable name encased in the appropriate amount of indirection.
+ *
+ * 0: Returns 'var' (as-is, no encasing)
+ * 1: Returns '${var}'
+ * 2: Returns '${!var}'
+ *
+ * Any other indirection level is treated as 0.
+ * 
+ * @param ref The reference string
+ * @param indirection_level The level of indirection (0, 1, or 2)
+ * @return std::string The encased reference string
+ */
+std::string get_encased_ref(const std::string& ref, size_t indirection_level) {
+	std::string encased;
+	std::string encase_open, encase_close, indirection;
+	switch (indirection_level) {
+		case 2:
+			indirection = "!";
+			[[ fallthrough ]];
+		case 1:
+			encase_open = "${";
+			encase_close = "}";
+			[[ fallthrough ]];
+		default:
+			[[ fallthrough ]];
+		case 0:
+			// No encasing
+			break;
+	}
+	encased = encase_open + indirection + ref + encase_close;
+	return encased;
+}
+
+
+/**
  * @brief Resolves a reference to an entity in a particular context.
  * 
  * This function resolves a reference to an entity (object, method, or data member) based on a sequence of identifiers.

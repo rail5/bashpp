@@ -84,14 +84,14 @@ void print_syntax_error_or_warning(
 	
 	std::cerr << line1_prefix
 		<< line_before_error
-		<< color_red << error_portion << color_reset
+		<< (is_warning ? color_orange : color_red) << error_portion << color_reset
 		<< line_after_error << std::endl;
 
 	// Print the caret line
 	line2_prefix += equal_width_padding(line_before_error);
 
 	std::cerr << line2_prefix
-		<< color_red << "^"
+		<< (is_warning ? color_orange : color_red) << "^"
 		<< equal_width_padding(utf8_substr(error_portion, 0, utf8_length(error_portion) - 1), '~')
 		<< color_reset << std::endl;
 

@@ -40,6 +40,7 @@ class BashppParser {
 		} input_type = InputType::FILEPATH;
 
 		std::variant<std::string, FILE*, std::monostate> input_source = std::monostate{}; // Can be a file path, FILE*, or string contents
+		std::string input_string_contents;
 
 		FILE* input_file = nullptr;
 

@@ -52,9 +52,9 @@ void AST::BashppParser::_initialize_lexer() {
 			break;
 		}
 		case InputType::STRING_CONTENTS: {
-			std::string contents = std::get<std::string>(input_source);
+			input_string_contents = std::get<std::string>(input_source);
 			// Create a temporary FILE* from the string contents
-			input_file = fmemopen(reinterpret_cast<void*>(const_cast<char*>(contents.c_str())), contents.size(), "r");
+			input_file = fmemopen(reinterpret_cast<void*>(const_cast<char*>(input_string_contents.c_str())), input_string_contents.size(), "r");
 			if (input_file == nullptr) {
 				throw internal_error("Could not create FILE* from string contents");
 			}

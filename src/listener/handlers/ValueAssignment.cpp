@@ -87,7 +87,6 @@ void BashppListener::exitValueAssignment(std::shared_ptr<AST::ValueAssignment> n
 			if (rvalue_object == nullptr) {
 				throw internal_error("Rvalue object not found for copy");
 			}
-			current_object_assignment->set_rvalue(rvalue_object->get_address());
 		}
 		return;
 	}

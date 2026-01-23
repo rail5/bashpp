@@ -68,7 +68,7 @@ function bpp____supershell() {
 
 [[maybe_unused]] static const char* bpp_dynamic_cast = R"EOF(function bpp____dynamic__cast() {
 	local __type="$1" __outputVar="$2" __this="$3"
-	([[ -z "${__type}" ]] || [[ -z "${__outputVar}" ]]) && >&2 echo "Bash++: Error: Invalid dynamic_cast" && exit 1
+	([[ -z "${__outputVar}" ]]) && >&2 echo "Bash++: Error: Invalid dynamic_cast" && exit 1
 	eval "${__outputVar}=0"
 	while : ; do
 		if ! eval "declare -p \"${__this}\"" &>/dev/null; then

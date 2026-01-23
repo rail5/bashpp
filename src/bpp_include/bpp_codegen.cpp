@@ -182,7 +182,7 @@ code_segment generate_dynamic_cast_code(
 ) {
 	code_segment result;
 
-	result.pre_code = "bpp____dynamic__cast " + class_name + " __dynamicCast" + std::to_string(program->get_dynamic_cast_counter()) + " " + reference_code + "\n";
+	result.pre_code = "bpp____dynamic__cast \"" + class_name + "\" \"__dynamicCast" + std::to_string(program->get_dynamic_cast_counter()) + "\" \"" + reference_code + "\"\n";
 	result.code = "${__dynamicCast" + std::to_string(program->get_dynamic_cast_counter()) + "}";
 	result.post_code = "unset __dynamicCast" + std::to_string(program->get_dynamic_cast_counter()) + "\n";
 

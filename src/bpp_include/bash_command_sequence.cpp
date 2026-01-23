@@ -8,6 +8,7 @@
 namespace bpp {
 
 void bash_command_sequence::join() {
+	if (perfect_forwarding) return; // Disable joining when perfect forwarding is enabled
 	// Move the contents of each buffer into temporary strings
 	auto ss = std::dynamic_pointer_cast<std::ostringstream>(code);
 	std::string pre_code;
@@ -78,20 +79,29 @@ void bash_command_sequence::add_connective(bool is_and) {
 
 void bash_command_sequence::add_code(const std::string& code, bool add_newline) {
 	// On a bash_command_sequence, this method should only ever be called when adding a COMPLETE pipeline
+	if (perfect_forwarding) {
+		bpp_string::add_code(code, add_newline);
+		return;
+	}
+
 	nextline_buffer += code;
 	join();
 }
 
 std::string bash_command_sequence::get_pre_code() const {
-	return "";
+	return perfect_forwarding ? bpp_string::get_pre_code() : "";
 }
 
 std::string bash_command_sequence::get_post_code() const {
-	return "";
+	return perfect_forwarding ? bpp_string::get_post_code() : "";
 }
 
 std::string bash_command_sequence::get_code() const {
-	return joined_code;
+	return perfect_forwarding ? bpp_string::get_code() : joined_code;
+}
+
+void bash_command_sequence::set_perfect_forwarding(bool enable) {
+	perfect_forwarding = enable;
 }
 
 } // namespace bpp

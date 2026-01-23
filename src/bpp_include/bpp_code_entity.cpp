@@ -169,4 +169,12 @@ std::string bpp_code_entity::get_post_code() const {
 	return postline_buffer;
 }
 
+void bpp_code_entity::set_requires_perfect_forwarding(bool require) {
+	requires_perfect_forwarding = require;
+}
+
+bool bpp_code_entity::get_requires_perfect_forwarding() const {
+	return requires_perfect_forwarding;
+}
+
 } // namespace bpp

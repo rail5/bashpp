@@ -275,6 +275,62 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 		if (ref.created_first_temporary_variable) indirection_level++;
 		if (ref.created_second_temporary_variable) indirection_level++;
 
+
+		/* Abandon all hope, ye who enter here */
+		std::string counting = node->hasHashkey() ? "#" : "";		
+		if (object_reference_entity->has_array_index()) {
+			// Special procedure needed to handle array indices
+			std::string local_decl = should_declare_local() ? "local " : "";
+			std::string indirection = ref.created_second_temporary_variable ? "!" : "";
+			std::string temporary_variable_lvalue = ref.reference_code.code + "____arrayIndexString";
+			std::string temporary_variable_rvalue;
+
+			bool first_object_is_pointer = false;
+			{
+				std::deque<std::string> first_id = {node->IDENTIFIER().getValue()};
+				auto first_object = std::dynamic_pointer_cast<bpp::bpp_object>(bpp::resolve_reference(
+					source_file,
+					current_code_entity,
+					&first_id,
+					should_declare_local(),
+					program
+				).entity);
+				first_object_is_pointer = (first_object != nullptr) && first_object->is_pointer();
+			}
+			first_object_is_pointer = first_object_is_pointer || self_reference;
+			
+			bool have_to_dereference_a_pointer = first_object_is_pointer || indirection_level >= 2;
+
+			if (have_to_dereference_a_pointer) {
+				temporary_variable_rvalue = counting + "${" + ref.reference_code.code + "}" + object_reference_entity->get_array_index();
+			} else {
+				// Can grab it directly
+				temporary_variable_rvalue = "${" + counting + indirection + ref.reference_code.code +  object_reference_entity->get_array_index() + "}";
+			}
+
+			object_reference_entity->add_code_to_previous_line(local_decl + temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n");
+			object_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
+
+			temporary_variable_rvalue = "${" + ref.reference_code.code + "____arrayIndexString}";
+
+			// If we're counting, another small layer of abstraction is needed
+			if (node->hasHashkey()) {
+				temporary_variable_rvalue = "\\${" + temporary_variable_rvalue + "}";
+			}
+
+			if (have_to_dereference_a_pointer) {
+				temporary_variable_lvalue = ref.reference_code.code + "____arrayIndex";
+				object_reference_entity->add_code_to_previous_line("eval " + local_decl + temporary_variable_lvalue + "=\"" + temporary_variable_rvalue + "\"\n");
+				object_reference_entity->add_code_to_next_line("unset " + temporary_variable_lvalue + "\n");
+			}
+
+			ref.reference_code.code = temporary_variable_lvalue;
+			if (node->hasHashkey() && indirection_level >= 2) indirection_level--;
+		}
+		/* End of the shameful section */
+
+		if (object_address) indirection_level--;
+
 		std::string encased_reference_code = bpp::get_encased_ref(ref.reference_code.code, indirection_level);
 
 		// Is this the lvalue of an object assignment?

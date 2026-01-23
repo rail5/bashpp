@@ -1061,6 +1061,8 @@ string_interpolation:
 	| pointer_dereference { $$ = $1; }
 	| supershell { $$ = $1; }
 	| subshell_substitution { $$ = $1; }
+	| bash_arithmetic_substitution { $$ = $1; }
+	| bash_53_native_supershell { $$ = $1; }
 	| bash_variable { $$ = $1; }
 	;
 

@@ -603,9 +603,27 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	get_lexer_extra(yyscanner)->modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
 	emit(DELIM, tokenText);
 }
-[ \t]*&&                             { emit(DOUBLEAMPERSAND); }
-[ \t]*\|\|                           { emit(DOUBLEPIPE); }
-[ \t]*\|                             { emit(PIPE); }
+[ \t]*&& {
+	if (get_lexer_extra(yyscanner)->modeStack.top() == BASH_TEST_CONDITION_MODE) {
+		emit(CATCHALL, tokenText);
+	} else {
+		emit(DOUBLEAMPERSAND);
+	}
+}
+[ \t]*\|\| {
+	if (get_lexer_extra(yyscanner)->modeStack.top() == BASH_TEST_CONDITION_MODE) {
+		emit(CATCHALL, tokenText);
+	} else {
+		emit(DOUBLEPIPE);
+	}
+}
+[ \t]*\| {
+	if (get_lexer_extra(yyscanner)->modeStack.top() == BASH_TEST_CONDITION_MODE) {
+		emit(CATCHALL, tokenText);
+	} else {
+		emit(PIPE);
+	}
+}
 {LBRACE}                             { get_lexer_extra(yyscanner)->modeStack.push(BLOCK_MODE); emit(LBRACE); }
 <BLOCK_MODE>{
 	{RBRACE} {
@@ -1012,6 +1030,11 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 	"@{" {
 		get_lexer_extra(yyscanner)->modeStack.push(BPP_BRACEREFERENCE_MODE);
 		emit(REF_START);
+	}
+
+	\$\(\([ \t]* {
+		get_lexer_extra(yyscanner)->modeStack.push(BASH_ARITHMETIC_MODE);
+		emit(BASH_ARITHMETIC_START);
 	}
 
 	"$(" {

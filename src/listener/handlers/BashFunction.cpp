@@ -63,8 +63,10 @@ void BashppListener::exitBashFunction(std::shared_ptr<AST::BashFunction> node) {
 	}
 
 	// Add the function to the current code entity
-	current_code_entity->add_code_to_previous_line("function " + function_entity->get_name() + " {");
+	current_code_entity->add_code_to_previous_line("function " + function_entity->get_name() + " {\n");
 	current_code_entity->add_code_to_next_line("}");
+
+	function_entity->flush_code_buffers();
 	
 	std::string code_to_add = function_entity->get_pre_code();
 	if (!code_to_add.empty()) {

@@ -28,6 +28,7 @@ using bpp::generate_method_call_code;
 using bpp::generate_dynamic_cast_code;
 
 #include "../bpp_include/bpp.h"
+#include "../include/BashVersion.h"
 #include "ContextExpectations.h"
 
 #include "../syntax_error.h"
@@ -118,7 +119,7 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 		* @var target_bash_version
 		* @brief The target Bash version to compile for (default is 5.2)
 		*/
-		std::pair<uint16_t, uint16_t> target_bash_version = {5, 2};
+		BashVersion target_bash_version = {5, 2};
 
 		/**
 		 * @var arguments
@@ -258,7 +259,7 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 	void set_output_file(std::string output_file);
 	void set_run_on_exit(bool run_on_exit);
 	void set_suppress_warnings(bool suppress_warnings);
-	void set_target_bash_version(uint16_t major, uint16_t minor);
+	void set_target_bash_version(BashVersion target_bash_version);
 	void set_arguments(std::vector<char*> arguments);
 
 	void set_replacement_file_contents(const std::string& file_path, const std::string& contents);
@@ -275,6 +276,8 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 	void exitArrayAssignment(std::shared_ptr<AST::ArrayAssignment> node);
 	void enterArrayIndex(std::shared_ptr<AST::ArrayIndex> node);
 	void exitArrayIndex(std::shared_ptr<AST::ArrayIndex> node);
+	void enterBash53NativeSupershell(std::shared_ptr<AST::Bash53NativeSupershell> node);
+	void exitBash53NativeSupershell(std::shared_ptr<AST::Bash53NativeSupershell> node);
 	void enterBashArithmeticForCondition(std::shared_ptr<AST::BashArithmeticForCondition> node);
 	void exitBashArithmeticForCondition(std::shared_ptr<AST::BashArithmeticForCondition> node);
 	void enterBashArithmeticForStatement(std::shared_ptr<AST::BashArithmeticForStatement> node);

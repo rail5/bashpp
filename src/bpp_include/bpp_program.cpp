@@ -179,7 +179,7 @@ void bpp_program::increment_supershell_counter() {
 
 	// If we're compiling to any standard below Bash 5.3, we need to add the supershell function to the program
 	if (supershell_counter == 1 &&
-		(target_bash_version.first < 5 || (target_bash_version.first == 5 && target_bash_version.second < 3))
+		(target_bash_version < BashVersion{5, 3})
 	) {
 		// This is the first object to be created in a supershell
 		// We need to add the code to create the supershell
@@ -249,11 +249,11 @@ uint64_t bpp_program::get_object_counter() const {
 	return object_counter;
 }
 
-void bpp_program::set_target_bash_version(uint16_t major, uint16_t minor) {
-	target_bash_version = {major, minor};
+void bpp_program::set_target_bash_version(BashVersion target_bash_version) {
+	this->target_bash_version = target_bash_version;
 }
 
-std::pair<uint16_t, uint16_t> bpp_program::get_target_bash_version() const {
+BashVersion bpp_program::get_target_bash_version() const {
 	return target_bash_version;
 }
 

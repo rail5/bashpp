@@ -100,7 +100,7 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 	listener.set_included_from(this);
 	listener.set_run_on_exit(false);
 	listener.set_suppress_warnings(suppress_warnings);
-	listener.set_target_bash_version(target_bash_version.first, target_bash_version.second);
+	listener.set_target_bash_version(target_bash_version);
 	
 	if (replacement_file_contents.has_value()) {
 		listener.set_replacement_file_contents(replacement_file_contents->first, replacement_file_contents->second);

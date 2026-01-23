@@ -162,7 +162,7 @@ int main(int argc, char* argv[]) {
 		listener->set_output_file(args.output_file.value_or(""));
 		listener->set_run_on_exit(run_on_exit);
 		listener->set_suppress_warnings(args.suppress_warnings);
-		listener->set_target_bash_version(args.target_bash_version.first, args.target_bash_version.second);
+		listener->set_target_bash_version(args.target_bash_version);
 		listener->set_arguments(args.program_arguments);
 		listener->walk(program);
 

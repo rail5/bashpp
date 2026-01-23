@@ -50,20 +50,9 @@ void BashppListener::exitBashWhileStatement(std::shared_ptr<AST::BashWhileStatem
 	current_code_entity->add_code_to_previous_line(while_statement->get_condition()->get_pre_code());
 	current_code_entity->add_code_to_next_line(while_statement->get_condition()->get_post_code());
 
-	// If we're targeting Bash 5.2 or earlier, extra logic is needed to re-evaluate supershells with each iteration of the loop
-	// If we're targeting Bash 5.3 or later, we can use the new native implementation
-
-	if (program->get_target_bash_version().first >= 5 && program->get_target_bash_version().second >= 3) {
-		current_code_entity->add_code("while " + while_statement->get_condition()->get_code() + "; do\n"
-			+ while_statement->get_pre_code() + "\n"
-			+ while_statement->get_code() + "\ndone", false);
-	} else {
-		current_code_entity->add_code_to_next_line(while_statement->get_post_code());
-
-		current_code_entity->add_code("while " + while_statement->get_condition()->get_code() + "; do\n"
-			+ while_statement->get_pre_code() + "\n"
-			+ while_statement->get_code() + "\ndone", false);
-	}
+	current_code_entity->add_code("while " + while_statement->get_condition()->get_code() + "; do\n"
+		+ while_statement->get_pre_code() + "\n"
+		+ while_statement->get_code() + "\ndone", false);
 
 	program->mark_entity(
 		source_file,
@@ -114,18 +103,9 @@ void BashppListener::exitBashUntilStatement(std::shared_ptr<AST::BashUntilStatem
 
 	// If we're targeting Bash 5.2 or earlier, extra logic is needed to re-evaluate supershells with each iteration of the loop
 	// If we're targeting Bash 5.3 or later, we can use the new native implementation
-
-	if (program->get_target_bash_version().first >= 5 && program->get_target_bash_version().second >= 3) {
-		current_code_entity->add_code("until " + until_statement->get_condition()->get_code() + "; do\n"
-			+ until_statement->get_pre_code() + "\n"
-			+ until_statement->get_code() + "\ndone", false);
-	} else {
-		current_code_entity->add_code_to_next_line(until_statement->get_post_code());
-
-		current_code_entity->add_code("until " + until_statement->get_condition()->get_code() + "; do\n"
-			+ until_statement->get_pre_code() + "\n"
-			+ until_statement->get_code() + "\ndone", false);
-	}
+	current_code_entity->add_code("until " + until_statement->get_condition()->get_code() + "; do\n"
+		+ until_statement->get_pre_code() + "\n"
+		+ until_statement->get_code() + "\ndone", false);
 
 	program->mark_entity(
 		source_file,

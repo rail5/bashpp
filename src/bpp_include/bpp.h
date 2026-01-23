@@ -16,6 +16,7 @@
 #include "replace_all.h"
 
 #include "../include/EntityMap.h"
+#include "../include/BashVersion.h"
 
 namespace bpp {
 
@@ -558,7 +559,7 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 		uint64_t typeof_counter = 0;
 		uint64_t object_counter = 0;
 		
-		std::pair<uint16_t, uint16_t> target_bash_version = {5, 2};
+		BashVersion target_bash_version = {5, 2};
 
 		std::string main_source_file;
 
@@ -605,8 +606,8 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 		void increment_object_counter();
 		uint64_t get_object_counter() const;
 
-		void set_target_bash_version(uint16_t major, uint16_t minor);
-		std::pair<uint16_t, uint16_t> get_target_bash_version() const;
+		void set_target_bash_version(BashVersion target_bash_version);
+		BashVersion get_target_bash_version() const;
 
 		void mark_entity(
 			const std::string& file,

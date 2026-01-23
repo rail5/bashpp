@@ -62,8 +62,8 @@ void BashppListener::set_suppress_warnings(bool suppress_warnings) {
 	this->suppress_warnings = suppress_warnings;
 }
 
-void BashppListener::set_target_bash_version(uint16_t major, uint16_t minor) {
-	this->target_bash_version = {major, minor};
+void BashppListener::set_target_bash_version(BashVersion target_bash_version) {
+	this->target_bash_version = target_bash_version;
 }
 
 void BashppListener::set_arguments(std::vector<char*> arguments) {

@@ -17,6 +17,7 @@
 #include <algorithm>
 
 #include "FixedString.h"
+#include "BashVersion.h"
 
 #include "../version.h"
 #include "../updated_year.h"
@@ -190,7 +191,7 @@ struct Arguments {
 	std::vector<char*> program_arguments;
 	std::optional<std::string> input_file;
 	std::optional<std::string> output_file;
-	std::pair<uint16_t, uint16_t> target_bash_version = {5, 2}; // Default to Bash 5.2
+	BashVersion target_bash_version = {5, 2}; // Default to Bash 5.2
 	std::shared_ptr<std::vector<std::string>> include_paths = std::make_shared<std::vector<std::string>>();
 	bool suppress_warnings = false;
 	bool display_tokens = false;

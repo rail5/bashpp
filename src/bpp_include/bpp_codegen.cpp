@@ -45,7 +45,7 @@ code_segment generate_supershell_code(
 	// Otherwise, run our old logic for Bash++ supershells
 	auto target_bash_version = program->get_target_bash_version();
 	
-	if (target_bash_version.first >= 5 && target_bash_version.second >= 3) {
+	if (target_bash_version >= BashVersion{5, 3}) {
 		result.code = "${ " + supershell_function_name + "; }";
 		program->increment_supershell_counter();
 		return result;

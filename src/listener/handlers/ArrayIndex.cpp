@@ -59,5 +59,5 @@ void BashppListener::exitArrayIndex(std::shared_ptr<AST::ArrayIndex> node) {
 	
 	current_code_entity->add_code_to_previous_line(array_index_entity->get_pre_code());
 	current_code_entity->add_code_to_next_line(array_index_entity->get_post_code());
-	current_code_entity->add_code(array_index_entity->get_code());
+	current_code_entity->add_code("[" + array_index_entity->get_code() + "]");
 }

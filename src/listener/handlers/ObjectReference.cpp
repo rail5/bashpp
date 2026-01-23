@@ -271,7 +271,7 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 		|| (reference_type == bpp::reference_type::ref_object && object->is_pointer())
 	) {
 
-		size_t indirection_level = 0;
+		uint8_t indirection_level = 0;
 		if (ref.created_first_temporary_variable) indirection_level++;
 		if (ref.created_second_temporary_variable) indirection_level++;
 

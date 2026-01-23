@@ -294,7 +294,7 @@ code_segment inline_new(
  * @param indirection_level The level of indirection (0, 1, or 2)
  * @return std::string The encased reference string
  */
-std::string get_encased_ref(const std::string& ref, size_t indirection_level) {
+std::string get_encased_ref(const std::string& ref, uint8_t indirection_level) {
 	std::string encased;
 	std::string encase_open, encase_close, indirection;
 	switch (indirection_level) {
@@ -450,10 +450,6 @@ entity_reference resolve_reference_impl(
 		result.created_first_temporary_variable = true; // Having to dereference a pointer means creating a temporary variable
 	}
 
-	std::string encase_open = "";
-	std::string encase_close = "";
-	std::string indirection = "";
-
 	if (self_reference) {
 		result.reference_code.code = "__this";
 	} else {
@@ -463,13 +459,9 @@ entity_reference resolve_reference_impl(
 	while (!ids.empty()) {
 		if (!nds.empty()) error_token = nds.front();
 
-		if (result.created_first_temporary_variable) {
-			encase_open = "${";
-			encase_close = "}";
-		}
-		if (result.created_second_temporary_variable) {
-			indirection = "!";
-		}
+		uint8_t indirection_level = 0;
+		if (result.created_first_temporary_variable) indirection_level++;
+		if (result.created_second_temporary_variable) indirection_level++;
 
 		switch (last_reference_type) {
 			case bpp::reference_type::ref_object:
@@ -530,11 +522,11 @@ entity_reference resolve_reference_impl(
 			result.entity = datamember;
 
 			std::string temporary_variable_lvalue = result.reference_code.code + "__" + ids.front();
-			std::string temporary_varible_rvalue = "${" + indirection + result.reference_code.code + "}__" + ids.front();
+			std::string temporary_variable_rvalue = get_encased_ref(result.reference_code.code, indirection_level) + "__" + ids.front();
 
 			if (result.created_first_temporary_variable) {
 				result.reference_code.pre_code += 
-					temporary_variable_declaration_prefix + temporary_variable_lvalue + "=" + temporary_varible_rvalue + "\n";
+					temporary_variable_declaration_prefix + temporary_variable_lvalue + "=" + temporary_variable_rvalue + "\n";
 				result.reference_code.post_code += "unset " + temporary_variable_lvalue + "\n";
 				result.created_second_temporary_variable = true;
 			}

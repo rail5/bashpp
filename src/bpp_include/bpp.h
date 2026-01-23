@@ -941,6 +941,7 @@ class bpp_object_reference : public bpp_string {
 		void set_array_index(const std::string& array_index);
 		bpp::reference_type get_reference_type() const;
 		std::string get_array_index() const;
+		bool has_array_index() const;
 };
 
 } // namespace bpp

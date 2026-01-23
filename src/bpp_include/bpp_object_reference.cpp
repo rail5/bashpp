@@ -25,4 +25,8 @@ std::string bpp_object_reference::get_array_index() const {
 	return array_index;
 }
 
+bool bpp_object_reference::has_array_index() const {
+	return !array_index.empty();
+}
+
 } // namespace bpp

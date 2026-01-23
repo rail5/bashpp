@@ -45,7 +45,7 @@ void BashppListener::exitArrayIndex(std::shared_ptr<AST::ArrayIndex> node) {
 	std::shared_ptr<bpp::bpp_object_reference> object_reference_entity = std::dynamic_pointer_cast<bpp::bpp_object_reference>(entity_stack.top());
 
 	if (object_reference_entity != nullptr) {
-		object_reference_entity->set_array_index(array_index_entity->get_code());
+		object_reference_entity->set_array_index("[" + array_index_entity->get_code() + "]");
 		object_reference_entity->add_code_to_previous_line(array_index_entity->get_pre_code());
 		object_reference_entity->add_code_to_next_line(array_index_entity->get_post_code());
 		return;

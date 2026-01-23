@@ -23,7 +23,9 @@ void BashppListener::enterBash53NativeSupershell(std::shared_ptr<AST::Bash53Nati
 	if (program->get_target_bash_version() < BashVersion{5, 3}) {
 		show_warning(node,
 			std::string("Bash 5.3 native supershells are not supported by the current Bash " + program->get_target_bash_version().to_string() + " target version. "
-			+ "\nYou can change the target Bash version using the -b / --target-bash command-line option.")
+			+ "\nYou can change the target Bash version using the -b / --target-bash command-line option."
+			+ "\nThe command string will still be processed, but may not work as expected on the target version."
+			+ "\nConsider using the Bash++ supershell syntax `@(...)` for better compatibility.")
 		);
 	}
 

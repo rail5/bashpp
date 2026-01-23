@@ -25,6 +25,7 @@ void BashppListener::enterBashArithmeticSubstitution(std::shared_ptr<AST::BashAr
 	std::shared_ptr<bpp::bpp_string> arithmetic_entity = std::make_shared<bpp::bpp_string>();
 	arithmetic_entity->set_containing_class(code_entity->get_containing_class());
 	arithmetic_entity->inherit(code_entity);
+	arithmetic_entity->set_requires_perfect_forwarding(true);
 
 	// Push the arithmetic entity onto the entity stack
 	entity_stack.push(arithmetic_entity);

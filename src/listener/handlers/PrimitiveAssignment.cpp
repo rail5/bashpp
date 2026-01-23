@@ -34,7 +34,11 @@ void BashppListener::exitPrimitiveAssignment(std::shared_ptr<AST::PrimitiveAssig
 		throw internal_error("Current code entity was not found in the entity stack");
 	}
 
+	std::string assignment_lvalue;
+	if (node->isLocal()) assignment_lvalue += "local ";
+	assignment_lvalue += node->IDENTIFIER().getValue();
+
 	current_code_entity->add_code_to_previous_line(assignment_entity->get_pre_code());
 	current_code_entity->add_code_to_next_line(assignment_entity->get_post_code());
-	current_code_entity->add_code(node->IDENTIFIER().getValue() + assignment_entity->get_code());
+	current_code_entity->add_code(assignment_lvalue + assignment_entity->get_code());
 }

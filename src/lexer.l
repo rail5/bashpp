@@ -60,6 +60,7 @@ struct LexerState {
 	bool currently_lexing_lvalue_reference = false;
 	bool might_be_lexing_object_instantiation = false;
 	bool parsed_assignment_operator = false;
+	bool received_local_keyword = false;
 	bool incoming_token_can_be_lvalue = true;
 
 	yy::position current_position;
@@ -89,6 +90,7 @@ struct LexerState {
 		currently_lexing_lvalue_reference = false;
 		might_be_lexing_object_instantiation = false;
 		parsed_assignment_operator = false;
+		received_local_keyword = false;
 		incoming_token_can_be_lvalue = true;
 
 		current_position.initialize();
@@ -272,6 +274,10 @@ void set_bash_while_or_until_condition_received(bool received, yyscan_t yyscanne
 
 void set_parsed_assignment_operator(bool parsed, yyscan_t yyscanner) {
 	get_lexer_extra(yyscanner)->lexerState.parsed_assignment_operator = parsed;
+}
+
+void set_received_local_keyword(bool received, yyscan_t yyscanner) {
+	get_lexer_extra(yyscanner)->lexerState.received_local_keyword = received;
 }
 
 /**
@@ -921,6 +927,16 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 	}
 }
 
+"local"/[ \t] {
+	if (get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue
+	&& get_lexer_extra(yyscanner)->lexerState.received_local_keyword == false
+	) {
+		emit(BASH_KEYWORD_LOCAL);
+	} else {
+		emit(IDENTIFIER, tokenText);
+	}
+}
+
 {INTEGER} { emit(INTEGER, tokenText); }
 
 [ \t]*[\#][^\n]*  { /* Ignore comments */ }
@@ -1554,7 +1570,9 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token, yy
 		case yy::parser::symbol_kind::S_BASH_KEYWORD_WHILE:
 		case yy::parser::symbol_kind::S_BASH_KEYWORD_UNTIL:
 			// At the start of a new command string, the next token can be an lvalue
+			// And the local keyword can be re-received
 			get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue = true;
+			get_lexer_extra(yyscanner)->lexerState.received_local_keyword = false;
 			get_lexer_extra(yyscanner)->modeStack.push(SKIP_AFTER_DELIM_MODE); // Skip whitespace, newlines, and comments after the DELIM
 			break;
 		case yy::parser::symbol_kind::S_KEYWORD_PUBLIC:
@@ -1567,6 +1585,9 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token, yy
 			break;
 		case yy::parser::symbol_kind::S_DEREFERENCE_OPERATOR:
 			// Dereference operator does not change lvalue considerations
+			break;
+		case yy::parser::symbol_kind::S_BASH_KEYWORD_LOCAL:
+			// 'local' specifier does not change lvalue considerations
 			break;
 		case yy::parser::symbol_kind::S_CATCHALL:
 			{

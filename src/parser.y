@@ -39,6 +39,7 @@ void yyerror(const char *s);
 	extern void set_bash_if_condition_received(bool received, yyscan_t yyscanner);
 	extern void set_bash_while_or_until_condition_received(bool received, yyscan_t yyscanner);
 	extern void set_parsed_assignment_operator(bool parsed, yyscan_t yyscanner);
+	extern void set_received_local_keyword(bool received, yyscan_t yyscanner);
 }
 
 %token <AST::Token<std::string>> ESCAPED_CHAR WS DELIM
@@ -88,6 +89,7 @@ void yyerror(const char *s);
 %token BASH_KEYWORD_FUNCTION BASH_FUNCTION_OPEN
 %token <AST::Token<std::string>> BASH_FUNCTION_LABEL
 %token BASH_TEST_CONDITION_START BASH_TEST_CONDITION_END
+%token BASH_KEYWORD_LOCAL
 
 %token EXCLAM
 %token <AST::Token<std::string>> EXPANSION_BEGIN PARAMETER_EXPANSION_CONTENT
@@ -146,7 +148,7 @@ void yyerror(const char *s);
 %type <ASTNodePtr> doublequoted_string quote_contents string_interpolation
 
 %type <ASTNodePtr> valid_rvalue concatenatable_rvalue concatenated_rvalue
-%type <ASTNodePtr> value_assignment maybe_default_value
+%type <ASTNodePtr> value_assignment maybe_default_value maybe_value_assignment
 %type <ASTNodePtr> object_assignment shell_variable_assignment
 
 %type <ASTNodePtr> typeof_expression
@@ -206,6 +208,7 @@ statements:
 
 statement:
 	DELIM {
+		set_incoming_token_can_be_lvalue(true, yyscanner);
 		auto node = std::make_shared<AST::RawText>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
@@ -904,6 +907,11 @@ maybe_default_value:
 	| value_assignment { $$ = $1; }
 	;
 
+maybe_value_assignment:
+	/* empty */ { $$ = nullptr; }
+	| value_assignment { $$ = $1; }
+	;
+
 value_assignment:
 	assignment_operator valid_rvalue {
 		auto node = std::make_shared<AST::ValueAssignment>();
@@ -1472,6 +1480,20 @@ shell_variable_assignment:
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->setIdentifier($1);
 		node->addChild($2);
+		$$ = node;
+	}
+	| BASH_KEYWORD_LOCAL WS IDENTIFIER_LVALUE maybe_value_assignment {
+		set_incoming_token_can_be_lvalue(true, yyscanner); // Lvalues can follow assignments
+		set_received_local_keyword(true, yyscanner); // Mark that we received the 'local' keyword for this line
+
+		auto node = std::make_shared<AST::PrimitiveAssignment>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setEndPosition(@4.end.line, @4.end.column);
+		node->setLocal(true);
+		node->setIdentifier($3);
+		if ($4 != nullptr) node->addChild($4);
 		$$ = node;
 	}
 	;

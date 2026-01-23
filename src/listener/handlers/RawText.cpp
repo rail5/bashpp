@@ -16,7 +16,7 @@ void BashppListener::enterRawText(std::shared_ptr<AST::RawText> node) {
 	}
 
 	// Just add it to the current code entity
-	current_code_entity->add_code(node->TEXT().getValue(), false);
+	current_code_entity->add_code(node->TEXT().getValue());
 }
 
 void BashppListener::exitRawText(std::shared_ptr<AST::RawText> node) {

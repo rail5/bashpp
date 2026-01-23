@@ -42,6 +42,7 @@ namespace AST {
 	X(BashPipeline) \
 	X(BashRedirection) \
 	X(BashSelectStatement) \
+	X(BashTestConditionCommand) \
 	X(BashUntilStatement) \
 	X(BashVariable) \
 	X(BashWhileOrUntilCondition) \

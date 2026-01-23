@@ -414,6 +414,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 %s BASH_ARITHMETIC_MODE
 
+%s BASH_TEST_CONDITION_MODE
+
 %s BASH_53_NATIVE_SUPERSHELL_MODE
 
 %%
@@ -733,6 +735,26 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 "(" {
 	get_lexer_extra(yyscanner)->modeStack.push(SUBSHELL_MODE);
 	emit(SUBSHELL_START);
+}
+
+\[\[[ \t]+ {
+	// Matches the opening '[[' of a bash test condition
+	if (get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue) {
+		get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue = false;
+		get_lexer_extra(yyscanner)->modeStack.push(BASH_TEST_CONDITION_MODE);
+		emit(BASH_TEST_CONDITION_START);
+	} else {
+		// If it's not an lvalue token, it's just normal text.
+		emit(CATCHALL, tokenText);
+	}
+}
+
+<BASH_TEST_CONDITION_MODE>{
+	[ \t]*\]\]/[ \t\n;]+ {
+		// Matches the closing ']]'
+		get_lexer_extra(yyscanner)->modeStack.pop();
+		emit(BASH_TEST_CONDITION_END);
+	}
 }
 
 <SUPERSHELL_MODE,SUBSHELL_MODE,SUBSHELL_SUBSTITUTION_MODE,PROCESS_SUBSTITUTION_MODE>{

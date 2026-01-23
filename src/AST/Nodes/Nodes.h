@@ -26,6 +26,7 @@
 #include "BashPipeline.h"
 #include "BashRedirection.h"
 #include "BashSelectStatement.h"
+#include "BashTestConditionCommand.h"
 #include "BashUntilStatement.h"
 #include "BashVariable.h"
 #include "BashWhileOrUntilCondition.h"

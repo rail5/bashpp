@@ -29,6 +29,7 @@ enum class NodeType : int {
 	BashPipeline,
 	BashRedirection,
 	BashSelectStatement,
+	BashTestConditionCommand,
 	BashUntilStatement,
 	BashVariable,
 	BashWhileOrUntilCondition,

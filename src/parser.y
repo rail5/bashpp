@@ -33,6 +33,7 @@ void yyerror(const char *s);
 
 	yy::parser::symbol_type yylex(yyscan_t yyscanner);
 
+	// The following 'set' functions are used to send signals to the lexer about the current parsing context
 	extern void set_incoming_token_can_be_lvalue(bool canBeLvalue, yyscan_t yyscanner);
 	extern void set_bash_case_input_received(bool received, yyscan_t yyscanner);
 	extern void set_bash_for_or_select_variable_received(bool received, yyscan_t yyscanner);
@@ -43,6 +44,12 @@ void yyerror(const char *s);
 
 	bool is_only_input_redirection(const std::vector<ASTNodePtr>& statements) {
 		// This is awful.
+		// And fragile. The anticipated AST structure is:
+		// BashCommandSequence
+		//   BashPipeline
+		//     BashCommand
+		//       BashRedirection
+		// If that structure changes, this will break.
 		if (statements.size() != 1) return false;
 		auto commandSequence = std::dynamic_pointer_cast<AST::BashCommandSequence>(statements[0]);
 		if (commandSequence == nullptr) return false;

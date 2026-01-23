@@ -69,6 +69,11 @@ void BashppListener::enterRawSubshell(std::shared_ptr<AST::RawSubshell> node) {
 	subshell_entity->set_containing_class(code_entity->get_containing_class());
 	subshell_entity->inherit(code_entity);
 
+	auto value_assignment_entity = std::dynamic_pointer_cast<bpp::bpp_value_assignment>(entity_stack.top());
+	if (value_assignment_entity != nullptr) {
+		subshell_entity->set_requires_perfect_forwarding(true);
+	}
+
 	// Push the subshell entity onto the entity stack
 	entity_stack.push(subshell_entity);
 

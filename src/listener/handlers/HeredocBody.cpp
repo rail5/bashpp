@@ -35,6 +35,5 @@ void BashppListener::exitHeredocBody(std::shared_ptr<AST::HeredocBody> node) {
 
 	current_code_entity->add_code_to_previous_line(heredoc_entity->get_pre_code());
 	current_code_entity->add_code_to_next_line(heredoc_entity->get_post_code());
-	// TODO(@rail5): Check: Do we need to prepend a newline?
-	current_code_entity->add_code(heredoc_entity->get_code() + node->DELIMITER().getValue(), false);
+	current_code_entity->add_code("\n" + heredoc_entity->get_code() + node->DELIMITER().getValue(), false);
 }

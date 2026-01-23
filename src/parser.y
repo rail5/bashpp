@@ -348,7 +348,11 @@ shell_command:
 		node->addChildren($2);
 		$$ = node;
 	}
-	| heredoc_body { $$ = $1; }
+	| shell_command heredoc_body {
+		$1->addChild($2);
+		$1->setEndPosition(@2.end.line, @2.end.column);
+		$$ = $1;
+	}
 	;
 
 command_redirections:
@@ -1614,7 +1618,11 @@ process_substitution:
 
 heredoc_header:
 	HEREDOC_START HEREDOC_DELIMITER {
-		$$ = $1;
+		AST::Token<std::string> header;
+		header.setLine(@1.begin.line);
+		header.setCharPositionInLine(@1.begin.column);
+		header.setValue($1.getValue() + $2.getValue());
+		$$ = header;
 	}
 	;
 

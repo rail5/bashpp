@@ -352,8 +352,8 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 	void exitObjectInstantiation(std::shared_ptr<AST::ObjectInstantiation> node);
 	void enterObjectReference(std::shared_ptr<AST::ObjectReference> node);
 	void exitObjectReference(std::shared_ptr<AST::ObjectReference> node);
-	//void enterParameterExpansion(std::shared_ptr<AST::ParameterExpansion> node);
-	//void exitParameterExpansion(std::shared_ptr<AST::ParameterExpansion> node);
+	void enterParameterExpansion(std::shared_ptr<AST::ParameterExpansion> node);
+	void exitParameterExpansion(std::shared_ptr<AST::ParameterExpansion> node);
 	void enterPointerDeclaration(std::shared_ptr<AST::PointerDeclaration> node);
 	void exitPointerDeclaration(std::shared_ptr<AST::PointerDeclaration> node);
 	void enterPrimitiveAssignment(std::shared_ptr<AST::PrimitiveAssignment> node);

@@ -306,6 +306,8 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 	void exitBashRedirection(std::shared_ptr<AST::BashRedirection> node);
 	void enterBashSelectStatement(std::shared_ptr<AST::BashSelectStatement> node);
 	void exitBashSelectStatement(std::shared_ptr<AST::BashSelectStatement> node);
+	void enterBashTestConditionCommand(std::shared_ptr<AST::BashTestConditionCommand> node);
+	void exitBashTestConditionCommand(std::shared_ptr<AST::BashTestConditionCommand> node);
 	void enterBashUntilStatement(std::shared_ptr<AST::BashUntilStatement> node);
 	void exitBashUntilStatement(std::shared_ptr<AST::BashUntilStatement> node);
 	void enterBashVariable(std::shared_ptr<AST::BashVariable> node);

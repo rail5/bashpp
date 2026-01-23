@@ -541,7 +541,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	":" { get_lexer_extra(yyscanner)->modeStack.pop(); emit(COLON); }
 }
 
-{DELIM}                              {
+{DELIM} {
+	get_lexer_extra(yyscanner)->lexerState.received_local_keyword = false; // Reset for next time
 	switch (get_lexer_extra(yyscanner)->modeStack.top()) {
 		case BASH_CASE_MODE:
 			if (get_lexer_extra(yyscanner)->lexerState.bash_case_keyword_in_received) {
@@ -667,6 +668,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	}
 
 	[ \t\n]*\([ \t\n]*\) {
+		get_lexer_extra(yyscanner)->lexerState.received_local_keyword = false;
 		emit(BASH_FUNCTION_OPEN);
 	}
 
@@ -1187,6 +1189,7 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 			get_lexer_extra(yyscanner)->modeStack.push(BASH_CASE_BODY_MODE);
 			get_lexer_extra(yyscanner)->lexerState.bash_case_keyword_in_received = false; // Reset for next time
 			get_lexer_extra(yyscanner)->lexerState.bash_case_input_received = false; // Reset for next time
+			get_lexer_extra(yyscanner)->lexerState.received_local_keyword = false;
 			emit(BASH_CASE_BODY_BEGIN, tokenText);
 		} else {
 			emit(WS, tokenText);
@@ -1197,6 +1200,7 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 <BASH_CASE_BODY_MODE>{
 	[ \t\n]+esac/[^a-zA-Z0-9_] {
 		get_lexer_extra(yyscanner)->modeStack.pop(); // Exit BASH_CASE_BODY_MODE
+		get_lexer_extra(yyscanner)->lexerState.received_local_keyword = false;
 		emit(BASH_KEYWORD_ESAC);
 	}
 
@@ -1252,6 +1256,7 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 <BASH_FOR_OR_SELECT_BODY_MODE,BASH_WHILE_OR_UNTIL_BODY_MODE>{
 	[ \t\n]*done/[^a-zA-Z0-9_] {
 		get_lexer_extra(yyscanner)->modeStack.pop(); // Exit the mode
+		get_lexer_extra(yyscanner)->lexerState.received_local_keyword = false;
 		emit(BASH_KEYWORD_DONE);
 	}
 }
@@ -1481,6 +1486,7 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 	}
 	[\n] {
 		get_lexer_extra(yyscanner)->modeStack.pop(); // Exit BPP_INCLUDE_MODE
+		get_lexer_extra(yyscanner)->lexerState.received_local_keyword = false;
 		emit(DELIM, tokenText);
 	}
 }

@@ -229,6 +229,7 @@ statements:
 statement:
 	DELIM {
 		set_incoming_token_can_be_lvalue(true, yyscanner);
+		set_received_local_keyword(false, yyscanner);
 		auto node = std::make_shared<AST::RawText>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
@@ -462,6 +463,14 @@ simple_command:
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
 		$$ = node;
+	}
+	| simple_command WS bash_test_condition_command {
+		current_command_can_receive_lvalues = false;
+		auto command = std::dynamic_pointer_cast<AST::BashCommand>($1);
+		command->addText(" "); // Preserve whitespace
+		command->addChild($3);
+		command->setEndPosition(@3.end.line, @3.end.column);
+		$$ = command;
 	}
 	;
 

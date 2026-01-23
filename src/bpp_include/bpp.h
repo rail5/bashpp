@@ -107,7 +107,7 @@ static const char bpp_nullptr[] = "0";
  */
 inline constexpr const char* protected_keywords[] = {
 			"class", "constructor", "delete", "destructor",
-			"dynamic_cast", "include", "include_once", "method",
+			"dynamic_cast", "include", "include_once", "local", "method",
 			"new", "nullptr", "primitive", "private",
 			"protected", "public", "super", "this",
 			"typeof", "virtual"

@@ -161,6 +161,28 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 		&& !object_address
 		&& !context_expectations_stack.canTakeObject()
 	) {
+		// Check for a couple cases in which we should emit warnings
+		// (i.e., where the user might have INTENDED to take the address of the object, or might not realize that .toPrimitive is being called)
+		if (!dynamic_cast_stack.empty()) {
+			auto cast_target_entity = std::dynamic_pointer_cast<bpp::bpp_dynamic_cast_target>(entity_stack.top());
+			if (cast_target_entity != nullptr) {
+				// This is the target of a dynamic cast
+				// I.e., the "cast-to" portion of a @dynamic_cast<cast-to> statement
+				show_warning(node,
+					std::string("This will attempt to interpret the output of @" + node->IDENTIFIER().getValue() + ".toPrimitive as a class name at runtime."));
+			} else {
+				// This is that which is being dynamically cast
+				show_warning(node,
+					std::string("Dynamic casting the output of @" + node->IDENTIFIER().getValue() + ".toPrimitive may not be what you want.\nDid you mean to take the address of the object?"));
+			}
+		}
+
+		if (!typeof_stack.empty()) {
+			// This is the target of a typeof expression
+			show_warning(node,
+				std::string("Checking the 'type' of the output of @" + node->IDENTIFIER().getValue() + ".toPrimitive may not be what you want.\nDid you mean to take the address of the object?"));
+		}
+
 		// Re-call resolve_reference to get the .toPrimitive method
 		std::deque<std::string> to_primitive_ids; // By pushing strings instead of tokens, we avoid duplicating diagnostics & reference counters
 		for (const auto& id : ids) {

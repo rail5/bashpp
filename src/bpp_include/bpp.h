@@ -847,6 +847,11 @@ class bpp_dynamic_cast_statement : public bpp_string {
 		std::string get_cast_to() const;
 };
 
+class bpp_dynamic_cast_target : public bpp_string {
+	public:
+		bpp_dynamic_cast_target() = default;
+};
+
 /**
  * @class bpp_value_assignment
  * 

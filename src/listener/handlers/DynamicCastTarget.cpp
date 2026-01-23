@@ -18,7 +18,7 @@ void BashppListener::enterDynamicCastTarget(std::shared_ptr<AST::DynamicCastTarg
 		throw internal_error("Dynamic cast context was not found in the entity stack");
 	}
 
-	std::shared_ptr<bpp::bpp_string> cast_target_entity = std::make_shared<bpp::bpp_string>();
+	std::shared_ptr<bpp::bpp_dynamic_cast_target> cast_target_entity = std::make_shared<bpp::bpp_dynamic_cast_target>();
 	cast_target_entity->set_containing_class(dynamic_cast_entity->get_containing_class());
 	cast_target_entity->inherit(dynamic_cast_entity);
 	entity_stack.push(cast_target_entity);
@@ -26,7 +26,7 @@ void BashppListener::enterDynamicCastTarget(std::shared_ptr<AST::DynamicCastTarg
 
 void BashppListener::exitDynamicCastTarget(std::shared_ptr<AST::DynamicCastTarget> node) {
 	skip_syntax_errors
-	std::shared_ptr<bpp::bpp_string> cast_target_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
+	std::shared_ptr<bpp::bpp_dynamic_cast_target> cast_target_entity = std::dynamic_pointer_cast<bpp::bpp_dynamic_cast_target>(entity_stack.top());
 	entity_stack.pop();
 	if (cast_target_entity == nullptr) {
 		throw internal_error("Dynamic cast target context was not found in the entity stack");

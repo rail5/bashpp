@@ -23,6 +23,7 @@ void BashppListener::enterTypeofExpression(std::shared_ptr<AST::TypeofExpression
 	typeof_entity->inherit(current_code_entity);
 
 	entity_stack.push(typeof_entity);
+	typeof_stack.push({});
 }
 
 void BashppListener::exitTypeofExpression(std::shared_ptr<AST::TypeofExpression> node) {
@@ -33,6 +34,7 @@ void BashppListener::exitTypeofExpression(std::shared_ptr<AST::TypeofExpression>
 	}
 
 	entity_stack.pop();
+	typeof_stack.pop();
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {

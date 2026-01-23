@@ -135,6 +135,10 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 		std::stack<std::monostate> bash_function_stack;
 		bool should_declare_local() const;
 
+		// Diagnostic information (not used for compilation):
+		std::stack<std::monostate> dynamic_cast_stack; // Used to track whether we're inside a dynamic_cast statement
+		std::stack<std::monostate> typeof_stack; // Used to track whether we're inside a typeof expression
+
 		ExpectationsStack context_expectations_stack;
 
 		/**
@@ -170,7 +174,7 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 		bool program_has_errors = false;
 
 		template <ASTNodePtrORToken T>
-		void output_syntax_error(const T& error_ctx, const std::string& msg) {
+		void output_syntax_error_or_warning(const T& error_ctx, const std::string& msg, bool is_warning = false) {
 			uint32_t line;
 			uint32_t column;
 			std::string text;
@@ -221,27 +225,24 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 					text = param.name.getValue();
 				}
 			}
-			print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), program);
-			program_has_errors = true;
+			print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), program, is_warning);
+			program_has_errors = !is_warning;
 		}
 
 		#define throw_syntax_error(token, msg) \
-			output_syntax_error(token, msg); \
+			output_syntax_error_or_warning(token, msg); \
 			error_thrown = true; \
 			error_node = node; \
 			node->clearChildren(); /* Skip traversing children */ \
 			return;
 
 		#define throw_syntax_error_from_exitRule(token, msg) \
-			output_syntax_error(token, msg); \
+			output_syntax_error_or_warning(token, msg); \
 			return;
 		
 		#define show_warning(token, msg) \
 			if (!suppress_warnings) { \
-				int line = static_cast<int>(token.getLine()); \
-				int column = static_cast<int>(token.getCharPositionInLine()); \
-				std::string text = token.getValue(); \
-				print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), program, true); \
+				output_syntax_error_or_warning(token, msg, true); \
 			}
 
 	public:

@@ -19,6 +19,10 @@ void BashppListener::enterSubshellSubstitution(std::shared_ptr<AST::SubshellSubs
 	subshell_entity->set_containing_class(code_entity->get_containing_class());
 	subshell_entity->inherit(code_entity);
 
+	if (node->isCatReplacement()) {
+		subshell_entity->set_requires_perfect_forwarding(true);
+	}
+
 	// Push the subshell entity onto the entity stack
 	entity_stack.push(subshell_entity);
 

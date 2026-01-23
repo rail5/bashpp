@@ -40,6 +40,24 @@ void yyerror(const char *s);
 	extern void set_bash_while_or_until_condition_received(bool received, yyscan_t yyscanner);
 	extern void set_parsed_assignment_operator(bool parsed, yyscan_t yyscanner);
 	extern void set_received_local_keyword(bool received, yyscan_t yyscanner);
+
+	bool is_only_input_redirection(const std::vector<ASTNodePtr>& statements) {
+		// This is awful.
+		if (statements.size() != 1) return false;
+		auto commandSequence = std::dynamic_pointer_cast<AST::BashCommandSequence>(statements[0]);
+		if (commandSequence == nullptr) return false;
+		if (commandSequence->getChildren().size() != 1) return false;
+		auto pipeline = std::dynamic_pointer_cast<AST::BashPipeline>(commandSequence->getChildren()[0]);
+		if (pipeline == nullptr) return false;
+		if (pipeline->getChildren().size() != 1) return false;
+		auto command = std::dynamic_pointer_cast<AST::BashCommand>(pipeline->getChildren()[0]);
+		if (command == nullptr) return false;
+		if (command->getChildren().size() != 1) return false;
+		auto redirection = std::dynamic_pointer_cast<AST::BashRedirection>(command->getChildren()[0]);
+		if (redirection == nullptr) return false;
+		if (redirection->OPERATOR().getValue().find('<') == std::string::npos) return false;
+		return true;
+	}
 }
 
 %token <AST::Token<std::string>> ESCAPED_CHAR WS DELIM
@@ -1632,6 +1650,13 @@ dollar_subshell:
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChildren($2);
 		$$ = node;
+
+		// Special check, barely documented by Bash (https://www.gnu.org/software/bash/manual/bash.html#Command-Substitution):
+		// If 'statements' contains ONLY an input redirection and NOTHING ELSE,
+		// Then this is not in fact a subshell substitution, but a replacement for the 'cat' command.
+		if (is_only_input_redirection($2)) {
+			node->setIsCatReplacement(true);
+		}
 	}
 	;
 

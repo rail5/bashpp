@@ -265,7 +265,7 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 	}
 
 	// 2.5. Is this simply a request for an object's address?
-	if (object_address && !object->is_pointer()) {
+	if (reference_type == bpp::reference_type::ref_object && object_address && !object->is_pointer()) {
 		object_reference_entity->add_code(object->get_address());
 	}
 

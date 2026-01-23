@@ -387,6 +387,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 %s BPP_CLASS_HEADER_MODE
 
 %s ARRAY_INDEX_MODE
+%s ARRAY_ASSIGNMENT_MODE
 
 %s SUPERSHELL_MODE
 
@@ -757,8 +758,14 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 }
 
 "(" {
-	get_lexer_extra(yyscanner)->modeStack.push(SUBSHELL_MODE);
-	emit(SUBSHELL_START);
+	if (get_lexer_extra(yyscanner)->lexerState.parsed_assignment_operator) {
+		// Beginning of an array assignment
+		get_lexer_extra(yyscanner)->modeStack.push(ARRAY_ASSIGNMENT_MODE);
+		emit(ARRAY_ASSIGNMENT_START);
+	} else {
+		get_lexer_extra(yyscanner)->modeStack.push(SUBSHELL_MODE);
+		emit(SUBSHELL_START);
+	}
 }
 
 \[\[[ \t]+ {
@@ -781,7 +788,7 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 	}
 }
 
-<SUPERSHELL_MODE,SUBSHELL_MODE,SUBSHELL_SUBSTITUTION_MODE,PROCESS_SUBSTITUTION_MODE>{
+<SUPERSHELL_MODE,SUBSHELL_MODE,SUBSHELL_SUBSTITUTION_MODE,PROCESS_SUBSTITUTION_MODE,ARRAY_ASSIGNMENT_MODE>{
 	[ \t]*\) {
 		// Absorb preceding whitespace
 		auto current_mode = get_lexer_extra(yyscanner)->modeStack.top();
@@ -798,6 +805,9 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 				break;
 			case PROCESS_SUBSTITUTION_MODE:
 				emit(PROCESS_SUBSTITUTION_END);
+				break;
+			case ARRAY_ASSIGNMENT_MODE:
+				emit(ARRAY_ASSIGNMENT_END);
 				break;
 		}
 	}

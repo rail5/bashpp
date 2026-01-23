@@ -61,6 +61,7 @@ void yyerror(const char *s);
 %token <AST::Token<std::string>> INCLUDE_TYPE INCLUDE_PATH
 
 %token SUPERSHELL_START SUPERSHELL_END SUBSHELL_START SUBSHELL_END SUBSHELL_SUBSTITUTION_START SUBSHELL_SUBSTITUTION_END
+%token ARRAY_ASSIGNMENT_START ARRAY_ASSIGNMENT_END
 %token <int> DEPRECATED_SUBSHELL_START DEPRECATED_SUBSHELL_END
 %token LPAREN RPAREN
 
@@ -104,7 +105,7 @@ void yyerror(const char *s);
 
 
 %precedence CONCAT_STOP
-%precedence LANGLE LANGLE_AMPERSAND RANGLE RANGLE_AMPERSAND AMPERSAND_RANGLE HEREDOC_START HERESTRING_START BASH_ARITHMETIC_START BASH_TEST_CONDITION_START
+%precedence LANGLE LANGLE_AMPERSAND RANGLE RANGLE_AMPERSAND AMPERSAND_RANGLE HEREDOC_START HERESTRING_START BASH_ARITHMETIC_START BASH_TEST_CONDITION_START ARRAY_ASSIGNMENT_START
 %precedence IDENTIFIER INTEGER SINGLEQUOTED_STRING KEYWORD_NULLPTR
 %precedence QUOTE_BEGIN
 %precedence AT REF_START
@@ -176,6 +177,7 @@ void yyerror(const char *s);
 %type <ASTNodePtr> bash_function bash_arithmetic_substitution
 %type <ASTNodePtr> bash_test_condition_command
 %type <ASTNodePtr> bash_53_native_supershell
+%type <ASTNodePtr> array_assignment
 
 %type <AST::Token<std::string>> maybe_include_type maybe_as_clause maybe_parent_class
 %type <AST::Token<std::string>> assignment_operator
@@ -539,6 +541,15 @@ valid_rvalue:
 		node->addText("");
 		$$ = node;
 	}
+	| array_assignment {
+		auto node = std::make_shared<AST::Rvalue>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
+		node->addChild($1);
+		$$ = node;
+	}
 	| subshell_raw {
 		auto node = std::make_shared<AST::Rvalue>();
 		uint32_t line_number = @1.begin.line;
@@ -576,6 +587,18 @@ valid_rvalue:
 		$$ = node;
 	}
 	| concatenated_rvalue %prec CONCAT_STOP { $$ = $1; }
+	;
+
+array_assignment:
+	ARRAY_ASSIGNMENT_START statements ARRAY_ASSIGNMENT_END {
+		auto node = std::make_shared<AST::ArrayAssignment>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setEndPosition(@3.end.line, @3.end.column);
+		node->addChildren($2);
+		$$ = node;
+	}
 	;
 
 concatenated_rvalue:

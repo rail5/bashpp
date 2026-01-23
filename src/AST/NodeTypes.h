@@ -8,6 +8,7 @@
 namespace AST {
 enum class NodeType : int {
 	Program = 0,
+	ArrayAssignment,
 	ArrayIndex,
 	BashArithmeticForCondition,
 	BashArithmeticForStatement,

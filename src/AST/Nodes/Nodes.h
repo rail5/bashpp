@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "ArrayAssignment.h"
 #include "ArrayIndex.h"
 #include "Bash53NativeSupershell.h"
 #include "BashArithmeticForCondition.h"

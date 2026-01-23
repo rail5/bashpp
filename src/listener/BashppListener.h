@@ -270,6 +270,8 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 
 	void enterProgram(std::shared_ptr<AST::Program> node);
 	void exitProgram(std::shared_ptr<AST::Program> node);
+	void enterArrayAssignment(std::shared_ptr<AST::ArrayAssignment> node);
+	void exitArrayAssignment(std::shared_ptr<AST::ArrayAssignment> node);
 	void enterArrayIndex(std::shared_ptr<AST::ArrayIndex> node);
 	void exitArrayIndex(std::shared_ptr<AST::ArrayIndex> node);
 	void enterBashArithmeticForCondition(std::shared_ptr<AST::BashArithmeticForCondition> node);

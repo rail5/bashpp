@@ -58,18 +58,11 @@ void BashppListener::exitBashWhileStatement(std::shared_ptr<AST::BashWhileStatem
 			+ while_statement->get_pre_code() + "\n"
 			+ while_statement->get_code() + "\ndone", false);
 	} else {
-		std::string supershell_evaluation = "";
-		for (const std::string& function_call : while_statement->get_condition()->get_supershell_function_calls()) {
-			supershell_evaluation += function_call + "\n";
-		}
-
-		current_code_entity->add_code_to_previous_line(supershell_evaluation); // Evaluate the supershell before the while loop starts
-
 		current_code_entity->add_code_to_next_line(while_statement->get_post_code());
 
 		current_code_entity->add_code("while " + while_statement->get_condition()->get_code() + "; do\n"
 			+ while_statement->get_pre_code() + "\n"
-			+ while_statement->get_code() + "\n" + supershell_evaluation + "done", false);
+			+ while_statement->get_code() + "\ndone", false);
 	}
 
 	program->mark_entity(
@@ -127,18 +120,11 @@ void BashppListener::exitBashUntilStatement(std::shared_ptr<AST::BashUntilStatem
 			+ until_statement->get_pre_code() + "\n"
 			+ until_statement->get_code() + "\ndone", false);
 	} else {
-		std::string supershell_evaluation = "";
-		for (const std::string& function_call : until_statement->get_condition()->get_supershell_function_calls()) {
-			supershell_evaluation += function_call + "\n";
-		}
-
-		current_code_entity->add_code_to_previous_line(supershell_evaluation); // Evaluate the supershell before the until loop starts
-
 		current_code_entity->add_code_to_next_line(until_statement->get_post_code());
 
 		current_code_entity->add_code("until " + until_statement->get_condition()->get_code() + "; do\n"
 			+ until_statement->get_pre_code() + "\n"
-			+ until_statement->get_code() + "\n" + supershell_evaluation + "done", false);
+			+ until_statement->get_code() + "\ndone", false);
 	}
 
 	program->mark_entity(
@@ -165,9 +151,6 @@ void BashppListener::enterBashWhileOrUntilCondition(std::shared_ptr<AST::BashWhi
 	loop->set_condition(condition);
 
 	entity_stack.push(condition);
-
-	in_while_condition = true;
-	current_while_or_until_condition = condition;
 }
 
 void BashppListener::exitBashWhileOrUntilCondition(std::shared_ptr<AST::BashWhileOrUntilCondition> node) {
@@ -178,8 +161,5 @@ void BashppListener::exitBashWhileOrUntilCondition(std::shared_ptr<AST::BashWhil
 	}
 
 	entity_stack.pop();
-
-	in_while_condition = false;
-	current_while_or_until_condition = nullptr;
 }
 

@@ -96,8 +96,6 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 			// Call 'new' in a supershell and assign its output
 			code_segment supershell_code = generate_supershell_code(
 				"bpp__" + dm->get_class()->get_name() + "____new",
-				false,
-				nullptr,
 				shared_from_this()
 			);
 			assignments += supershell_code.pre_code;

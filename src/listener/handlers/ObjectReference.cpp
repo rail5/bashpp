@@ -209,8 +209,6 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 		if (!lvalue && !object_address) {
 			auto supershell = bpp::generate_supershell_code(
 				method_call.code,
-				in_while_condition,
-				current_while_or_until_condition,
 				program
 			);
 			// Add the pre- and post- code necessary to run a supershell

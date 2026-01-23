@@ -673,15 +673,8 @@ class bash_while_or_until_loop : public bpp_code_entity {
  * The 'bash_' prefix signifies that this is used to parse ordinary Bash code, not anything specific to Bash++
  */
 class bash_while_or_until_condition : public bpp_string {
-	private:
-		int supershell_count = 0;
-		std::vector<std::string> supershell_function_calls = {};
 	public:
-		bash_while_or_until_condition();
-
-		void increment_supershell_count();
-		void add_supershell_function_call(const std::string& function_call);
-		std::vector<std::string> get_supershell_function_calls() const;
+		bash_while_or_until_condition() = default;
 };
 
 /**

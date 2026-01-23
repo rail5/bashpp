@@ -26,8 +26,6 @@ namespace bpp {
  */
 code_segment generate_supershell_code(
 	const std::string& code_to_run,
-	bool in_while_condition,
-	std::shared_ptr<bash_while_or_until_condition> current_while_condition,
 	std::shared_ptr<bpp::bpp_program> program
 ) {
 	code_segment result;
@@ -56,12 +54,7 @@ code_segment generate_supershell_code(
 	// If we haven't returned yet, we're targeting Bash 5.2 or earlier
 	// Carry on
 
-	if (in_while_condition) {
-		current_while_condition->add_supershell_function_call("bpp____supershell " + supershell_output_variable + " " + supershell_function_name);
-		current_while_condition->increment_supershell_count();
-	} else {
-		result.pre_code += "bpp____supershell " + supershell_output_variable + " " + supershell_function_name + "\n";
-	}
+	result.pre_code += "bpp____supershell " + supershell_output_variable + " " + supershell_function_name + "\n";
 	result.post_code += "unset -f " + supershell_function_name + "\n";
 	result.post_code += "unset " + supershell_output_variable + "\n";
 

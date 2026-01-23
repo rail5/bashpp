@@ -72,9 +72,7 @@ void BashppListener::exitSupershell(std::shared_ptr<AST::Supershell> node) {
 	}
 
 	code_segment supershell_code = generate_supershell_code(
-		code_to_run, 
-		in_while_condition, 
-		current_while_or_until_condition, 
+		code_to_run,
 		program);
 
 	in_supershell = false;

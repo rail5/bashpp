@@ -38,7 +38,7 @@ void BashppListener::enterNewStatement(std::shared_ptr<AST::NewStatement> node) 
 	// Call the class's "new" method in a supershell and substitute the result
 	std::string new_method_call = "bpp__" + class_name + "____new";
 
-	code_segment new_code = generate_supershell_code(new_method_call, in_while_condition, current_while_or_until_condition, program);
+	code_segment new_code = generate_supershell_code(new_method_call, program);
 	current_code_entity->add_code_to_previous_line(new_code.pre_code);
 
 	// Create a temporary variable to hold the output of the supershell

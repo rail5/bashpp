@@ -91,6 +91,13 @@ void BashppListener::exitRawSubshell(std::shared_ptr<AST::RawSubshell> node) {
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
+	auto value_assignment_entity = std::dynamic_pointer_cast<bpp::bpp_value_assignment>(entity_stack.top());
+	if (value_assignment_entity != nullptr) {
+		// In we're in a value assignment, this is not in fact a subshell, but an array assignment
+		// E.g.: var=() or var+=("abc")
+		value_assignment_entity->set_array_assignment(true);
+	}
+
 	current_code_entity->add_code_to_previous_line(subshell_entity->get_pre_code());
 	current_code_entity->add_code_to_next_line("\n" + subshell_entity->get_post_code());
 	current_code_entity->add_code("(" + subshell_entity->get_code() + ")");

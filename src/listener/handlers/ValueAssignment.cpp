@@ -116,5 +116,5 @@ void BashppListener::exitValueAssignment(std::shared_ptr<AST::ValueAssignment> n
 
 	current_code_entity->add_code_to_previous_line(value_assignment_entity->get_pre_code());
 	current_code_entity->add_code_to_next_line(value_assignment_entity->get_post_code());
-	current_code_entity->add_code(value_assignment_entity->get_code());
+	current_code_entity->add_code(node->OPERATOR().getValue() + value_assignment_entity->get_code());
 }

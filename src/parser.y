@@ -1329,13 +1329,12 @@ bash_variable:
 		$$ = node;
 	}
 	| BASH_VAR {
-		auto node = std::make_shared<AST::BashVariable>();
+		auto node = std::make_shared<AST::RawText>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
-
-		node->setText($1); // Just the simple $VAR form
+		node->setText($1);
 		$$ = node;
 	}
 	;

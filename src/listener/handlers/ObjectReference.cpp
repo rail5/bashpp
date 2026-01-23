@@ -237,7 +237,7 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 	}
 
 	// 2. Is it a non-primitive object?
-	if (reference_type == bpp::reference_type::ref_object) {
+	if (reference_type == bpp::reference_type::ref_object && !object_address) {
 		// Are we in a @delete statement?
 		auto delete_entity = std::dynamic_pointer_cast<bpp::bpp_delete_statement>(entity_stack.top());
 		if (delete_entity != nullptr) {
@@ -262,6 +262,11 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 			object_reference_entity->add_code(ref.reference_code.code);
 		}
 		// That's all 3 of the special cases in which non-primitive objects are directly acceptable.
+	}
+
+	// 2.5. Is this simply a request for an object's address?
+	if (object_address && !object->is_pointer()) {
+		object_reference_entity->add_code(object->get_address());
 	}
 
 	// 3. Is it a primitive? (Or a pointer)

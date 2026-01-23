@@ -71,7 +71,10 @@ void AST::BashppParser::_initialize_lexer() {
 void AST::BashppParser::_destroy_lexer() {
 	destroyLexer(lexer);
 
-	if (input_file != nullptr) fclose(input_file);
+	// Don't fclose() if:
+	// a. We didn't **fopen()** (no FILE* is open)
+	// b. **We** didn't fopen() (caller owns the FILE*)
+	if (input_file != nullptr && input_type != InputType::FILEPTR) fclose(input_file);
 	input_file = nullptr;
 }
 

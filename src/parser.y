@@ -123,6 +123,7 @@ void yyerror(const char *s);
 %token <AST::Token<std::string>> PROCESS_SUBSTITUTION_START
 %token PROCESS_SUBSTITUTION_END
 %token BASH_ARITHMETIC_START BASH_ARITHMETIC_END
+%token <AST::Token<std::string>> BASH_53_NATIVE_SUPERSHELL_START
 %token BASH_53_NATIVE_SUPERSHELL_END
 
 /* Handling unrecognized tokens */
@@ -130,7 +131,7 @@ void yyerror(const char *s);
 
 
 %precedence CONCAT_STOP
-%precedence LANGLE LANGLE_AMPERSAND RANGLE RANGLE_AMPERSAND AMPERSAND_RANGLE HEREDOC_START HERESTRING_START BASH_ARITHMETIC_START BASH_TEST_CONDITION_START ARRAY_ASSIGNMENT_START
+%precedence LANGLE LANGLE_AMPERSAND RANGLE RANGLE_AMPERSAND AMPERSAND_RANGLE HEREDOC_START HERESTRING_START BASH_ARITHMETIC_START BASH_TEST_CONDITION_START ARRAY_ASSIGNMENT_START BASH_53_NATIVE_SUPERSHELL_START
 %precedence IDENTIFIER INTEGER SINGLEQUOTED_STRING KEYWORD_NULLPTR
 %precedence QUOTE_BEGIN
 %precedence AT REF_START
@@ -2372,13 +2373,14 @@ bash_test_condition_command:
 	;
 
 bash_53_native_supershell:
-	BASH_VAR_START WS statements BASH_53_NATIVE_SUPERSHELL_END {
+	BASH_53_NATIVE_SUPERSHELL_START statements BASH_53_NATIVE_SUPERSHELL_END {
 		auto node = std::make_shared<AST::Bash53NativeSupershell>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
-		node->setEndPosition(@4.end.line, @4.end.column);
-		node->addChildren($3);
+		node->setEndPosition(@3.end.line, @3.end.column);
+		node->setStartToken($1);
+		node->addChildren($2);
 		$$ = node;
 	}
 

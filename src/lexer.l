@@ -722,6 +722,17 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 ([0-9]+|\{[a-zA-Z_][a-zA-Z_0-9]*\})?\>\&  { emit(RANGLE_AMPERSAND, tokenText); }
 ([0-9]+|\{[a-zA-Z_][a-zA-Z_0-9]*\})?\<\&  { emit(LANGLE_AMPERSAND, tokenText); }
 
+\$\{[ \t\n\|]                        {
+	// Bash 5.3's native supershell syntax: ${| ... ; } or ${ ... ; }
+	// Equivalent to our original @(...)
+	// Make no mistake: This was originally developed & released in Bash++,
+	// and was added to Bash a full year later.
+	get_lexer_extra(yyscanner)->modeStack.push(BASH_53_NATIVE_SUPERSHELL_MODE);
+	get_lexer_extra(yyscanner)->lexerState.currently_lexing_lvalue_reference = false;
+	get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue = true;
+	get_lexer_extra(yyscanner)->modeStack.push(SKIP_AFTER_DELIM_MODE);
+	emit(BASH_53_NATIVE_SUPERSHELL_START, tokenText);
+}
 "${"                                 { get_lexer_extra(yyscanner)->modeStack.push(BASH_VAR_MODE); emit(BASH_VAR_START); }
 
 \${IDENTIFIER}                       { emit(BASH_VAR, tokenText); }
@@ -1349,18 +1360,6 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 <BASH_VAR_MODE>{
 	{IDENTIFIER} {
 		emit(IDENTIFIER, tokenText);
-	}
-
-	{WS} {
-		// Replace BASH_VAR_MODE with BASH_53_NATIVE_SUPERSHELL_MODE
-		// Bash 5.3's native supershell syntax is roughly ${ statements ; }
-		// Equivalent to our original @(statements)
-		// (Make no mistake, this was originally developed & released in Bash++, and was added to Bash a full year later)
-		get_lexer_extra(yyscanner)->modeStack.pop();
-		get_lexer_extra(yyscanner)->modeStack.push(BASH_53_NATIVE_SUPERSHELL_MODE);
-		get_lexer_extra(yyscanner)->lexerState.currently_lexing_lvalue_reference = false;
-		get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue = true;
-		emit(WS, tokenText);
 	}
 
 	"#" {

@@ -316,8 +316,8 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 	void exitBashWhileStatement(std::shared_ptr<AST::BashWhileStatement> node);
 	void enterBashFunction(std::shared_ptr<AST::BashFunction> node);
 	void exitBashFunction(std::shared_ptr<AST::BashFunction> node);
-	//void enterBlock(std::shared_ptr<AST::Block> node);
-	//void exitBlock(std::shared_ptr<AST::Block> node);
+	void enterBlock(std::shared_ptr<AST::Block> node);
+	void exitBlock(std::shared_ptr<AST::Block> node);
 	void enterClassDefinition(std::shared_ptr<AST::ClassDefinition> node);
 	void exitClassDefinition(std::shared_ptr<AST::ClassDefinition> node);
 	void enterConnective(std::shared_ptr<AST::Connective> node);

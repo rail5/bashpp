@@ -520,6 +520,15 @@ valid_rvalue:
 		node->addText("");
 		$$ = node;
 	}
+	| subshell_raw {
+		auto node = std::make_shared<AST::Rvalue>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
+		node->addChild($1);
+		$$ = node;
+	}
 	| new_statement {
 		auto node = std::make_shared<AST::Rvalue>();
 		uint32_t line_number = @1.begin.line;
@@ -622,7 +631,6 @@ concatenatable_rvalue:
 	| bash_variable { $$ = $1; }
 	| supershell { $$ = $1; }
 	| subshell_substitution { $$ = $1; }
-	| subshell_raw { $$ = $1; }
 	| process_substitution { $$ = $1; }
 	| bash_arithmetic_substitution { $$ = $1; }
 	| bash_53_native_supershell { $$ = $1; }
@@ -1441,7 +1449,7 @@ object_assignment:
 shell_variable_assignment:
 	IDENTIFIER_LVALUE value_assignment {
 		set_incoming_token_can_be_lvalue(true, yyscanner); // Lvalues can follow assignments
-		
+
 		auto node = std::make_shared<AST::PrimitiveAssignment>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;

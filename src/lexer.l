@@ -1568,6 +1568,16 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token, yy
 		case yy::parser::symbol_kind::S_DEREFERENCE_OPERATOR:
 			// Dereference operator does not change lvalue considerations
 			break;
+		case yy::parser::symbol_kind::S_CATCHALL:
+			{
+				AST::Token<std::string> vl = token.value.as<AST::Token<std::string>>();
+				if (vl.getValue() == "!") {
+					// '!' operator does not change lvalue considerations
+					// Kind of unfortunate that this is caught as a CATCHALL token
+					// TODO(@rail5): Separate token type for exit status inversion operator
+					break;
+				}
+			}
 		default:
 			get_lexer_extra(yyscanner)->lexerState.incoming_token_can_be_lvalue = false;
 			break;

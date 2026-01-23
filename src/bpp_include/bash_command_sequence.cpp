@@ -70,6 +70,11 @@ void bash_command_sequence::join() {
  * @param is_and True if the connective is '&&', false if it is '||'
  */
 void bash_command_sequence::add_connective(bool is_and) {
+	if (perfect_forwarding) {
+		bpp_string::add_code(is_and ? " && " : " || ", false);
+		return;
+	}
+
 	if (!contains_multiple_commands) {
 		joined_code = "{\n" + joined_code + "\n}";
 		contains_multiple_commands = true;

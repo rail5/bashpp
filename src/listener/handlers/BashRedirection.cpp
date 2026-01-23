@@ -14,7 +14,7 @@ void BashppListener::enterBashRedirection(std::shared_ptr<AST::BashRedirection> 
 	}
 
 	// Just add it to the current code entity
-	current_code_entity->add_code(node->OPERATOR().getValue(), false);
+	current_code_entity->add_code(node->OPERATOR().getValue() + " ", false);
 }
 
 void BashppListener::exitBashRedirection(std::shared_ptr<AST::BashRedirection> node) {

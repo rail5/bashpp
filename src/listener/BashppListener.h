@@ -358,8 +358,8 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 	void exitPointerDeclaration(std::shared_ptr<AST::PointerDeclaration> node);
 	void enterPrimitiveAssignment(std::shared_ptr<AST::PrimitiveAssignment> node);
 	void exitPrimitiveAssignment(std::shared_ptr<AST::PrimitiveAssignment> node);
-	//void enterProcessSubstitution(std::shared_ptr<AST::ProcessSubstitution> node);
-	//void exitProcessSubstitution(std::shared_ptr<AST::ProcessSubstitution> node);
+	void enterProcessSubstitution(std::shared_ptr<AST::ProcessSubstitution> node);
+	void exitProcessSubstitution(std::shared_ptr<AST::ProcessSubstitution> node);
 	void enterRawSubshell(std::shared_ptr<AST::RawSubshell> node);
 	void exitRawSubshell(std::shared_ptr<AST::RawSubshell> node);
 	void enterRawText(std::shared_ptr<AST::RawText> node);

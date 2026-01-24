@@ -2229,7 +2229,7 @@ bash_if_root_branch:
 		node->setPosition(line_number, column_number);
 
 		auto rootBranch = std::make_shared<AST::BashIfRootBranch>();
-		rootBranch->setPosition(@5.begin.line, @5.begin.column);
+		rootBranch->setPosition(@1.begin.line, @1.begin.column);
 		rootBranch->setEndPosition(@7.end.line, @7.end.column);
 		rootBranch->addChild($2); // condition
 		rootBranch->addChildren($7); // statements

@@ -41,8 +41,8 @@ GenericResponseMessage bpp::BashppServer::handleDefinition(const GenericRequestM
 	try {
 		referenced_entity = resolve_entity_at(
 			uri,
-			position.line,
-			position.character,
+			position.line + 1,
+			position.character + 1,
 			program,
 			program_pool.get_utf16_mode()
 		);

@@ -1042,14 +1042,22 @@ parameter:
 		param.type = std::nullopt;
 		param.name = $1;
 		param.pointer = false;
-		$$ = param;
+		AST::Token<AST::MethodDefinition::Parameter> token;
+		token.setValue(param);
+		token.setLine(@1.begin.line);
+		token.setCharPositionInLine(@1.begin.column);
+		$$ = token;
 	}
 	| AT IDENTIFIER ASTERISK WS IDENTIFIER WS {
 		AST::MethodDefinition::Parameter param;
 		param.type = $2;
 		param.name = $5;
 		param.pointer = true;
-		$$ = param;
+		AST::Token<AST::MethodDefinition::Parameter> token;
+		token.setValue(param);
+		token.setLine(@1.begin.line);
+		token.setCharPositionInLine(@1.begin.column);
+		$$ = token;
 	}
 	| AT IDENTIFIER WS IDENTIFIER WS {
 		/* Actually invalid, but error handling should come later when traversing the AST */
@@ -1058,7 +1066,11 @@ parameter:
 		param.type = $2;
 		param.name = $4;
 		param.pointer = false;
-		$$ = param;
+		AST::Token<AST::MethodDefinition::Parameter> token;
+		token.setValue(param);
+		token.setLine(@1.begin.line);
+		token.setCharPositionInLine(@1.begin.column);
+		$$ = token;
 	}
 	;
 

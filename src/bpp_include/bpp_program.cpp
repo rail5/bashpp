@@ -49,6 +49,7 @@ bool bpp_program::prepare_class(std::shared_ptr<bpp_class> class_) {
 		return false; // Class already exists
 	}
 	classes[name] = class_;
+	owned_classes[name] = class_;
 	return true;
 }
 

@@ -341,7 +341,7 @@ std::shared_ptr<bpp::bpp_class> bpp_class::get_parent() {
 	if (parents.size() == 0) {
 		return nullptr;
 	}
-	return parents.back();
+	return parents.back().lock();
 }
 
 /**

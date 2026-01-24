@@ -182,22 +182,24 @@ class bpp_entity {
 		 * @var classes
 		 * @brief A map of class names to class objects within this entity
 		 */
-		std::unordered_map<std::string, std::shared_ptr<bpp_class>> classes;
+		std::unordered_map<std::string, std::weak_ptr<bpp_class>> classes;
 
 		/**
 		 * @var objects
 		 * @brief A map of object names to bpp_objects within this entity
 		 */
-		std::unordered_map<std::string, std::shared_ptr<bpp_object>> objects;
+		std::unordered_map<std::string, std::weak_ptr<bpp_object>> objects;
 
 		/**
 		 * @var local_objects
 		 * @brief Like objects, but only for objects whose scope is local to this entity
+		 *
+		 * The type is shared_ptr because this entity **owns** its own local objects.
 		 */
 		std::unordered_map<std::string, std::shared_ptr<bpp_object>> local_objects;
 		std::shared_ptr<bpp_class> type = nullptr;
 		std::weak_ptr<bpp_class> containing_class;
-		std::vector<std::shared_ptr<bpp_class>> parents;
+		std::vector<std::weak_ptr<bpp_class>> parents;
 		bpp::SymbolPosition initial_definition;
 		std::list<bpp::SymbolPosition> references;
 	public:
@@ -562,6 +564,10 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 		BashVersion target_bash_version = {5, 2};
 
 		std::string main_source_file;
+
+		// To ensure that the bpp_program **owns** its classes
+		// I.e., that those classes don't get destroyed before we're done with them
+		std::unordered_map<std::string, std::shared_ptr<bpp::bpp_class>> owned_classes;
 
 		// Source file -> EntityMap
 		std::unordered_map<std::string, EntityMap> entity_maps;

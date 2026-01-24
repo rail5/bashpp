@@ -110,11 +110,20 @@ void bpp_entity::inherit(std::shared_ptr<bpp_class> parent) {
 }
 
 std::unordered_map<std::string, std::shared_ptr<bpp_class>> bpp_entity::get_classes() const {
+	std::unordered_map<std::string, std::shared_ptr<bpp_class>> classes;
+	classes.reserve(this->classes.size());
+	for (auto& c : this->classes) {
+		classes[c.first] = c.second.lock();
+	}
 	return classes;
 }
 
 std::unordered_map<std::string, std::shared_ptr<bpp_object>> bpp_entity::get_objects() const {
-	std::unordered_map<std::string, std::shared_ptr<bpp_object>> all_objects = objects;
+	std::unordered_map<std::string, std::shared_ptr<bpp_object>> all_objects;
+	all_objects.reserve(objects.size() + local_objects.size());
+	for (auto& o : objects) {
+		all_objects[o.first] = o.second.lock();
+	}
 	for (auto& o : local_objects) {
 		all_objects[o.first] = o.second;
 	}
@@ -124,7 +133,7 @@ std::unordered_map<std::string, std::shared_ptr<bpp_object>> bpp_entity::get_obj
 std::shared_ptr<bpp::bpp_class> bpp_entity::get_class(const std::string& name) {
 	auto it = classes.find(name);
 	if (it != classes.end()) {
-		return it->second;
+		return it->second.lock();
 	}
 
 	return nullptr;
@@ -136,7 +145,7 @@ std::shared_ptr<bpp::bpp_object> bpp_entity::get_object(const std::string& name)
 	}
 
 	if (objects.find(name) != objects.end()) {
-		return objects[name];
+		return objects[name].lock();
 	}
 
 	return nullptr;
@@ -144,7 +153,7 @@ std::shared_ptr<bpp::bpp_object> bpp_entity::get_object(const std::string& name)
 
 std::shared_ptr<bpp::bpp_class> bpp_entity::get_parent() const {
 	if (!parents.empty()) {
-		return parents.back();
+		return parents.back().lock();
 	}
 
 	return nullptr;

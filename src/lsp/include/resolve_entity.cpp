@@ -5,31 +5,39 @@
 
 #include "resolve_entity.h"
 #include <memory>
-#include <regex>
 #include <unistd.h>
 
 #include "../../AST/BashppParser.h"
 
-std::shared_ptr<AST::ASTNode> find_node_at_column(std::shared_ptr<AST::ASTNode> single_line_node, uint32_t column) {
-	if (single_line_node == nullptr) return nullptr;
+std::shared_ptr<AST::ASTNode> find_node_at_position(std::shared_ptr<AST::ASTNode> node, uint32_t line, uint32_t column) {
+	if (node == nullptr) return nullptr;
 
-	uint64_t start_column = single_line_node->getCharPositionInLine();
-	uint64_t stop_column = single_line_node->getEndPosition().column;
+	uint32_t start_line = node->getLine();
+	uint32_t start_column = node->getCharPositionInLine();
+	uint32_t stop_line = node->getEndPosition().line;
+	uint32_t stop_column = node->getEndPosition().column;
 
-	if (column < start_column || column > stop_column) {
-		return nullptr; // Column is outside the range of this node
+	// Combine line and column into a single 64-bit value for easier comparison
+	// The upper 32 bits are the line, the lower 32 bits are the column
+	uint64_t start_pos = (static_cast<uint64_t>(start_line) << 32) | start_column;
+	uint64_t stop_pos = (static_cast<uint64_t>(stop_line) << 32) | stop_column;
+
+	uint64_t target_pos = (static_cast<uint64_t>(line) << 32) | column;
+
+	if (target_pos < start_pos || target_pos > stop_pos) {
+		return nullptr; // Position is outside the range of this node
 	}
 
-	for (size_t i = 0; i < single_line_node->getChildren().size(); i++) {
-		const std::shared_ptr<AST::ASTNode> child = single_line_node->getChildren()[i];
+	for (size_t i = 0; i < node->getChildren().size(); i++) {
+		const std::shared_ptr<AST::ASTNode>& child = node->getChildren()[i];
 		if (child) {
-			std::shared_ptr<AST::ASTNode> result = find_node_at_column(child, column);
+			std::shared_ptr<AST::ASTNode> result = find_node_at_position(child, line, column);
 			if (result) {
 				return result; // Found a child node that matches the column
 			}
 		}
 	}
-	return single_line_node;
+	return node;
 }
 
 std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
@@ -48,96 +56,54 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 		context = program;
 	}
 
-	std::string line_content;
-	// If we weren't provided with replacement contents,
-	// Read from the file on the filesystem
+	AST::BashppParser parser;
+	parser.setUTF16Mode(utf16_mode);
 	if (file_contents.empty()) {
-		std::ifstream source_file(file);
-		if (!source_file.is_open()) {
-			return nullptr;
-		}
-		uint32_t current_line = 0;
-		while (std::getline(source_file, line_content) && current_line < line) {
-			current_line++;
-		}
-		source_file.close();
-
-		if (current_line != line) {
-			return nullptr; // Line does not exist
-		}
+		// Parse the file on disk
+		parser.setInputFromFilePath(file);
 	} else {
-		// If replacement contents *were* provided,
-		// Read from that instead
-		std::istringstream stream(file_contents);
-		uint32_t current_line = 0;
-		while (std::getline(stream, line_content) && current_line < line) {
-			current_line++;
-		}
-
-		if (current_line != line) {
-			return nullptr; // Line does not exist
-		}
+		// Parse the provided file contents
+		parser.setInputFromStringContents(file_contents);
 	}
 
-	// Run the parser on this one line
-	try {
-		AST::BashppParser parser;
-		parser.setUTF16Mode(utf16_mode);
-		parser.setInputFromStringContents(line_content);
-		auto astRoot = parser.program();
-		if (astRoot == nullptr) {
-			return nullptr; // Parsing failed
-		}
-		
-		// Find the statement that intersects with the given column
-		auto node = find_node_at_column(astRoot, column);
-		if (!node) {
-			return nullptr; // No node found at the specified column
-		}
+	auto astRoot = parser.program();
+	if (!astRoot) return nullptr;
 
-		std::deque<std::string> identifiers;
+	auto node = find_node_at_position(astRoot, line, column);
+	if (!node) return nullptr;
 
-		// First, check if it's an object reference
-		if (node->getType() == AST::NodeType::ObjectReference) {
-				auto object_ref_ctx = std::dynamic_pointer_cast<AST::ObjectReference>(node);
-				if (!object_ref_ctx) {
-					return nullptr; // Not a valid object reference context
-				}
+	uint64_t target_position = (static_cast<uint64_t>(line) << 32) | column;
 
-				std::vector<AST::Token<std::string>> ids;
-				ids.reserve(object_ref_ctx->IDENTIFIERS().size() + 1);
-				ids.push_back(object_ref_ctx->IDENTIFIER());
-				ids.insert(ids.end(), object_ref_ctx->IDENTIFIERS().begin(), object_ref_ctx->IDENTIFIERS().end());
-
-				for (const auto& id : ids) {
+	switch (node->getType()) {
+		case AST::NodeType::ObjectReference:
+			{
+				auto object_ref_ctx = std::static_pointer_cast<AST::ObjectReference>(node);
+				std::vector<std::string> identifiers;
+				identifiers.push_back(object_ref_ctx->IDENTIFIER().getValue());
+				for (const auto& id : object_ref_ctx->IDENTIFIERS()) {
 					if (id.getCharPositionInLine() > column) {
 						break;
 					}
 					identifiers.push_back(id.getValue());
 				}
-			// Resolve the object reference
-			bpp::entity_reference entity_ref = bpp::resolve_reference(
-				file,
-				context,
-				&identifiers,
-				false,
-				program
-			);
-			return entity_ref.entity;
-		}
-		
-		// If we're here, it's not an object reference. Keep checking
-		switch (node->getType()) {
-			case AST::NodeType::IncludeStatement:
+
+				// Resolve the object reference
+				bpp::entity_reference entity_ref = bpp::resolve_reference(
+					file,
+					context,
+					&identifiers,
+					false,
+					program
+				);
+				return entity_ref.entity;
+			}
+			break;
+		case AST::NodeType::IncludeStatement:
 			{
-				// Create a faux-entity that points to the included file line 0, column 0
-				auto include_ctx = std::dynamic_pointer_cast<AST::IncludeStatement>(node);
-				if (!include_ctx) {
-					return nullptr; // Not a valid include statement context
-				}
+				// Create a fake entity that points to the included file line 0, column 0
+				auto include_ctx = std::static_pointer_cast<AST::IncludeStatement>(node);
 				bool local_include = include_ctx->PATHTYPE() == AST::IncludeStatement::PathType::QUOTED;
 				std::string source_filename = include_ctx->PATH();
-
 				// Resolve the path
 				if (!local_include) {
 					// Search for the file in the include paths
@@ -154,7 +120,7 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 					if (!found) {
 						return nullptr; // File not found in include paths
 					}
-				} else {
+				} else if (local_include) {
 					std::string current_directory;
 					if (file == "<stdin>") {
 						char current_working_directory[PATH_MAX];
@@ -169,30 +135,24 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 					// Append the source_filename to the directory
 					source_filename = current_directory + "/" + source_filename;
 				}
-
 				// Get the full path of the file
 				char full_path[PATH_MAX];
 				if (realpath(source_filename.c_str(), full_path) == nullptr) {
 					return nullptr; // File not found
 				}
-
-				std::shared_ptr<bpp::bpp_entity> faux_entity = std::make_shared<bpp::bpp_entity>();
-				faux_entity->set_definition_position(source_filename, 0, 0);
+				auto faux_entity = std::make_shared<bpp::bpp_entity>();
+				faux_entity->set_definition_position(source_filename, 1, 1);
 				faux_entity->set_name(full_path);
 				return faux_entity;
 			}
 			break;
-
-			case AST::NodeType::ObjectInstantiation:
+		case AST::NodeType::ObjectInstantiation:
 			{
 				// Resolve either:
 				// 1. The class being instantiated, or
 				// 2. The object being instantiated
 				// depending on the position of the column
-				auto instantiation_ctx = std::dynamic_pointer_cast<AST::ObjectInstantiation>(node);
-				if (!instantiation_ctx) {
-					return nullptr; // Not a valid object instantiation context
-				}
+				auto instantiation_ctx = std::static_pointer_cast<AST::ObjectInstantiation>(node);
 
 				auto class_name_token = instantiation_ctx->TYPE();
 				
@@ -214,7 +174,7 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 					std::shared_ptr<bpp::bpp_entity> object_pointer;
 					// If we're inside a class, resolve the object as a data member
 					// Otherwise, resolve it as an object
-					std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(context);
+					auto current_class = std::dynamic_pointer_cast<bpp::bpp_class>(context);
 					if (current_class) {
 						object_pointer = current_class->get_datamember(object_name_token.getValue(), current_class);
 					} else {
@@ -222,22 +182,16 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 					}
 					return object_pointer;
 				}
-
-				// If we reach here, the column is not within the class or object name tokens
 				return nullptr;
 			}
 			break;
-
-			case AST::NodeType::PointerDeclaration:
+		case AST::NodeType::PointerDeclaration:
 			{
 				// Resolve either:
 				// 1. The class type of the pointer, or
 				// 2. The pointer variable itself
 				// depending on the position of the column
-				auto pointer_ctx = std::dynamic_pointer_cast<AST::PointerDeclaration>(node);
-				if (!pointer_ctx) {
-					return nullptr; // Not a valid pointer declaration context
-				}
+				auto pointer_ctx = std::static_pointer_cast<AST::PointerDeclaration>(node);
 
 				auto type_token = pointer_ctx->TYPE();
 				
@@ -259,7 +213,7 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 					std::shared_ptr<bpp::bpp_entity> pointer_variable;
 					// If we're inside a class, resolve the pointer as a data member
 					// Otherwise, resolve it as an object
-					std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(context);
+					auto current_class = std::dynamic_pointer_cast<bpp::bpp_class>(context);
 					if (current_class) {
 						pointer_variable = current_class->get_datamember(name_token.getValue(), current_class);
 					} else {
@@ -267,37 +221,25 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 					}
 					return pointer_variable;
 				}
-
-				// If we reach here, the column is not within the class type or pointer variable tokens
 				return nullptr;
 			}
 			break;
-
-			case AST::NodeType::DatamemberDeclaration:
+		case AST::NodeType::DatamemberDeclaration:
 			{
 				// If it's a non-primitive class member, this will be caught by object_instantiation or pointer_declaration
 				// Here, it's a primitive member
-				auto member_ctx = std::dynamic_pointer_cast<AST::DatamemberDeclaration>(node);
-				if (!member_ctx) {
-					return nullptr; // Not a valid data member declaration context
-				}
+				auto member_ctx = std::static_pointer_cast<AST::DatamemberDeclaration>(node);
 
-				std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(context);
-				if (!current_class) {
-					return nullptr; // Not in a class context
-				}
-
-				std::shared_ptr<bpp::bpp_datamember> member = current_class->get_datamember(member_ctx->IDENTIFIER().value(), current_class);
+				auto current_class = std::dynamic_pointer_cast<bpp::bpp_class>(context);
+				if (!current_class) return nullptr;
+				auto member = current_class->get_datamember(member_ctx->IDENTIFIER().value(), current_class);
 				return member;
 			}
-
-			case AST::NodeType::NewStatement:
+			break;
+		case AST::NodeType::NewStatement:
 			{
 				// Resolve the class being instantiated with 'new'
-				auto new_ctx = std::dynamic_pointer_cast<AST::NewStatement>(node);
-				if (!new_ctx) {
-					return nullptr; // Not a valid new statement context
-				}
+				auto new_ctx = std::static_pointer_cast<AST::NewStatement>(node);
 
 				// Verify that the given position is within the class name token
 				uint64_t class_name_start = new_ctx->TYPE().getCharPositionInLine();
@@ -310,73 +252,129 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 				return class_pointer;
 			}
 			break;
-
-			case AST::NodeType::DynamicCastTarget:
+		case AST::NodeType::DynamicCastTarget:
 			{
 				// Resolve the class being cast to
-				auto cast_ctx = std::dynamic_pointer_cast<AST::DynamicCastTarget>(node);
-				if (!cast_ctx) {
-					return nullptr; // Not a valid dynamic cast statement context
-				}
+				auto cast_ctx = std::static_pointer_cast<AST::DynamicCastTarget>(node);
 
-				auto class_pointer = context->get_class(cast_ctx->TARGETTYPE().value());
+				auto target_type = cast_ctx->TARGETTYPE();
+				if (!target_type.has_value()) return nullptr;
+				std::string type_string = target_type.value().getValue();
+
+				auto class_pointer = context->get_class(type_string);
 				return class_pointer;
 			}
 			break;
+		case AST::NodeType::ClassDefinition:
+			{
+				// Resolve either the class being defined or the parent class from which it inherits
+				auto class_def_ctx = std::static_pointer_cast<AST::ClassDefinition>(node);
+				auto class_name_token = class_def_ctx->CLASSNAME();
+				auto parent_class_token = class_def_ctx->PARENTCLASSNAME();
 
-			default:
-				break;
-		}
-	} catch (...) {
-		// Parser failed, ignore
+				uint64_t class_name_start = (static_cast<uint64_t>(class_name_token.getLine()) << 32) | class_name_token.getCharPositionInLine();
+				uint64_t class_name_end = class_name_start + class_name_token.getValue().length();
+
+				uint64_t parent_class_start = 0;
+				uint64_t parent_class_end = 0;
+
+				if (parent_class_token.has_value()) {
+					parent_class_start = (static_cast<uint64_t>(parent_class_token.value().getLine()) << 32) | parent_class_token.value().getCharPositionInLine();
+					parent_class_end = parent_class_start + parent_class_token.value().getValue().length();
+				}
+
+				// Are we being asked to resolve the class being defined?
+				if (target_position >= class_name_start && target_position <= class_name_end) {
+					auto class_pointer = program->get_class(class_name_token.getValue());
+					return class_pointer;
+				}
+
+				// Are we being asked to resolve the parent class?
+				if (parent_class_token.has_value() && target_position >= parent_class_start && target_position <= parent_class_end) {
+					auto class_pointer = program->get_class(parent_class_token.value().getValue());
+					return class_pointer;
+				}
+
+				return nullptr;
+			}
+			break;
+		case AST::NodeType::MethodDefinition:
+			{
+				// Resolve either:
+				// 1. The method being defined
+				// 2. One of the method's parameters
+				// 3. The type of one of the method's parameters
+				std::cerr << "hit" << std::endl;
+				auto current_class = context->get_containing_class().lock();
+				if (!current_class) return nullptr;
+				auto method_def_ctx = std::static_pointer_cast<AST::MethodDefinition>(node);
+				auto method_name_token = method_def_ctx->NAME();
+				auto parameters = method_def_ctx->PARAMETERS();
+
+				uint64_t method_name_start = (static_cast<uint64_t>(method_name_token.getLine()) << 32) | method_name_token.getCharPositionInLine();
+				uint64_t method_name_end = method_name_start + method_name_token.getValue().length();
+
+				if (target_position >= method_name_start && target_position <= method_name_end) {
+					// Resolve the method being defined
+					auto method = current_class->get_method_UNSAFE(method_name_token.getValue());
+					return method;
+				}
+
+				for (const auto& param : parameters) {
+					uint64_t param_start = (static_cast<uint64_t>(param.getLine()) << 32) | param.getCharPositionInLine();
+
+					std::string param_string = "";
+					if (param.getValue().type.has_value()) {
+						param_string += "@" + param.getValue().type.value().getValue();
+						if (param.getValue().pointer) {
+							param_string += "*";
+						}
+						param_string += " ";
+					}
+					param_string += param.getValue().name.getValue();
+
+					uint64_t param_end = param_start + param_string.length();
+					if (target_position < param_start || target_position > param_end) {
+						continue;
+					}
+
+					auto param_name_token = param.getValue().name;
+					auto param_type_token_opt = param.getValue().type;
+
+					uint64_t param_name_start = (static_cast<uint64_t>(param_name_token.getLine()) << 32) | param_name_token.getCharPositionInLine();
+					uint64_t param_name_end = param_name_start + param_name_token.getValue().length();
+
+					if (target_position >= param_name_start && target_position <= param_name_end) {
+						// Resolve the parameter variable
+						auto method = current_class->get_method_UNSAFE(method_name_token.getValue());
+						if (!method) return nullptr;
+						auto obj = method->get_object(param_name_token.getValue());
+						return obj;
+					}
+
+					if (!param_type_token_opt.has_value()) continue;
+					auto param_type_token = param_type_token_opt.value();
+					uint64_t param_type_start = (static_cast<uint64_t>(param_type_token.getLine()) << 32) | param_type_token.getCharPositionInLine();
+					uint64_t param_type_end = param_type_start + param_type_token.getValue().length();
+					if (target_position >= param_type_start && target_position <= param_type_end) {
+						// Resolve the parameter type
+						auto method = current_class->get_method_UNSAFE(method_name_token.getValue());
+						if (!method) return nullptr;
+						for (const auto& method_param : method->get_parameters()) {
+							if (method_param->get_name() == param_name_token.getValue()) {
+								return method_param->get_class();
+							}
+						}
+					}
+				}
+				return nullptr;
+			}
+			break;
+		default:
+			// DEBUG: REMOVE LATER
+			std::cerr << "Innermost node type is " << static_cast<int>(node->getType()) << std::endl;
+			return nullptr; // Not a resolvable node type
 	}
-
-	// Nothing hit -- last ditch effort: try regex matching partial class or method definitions
-	std::regex class_regex(R"(@class\s+([a-zA-Z_][a-zA-Z0-9_]*)(?:\s*:\s*([a-zA-Z_][a-zA-Z0-9_]*))?)");
-	std::smatch class_match;
-	if (std::regex_search(line_content, class_match, class_regex)) {
-		
-		std::string class_name = class_match[1].str();
-		std::string parent_class_name = class_match[2].matched ? class_match[2].str() : "";
-
-		auto class_name_start = class_match.position(1);
-		auto class_name_end = class_name_start + class_match[1].length();
-
-		auto parent_class_name_start = class_match[2].matched ? class_match.position(2) : -1;
-		auto parent_class_name_end = parent_class_name_start + (parent_class_name.empty() ? 0 : class_match[2].length());
-
-		if (column >= class_name_start && column <= class_name_end) {
-			// We're resolving the class name
-			auto class_pointer = program->get_class(class_name);
-			return class_pointer;
-		} else if (parent_class_name_start != -1 &&
-		           column >= parent_class_name_start && column <= parent_class_name_end) {
-			// We're resolving the parent class name
-			auto parent_class_pointer = program->get_class(parent_class_name);
-			return parent_class_pointer;
-		}
-	}
-
-	std::regex method_regex(R"(@method\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*)");
-	std::smatch method_match;
-	if (std::regex_search(line_content, method_match, method_regex)) {
-		std::string method_name = method_match[1].str();
-
-		auto method_name_start = method_match.position(1);
-		auto method_name_end = method_name_start + method_match[1].length();
-
-		std::shared_ptr<bpp::bpp_method> method_ctx = std::dynamic_pointer_cast<bpp::bpp_method>(context);
-		if (!method_ctx) {
-			// Not in a method context, so we can't resolve the method
-			return nullptr;
-		}
-
-		if (column >= method_name_start && column <= method_name_end) {
-			return method_ctx;
-		}
-	}
-
-	return nullptr;
 }
 
 std::string find_comments_for_entity(std::shared_ptr<bpp::bpp_entity> entity) {
@@ -400,7 +398,7 @@ std::string find_comments_for_entity(std::shared_ptr<bpp::bpp_entity> entity) {
 
 	std::string comments;
 	std::string line;
-	uint32_t current_line = 0;
+	uint32_t current_line = 1;
 	while (std::getline(source_file, line)) {
 		if (current_line >= definition_position.line) {
 			break; // Stop reading after reaching the definition line

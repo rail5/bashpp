@@ -26,21 +26,6 @@ In particular, changing options like `-e` (exit on error) or `-u` (treat unset v
 
 The behavior of `set` is therefore undefined in Bash++ programs.
 
-## $?
-
-The special variable `$?` in Bash holds the exit status of the last executed command. The Bash++ compiler however routinely interposes housekeeping commands between source lines to implement many object-oriented features. As a result, the `$?` variable may hold the exit status of an internal housekeeping command rather than the one you intended to check.
-
-For example:
-
-```bash
-@object.method
-exitStatus=$?
-```
-
-In this example, `exitStatus` will **NOT** contain the exit status of `@object.method`, because the Bash++ compiler will have inserted additional commands between the method call and the assignment to `exitStatus`. If you would like to check the exit status of a method call, you should instead wrap it in an `if` statement, as in `if @object.method; then ... fi`.
-
-The behavior of `$?` is therefore undefined in Bash++ programs.
-
 # NOTES
 
 These features are not banned and you are free to use them as you see fit. However, their behavior is **undefined** as far as Bash++ is concerned. This means that the Bash++ compiler will not enforce any rules regarding their use, and the behavior of your program may vary depending on how you use them.

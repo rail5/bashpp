@@ -6,8 +6,7 @@
 #include "resolve_entity.h"
 #include <memory>
 #include <unistd.h>
-
-#include "../../AST/BashppParser.h"
+#include "../../AST/Nodes/Nodes.h"
 
 std::shared_ptr<AST::ASTNode> find_node_at_position(std::shared_ptr<AST::ASTNode> node, uint32_t line, uint32_t column) {
 	if (node == nullptr) return nullptr;
@@ -56,17 +55,7 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 		context = program;
 	}
 
-	AST::BashppParser parser;
-	parser.setUTF16Mode(utf16_mode);
-	if (file_contents.empty()) {
-		// Parse the file on disk
-		parser.setInputFromFilePath(file);
-	} else {
-		// Parse the provided file contents
-		parser.setInputFromStringContents(file_contents);
-	}
-
-	auto astRoot = parser.program();
+	auto astRoot = program->get_source_file_ast(file);
 	if (!astRoot) return nullptr;
 
 	auto node = find_node_at_position(astRoot, line, column);
@@ -304,7 +293,6 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 				// 1. The method being defined
 				// 2. One of the method's parameters
 				// 3. The type of one of the method's parameters
-				std::cerr << "hit" << std::endl;
 				auto current_class = context->get_containing_class().lock();
 				if (!current_class) return nullptr;
 				auto method_def_ctx = std::static_pointer_cast<AST::MethodDefinition>(node);
@@ -371,8 +359,6 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 			}
 			break;
 		default:
-			// DEBUG: REMOVE LATER
-			std::cerr << "Innermost node type is " << static_cast<int>(node->getType()) << std::endl;
 			return nullptr; // Not a resolvable node type
 	}
 }

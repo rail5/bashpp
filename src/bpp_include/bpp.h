@@ -17,6 +17,7 @@
 
 #include "../include/EntityMap.h"
 #include "../include/BashVersion.h"
+#include "../AST/Nodes/Program.h"
 
 namespace bpp {
 
@@ -569,6 +570,10 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 		// I.e., that those classes don't get destroyed before we're done with them
 		std::unordered_map<std::string, std::shared_ptr<bpp::bpp_class>> owned_classes;
 
+		// Source file -> AST
+		// Used for advanced analysis, e.g. LSP features
+		std::unordered_map<std::string, std::shared_ptr<AST::Program>> source_file_asts;
+
 		// Source file -> EntityMap
 		std::unordered_map<std::string, EntityMap> entity_maps;
 		// s.t. requesting entity_maps["/path/to/file1.bpp"] returns an EntityMap
@@ -631,6 +636,9 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 		std::string get_main_source_file() const;
 		void set_main_source_file(const std::string& file);
 		void add_source_file(const std::string& file);
+
+		void set_source_file_ast(const std::string& file, std::shared_ptr<AST::Program> ast);
+		std::shared_ptr<AST::Program> get_source_file_ast(const std::string& file) const;
 
 		void add_diagnostic(
 			const std::string& file,

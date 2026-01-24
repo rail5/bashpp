@@ -33,6 +33,7 @@ void BashppListener::enterProgram(std::shared_ptr<AST::Program> node) {
 
 	entity_stack.push(program);
 	primitive = program->get_primitive_class();	
+	program->set_source_file_ast(source_file, node);
 }
 
 void BashppListener::exitProgram(std::shared_ptr<AST::Program> node) {

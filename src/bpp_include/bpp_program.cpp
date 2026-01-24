@@ -314,6 +314,18 @@ void bpp_program::add_source_file(const std::string& file) {
 	}
 }
 
+void bpp_program::set_source_file_ast(const std::string& file, std::shared_ptr<AST::Program> ast) {
+	source_file_asts[file] = ast;
+}
+
+std::shared_ptr<AST::Program> bpp_program::get_source_file_ast(const std::string& file) const {
+	auto it = source_file_asts.find(file);
+	if (it != source_file_asts.end()) {
+		return it->second;
+	}
+	return nullptr; // No AST found for the file
+}
+
 void bpp_program::add_diagnostic(
 	const std::string& file,
 	diagnostic_type type,

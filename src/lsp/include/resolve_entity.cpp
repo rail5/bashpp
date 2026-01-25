@@ -128,7 +128,7 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 					return nullptr; // File not found
 				}
 				auto faux_entity = std::make_shared<bpp::bpp_entity>();
-				faux_entity->set_definition_position(source_filename, 1, 1);
+				faux_entity->set_definition_position(source_filename, 0, 0);
 				faux_entity->set_name(full_path);
 				return faux_entity;
 			}

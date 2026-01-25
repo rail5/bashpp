@@ -147,8 +147,8 @@ CompletionList bpp::BashppServer::handleDOTCompletion(const CompletionParams& pa
 	// Resolve the referenced entity before the dot
 	std::shared_ptr<bpp::bpp_entity> referenced_entity = resolve_entity_at(
 		uri,
-		position.line + 1,
-		position.character, // Position before the dot
+		position.line,
+		position.character - 1, // Position before the dot
 		program,
 		program_pool.get_utf16_mode(),
 		unsaved_changes.find(uri) != unsaved_changes.end() ? unsaved_changes[uri] : "" // Send unsaved changes content if available

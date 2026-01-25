@@ -46,7 +46,7 @@ void bpp::BashppServer::handleDidChange(const GenericNotificationMessage& reques
 	}
 
 	std::thread([this, uri, now, did_change_notification]() {
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // 1 second debounce
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		bool should_parse = false;
 		{
 			std::lock_guard<std::mutex> lock(debounce_mutex);

@@ -26,8 +26,8 @@ GenericResponseMessage bpp::BashppServer::handleRename(const GenericRequestMessa
 
 	std::shared_ptr<bpp::bpp_entity> entity = resolve_entity_at(
 		uri,
-		rename_request.params.position.line + 1,
-		rename_request.params.position.character + 1,
+		rename_request.params.position.line,
+		rename_request.params.position.character,
 		program_pool.get_program(uri),
 		program_pool.get_utf16_mode(),
 		unsaved_changes.find(uri) != unsaved_changes.end() ? unsaved_changes[uri] : "" // Send unsaved changes content if available

@@ -41,8 +41,8 @@ GenericResponseMessage bpp::BashppServer::handleDefinition(const GenericRequestM
 	try {
 		referenced_entity = resolve_entity_at(
 			uri,
-			position.line + 1,
-			position.character + 1,
+			position.line,
+			position.character,
 			program,
 			program_pool.get_utf16_mode()
 		);
@@ -67,10 +67,10 @@ GenericResponseMessage bpp::BashppServer::handleDefinition(const GenericRequestM
 
 	Location location;
 	location.uri = "file://" + definition_location.file;
-	location.range.start.line = definition_location.line - 1;
-	location.range.start.character = definition_location.column - 1;
-	location.range.end.line = definition_location.line - 1;
-	location.range.end.character = definition_location.column + referenced_entity->get_name().size() - 1;
+	location.range.start.line = definition_location.line ;
+	location.range.start.character = definition_location.column;
+	location.range.end.line = definition_location.line;
+	location.range.end.character = definition_location.column + referenced_entity->get_name().size();
 
 	response.result = std::vector<Location>{location};
 	log("Found definition for entity: ", referenced_entity->get_name(), " at URI: ", uri, ", Range: (", location.range.start.line, ", ", location.range.start.character, ") to (", location.range.end.line, ", ", location.range.end.character, ")");

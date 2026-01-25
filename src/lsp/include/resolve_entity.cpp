@@ -384,7 +384,7 @@ std::string find_comments_for_entity(std::shared_ptr<bpp::bpp_entity> entity) {
 
 	std::string comments;
 	std::string line;
-	uint32_t current_line = 1;
+	uint32_t current_line = 0;
 	while (std::getline(source_file, line)) {
 		if (current_line >= definition_position.line) {
 			break; // Stop reading after reaching the definition line

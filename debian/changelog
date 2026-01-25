@@ -1,3 +1,30 @@
+bpp (0.8.0) unstable; urgency=medium
+
+  * Rewrote the entire lexer/parser using Flex/Bison instead of ANTLR4
+    This also comes with a MASSIVE parser speed-up. It's orders of
+    magnitude faster than it was before.
+    This also means we now manually build and traverse our own AST,
+    giving us greater control.
+    This is arguably the biggest internal change to the compiler since
+    the v0.1 release.
+  * Fixed #10 incidentally as a consequence of the parser rewrite.
+    All generated pre- and post-code for Bash++ constructs is now
+    guaranteed to only run in the event that the main code itself runs.
+  * bpp-lsp: Added a '-b' / '--target-bash' option to the language server
+    This mirrors the same option in the compiler, and affects some
+    diagnostics and warnings about compatibility.
+  * Reworked ObjectReference handling from the ground-up
+  * Solved a few memory leaks by removing owning pointers where owneship
+    was neither necessary nor desirable
+  * Fixed parsing and handling of heredocs
+    Previously, the parser naively assumed that the heredoc header/delim
+    had to immediately precede the heredoc content. There is no such
+    restriction imposed by Bash. We now parse accurately
+  * Preserve exit status codes of executed commands using the new __repeat
+    system function
+
+ -- rail5 <andrew@rail5.org>  Sun, 25 Jan 2026 15:46:18 +0800
+
 bpp (0.7.1) unstable; urgency=medium
 
   * Compile with C++23 standard

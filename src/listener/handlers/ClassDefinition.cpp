@@ -15,8 +15,8 @@ void BashppListener::enterClassDefinition(std::shared_ptr<AST::ClassDefinition> 
 
 	new_class->set_definition_position(
 		source_file,
-		node->getLine(),
-		node->getCharPositionInLine()
+		node->CLASSNAME().getLine(),
+		node->CLASSNAME().getCharPositionInLine()
 	);
 
 	// Get the class name

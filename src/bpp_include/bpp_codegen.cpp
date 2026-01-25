@@ -409,6 +409,7 @@ entity_reference resolve_reference_impl(
 	if (super) {
 		std::string derived_class_name = result.entity->get_name();
 		result.entity = current_class->get_parent();
+		current_class = current_class->get_parent();
 		if (result.entity == nullptr) {
 			if (!nds.empty()) {
 				error_token = nds.at(0);

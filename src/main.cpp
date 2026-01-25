@@ -10,7 +10,7 @@
  * 
  * Here is an article which gives an overview of the compiler:
  * 
- * [How Does the Bash++ Compiler Work?](https://log.bpp.sh/2025/05/16/how-does-the-bashpp-compiler-work.html)
+ * [How Does the Bash++ Compiler Work?](https://log.bpp.sh/2026/01/25/how-does-the-bashpp-compiler-work.html)
  *
  * As for the rest, the Doxygen documentation will provide details on the compiler's different classes and functions.
 */

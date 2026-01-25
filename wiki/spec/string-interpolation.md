@@ -14,7 +14,7 @@ String Interpolation - Embedding expressions within string literals
 
 Like in Bash, certain expressions can be embedded within double-quoted strings, such as variable references and command substitutions. Double-quoted strings in Bash++ can also contain interpolations of object references and supershells.
 
-Object references can be embedded using either the `@object.member` syntax or the `@{object.member}` syntax. If the first form is used, the object reference parse ends at the first character that is not valid in an ordinary object reference. Valid characters include letters, digits, underscores, and dots. If the second form is used, the object reference parse ends at the closing `}` character.
+Object references can be embedded using either the `@object.member` syntax or the `@{object.member}` syntax. If the first form is used, the object reference parse ends at the first character that is not valid in an ordinary object reference (that is, either a character which is not a valid part of an identifier, or a dot which is not followed by an identifier). If the second form is used, the object reference parse ends at the closing `}` character.
 
 If an object's method is referenced in either of the above forms, the method will be implicitly executed in a supershell, and its output will be substituted in place of the interpolation in the string.
 

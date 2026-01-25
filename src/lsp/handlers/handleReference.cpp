@@ -29,9 +29,7 @@ GenericResponseMessage bpp::BashppServer::handleReferences(const GenericRequestM
 		uri,
 		reference_request.params.position.line,
 		reference_request.params.position.character,
-		program_pool.get_program(uri),
-		program_pool.get_utf16_mode(),
-		unsaved_changes.find(uri) != unsaved_changes.end() ? unsaved_changes[uri] : "" // Send unsaved changes content if available
+		program_pool.get_program(uri)
 	);
 
 	if (!entity) {

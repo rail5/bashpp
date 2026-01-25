@@ -43,9 +43,7 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 	const std::string& file,
 	uint32_t line,
 	uint32_t column,
-	std::shared_ptr<bpp::bpp_program> program,
-	bool utf16_mode,
-	const std::string& file_contents
+	std::shared_ptr<bpp::bpp_program> program
 ) {
 	if (program == nullptr || file.empty()) {
 		return nullptr; // Invalid program or file
@@ -363,7 +361,7 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 	}
 }
 
-std::string find_comments_for_entity(std::shared_ptr<bpp::bpp_entity> entity) {
+std::string find_comments_for_entity(std::shared_ptr<bpp::bpp_entity> entity, ProgramPool* program_pool) {
 	if (entity == nullptr) {
 		return "";
 	}
@@ -375,17 +373,12 @@ std::string find_comments_for_entity(std::shared_ptr<bpp::bpp_entity> entity) {
 		return ""; // No known source file, no alternative contents provided
 	}
 
-	// TODO(@rail5): Should we be concerned that we're reading from the filesystem here?
-	// Should the language server keep a cache of file contents for parsed files?
-	std::ifstream source_file(definition_position.file);
-	if (!source_file.is_open()) {
-		return ""; // Could not open the source file
-	}
+	std::istringstream source_file_contents(program_pool->get_file_contents(definition_position.file));
 
 	std::string comments;
 	std::string line;
 	uint32_t current_line = 0;
-	while (std::getline(source_file, line)) {
+	while (std::getline(source_file_contents, line)) {
 		if (current_line >= definition_position.line) {
 			break; // Stop reading after reaching the definition line
 		}
@@ -408,7 +401,5 @@ std::string find_comments_for_entity(std::shared_ptr<bpp::bpp_entity> entity) {
 				// Therefore, clear it
 		}
 	}
-
-	source_file.close();
 	return comments;
 }

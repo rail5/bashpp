@@ -40,9 +40,7 @@ GenericResponseMessage bpp::BashppServer::handleHover(const GenericRequestMessag
 			uri,
 			position.line,
 			position.character,
-			program,
-			program_pool.get_utf16_mode(),
-			unsaved_changes.find(uri) != unsaved_changes.end() ? unsaved_changes[uri] : ""
+			program
 		);
 	} catch (...) {
 		// Ignore, it'll just be nullptr.
@@ -147,7 +145,7 @@ GenericResponseMessage bpp::BashppServer::handleHover(const GenericRequestMessag
 	}
 
 	// Search for any relevant comments associated with the entity
-	std::string comments = find_comments_for_entity(entity);
+	std::string comments = find_comments_for_entity(entity, &program_pool);
 
 	if (!comments.empty()) {
 		hover_text += "\n\n" + comments; // Append comments if available

@@ -28,9 +28,7 @@ GenericResponseMessage bpp::BashppServer::handleRename(const GenericRequestMessa
 		uri,
 		rename_request.params.position.line,
 		rename_request.params.position.character,
-		program_pool.get_program(uri),
-		program_pool.get_utf16_mode(),
-		unsaved_changes.find(uri) != unsaved_changes.end() ? unsaved_changes[uri] : "" // Send unsaved changes content if available
+		program_pool.get_program(uri)
 	);
 
 	// Verify that we found an entity, and it is either:

@@ -39,23 +39,28 @@ class ProgramPool {
 		std::vector<std::shared_ptr<bpp::bpp_program>> programs;
 		std::unordered_map<std::string, size_t> program_indices; // Maps file paths to program indices in the pool
 		std::unordered_map<std::string, bool> open_files; // Maps file paths to whether they are currently open
+		std::unordered_map<std::string, std::string> unsaved_changes; // Maps file paths to their unsaved contents
 		std::recursive_mutex pool_mutex; // Mutex to protect access to the pool
+
+		// This will be zero when all unsaved changes have been stored,
+		// And will be non-zero if some threads are in the middle of storing unsaved changes.
+		std::atomic<size_t> currently_storing_unsaved_changes_count = 0;
 
 		// Pool snapshots:
 		struct Snapshot {
 			std::vector<std::shared_ptr<bpp::bpp_program>> programs_snapshot; // Snapshot of the current programs in the pool
 			std::unordered_map<std::string, size_t> program_indices_snapshot; // Snapshot of the current program indices
 			std::unordered_map<std::string, bool> open_files_snapshot; // Snapshot of the current open files
+			std::unordered_map<std::string, std::string> unsaved_changes_snapshot; // Snapshot of the current unsaved changes
 		};
-		std::atomic<std::shared_ptr<Snapshot>> snapshot; // Atomic snapshot for thread-safe access
+		std::unique_ptr<Snapshot> snapshot = std::make_unique<Snapshot>();
+		mutable std::recursive_mutex snapshot_mutex; // Mutex to protect access to the snapshot
 
 		bool utf16_mode = false; // Whether to use UTF-16 mode for character counting
 
 		void _remove_oldest_program();
 		void _remove_program(size_t index);
-		std::shared_ptr<bpp::bpp_program> _parse_program(
-			const std::string& file_path, 
-			std::optional<std::pair<std::string, std::string>> replacement_file_contents = std::nullopt);
+		std::shared_ptr<bpp::bpp_program> _parse_program(const std::string& file_path);
 
 		// Configurable settings
 		std::shared_ptr<std::vector<std::string>> include_paths = std::make_shared<std::vector<std::string>>();
@@ -77,6 +82,21 @@ class ProgramPool {
 		void set_suppress_warnings(bool suppress);
 		void set_utf16_mode(bool mode);
 		bool get_utf16_mode() const;
+
+		void set_unsaved_file_contents(const std::string& file_path, const std::string& contents);
+		void remove_unsaved_file_contents(const std::string& file_path);
+		bool is_currently_storing_unsaved_changes() const noexcept;
+
+		/**
+		 * @brief Get the contents of a file, considering unsaved changes if present.
+		 *
+		 * If there are unsaved changes for the given file path, those contents are returned.
+		 * Otherwise, the contents are read from the file on disk.
+		 * 
+		 * @param file_path The file path to get the contents of.
+		 * @return std::string The contents of the file.
+		 */
+		std::string get_file_contents(const std::string& file_path);
 		
 		/**
 		 * @brief Get or create a program for the given file path
@@ -109,19 +129,6 @@ class ProgramPool {
 		 * @return std::shared_ptr<bpp::bpp_program> The re-parsed program
 		 */
 		std::shared_ptr<bpp::bpp_program> re_parse_program(const std::string& file_path);
-
-		/**
-		 * @brief Re-parse a program for the given file path, with unsaved changes parsed instead of the file on disk.
-		 * 
-		 * @param file_path The source file which has been modified, triggering the re-parse.
-		 * @param replacement_file_contents A pair: the first element is the path to the file with unsaved changes,
-		 *                                  the second element is the new contents of the file to use instead of
-		 *                                  the file on disk.
-		 * @return std::shared_ptr<bpp::bpp_program> 
-		 */
-		std::shared_ptr<bpp::bpp_program> re_parse_program(
-			const std::string& file_path, 
-			std::pair<std::string, std::string> replacement_file_contents);
 		
 		/**
 		 * @brief Mark a file as open in the program pool.

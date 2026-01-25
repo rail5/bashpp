@@ -22,14 +22,6 @@ void bpp::BashppServer::handleDidClose(const GenericNotificationMessage& request
 	}
 
 	// If we've stored unsaved changes for this URI, we can remove them
-	{
-		std::lock_guard<std::mutex> lock(unsaved_changes_mutex);
-		auto it = unsaved_changes.find(uri);
-		if (it != unsaved_changes.end()) {
-			log("Forgetting unsaved changes for URI: ", uri);
-			unsaved_changes.erase(it);
-		}
-	}
-
+	program_pool.remove_unsaved_file_contents(uri);
 	program_pool.close_file(uri); // Mark the file as closed
 }

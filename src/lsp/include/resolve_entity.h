@@ -9,6 +9,7 @@
 #include <string>
 #include <cstdint>
 
+#include "../ProgramPool.h"
 #include "../../AST/ASTNode.h"
 #include "../../bpp_include/bpp_codegen.h"
 #include "explode.h"
@@ -38,9 +39,7 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 	const std::string& file,
 	uint32_t line,
 	uint32_t column,
-	std::shared_ptr<bpp::bpp_program> program,
-	bool utf16_mode,
-	const std::string& file_contents = ""
+	std::shared_ptr<bpp::bpp_program> program
 );
 
 /**
@@ -50,6 +49,7 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
  * It returns a string containing the comments, or an empty string if no comments are found.
  * 
  * @param entity The entity to find comments for.
+ * @param program_pool The program pool to use for accessing source files.
  * @return A string containing the comments associated with the entity, or an empty string if no comments are found.
  */
-std::string find_comments_for_entity(std::shared_ptr<bpp::bpp_entity> entity);
+std::string find_comments_for_entity(std::shared_ptr<bpp::bpp_entity> entity, ProgramPool* program_pool);

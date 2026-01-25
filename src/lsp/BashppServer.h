@@ -64,9 +64,6 @@ class BashppServer {
 		ThreadPool thread_pool = ThreadPool(std::thread::hardware_concurrency());
 		ProgramPool program_pool = ProgramPool(10); // Maximum 10 programs in the pool
 		std::ofstream log_file;
-		std::unordered_map<std::string, std::string> unsaved_changes; // Maps file paths to their unsaved contents
-		std::mutex unsaved_changes_mutex;
-		std::atomic<bool> stored_changes_content_updating = false;
 
 		// Debouncing didChange notifications
 		std::unordered_map<std::string, std::shared_ptr<std::atomic<uint64_t>>> debounce_timestamps;

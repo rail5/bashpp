@@ -43,8 +43,7 @@ GenericResponseMessage bpp::BashppServer::handleDefinition(const GenericRequestM
 			uri,
 			position.line,
 			position.character,
-			program,
-			program_pool.get_utf16_mode()
+			program
 		);
 	} catch (...) {
 		// Ignore, it'll just be nullptr.

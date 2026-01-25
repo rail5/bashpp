@@ -23,6 +23,16 @@ GenericResponseMessage bpp::BashppServer::handleCompletion(const GenericRequestM
 		// Strip the "file://" prefix
 		uri = uri.substr(7);
 	}
+
+	// Wait for stored_changes_content_updating to be false before proceeding
+	// Just to make sure we're suggesting completions based on the latest content
+	// When the user types '.', the client will send a didChange notification,
+	// and then immediately after, it'll send a completion request.
+	// We need to ensure that our internally-stored version of the file content
+	// is up-to-date before we resolve the reference and provide completions.
+	do {
+		std::this_thread::sleep_for(std::chrono::milliseconds(150));
+	} while (program_pool.is_currently_storing_unsaved_changes());
 	
 	// Which character triggered the request?
 	char trigger_character = '.';
@@ -126,17 +136,6 @@ CompletionList bpp::BashppServer::handleDOTCompletion(const CompletionParams& pa
 		uri = uri.substr(7);
 	}
 
-	// Wait for stored_changes_content_updating to be false before proceeding
-	// Just to make sure we're suggesting completions based on the latest content
-	// When the user types '.', the client will send a didChange notification,
-	// and then immediately after, it'll send a completion request.
-	// We need to ensure that our internally-stored version of the file content
-	// is up-to-date before we resolve the reference and provide completions.
-	while (stored_changes_content_updating) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Sleep for 10 milliseconds
-	}
-	std::lock_guard<std::mutex> lock(unsaved_changes_mutex);
-
 	std::shared_ptr<bpp::bpp_program> program = program_pool.get_program(uri, true); // Jump the queue and get the program immediately
 	if (program == nullptr) {
 		throw std::runtime_error("Program not found for URI: " + uri);
@@ -149,9 +148,7 @@ CompletionList bpp::BashppServer::handleDOTCompletion(const CompletionParams& pa
 		uri,
 		position.line,
 		position.character - 1, // Position before the dot
-		program,
-		program_pool.get_utf16_mode(),
-		unsaved_changes.find(uri) != unsaved_changes.end() ? unsaved_changes[uri] : "" // Send unsaved changes content if available
+		program
 	);
 
 	if (referenced_entity == nullptr) {

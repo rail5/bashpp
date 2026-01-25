@@ -27,14 +27,7 @@ void bpp::BashppServer::handleDidChangeWatchedFiles(const GenericNotificationMes
 			uri = uri.substr(7);
 		}
 
-		{
-			std::lock_guard<std::mutex> lock(unsaved_changes_mutex);
-			auto it = unsaved_changes.find(uri);
-			if (it != unsaved_changes.end()) {
-				log("Forgetting unsaved changes for URI: ", uri);
-				unsaved_changes.erase(it); // Remove unsaved changes for this URI
-			}
-		}
+		program_pool.remove_unsaved_file_contents(uri); // Remove unsaved changes for this URI
 
 		log("Re-parsing program for URI: ", uri);
 		std::shared_ptr<bpp::bpp_program> program = program_pool.re_parse_program(uri);

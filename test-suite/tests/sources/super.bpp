@@ -1,5 +1,6 @@
 @class Example {
 	@public member="default value"
+	@protected protectedMember="protected value"
 	@virtual @public @method something {
 		echo "Base class"
 	}
@@ -37,6 +38,8 @@
 
 		*@super # "Example Instance" (call to @super.toPrimitive)
 		*@this # "Derived Instance" (call to @this.toPrimitive)
+
+		echo @super.protectedMember # "protected value"
 	}
 }
 

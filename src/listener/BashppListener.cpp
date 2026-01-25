@@ -110,5 +110,5 @@ std::shared_ptr<bpp::bpp_code_entity> BashppListener::latest_code_entity() {
 }
 
 void BashppListener::set_replacement_file_contents(const std::string& file_path, const std::string& contents) {
-	replacement_file_contents = std::make_pair(file_path, contents);
+	replacement_file_contents[file_path] = contents;
 }

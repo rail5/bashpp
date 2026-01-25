@@ -101,9 +101,8 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 	listener.set_run_on_exit(false);
 	listener.set_suppress_warnings(suppress_warnings);
 	listener.set_target_bash_version(target_bash_version);
-	
-	if (replacement_file_contents.has_value()) {
-		listener.set_replacement_file_contents(replacement_file_contents->first, replacement_file_contents->second);
+	for (const auto& pair : replacement_file_contents) {
+		listener.set_replacement_file_contents(pair.first, pair.second);
 	}
 
 	if (!dynamic_linking) {
@@ -121,11 +120,11 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 	std::stack<std::string> new_include_stack = this->include_stack;
 	new_include_stack.push(source_file);
 	parser.setIncludeChain(new_include_stack);
-	if (!replacement_file_contents.has_value() || replacement_file_contents->first != full_path) {
-		parser.setInputFromFilePath(full_path);
+	
+	if (replacement_file_contents.find(full_path) != replacement_file_contents.end()) {
+		parser.setInputFromStringContents(replacement_file_contents[full_path]);
 	} else {
-		// If we have replacement file contents for this file, use those instead
-		parser.setInputFromStringContents(replacement_file_contents->second);
+		parser.setInputFromFilePath(full_path);
 	}
 
 	auto tree = parser.program();

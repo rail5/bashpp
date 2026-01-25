@@ -15,6 +15,7 @@
 #include <optional>
 #include <concepts>
 #include <fstream>
+#include <unordered_map>
 
 #include "../AST/Listener/BaseListener.h"
 
@@ -157,15 +158,12 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 
 		/**
 		 * @var replacement_file_contents
-		 * @brief This option is used by the language server.
+		 * @brief A map of file paths to replacement contents for those files
+		 * This is used by the language server to provide unsaved changes to the listener
+		 * so that we can report diagnostics/completions/etc based on the unsaved changes
 		 * 
-		 * The first element is the file path, and the second element is the contents of the file.
-		 * 
-		 * If set, it tells the listener not to read from the given file path, but instead to use the contents provided.
-		 * 
-		 * The language server uses this to parse unsaved changes in your editor.
 		 */
-		std::optional<std::pair<std::string, std::string>> replacement_file_contents;
+		std::unordered_map<std::string, std::string> replacement_file_contents;
 
 		std::shared_ptr<bpp::bpp_class> primitive;
 

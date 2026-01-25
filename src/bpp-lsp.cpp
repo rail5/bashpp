@@ -6,11 +6,8 @@
 // Bash++ Language Server
 
 #include <iostream>
-#include <fstream>
 #include <string>
-#include <vector>
 #include <memory>
-#include <thread>
 #include <csignal>
 
 #include <ext/stdio_filebuf.h> // Non-portable GNU extension
@@ -20,6 +17,8 @@
 
 #include "lsp/BashppServer.h"
 #include "lsp/helpers.h"
+
+#include "include/BashVersion.h"
 
 #include "version.h"
 #include "updated_year.h"
@@ -53,14 +52,15 @@ int main(int argc, char* argv[]) {
 	constexpr const char* help_string = "Bash++ Language Server " bpp_compiler_version "\n"
 		"Usage: bpp-lsp [options]\n"
 		"Options:\n"
-		"  -h, --help            Show this help message\n"
-		"  -v, --version         Show version information\n"
-		"  -l, --log <file>      Log messages to the specified file\n"
-		"  -s, --no-warnings     Suppress warnings\n"
-		"  -I, --include <path>  Add a directory to include path\n"
-		"      --stdio           Use standard input/output for communication (default)\n"
-		"      --port <port>     Use TCP port for communication\n"
-		"      --socket <path>   Use Unix domain socket for communication\n";
+		"  -h, --help                  Show this help message\n"
+		"  -v, --version               Show version information\n"
+		"  -l, --log <file>            Log messages to the specified file\n"
+		"  -s, --no-warnings           Suppress warnings\n"
+		"  -b, --target-bash <version> Set target Bash version (e.g., 5.2)\n"
+		"  -I, --include <path>        Add a directory to include path\n"
+		"      --stdio                 Use standard input/output for communication (default)\n"
+		"      --port <port>           Use TCP port for communication\n"
+		"      --socket <path>         Use Unix domain socket for communication\n";
 
 	constexpr const char* version_string = "Bash++ Language Server " bpp_compiler_version "\n"
 		"Copyright (C) 2024-" bpp_compiler_updated_year " Andrew S. Rightenburg\n"
@@ -88,6 +88,7 @@ int main(int argc, char* argv[]) {
 		{"log", required_argument, nullptr, 'l'},
 		{"include", required_argument, nullptr, 'I'},
 		{"no-warnings", no_argument, nullptr, 's'},
+		{"target-bash", required_argument, nullptr, 'b'},
 		{"stdio", no_argument, nullptr, 10000},
 		{"port", required_argument, nullptr, 10001},
 		{"socket", required_argument, nullptr, 10002},
@@ -104,6 +105,18 @@ int main(int argc, char* argv[]) {
 				break;
 			case 's':
 				server.set_suppress_warnings(true);
+				break;
+			case 'b':
+				{
+					std::istringstream version_stream(optarg);
+					uint16_t major, minor;
+					char dot;
+					if (!(version_stream >> major >> dot >> minor) || dot != '.') {
+						throw std::runtime_error("Invalid Bash version format: " + std::string(optarg) +
+							"\nExpected format: <major>.<minor> (e.g., 5.2)");
+					}
+					server.setTargetBashVersion(BashVersion{major, minor});
+				}
 				break;
 			case 'v':
 				std::cout << version_string << std::flush;

@@ -15,6 +15,8 @@
 
 #include "../bpp_include/bpp.h"
 
+#include "../include/BashVersion.h"
+
 /**
  * @class ProgramPool
  * @brief Manages a pool of bpp_program objects for efficient reuse and access.
@@ -40,6 +42,7 @@ class ProgramPool {
 		std::unordered_map<std::string, size_t> program_indices; // Maps file paths to program indices in the pool
 		std::unordered_map<std::string, bool> open_files; // Maps file paths to whether they are currently open
 		std::unordered_map<std::string, std::string> unsaved_changes; // Maps file paths to their unsaved contents
+		BashVersion target_bash_version = {5, 2};
 		std::recursive_mutex pool_mutex; // Mutex to protect access to the pool
 
 		// This will be zero when all unsaved changes have been stored,
@@ -82,6 +85,7 @@ class ProgramPool {
 		void set_suppress_warnings(bool suppress);
 		void set_utf16_mode(bool mode);
 		bool get_utf16_mode() const;
+		void set_target_bash_version(const BashVersion& version);
 
 		void set_unsaved_file_contents(const std::string& file_path, const std::string& contents);
 		void remove_unsaved_file_contents(const std::string& file_path);

@@ -36,6 +36,10 @@ bool ProgramPool::get_utf16_mode() const {
 	return utf16_mode;
 }
 
+void ProgramPool::set_target_bash_version(const BashVersion& version) {
+	target_bash_version = version;
+}
+
 void ProgramPool::set_unsaved_file_contents(const std::string& file_path, const std::string& contents) {
 	currently_storing_unsaved_changes_count.fetch_add(1, std::memory_order_acq_rel);
 	{
@@ -154,6 +158,8 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::_parse_program(const std::string&
 		listener.set_code_buffer(code_buffer);
 		listener.set_suppress_warnings(suppress_warnings);
 		listener.set_include_paths(include_paths);
+		listener.set_target_bash_version(target_bash_version);
+		listener.set_lsp_mode(true);
 		for (const auto& pair : unsaved_changes) {
 			listener.set_replacement_file_contents(pair.first, pair.second);
 		}

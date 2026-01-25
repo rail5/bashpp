@@ -137,6 +137,10 @@ void bpp::BashppServer::setLogFile(const std::string& path) {
 	}
 }
 
+void bpp::BashppServer::setTargetBashVersion(const BashVersion& version) {
+	target_bash_version = version;
+}
+
 void bpp::BashppServer::cleanup() {
 	if (output_stream) {
 		output_stream->flush();
@@ -321,10 +325,10 @@ void bpp::BashppServer::publishDiagnostics(std::shared_ptr<bpp::bpp_program> pro
 		std::vector<Diagnostic> lsp_diags;
 		for (const auto& diag : diags) {
 			Diagnostic lsp_diag;
-			lsp_diag.range.start.line = diag.start_line - 1;
-			lsp_diag.range.start.character = diag.start_column - 1;
-			lsp_diag.range.end.line = diag.end_line - 1;
-			lsp_diag.range.end.character = diag.end_column - 1;
+			lsp_diag.range.start.line = diag.start_line;
+			lsp_diag.range.start.character = diag.start_column;
+			lsp_diag.range.end.line = diag.end_line;
+			lsp_diag.range.end.character = diag.end_column;
 			
 			switch (diag.type) {
 				case bpp::diagnostic_type::DIAGNOSTIC_ERROR:

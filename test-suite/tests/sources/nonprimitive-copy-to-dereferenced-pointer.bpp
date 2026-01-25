@@ -1,0 +1,11 @@
+@class Object {
+	@public member=default
+}
+
+@Object obj1
+@obj1.member="recognizable"
+@Object* obj2=@new Object
+
+*@obj2=@obj1
+
+echo @obj2.member # "recognizable"

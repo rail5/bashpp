@@ -95,7 +95,7 @@ int main(int argc, char* argv[]) {
 		{nullptr, 0, nullptr, 0} // Sentinel
 	};
 
-	while ((opt = getopt_long(argc, argv, "hI:svl:", long_options, nullptr)) != -1) {
+	while ((opt = getopt_long(argc, argv, "b:hI:svl:", long_options, nullptr)) != -1) {
 		switch (opt) {
 			case 'h':
 				std::cout << help_string << std::flush;
@@ -112,8 +112,9 @@ int main(int argc, char* argv[]) {
 					uint16_t major, minor;
 					char dot;
 					if (!(version_stream >> major >> dot >> minor) || dot != '.') {
-						throw std::runtime_error("Invalid Bash version format: " + std::string(optarg) +
-							"\nExpected format: <major>.<minor> (e.g., 5.2)");
+						std::cerr << "Invalid Bash version format: " << std::string(optarg)
+							<< std::endl << "Expected format: <major>.<minor> (e.g., 5.2)" << std::endl;
+						return 1;
 					}
 					server.setTargetBashVersion(BashVersion{major, minor});
 				}

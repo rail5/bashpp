@@ -138,7 +138,7 @@ void bpp::BashppServer::setLogFile(const std::string& path) {
 }
 
 void bpp::BashppServer::setTargetBashVersion(const BashVersion& version) {
-	target_bash_version = version;
+	program_pool.set_target_bash_version(version);
 }
 
 void bpp::BashppServer::cleanup() {

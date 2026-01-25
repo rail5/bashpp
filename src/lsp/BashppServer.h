@@ -66,7 +66,6 @@ class BashppServer {
 		ThreadPool thread_pool = ThreadPool(std::thread::hardware_concurrency());
 		ProgramPool program_pool = ProgramPool(10); // Maximum 10 programs in the pool
 		std::ofstream log_file;
-		BashVersion target_bash_version = BashVersion{5, 2};
 
 		// Debouncing didChange notifications
 		std::unordered_map<std::string, std::shared_ptr<std::atomic<uint64_t>>> debounce_timestamps;

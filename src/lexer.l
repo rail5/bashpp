@@ -63,11 +63,10 @@ struct LexerState {
 	bool received_local_keyword = false;
 	bool incoming_token_can_be_lvalue = true;
 
-	yy::position current_position;
-	yy::position token_beginning;
-	yy::position token_ending;
+	ParserPosition current_position;
+	ParserPosition token_beginning;
+	ParserPosition token_ending;
 	bool utf16_mode = false;
-
 
 	void reset() {
 		singlequote_contents.clear();
@@ -202,7 +201,7 @@ void advance_position(const std::string& text, yyscan_t yyscanner) {
 		switch (c) {
 			case '\n':
 				get_lexer_extra(yyscanner)->lexerState.current_position.line++;
-				get_lexer_extra(yyscanner)->lexerState.current_position.column = 1;
+				get_lexer_extra(yyscanner)->lexerState.current_position.column = 0;
 				line.clear();
 				break;
 			case '\r':
@@ -226,8 +225,8 @@ void char_counter_zero_length_match_here(yyscan_t yyscanner) {
 	get_lexer_extra(yyscanner)->lexerState.token_ending = get_lexer_extra(yyscanner)->lexerState.current_position;
 }
 
-yy::location current_match_location(yyscan_t yyscanner) {
-	yy::location result;
+ParserLocation current_match_location(yyscan_t yyscanner) {
+	ParserLocation result;
 	result.begin = get_lexer_extra(yyscanner)->lexerState.token_beginning;
 	result.end = get_lexer_extra(yyscanner)->lexerState.token_ending;
 	return result;

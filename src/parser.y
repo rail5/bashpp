@@ -10,6 +10,7 @@
 #include <memory>
 #include <cassert>
 #include "../AST/Nodes/Nodes.h"
+#include "../include/ParserPosition.h"
 #include "../syntax_error.h"
 typedef std::shared_ptr<AST::ASTNode> ASTNodePtr;
 typedef void* yyscan_t;
@@ -28,6 +29,7 @@ void yyerror(const char *s);
 
 %define api.token.constructor
 %define api.value.type variant
+%define api.location.type { ParserLocation }
 %code {
 	#include "parser.tab.hpp"
 

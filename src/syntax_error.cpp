@@ -71,16 +71,16 @@ void print_syntax_error_or_warning(
 
 	// Read the line with the error
 	std::string line_content;
-	for (uint32_t i = 0; i < line; i++) {
+	for (uint32_t i = 0; i <= line; i++) {
 		std::getline(file, line_content);
 	}
 	file.close();
 
 	// Print the line with the error
-	std::string line_before_error = utf8_substr(line_content, 0, column - 1);
-	std::string error_portion = utf8_substr(line_content, column - 1, utf8_length(text));
+	std::string line_before_error = utf8_substr(line_content, 0, column);
+	std::string error_portion = utf8_substr(line_content, column, utf8_length(text));
 	uint32_t line_after_error_length = utf8_length(line_content) - (utf8_length(line_before_error) + utf8_length(error_portion));
-	std::string line_after_error = utf8_substr(line_content, column - 1 + utf8_length(text), line_after_error_length);
+	std::string line_after_error = utf8_substr(line_content, column + utf8_length(text), line_after_error_length);
 	
 	std::cerr << line1_prefix
 		<< line_before_error

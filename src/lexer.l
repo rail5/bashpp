@@ -1276,7 +1276,7 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 		emit(IDENTIFIER, tokenText);
 	}
 
-	"\." {
+	\./[A-Za-z_] {
 		emit(DOT);
 	}
 

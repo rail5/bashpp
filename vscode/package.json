@@ -2,7 +2,7 @@
   "name": "bashpp",
   "displayName": "Bash++",
   "description": "Language support for Bash++",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "homepage": "https://bpp.sh",
   "publisher": "rail5",
   "repository": {
@@ -80,6 +80,11 @@
           "type": "boolean",
           "default": true,
           "description": "Show warnings from the Bash++ language server."
+        },
+        "bashpp.languageServer.targetBashVersion": {
+          "type": "number",
+          "default": 5.2,
+          "description": "Target Bash version for compilation (e.g., 5.2, 5.3). This affects diagnostics and compatibility checks."
         }
       }
     },

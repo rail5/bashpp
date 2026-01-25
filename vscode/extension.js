@@ -50,6 +50,10 @@ async function startClient(context) {
 			args.push(`-I${path}`);
 		});
 
+		// Get the target bash version
+		const targetBashVersion = config.get('targetBashVersion', '5.2');
+		args.push(`-b${targetBashVersion}`);
+
 		const serverOptions = {
 			run: {
 				command: serverPath,

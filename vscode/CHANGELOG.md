@@ -1,5 +1,13 @@
 # Change Log
 
+## [0.8.0]
+
+- Added support for bpp-lsp's `-b`/`--target-bash` option to specify the target Bash version for compilation
+  - This option allows users to specify which version of Bash they are targeting when writing Bash++ code.
+  - The target Bash version affects diagnostics and compatibility checks performed by the language server.
+  - Users can set this option in the VSCode extension settings under `Bash++: Language Server: Target Bash Version`.
+  - The default target Bash version is 5.2.
+
 ## [0.7.0]
 
 - Brought syntax rules up to speed with Bash++ v0.7.0 by adding support for the `@typeof` keyword

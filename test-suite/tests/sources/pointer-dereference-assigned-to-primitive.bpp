@@ -1,0 +1,28 @@
+@class Inner {
+}
+
+@class Object {
+	@public member=value
+
+	@public @method change {
+		@Inner inner
+		@this.member=@inner
+		echo @this.member # "Inner Instance"
+
+		@Inner* in=@new Inner
+		@this.member=*@in
+		echo @this.member # "Inner Instance"
+	}
+}
+
+@Object obj
+
+@obj.change
+
+@Inner* inner=@new Inner
+@obj.member=*@inner
+echo @obj.member # "Inner Instance"
+
+
+var=*@inner
+echo $var # "Inner Instance"

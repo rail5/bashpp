@@ -74,7 +74,7 @@ jobs:
         if: steps.code_changed.outputs.code == 'true'
         run: |
           apt-get update
-          apt-get install build-essential flex bison doxygen graphviz libutfcpp-dev -y
+          apt-get install build-essential flex bison doxygen graphviz libfrozen-dev libutfcpp-dev -y
       - name: Run tests and generate test stats SVG
         if: steps.code_changed.outputs.code == 'true'
         run: |

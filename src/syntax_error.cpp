@@ -18,13 +18,27 @@
 
 void print_syntax_error_or_warning(
 	std::string source_file,
-	uint32_t line, uint32_t column,
-	const std::string& text,
+	uint32_t line, uint32_t column, uint32_t text_length,
 	const std::string& msg,
 	std::stack<std::string> include_chain,
 	std::shared_ptr<bpp::bpp_program> program,
+	bool lsp_mode,
 	bool is_warning
 ) {
+	// Add to the program's diagnostics
+	if (program != nullptr) {
+		program->add_diagnostic(
+			source_file,
+			is_warning ? bpp::diagnostic_type::DIAGNOSTIC_WARNING : bpp::diagnostic_type::DIAGNOSTIC_ERROR,
+			msg,
+			line,
+			column,
+			line,
+			column + text_length
+		);
+	}
+	if (lsp_mode) return; // The language server doesn't need to print errors to stderr, just add them to the diagnostics list
+
 	// Colorize output if the output is a TTY
 	bool is_tty = isatty(fileno(stderr));
 	std::string color_red = is_tty ? "\033[0;31m" : "";
@@ -78,9 +92,9 @@ void print_syntax_error_or_warning(
 
 	// Print the line with the error
 	std::string line_before_error = utf8_substr(line_content, 0, column);
-	std::string error_portion = utf8_substr(line_content, column, utf8_length(text));
+	std::string error_portion = utf8_substr(line_content, column, text_length);
 	uint32_t line_after_error_length = utf8_length(line_content) - (utf8_length(line_before_error) + utf8_length(error_portion));
-	std::string line_after_error = utf8_substr(line_content, column + utf8_length(text), line_after_error_length);
+	std::string line_after_error = utf8_substr(line_content, column + text_length, line_after_error_length);
 	
 	std::cerr << line1_prefix
 		<< line_before_error
@@ -94,42 +108,7 @@ void print_syntax_error_or_warning(
 		<< (is_warning ? color_orange : color_red) << "^"
 		<< equal_width_padding(utf8_substr(error_portion, 0, utf8_length(error_portion) - 1), '~')
 		<< color_reset << std::endl;
-
-	// Add to the program's diagnostics
-	if (program != nullptr) {
-		program->add_diagnostic(
-			source_file,
-			is_warning ? bpp::diagnostic_type::DIAGNOSTIC_WARNING : bpp::diagnostic_type::DIAGNOSTIC_ERROR,
-			msg,
-			static_cast<uint32_t>(line),
-			static_cast<uint32_t>(column),
-			static_cast<uint32_t>(line),
-			static_cast<uint32_t>(column + text.length())
-		);
-	}
 }
-
-void print_syntax_error_or_warning(
-	std::string source_file,
-	uint32_t line,
-	uint32_t column,
-	uint32_t error_portion_length,
-	const std::string& msg,
-	std::stack<std::string> include_chain,
-	std::shared_ptr<bpp::bpp_program> program,
-	bool is_warning
-) {
-	std::string blank(' ', error_portion_length);
-	print_syntax_error_or_warning(
-		source_file,
-		line,
-		column,
-		blank,
-		msg,
-		include_chain,
-		program,
-		is_warning);
-	}
 
 void print_syntax_error_from_parser(
 	std::string source_file,
@@ -147,6 +126,7 @@ void print_syntax_error_from_parser(
 		msg,
 		include_chain,
 		nullptr,
+		false,
 		false);
 }
 

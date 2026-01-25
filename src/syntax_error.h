@@ -17,7 +17,7 @@
  * @param source_file The source file which contains the error
  * @param line The line number where the error occurred
  * @param column The column number where the error occurred
- * @param text The text of the token which caused the error
+ * @param text_length The length of the token which caused the error
  * @param msg The error message to display
  * @param include_chain A stack of include files which led to the error
  * @param is_warning Whether the message is a warning or an error
@@ -26,20 +26,11 @@ void print_syntax_error_or_warning(
 	std::string source_file,
 	uint32_t line,
 	uint32_t column,
-	const std::string& text,
+	uint32_t text_length,
 	const std::string& msg,
 	std::stack<std::string> include_chain,
 	std::shared_ptr<bpp::bpp_program> program,
-	bool is_warning = false);
-
-void print_syntax_error_or_warning(
-	std::string source_file,
-	uint32_t line,
-	uint32_t column,
-	uint32_t error_portion_length,
-	const std::string& msg,
-	std::stack<std::string> include_chain,
-	std::shared_ptr<bpp::bpp_program> program,
+	bool lsp_mode,
 	bool is_warning = false);
 
 void print_syntax_error_from_parser(

@@ -167,6 +167,8 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 
 		std::shared_ptr<bpp::bpp_class> primitive;
 
+		bool lsp_mode = false; // Whether this listener is just running as part of the language server (i.e., not really compiling anything)
+
 		bool error_thrown = false;
 		std::shared_ptr<AST::ASTNode> error_node = nullptr;
 
@@ -176,55 +178,37 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 		void output_syntax_error_or_warning(const T& error_ctx, const std::string& msg, bool is_warning = false) {
 			uint32_t line;
 			uint32_t column;
-			std::string text;
+			uint32_t text_length = 1;
 
 			if constexpr (ASTNodePtrType<T>) {
 				line = error_ctx->getPosition().line;
 				column = error_ctx->getPosition().column;
-				// For the text:
-				// Read from source_file the text corresponding to the node's position
-				// I.e., between line/column and end_line/end_column
-
-				std::ifstream infile(source_file);
-				if (!infile.is_open()) {
-					text = "<READ_ERROR>";
+				if (error_ctx->getEndPosition().line == error_ctx->getPosition().line) {
+					text_length = error_ctx->getEndPosition().column - error_ctx->getPosition().column;
 				} else {
-					std::string line_content;
-					uint32_t current_line = 1;
-					while (std::getline(infile, line_content)) {
-						if (current_line == static_cast<uint32_t>(line)) {
-							// We're at the starting line
-							if (line == error_ctx->getEndPosition().line) {
-								// Single-line node
-								text = line_content.substr(column - 1, error_ctx->getEndPosition().column - column);
-							} else {
-								// Multi-line node
-								// Only report to the end of this line
-								text = line_content.substr(column - 1);
-							}
-						}
-						current_line++;
-					}
+					// Multi-line node: Just highlight 1 character
+					text_length = 1;
 				}
 			} else if constexpr (ASTStringToken<T>) {
 				line = error_ctx.getLine();
 				column = error_ctx.getCharPositionInLine();
-				text = error_ctx.getValue();
+				text_length = static_cast<uint32_t>(error_ctx.getValue().length());
 			} else if constexpr (ASTParameterToken<T>) {
 				// Special case: Error reporting on a declared method parameter
 				// FIXME(@rail5): Kind of hacky to handle special cases. Would prefer a general solution.
 				line = error_ctx.getLine();
 				column = error_ctx.getCharPositionInLine();
 				auto param = error_ctx.getValue();
+				text_length = 0;
 				if (param.type.has_value()) {
-					text = "@" + param.type.value().getValue();
-					if (param.pointer) text += "*";
-					text += " " + param.name.getValue();
+					text_length += 1 + static_cast<uint32_t>(param.type.value().getValue().length()); // '@Type'
+					if (param.pointer) text_length += 1; // '*'
+					text_length += 1 + static_cast<uint32_t>(param.name.getValue().length()); // ' Name'
 				} else {
-					text = param.name.getValue();
+					text_length = static_cast<uint32_t>(param.name.getValue().length()); // 'Name'
 				}
 			}
-			print_syntax_error_or_warning(source_file, line, column, text, msg, get_include_stack(), program, is_warning);
+			print_syntax_error_or_warning(source_file, line, column, text_length, msg, get_include_stack(), program, lsp_mode, is_warning);
 			program_has_errors = !is_warning;
 		}
 
@@ -259,6 +243,7 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 	void set_suppress_warnings(bool suppress_warnings);
 	void set_target_bash_version(BashVersion target_bash_version);
 	void set_arguments(std::vector<char*> arguments);
+	void set_lsp_mode(bool lsp_mode);
 
 	void set_replacement_file_contents(const std::string& file_path, const std::string& contents);
 

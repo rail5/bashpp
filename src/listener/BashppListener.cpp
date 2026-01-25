@@ -70,6 +70,10 @@ void BashppListener::set_arguments(std::vector<char*> arguments) {
 	this->arguments = arguments;
 }
 
+void BashppListener::set_lsp_mode(bool lsp_mode) {
+	this->lsp_mode = lsp_mode;
+}
+
 std::shared_ptr<bpp::bpp_program> BashppListener::get_program() {
 	return program;
 }

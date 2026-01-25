@@ -64,6 +64,18 @@
 		done
 		echo "Escaped"
 		@this.resetX
+
+		until @this.returnFalseTwice; do
+			echo "Hit"
+		done
+		echo "Escaped"
+		@this.resetX
+
+		until ! @this.returnTrueTwice; do
+			echo "Hit"
+		done
+		echo "Escaped"
+		@this.resetX
 	}
 }
 
@@ -98,6 +110,18 @@ echo "Escaped"
 
 @ex.resetX
 while @ex.returnTrueTwice; do
+	echo "Hit"
+done
+echo "Escaped"
+@ex.resetX
+
+until @ex.returnFalseTwice; do
+	echo "Hit"
+done
+echo "Escaped"
+@ex.resetX
+
+until ! @ex.returnTrueTwice; do
 	echo "Hit"
 done
 echo "Escaped"

@@ -9,60 +9,46 @@
 #include <vector>
 #include <cstdint>
 #include <cassert>
+#include <algorithm>
 
 template <class T>
 class IntervalNode {
-	private:
-		std::unique_ptr<IntervalNode<T>> _left;
-		std::unique_ptr<IntervalNode<T>> _right;
-		uint64_t _low;
-		uint64_t _high;
-		uint64_t _max;
-		T _payload;
-	public:
-		IntervalNode(uint64_t low, uint64_t high, T payload)
-			: _low(low), _high(high), _max(high), _payload(payload) {}
+private:
+	std::unique_ptr<IntervalNode<T>> _left;
+	std::unique_ptr<IntervalNode<T>> _right;
+	uint64_t _low;
+	uint64_t _high;
+	uint64_t _max;
+	T _payload;
+	
+public:
+	IntervalNode(uint64_t low, uint64_t high, T payload)
+		: _low(low), _high(high), _max(high), _payload(payload) {}
 
-		IntervalNode(uint64_t low, uint64_t high) : _low(low), _high(high), _max(high) {}
+	// Getters
+	uint64_t low() const { return _low; }
+	uint64_t high() const { return _high; }
+	uint64_t max() const { return _max; }
+	const T& payload() const { return _payload; }
+	
+	std::unique_ptr<IntervalNode<T>>& left() { return _left; }
+	std::unique_ptr<IntervalNode<T>>& right() { return _right; }
 
-		uint64_t low() const {
-			return _low;
-		}
-		uint64_t high() const {
-			return _high;
-		}
-		uint64_t max() const {
-			return _max;
-		}
-		T payload() const {
-			return _payload;
-		}
-
-		std::unique_ptr<IntervalNode<T>>& left() {
-			return _left;
-		}
-		std::unique_ptr<IntervalNode<T>>& right() {
-			return _right;
-		}
-
-		void set_left(std::unique_ptr<IntervalNode<T>> left) {
-			_left = std::move(left);
-		}
-		void set_right(std::unique_ptr<IntervalNode<T>> right) {
-			_right = std::move(right);
-		}
-		void set_low(uint64_t low) {
-			_low = low;
-		}
-		void set_high(uint64_t high) {
-			_high = high;
-		}
-		void set_max(uint64_t max) {
-			_max = max;
-		}
-		void set_payload(T payload) {
-			_payload = payload;
-		}
+	void set_left(std::unique_ptr<IntervalNode<T>> left) {
+		_left = std::move(left);
+	}
+	void set_right(std::unique_ptr<IntervalNode<T>> right) {
+		_right = std::move(right);
+	}
+	void set_max(uint64_t max) { _max = max; }
+	void set_payload(T payload) { _payload = payload; }
+	
+	// Update max based on children (non-recursive)
+	void update_max() {
+		_max = _high;
+		if (_left && _left->_max > _max) _max = _left->_max;
+		if (_right && _right->_max > _max) _max = _right->_max;
+	}
 };
 
 /**
@@ -89,111 +75,144 @@ class IntervalNode {
  */
 template <class T>
 class IntervalTree {
-	private:
-		std::unique_ptr<IntervalNode<T>> _root;
+private:
+	std::unique_ptr<IntervalNode<T>> _root;
 
-		uint64_t find_max(std::unique_ptr<IntervalNode<T>>& node) {
-			if (!node) return 0;
-			uint64_t left_max = find_max(node->left());
-			uint64_t right_max = find_max(node->right());
-			return std::max({node->high(), left_max, right_max});
+	// Fast, non-recursive max computation for a node's subtree
+	static uint64_t compute_subtree_max(const IntervalNode<T>* node) {
+		if (!node) return 0;
+		
+		uint64_t max_val = node->high();
+		if (node->left()) {
+			max_val = std::max(max_val, node->left()->max());
 		}
-
-		void insert_node(std::unique_ptr<IntervalNode<T>>& node, uint64_t low, uint64_t high, T payload) {
-			if (!node) {
-				node = std::make_unique<IntervalNode<T>>(low, high, payload);
-				return;
-			}
-
-			// ASSERT: Partial overlaps are banned
+		if (node->right()) {
+			max_val = std::max(max_val, node->right()->max());
+		}
+		return max_val;
+	}
+public:
+	IntervalTree() : _root(nullptr) {}
+	
+	/**
+	 * @brief Inserts a new interval node into the tree, maintaining the tree's invariants.
+	 * 
+	 * @param low The lower bound of the interval to insert.
+	 * @param high The upper bound of the interval to insert.
+	 * @param payload The payload associated with the interval.
+	 */
+	void insert(uint64_t low, uint64_t high, T payload) {
+		if (!_root) {
+			_root = std::make_unique<IntervalNode<T>>(low, high, payload);
+			return;
+		}
+		
+		// Store the path for backtracking and max updates
+		struct InsertPath {
+			std::unique_ptr<IntervalNode<T>>* ptr;  // Pointer to the unique_ptr in parent
+			IntervalNode<T>* node;  // Current node
+		};
+		
+		std::vector<InsertPath> path;
+		path.reserve(32);  // Pre-allocate reasonable depth
+		
+		// Find insertion point
+		std::unique_ptr<IntervalNode<T>>* current = &_root;
+		IntervalNode<T>* node = current->get();
+		
+		while (node) {
+			// Check for containment
+			bool child_in_parent = (low >= node->low() && high <= node->high());
+			bool parent_in_child = (node->low() >= low && node->high() <= high);
 			bool overlap = (low < node->high() && high > node->low());
-			bool child_is_entirely_contained_by_parent = (low >= node->low() && high <= node->high());
-			bool parent_is_entirely_contained_by_child = (node->low() >= low && node->high() <= high);
-
-			bool partial_overlap = overlap &&
-				!child_is_entirely_contained_by_parent &&
-				!parent_is_entirely_contained_by_child;
-
+			bool partial_overlap = overlap && !child_in_parent && !parent_in_child;
+			
 			assert(!partial_overlap && "Partial overlap given: this should be impossible");
-
-			// If this node should be the parent, we need to insert it before the child
-			if (parent_is_entirely_contained_by_child) {
-				std::unique_ptr<IntervalNode<T>> old_parent = std::move(node);
-				node = std::make_unique<IntervalNode<T>>(low, high, payload);
-				node->set_right(std::move(old_parent));
-				node->set_max(find_max(node));
-				return;
+			
+			// Handle promotion case
+			if (parent_in_child) {
+				auto new_node = std::make_unique<IntervalNode<T>>(low, high, payload);
+				new_node->set_right(std::move(*current));
+				new_node->update_max();
+				*current = std::move(new_node);
+				return;  // No need to update ancestors since we replaced the node
 			}
-
+			
+			// Record path for backtracking
+			path.push_back({current, node});
+			
+			// Move to appropriate child
 			if (low < node->low()) {
-				insert_node(node->left(), low, high, payload);
+				current = &(node->left());
 			} else {
-				insert_node(node->right(), low, high, payload);
+				current = &(node->right());
 			}
-
-			// Update the max value
-			node->set_max(find_max(node));
+			node = current->get();
 		}
-
-		void find_overlaps(std::unique_ptr<IntervalNode<T>>& node, uint64_t point, std::vector<T>& overlaps) {
-			if (!node) return;
-
-			// If the current interval overlaps with the point, add it to the overlaps
-			if (node->low() <= point && point <= node->high()) {
-				overlaps.push_back(node->payload());
-			}
-
-			// If the left child has the potential to overlap, search it
-			if (node->left() && node->left()->max() >= point) {
-				find_overlaps(node->left(), point, overlaps);
-			}
-
-			// If the right child has the potential to overlap, search it
-			if (node->right() && node->right()->low() <= point) {
-				find_overlaps(node->right(), point, overlaps);
-			}
+		
+		// Insert new node at leaf position
+		*current = std::make_unique<IntervalNode<T>>(low, high, payload);
+		
+		// Update max values back up the path
+		for (auto it = path.rbegin(); it != path.rend(); ++it) {
+			it->node->update_max();
 		}
+	}
 
-	public:
-		IntervalTree() : _root(nullptr) {}
-		void insert(uint64_t low, uint64_t high, T payload) {
-			if (_root == nullptr) {
-				_root = std::make_unique<IntervalNode<T>>(low, high, payload);
-				return;
+	/**
+	 * @brief Finds the innermost interval that overlaps with the given point.
+	 * 
+	 * @param point The point to check for overlap.
+	 * @return T The payload of the innermost overlapping interval, or a default-constructed T if none found.
+	 */
+	T find_innermost_overlap(uint64_t point) const {
+		if (!_root) return T();
+		
+		IntervalNode<T>* current = _root.get();
+		IntervalNode<T>* best = nullptr;
+		uint64_t best_start = 0;
+		
+		struct StackFrame {
+			IntervalNode<T>* node;
+			bool visited_left;
+		};
+		
+		std::vector<StackFrame> stack;
+		stack.reserve(64);
+		stack.push_back({current, false});
+		
+		while (!stack.empty()) {
+			auto& frame = stack.back();
+			
+			if (!frame.visited_left) {
+				// Check if we should visit left subtree
+				if (frame.node->left() && frame.node->left()->max() >= point) {
+					stack.push_back({frame.node->left().get(), false});
+					frame.visited_left = true;
+					continue;
+				}
+				frame.visited_left = true;
 			}
-
-			insert_node(_root, low, high, payload);
-		}
-
-		std::vector<T> find_overlaps(uint64_t point) {
-			std::vector<T> overlaps;
-			find_overlaps(_root, point, overlaps);
-			return overlaps;
-		}
-
-		/**
-		 * @brief Find the innermost interval that contains the given point.
-		 *
-		 * This function traverses the interval tree to find the innermost interval
-		 * that contains the specified point.
-		 *
-		 * Given our tree's invariants, this task is equivalent to either of:
-		 *    1. Finding the overlapping interval with the highest start position.
-		 *    2. Finding the deepest interval in the tree that contains the point.
-		 *
-		 * So, this implementation simply traverses the tree, and returns the *last* overlapping node that it finds,
-		 * which is guaranteed to be the innermost one due to the tree's structure.
-		 *
-		 * @param point The point to check for overlaps.
-		 * @return T The payload of the innermost overlapping interval, or a default-constructed T if none is found.
-		 */
-		T find_innermost_overlap(uint64_t point) {
-			std::vector<T> overlaps = find_overlaps(point);
-			if (overlaps.empty()) {
-				return T();
+			
+			// Process current node
+			if (frame.node->low() <= point && point <= frame.node->high()) {
+				if (!best || frame.node->low() > best_start) {
+					best = frame.node;
+					best_start = frame.node->low();
+				}
 			}
-			// Return the overlap with the highest start position
-			// Given our tree's invariants, this is equivalent to the .back() of the vector
-			return overlaps.back();
+			
+			// Check if we should visit right subtree
+			if (frame.node->right() && frame.node->right()->low() <= point) {
+				// Replace current frame with right child
+				frame = {frame.node->right().get(), false};
+				continue;
+			}
+			
+			// Pop and continue
+			stack.pop_back();
 		}
+		
+		return best ? best->payload() : T();
+	}
 };

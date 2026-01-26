@@ -27,7 +27,7 @@ void BashppListener::enterObjectReference(std::shared_ptr<AST::ObjectReference> 
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(node, "Object reference outside of code entity");
+		syntax_error(node, "Object reference outside of code entity");
 	}
 
 	std::shared_ptr<bpp::bpp_class> current_class = current_code_entity->get_containing_class().lock();
@@ -99,7 +99,7 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 	);
 
 	if (ref.error.has_value()) {
-		throw_syntax_error_from_exitRule(ref.error->token, ref.error->message);
+		syntax_error(ref.error->token, ref.error->message);
 	}
 
 	bpp::reference_type reference_type;
@@ -129,7 +129,7 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 		// Extra checks:
 		auto object_assignment_entity = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(entity_stack.top());
 		if (object_assignment_entity != nullptr) {
-			throw_syntax_error_from_exitRule(node, "Cannot assign to '@this'");
+			syntax_error(node, "Cannot assign to '@this'");
 		}
 	} else {
 		throw internal_error("Referenced entity is not an object, datamember or method");

@@ -15,7 +15,7 @@ void BashppListener::enterTypeofExpression(std::shared_ptr<AST::TypeofExpression
 	 */
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(node, "Typeof expression outside of code entity");
+		syntax_error(node, "Typeof expression outside of code entity");
 	}
 
 	std::shared_ptr<bpp::bpp_string> typeof_entity = std::make_shared<bpp::bpp_string>();

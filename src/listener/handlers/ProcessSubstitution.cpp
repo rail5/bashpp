@@ -10,7 +10,7 @@ void BashppListener::enterProcessSubstitution(std::shared_ptr<AST::ProcessSubsti
 
 	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(node, "Process substitution outside of code entity");
+		syntax_error(node, "Process substitution outside of code entity");
 	}
 
 	// Just add the substitution start token to the current code entity
@@ -22,7 +22,7 @@ void BashppListener::exitProcessSubstitution(std::shared_ptr<AST::ProcessSubstit
 
 	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(node, "Process substitution outside of code entity");
+		syntax_error(node, "Process substitution outside of code entity");
 	}
 
 	// Add the substitution end token to the current code entity

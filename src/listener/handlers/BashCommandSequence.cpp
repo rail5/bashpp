@@ -10,7 +10,7 @@ void BashppListener::enterBashCommandSequence(std::shared_ptr<AST::BashCommandSe
 
 	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(node, "Command sequence outside of a code entity");
+		syntax_error(node, "Command sequence outside of a code entity");
 	}
 
 	std::shared_ptr<bpp::bash_command_sequence> command_sequence_entity = std::make_shared<bpp::bash_command_sequence>();

@@ -40,7 +40,7 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 	std::string resolved_source_path = source_path.getValue();
 
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(node, "Include statements can only be used at the top level of a program");
+		syntax_error(node, "Include statements can only be used at the top level of a program");
 	}
 
 	if (!local_include) {
@@ -55,7 +55,7 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 			}
 		}
 		if (!found) {
-			throw_syntax_error(source_path, "File not found: " + source_path.getValue());
+			syntax_error(source_path, "File not found: " + source_path.getValue());
 		}
 	} else {
 		// This is a "local" include -- meaning we should start scanning from the same directory as the current source file
@@ -83,7 +83,7 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 	// Get the full path of the file
 	char full_path[PATH_MAX];
 	if (realpath(resolved_source_path.c_str(), full_path) == nullptr) {
-		throw_syntax_error(source_path, "File not found: " + resolved_source_path);
+		syntax_error(source_path, "File not found: " + resolved_source_path);
 	}
 
 	auto result = included_files->insert(full_path);
@@ -136,7 +136,7 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 		// Bad design, should just take a length to begin with
 		// Until then, this hack adds two characters to the error token's string so highlighting works
 		// TODO(@rail5): FIX THIS
-		throw_syntax_error(nodeCopy, "Failed to parse included file: " + std::string(full_path));
+		syntax_error(nodeCopy, "Failed to parse included file: " + std::string(full_path));
 	}
 	try {
 		// Walk the tree

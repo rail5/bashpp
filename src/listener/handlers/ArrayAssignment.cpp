@@ -11,7 +11,7 @@ void BashppListener::enterArrayAssignment(std::shared_ptr<AST::ArrayAssignment> 
 	std::shared_ptr<bpp::bpp_code_entity> code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	if (code_entity == nullptr) {
-		throw_syntax_error(node, "Array assignment outside of code entity");
+		syntax_error(node, "Array assignment outside of code entity");
 	}
 
 	std::shared_ptr<bpp::bpp_string> array_assignment_entity = std::make_shared<bpp::bpp_string>();

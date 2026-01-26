@@ -10,7 +10,7 @@ void BashppListener::enterBashVariable(std::shared_ptr<AST::BashVariable> node) 
 
 	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(node, "Command outside of a code entity");
+		syntax_error(node, "Command outside of a code entity");
 	}
 
 	std::shared_ptr<bpp::bpp_string> bash_variable_entity = std::make_shared<bpp::bpp_string>();

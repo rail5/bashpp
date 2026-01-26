@@ -19,7 +19,7 @@ void BashppListener::enterSupershell(std::shared_ptr<AST::Supershell> node) {
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(node, "Supershell outside of a code entity");
+		syntax_error(node, "Supershell outside of a code entity");
 	}
 
 	std::shared_ptr<bpp::bpp_string> supershell_entity = std::make_shared<bpp::bpp_string>();

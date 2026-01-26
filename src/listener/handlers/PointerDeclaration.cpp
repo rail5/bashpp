@@ -13,7 +13,7 @@ void BashppListener::enterPointerDeclaration(std::shared_ptr<AST::PointerDeclara
 	// Verify that we're in a place where an object *can* be instantiated
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 	if (current_class != nullptr) {
-		throw_syntax_error(node, "Stray pointer declaration inside class body.\nDid you mean to declare a data member?\nIf so, start by declaring the data member with a visibility keyword (@public, @private, @protected)");
+		syntax_error(node, "Stray pointer declaration inside class body.\nDid you mean to declare a data member?\nIf so, start by declaring the data member with a visibility keyword (@public, @private, @protected)");
 	}
 
 	// Actually get the containing class
@@ -32,7 +32,7 @@ void BashppListener::enterPointerDeclaration(std::shared_ptr<AST::PointerDeclara
 
 	// Verify that the object's class exists
 	if (object_class == nullptr) {
-		throw_syntax_error(object_type, "Class not found: " + object_type_text);
+		syntax_error(object_type, "Class not found: " + object_type_text);
 	}
 
 	std::shared_ptr<bpp::bpp_object> new_object = std::make_shared<bpp::bpp_object>(object_name_text);
@@ -62,19 +62,19 @@ void BashppListener::enterPointerDeclaration(std::shared_ptr<AST::PointerDeclara
 		entity_stack.pop();
 		// If, specifically, it contains a double underscore, we can provide a more specific error message
 		if (new_object->get_name().find("__") != std::string::npos) {
-			throw_syntax_error(object_name, "Invalid object name: " + new_object->get_name() + "\nBash++ identifiers cannot contain double underscores");
+			syntax_error(object_name, "Invalid object name: " + new_object->get_name() + "\nBash++ identifiers cannot contain double underscores");
 		} else {
-			throw_syntax_error(object_name, "Invalid object name: " + new_object->get_name());
+			syntax_error(object_name, "Invalid object name: " + new_object->get_name());
 		}
 	}
 
 	if (current_code_entity->get_class(new_object->get_name()) != nullptr) {
 		entity_stack.pop();
-		throw_syntax_error(object_name, "Class already exists: " + new_object->get_name());
+		syntax_error(object_name, "Class already exists: " + new_object->get_name());
 	}
 	if (current_code_entity->get_object(new_object->get_name()) != nullptr) {
 		entity_stack.pop();
-		throw_syntax_error(object_name, "Object already exists: " + new_object->get_name());
+		syntax_error(object_name, "Object already exists: " + new_object->get_name());
 	}
 }
 
@@ -113,7 +113,7 @@ void BashppListener::exitPointerDeclaration(std::shared_ptr<AST::PointerDeclarat
 	// Add the object to the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw_syntax_error_from_exitRule(node, "Pointer declaration outside of code entity");
+		syntax_error(node, "Pointer declaration outside of code entity");
 	}
 
 	current_code_entity->add_code_to_previous_line(new_object->get_pre_access_code());

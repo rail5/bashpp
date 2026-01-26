@@ -26,7 +26,7 @@ void BashppListener::enterDynamicCast(std::shared_ptr<AST::DynamicCast> node) {
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(node, "Dynamic cast statement outside of code entity");
+		syntax_error(node, "Dynamic cast statement outside of code entity");
 	}
 
 	std::shared_ptr<bpp::bpp_dynamic_cast_statement> dynamic_cast_entity = std::make_shared<bpp::bpp_dynamic_cast_statement>();
@@ -53,7 +53,7 @@ void BashppListener::exitDynamicCast(std::shared_ptr<AST::DynamicCast> node) {
 	}
 
 	if (dynamic_cast_entity->get_cast_to().empty()) {
-		throw_syntax_error_from_exitRule(node, "Dynamic cast target not specified");
+		syntax_error(node, "Dynamic cast target not specified");
 	}
 
 	code_segment dynamic_cast_code = generate_dynamic_cast_code(dynamic_cast_entity->get_code(), dynamic_cast_entity->get_cast_to(), program);

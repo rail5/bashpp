@@ -16,6 +16,8 @@
 #include <concepts>
 #include <fstream>
 #include <unordered_map>
+#include <string_view>
+#include <source_location>
 
 #include "../AST/Listener/BaseListener.h"
 
@@ -42,6 +44,31 @@ using bpp::generate_dynamic_cast_code;
 		} \
 		return; \
 		}
+
+namespace bpp_detail {
+consteval std::string_view unqualified_function_name(std::string_view function_signature) {
+	// Strip it to the identifier after the last "::"
+	const auto position = function_signature.rfind("::");
+	if (position != std::string_view::npos) function_signature.remove_prefix(position + 2);
+	return function_signature;
+}
+consteval bool starts_with(std::string_view str, std::string_view prefix) {
+	return str.size() >= prefix.size() && str.substr(0, prefix.size()) == prefix;
+}
+
+consteval bool is_enter_context(std::string_view function_name) {
+	if (function_name.find("::enter") != std::string_view::npos) return true;
+	return starts_with(unqualified_function_name(function_name), "enter");
+}
+
+consteval bool is_exit_context(std::string_view function_name) {
+	if (function_name.find("::exit") != std::string_view::npos) return true;
+	return starts_with(unqualified_function_name(function_name), "exit");
+}
+
+template <class...>
+inline constexpr bool false_v = false;
+} // namespace bpp_detail
 
 template <typename T>
 concept ASTNodePtrType = std::is_same_v<std::shared_ptr<AST::ASTNode>, T> ||
@@ -77,7 +104,7 @@ concept ASTNodePtrORToken = ASTNodePtrType<T> || ASTStringToken<T> || ASTParamet
  * When we exit a node in the parse tree, we execute the exit* function for that node.
  */
 class BashppListener : public AST::BaseListener<BashppListener>, std::enable_shared_from_this<BashppListener> {
-	private:
+    private:
 		/**
 		 * @var source_file
 		 * @brief Path to the source file being compiled (used for error reporting)
@@ -169,11 +196,19 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 
 		bool lsp_mode = false; // Whether this listener is just running as part of the language server (i.e., not really compiling anything)
 
+		/* Error handling */
 		bool error_thrown = false;
 		std::shared_ptr<AST::ASTNode> error_node = nullptr;
-
 		bool program_has_errors = false;
 
+		/**
+		 * @brief Display an error or warning message based on the given context
+		 * 
+		 * @tparam T The type of the error context (AST node pointer or token)
+		 * @param error_ctx The context of the error (AST node pointer or token)
+		 * @param msg The error or warning message
+		 * @param is_warning Whether this is a warning (true) or an error (false)
+		 */
 		template <ASTNodePtrORToken T>
 		void output_syntax_error_or_warning(const T& error_ctx, const std::string& msg, bool is_warning = false) {
 			uint32_t line;
@@ -212,17 +247,53 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 			program_has_errors = !is_warning;
 		}
 
-		#define throw_syntax_error(token, msg) \
-			output_syntax_error_or_warning(token, msg); \
-			error_thrown = true; \
-			error_node = node; \
-			node->clearChildren(); /* Skip traversing children */ \
+		/**
+		 * @brief "Throw" a syntax error from an enter* function
+		 * This will output the error message, set the error_thrown flag,
+		 * and clear the children of the current node to skip traversing them.
+		 * 
+		 * @tparam T 
+		 * @tparam NodeT 
+		 * @param error_ctx 
+		 * @param msg 
+		 * @param node_ctx 
+		 */
+		template <ASTNodePtrORToken T, ASTNodePtrType NodeT>
+		void syntax_error_fromEnter(const T& error_ctx, const std::string& msg, const NodeT& node_ctx) {
+			output_syntax_error_or_warning(error_ctx, msg);
+			error_thrown = true;
+			error_node = node_ctx;
+			node_ctx->clearChildren(); // Skip traversing children
+		}
+
+		/**
+		 * @brief "Throw" a syntax error from an exit* function
+		 * This will output the error message, but will not modify the parse tree or listener state.
+		 * 
+		 * @tparam T 
+		 * @param error_ctx 
+		 * @param msg 
+		 */
+		template <ASTNodePtrORToken T>
+		void syntax_error_fromExit(const T& error_ctx, const std::string& msg) {
+			output_syntax_error_or_warning(error_ctx, msg);
+		}
+
+		#define syntax_error(token, msg) \
+			constexpr auto _loc = std::source_location::current(); \
+			constexpr bool _is_enter = bpp_detail::is_enter_context(_loc.function_name()); \
+			constexpr bool _is_exit  = bpp_detail::is_exit_context(_loc.function_name()); \
+			[]<bool IsEnter, bool IsExit>(BashppListener* self, const auto& tok, const std::string& m, const auto& n) { \
+				if constexpr (IsEnter) { \
+					self->syntax_error_fromEnter(tok, m, n); \
+				} else if constexpr (IsExit) { \
+					self->syntax_error_fromExit(tok, m); \
+				} else { \
+					static_assert(IsEnter || IsExit, "syntax_error can only be used in enter* or exit* functions"); \
+				} \
+			}.template operator()<_is_enter, _is_exit>(this, (token), (msg), node); \
 			return;
 
-		#define throw_syntax_error_from_exitRule(token, msg) \
-			output_syntax_error_or_warning(token, msg); \
-			return;
-		
 		#define show_warning(token, msg) \
 			if (!suppress_warnings) { \
 				output_syntax_error_or_warning(token, msg, true); \

@@ -12,7 +12,7 @@ void BashppListener::enterRawText(std::shared_ptr<AST::RawText> node) {
 	if (current_code_entity == nullptr) {
 		// Could just be harmless whitespace
 		if (node->TEXT().getValue().find_first_not_of(" \t\n\r") == std::string::npos) return;
-		throw_syntax_error(node, "Raw text outside of code entity");
+		syntax_error(node, "Raw text outside of code entity");
 	}
 
 	// Just add it to the current code entity

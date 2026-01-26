@@ -41,7 +41,7 @@ void BashppListener::exitObjectAssignment(std::shared_ptr<AST::ObjectAssignment>
 		}
 
 		if (lvalue_object->get_class()->get_name() != rvalue_object->get_class()->get_name()) {
-			throw_syntax_error_from_exitRule(node, "Cannot copy objects of different classes");
+			syntax_error(node, "Cannot copy objects of different classes");
 		}
 
 		// Call the __copy method
@@ -61,7 +61,7 @@ void BashppListener::exitObjectAssignment(std::shared_ptr<AST::ObjectAssignment>
 	}
 
 	if (object_assignment->lvalue_is_nonprimitive() && !object_assignment->rvalue_is_nonprimitive()) {
-		throw_syntax_error_from_exitRule(node, "Cannot assign a primitive value to a nonprimitive object");
+		syntax_error(node, "Cannot assign a primitive value to a nonprimitive object");
 	}
 
 	std::string object_assignment_lvalue = object_assignment->get_lvalue();

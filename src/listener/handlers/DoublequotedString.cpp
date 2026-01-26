@@ -12,7 +12,7 @@ void BashppListener::enterDoublequotedString(std::shared_ptr<AST::DoublequotedSt
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(node, "String outside of code entity");
+		syntax_error(node, "String outside of code entity");
 	}
 
 	std::shared_ptr<bpp::bpp_string> string_code_entity = std::make_shared<bpp::bpp_string>();

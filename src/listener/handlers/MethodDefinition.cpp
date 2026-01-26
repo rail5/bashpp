@@ -10,7 +10,7 @@ void BashppListener::enterMethodDefinition(std::shared_ptr<AST::MethodDefinition
 	// Verify we're in a class
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 	if (current_class == nullptr) {
-		throw_syntax_error(node, "Method definition outside of class body");
+		syntax_error(node, "Method definition outside of class body");
 	}
 
 	std::string method_name = node->NAME().getValue();
@@ -41,13 +41,13 @@ void BashppListener::enterMethodDefinition(std::shared_ptr<AST::MethodDefinition
 
 	// If the method is toPrimitive, verify that the scope is public
 	if (method->get_name() == "toPrimitive" && method->get_scope() != bpp::bpp_scope::SCOPE_PUBLIC) {
-		throw_syntax_error(node->NAME(), "toPrimitive method must be public");
+		syntax_error(node->NAME(), "toPrimitive method must be public");
 		return;
 	}
 
 	// Verify that the method name does not contain a double underscore
 	if (method_name.find("__") != std::string::npos) {
-		throw_syntax_error(node->NAME(), "Invalid method name: " + method_name + "\nBash++ identifiers cannot contain double underscores");
+		syntax_error(node->NAME(), "Invalid method name: " + method_name + "\nBash++ identifiers cannot contain double underscores");
 	}
 
 	// Virtual?
@@ -56,7 +56,7 @@ void BashppListener::enterMethodDefinition(std::shared_ptr<AST::MethodDefinition
 	}
 
 	if (!current_class->add_method(method)) {
-		throw_syntax_error(node->NAME(), "Method redefinition: " + method->get_name());
+		syntax_error(node->NAME(), "Method redefinition: " + method->get_name());
 	}
 
 	// Check the method's parameters in the parameter list
@@ -69,7 +69,7 @@ void BashppListener::enterMethodDefinition(std::shared_ptr<AST::MethodDefinition
 			std::string type_name = param.type.value();
 			type = program->get_class(type_name);
 			if (type == nullptr) {
-				throw_syntax_error(p, "Unknown class: " + type_name);
+				syntax_error(p, "Unknown class: " + type_name);
 			}
 
 			type->add_reference(
@@ -79,16 +79,16 @@ void BashppListener::enterMethodDefinition(std::shared_ptr<AST::MethodDefinition
 			);
 
 			if (!param.pointer) {
-				throw_syntax_error(p, "Methods can only accept pointers as parameters, not objects");
+				syntax_error(p, "Methods can only accept pointers as parameters, not objects");
 			}
 
 			// Verify that the parameter name is valid
 			if (!bpp::is_valid_identifier(param_name)) {
 				// If, specifically, it contains a double underscore, we can provide a more specific error message
 				if (param_name.find("__") != std::string::npos) {
-					throw_syntax_error(param.name, "Invalid parameter name: " + param_name + "\nBash++ identifiers cannot contain double underscores");
+					syntax_error(param.name, "Invalid parameter name: " + param_name + "\nBash++ identifiers cannot contain double underscores");
 				} else {
-					throw_syntax_error(param.name, "Invalid parameter name: " + param_name);
+					syntax_error(param.name, "Invalid parameter name: " + param_name);
 				}
 			}
 
@@ -111,15 +111,15 @@ void BashppListener::enterMethodDefinition(std::shared_ptr<AST::MethodDefinition
 
 		if (!method->add_parameter(parameter)) {
 			if (parameter->get_class() != primitive && method->get_object(param_name) != nullptr) {
-				throw_syntax_error(param.name, "Parameter name conflicts with existing object: " + param_name);
+				syntax_error(param.name, "Parameter name conflicts with existing object: " + param_name);
 			}
 			
 			if (parameter->get_class() != primitive && method->get_class(param_name) != nullptr) {
-				throw_syntax_error(param.name, "Parameter name conflicts with existing class: " + param_name);
+				syntax_error(param.name, "Parameter name conflicts with existing class: " + param_name);
 			}
 
 			// If we reach here, the parameter name is already in use
-			throw_syntax_error(param.name, "Duplicate parameter: " + param_name);
+			syntax_error(param.name, "Duplicate parameter: " + param_name);
 		}
 	}
 

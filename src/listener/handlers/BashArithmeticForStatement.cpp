@@ -9,7 +9,7 @@ void BashppListener::enterBashArithmeticForStatement(std::shared_ptr<AST::BashAr
 	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(node, "For statement outside of code entity");
+		syntax_error(node, "For statement outside of code entity");
 	}
 
 	std::shared_ptr<bpp::bash_for_or_select> for_statement = std::make_shared<bpp::bash_for_or_select>();

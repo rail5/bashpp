@@ -30,7 +30,7 @@ void BashppListener::enterBlock(std::shared_ptr<AST::Block> node) {
 	// If however we're not surrounded by a larger construct, add the surrounding braces
 	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(node, "Statement block outside of code entity");
+		syntax_error(node, "Statement block outside of code entity");
 	}
 
 	current_code_entity->add_code("{\n");
@@ -55,7 +55,7 @@ void BashppListener::exitBlock(std::shared_ptr<AST::Block> node) {
 
 	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(node, "Statement block outside of code entity");
+		syntax_error(node, "Statement block outside of code entity");
 	}
 
 	// Add the substitution end token to the current code entity

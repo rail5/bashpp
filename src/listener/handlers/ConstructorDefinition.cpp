@@ -16,7 +16,7 @@ void BashppListener::enterConstructorDefinition(std::shared_ptr<AST::Constructor
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 
 	if (current_class == nullptr) {
-		throw_syntax_error(node, "Constructor definition outside of class");
+		syntax_error(node, "Constructor definition outside of class");
 	}
 
 	std::shared_ptr<bpp::bpp_method> constructor = std::make_shared<bpp::bpp_method>();
@@ -64,6 +64,6 @@ void BashppListener::exitConstructorDefinition(std::shared_ptr<AST::ConstructorD
 	);
 
 	if (!current_class->add_method(constructor)) {
-		throw_syntax_error_from_exitRule(node, "Constructor already defined");
+		syntax_error(node, "Constructor already defined");
 	}
 }

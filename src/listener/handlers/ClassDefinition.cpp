@@ -27,21 +27,21 @@ void BashppListener::enterClassDefinition(std::shared_ptr<AST::ClassDefinition> 
 		entity_stack.pop();
 		// If, specifically, it contains a double underscore, we can provide a more specific error message
 		if (class_name.find("__") != std::string::npos) {
-			throw_syntax_error(node->CLASSNAME(), "Invalid class name: " + class_name + "\nBash++ identifiers cannot contain double underscores");
+			syntax_error(node->CLASSNAME(), "Invalid class name: " + class_name + "\nBash++ identifiers cannot contain double underscores");
 		} else {
-			throw_syntax_error(node->CLASSNAME(), "Invalid class name: " + class_name);
+			syntax_error(node->CLASSNAME(), "Invalid class name: " + class_name);
 		}
 	}
 
 	// Verify that the class name is not already in use
 	if (program->get_class(class_name) != nullptr) {
 		entity_stack.pop();
-		throw_syntax_error(node->CLASSNAME(), "Class already exists: " + class_name);
+		syntax_error(node->CLASSNAME(), "Class already exists: " + class_name);
 	}
 
 	if (program->get_object(class_name) != nullptr) {
 		entity_stack.pop();
-		throw_syntax_error(node->CLASSNAME(), "Object already exists: " + class_name);
+		syntax_error(node->CLASSNAME(), "Object already exists: " + class_name);
 	}
 
 	new_class->set_name(class_name);
@@ -54,7 +54,7 @@ void BashppListener::enterClassDefinition(std::shared_ptr<AST::ClassDefinition> 
 		std::shared_ptr<bpp::bpp_class> parent_class = program->get_class(parent_class_name);
 		if (parent_class == nullptr) {
 			entity_stack.pop();
-			throw_syntax_error(node->PARENTCLASSNAME().value(), "Parent class not found: " + parent_class_name);
+			syntax_error(node->PARENTCLASSNAME().value(), "Parent class not found: " + parent_class_name);
 		}
 		new_class->inherit(parent_class);
 

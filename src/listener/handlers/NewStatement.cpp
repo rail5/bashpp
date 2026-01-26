@@ -18,7 +18,7 @@ void BashppListener::enterNewStatement(std::shared_ptr<AST::NewStatement> node) 
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(node, "New statement outside of code entity");
+		syntax_error(node, "New statement outside of code entity");
 	}
 
 	// Verify that the class actually exists
@@ -26,7 +26,7 @@ void BashppListener::enterNewStatement(std::shared_ptr<AST::NewStatement> node) 
 	std::shared_ptr<bpp::bpp_class> new_class = current_code_entity->get_class(class_name);
 
 	if (new_class == nullptr) {
-		throw_syntax_error(node->TYPE(), "Class not found: " + class_name);
+		syntax_error(node->TYPE(), "Class not found: " + class_name);
 	}
 
 	new_class->add_reference(

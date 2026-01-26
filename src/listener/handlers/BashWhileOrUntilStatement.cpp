@@ -17,7 +17,7 @@ void BashppListener::enterBashWhileStatement(std::shared_ptr<AST::BashWhileState
 	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(node, "While statement outside of code entity");
+		syntax_error(node, "While statement outside of code entity");
 	}
 
 	std::shared_ptr<bpp::bash_while_or_until_loop> while_statement = std::make_shared<bpp::bash_while_or_until_loop>();
@@ -68,7 +68,7 @@ void BashppListener::enterBashUntilStatement(std::shared_ptr<AST::BashUntilState
 	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(node, "Until statement outside of code entity");
+		syntax_error(node, "Until statement outside of code entity");
 	}
 
 	std::shared_ptr<bpp::bash_while_or_until_loop> until_statement = std::make_shared<bpp::bash_while_or_until_loop>();

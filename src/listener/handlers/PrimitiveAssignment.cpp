@@ -10,7 +10,7 @@ void BashppListener::enterPrimitiveAssignment(std::shared_ptr<AST::PrimitiveAssi
 
 	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw_syntax_error(node, "Variable assignment outside of code entity");
+		syntax_error(node, "Variable assignment outside of code entity");
 	}
 
 	auto assignment_entity = std::make_shared<bpp::bpp_string>();

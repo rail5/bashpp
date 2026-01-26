@@ -28,7 +28,7 @@ void BashppListener::enterDatamemberDeclaration(std::shared_ptr<AST::DatamemberD
 
 	if (current_class == nullptr) {
 		entity_stack.pop();
-		throw_syntax_error(node, "Member declaration outside of class");
+		syntax_error(node, "Member declaration outside of class");
 	}
 
 	/**
@@ -59,7 +59,7 @@ void BashppListener::enterDatamemberDeclaration(std::shared_ptr<AST::DatamemberD
 		// Verify the name doesn't contain a double underscore
 		if (member_name.find("__") != std::string::npos) {
 			entity_stack.pop();
-			throw_syntax_error(id.value(), "Invalid member name: " + member_name + "\nBash++ identifiers cannot contain double underscores");
+			syntax_error(id.value(), "Invalid member name: " + member_name + "\nBash++ identifiers cannot contain double underscores");
 		}
 	}
 }

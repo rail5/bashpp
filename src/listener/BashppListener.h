@@ -204,7 +204,7 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 				text_length = static_cast<uint32_t>(error_ctx.getValue().length());
 			} else if constexpr (ASTParameterToken<T>) {
 				// Special case: Error reporting on a declared method parameter
-				// FIXME(@rail5): Kind of hacky to handle special cases. Would prefer a general solution.
+				// TODO(@rail5): Kind of hacky to handle special cases. Would prefer a general solution.
 				line = error_ctx.getLine();
 				column = error_ctx.getCharPositionInLine();
 				auto param = error_ctx.getValue();

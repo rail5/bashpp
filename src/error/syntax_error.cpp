@@ -49,9 +49,10 @@ void print_syntax_error_or_warning(
 	std::setlocale(LC_ALL, "");
 
 	// Print the source file and line/column number
+	// Internally, we 0-index lines and columns, but for user display we'll 1-index them
 	std::cerr << color_purple << source_file << color_reset << ":"
-		<< std::to_string(line) << ":"
-		<< std::to_string(column) << ": "
+		<< std::to_string(line + 1) << ":"
+		<< std::to_string(column + 1) << ": "
 		<< std::endl;
 	
 	// Print the include chain that led to the problematic file
@@ -76,9 +77,10 @@ void print_syntax_error_or_warning(
 	// Calculate the prefixes:
 	// 1. ' (line number) | '
 	// 2. '               | '
-	std::string line1_prefix = std::to_string(line) + " | ";
+	// Once again, lines and columns are 0-indexed internally, so we add 1 to the line number for display
+	std::string line1_prefix = std::to_string(line + 1) + " | ";
 	std::string line2_prefix;
-	for (size_t i = 0; i < std::to_string(line).size(); i++) {
+	for (size_t i = 0; i < std::to_string(line + 1).size(); i++) {
 		line2_prefix += " ";
 	}
 	line2_prefix += " | ";

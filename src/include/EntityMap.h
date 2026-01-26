@@ -32,7 +32,7 @@ struct FilePosition {
 
 class EntityMap {
 	private:
-		IntervalTree<std::shared_ptr<bpp::bpp_entity>> tree;
+		FlatIntervalTree<std::shared_ptr<bpp::bpp_entity>> tree;
 	public:
 
 		/**

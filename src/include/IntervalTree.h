@@ -11,208 +11,91 @@
 #include <cassert>
 #include <algorithm>
 
-template <class T>
-class IntervalNode {
-private:
-	std::unique_ptr<IntervalNode<T>> _left;
-	std::unique_ptr<IntervalNode<T>> _right;
-	uint64_t _low;
-	uint64_t _high;
-	uint64_t _max;
-	T _payload;
-	
-public:
-	IntervalNode(uint64_t low, uint64_t high, T payload)
-		: _low(low), _high(high), _max(high), _payload(payload) {}
-
-	// Getters
-	uint64_t low() const { return _low; }
-	uint64_t high() const { return _high; }
-	uint64_t max() const { return _max; }
-	const T& payload() const { return _payload; }
-	
-	std::unique_ptr<IntervalNode<T>>& left() { return _left; }
-	std::unique_ptr<IntervalNode<T>>& right() { return _right; }
-
-	void set_left(std::unique_ptr<IntervalNode<T>> left) {
-		_left = std::move(left);
-	}
-	void set_right(std::unique_ptr<IntervalNode<T>> right) {
-		_right = std::move(right);
-	}
-	void set_max(uint64_t max) { _max = max; }
-	void set_payload(T payload) { _payload = payload; }
-	
-	// Update max based on children (non-recursive)
-	void update_max() {
-		_max = _high;
-		if (_left && _left->_max > _max) _max = _left->_max;
-		if (_right && _right->_max > _max) _max = _right->_max;
-	}
-};
-
 /**
- * @class IntervalTree
+ * @class FlatIntervalTree
+ * @brief A specialized implementation of an Interval Tree optimized for Bash++'s particular use case.
  *
- * @brief A specialized implementation of an Interval Tree for Bash++'s particular use case.
+ * This implementation is designed to efficiently store and query intervals representing
+ * code entities in Bash++ source files. It supports insertion of intervals and querying
+ * for the innermost overlapping interval at a given point.
  *
- * This implementation is designed to efficiently manage and query intervals, allowing for fast insertion,
- * deletion, and overlap detection.
  *
- * Some particularities about our implementation:
- *   1. Partial overlaps are not possible in the Bash++ compiler
- *      All intervals are either entirely contained within wider intervals (e.g., [0 [50, 75] 100])
- *      Or entirely disjoint (e.g., [0, 100] [101, 110])
- *      Partial overlaps can never happen
+ * It's possible to design this as a "flat" structure because of our invariants:
  *
- *   2. This implementation guarantees that wider (parent) intervals are always placed above narrower (children) intervals in the tree.
- *      If [50, 75] is inserted, and then [0, 100] is inserted afterwards,
- *      The tree will re-order itself such that [0, 100] becomes the new root, with [50, 75] as its child.
+ * 1. Intervals are only inserted and never removed.
  *
- * These invariants are crucial for the tree's primary function in the compiler: find_innermost_overlap
+ * 2. Queries are only made after all insertions are complete.
  *
- * @tparam T The type of the payload stored in each interval node.
+ * 3. Intervals do not partially overlap; they are either entirely nested or entirely disjoint.
+ *
+ *
+ * These invariants allow us to use a sorted vector and binary search for efficient querying,
+ * avoiding the complexity of a traditional tree structure.
+ * 
+ * @tparam T The type of the payload associated with each interval.
  */
 template <class T>
-class IntervalTree {
+class FlatIntervalTree {
 private:
-	std::unique_ptr<IntervalNode<T>> _root;
-
-	// Fast, non-recursive max computation for a node's subtree
-	static uint64_t compute_subtree_max(const IntervalNode<T>* node) {
-		if (!node) return 0;
+	struct Interval {
+		uint64_t low, high;
+		T payload;
 		
-		uint64_t max_val = node->high();
-		if (node->left()) {
-			max_val = std::max(max_val, node->left()->max());
+		bool contains(uint64_t point) const { return low <= point && point <= high; }
+		bool contains(const Interval& other) const { return low <= other.low && high >= other.high; }
+	};
+	
+	std::vector<Interval> intervals;
+	bool sorted = false;
+	
+	void ensure_sorted() {
+		if (!sorted) {
+			// Sort by low, then by high (descending) so wider intervals come first
+			std::sort(intervals.begin(), intervals.end(),
+				[](const Interval& a, const Interval& b) {
+					return a.low < b.low || (a.low == b.low && a.high > b.high);
+				});
+			sorted = true;
 		}
-		if (node->right()) {
-			max_val = std::max(max_val, node->right()->max());
-		}
-		return max_val;
 	}
+	
 public:
-	IntervalTree() : _root(nullptr) {}
+	void insert(uint64_t low, uint64_t high, T payload) {
+		// TODO(@rail5): Assertions to ensure that our invariants are maintained
+		intervals.push_back({low, high, payload});
+		sorted = false;
+	}
 	
 	/**
-	 * @brief Inserts a new interval node into the tree, maintaining the tree's invariants.
+	 * @brief Find the innermost interval that overlaps a given point.
+	 *
+	 * This function performs a binary search to efficiently locate the innermost interval
+	 * that contains the specified point. If no such interval exists, it returns a default-constructed T.
 	 * 
-	 * @param low The lower bound of the interval to insert.
-	 * @param high The upper bound of the interval to insert.
-	 * @param payload The payload associated with the interval.
+	 * @param point The point to query.
+	 * @return T The payload of the innermost overlapping interval, or default-constructed T if none found.
 	 */
-	void insert(uint64_t low, uint64_t high, T payload) {
-		if (!_root) {
-			_root = std::make_unique<IntervalNode<T>>(low, high, payload);
-			return;
-		}
+	T find_innermost_overlap(uint64_t point) {
+		ensure_sorted();
 		
-		// Store the path for backtracking and max updates
-		struct InsertPath {
-			std::unique_ptr<IntervalNode<T>>* ptr;  // Pointer to the unique_ptr in parent
-			IntervalNode<T>* node;  // Current node
-		};
+		// Binary search for first interval with low <= point
+		auto it = std::upper_bound(intervals.begin(), intervals.end(), point,
+			[](uint64_t point, const Interval& interval) {
+				return point < interval.low;
+			});
 		
-		std::vector<InsertPath> path;
-		path.reserve(32);  // Pre-allocate reasonable depth
+		if (it == intervals.begin()) return T();
 		
-		// Find insertion point
-		std::unique_ptr<IntervalNode<T>>* current = &_root;
-		IntervalNode<T>* node = current->get();
-		
-		while (node) {
-			// Check for containment
-			bool child_in_parent = (low >= node->low() && high <= node->high());
-			bool parent_in_child = (node->low() >= low && node->high() <= high);
-			bool overlap = (low < node->high() && high > node->low());
-			bool partial_overlap = overlap && !child_in_parent && !parent_in_child;
-			
-			assert(!partial_overlap && "Partial overlap given: this should be impossible");
-			
-			// Handle promotion case
-			if (parent_in_child) {
-				auto new_node = std::make_unique<IntervalNode<T>>(low, high, payload);
-				new_node->set_right(std::move(*current));
-				new_node->update_max();
-				*current = std::move(new_node);
-				return;  // No need to update ancestors since we replaced the node
-			}
-			
-			// Record path for backtracking
-			path.push_back({current, node});
-			
-			// Move to appropriate child
-			if (low < node->low()) {
-				current = &(node->left());
-			} else {
-				current = &(node->right());
-			}
-			node = current->get();
-		}
-		
-		// Insert new node at leaf position
-		*current = std::make_unique<IntervalNode<T>>(low, high, payload);
-		
-		// Update max values back up the path
-		for (auto it = path.rbegin(); it != path.rend(); ++it) {
-			it->node->update_max();
-		}
-	}
-
-	/**
-	 * @brief Finds the innermost interval that overlaps with the given point.
-	 * 
-	 * @param point The point to check for overlap.
-	 * @return T The payload of the innermost overlapping interval, or a default-constructed T if none found.
-	 */
-	T find_innermost_overlap(uint64_t point) const {
-		if (!_root) return T();
-		
-		IntervalNode<T>* current = _root.get();
-		IntervalNode<T>* best = nullptr;
-		uint64_t best_start = 0;
-		
-		struct StackFrame {
-			IntervalNode<T>* node;
-			bool visited_left;
-		};
-		
-		std::vector<StackFrame> stack;
-		stack.reserve(64);
-		stack.push_back({current, false});
-		
-		while (!stack.empty()) {
-			auto& frame = stack.back();
-			
-			if (!frame.visited_left) {
-				// Check if we should visit left subtree
-				if (frame.node->left() && frame.node->left()->max() >= point) {
-					stack.push_back({frame.node->left().get(), false});
-					frame.visited_left = true;
-					continue;
-				}
-				frame.visited_left = true;
-			}
-			
-			// Process current node
-			if (frame.node->low() <= point && point <= frame.node->high()) {
-				if (!best || frame.node->low() > best_start) {
-					best = frame.node;
-					best_start = frame.node->low();
+		// Scan backwards to find innermost (since sorted by low then wide-first)
+		--it;
+		const Interval* best = nullptr;
+		for (; it >= intervals.begin() && it->low <= point; --it) {
+			if (it->contains(point)) {
+				if (!best || it->low > best->low) {
+					best = &*it;
 				}
 			}
-			
-			// Check if we should visit right subtree
-			if (frame.node->right() && frame.node->right()->low() <= point) {
-				// Replace current frame with right child
-				frame = {frame.node->right().get(), false};
-				continue;
-			}
-			
-			// Pop and continue
-			stack.pop_back();
 		}
-		
-		return best ? best->payload() : T();
+		return best ? best->payload : T();
 	}
 };

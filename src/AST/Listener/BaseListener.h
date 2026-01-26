@@ -189,7 +189,6 @@ class BaseListener {
 				// but continue to traverse the rest of the tree.
 				// The listener will in fact refuse to complete compilation if any syntax errors were encountered,
 				// but continuing traversal allows us to report multiple syntax errors in one go.
-				node->clearChildren();
 				this->program_has_errors = true;
 				e.print();
 				return;

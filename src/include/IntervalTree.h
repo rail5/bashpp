@@ -95,6 +95,8 @@ public:
 					best = &*it;
 				}
 			}
+
+			if (it == intervals.begin()) break; // Prevent underflow/UB
 		}
 		return best ? best->payload : T();
 	}

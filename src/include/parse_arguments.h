@@ -200,7 +200,7 @@ struct Arguments {
 	bool exit_early = false; // Exit early if the request is just -h/--help or -v/--version
 };
 
-std::pair<std::vector<char*>, std::vector<char*>> separate_compiler_and_program_options(Arguments* args, int argc, char* argv[]) {
+inline std::pair<std::vector<char*>, std::vector<char*>> separate_compiler_and_program_options(Arguments* args, int argc, char* argv[]) {
 	std::vector<char*> program_arguments;
 	std::vector<char*> compiler_arguments;
 	
@@ -269,7 +269,7 @@ std::pair<std::vector<char*>, std::vector<char*>> separate_compiler_and_program_
 	return {compiler_arguments, program_arguments};
 }
 
-Arguments parse_arguments(int argc, char* argv[]) {
+inline Arguments parse_arguments(int argc, char* argv[]) {
 	Arguments args;
 
 	args.include_paths->push_back("/usr/lib/bpp/stdlib/");

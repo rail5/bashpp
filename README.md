@@ -65,10 +65,10 @@ Pre-built packages are available for **amd64** and **arm64**. The .debs can also
  - `flex`
  - `bison`
  - `libutfcpp-dev`
- - `libfrozen-dev`
 
 Language server-specific prerequisites:
  - `nlohmann-json3-dev`
+ - `libfrozen-dev`
 
 Optional:
  - `pandoc` and `perl` for building the documentation

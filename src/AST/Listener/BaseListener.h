@@ -7,9 +7,6 @@
 
 #include <memory>
 #include <type_traits>
-#include <utility>
-#include <frozen/unordered_map.h>
-#include <functional>
 
 #include <AST/ASTNode.h>
 #include <AST/NodeTypes.h>
@@ -80,10 +77,6 @@ namespace AST {
 	X(TypeofExpression) \
 	X(ValueAssignment) \
 
-#define COUNT_NODE_TYPE(Name) +1
-
-#define TOTAL_NODE_TYPES (0 AST_LISTENER_NODE_LIST(COUNT_NODE_TYPE)) // Gives the total number of node types
-
 /**
  * @class BaseListener
  * @brief CRTP base class for AST listeners.
@@ -120,42 +113,6 @@ class BaseListener {
 			return static_cast<Derived&>(*this);
 		}
 
-		#define AST_MAKE_WRAPPERS(Name) \
-			void _enter##Name(std::shared_ptr<AST::ASTNode> node) { \
-				auto n = std::static_pointer_cast<AST::Name>(node); \
-				if constexpr (requires(Derived& d, std::shared_ptr<AST::Name> x) { d.enter##Name(x); }) { \
-					self().enter##Name(n); \
-				} \
-			} \
-			void _exit##Name(std::shared_ptr<AST::ASTNode> node) { \
-				auto n = std::static_pointer_cast<AST::Name>(node); \
-				if constexpr (requires(Derived& d, std::shared_ptr<AST::Name> x) { d.exit##Name(x); }) { \
-					self().exit##Name(n); \
-				} \
-			}
-		
-		AST_LISTENER_NODE_LIST(AST_MAKE_WRAPPERS)
-
-		#undef AST_MAKE_WRAPPERS
-
-		#define AST_MAKE_MAP_ENTRY(Name) \
-			{ AST::NodeType::Name, { &BaseListener::_enter##Name, &BaseListener::_exit##Name } },
-
-		/**
-		 * @brief A fully constexpr map of AST node types to their corresponding enter and exit functions.
-		 */
-		static constexpr frozen::unordered_map<
-			AST::NodeType,
-			std::pair<
-				void (BaseListener::*)(std::shared_ptr<AST::ASTNode>),
-				void (BaseListener::*)(std::shared_ptr<AST::ASTNode>)
-			>,
-			TOTAL_NODE_TYPES
-		> enterExitMap = {
-			AST_LISTENER_NODE_LIST(AST_MAKE_MAP_ENTRY)
-		};
-		#undef AST_MAKE_MAP_ENTRY
-
 	protected:
 		bool program_has_errors = false;
 
@@ -163,40 +120,35 @@ class BaseListener {
 		virtual ~BaseListener() = default;
 
 		void walk(std::shared_ptr<AST::ASTNode> node) {
-			if (node == nullptr) return;
-
-			auto it = enterExitMap.find(node->getType());
-			if (it == enterExitMap.end()) {
-				throw bpp::ErrorHandling::InternalError(
-					"No enter/exit functions defined for node type "
-					+ std::to_string(static_cast<int>(node->getType()))
-				);
-			}
-
-			auto [enterFunc, exitFunc] = it->second;
-
 			try {
-				std::invoke(enterFunc, this, node);
+				switch (node->getType()) {
+					#define AST_CASE(Name) \
+						case AST::NodeType::Name: \
+							if constexpr (requires(Derived& d, std::shared_ptr<AST::Name> x) { d.enter##Name(x); }) { \
+								self().enter##Name(std::static_pointer_cast<AST::Name>(node)); \
+							} \
+							for (const auto& child : node->getChildren()) { \
+								walk(child); \
+							} \
+							if constexpr (requires(Derived& d, std::shared_ptr<AST::Name> x) { d.exit##Name(x); }) { \
+								self().exit##Name(std::static_pointer_cast<AST::Name>(node)); \
+							} \
+							break;
+					
+					AST_LISTENER_NODE_LIST(AST_CASE)
 
-				for (const auto& child : node->getChildren()) {
-					walk(child);
+					#undef AST_CASE
+
+					default:
+						throw bpp::ErrorHandling::InternalError("Unknown AST node type encountered in listener walk");
 				}
-
-				std::invoke(exitFunc, this, node);
 			} catch (const bpp::ErrorHandling::SyntaxError& e) {
-				// When we encounter a syntax error,
-				// cancel the traversal of this node and its children,
-				// but continue to traverse the rest of the tree.
-				// The listener will in fact refuse to complete compilation if any syntax errors were encountered,
-				// but continuing traversal allows us to report multiple syntax errors in one go.
+				// Cancel traversal of this node and its children, but continue to traverse the rest of the tree
 				this->program_has_errors = true;
 				e.print();
 				return;
 			}
 		}
-
-		#undef TOTAL_NODE_TYPES
-		#undef COUNT_NODE_TYPE
 		#undef AST_LISTENER_NODE_LIST
 
 		inline void set_has_errors(bool has_errors) {

@@ -6,7 +6,6 @@
 #include <listener/BashppListener.h>
 
 void BashppListener::enterObjectReference(std::shared_ptr<AST::ObjectReference> node) {
-	skip_syntax_errors
 	/**
 	 * Object references take the form
 	 * 	[*|&]@IDENTIFIER.IDENTIFIER.IDENTIFIER...
@@ -27,7 +26,7 @@ void BashppListener::enterObjectReference(std::shared_ptr<AST::ObjectReference> 
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		syntax_error(node, "Object reference outside of code entity");
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Object reference outside of code entity");
 	}
 
 	std::shared_ptr<bpp::bpp_class> current_class = current_code_entity->get_containing_class().lock();
@@ -39,16 +38,15 @@ void BashppListener::enterObjectReference(std::shared_ptr<AST::ObjectReference> 
 }
 
 void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> node) {
-	skip_syntax_errors
 	auto object_reference_entity = std::dynamic_pointer_cast<bpp::bpp_object_reference>(entity_stack.top());
 	if (object_reference_entity == nullptr) {
-		throw internal_error("Object reference context was not found in the entity stack");
+		throw bpp::ErrorHandling::InternalError("Object reference context was not found in the entity stack");
 	}
 	entity_stack.pop();
 
 	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw internal_error("Current code entity was not found in the entity stack");
+		throw bpp::ErrorHandling::InternalError("Current code entity was not found in the entity stack");
 	}
 
 	auto current_class = current_code_entity->get_containing_class().lock();
@@ -81,7 +79,7 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 	 */
 	
 	if (pointer_dereference && object_address) {
-		throw internal_error("Detected simultaneous pointer dereference and object address");
+		throw bpp::ErrorHandling::InternalError("Detected simultaneous pointer dereference and object address");
 	}
 
 	std::deque<AST::Token<std::string>> ids;
@@ -99,7 +97,7 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 	);
 
 	if (ref.error.has_value()) {
-		syntax_error(ref.error->token, ref.error->message);
+		throw bpp::ErrorHandling::SyntaxError(this, ref.error->token, ref.error->message);
 	}
 
 	bpp::reference_type reference_type;
@@ -129,10 +127,10 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 		// Extra checks:
 		auto object_assignment_entity = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(entity_stack.top());
 		if (object_assignment_entity != nullptr) {
-			syntax_error(node, "Cannot assign to '@this'");
+			throw bpp::ErrorHandling::SyntaxError(this, node, "Cannot assign to '@this'");
 		}
 	} else {
-		throw internal_error("Referenced entity is not an object, datamember or method");
+		throw bpp::ErrorHandling::InternalError("Referenced entity is not an object, datamember or method");
 	}
 
 	object_reference_entity->set_reference_type(reference_type);
@@ -202,7 +200,7 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 		object = nullptr;
 		method = std::dynamic_pointer_cast<bpp::bpp_method>(ref.entity);
 		if (method == nullptr) {
-			throw internal_error("toPrimitive method not found for class " + ref.class_containing_the_method->get_name());
+			throw bpp::ErrorHandling::InternalError("toPrimitive method not found for class " + ref.class_containing_the_method->get_name());
 		}
 	}
 

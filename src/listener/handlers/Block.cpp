@@ -6,7 +6,6 @@
 #include <listener/BashppListener.h>
 
 void BashppListener::enterBlock(std::shared_ptr<AST::Block> node) {
-	skip_syntax_errors
 	/**
 	 * Blocks are just groups of statements enclosed in curly-braces
 	 * Sometimes, a block is a part of a larger construct, such as a method or class definition
@@ -30,15 +29,13 @@ void BashppListener::enterBlock(std::shared_ptr<AST::Block> node) {
 	// If however we're not surrounded by a larger construct, add the surrounding braces
 	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		syntax_error(node, "Statement block outside of code entity");
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Statement block outside of code entity");
 	}
 
 	current_code_entity->add_code("{\n");
 }
 
 void BashppListener::exitBlock(std::shared_ptr<AST::Block> node) {
-	skip_syntax_errors
-
 	auto parent_entity = entity_stack.top();
 	auto surrounding_class = std::dynamic_pointer_cast<bpp::bpp_class>(parent_entity);
 	auto surrounding_method = std::dynamic_pointer_cast<bpp::bpp_method>(parent_entity);
@@ -55,7 +52,7 @@ void BashppListener::exitBlock(std::shared_ptr<AST::Block> node) {
 
 	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		syntax_error(node, "Statement block outside of code entity");
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Statement block outside of code entity");
 	}
 
 	// Add the substitution end token to the current code entity

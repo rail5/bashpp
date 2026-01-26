@@ -5,7 +5,7 @@
 
 #include "BashppParser.h"
 
-#include <error/internal_error.h>
+#include <error/InternalError.h>
 #include <stdexcept>
 
 struct LexerExtra;
@@ -26,11 +26,11 @@ extern void set_utf16_mode(bool enable, yyscan_t yyscanner);
 void AST::BashppParser::_initialize_lexer() {
 	// If the input_source is empty, throw an exception
 	if (std::holds_alternative<std::monostate>(input_source)) {
-		throw internal_error("Attempted to initialize the lexer: Input source is not set");
+		throw bpp::ErrorHandling::InternalError("Attempted to initialize the lexer: Input source is not set");
 	}
 
 	if (yylex_init(&lexer) != 0) {
-		throw internal_error("Could not initialize lexer");
+		throw bpp::ErrorHandling::InternalError("Could not initialize lexer");
 	}
 
 	switch (input_type) {
@@ -46,7 +46,7 @@ void AST::BashppParser::_initialize_lexer() {
 		case InputType::FILEPTR: {
 			input_file = std::get<FILE*>(input_source);
 			if (input_file == nullptr) {
-				throw internal_error("Input FILE* is null");
+				throw bpp::ErrorHandling::InternalError("Input FILE* is null");
 			}
 			yyset_in(input_file, lexer);
 			break;
@@ -56,7 +56,7 @@ void AST::BashppParser::_initialize_lexer() {
 			// Create a temporary FILE* from the string contents
 			input_file = fmemopen(reinterpret_cast<void*>(const_cast<char*>(input_string_contents.c_str())), input_string_contents.size(), "r");
 			if (input_file == nullptr) {
-				throw internal_error("Could not create FILE* from string contents");
+				throw bpp::ErrorHandling::InternalError("Could not create FILE* from string contents");
 			}
 			yyset_in(input_file, lexer);
 			break;

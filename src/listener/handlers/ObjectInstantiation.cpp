@@ -6,7 +6,6 @@
 #include <listener/BashppListener.h>
 
 void BashppListener::enterObjectInstantiation(std::shared_ptr<AST::ObjectInstantiation> node) {
-	skip_syntax_errors
 	/**
 	 * The object type will be stored in one of either IDENTIFIER_LVALUE or IDENTIFIER(0)
 	 * If IDENTIFIER_LVALUE, then the object name will be in IDENTIFIER(0)
@@ -20,7 +19,7 @@ void BashppListener::enterObjectInstantiation(std::shared_ptr<AST::ObjectInstant
 	auto object_name = node->IDENTIFIER();
 
 	if (current_class != nullptr) {
-		syntax_error(node, "Stray object instantiation inside class body.\nDid you mean to declare a data member?\nIf so, start by declaring the data member with a visibility keyword (@public, @private, @protected)");
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Stray object instantiation inside class body.\nDid you mean to declare a data member?\nIf so, start by declaring the data member with a visibility keyword (@public, @private, @protected)");
 	}
 
 	std::string object_type_text = object_type.getValue();
@@ -42,7 +41,7 @@ void BashppListener::enterObjectInstantiation(std::shared_ptr<AST::ObjectInstant
 	// Verify that the object's class exists
 	if (object_class == nullptr) {
 		entity_stack.pop();
-		syntax_error(object_type, "Class not found: " + object_type_text);
+		throw bpp::ErrorHandling::SyntaxError(this, object_type, "Class not found: " + object_type_text);
 	}
 
 	new_object->set_class(object_class);
@@ -66,28 +65,27 @@ void BashppListener::enterObjectInstantiation(std::shared_ptr<AST::ObjectInstant
 		entity_stack.pop();
 		// If, specifically, it contains a double underscore, we can provide a more specific error message
 		if (new_object->get_name().find("__") != std::string::npos) {
-			syntax_error(object_name, "Invalid object name: " + new_object->get_name() + "\nBash++ identifiers cannot contain double underscores");
+			throw bpp::ErrorHandling::SyntaxError(this, object_name, "Invalid object name: " + new_object->get_name() + "\nBash++ identifiers cannot contain double underscores");
 		} else {
-			syntax_error(object_name, "Invalid object name: " + new_object->get_name());
+			throw bpp::ErrorHandling::SyntaxError(this, object_name, "Invalid object name: " + new_object->get_name());
 		}
 	}
 
 	// Verify that the object name is not already in use
 	if (current_code_entity->get_class(new_object->get_name()) != nullptr) {
 		entity_stack.pop();
-		syntax_error(object_name, "Class already exists: " + new_object->get_name());
+		throw bpp::ErrorHandling::SyntaxError(this, object_name, "Class already exists: " + new_object->get_name());
 	}
 	if (current_code_entity->get_object(new_object->get_name()) != nullptr) {
 		entity_stack.pop();
-		syntax_error(object_name, "Object already exists: " + new_object->get_name());
+		throw bpp::ErrorHandling::SyntaxError(this, object_name, "Object already exists: " + new_object->get_name());
 	}
 }
 
 void BashppListener::exitObjectInstantiation(std::shared_ptr<AST::ObjectInstantiation> node) {
-	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_object> new_object = std::dynamic_pointer_cast<bpp::bpp_object>(entity_stack.top());
 	if (new_object == nullptr) {
-		throw internal_error("entity_stack top is not a bpp_object");
+		throw bpp::ErrorHandling::InternalError("entity_stack top is not a bpp_object");
 	}
 
 	entity_stack.pop();

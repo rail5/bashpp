@@ -6,7 +6,6 @@
 #include <listener/BashppListener.h>
 
 void BashppListener::enterConstructorDefinition(std::shared_ptr<AST::ConstructorDefinition> node) {
-	skip_syntax_errors
 	/**
 	 * Constructor definitions take the form
 	 * 	@constructor { ... }
@@ -16,7 +15,7 @@ void BashppListener::enterConstructorDefinition(std::shared_ptr<AST::Constructor
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 
 	if (current_class == nullptr) {
-		syntax_error(node, "Constructor definition outside of class");
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Constructor definition outside of class");
 	}
 
 	std::shared_ptr<bpp::bpp_method> constructor = std::make_shared<bpp::bpp_method>();
@@ -35,10 +34,9 @@ void BashppListener::enterConstructorDefinition(std::shared_ptr<AST::Constructor
 }
 
 void BashppListener::exitConstructorDefinition(std::shared_ptr<AST::ConstructorDefinition> node) {
-	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_method> constructor = std::dynamic_pointer_cast<bpp::bpp_method>(entity_stack.top());
 	if (constructor == nullptr) {
-		throw internal_error("Constructor definition not found on the entity stack");
+		throw bpp::ErrorHandling::InternalError("Constructor definition not found on the entity stack");
 	}
 
 	entity_stack.pop();
@@ -51,7 +49,7 @@ void BashppListener::exitConstructorDefinition(std::shared_ptr<AST::ConstructorD
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 
 	if (current_class == nullptr) {
-		throw internal_error("Class not found on the entity stack");
+		throw bpp::ErrorHandling::InternalError("Class not found on the entity stack");
 	}
 
 	program->mark_entity(
@@ -64,6 +62,6 @@ void BashppListener::exitConstructorDefinition(std::shared_ptr<AST::ConstructorD
 	);
 
 	if (!current_class->add_method(constructor)) {
-		syntax_error(node, "Constructor already defined");
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Constructor already defined");
 	}
 }

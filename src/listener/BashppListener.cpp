@@ -74,6 +74,10 @@ void BashppListener::set_lsp_mode(bool lsp_mode) {
 	this->lsp_mode = lsp_mode;
 }
 
+void BashppListener::set_has_errors(bool has_errors) {
+	this->program_has_errors = has_errors;
+}
+
 std::shared_ptr<bpp::bpp_program> BashppListener::get_program() {
 	return program;
 }
@@ -84,6 +88,14 @@ std::shared_ptr<std::set<std::string>> BashppListener::get_included_files() {
 
 std::stack<std::string> BashppListener::get_include_stack() {
 	return include_stack;
+}
+
+std::string BashppListener::get_source_file() {
+	return source_file;
+}
+
+bool BashppListener::get_lsp_mode() {
+	return lsp_mode;
 }
 
 bool BashppListener::should_declare_local() const {

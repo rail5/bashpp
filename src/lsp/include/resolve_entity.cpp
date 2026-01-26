@@ -112,7 +112,7 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 					if (file == "<stdin>") {
 						char current_working_directory[PATH_MAX];
 						if (getcwd(current_working_directory, PATH_MAX) == nullptr) {
-							throw internal_error("Could not get current working directory");
+							throw bpp::ErrorHandling::InternalError("Could not get current working directory");
 						}
 						current_directory = current_working_directory;
 					} else {

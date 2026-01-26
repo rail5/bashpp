@@ -6,7 +6,6 @@
 #include <listener/BashppListener.h>
 
 void BashppListener::enterDynamicCastTarget(std::shared_ptr<AST::DynamicCastTarget> node) {
-	skip_syntax_errors
 	/**
 	 * Dynamic cast targets are the part of a dynamic cast statement that specifies the class we're casting to
 	 * This can be either an identifier (the name of the class), a shell variable (the name of the class is stored in the variable),
@@ -15,7 +14,7 @@ void BashppListener::enterDynamicCastTarget(std::shared_ptr<AST::DynamicCastTarg
 
 	std::shared_ptr<bpp::bpp_dynamic_cast_statement> dynamic_cast_entity = std::dynamic_pointer_cast<bpp::bpp_dynamic_cast_statement>(entity_stack.top());
 	if (dynamic_cast_entity == nullptr) {
-		throw internal_error("Dynamic cast context was not found in the entity stack");
+		throw bpp::ErrorHandling::InternalError("Dynamic cast context was not found in the entity stack");
 	}
 
 	std::shared_ptr<bpp::bpp_dynamic_cast_target> cast_target_entity = std::make_shared<bpp::bpp_dynamic_cast_target>();
@@ -25,16 +24,15 @@ void BashppListener::enterDynamicCastTarget(std::shared_ptr<AST::DynamicCastTarg
 }
 
 void BashppListener::exitDynamicCastTarget(std::shared_ptr<AST::DynamicCastTarget> node) {
-	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_dynamic_cast_target> cast_target_entity = std::dynamic_pointer_cast<bpp::bpp_dynamic_cast_target>(entity_stack.top());
 	entity_stack.pop();
 	if (cast_target_entity == nullptr) {
-		throw internal_error("Dynamic cast target context was not found in the entity stack");
+		throw bpp::ErrorHandling::InternalError("Dynamic cast target context was not found in the entity stack");
 	}
 
 	std::shared_ptr<bpp::bpp_dynamic_cast_statement> dynamic_cast_entity = std::dynamic_pointer_cast<bpp::bpp_dynamic_cast_statement>(entity_stack.top());
 	if (dynamic_cast_entity == nullptr) {
-		throw internal_error("Dynamic cast context was not found in the entity stack");
+		throw bpp::ErrorHandling::InternalError("Dynamic cast context was not found in the entity stack");
 	}
 
 	// Which kind of input did we receive?

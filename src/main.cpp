@@ -35,7 +35,7 @@ volatile int bpp_exit_code = 0;
 #include <AST/BashppParser.h>
 #include <listener/BashppListener.h>
 
-#include <error/internal_error.h>
+#include <error/InternalError.h>
 
 int main(int argc, char* argv[]) {
 	std::shared_ptr<std::ostream> output_stream(&std::cout, [](std::ostream*){});
@@ -166,7 +166,7 @@ int main(int argc, char* argv[]) {
 		listener->set_arguments(args.program_arguments);
 		listener->walk(program);
 
-	} catch (const internal_error& e) {
+	} catch (const bpp::ErrorHandling::InternalError& e) {
 		std::cerr << "Internal error: " << e.what() << std::endl;
 	} catch (const std::exception& e) {
 		std::cerr << "Standard exception: " << e.what() << std::endl;

@@ -128,7 +128,7 @@ code_segment generate_method_call_code(
 	code_segment result;
 
 	if (assumed_class == nullptr) {
-		throw internal_error("Assumed class is null");
+		throw bpp::ErrorHandling::InternalError("Assumed class is null");
 	}
 
 	std::shared_ptr<bpp::bpp_method> assumed_method = assumed_class->get_method_UNSAFE(method_name);
@@ -142,7 +142,7 @@ code_segment generate_method_call_code(
 			assumed_method->set_scope(bpp_scope::SCOPE_PUBLIC);
 			assumed_method->set_virtual(true);
 		} else {
-			throw internal_error("Method " + method_name + " not found in class " + assumed_class->get_name());
+			throw bpp::ErrorHandling::InternalError("Method " + method_name + " not found in class " + assumed_class->get_name());
 		}
 	}
 

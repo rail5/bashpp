@@ -6,7 +6,6 @@
 #include <listener/BashppListener.h>
 
 void BashppListener::enterArrayIndex(std::shared_ptr<AST::ArrayIndex> node) {
-	skip_syntax_errors
 	/**
 	 * Array indices take the form:
 	 * 	[...]
@@ -17,7 +16,7 @@ void BashppListener::enterArrayIndex(std::shared_ptr<AST::ArrayIndex> node) {
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw internal_error("Current code entity was not found in the entity stack");
+		throw bpp::ErrorHandling::InternalError("Current code entity was not found in the entity stack");
 	}
 
 	// Create a new code entity for the array index
@@ -32,10 +31,9 @@ void BashppListener::enterArrayIndex(std::shared_ptr<AST::ArrayIndex> node) {
 }
 
 void BashppListener::exitArrayIndex(std::shared_ptr<AST::ArrayIndex> node) {
-	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_string> array_index_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 	if (array_index_entity == nullptr) {
-		throw internal_error("Array index context was not found in the entity stack");
+		throw bpp::ErrorHandling::InternalError("Array index context was not found in the entity stack");
 	}
 
 	entity_stack.pop();
@@ -54,7 +52,7 @@ void BashppListener::exitArrayIndex(std::shared_ptr<AST::ArrayIndex> node) {
 	// Otherwise, standard procedure
 	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw internal_error("Current code entity was not found in the entity stack");
+		throw bpp::ErrorHandling::InternalError("Current code entity was not found in the entity stack");
 	}
 	
 	current_code_entity->add_code_to_previous_line(array_index_entity->get_pre_code());

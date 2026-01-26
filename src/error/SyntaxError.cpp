@@ -12,9 +12,12 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 
-#include "syntax_error.h"
+#include "SyntaxError.h"
 
 #include <utf8cpp/utf8.h>
+
+namespace bpp {
+namespace ErrorHandling {
 
 void print_syntax_error_or_warning(
 	std::string source_file,
@@ -206,3 +209,6 @@ std::string equal_width_padding(const std::string& str, char padding_char) {
 
 	return result;
 }
+
+} // namespace ErrorHandling
+} // namespace bpp

@@ -6,12 +6,11 @@
 #include <listener/BashppListener.h>
 
 void BashppListener::enterSubshellSubstitution(std::shared_ptr<AST::SubshellSubstitution> node) {
-	skip_syntax_errors
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	if (code_entity == nullptr) {
-		syntax_error(node, "Subshell substitution outside of code entity");
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Subshell substitution outside of code entity");
 	}
 
 	// Create a new code entity for the subshell
@@ -34,11 +33,10 @@ void BashppListener::enterSubshellSubstitution(std::shared_ptr<AST::SubshellSubs
 }
 
 void BashppListener::exitSubshellSubstitution(std::shared_ptr<AST::SubshellSubstitution> node) {
-	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_string> subshell_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 
 	if (subshell_entity == nullptr) {
-		throw internal_error("Subshell substitution context was not found in the entity stack");
+		throw bpp::ErrorHandling::InternalError("Subshell substitution context was not found in the entity stack");
 	}
 
 	entity_stack.pop();
@@ -60,12 +58,11 @@ void BashppListener::exitSubshellSubstitution(std::shared_ptr<AST::SubshellSubst
 }
 
 void BashppListener::enterRawSubshell(std::shared_ptr<AST::RawSubshell> node) {
-	skip_syntax_errors
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	if (code_entity == nullptr) {
-		syntax_error(node, "Subshell outside of code entity");
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Subshell outside of code entity");
 	}
 
 	// Create a new code entity for the subshell
@@ -84,11 +81,10 @@ void BashppListener::enterRawSubshell(std::shared_ptr<AST::RawSubshell> node) {
 }
 
 void BashppListener::exitRawSubshell(std::shared_ptr<AST::RawSubshell> node) {
-	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_string> subshell_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 
 	if (subshell_entity == nullptr) {
-		throw internal_error("Subshell context was not found in the entity stack");
+		throw bpp::ErrorHandling::InternalError("Subshell context was not found in the entity stack");
 	}
 
 	entity_stack.pop();

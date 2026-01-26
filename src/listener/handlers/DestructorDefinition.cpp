@@ -6,7 +6,6 @@
 #include <listener/BashppListener.h>
 
 void BashppListener::enterDestructorDefinition(std::shared_ptr<AST::DestructorDefinition> node) {
-	skip_syntax_errors
 	/**
 	 * Destructor definitions take the form
 	 * 	@destructor { ... }
@@ -16,7 +15,7 @@ void BashppListener::enterDestructorDefinition(std::shared_ptr<AST::DestructorDe
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 
 	if (current_class == nullptr) {
-		syntax_error(node, "Destructor definition outside of class");
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Destructor definition outside of class");
 	}
 
 	std::shared_ptr<bpp::bpp_method> destructor = std::make_shared<bpp::bpp_method>();
@@ -35,10 +34,9 @@ void BashppListener::enterDestructorDefinition(std::shared_ptr<AST::DestructorDe
 }
 
 void BashppListener::exitDestructorDefinition(std::shared_ptr<AST::DestructorDefinition> node) {
-	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_method> destructor = std::dynamic_pointer_cast<bpp::bpp_method>(entity_stack.top());
 	if (destructor == nullptr) {
-		throw internal_error("Destructor definition not found on the entity stack");
+		throw bpp::ErrorHandling::InternalError("Destructor definition not found on the entity stack");
 	}
 
 	entity_stack.pop();
@@ -51,7 +49,7 @@ void BashppListener::exitDestructorDefinition(std::shared_ptr<AST::DestructorDef
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 
 	if (current_class == nullptr) {
-		throw internal_error("Class not found on the entity stack");
+		throw bpp::ErrorHandling::InternalError("Class not found on the entity stack");
 	}
 
 	program->mark_entity(
@@ -64,6 +62,6 @@ void BashppListener::exitDestructorDefinition(std::shared_ptr<AST::DestructorDef
 	);
 
 	if (!current_class->add_method(destructor)) {
-		syntax_error(node, "Destructor already defined");
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Destructor already defined");
 	}
 }

@@ -14,7 +14,8 @@
 #include <AST/ASTNode.h>
 #include <AST/NodeTypes.h>
 #include <AST/Nodes/Nodes.h>
-#include <error/internal_error.h>
+#include <error/InternalError.h>
+#include <error/SyntaxError.h>
 
 namespace AST {
 
@@ -162,20 +163,32 @@ class BaseListener {
 
 			auto it = enterExitMap.find(node->getType());
 			if (it == enterExitMap.end()) {
-				throw internal_error(
+				throw bpp::ErrorHandling::InternalError(
 					"No enter/exit functions defined for node type "
 					+ std::to_string(static_cast<int>(node->getType()))
 				);
 			}
 
 			auto [enterFunc, exitFunc] = it->second;
-			std::invoke(enterFunc, this, node);
 
-			for (const auto& child : node->getChildren()) {
-				walk(child);
+			try {
+				std::invoke(enterFunc, this, node);
+
+				for (const auto& child : node->getChildren()) {
+					walk(child);
+				}
+
+				std::invoke(exitFunc, this, node);
+			} catch (const bpp::ErrorHandling::SyntaxError& e) {
+				// When we encounter a syntax error,
+				// cancel the traversal of this node and its children,
+				// but continue to traverse the rest of the tree.
+				// The listener will in fact refuse to complete compilation if any syntax errors were encountered,
+				// but continuing traversal allows us to report multiple syntax errors in one go.
+				node->clearChildren();
+				e.print();
+				return;
 			}
-
-			std::invoke(exitFunc, this, node);
 		}
 
 		#undef TOTAL_NODE_TYPES

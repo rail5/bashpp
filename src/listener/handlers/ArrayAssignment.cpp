@@ -6,12 +6,11 @@
 #include <listener/BashppListener.h>
 
 void BashppListener::enterArrayAssignment(std::shared_ptr<AST::ArrayAssignment> node) {
-	skip_syntax_errors
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	if (code_entity == nullptr) {
-		syntax_error(node, "Array assignment outside of code entity");
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Array assignment outside of code entity");
 	}
 
 	std::shared_ptr<bpp::bpp_string> array_assignment_entity = std::make_shared<bpp::bpp_string>();
@@ -29,11 +28,10 @@ void BashppListener::enterArrayAssignment(std::shared_ptr<AST::ArrayAssignment> 
 }
 
 void BashppListener::exitArrayAssignment(std::shared_ptr<AST::ArrayAssignment> node) {
-	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_string> array_assignment_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 
 	if (array_assignment_entity == nullptr) {
-		throw internal_error("Array assignment context was not found in the entity stack");
+		throw bpp::ErrorHandling::InternalError("Array assignment context was not found in the entity stack");
 	}
 
 	entity_stack.pop();

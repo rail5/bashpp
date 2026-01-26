@@ -6,7 +6,6 @@
 #include <listener/BashppListener.h>
 
 void BashppListener::enterBashFunction(std::shared_ptr<AST::BashFunction> node) {
-	skip_syntax_errors
 	/**
 	 * Bash functions take the format:
 	 * 
@@ -25,7 +24,7 @@ void BashppListener::enterBashFunction(std::shared_ptr<AST::BashFunction> node) 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	if (current_code_entity == nullptr) {
-		syntax_error(node, "Function definition outside of code entity");
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Function definition outside of code entity");
 	}
 
 	// What's the name of the function?
@@ -48,18 +47,16 @@ void BashppListener::enterBashFunction(std::shared_ptr<AST::BashFunction> node) 
 }
 
 void BashppListener::exitBashFunction(std::shared_ptr<AST::BashFunction> node) {
-	skip_syntax_errors
-
 	std::shared_ptr<bpp::bash_function> function_entity = std::dynamic_pointer_cast<bpp::bash_function>(entity_stack.top());
 	if (function_entity == nullptr) {
-		throw internal_error("Function context was not found in the entity stack");
+		throw bpp::ErrorHandling::InternalError("Function context was not found in the entity stack");
 	}
 	entity_stack.pop();
 
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw internal_error("Couldn't find the current code entity");
+		throw bpp::ErrorHandling::InternalError("Couldn't find the current code entity");
 	}
 
 	// Add the function to the current code entity

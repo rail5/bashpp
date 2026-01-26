@@ -6,7 +6,6 @@
 #include <listener/BashppListener.h>
 
 void BashppListener::enterValueAssignment(std::shared_ptr<AST::ValueAssignment> node) {
-	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_value_assignment> value_assignment_entity = std::make_shared<bpp::bpp_value_assignment>();
 	value_assignment_entity->set_containing_class(entity_stack.top()->get_containing_class());
 	value_assignment_entity->inherit(latest_code_entity());
@@ -38,7 +37,6 @@ void BashppListener::enterValueAssignment(std::shared_ptr<AST::ValueAssignment> 
 }
 
 void BashppListener::exitValueAssignment(std::shared_ptr<AST::ValueAssignment> node) {
-	skip_syntax_errors
 	/**
 	 * Value assignments will appear in the following contexts:
 	 * 	1. Member declarations
@@ -52,7 +50,7 @@ void BashppListener::exitValueAssignment(std::shared_ptr<AST::ValueAssignment> n
 	context_expectations_stack.pop();
 
 	if (value_assignment_entity == nullptr) {
-		throw internal_error("Value assignment context was not found in the entity stack");
+		throw bpp::ErrorHandling::InternalError("Value assignment context was not found in the entity stack");
 	}
 
 	// Check if we're in a member declaration
@@ -85,7 +83,7 @@ void BashppListener::exitValueAssignment(std::shared_ptr<AST::ValueAssignment> n
 			std::string rvalue;
 			std::shared_ptr<bpp::bpp_object> rvalue_object = std::dynamic_pointer_cast<bpp::bpp_object>(value_assignment_entity->get_nonprimitive_object());
 			if (rvalue_object == nullptr) {
-				throw internal_error("Rvalue object not found for copy");
+				throw bpp::ErrorHandling::InternalError("Rvalue object not found for copy");
 			}
 		}
 		return;
@@ -102,7 +100,7 @@ void BashppListener::exitValueAssignment(std::shared_ptr<AST::ValueAssignment> n
 		} else if (!value_assignment_entity->is_nonprimitive_assignment()) {
 			// The object we're assigning to is not a pointer, and yet we're trying to assign a primitive to it
 			// Throw an error
-			syntax_error(node, "Cannot assign a primitive value to a nonprimitive object");
+			throw bpp::ErrorHandling::SyntaxError(this, node, "Cannot assign a primitive value to a nonprimitive object");
 		}
 		return;
 	}
@@ -110,7 +108,7 @@ void BashppListener::exitValueAssignment(std::shared_ptr<AST::ValueAssignment> n
 	// Default case: just send it up the chain
 	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw internal_error("Current code entity was not found in the entity stack");
+		throw bpp::ErrorHandling::InternalError("Current code entity was not found in the entity stack");
 	}
 
 	current_code_entity->add_code_to_previous_line(value_assignment_entity->get_pre_code());

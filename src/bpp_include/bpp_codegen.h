@@ -13,7 +13,7 @@
 #include <type_traits>
 
 #include "bpp.h"
-#include <error/internal_error.h>
+#include <error/InternalError.h>
 #include <AST/ASTNode.h>
 
 namespace bpp {

@@ -26,7 +26,6 @@
  * @include "Stack.bpp"
  */
 void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement> node) {
-	skip_syntax_errors
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_program> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_program>(entity_stack.top());
 
@@ -40,7 +39,7 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 	std::string resolved_source_path = source_path.getValue();
 
 	if (current_code_entity == nullptr) {
-		syntax_error(node, "Include statements can only be used at the top level of a program");
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Include statements can only be used at the top level of a program");
 	}
 
 	if (!local_include) {
@@ -55,7 +54,7 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 			}
 		}
 		if (!found) {
-			syntax_error(source_path, "File not found: " + source_path.getValue());
+			throw bpp::ErrorHandling::SyntaxError(this, source_path, "File not found: " + source_path.getValue());
 		}
 	} else {
 		// This is a "local" include -- meaning we should start scanning from the same directory as the current source file
@@ -69,7 +68,7 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 			if (source_file == "<stdin>") {
 				char current_working_directory[PATH_MAX];
 				if (getcwd(current_working_directory, PATH_MAX) == nullptr) {
-					throw internal_error("Could not get current working directory");
+					throw bpp::ErrorHandling::InternalError("Could not get current working directory");
 				}
 				current_directory = current_working_directory;
 			} else {
@@ -83,7 +82,7 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 	// Get the full path of the file
 	char full_path[PATH_MAX];
 	if (realpath(resolved_source_path.c_str(), full_path) == nullptr) {
-		syntax_error(source_path, "File not found: " + resolved_source_path);
+		throw bpp::ErrorHandling::SyntaxError(this, source_path, "File not found: " + resolved_source_path);
 	}
 
 	auto result = included_files->insert(full_path);
@@ -136,14 +135,14 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 		// Bad design, should just take a length to begin with
 		// Until then, this hack adds two characters to the error token's string so highlighting works
 		// TODO(@rail5): FIX THIS
-		syntax_error(nodeCopy, "Failed to parse included file: " + std::string(full_path));
+		throw bpp::ErrorHandling::SyntaxError(this, nodeCopy, "Failed to parse included file: " + std::string(full_path));
 	}
 	try {
 		// Walk the tree
 		listener.walk(tree);
-	} catch (const internal_error& e) {
+	} catch (const bpp::ErrorHandling::InternalError& e) {
 		std::cerr << "Internal error from included file '" << full_path << "'" << std::endl;
-		throw internal_error(e);
+		throw bpp::ErrorHandling::InternalError(e);
 	} catch (const std::exception& e) {
 		std::cerr << "Standard exception from included file '" << full_path << "'" << std::endl;
 		throw std::exception(e);
@@ -185,6 +184,4 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 	}
 }
 
-void BashppListener::exitIncludeStatement(std::shared_ptr<AST::IncludeStatement> node) {
-	skip_syntax_errors
-}
+void BashppListener::exitIncludeStatement(std::shared_ptr<AST::IncludeStatement> node) {}

@@ -11,7 +11,7 @@
 #include <cassert>
 #include <AST/Nodes/Nodes.h>
 #include <include/ParserPosition.h>
-#include <error/syntax_error.h>
+#include <error/SyntaxError.h>
 typedef std::shared_ptr<AST::ASTNode> ASTNodePtr;
 typedef void* yyscan_t;
 }
@@ -2402,7 +2402,7 @@ bash_53_native_supershell:
 
 namespace yy {
 void parser::error(const location_type& loc, const std::string& m) {
-	print_syntax_error_from_parser(
+	bpp::ErrorHandling::print_syntax_error_from_parser(
 		source_file,
 		loc.begin.line,
 		loc.begin.column,

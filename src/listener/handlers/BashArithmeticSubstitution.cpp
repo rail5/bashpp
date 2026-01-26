@@ -6,7 +6,6 @@
 #include <listener/BashppListener.h>
 
 void BashppListener::enterBashArithmeticSubstitution(std::shared_ptr<AST::BashArithmeticSubstitution> node) {
-	skip_syntax_errors
 	/**
 	 * Bash arithmetic is a series of arithmetic operations
 	 * that are enclosed in $((...))
@@ -18,7 +17,7 @@ void BashppListener::enterBashArithmeticSubstitution(std::shared_ptr<AST::BashAr
 	std::shared_ptr<bpp::bpp_code_entity> code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	if (code_entity == nullptr) {
-		syntax_error(node, "Bash arithmetic outside of code entity");
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Bash arithmetic outside of code entity");
 	}
 
 	// Create a new code entity for the arithmetic expression
@@ -32,11 +31,10 @@ void BashppListener::enterBashArithmeticSubstitution(std::shared_ptr<AST::BashAr
 }
 
 void BashppListener::exitBashArithmeticSubstitution(std::shared_ptr<AST::BashArithmeticSubstitution> node) {
-	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_string> arithmetic_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 
 	if (arithmetic_entity == nullptr) {
-		throw internal_error("Bash arithmetic context was not found in the entity stack");
+		throw bpp::ErrorHandling::InternalError("Bash arithmetic context was not found in the entity stack");
 	}
 
 	entity_stack.pop();

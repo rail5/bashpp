@@ -13,7 +13,6 @@
 #include <memory>
 #include <stack>
 #include <optional>
-#include <concepts>
 #include <fstream>
 #include <unordered_map>
 
@@ -33,29 +32,8 @@ using bpp::generate_dynamic_cast_code;
 #include <listener/ContextExpectations.h>
 
 #include <error/detail.h>
-#include <error/syntax_error.h>
-#include <error/internal_error.h>
-
-#define skip_syntax_errors if (error_thrown) { \
-		if (error_node == node) { \
-			error_thrown = false; \
-			error_node = nullptr; \
-		} \
-		return; \
-		}
-
-template <typename T>
-concept ASTNodePtrType = std::is_same_v<std::shared_ptr<AST::ASTNode>, T> ||
-	std::is_base_of_v<AST::ASTNode, typename T::element_type>;
-
-template <typename T>
-concept ASTStringToken = std::is_same_v<AST::Token<std::string>, T>;
-
-template <typename T>
-concept ASTParameterToken = std::is_same_v<AST::Token<AST::MethodDefinition::Parameter>, T>;
-
-template <typename T>
-concept ASTNodePtrORToken = ASTNodePtrType<T> || ASTStringToken<T> || ASTParameterToken<T>;
+#include <error/SyntaxError.h>
+#include <error/InternalError.h>
 
 /**
  * @class BashppListener
@@ -169,108 +147,12 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 		std::shared_ptr<bpp::bpp_class> primitive;
 
 		bool lsp_mode = false; // Whether this listener is just running as part of the language server (i.e., not really compiling anything)
-
-		/* Error handling */
-		bool error_thrown = false;
-		std::shared_ptr<AST::ASTNode> error_node = nullptr;
 		bool program_has_errors = false;
-
-		/**
-		 * @brief Display an error or warning message based on the given context
-		 * 
-		 * @tparam T The type of the error context (AST node pointer or token)
-		 * @param error_ctx The context of the error (AST node pointer or token)
-		 * @param msg The error or warning message
-		 * @param is_warning Whether this is a warning (true) or an error (false)
-		 */
-		template <ASTNodePtrORToken T>
-		void output_syntax_error_or_warning(const T& error_ctx, const std::string& msg, bool is_warning = false) {
-			uint32_t line;
-			uint32_t column;
-			uint32_t text_length = 1;
-
-			if constexpr (ASTNodePtrType<T>) {
-				line = error_ctx->getPosition().line;
-				column = error_ctx->getPosition().column;
-				if (error_ctx->getEndPosition().line == error_ctx->getPosition().line) {
-					text_length = error_ctx->getEndPosition().column - error_ctx->getPosition().column;
-				} else {
-					// Multi-line node: Just highlight 1 character
-					text_length = 1;
-				}
-			} else if constexpr (ASTStringToken<T>) {
-				line = error_ctx.getLine();
-				column = error_ctx.getCharPositionInLine();
-				text_length = static_cast<uint32_t>(error_ctx.getValue().length());
-			} else if constexpr (ASTParameterToken<T>) {
-				// Special case: Error reporting on a declared method parameter
-				// TODO(@rail5): Kind of hacky to handle special cases. Would prefer a general solution.
-				line = error_ctx.getLine();
-				column = error_ctx.getCharPositionInLine();
-				auto param = error_ctx.getValue();
-				text_length = 0;
-				if (param.type.has_value()) {
-					text_length += 1 + static_cast<uint32_t>(param.type.value().getValue().length()); // '@Type'
-					if (param.pointer) text_length += 1; // '*'
-					text_length += 1 + static_cast<uint32_t>(param.name.getValue().length()); // ' Name'
-				} else {
-					text_length = static_cast<uint32_t>(param.name.getValue().length()); // 'Name'
-				}
-			}
-			print_syntax_error_or_warning(source_file, line, column, text_length, msg, get_include_stack(), program, lsp_mode, is_warning);
-			program_has_errors = !is_warning;
-		}
-
-		/**
-		 * @brief "Throw" a syntax error from an enter* function
-		 * This will output the error message, set the error_thrown flag,
-		 * and clear the children of the current node to skip traversing them.
-		 * 
-		 * @tparam T 
-		 * @tparam NodeT 
-		 * @param error_ctx 
-		 * @param msg 
-		 * @param node_ctx 
-		 */
-		template <ASTNodePtrORToken T, ASTNodePtrType NodeT>
-		void syntax_error_fromEnter(const T& error_ctx, const std::string& msg, const NodeT& node_ctx) {
-			output_syntax_error_or_warning(error_ctx, msg);
-			error_thrown = true;
-			error_node = node_ctx;
-			node_ctx->clearChildren(); // Skip traversing children
-		}
-
-		/**
-		 * @brief "Throw" a syntax error from an exit* function
-		 * This will output the error message, but will not modify the parse tree or listener state.
-		 * 
-		 * @tparam T 
-		 * @param error_ctx 
-		 * @param msg 
-		 */
-		template <ASTNodePtrORToken T>
-		void syntax_error_fromExit(const T& error_ctx, const std::string& msg) {
-			output_syntax_error_or_warning(error_ctx, msg);
-		}
-
-		#define syntax_error(token, msg) \
-			constexpr auto _loc = std::source_location::current(); \
-			constexpr bool _is_enter = bpp_detail::is_enter_context(_loc.function_name()); \
-			constexpr bool _is_exit  = bpp_detail::is_exit_context(_loc.function_name()); \
-			[]<bool IsEnter, bool IsExit>(BashppListener* self, const auto& tok, const std::string& m, const auto& n) { \
-				if constexpr (IsEnter) { \
-					self->syntax_error_fromEnter(tok, m, n); \
-				} else if constexpr (IsExit) { \
-					self->syntax_error_fromExit(tok, m); \
-				} else { \
-					static_assert(IsEnter || IsExit, "syntax_error can only be used in enter* or exit* functions"); \
-				} \
-			}.template operator()<_is_enter, _is_exit>(this, (token), (msg), node); \
-			return;
 
 		#define show_warning(token, msg) \
 			if (!suppress_warnings) { \
-				output_syntax_error_or_warning(token, msg, true); \
+				bpp::ErrorHandling::Warning _msg(this, token, msg); \
+				_msg.print(); \
 			}
 
 	public:
@@ -289,12 +171,15 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 	void set_target_bash_version(BashVersion target_bash_version);
 	void set_arguments(std::vector<char*> arguments);
 	void set_lsp_mode(bool lsp_mode);
+	void set_has_errors(bool has_errors);
 
 	void set_replacement_file_contents(const std::string& file_path, const std::string& contents);
 
 	std::shared_ptr<bpp::bpp_program> get_program();
 	std::shared_ptr<std::set<std::string>> get_included_files();
 	std::stack<std::string> get_include_stack();
+	std::string get_source_file();
+	bool get_lsp_mode();
 
 	std::shared_ptr<bpp::bpp_code_entity> latest_code_entity();
 

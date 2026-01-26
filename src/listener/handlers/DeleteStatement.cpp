@@ -6,7 +6,6 @@
 #include <listener/BashppListener.h>
 
 void BashppListener::enterDeleteStatement(std::shared_ptr<AST::DeleteStatement> node) {
-	skip_syntax_errors
 	/**
 	 * Delete statements take the form
 	 * 	@delete @object
@@ -28,11 +27,10 @@ void BashppListener::enterDeleteStatement(std::shared_ptr<AST::DeleteStatement> 
 }
 
 void BashppListener::exitDeleteStatement(std::shared_ptr<AST::DeleteStatement> node) {
-	skip_syntax_errors
 	// Get the delete entity from the entity stack
 	std::shared_ptr<bpp::bpp_delete_statement> delete_entity = std::dynamic_pointer_cast<bpp::bpp_delete_statement>(entity_stack.top());
 	if (delete_entity == nullptr) {
-		throw internal_error("Delete statement not found on the entity stack");
+		throw bpp::ErrorHandling::InternalError("Delete statement not found on the entity stack");
 	}
 
 	entity_stack.pop();
@@ -45,7 +43,7 @@ void BashppListener::exitDeleteStatement(std::shared_ptr<AST::DeleteStatement> n
 		auto objectReferenceEntity = std::dynamic_pointer_cast<AST::ObjectReference>(node->getFirstChild());
 
 		if (!objectReferenceEntity) {
-			throw internal_error("Delete statement does not contain a valid object reference");
+			throw bpp::ErrorHandling::InternalError("Delete statement does not contain a valid object reference");
 		}
 
 		std::string object_ref_name = "@" + objectReferenceEntity->IDENTIFIER().getValue();
@@ -53,11 +51,11 @@ void BashppListener::exitDeleteStatement(std::shared_ptr<AST::DeleteStatement> n
 			object_ref_name += "." + id.getValue();
 		}
 
-		syntax_error(node, "Object not found: " + object_ref_name);
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Object not found: " + object_ref_name);
 	}
 
 	if (delete_entity->get_object_to_delete()->get_address() == "__this") {
-		syntax_error(node, "Cannot call @delete on '@this'");
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Cannot call @delete on '@this'");
 	}
 
 	// Generate the delete code

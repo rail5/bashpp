@@ -6,7 +6,6 @@
 #include <listener/BashppListener.h>
 
 void BashppListener::enterDatamemberDeclaration(std::shared_ptr<AST::DatamemberDeclaration> node) {
-	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 
 	std::shared_ptr<bpp::bpp_datamember> new_datamember = std::make_shared<bpp::bpp_datamember>();
@@ -28,7 +27,7 @@ void BashppListener::enterDatamemberDeclaration(std::shared_ptr<AST::DatamemberD
 
 	if (current_class == nullptr) {
 		entity_stack.pop();
-		syntax_error(node, "Member declaration outside of class");
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Member declaration outside of class");
 	}
 
 	/**
@@ -59,16 +58,15 @@ void BashppListener::enterDatamemberDeclaration(std::shared_ptr<AST::DatamemberD
 		// Verify the name doesn't contain a double underscore
 		if (member_name.find("__") != std::string::npos) {
 			entity_stack.pop();
-			syntax_error(id.value(), "Invalid member name: " + member_name + "\nBash++ identifiers cannot contain double underscores");
+			throw bpp::ErrorHandling::SyntaxError(this, id.value(), "Invalid member name: " + member_name + "\nBash++ identifiers cannot contain double underscores");
 		}
 	}
 }
 
 void BashppListener::exitDatamemberDeclaration(std::shared_ptr<AST::DatamemberDeclaration> node) {
-	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_datamember> new_datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(entity_stack.top());
 	if (new_datamember == nullptr) {
-		throw internal_error("entity_stack top is not a bpp_datamember");
+		throw bpp::ErrorHandling::InternalError("entity_stack top is not a bpp_datamember");
 	}
 
 	entity_stack.pop();

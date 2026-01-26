@@ -6,7 +6,6 @@
 #include <listener/BashppListener.h>
 
 void BashppListener::enterSupershell(std::shared_ptr<AST::Supershell> node) {
-	skip_syntax_errors
 	/**
 	 * Supershells take the form
 	 * 	@(...)
@@ -19,7 +18,7 @@ void BashppListener::enterSupershell(std::shared_ptr<AST::Supershell> node) {
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	if (current_code_entity == nullptr) {
-		syntax_error(node, "Supershell outside of a code entity");
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Supershell outside of a code entity");
 	}
 
 	std::shared_ptr<bpp::bpp_string> supershell_entity = std::make_shared<bpp::bpp_string>();
@@ -35,10 +34,9 @@ void BashppListener::enterSupershell(std::shared_ptr<AST::Supershell> node) {
 }
 
 void BashppListener::exitSupershell(std::shared_ptr<AST::Supershell> node) {
-	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_string> supershell_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
 	if (supershell_entity == nullptr) {
-		throw internal_error("Supershell context was not found in the entity stack");
+		throw bpp::ErrorHandling::InternalError("Supershell context was not found in the entity stack");
 	}
 
 	entity_stack.pop();
@@ -55,7 +53,7 @@ void BashppListener::exitSupershell(std::shared_ptr<AST::Supershell> node) {
 	// Carry objects, classes, etc from the supershell to the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw internal_error("Current code entity was not found in the entity stack");
+		throw bpp::ErrorHandling::InternalError("Current code entity was not found in the entity stack");
 	}
 	current_code_entity->inherit(supershell_entity);
 

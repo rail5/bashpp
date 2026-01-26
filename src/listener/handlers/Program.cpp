@@ -41,7 +41,7 @@ void BashppListener::exitProgram(std::shared_ptr<AST::Program> node) {
 
 	entity_stack.pop();
 	if (!entity_stack.empty()) {
-		throw internal_error("entity_stack is not empty after exiting program");
+		throw bpp::ErrorHandling::InternalError("entity_stack is not empty after exiting program");
 	}
 
 	if (included) {
@@ -62,7 +62,7 @@ void BashppListener::exitProgram(std::shared_ptr<AST::Program> node) {
 	// Copy the contents of the code stream to the output stream
 	std::shared_ptr<std::ostringstream> cd = std::dynamic_pointer_cast<std::ostringstream>(code_buffer);
 	if (cd == nullptr) {
-		throw internal_error("code_buffer is not a stringstream");
+		throw bpp::ErrorHandling::InternalError("code_buffer is not a stringstream");
 	}
 	*output_stream << cd->str() << std::flush;
 	cd->clear();

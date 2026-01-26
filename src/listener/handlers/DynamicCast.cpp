@@ -6,7 +6,6 @@
 #include <listener/BashppListener.h>
 
 void BashppListener::enterDynamicCast(std::shared_ptr<AST::DynamicCast> node) {
-	skip_syntax_errors
 	/**
 	 * Dynamic cast statements take the form
 	 * 	@dynamic_cast<ClassName> Pointer
@@ -26,7 +25,7 @@ void BashppListener::enterDynamicCast(std::shared_ptr<AST::DynamicCast> node) {
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		syntax_error(node, "Dynamic cast statement outside of code entity");
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Dynamic cast statement outside of code entity");
 	}
 
 	std::shared_ptr<bpp::bpp_dynamic_cast_statement> dynamic_cast_entity = std::make_shared<bpp::bpp_dynamic_cast_statement>();
@@ -38,10 +37,9 @@ void BashppListener::enterDynamicCast(std::shared_ptr<AST::DynamicCast> node) {
 }
 
 void BashppListener::exitDynamicCast(std::shared_ptr<AST::DynamicCast> node) {
-	skip_syntax_errors
 	std::shared_ptr<bpp::bpp_dynamic_cast_statement> dynamic_cast_entity = std::dynamic_pointer_cast<bpp::bpp_dynamic_cast_statement>(entity_stack.top());
 	if (dynamic_cast_entity == nullptr) {
-		throw internal_error("Dynamic cast context was not found in the entity stack");
+		throw bpp::ErrorHandling::InternalError("Dynamic cast context was not found in the entity stack");
 	}
 
 	entity_stack.pop();
@@ -49,11 +47,11 @@ void BashppListener::exitDynamicCast(std::shared_ptr<AST::DynamicCast> node) {
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw internal_error("Current code entity was not found in the entity stack");
+		throw bpp::ErrorHandling::InternalError("Current code entity was not found in the entity stack");
 	}
 
 	if (dynamic_cast_entity->get_cast_to().empty()) {
-		syntax_error(node, "Dynamic cast target not specified");
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Dynamic cast target not specified");
 	}
 
 	code_segment dynamic_cast_code = generate_dynamic_cast_code(dynamic_cast_entity->get_code(), dynamic_cast_entity->get_cast_to(), program);

@@ -131,13 +131,12 @@ class SyntaxError : public ErrorOrWarning {
 		template <bpp::detail::ErrorReportableListener Listener, bpp::detail::ASTNodePtrORToken T>
 		inline SyntaxError(Listener* listener, T error_ctx, const std::string& msg) : ErrorOrWarning(listener, error_ctx, msg) {
 			is_warning = false;
-			listener->set_has_errors(true);
 		}
 };
 
 /**
  * @class Warning
- * @brief An compiler warning that is not fatal to compilation
+ * @brief A compiler warning that is not fatal to compilation
  * This type should never be thrown. Instead, it should be constructed and displayed via the print() method.
  * Throwing it would halt compilation, which is not desired for warnings.
  * This class likewise can be constructed from any listener that satisfies the ErrorReportableListener concept,

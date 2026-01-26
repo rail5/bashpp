@@ -147,7 +147,6 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 		std::shared_ptr<bpp::bpp_class> primitive;
 
 		bool lsp_mode = false; // Whether this listener is just running as part of the language server (i.e., not really compiling anything)
-		bool program_has_errors = false;
 
 		#define show_warning(token, msg) \
 			if (!suppress_warnings) { \
@@ -162,7 +161,6 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 	void set_included(bool included);
 	void set_included_from(BashppListener* included_from);
 	void set_included_files(std::shared_ptr<std::set<std::string>> included_files);
-	void set_errors();
 	void set_code_buffer(std::shared_ptr<std::ostream> code_buffer);
 	void set_output_stream(std::shared_ptr<std::ostream> output_stream);
 	void set_output_file(std::string output_file);
@@ -171,7 +169,6 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 	void set_target_bash_version(BashVersion target_bash_version);
 	void set_arguments(std::vector<char*> arguments);
 	void set_lsp_mode(bool lsp_mode);
-	void set_has_errors(bool has_errors);
 
 	void set_replacement_file_contents(const std::string& file_path, const std::string& contents);
 

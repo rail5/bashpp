@@ -155,6 +155,10 @@ class BaseListener {
 			AST_LISTENER_NODE_LIST(AST_MAKE_MAP_ENTRY)
 		};
 		#undef AST_MAKE_MAP_ENTRY
+
+	protected:
+		bool program_has_errors = false;
+
 	public:
 		virtual ~BaseListener() = default;
 
@@ -186,6 +190,7 @@ class BaseListener {
 				// The listener will in fact refuse to complete compilation if any syntax errors were encountered,
 				// but continuing traversal allows us to report multiple syntax errors in one go.
 				node->clearChildren();
+				this->program_has_errors = true;
 				e.print();
 				return;
 			}
@@ -194,6 +199,10 @@ class BaseListener {
 		#undef TOTAL_NODE_TYPES
 		#undef COUNT_NODE_TYPE
 		#undef AST_LISTENER_NODE_LIST
+
+		inline void set_has_errors(bool has_errors) {
+			this->program_has_errors = has_errors;
+		}
 };
 
 } // namespace AST

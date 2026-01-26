@@ -45,9 +45,7 @@ void BashppListener::exitProgram(std::shared_ptr<AST::Program> node) {
 	}
 
 	if (included) {
-		if (program_has_errors) {
-			included_from->set_errors();
-		}
+		included_from->set_has_errors(program_has_errors);
 		return;
 	}
 

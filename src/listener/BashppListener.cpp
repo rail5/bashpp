@@ -33,15 +33,6 @@ void BashppListener::set_included_files(std::shared_ptr<std::set<std::string>> i
 	this->included_files = included_files;
 }
 
-/**
- * @brief Sets the program_has_errors flag to true.
- * 
- * This function is called when a syntax error is encountered during parsing.
- */
-void BashppListener::set_errors() {
-	program_has_errors = true;
-}
-
 void BashppListener::set_code_buffer(std::shared_ptr<std::ostream> code_buffer) {
 	this->code_buffer = code_buffer;
 }
@@ -72,10 +63,6 @@ void BashppListener::set_arguments(std::vector<char*> arguments) {
 
 void BashppListener::set_lsp_mode(bool lsp_mode) {
 	this->lsp_mode = lsp_mode;
-}
-
-void BashppListener::set_has_errors(bool has_errors) {
-	this->program_has_errors = has_errors;
 }
 
 std::shared_ptr<bpp::bpp_program> BashppListener::get_program() {

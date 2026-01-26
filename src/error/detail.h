@@ -59,7 +59,6 @@ concept ErrorReportableListener = requires(T t) {
 	{ t.get_include_stack() } -> std::same_as<std::stack<std::string>>;
 	{ t.get_source_file() } -> std::same_as<std::string>;
 	{ t.get_lsp_mode() } -> std::same_as<bool>;
-	{ t.set_has_errors(true) } -> std::same_as<void>;
 };
 
 } // namespace detail

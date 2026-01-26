@@ -15,20 +15,20 @@
 #include <unistd.h>
 #include <getopt.h>
 
-#include "lsp/BashppServer.h"
-#include "lsp/helpers.h"
+#include <lsp/BashppServer.h>
+#include <lsp/helpers.h>
 
-#include "include/BashVersion.h"
+#include <include/BashVersion.h>
 
-#include "version.h"
-#include "updated_year.h"
+#include <version.h>
+#include <updated_year.h>
 
 bpp::BashppServer server;
 int client_fd = -1;
 int server_fd = -1;
 int socket_port = 0;
 
-#include "exit_code.h"
+#include <include/exit_code.h>
 volatile int bpp_exit_code = 0;
 
 int main(int argc, char* argv[]) {

@@ -3,9 +3,9 @@
  * Bash++: Bash with classes
  */
 
-#include "../BashppServer.h"
-#include "../generated/CompletionRequest.h"
-#include "../include/resolve_entity.h"
+#include <lsp/BashppServer.h>
+#include <lsp/generated/CompletionRequest.h>
+#include <lsp/include/resolve_entity.h>
 
 GenericResponseMessage bpp::BashppServer::handleCompletion(const GenericRequestMessage& request) {
 

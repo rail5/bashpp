@@ -29,9 +29,8 @@
 #include "generated/CompletionList.h"
 #include "generated/CompletionParams.h"
 
-#include "../bpp_include/bpp_codegen.h"
-
-#include "../include/BashVersion.h"
+#include <bpp_include/bpp_codegen.h>
+#include <include/BashVersion.h>
 
 namespace bpp {
 

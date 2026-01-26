@@ -3,7 +3,7 @@
 * Bash++: Bash with classes
 */
 
-#include "../BashppListener.h"
+#include <listener/BashppListener.h>
 
 void BashppListener::enterPrimitiveAssignment(std::shared_ptr<AST::PrimitiveAssignment> node) {
 	skip_syntax_errors

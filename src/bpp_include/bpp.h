@@ -15,9 +15,9 @@
 
 #include "replace_all.h"
 
-#include "../include/EntityMap.h"
-#include "../include/BashVersion.h"
-#include "../AST/Nodes/Program.h"
+#include <include/EntityMap.h>
+#include <include/BashVersion.h>
+#include <AST/Nodes/Program.h>
 
 namespace bpp {
 

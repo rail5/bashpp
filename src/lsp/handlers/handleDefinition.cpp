@@ -3,9 +3,9 @@
  * Bash++: Bash with classes
  */
 
-#include "../BashppServer.h"
-#include "../generated/DefinitionRequest.h"
-#include "../include/resolve_entity.h"
+#include <lsp/BashppServer.h>
+#include <lsp/generated/DefinitionRequest.h>
+#include <lsp/include/resolve_entity.h>
 
 GenericResponseMessage bpp::BashppServer::handleDefinition(const GenericRequestMessage& request) {
 	DefinitionRequest definition_request = request.toSpecific<DefinitionParams>();

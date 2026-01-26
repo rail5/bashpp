@@ -3,7 +3,7 @@
 * Bash++: Bash with classes
 */
 
-#include "../BashppListener.h"
+#include <listener/BashppListener.h>
 
 void BashppListener::enterBlock(std::shared_ptr<AST::Block> node) {
 	skip_syntax_errors

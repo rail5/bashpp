@@ -8,8 +8,8 @@
 #include <memory>
 #include <variant>
 #include <stack>
-#include "ASTNode.h"
-#include "Nodes/Nodes.h"
+#include <AST/ASTNode.h>
+#include <AST/Nodes/Nodes.h>
 
 typedef void* yyscan_t;
 

@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "../ASTNode.h"
-#include "StringType.h"
+#include <AST/ASTNode.h>
+#include <AST/Nodes/StringType.h>
 
 namespace AST {
 

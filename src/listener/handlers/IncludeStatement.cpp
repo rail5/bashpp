@@ -3,8 +3,8 @@
 * Bash++: Bash with classes
 */
 
-#include "../BashppListener.h"
-#include "../../AST/BashppParser.h"
+#include <listener/BashppListener.h>
+#include <AST/BashppParser.h>
 
 #include <unistd.h>
 

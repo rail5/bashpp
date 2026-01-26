@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "../ASTNode.h"
-#include "RawText.h"
+#include <AST/ASTNode.h>
+#include <AST/Nodes/RawText.h>
 #include <cstdint>
 
 namespace AST {

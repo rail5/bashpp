@@ -5,7 +5,7 @@
 
 #include "BashppParser.h"
 
-#include "../internal_error.h"
+#include <error/internal_error.h>
 #include <stdexcept>
 
 struct LexerExtra;
@@ -20,8 +20,8 @@ extern void destroyLexer(yyscan_t yyscanner);
 extern bool set_display_lexer_output(bool enable, yyscan_t yyscanner);
 extern void set_utf16_mode(bool enable, yyscan_t yyscanner);
 
-#include "../flexbison/parser.tab.hpp"
-#include "../flexbison/lex.yy.hpp"
+#include <flexbison/generated/parser.tab.hpp>
+#include <flexbison/generated/lex.yy.hpp>
 
 void AST::BashppParser::_initialize_lexer() {
 	// If the input_source is empty, throw an exception

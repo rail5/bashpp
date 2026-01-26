@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#include "../BashppServer.h"
-#include "../generated/DidChangeTextDocumentNotification.h"
+#include <lsp/BashppServer.h>
+#include <lsp/generated/DidChangeTextDocumentNotification.h>
 
 void bpp::BashppServer::handleDidChange(const GenericNotificationMessage& request) {
 	DidChangeTextDocumentNotification did_change_notification = request.toSpecific<DidChangeTextDocumentParams>();

@@ -3,7 +3,7 @@
 * Bash++: Bash with classes
 */
 
-#include "../BashppListener.h"
+#include <listener/BashppListener.h>
 
 void BashppListener::enterParameterExpansion(std::shared_ptr<AST::ParameterExpansion> node) {
 	skip_syntax_errors

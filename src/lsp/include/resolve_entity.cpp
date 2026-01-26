@@ -6,7 +6,7 @@
 #include "resolve_entity.h"
 #include <memory>
 #include <unistd.h>
-#include "../../AST/Nodes/Nodes.h"
+#include <AST/Nodes/Nodes.h>
 
 std::shared_ptr<AST::ASTNode> find_node_at_position(std::shared_ptr<AST::ASTNode> node, uint32_t line, uint32_t column) {
 	if (node == nullptr) return nullptr;

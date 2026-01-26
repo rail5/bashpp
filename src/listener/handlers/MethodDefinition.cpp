@@ -3,7 +3,7 @@
 * Bash++: Bash with classes
 */
 
-#include "../BashppListener.h"
+#include <listener/BashppListener.h>
 
 void BashppListener::enterMethodDefinition(std::shared_ptr<AST::MethodDefinition> node) {
 	skip_syntax_errors

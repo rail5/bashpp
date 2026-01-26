@@ -6,8 +6,8 @@
  * Bash++: Bash with classes
  */
 #include "parser.tab.hpp" // Bison header for token types
-#include "../AST/Token.h" // For AST::Token<T>
-#include "../ModeStack.h"
+#include <AST/Token.h> // For AST::Token<T>
+#include <flexbison/ModeStack.h>
 #include <cstdint>
 #include <stack>
 #include <deque>

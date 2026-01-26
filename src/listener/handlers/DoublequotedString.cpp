@@ -3,7 +3,7 @@
 * Bash++: Bash with classes
 */
 
-#include "../BashppListener.h"
+#include <listener/BashppListener.h>
 
 void BashppListener::enterDoublequotedString(std::shared_ptr<AST::DoublequotedString> node) {
 	skip_syntax_errors

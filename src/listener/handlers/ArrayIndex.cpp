@@ -3,7 +3,7 @@
 * Bash++: Bash with classes
 */
 
-#include "../BashppListener.h"
+#include <listener/BashppListener.h>
 
 void BashppListener::enterArrayIndex(std::shared_ptr<AST::ArrayIndex> node) {
 	skip_syntax_errors

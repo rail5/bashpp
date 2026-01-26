@@ -3,7 +3,7 @@
 * Bash++: Bash with classes
 */
 
-#include "../BashppListener.h"
+#include <listener/BashppListener.h>
 
 void BashppListener::enterDynamicCastTarget(std::shared_ptr<AST::DynamicCastTarget> node) {
 	skip_syntax_errors

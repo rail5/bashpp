@@ -10,7 +10,7 @@
 * 		3. BashWhileOrUntilCondition
 */
 
-#include "../BashppListener.h"
+#include <listener/BashppListener.h>
 #include <memory>
 
 void BashppListener::enterBashWhileStatement(std::shared_ptr<AST::BashWhileStatement> node) {

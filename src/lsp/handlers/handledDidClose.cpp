@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#include "../BashppServer.h"
-#include "../generated/DidCloseTextDocumentNotification.h"
+#include <lsp/BashppServer.h>
+#include <lsp/generated/DidCloseTextDocumentNotification.h>
 
 void bpp::BashppServer::handleDidClose(const GenericNotificationMessage& request) {
 	DidCloseTextDocumentNotification did_close_notification = request.toSpecific<DidCloseTextDocumentParams>();

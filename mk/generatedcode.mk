@@ -3,13 +3,13 @@ include mk/config.mk
 # FLEX/BISON LEXER/PARSER GENERATION
 FLEXBISON_LOCK = .flexbison.lock
 
-$(FLEXBISON_STAMP): $(SRCDIR)/lexer.l $(SRCDIR)/parser.y
+$(FLEXBISON_GENERATED_STAMP): $(FLEXBISONDIR)/lexer.l $(FLEXBISONDIR)/parser.y
 	@if [ ! -f $(FLEXBISON_LOCK) ]; then \
 		touch $(FLEXBISON_LOCK); \
 		echo "Generating lexer and parser..."; \
-		mkdir -p $(FLEXBISONDIR); \
-		flex --header-file=$(FLEXBISONDIR)/lex.yy.hpp -o $(FLEXBISONDIR)/lex.yy.cpp src/lexer.l; \
-		bison -o $(FLEXBISONDIR)/parser.tab.cpp -d src/parser.y; \
+		mkdir -p $(FLEXBISON_GENERATEDDIR); \
+		flex --header-file=$(FLEXBISON_GENERATEDDIR)/lex.yy.hpp -o $(FLEXBISON_GENERATEDDIR)/lex.yy.cpp $(FLEXBISONDIR)/lexer.l; \
+		bison -o $(FLEXBISON_GENERATEDDIR)/parser.tab.cpp -d $(FLEXBISONDIR)/parser.y; \
 		touch $@; \
 		rm -f $(FLEXBISON_LOCK); \
 	else \
@@ -18,7 +18,7 @@ $(FLEXBISON_STAMP): $(SRCDIR)/lexer.l $(SRCDIR)/parser.y
 		done; \
 	fi
 
-$(FLEXBISONDIR)/%.cpp: $(FLEXBISON_STAMP)
+$(FLEXBISON_GENERATEDDIR)/%.cpp: $(FLEXBISON_GENERATED_STAMP)
 	@:
 
 # LSP CLASSES GENERATION
@@ -47,7 +47,7 @@ $(SRCDIR)/updated_year.h:
 	fi
 
 clean-flexbison:
-	@rm -rf $(FLEXBISONDIR)
+	@rm -rf $(FLEXBISON_GENERATEDDIR)
 	@rm -f $(FLEXBISON_LOCK)
 	@echo "Cleaned up Flex/Bison-generated files."
 clean-lsp:

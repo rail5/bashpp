@@ -3,10 +3,10 @@
  * Bash++: Bash with classes
  */
 
-#include "../BashppServer.h"
+#include <lsp/BashppServer.h>
 
-#include "../generated/InitializeRequest.h"
-#include "../generated/InitializeResult.h"
+#include <lsp/generated/InitializeRequest.h>
+#include <lsp/generated/InitializeResult.h>
 
 GenericResponseMessage bpp::BashppServer::handleInitialize(const GenericRequestMessage& request) {
 	InitializeRequest initialize_request = request.toSpecific<InitializeParams>();

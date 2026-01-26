@@ -10,7 +10,7 @@
 #include <stack>
 #include <memory>
 #include <cstdint>
-#include "bpp_include/bpp.h"
+#include <bpp_include/bpp.h>
 
 /**
  * @brief Print a syntax error or warning message to stderr

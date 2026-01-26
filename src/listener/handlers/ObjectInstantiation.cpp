@@ -3,7 +3,7 @@
 * Bash++: Bash with classes
 */
 
-#include "../BashppListener.h"
+#include <listener/BashppListener.h>
 
 void BashppListener::enterObjectInstantiation(std::shared_ptr<AST::ObjectInstantiation> node) {
 	skip_syntax_errors

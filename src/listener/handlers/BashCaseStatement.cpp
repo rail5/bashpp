@@ -10,7 +10,7 @@
 * 		3. BashCasePatternHeader
 */
 
-#include "../BashppListener.h"
+#include <listener/BashppListener.h>
 
 void BashppListener::enterBashCaseStatement(std::shared_ptr<AST::BashCaseStatement> node) {
 	skip_syntax_errors

@@ -11,10 +11,10 @@
 #include <frozen/unordered_map.h>
 #include <functional>
 
-#include "../ASTNode.h"
-#include "../NodeTypes.h"
-#include "../Nodes/Nodes.h"
-#include "../../internal_error.h"
+#include <AST/ASTNode.h>
+#include <AST/NodeTypes.h>
+#include <AST/Nodes/Nodes.h>
+#include <error/internal_error.h>
 
 namespace AST {
 

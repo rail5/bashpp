@@ -3,9 +3,9 @@
  * Bash++: Bash with classes
  */
 
-#include "../BashppServer.h"
-#include "../generated/ReferencesRequest.h"
-#include "../include/resolve_entity.h"
+#include <lsp/BashppServer.h>
+#include <lsp/generated/ReferencesRequest.h>
+#include <lsp/include/resolve_entity.h>
 
 
 GenericResponseMessage bpp::BashppServer::handleReferences(const GenericRequestMessage& request) {

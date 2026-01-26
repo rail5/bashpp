@@ -3,9 +3,9 @@
  * Bash++: Bash with classes
  */
 
-#include "../BashppServer.h"
-#include "../generated/RenameRequest.h"
-#include "../include/resolve_entity.h"
+#include <lsp/BashppServer.h>
+#include <lsp/generated/RenameRequest.h>
+#include <lsp/include/resolve_entity.h>
 
 GenericResponseMessage bpp::BashppServer::handleRename(const GenericRequestMessage& request) {
 	RenameRequestResponse response;

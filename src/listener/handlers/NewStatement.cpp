@@ -3,7 +3,7 @@
 * Bash++: Bash with classes
 */
 
-#include "../BashppListener.h"
+#include <listener/BashppListener.h>
 
 void BashppListener::enterNewStatement(std::shared_ptr<AST::NewStatement> node) {
 	skip_syntax_errors

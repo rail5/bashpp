@@ -13,9 +13,8 @@
 #include <vector>
 #include <optional>
 
-#include "../bpp_include/bpp.h"
-
-#include "../include/BashVersion.h"
+#include <bpp_include/bpp.h>
+#include <include/BashVersion.h>
 
 /**
  * @class ProgramPool

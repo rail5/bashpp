@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "../ASTNode.h"
+#include <AST/ASTNode.h>
 
 namespace AST {
 

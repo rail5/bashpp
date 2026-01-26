@@ -1,6 +1,7 @@
 # C++ CONFIG
 CXX = g++
 CXXFLAGS = -std=gnu++23 -O2 -s -Wall -MMD -MP
+INCLUDEFLAGS = -Isrc/
 
 # Can we parse debian/changelog?
 PARSECHANGELOG := $(shell command -v dpkg-parsechangelog 2>/dev/null)
@@ -19,10 +20,11 @@ OBJDIR = $(BINDIR)/obj
 
 BPP_OBJDIR = $(OBJDIR)/bpp
 FLEXBISON_OBJDIR = $(OBJDIR)/flexbison
+FLEXBISON_GENERATED_OBJDIR = $(FLEXBISON_OBJDIR)/generated
 LISTENER_OBJDIR = $(OBJDIR)/listener
 COMPILER_HANDLERS_OBJDIR = $(LISTENER_OBJDIR)/handlers
 AST_OBJDIR = $(OBJDIR)/AST
-EXTRA_OBJDIR = $(OBJDIR)/extra
+ERROR_OBJDIR = $(OBJDIR)/error
 
 LSP_OBJDIR = $(OBJDIR)/lsp
 LSP_INCLUDE_OBJDIR = $(LSP_OBJDIR)/include
@@ -50,8 +52,12 @@ AST_SRCDIR = $(SRCDIR)/AST
 AST_SRCS = $(wildcard $(AST_SRCDIR)/*.cpp)
 AST_OBJS = $(patsubst $(AST_SRCDIR)/%.cpp,$(AST_OBJDIR)/%.o,$(AST_SRCS))
 
-EXTRA_SRCS = $(SRCDIR)/internal_error.cpp $(SRCDIR)/syntax_error.cpp $(SRCDIR)/ModeStack.cpp
-EXTRA_OBJS = $(patsubst $(SRCDIR)/%.cpp,$(EXTRA_OBJDIR)/%.o,$(EXTRA_SRCS))
+FLEXBISONDIR = $(SRCDIR)/flexbison
+FLEXBISON_SRCS = $(wildcard $(FLEXBISONDIR)/*.cpp)
+FLEXBISON_OBJS = $(patsubst $(FLEXBISONDIR)/%.cpp,$(FLEXBISON_OBJDIR)/%.o,$(FLEXBISON_SRCS))
+
+ERROR_SRCS = $(wildcard $(SRCDIR)/error/*.cpp)
+ERROR_OBJS = $(patsubst $(SRCDIR)/error/%.cpp,$(ERROR_OBJDIR)/%.o,$(ERROR_SRCS))
 
 MAIN = $(SRCDIR)/main.cpp
 MAIN_OBJ = $(OBJDIR)/main.o
@@ -79,10 +85,10 @@ LSP_MAIN = $(SRCDIR)/bpp-lsp.cpp
 LSP_MAIN_OBJ = $(OBJDIR)/bpp-lsp.o
 
 # GENERATED CODE LOCATIONS
-FLEXBISONDIR = $(SRCDIR)/flexbison
-FLEXBISON_STAMP = $(FLEXBISONDIR)/.stamp
-FLEXBISON_SRCS = $(FLEXBISONDIR)/parser.tab.cpp $(FLEXBISONDIR)/lex.yy.cpp
-FLEXBISON_OBJS = $(patsubst $(FLEXBISONDIR)/%.cpp,$(FLEXBISON_OBJDIR)/%.o,$(FLEXBISON_SRCS))
+FLEXBISON_GENERATEDDIR = $(SRCDIR)/flexbison/generated
+FLEXBISON_GENERATED_STAMP = $(FLEXBISON_GENERATEDDIR)/.stamp
+FLEXBISON_GENERATED_SRCS = $(FLEXBISON_GENERATEDDIR)/parser.tab.cpp $(FLEXBISON_GENERATEDDIR)/lex.yy.cpp
+FLEXBISON_GENERATED_OBJS = $(patsubst $(FLEXBISON_GENERATEDDIR)/%.cpp,$(FLEXBISON_GENERATED_OBJDIR)/%.o,$(FLEXBISON_GENERATED_SRCS))
 
 LSP_GENERATEDDIR = $(LSPDIR)/generated
 LSP_GENERATED_STAMP = $(LSP_GENERATEDDIR)/.stamp

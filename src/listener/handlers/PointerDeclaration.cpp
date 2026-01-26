@@ -3,7 +3,7 @@
 * Bash++: Bash with classes
 */
 
-#include "../BashppListener.h"
+#include <listener/BashppListener.h>
 
 void BashppListener::enterPointerDeclaration(std::shared_ptr<AST::PointerDeclaration> node) {
 	skip_syntax_errors

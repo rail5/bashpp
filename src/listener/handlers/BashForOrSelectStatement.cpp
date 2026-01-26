@@ -10,7 +10,7 @@
 * 		3. BashInCondition
 */
 
-#include "../BashppListener.h"
+#include <listener/BashppListener.h>
 
 void BashppListener::enterBashForStatement(std::shared_ptr<AST::BashForStatement> node) {
 	skip_syntax_errors

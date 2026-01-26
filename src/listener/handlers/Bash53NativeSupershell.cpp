@@ -3,7 +3,7 @@
 * Bash++: Bash with classes
 */
 
-#include "../BashppListener.h"
+#include <listener/BashppListener.h>
 
 void BashppListener::enterBash53NativeSupershell(std::shared_ptr<AST::Bash53NativeSupershell> node) {
 	skip_syntax_errors

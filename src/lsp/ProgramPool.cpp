@@ -7,10 +7,10 @@
 
 #include "ProgramPool.h"
 
-#include "../AST/BashppParser.h"
-#include "../listener/BashppListener.h"
+#include <AST/BashppParser.h>
+#include <listener/BashppListener.h>
 
-#include "include/NullStream.h"
+#include <lsp/include/NullStream.h>
 
 ProgramPool::ProgramPool(size_t max_programs) : max_programs(max_programs) {
 	// Initialize the program pool with a maximum number of programs

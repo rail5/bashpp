@@ -16,11 +16,11 @@
 #include <unistd.h>
 #include <algorithm>
 
-#include "FixedString.h"
-#include "BashVersion.h"
+#include <include/FixedString.h>
+#include <include/BashVersion.h>
 
-#include "../version.h"
-#include "../updated_year.h"
+#include <version.h>
+#include <updated_year.h>
 
 constexpr const char* program_name = "Bash++";
 

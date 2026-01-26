@@ -11,7 +11,7 @@
 * 		4. BashIfElseBranch
 */
 
-#include "../BashppListener.h"
+#include <listener/BashppListener.h>
 
 void BashppListener::enterBashIfStatement(std::shared_ptr<AST::BashIfStatement> node) {
 	skip_syntax_errors

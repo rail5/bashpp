@@ -3,7 +3,7 @@
 * Bash++: Bash with classes
 */
 
-#include "../BashppListener.h"
+#include <listener/BashppListener.h>
 
 void BashppListener::enterDeleteStatement(std::shared_ptr<AST::DeleteStatement> node) {
 	skip_syntax_errors

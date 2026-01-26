@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#include "../BashppServer.h"
-#include "../generated/DidChangeWatchedFilesNotification.h"
+#include <lsp/BashppServer.h>
+#include <lsp/generated/DidChangeWatchedFilesNotification.h>
 
 void bpp::BashppServer::handleDidChangeWatchedFiles(const GenericNotificationMessage& request) {
 	DidChangeWatchedFilesNotification did_change_notification = request.toSpecific<DidChangeWatchedFilesParams>();

@@ -3,7 +3,7 @@
 * Bash++: Bash with classes
 */
 
-#include "../BashppListener.h"
+#include <listener/BashppListener.h>
 
 void BashppListener::enterProcessSubstitution(std::shared_ptr<AST::ProcessSubstitution> node) {
 	skip_syntax_errors

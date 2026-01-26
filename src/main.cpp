@@ -15,7 +15,7 @@
  * As for the rest, the Doxygen documentation will provide details on the compiler's different classes and functions.
 */
 
-#include "exit_code.h"
+#include <include/exit_code.h>
 volatile int bpp_exit_code = 0;
 
 #include <iostream>
@@ -28,14 +28,14 @@ volatile int bpp_exit_code = 0;
 #include <sys/stat.h>
 #include <cstdio>
 
-#include "version.h"
-#include "updated_year.h"
+#include <version.h>
+#include <updated_year.h>
 
-#include "include/parse_arguments.h"
-#include "AST/BashppParser.h"
-#include "listener/BashppListener.h"
+#include <include/parse_arguments.h>
+#include <AST/BashppParser.h>
+#include <listener/BashppListener.h>
 
-#include "internal_error.h"
+#include <error/internal_error.h>
 
 int main(int argc, char* argv[]) {
 	std::shared_ptr<std::ostream> output_stream(&std::cout, [](std::ostream*){});

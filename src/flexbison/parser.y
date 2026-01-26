@@ -9,9 +9,9 @@
  */
 #include <memory>
 #include <cassert>
-#include "../AST/Nodes/Nodes.h"
-#include "../include/ParserPosition.h"
-#include "../syntax_error.h"
+#include <AST/Nodes/Nodes.h>
+#include <include/ParserPosition.h>
+#include <error/syntax_error.h>
 typedef std::shared_ptr<AST::ASTNode> ASTNodePtr;
 typedef void* yyscan_t;
 }

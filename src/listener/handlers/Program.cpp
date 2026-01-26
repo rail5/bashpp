@@ -5,9 +5,9 @@
 
 #include <sys/stat.h>
 #include <unistd.h>
-#include "../BashppListener.h"
-#include "../../exit_code.h"
-#include "../../bpp_include/templates.h"
+#include <listener/BashppListener.h>
+#include <include/exit_code.h>
+#include <bpp_include/templates.h>
 
 void BashppListener::enterProgram(std::shared_ptr<AST::Program> node) {
 	program->set_output_stream(code_buffer);

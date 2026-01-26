@@ -13,8 +13,8 @@
 #include <type_traits>
 
 #include "bpp.h"
-#include "../internal_error.h"
-#include "../AST/ASTNode.h"
+#include <error/internal_error.h>
+#include <AST/ASTNode.h>
 
 namespace bpp {
 // Minimal forward declarations

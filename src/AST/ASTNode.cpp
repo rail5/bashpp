@@ -3,9 +3,9 @@
  * Bash++: Bash with classes
  */
 
-#include "ASTNode.h"
-#include "Nodes/RawText.h"
-#include "Position.h"
+#include <AST/ASTNode.h>
+#include <AST/Nodes/RawText.h>
+#include <AST/Position.h>
 
 namespace AST {
 

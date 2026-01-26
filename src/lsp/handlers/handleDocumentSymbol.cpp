@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#include "../BashppServer.h"
-#include "../generated/DocumentSymbolRequest.h"
+#include <lsp/BashppServer.h>
+#include <lsp/generated/DocumentSymbolRequest.h>
 
 GenericResponseMessage bpp::BashppServer::handleDocumentSymbol(const GenericRequestMessage& request) {
 	// Placeholder for actual implementation

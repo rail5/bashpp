@@ -3,8 +3,8 @@
  * Bash++: Bash with classes
  */
 
-#include "../BashppServer.h"
-#include "../generated/DidOpenTextDocumentNotification.h"
+#include <lsp/BashppServer.h>
+#include <lsp/generated/DidOpenTextDocumentNotification.h>
 
 void bpp::BashppServer::handleDidOpen(const GenericNotificationMessage& request) {
 	DidOpenTextDocumentNotification did_open_notification = request.toSpecific<DidOpenTextDocumentParams>();

@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "../ASTNode.h"
-#include "../AccessModifier.h"
+#include <AST/ASTNode.h>
+#include <AST/AccessModifier.h>
 #include <optional>
 
 namespace AST {

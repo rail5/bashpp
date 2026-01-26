@@ -11,9 +11,9 @@
 #include <string>
 #include <iostream>
 
-#include "NodeTypes.h"
-#include "Position.h"
-#include "Token.h"
+#include <AST/NodeTypes.h>
+#include <AST/Position.h>
+#include <AST/Token.h>
 
 #define PRETTYPRINT_INDENTATION_AMOUNT 4
 

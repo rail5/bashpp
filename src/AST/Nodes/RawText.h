@@ -12,7 +12,7 @@ namespace AST {
 class RawText : public ASTNode {
 	protected:
 		AST::Token<std::string> m_TEXT;
-		const std::string getEscapedText() const {
+		std::string getEscapedText() const {
 			std::string escaped;
 			for (char c : m_TEXT.getValue()) {
 				switch (c) {

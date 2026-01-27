@@ -44,10 +44,6 @@ class ProgramPool {
 		BashVersion target_bash_version = {5, 2};
 		std::recursive_mutex pool_mutex; // Mutex to protect access to the pool
 
-		// This will be zero when all unsaved changes have been stored,
-		// And will be non-zero if some threads are in the middle of storing unsaved changes.
-		std::atomic<size_t> currently_storing_unsaved_changes_count = 0;
-
 		// Pool snapshots:
 		struct Snapshot {
 			std::vector<std::shared_ptr<bpp::bpp_program>> programs_snapshot; // Snapshot of the current programs in the pool
@@ -88,7 +84,6 @@ class ProgramPool {
 
 		void set_unsaved_file_contents(const std::string& file_path, const std::string& contents);
 		void remove_unsaved_file_contents(const std::string& file_path);
-		bool is_currently_storing_unsaved_changes() const noexcept;
 
 		/**
 		 * @brief Get the contents of a file, considering unsaved changes if present.

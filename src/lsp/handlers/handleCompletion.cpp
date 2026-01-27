@@ -30,8 +30,8 @@ GenericResponseMessage bpp::BashppServer::handleCompletion(const GenericRequestM
 	// We need to ensure that our internally-stored version of the file content
 	// is up-to-date before we resolve the reference and provide completions.
 	do {
-		std::this_thread::sleep_for(std::chrono::milliseconds(150));
-	} while (program_pool.is_currently_storing_unsaved_changes());
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
+	} while (processing_didChange.load(std::memory_order_acquire) == true);
 	
 	// Which character triggered the request?
 	char trigger_character = '.';

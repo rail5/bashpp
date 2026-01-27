@@ -41,17 +41,14 @@ void ProgramPool::set_target_bash_version(const BashVersion& version) {
 }
 
 void ProgramPool::set_unsaved_file_contents(const std::string& file_path, const std::string& contents) {
-	currently_storing_unsaved_changes_count.fetch_add(1, std::memory_order_acq_rel);
 	{
 		std::lock_guard<std::recursive_mutex> lock(pool_mutex);
 		unsaved_changes[file_path] = contents;
 	}
 	update_snapshot();
-	currently_storing_unsaved_changes_count.fetch_sub(1, std::memory_order_acq_rel);
 }
 
 void ProgramPool::remove_unsaved_file_contents(const std::string& file_path) {
-	currently_storing_unsaved_changes_count.fetch_add(1, std::memory_order_acq_rel);
 	{
 		std::lock_guard<std::recursive_mutex> lock(pool_mutex);
 		auto it = unsaved_changes.find(file_path);
@@ -60,11 +57,6 @@ void ProgramPool::remove_unsaved_file_contents(const std::string& file_path) {
 		}
 	}
 	update_snapshot();
-	currently_storing_unsaved_changes_count.fetch_sub(1, std::memory_order_acq_rel);
-}
-
-bool ProgramPool::is_currently_storing_unsaved_changes() const noexcept {
-	return currently_storing_unsaved_changes_count.load(std::memory_order_acquire) > 0;
 }
 
 std::string ProgramPool::get_file_contents(const std::string& file_path) {

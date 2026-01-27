@@ -67,8 +67,44 @@ class BashppServer {
 		std::ofstream log_file;
 
 		// Debouncing didChange notifications
-		std::unordered_map<std::string, std::shared_ptr<std::atomic<uint64_t>>> debounce_timestamps;
-		std::mutex debounce_mutex;
+		struct DebounceState {
+			std::atomic<uint64_t> change_generation{0};
+			std::atomic<uint64_t> average_reparse_time_in_microseconds{50'000}; // 50ms initial guess
+			std::atomic<uint32_t> debounce_time_in_milliseconds{100}; // Start with 100ms
+		};
+
+		// Map: program main URI -> DebounceState
+		// Used for adaptive debouncing
+		class DebounceStateMap {
+			private:
+				std::unordered_map<std::string, std::shared_ptr<DebounceState>> states;
+				ProgramPool* pool;
+				std::mutex map_mutex;
+
+				void cleanup() {
+					for (auto it = states.begin(); it != states.end(); ) {
+						if (!pool->has_program(it->first)) {
+							it = states.erase(it);
+						} else {
+							it++;
+						}
+					}
+				}
+			public:
+				DebounceStateMap() = delete;
+				explicit DebounceStateMap(ProgramPool* program_pool) : pool(program_pool) {}
+				std::shared_ptr<DebounceState> get(const std::string& uri) {
+					std::lock_guard<std::mutex> lock(map_mutex);
+					cleanup(); // Clean up stale entries on every access
+					auto it = states.find(uri);
+					if (it != states.end()) return it->second;
+					auto new_state = std::make_shared<DebounceState>();
+					states[uri] = new_state;
+					return new_state;
+				}
+		};
+		DebounceStateMap debounce_states = DebounceStateMap(&program_pool);
+		std::atomic<bool> processing_didChange{false};
 
 		void _sendMessage(const std::string& message);
 

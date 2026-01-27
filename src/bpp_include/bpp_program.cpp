@@ -105,7 +105,8 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 
 			// Call the constructor if it exists
 			if (dm->get_class()->get_method_UNSAFE("__constructor") != nullptr) {
-				assignments += "	bpp__" + dm->get_class()->get_name() + "____constructor \"${__this}__" + dm->get_name() + "\"\n";
+				auto constructor_code = generate_constructor_call_code("${__this}__" + dm->get_name(), dm->get_class());
+				assignments += constructor_code.full_code();
 			}
 		}
 		assignments += dm->get_post_access_code() + "\n";
@@ -141,8 +142,19 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 
 	// Add the methods
 	for (auto& method : class_->get_methods()) {
+		if (method->is_inherited() && !method->is_virtual()) continue;
+
+		if (method->is_virtual()) {
+			if (method->get_last_override() != name) {
+				// Add the vTable entry to point to the last override
+				class_vTable += "bpp__" + name + "____vTable[\"" + method->get_name() + "\"]=\"bpp__" + method->get_last_override() + "__" + method->get_name() + "\"\n";
+				continue; // Skip generating the method again
+			} else {
+				class_vTable += "bpp__" + name + "____vTable[\"" + method->get_name() + "\"]=\"bpp__" + name + "__" + method->get_name() + "\"\n";
+			}
+		}
+
 		std::string method_code = template_method;
-		std::string method_name = method->get_name();
 		std::string params = method->get_parameters().empty() ? "" : "local ";
 		for (size_t i = 0; i < method->get_parameters().size(); i++) {
 			params += method->get_parameters()[i]->get_name() + "=\"$" + std::to_string(i + 1) + "\"";
@@ -151,15 +163,10 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 			}
 		}
 		method_code = replace_all(method_code, "%CLASS%", class_->get_name());
-		method_code = replace_all(method_code, "%SIGNATURE%", method_name);
+		method_code = replace_all(method_code, "%SIGNATURE%", method->get_name());
 		method_code = replace_all(method_code, "%PARAMS%", params);
 		method_code = replace_all(method_code, "%METHODBODY%", method->get_code());
 		class_code += method_code;
-
-		// Add the method to the vTable if it is virtual
-		if (method->is_virtual()) {
-			class_vTable += "bpp__" + name + "____vTable[\"" + method_name + "\"]=\"bpp__" + name + "__" + method_name + "\"\n";
-		}
 	}
 
 	*code << class_code << class_vTable << std::flush;

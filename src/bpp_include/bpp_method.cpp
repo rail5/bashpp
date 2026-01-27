@@ -91,6 +91,10 @@ void bpp_method::set_inherited(bool is_inherited) {
 	inherited = is_inherited;
 }
 
+void bpp_method::set_last_override(const std::string& class_name) {
+	last_override = class_name;
+}
+
 std::vector<std::shared_ptr<bpp_method_parameter>> bpp_method::get_parameters() const {
 	return parameters;
 }
@@ -105,6 +109,10 @@ bool bpp_method::is_virtual() const {
 
 bool bpp_method::is_inherited() const {
 	return inherited;
+}
+
+std::string bpp_method::get_last_override() const {
+	return last_override;
 }
 
 /**
@@ -157,7 +165,8 @@ bool bpp_method::add_object(std::shared_ptr<bpp_object> object, bool make_local)
 			object_code += inline_new(object->get_address(), object->get_class()).pre_code;
 			// Call the constructor if it exists
 			if (object->get_class()->get_method_UNSAFE("__constructor") != nullptr) {
-				object_code += "bpp__" + type + "____constructor " + object->get_address() + "\n";
+				auto constructor_code = generate_constructor_call_code(object->get_address(), object->get_class());
+				object_code += constructor_code.full_code();
 			}
 		}
 	}

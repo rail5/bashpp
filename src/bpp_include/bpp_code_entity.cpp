@@ -4,6 +4,7 @@
 */
 
 #include "bpp.h"
+#include "bpp_codegen.h"
 
 namespace bpp {
 
@@ -135,7 +136,8 @@ bool bpp_code_entity::add_object(std::shared_ptr<bpp_object> object, bool make_l
 			object_code += "bpp__" + type + "____new " + object->get_address() + " >/dev/null\n";
 			// Call the constructor if it exists
 			if (object->get_class()->get_method_UNSAFE("__constructor") != nullptr) {
-				object_code += "bpp__" + type + "____constructor " + object->get_address() + "\n";
+				auto constructor_code = generate_constructor_call_code(object->get_address(), object->get_class());
+				object_code += constructor_code.full_code();
 			}
 		}
 	}

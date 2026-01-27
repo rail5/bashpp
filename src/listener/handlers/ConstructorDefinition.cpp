@@ -21,7 +21,6 @@ void BashppListener::enterConstructorDefinition(std::shared_ptr<AST::Constructor
 	std::shared_ptr<bpp::bpp_method> constructor = std::make_shared<bpp::bpp_method>();
 	constructor->set_name("__constructor");
 	constructor->set_scope(bpp::bpp_scope::SCOPE_PUBLIC);
-	constructor->set_virtual(true);
 	constructor->set_containing_class(current_class);
 	constructor->inherit(program);
 	entity_stack.push(constructor);

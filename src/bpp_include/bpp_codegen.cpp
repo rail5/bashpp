@@ -154,8 +154,31 @@ code_segment generate_method_call_code(
 		result.code = "	${!__func" + std::to_string(program->get_function_counter()) + "} " + reference_code;
 		program->increment_function_counter();
 	} else {
-		result.code = "bpp__" + assumed_class->get_name() + "__" + method_name + " " + reference_code;
+		std::string class_name = assumed_class->get_name();
+		auto class_containing_the_method = assumed_method->get_containing_class().lock();
+		if (class_containing_the_method != nullptr) {
+			class_name = class_containing_the_method->get_name();
+		}
+		result.code = "bpp__" + class_name + "__" + method_name + " " + reference_code;
 	}
+
+	return result;
+}
+
+code_segment generate_constructor_call_code(const std::string &reference_code,
+	std::shared_ptr<bpp_class> assumed_class
+) {
+	code_segment result;
+	auto constructor_method = assumed_class->get_method_UNSAFE("__constructor");
+	if (constructor_method == nullptr) return result;
+
+	std::string class_name = assumed_class->get_name();
+	auto class_containing_the_constructor = constructor_method->get_containing_class().lock();
+	if (class_containing_the_constructor != nullptr) {
+		class_name = class_containing_the_constructor->get_name();
+	}
+
+	result.code = "bpp__" + class_name + "____constructor " + reference_code + "\n";
 
 	return result;
 }
@@ -260,7 +283,8 @@ code_segment inline_new(
 			result.pre_code += inline_new(new_address + "__" + dm->get_name(), dm->get_class()).pre_code;
 			// Call the constructor if it exists
 			if (dm->get_class()->get_method_UNSAFE("__constructor") != nullptr) {
-				result.pre_code += "	bpp__" + dm->get_class()->get_name() + "____constructor \"" + new_address + "__" + dm->get_name() + "\"\n";
+				auto constructor_code = generate_constructor_call_code(new_address + "__" + dm->get_name(), dm->get_class());
+				result.pre_code += constructor_code.full_code();
 			}
 		}
 		result.pre_code += dm->get_post_access_code() + "\n";

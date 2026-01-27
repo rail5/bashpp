@@ -412,6 +412,7 @@ class bpp_method : public bpp_code_entity {
 		bool m_is_virtual = false;
 		bool inherited = false;
 		bool add_object_as_parameter(std::shared_ptr<bpp_object> object);
+		std::string last_override; // Name of the latest class to override this virtual method
 	public:
 		bpp_method();
 		explicit bpp_method(const std::string& name);
@@ -421,12 +422,14 @@ class bpp_method : public bpp_code_entity {
 		void set_scope(bpp_scope scope);
 		void set_virtual(bool is_virtual);
 		void set_inherited(bool is_inherited);
+		void set_last_override(const std::string& class_name);
 		bool add_object(std::shared_ptr<bpp_object> object, bool make_local) override;
 
 		std::vector<std::shared_ptr<bpp_method_parameter>> get_parameters() const;
 		bpp_scope get_scope() const;
 		bool is_virtual() const;
 		bool is_inherited() const;
+		std::string get_last_override() const;
 
 		void destruct_local_objects(std::shared_ptr<bpp_program> program);
 };

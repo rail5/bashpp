@@ -47,12 +47,13 @@ void BashppListener::enterNewStatement(std::shared_ptr<AST::NewStatement> node) 
 	program->increment_assignment_counter();
 
 	// Call the constructor if it exists
-	if (new_class->get_method_UNSAFE("__constructor") != nullptr) {
+	auto constructor_method = new_class->get_method_UNSAFE("__constructor");
+	if (constructor_method != nullptr) {
 		// The 'new' function was called in a supershell, and its output was stored in the variable given in new_code.code
 		// This output is the pointer to the new object
 		// Call the constructor with this pointer as the argument
-		std::string constructor_call = "bpp__" + class_name + "____constructor " + tmp_storage_var + "\n";
-		current_code_entity->add_code_to_previous_line(constructor_call);
+		auto constructor_code = generate_constructor_call_code(tmp_storage_var, new_class);
+		current_code_entity->add_code_to_previous_line(constructor_code.full_code());
 	}
 
 	current_code_entity->add_code_to_next_line(new_code.post_code);

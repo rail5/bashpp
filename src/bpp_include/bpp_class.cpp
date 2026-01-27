@@ -8,9 +8,7 @@
 
 namespace bpp {
 
-bpp_class::bpp_class() {
-	add_default_destructor();
-}
+bpp_class::bpp_class() {}
 
 /**
  * @brief Remove the default toPrimitive method
@@ -44,6 +42,7 @@ void bpp_class::add_default_toPrimitive()  {
 		toPrimitive->add_code(default_toPrimitive_body);
 		toPrimitive->set_scope(bpp_scope::SCOPE_PUBLIC);
 		toPrimitive->set_virtual(true);
+		toPrimitive->set_last_override(name);
 		remove_default_toPrimitive();
 		methods.push_back(toPrimitive);
 	}
@@ -77,6 +76,7 @@ void bpp_class::add_default_destructor()  {
 		destructor->set_name("__destructor");
 		destructor->set_scope(bpp_scope::SCOPE_PUBLIC);
 		destructor->set_virtual(true);
+		destructor->set_last_override(name);
 		remove_default_destructor();
 		methods.push_back(destructor);
 	}
@@ -98,6 +98,7 @@ void bpp_class::set_name(const std::string& name) {
 	this->name = name;
 
 	add_default_toPrimitive();
+	add_default_destructor();
 }
 
 /**
@@ -112,27 +113,39 @@ bool bpp_class::add_method(std::shared_ptr<bpp_method> method) {
 			return false;
 		}
 		method->set_virtual(true);
+		method->set_last_override(this->name);
+		method->set_containing_class(weak_from_this());
 		remove_default_toPrimitive();
 		has_custom_toPrimitive = true;
 	}
 
 	if (name == "__destructor" && !has_custom_destructor) {
 		method->set_virtual(true);
+		method->set_last_override(this->name);
+		method->set_containing_class(weak_from_this());
 		remove_default_destructor();
 		has_custom_destructor = true;
 	}
 
 	for (auto it = methods.begin(); it != methods.end(); it++) {
 		if ((*it)->get_name() == name) {
-			if ((*it)->is_inherited() && (*it)->is_virtual()) {
+			if ((*it)->is_inherited() && (*it)->is_virtual() && (*it)->get_last_override() != this->name) {
 				// Override the inherited virtual method
 				method->set_virtual(true);
+				method->set_last_override(this->name);
+				method->set_containing_class(weak_from_this());
 				methods.erase(it);
-				methods.push_back(method);
-				return true;
+				break;
+			} else {
+				// Method re-definition error
+				return false;
 			}
-			return false;
 		}
+	}
+
+	// If this is the initial definition of a virtual method, set the last_override to this (the base) class
+	if (!method->is_inherited() && method->is_virtual()) {
+		method->set_last_override(this->name);
 	}
 
 	// If this method shares the name of a datamember, reject it
@@ -142,7 +155,7 @@ bool bpp_class::add_method(std::shared_ptr<bpp_method> method) {
 		}
 	}
 
-	method->set_containing_class(weak_from_this());
+	if (!method->is_inherited()) method->set_containing_class(weak_from_this());
 
 	methods.push_back(method);
 	return true;
@@ -289,31 +302,18 @@ std::shared_ptr<bpp::bpp_datamember> bpp_class::get_datamember_UNSAFE(const std:
  */
 void bpp_class::inherit(std::shared_ptr<bpp_class> parent) {
 	// Inherit methods
+	methods.reserve(methods.size() + parent->get_methods().size());
 	for (auto& m : parent->get_methods()) {
-		if (m->get_name() == "toPrimitive" || m->get_name() == "__delete") {
-			continue; // Don't inherit toPrimitive or system methods
+		if (m->get_name() == "toPrimitive" || m->get_name() == "__delete") continue; // Skip these, they are handled specially
+		if (m->get_scope() == bpp_scope::SCOPE_PRIVATE) {
+			m->set_scope(bpp_scope::SCOPE_INACCESSIBLE);
 		}
-		// Write a proxy method to the base class's method
-		std::shared_ptr<bpp_method> proxy = std::make_shared<bpp_method>();
-		proxy->set_name(m->get_name());
-		proxy->set_scope( (m->get_scope() == bpp_scope::SCOPE_PRIVATE) ? bpp_scope::SCOPE_INACCESSIBLE : m->get_scope() );
-		proxy->set_virtual(m->is_virtual());
-		proxy->set_inherited(true);
-
-		std::string proxy_method_code = "bpp__" + parent->get_name() + "__" + m->get_name()
-			+ " ${__this}";
-		// Add the parameters
-		for (auto& p : m->get_parameters()) {
-			proxy->add_parameter(p);
-			proxy_method_code += " \"$" + p->get_name() + "\"";
-		}
-		proxy_method_code += "\n";
-		proxy->add_code(proxy_method_code);
-
-		add_method(proxy);
+		m->set_inherited(true);
+		add_method(m);
 	}
 
 	// Inherit datamembers
+	datamembers.reserve(datamembers.size() + parent->get_datamembers().size());
 	for (auto& d : parent->get_datamembers()) {
 		datamembers.push_back(d);
 		// If the datamember is marked private, mark it as inaccessible
@@ -323,6 +323,7 @@ void bpp_class::inherit(std::shared_ptr<bpp_class> parent) {
 	}
 
 	// Inherit parents
+	parents.reserve(parents.size() + parent->parents.size() + 1);
 	for (auto& p : parent->parents) {
 		parents.push_back(p);
 	}

@@ -47,6 +47,8 @@ void BashppListener::exitBashForStatement(std::shared_ptr<AST::BashForStatement>
 		throw bpp::ErrorHandling::InternalError("Current code entity not found in the entity stack");
 	}
 
+	for_loop->flush_code_buffers();
+
 	current_code_entity->add_code_to_previous_line(for_loop->get_header_pre_code());
 	current_code_entity->add_code_to_next_line("done\n");
 	current_code_entity->add_code_to_next_line(for_loop->get_header_post_code());
@@ -97,6 +99,8 @@ void BashppListener::exitBashSelectStatement(std::shared_ptr<AST::BashSelectStat
 	if (current_code_entity == nullptr) {
 		throw bpp::ErrorHandling::InternalError("Current code entity not found in the entity stack");
 	}
+
+	select_statement->flush_code_buffers();
 
 	current_code_entity->add_code_to_previous_line(select_statement->get_header_pre_code());
 	current_code_entity->add_code_to_next_line("done\n");

@@ -12,7 +12,7 @@ Derived Instance
 bpp__Example__something bpp__0__Derived__d
 bpp__Derived__something bpp__0__Derived__d
 bpp__Example__nonVirtual bpp__0__Derived__d
-bpp__Derived__nonVirtual bpp__0__Derived__d
+bpp__Example__nonVirtual bpp__0__Derived__d
 bpp__0__Derived__d__member
 bpp__0__Derived__d__member
 Example Instance

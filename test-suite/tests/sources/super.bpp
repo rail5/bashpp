@@ -32,7 +32,7 @@
 		echo &@super.something # Address of the base class method
 		echo &@this.something # Address of the derived class method
 		echo &@super.nonVirtual # Address of the base class non-virtual
-		echo &@this.nonVirtual # Address of the derived class non-virtual
+		echo &@this.nonVirtual # Same as above, non-virtual methods are not overridden
 		echo &@super.member # Address of this object's member
 		echo &@this.member # Address of this object's member
 

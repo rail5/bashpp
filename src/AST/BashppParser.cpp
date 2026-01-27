@@ -87,7 +87,7 @@ void AST::BashppParser::_parse() {
 			input_file_path,
 			include_chain,
 			lexer);
-		int parse_result = parser.parse();
+		parser.parse(); // Returns an int, not needed by us
 	} catch (...) {
 		_destroy_lexer();
 		throw;

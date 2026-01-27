@@ -3,8 +3,7 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_LISTENER_BASHPPLISTENER_H_
-#define SRC_LISTENER_BASHPPLISTENER_H_
+#pragma once
 
 #include <iostream>
 #include <vector>
@@ -294,5 +293,3 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 	void exitValueAssignment(std::shared_ptr<AST::ValueAssignment> node);
 
 };
-
-#endif // SRC_LISTENER_BASHPPLISTENER_H_

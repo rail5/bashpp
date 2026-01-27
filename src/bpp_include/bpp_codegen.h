@@ -3,8 +3,7 @@
  * Bash++: Bash with classes
  */
 
-#ifndef SRC_BPP_INCLUDE_BPP_CODEGEN_H_
-#define SRC_BPP_INCLUDE_BPP_CODEGEN_H_
+#pragma once
 
 #include <string>
 #include <memory>
@@ -171,5 +170,3 @@ inline entity_reference resolve_reference(
 }
 
 } // namespace bpp
-
-#endif // SRC_BPP_INCLUDE_BPP_CODEGEN_H_

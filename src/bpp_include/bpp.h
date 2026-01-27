@@ -3,8 +3,7 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_BPP_INCLUDE_BPP_H_
-#define SRC_BPP_INCLUDE_BPP_H_
+#pragma once
 
 #include <string>
 #include <sstream>
@@ -990,5 +989,3 @@ class bpp_object_reference : public bpp_string {
 };
 
 } // namespace bpp
-
-#endif // SRC_BPP_INCLUDE_BPP_H_

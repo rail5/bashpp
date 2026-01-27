@@ -3,8 +3,7 @@
 * Bash++: Bash with classes
 */
 
-#ifndef SRC_BPP_INCLUDE_TEMPLATES_H_
-#define SRC_BPP_INCLUDE_TEMPLATES_H_
+#pragma once
 
 /**
  * COMPATIBILITY NOTES:
@@ -178,5 +177,3 @@ function bpp____supershell() {
 %METHODBODY%
 }
 )EOF";
-
-#endif // SRC_BPP_INCLUDE_TEMPLATES_H_

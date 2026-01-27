@@ -271,6 +271,15 @@ std::shared_ptr<bpp::bpp_datamember> bpp_class::get_datamember(const std::string
 	return nullptr;
 }
 
+std::shared_ptr<bpp::bpp_datamember> bpp_class::get_datamember_UNSAFE(const std::string& name) {
+	for (auto& d : datamembers) {
+		if (d->get_name() == name) {
+			return d;
+		}
+	}
+	return nullptr;
+}
+
 /**
  * @brief Inherit from a parent class
  * 

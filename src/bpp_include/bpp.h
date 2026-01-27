@@ -480,6 +480,7 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 		std::shared_ptr<bpp_method> get_method(const std::string& name, std::shared_ptr<bpp_entity> context);
 		std::shared_ptr<bpp_method> get_method_UNSAFE(const std::string& name);
 		std::shared_ptr<bpp_datamember> get_datamember(const std::string& name, std::shared_ptr<bpp_entity> context);
+		std::shared_ptr<bpp_datamember> get_datamember_UNSAFE(const std::string& name);
 
 		void inherit(std::shared_ptr<bpp_class> parent) override;
 		void inherit(std::shared_ptr<bpp_entity> parent) override;

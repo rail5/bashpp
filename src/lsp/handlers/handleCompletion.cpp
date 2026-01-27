@@ -8,7 +8,6 @@
 #include <lsp/include/resolve_entity.h>
 
 GenericResponseMessage bpp::BashppServer::handleCompletion(const GenericRequestMessage& request) {
-
 	CompletionRequestResponse response;
 	response.id = request.id;
 	CompletionRequest completion_request = request.toSpecific<CompletionParams>();
@@ -155,14 +154,27 @@ CompletionList bpp::BashppServer::handleDOTCompletion(const CompletionParams& pa
 		throw std::runtime_error("No entity found at position: (" + std::to_string(position.line) + ", " + std::to_string(position.character) + ") in URI: " + uri);
 	}
 
-	// Ensure that the referenced entity is a non-primitive object
+	// Ensure that the referenced entity is a non-primitive object (@obj) or a class (e.g., @this/@super)
 	std::shared_ptr<bpp::bpp_object> obj = std::dynamic_pointer_cast<bpp::bpp_object>(referenced_entity);
-	if (obj == nullptr || obj->get_class() == program->get_primitive_class()) {
-		throw std::runtime_error("Referenced entity is not a valid object or is a primitive type at position: (" + std::to_string(position.line) + ", " + std::to_string(position.character) + ") in URI: " + uri);
+	std::shared_ptr<bpp::bpp_class> cls = std::dynamic_pointer_cast<bpp::bpp_class>(referenced_entity);
+
+	std::vector<std::shared_ptr<bpp::bpp_method>> methods;
+	std::vector<std::shared_ptr<bpp::bpp_datamember>> data_members;
+	std::string entity_name;
+
+	if (obj != nullptr && obj->get_class() != program->get_primitive_class()) {
+		methods = obj->get_class()->get_methods();
+		data_members = obj->get_class()->get_datamembers();
+		entity_name = obj->get_name();
+	} else if (cls != nullptr) {
+		methods = cls->get_methods();
+		data_members = cls->get_datamembers();
+		entity_name = cls->get_name();
+	} else {
+		throw std::runtime_error("Referenced entity is not a valid object or class at position: (" + std::to_string(position.line) + ", " + std::to_string(position.character) + ") in URI: " + uri);
 	}
 
-	// Otherwise, let's populate the completion list with methods and data members of the object's class
-	for (const auto& method : obj->get_class()->get_methods()) {
+	for (const auto& method : methods) {
 		if (method->get_name().find("__") != std::string::npos) {
 			continue; // Skip system methods
 		}
@@ -206,12 +218,12 @@ CompletionList bpp::BashppServer::handleDOTCompletion(const CompletionParams& pa
 		completion_list.items.push_back(item);
 	}
 
-	for (const auto& data_member : obj->get_class()->get_datamembers()) {
+	for (const auto& data_member : data_members) {
 		CompletionItem item;
 		item.label = data_member->get_name();
 		item.kind = CompletionItemKind::Field;
 
-		std::string detail = "@" + obj->get_name() + "." + data_member->get_name();
+		std::string detail = "@" + entity_name + "." + data_member->get_name();
 		detail += " (";
 
 		if (data_member->get_class() == program->get_primitive_class()) {

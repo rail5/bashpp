@@ -82,6 +82,14 @@ class ProgramPool {
 		bool get_utf16_mode() const;
 		void set_target_bash_version(const BashVersion& version);
 
+		/**
+		 * @brief Set the unsaved contents for a file to reflect in-editor changes.
+		 *
+		 * Future re-parses of the relevant program will use these contents
+		 * 
+		 * @param file_path The file path to set unsaved contents for.
+		 * @param contents The unsaved contents of the file.
+		 */
 		void set_unsaved_file_contents(const std::string& file_path, const std::string& contents);
 		void remove_unsaved_file_contents(const std::string& file_path);
 

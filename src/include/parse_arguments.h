@@ -38,6 +38,15 @@ constexpr const char* copyright = "Copyright (C) 2024-"
 	"You should have received a copy of the GNU General Public License\n"
 	"along with this program. If not, see http://www.gnu.org/licenses/.\n";
 
+/**
+ * @struct Option
+ * @brief Represents a command-line option for the Bash++ compiler
+ *
+ * This struct defines a command-line option, including its short and long forms,
+ * a description, and whether it takes an argument.
+ * It is fully constexpr to allow compile-time generation of help strings.
+ * 
+ */
 struct Option {
 	const char shortopt;
 	const char* longopt;
@@ -186,7 +195,15 @@ consteval auto generate_help_string() {
 
 constexpr auto help_string = generate_help_string();
 
-
+/**
+ * @struct Arguments
+ * @brief Represents the parsed command-line arguments given to the compiler
+ *
+ * This struct holds the parsed command-line arguments for the Bash++ compiler.
+ * It includes options for input/output files, target Bash version, include paths,
+ * warning suppression, and flags for displaying tokens or parse trees.
+ * 
+ */
 struct Arguments {
 	std::vector<char*> program_arguments;
 	std::optional<std::string> input_file;

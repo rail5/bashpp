@@ -96,6 +96,15 @@ std::string get_encased_ref(const std::string& ref, uint8_t indirection_level);
 
 // Entity reference resolution
 
+/**
+ * @struct entity_reference
+ * @brief Represents the result of resolving a reference to an entity
+ *
+ * This struct holds the resolved entity, the code segment to access it,
+ * flags indicating whether temporary variables were created during resolution,
+ * and any errors encountered during the resolution process.
+ * 
+ */
 struct entity_reference {
 	std::shared_ptr<bpp::bpp_entity> entity;
 	code_segment reference_code;

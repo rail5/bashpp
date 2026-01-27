@@ -41,6 +41,13 @@ enum diagnostic_type {
 	DIAGNOSTIC_HINT
 };
 
+/**
+ * @struct diagnostic
+ * @brief Represents a diagnostic message (error, warning, info, hint)
+ *
+ * This is used by the language server to report diagnostics to the user.
+ * 
+ */
 struct diagnostic {
 	diagnostic_type type;
 	std::string message;
@@ -819,6 +826,15 @@ class bash_for_or_select : public bpp_code_entity {
 		const std::string& get_header_code() const;
 };
 
+/**
+ * @class bash_function
+ * @brief A normal Bash function
+ *
+ * This entity gets pushed onto the entity stack when a normal Bash function is encountered in Bash++ code.
+ *
+ * The 'bash_' prefix signifies that this is used to parse ordinary Bash code, not anything specific to Bash++
+ * 
+ */
 class bash_function : public bpp_code_entity {
 	public:
 		bash_function();
@@ -866,6 +882,18 @@ class bpp_dynamic_cast_statement : public bpp_string {
 		std::string get_cast_to() const;
 };
 
+/**
+ * @class bpp_dynamic_cast_target
+ * @brief The target of a dynamic_cast in Bash++
+ *
+ * This entity type represents the target of a `@dynamic_cast` statement in Bash++ code.
+ * That is, the expression holding the type to which we are casting.
+ *
+ * For example, in the statement:
+ * `@dynamic_cast<$target_type> &@object`
+ * the `$target_type` expression would be held in a bpp_dynamic_cast_target entity.
+ * 
+ */
 class bpp_dynamic_cast_target : public bpp_string {
 	public:
 		bpp_dynamic_cast_target() = default;

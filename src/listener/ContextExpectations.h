@@ -40,6 +40,14 @@ struct ContextExpectations {
 	bool can_take_object = false;
 };
 
+/**
+ * @class ExpectationsStack
+ * @brief A stack to manage ContextExpectations during AST traversal
+ *
+ * This class provides a stack-based mechanism to manage ContextExpectations
+ * as the parser traverses different contexts in the AST.
+ * 
+ */
 class ExpectationsStack {
 	private:
 		std::stack<ContextExpectations> stack;

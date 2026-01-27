@@ -11,10 +11,6 @@ if ! command -v wc &> /dev/null; then
 	>&2 echo "Bash++: SharedStack requires the 'wc' command to be available."
 	exit 1
 fi
-if ! command -v head &> /dev/null; then
-	>&2 echo "Bash++: SharedStack requires the 'head' command to be available."
-	exit 1
-fi
 if ! command -v base64 &> /dev/null; then
 	>&2 echo "Bash++: SharedStack requires the 'base64' command to be available."
 	exit 1
@@ -48,7 +44,7 @@ fi
 		@this.used=1
 		@this._lock
 		if [[ @this.encrypted -eq 1 ]]; then
-			value="$(openssl enc -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A <<<"$value")"
+			value="@(openssl enc -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A <<<"$value")"
 		fi
 		printf "%s" "$value" | base64 -w0 >> "@this.object_file"
 		echo >> "@this.object_file"
@@ -56,7 +52,7 @@ fi
 	}
 
 	@private @method _get_top {
-		local last_line=@(tail -n 1 "@this.object_file" | base64 -d)
+		local last_line=@(sed -n '$p' "@this.object_file" | base64 -d)
 		if [[ -z "$last_line" ]]; then
 			return 1
 		fi
@@ -111,7 +107,7 @@ fi
 	### Echoes "true" if the stack is empty, "false" otherwise.
 	@virtual @public @method empty {
 		@this._lock
-		if [[ -z $(head -n 1 "@this.object_file") ]]; then
+		if [[ -z @(sed -n 1p "@this.object_file") ]]; then
 			echo "true"
 		else
 			echo "false"

@@ -34,7 +34,7 @@ fi
 		local value=$(< "@this.object_file")
 		value=@(base64 -d <<<"$value")
 		if [[ @this.encrypted -eq 1 ]]; then
-			value="$(openssl enc -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -d -a -A <<<"$value")"
+			value="@(openssl enc -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -d -a -A <<<"$value")"
 		fi
 		echo "$value"
 		@this._unlock
@@ -48,7 +48,7 @@ fi
 		@this.used=1
 		@this._lock
 		if [[ @this.encrypted -eq 1 ]]; then
-			value="$(openssl enc -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A <<<"$value")"
+			value="@(openssl enc -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A <<<"$value")"
 		fi
 		printf "%s" "$value" | base64 -w0 > "@this.object_file"
 		echo >> "@this.object_file"

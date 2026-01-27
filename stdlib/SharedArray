@@ -11,14 +11,6 @@ if ! command -v wc &> /dev/null; then
 	>&2 echo "Bash++: SharedArray requires the 'wc' command to be available."
 	exit 1
 fi
-if ! command -v head &> /dev/null; then
-	>&2 echo "Bash++: SharedArray requires the 'head' command to be available."
-	exit 1
-fi
-if ! command -v tail &> /dev/null; then
-	>&2 echo "Bash++: SharedArray requires the 'tail' command to be available."
-	exit 1
-fi
 if ! command -v base64 &> /dev/null; then
 	>&2 echo "Bash++: SharedArray requires the 'base64' command to be available."
 	exit 1
@@ -54,7 +46,7 @@ fi
 		@this.used=1
 		@this._lock
 		if [[ @this.encrypted -eq 1 ]]; then
-			value="$(openssl enc -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A <<<"$value")"
+			value="@(openssl enc -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A <<<"$value")"
 		fi
 		printf "%s" "$value" | base64 -w0 >> "@this.object_file"
 		echo >> "@this.object_file"
@@ -62,7 +54,7 @@ fi
 	}
 
 	@private @method _get_front {
-		local first_line=@(head -n 1 "@this.object_file" | base64 -d)
+		local first_line=@(sed -n 1p "@this.object_file" | base64 -d)
 		if [[ -z "$first_line" ]]; then
 			return 1
 		fi
@@ -74,7 +66,7 @@ fi
 	}
 
 	@private @method _get_back {
-		local last_line=@(tail -n 1 "@this.object_file" | base64 -d)
+		local last_line=@(sed -n '$p' "@this.object_file" | base64 -d)
 		if [[ -z "$last_line" ]]; then
 			return 1
 		fi
@@ -115,7 +107,7 @@ fi
 		fi
 		@this._lock
 		if [[ @this.encrypted -eq 1 ]]; then
-			value="$(openssl enc -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A <<<"$value")"
+			value="@(openssl enc -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A <<<"$value")"
 		fi
 
 		if [[ $index -eq @this.size ]]; then
@@ -167,9 +159,9 @@ fi
 			return 1
 		fi
 		@this._lock
-		local value=$(sed -n "$((index + 1))p" "@this.object_file" | base64 -d)
+		local value=@(sed -n "$((index + 1))p" "@this.object_file" | base64 -d)
 		if [[ @this.encrypted -eq 1 ]]; then
-			value=$(printf "%s" "$value" | openssl enc -d -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A)
+			value=@(printf "%s" "$value" | openssl enc -d -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A)
 		fi
 		echo "$value"
 		@this._unlock
@@ -206,9 +198,9 @@ fi
 		local array_copy=()
 		while IFS= read -r line; do
 			if [[ @this.encrypted -eq 1 ]]; then
-				array_copy+=("$(printf "%s" "$line" | base64 -d | openssl enc -d -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A)")
+				array_copy+=("@(printf "%s" "$line" | base64 -d | openssl enc -d -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A)")
 			else
-				array_copy+=("$(printf "%s" "$line" | base64 -d)")
+				array_copy+=("@(printf "%s" "$line" | base64 -d)")
 			fi
 		done < "@this.object_file"
 		echo "${array_copy[@]}"
@@ -247,9 +239,9 @@ fi
 		local array_copy=()
 		while IFS= read -r line; do
 			if [[ @this.encrypted -eq 1 ]]; then
-				array_copy+=("$(printf "%s" "$line" | base64 -d | openssl enc -d -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A)")
+				array_copy+=("@(printf "%s" "$line" | base64 -d | openssl enc -d -aes-256-cbc -pbkdf2 -pass pass:@this.encryption_key -a -A)")
 			else
-				array_copy+=("$(printf "%s" "$line" | base64 -d)")
+				array_copy+=("@(printf "%s" "$line" | base64 -d)")
 			fi
 		done < "@this.object_file"
 		echo "${array_copy[@]:$start:$((end - start + 1))}"

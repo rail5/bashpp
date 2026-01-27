@@ -11,7 +11,7 @@ while getopts "lh" opt; do
 	case $opt in
 		l)
 			for file in test-suite/tests/sources/*.bpp; do
-				testName=$(basename "$file" .bpp)
+				testName=@(basename "$file" .bpp)
 				echo "$testName"
 			done
 			exit 0

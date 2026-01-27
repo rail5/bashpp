@@ -59,6 +59,16 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 	auto node = find_node_at_position(astRoot, line, column);
 	if (!node) return nullptr;
 
+	if (node->getType() == AST::NodeType::ValueAssignment) {
+		// We may have been given the position of the `=` sign.
+		// Try to back up one character and try again
+		// TODO(@rail5): Hacky fix, improve later
+		if (column > 0) {
+			node = find_node_at_position(astRoot, line, column - 1);
+			if (!node) return nullptr;
+		}
+	}
+
 	uint64_t target_position = (static_cast<uint64_t>(line) << 32) | column;
 
 	switch (node->getType()) {
@@ -163,7 +173,7 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 					// Otherwise, resolve it as an object
 					auto current_class = std::dynamic_pointer_cast<bpp::bpp_class>(context);
 					if (current_class) {
-						object_pointer = current_class->get_datamember(object_name_token.getValue(), current_class);
+						object_pointer = current_class->get_datamember_UNSAFE(object_name_token.getValue());
 					} else {
 						object_pointer = context->get_object(object_name_token.getValue());
 					}
@@ -202,7 +212,7 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 					// Otherwise, resolve it as an object
 					auto current_class = std::dynamic_pointer_cast<bpp::bpp_class>(context);
 					if (current_class) {
-						pointer_variable = current_class->get_datamember(name_token.getValue(), current_class);
+						pointer_variable = current_class->get_datamember_UNSAFE(name_token.getValue());
 					} else {
 						pointer_variable = context->get_object(name_token.getValue());
 					}
@@ -219,7 +229,7 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 
 				auto current_class = std::dynamic_pointer_cast<bpp::bpp_class>(context);
 				if (!current_class) return nullptr;
-				auto member = current_class->get_datamember(member_ctx->IDENTIFIER().value(), current_class);
+				auto member = current_class->get_datamember_UNSAFE(member_ctx->IDENTIFIER().value());
 				return member;
 			}
 			break;

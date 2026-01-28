@@ -22,11 +22,6 @@ fi
 ##
 ## Internally, it uses the file system to store the variable.
 @class SharedVar : SharedObject {
-	@protected var_file
-	@protected encrypted=0
-	@protected encryption_key
-	@protected used=0
-
 	##METHOD public get
 	### Gets the value of the shared variable.
 	@public @method get {

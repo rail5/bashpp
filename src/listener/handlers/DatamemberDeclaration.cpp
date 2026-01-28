@@ -73,5 +73,21 @@ void BashppListener::exitDatamemberDeclaration(std::shared_ptr<AST::DatamemberDe
 
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 
-	current_class->add_datamember(new_datamember);
+	if (!current_class->add_datamember(new_datamember)) {
+		// Throw a more specific error: with what does this name conflict?
+		auto existing_datamember = current_class->get_datamember_UNSAFE(new_datamember->get_name());
+		auto existing_method = current_class->get_method_UNSAFE(new_datamember->get_name());
+		if (existing_datamember != nullptr) {
+			throw bpp::ErrorHandling::SyntaxError(this, node,
+				"Data member name has already been used: @" + current_class->get_name() + "." + new_datamember->get_name());
+		}
+
+		if (existing_method != nullptr) {
+			throw bpp::ErrorHandling::SyntaxError(this, node, 
+				"Data member name conflicts with existing method name: @" + current_class->get_name() + "." + new_datamember->get_name());
+		}
+
+		// Generic error if we can't determine the cause
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Failed to add data member: " + new_datamember->get_name());
+	}
 }

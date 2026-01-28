@@ -5,7 +5,9 @@
 }
 
 @class DerivedObject : Object {
-	@public member="derived value"
+	@constructor {
+		@this.member="derived value"
+	}
 }
 
 @class Unrelated {

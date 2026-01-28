@@ -161,7 +161,7 @@ bool bpp_method::add_object(std::shared_ptr<bpp_object> object, bool make_local)
 		if (make_local) {
 			object_code += "local ";
 		}
-		object_code += object->get_address() + "=\"" + object->get_assignment_value() + "\"\n";
+		object_code += object->get_address() + "=" + object->get_assignment_value() + "\n";
 	} else {
 		if (object->get_copy_from() != nullptr) {
 			object_code += "bpp__" + type + "____copy " + object->get_copy_from()->get_address() + " " + object->get_address() + "\n";

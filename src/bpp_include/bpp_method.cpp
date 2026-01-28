@@ -95,6 +95,10 @@ void bpp_method::set_last_override(const std::string& class_name) {
 	last_override = class_name;
 }
 
+void bpp_method::set_overridden_method(std::weak_ptr<bpp_method> method) {
+	overridden_method = method;
+}
+
 std::vector<std::shared_ptr<bpp_method_parameter>> bpp_method::get_parameters() const {
 	return parameters;
 }

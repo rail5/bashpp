@@ -133,7 +133,13 @@ bool bpp_class::add_method(std::shared_ptr<bpp_method> method) {
 				// Override the inherited virtual method
 				method->set_virtual(true);
 				method->set_last_override(this->name);
+				method->set_overridden_method(*it);
 				method->set_containing_class(weak_from_this());
+				(*it)->add_reference(
+					method->get_initial_definition().file,
+					method->get_initial_definition().line,
+					method->get_initial_definition().column
+				);
 				methods.erase(it);
 				break;
 			} else {

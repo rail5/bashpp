@@ -83,6 +83,13 @@ bpp::SymbolPosition bpp_entity::get_initial_definition() const {
 
 void bpp_entity::add_reference(const std::string& file, uint64_t line, uint64_t column) {
 	references.emplace_back(file, line, column);
+	// If this is a derived class's version of an overridden method, add the reference to the overridden method as well
+	// This is useful in the language server for "find all references" functionality,
+	// And, for example, for "rename symbol" -- renaming the original method should rename all overridden versions as well
+	auto _overriden_method = overridden_method.lock();
+	if (_overriden_method) {
+		_overriden_method->add_reference(file, line, column);
+	}
 }
 
 std::list<bpp::SymbolPosition> bpp_entity::get_references() const {

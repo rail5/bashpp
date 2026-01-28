@@ -207,6 +207,7 @@ class bpp_entity {
 		std::shared_ptr<bpp_class> type = nullptr;
 		std::weak_ptr<bpp_class> containing_class;
 		std::vector<std::weak_ptr<bpp_class>> parents;
+		std::weak_ptr<bpp_method> overridden_method;
 		bpp::SymbolPosition initial_definition;
 		std::list<bpp::SymbolPosition> references;
 	public:
@@ -429,6 +430,7 @@ class bpp_method : public bpp_code_entity {
 		void set_virtual(bool is_virtual);
 		void set_inherited(bool is_inherited);
 		void set_last_override(const std::string& class_name);
+		void set_overridden_method(std::weak_ptr<bpp_method> method);
 		bool add_object(std::shared_ptr<bpp_object> object, bool make_local) override;
 
 		std::vector<std::shared_ptr<bpp_method_parameter>> get_parameters() const;

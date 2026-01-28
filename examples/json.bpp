@@ -21,7 +21,7 @@
 
 	# Add or update a key-value pair in the JSON object
 	@public @method set key value {
-		@this.value="@(jq --arg k "$key" --arg v "$value" '. + {($k): $v}' <<< "@{this.value}")"
+		@this.value="@(jq --arg k "$key" --arg v "$value" '. + {($k): ($v | fromjson)}' <<< "@{this.value}")"
 	}
 
 	# Retrieve the value associated with a key in the JSON object

@@ -1,0 +1,60 @@
+# This example demonstrates a more advanced usage of Bash++ by creating
+# a wrapper around `jq` for JSON manipulation, along with advanced method chaining.
+#
+# Pay particular attention to the `forEachKey` method, which pipes the output
+# of one method into a while loop to iterate over keys and execute commands dynamically.
+# Further, the call to `forEachKey` shows how to pass method addresses as commands for dynamic execution.
+
+# A simple wrapper around `jq`
+@class JsonObject {
+	@protected value=null
+
+	# Serialize the JSON object to a string
+	@virtual @public @method serialize {
+		jq . <<< "@{this.value}"
+	}
+
+	# Deserialize a string into the JSON object
+	@virtual @public @method deserialize rawJson {
+		@this.value="$rawJson"
+	}
+
+	# Add or update a key-value pair in the JSON object
+	@public @method set key value {
+		@this.value="@(jq --arg k "$key" --arg v "$value" '. + {($k): ($v | fromjson)}' <<< "@{this.value}")"
+	}
+
+	# Retrieve the value associated with a key in the JSON object
+	@public @method get key {
+		jq -r --arg k "$key" '.[$k]' <<< "@{this.value}"
+	}
+
+	# List all keys in the JSON object, each on a new line
+	@public @method keys {
+		jq -r 'keys[]' <<< "@{this.value}"
+	}
+
+
+	# Iterate over each key in the JSON object and execute a command
+	# The key is passed as an argument to the command
+	@public @method forEachKey command {
+		# Pipe the output of the 'keys' method into a while loop
+		@this.keys | while IFS= read -r key; do
+			# Execute the provided command with the current key as an argument
+			$command "$key"
+		done
+	}
+}
+
+@JsonObject jsonObj
+
+@jsonObj.deserialize '{"name": "Alice", "age": 30, "city": "Wonderland"}'
+
+echo "Serialized JSON:"
+@jsonObj.serialize
+
+echo ""
+echo "Values of each key:"
+@jsonObj.forEachKey "&@jsonObj.get"
+# We pass the address of the 'get' method to 'forEachKey',
+# and forEachKey runs it as a command as it iterates over each key.

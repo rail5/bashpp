@@ -19,3 +19,7 @@ More detailed descriptions of the language can be found at the [website](https:/
  - [queue.bpp](queue.bpp) - A small example of a **queue** implemented in Bash++ using pointers
 
  - [stack.bpp](stack.bpp) - A small example of a **stack** implemented in Bash++
+
+&nbsp;
+
+ - [json.bpp](json.bpp) - A demonstration of more **advanced** usage of Bash++: a wrapper around `jq` for easy JSON manipulation, and an illustration of advanced method chaining techniques and dynamic command execution.

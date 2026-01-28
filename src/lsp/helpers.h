@@ -14,7 +14,7 @@
 
 #include "BashppServer.h"
 
-extern bpp::BashppServer server;
+extern bpp::BashppServer* p_server;
 extern int client_fd;
 extern int server_fd;
 extern int socket_port;

@@ -6,8 +6,10 @@
 #include "helpers.h"
 
 void signal_handler(int signum) {
-	server.log("Received signal: ", signum, ", cleaning up and exiting.");
-	server.cleanup();
+	if (p_server != nullptr) {
+		p_server->log("Received signal: ", signum, ", cleaning up and exiting.");
+		p_server->cleanup();
+	}
 	if (client_fd != -1) {
 		close(client_fd);
 	}

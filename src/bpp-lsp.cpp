@@ -23,7 +23,7 @@
 #include <version.h>
 #include <updated_year.h>
 
-bpp::BashppServer server;
+bpp::BashppServer* p_server;
 int client_fd = -1;
 int server_fd = -1;
 int socket_port = 0;
@@ -38,6 +38,9 @@ int main(int argc, char* argv[]) {
 
 	std::shared_ptr<std::istream> input_stream;
 	std::shared_ptr<std::ostream> output_stream;
+
+	bpp::BashppServer server;
+	p_server = &server;
 
 	server.log("Bash++ Language Server " bpp_compiler_version " starting...");
 	std::string args;
@@ -207,6 +210,7 @@ int main(int argc, char* argv[]) {
 
 	server.mainLoop();
 	server.cleanup();
+	p_server = nullptr;
 	if (client_fd != -1) {
 		close(client_fd);
 	}

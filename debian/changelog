@@ -1,3 +1,41 @@
+bpp (0.8.1) unstable; urgency=medium
+
+  * bpp: Enhanced method override tracking and reference propagation:
+    - Added weak pointer tracking for overridden methods in bpp_entity and
+    bpp_method.
+    - Improved reference propagation for "find all references" and "rename
+    symbol".
+  * bpp: Refactored method inheritance and constructor codegen for
+    virtual/override correctness:
+    - Improved vTable and constructor call code generation.
+    - Centralized constructor call logic.
+    - Optimized method inheritance and override tracking.
+  * bpp: Bug fix: for/select statements: Ensure code buffers are flushed.
+  * bpp: More efficient CRTP: Removed std::invoke and map, use switch with
+    if constexpr.
+  * bpp: FlatIntervalTree: Replaced IntervalTree for better cache locality and
+    performance.
+  * bpp: Error handling improvements:
+    - Preserve node children for diagnostics.
+    - Unified InternalError and SyntaxError handling.
+    - Improved error reporting and tree traversal.
+    - Display 1-indexed line/column numbers in error messages.
+  * bpp-lsp: Bug fix: Properly identify entities as lvalues in assignments in
+    the language server.
+  * bpp-lsp: Adaptive debounce timing for didChange notifications in the
+    language server
+    - Debounce interval now adapts to reparse durations.
+    - Simplified unsaved changes tracking.
+    - Improved logging and thread safety.
+  * bpp-lsp: Bug fix: Provide completions after 'this'/'super' keywords in the
+    language server.
+  * bpp-lsp: Changed global BashppServer instance to pointer for better server
+    lifetime control.
+  * libstd-bpp: STL: Use supershells, remove head/tail dependencies, use sed.
+  * Test suite: Use supershells for faster execution.
+
+ -- rail5 <andrew@rail5.org>  Wed, 28 Jan 2026 11:56:06 +0800
+
 bpp (0.8.0) unstable; urgency=medium
 
   * Rewrote the entire lexer/parser using Flex/Bison instead of ANTLR4

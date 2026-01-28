@@ -1,6 +1,6 @@
 bpp (0.8.2) unstable; urgency=medium
 
-  * bpp: Code entities: When adding objects, on't force quotes around the
+  * bpp: Code entities: When adding objects, don't force quotes around the
     assignment value
   * bpp: Throw a detailed syntax error if a data member's name is not unique
 

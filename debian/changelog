@@ -1,3 +1,11 @@
+bpp (0.8.2) unstable; urgency=medium
+
+  * bpp: Code entities: When adding objects, on't force quotes around the
+    assignment value
+  * bpp: Throw a detailed syntax error if a data member's name is not unique
+
+ -- rail5 <andrew@rail5.org>  Wed, 28 Jan 2026 19:26:25 +0800
+
 bpp (0.8.1) unstable; urgency=medium
 
   * bpp: Enhanced method override tracking and reference propagation:

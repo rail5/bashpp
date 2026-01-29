@@ -80,7 +80,8 @@ void BashppListener::exitClassDefinition(std::shared_ptr<AST::ClassDefinition> n
 	auto new_method = bpp::generate_new_method(new_class);
 	new_class->add_method(new_method);
 
-	new_class->finalize(program);
+	auto delete_method = bpp::generate_delete_method(new_class);
+	new_class->add_method(delete_method);
 
 	// Add the class to the program
 	program->add_class(new_class);

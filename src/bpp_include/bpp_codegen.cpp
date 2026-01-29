@@ -443,6 +443,38 @@ std::shared_ptr<bpp::bpp_method> generate_new_method(
 	return new_method;
 }
 
+std::shared_ptr<bpp::bpp_method> generate_delete_method(
+	std::shared_ptr<bpp::bpp_class> containing_class
+) {
+	auto delete_method = std::make_shared<bpp::bpp_method>();
+	delete_method->set_name("__delete");
+	delete_method->set_scope(bpp_scope::SCOPE_PUBLIC);
+	delete_method->set_virtual(true);
+	delete_method->set_containing_class(containing_class);
+
+	for (auto& dm : containing_class->get_datamembers()) {
+		delete_method->add_code(dm->get_pre_access_code() + "\n");
+		if (dm->get_class()->get_name() == "primitive" || dm->is_pointer()) {
+			delete_method->add_code("unset \"${__this}__" + dm->get_name() + "\"\n");
+		} else {
+			code_segment inner_delete_code = generate_delete_code(
+				dm,
+				"${__this}__" + dm->get_name(),
+				containing_class->get_containing_program().lock()
+			);
+			delete_method->add_code(inner_delete_code.full_code() + "\n");
+			delete_method->add_code("unset \"${__this}__" + dm->get_name() + "\"\n");
+		}
+		delete_method->add_code(dm->get_post_access_code() + "\n");
+	}
+
+	// Unset the vPointer
+	delete_method->add_code("unset \"${__this}____vPointer\"\n");
+
+	delete_method->flush_code_buffers();
+	return delete_method;
+}
+
 /**
  * @brief Encases a temporary variable reference with the appropriate level of indirection
  *

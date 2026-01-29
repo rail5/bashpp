@@ -267,7 +267,7 @@ void bpp_class::inherit(std::shared_ptr<bpp_class> parent) {
 	// Inherit methods
 	methods.reserve(methods.size() + parent->get_methods().size());
 	for (auto& m : parent->get_methods()) {
-		if (m->get_name() == "toPrimitive" || m->get_name() == "__delete") continue; // Skip these, they are handled specially
+		if (m->get_name() == "toPrimitive") continue; // Skip toPrimitive, we handle it separately
 		if (m->get_scope() == bpp_scope::SCOPE_PRIVATE) {
 			m->set_scope(bpp_scope::SCOPE_INACCESSIBLE);
 		}
@@ -300,47 +300,6 @@ std::shared_ptr<bpp::bpp_class> bpp_class::get_parent() {
 		return nullptr;
 	}
 	return parents.back().lock();
-}
-
-/**
- * @brief Finalize the class
- * 
- * This function is called when the class is complete and no more methods or datamembers will be added.
- * It generates the system __delete method and marks the class as finalized.
- * 
- * @param program A pointer to the program we're compiling (needed for code generation)
- */
-void bpp_class::finalize(std::shared_ptr<bpp_program> program) {
-	if (finalized) {
-		return;
-	}
-
-	// Now that we're certain there won't be any more methods or data members added
-	// Generate the system __delete method
-	std::shared_ptr<bpp_method> delete_method = std::make_shared<bpp_method>();
-	delete_method->set_name("__delete");
-	delete_method->set_scope(bpp_scope::SCOPE_PUBLIC);
-	delete_method->set_virtual(true);
-	
-	for (auto& dm : datamembers) {
-		if (dm->get_class()->get_name() == "primitive" || dm->is_pointer()) {
-			delete_method->add_code("	unset ${__this}__" + dm->get_name() + "\n");
-		} else {
-			code_segment delete_code = generate_delete_code(dm, "${__this}__" + dm->get_name(), program);
-			delete_method->add_code(delete_code.full_code() + "\n");
-			delete_method->add_code("	unset ${__this}__" + dm->get_name() + "\n");
-		}
-		delete_method->add_code(dm->get_post_access_code() + "\n");
-	}
-
-	// Unset the vPointer
-	delete_method->add_code("	unset ${__this}____vPointer\n");
-
-	// Add the delete method to the class
-	add_method(delete_method);
-
-	// Mark the class as finalized
-	finalized = true;
 }
 
 } // namespace bpp

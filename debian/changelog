@@ -1,3 +1,24 @@
+bpp (0.8.3) unstable; urgency=medium
+
+  * Internal system methods refactored:
+    Treat all internal system methods (such as __new, __delete, __copy) as
+    ordinary methods.
+  * Removed special-casing for system methods; they are now generated,
+    overridden, and dispatched using the same mechanisms as user-defined
+    methods.
+  * Improved method override and inheritance logic for system methods, ensuring
+    correct virtual/override semantics.
+  * Refactored code generation for object creation, deletion, and copying to
+    use generated methods (__new, __delete, __copy) instead of templates or
+    global functions.
+  * Enhanced constructor and destructor handling for better inheritance and
+    chaining.
+  * Added comprehensive regression tests for copy, delete, and constructor
+    chaining behaviors.
+  * Code cleanup and improved error propagation in method prologues.
+
+ -- rail5 <andrew@rail5.org>  Thu, 29 Jan 2026 19:04:07 +0800
+
 bpp (0.8.2) unstable; urgency=medium
 
   * bpp: Code entities: When adding objects, don't force quotes around the

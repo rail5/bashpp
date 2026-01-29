@@ -7,7 +7,7 @@
 
 
 <!-- Check/keep one of the following -->
-- [  ] Appropriate **regression tests have been added** (if new functionality is being introduced)
+- [  ] Appropriate [**regression tests have been added**](https://github.com/rail5/bashpp/blob/main/test-suite/README.md#adding-new-test-cases) (if new functionality is being introduced)
 
 - [  ] **No new tests are required**
 

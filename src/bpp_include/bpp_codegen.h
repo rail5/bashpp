@@ -97,6 +97,15 @@ code_segment inline_new(
 	std::shared_ptr<bpp::bpp_class>		new_class
 	);
 
+
+// Generators for standardized system methods
+std::shared_ptr<bpp::bpp_method> generate_copy_method(
+	std::shared_ptr<bpp::bpp_class> containing_class,
+	std::shared_ptr<bpp::bpp_program> program
+	);
+
+
+
 std::string get_encased_ref(const std::string& ref, uint8_t indirection_level);
 
 

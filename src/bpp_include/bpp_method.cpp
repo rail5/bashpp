@@ -35,7 +35,7 @@ bool bpp_method::add_object_as_parameter(std::shared_ptr<bpp_object> object) {
 
 	// Verify that the type of the object is a valid class
 	std::string type = object->get_class()->get_name();
-	if (classes.find(type) == classes.end()) {
+	if (classes.find(type) == classes.end() && type != this->containing_class.lock()->get_name()) {
 		return false;
 	}
 	object->set_pointer(true);
@@ -164,7 +164,16 @@ bool bpp_method::add_object(std::shared_ptr<bpp_object> object, bool make_local)
 		object_code += object->get_address() + "=" + object->get_assignment_value() + "\n";
 	} else {
 		if (object->get_copy_from() != nullptr) {
-			object_code += "bpp__" + type + "____copy " + object->get_copy_from()->get_address() + " " + object->get_address() + "\n";
+			auto copy_call = generate_method_call_code(
+				object->get_address(),
+				"__copy",
+				object->get_class(),
+				false,
+				get_containing_program().lock()
+			);
+			object_code += copy_call.pre_code + "\n";
+			object_code += copy_call.code + " " + object->get_copy_from()->get_address() + "\n";
+			object_code += copy_call.post_code + "\n";
 		} else {
 			object_code += inline_new(object->get_address(), object->get_class()).pre_code;
 			// Call the constructor if it exists

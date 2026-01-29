@@ -328,6 +328,90 @@ code_segment inline_new(
 }
 
 /**
+ * @brief Generates a copy method for a class.
+ *
+ * The generated method will be named "__copy" and will be public and virtual.
+ * It takes, of course, the '@this' pointer as its implicit first parameter (as do all methods),
+ * and one explicit parameter: the address to copy from.
+ *
+ * The copy-from address is dynamically cast to the containing class type,
+ * and therefore must point to an object which is convertible to the containing class type.
+ *
+ * TODO(@rail5): This method duplicates some code from other portions of the compiler.
+ * 
+ * @param containing_class The class for which to generate the copy method
+ * @param program The program in which the class resides
+ * @return std::shared_ptr<bpp::bpp_method> The generated copy method
+ */
+std::shared_ptr<bpp::bpp_method> generate_copy_method(
+	std::shared_ptr<bpp::bpp_class> containing_class,
+	std::shared_ptr<bpp::bpp_program> program
+) {
+	auto copy_method = std::make_shared<bpp::bpp_method>();
+	copy_method->set_name("__copy");
+	copy_method->set_scope(bpp_scope::SCOPE_PUBLIC);
+	copy_method->set_virtual(true);
+	copy_method->set_containing_class(containing_class);
+
+	// Add one parameter: the address to copy from
+	const std::string param_name = "__copyFromPtr";
+
+	auto from_param = std::make_shared<bpp::bpp_method_parameter>(param_name);
+	from_param->set_type(containing_class);
+	if (!copy_method->add_parameter(from_param)) {
+		throw bpp::ErrorHandling::InternalError("Failed to add parameter to copy method");
+	}
+
+	// Necessary type verification
+	code_segment dynamic_cast_code = generate_dynamic_cast_code(
+		param_name,
+		containing_class->get_name(),
+		program
+	);
+	copy_method->add_code_to_previous_line(dynamic_cast_code.pre_code);
+	copy_method->add_code_to_next_line(dynamic_cast_code.post_code);
+	copy_method->add_code(param_name + "=" + dynamic_cast_code.code + "\n");
+
+	// Verify that the dynamic cast was successful
+	copy_method->add_code_to_previous_line("if [[ ${" + param_name + "} == " + bpp::bpp_nullptr + " ]]; then\n"
+		"	>&2 echo \"Bash++: Error: " + containing_class->get_name() + ": Attempted to copy between incompatible types.\"\n"
+		"	return 1\n"
+		"fi\n"
+	);
+
+	std::string copy_code;
+
+	// Add the copy code for each data member
+	// WARNING: VERY FRAGILE. Also code duplication
+	for (auto& dm : containing_class->get_datamembers()) {
+		copy_code += dm->get_pre_access_code() + "\n";
+		if (dm->get_class()->get_name() == "primitive" || dm->is_pointer()) {
+			copy_code += "	local __" + param_name + "__" + dm->get_name()
+				+ "=\"${" + param_name + "}__" + dm->get_name() + "\"\n";
+
+			copy_code += "	eval \"${__this}__" + dm->get_name()
+				+ "=\\${!__" + param_name + "__" + dm->get_name() + "}\"\n";
+		} else {
+			code_segment method_call_code = generate_method_call_code(
+				"${__this}__" + dm->get_name(),
+				"__copy",
+				dm->get_class(),
+				false,
+				program
+			);
+			copy_code += method_call_code.pre_code + "\n";
+			copy_code += method_call_code.code + " ${" + param_name + "}__" + dm->get_name() + "\n";
+			copy_code += method_call_code.post_code + "\n";
+		}
+		copy_code += dm->get_post_access_code() + "\n";
+	}
+	copy_method->add_code(copy_code);
+	copy_method->flush_code_buffers();
+
+	return copy_method;
+} 
+
+/**
  * @brief Encases a temporary variable reference with the appropriate level of indirection
  *
  * This function takes a std::string which is the name of a shell variable we would like to use,

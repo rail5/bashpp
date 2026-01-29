@@ -1,0 +1,34 @@
+@class Inner {
+	@public member="default value"
+}
+
+@class Outer {
+	@public @Inner inner
+	@public member="outer value"
+}
+
+@Outer outer1
+@Outer outer2
+
+@outer2.inner.member="modified value"
+@outer2.member="modified outer value"
+
+echo @outer1.inner.member # "default value"
+echo @outer1.member	# "outer value"
+
+echo @outer2.inner.member # "modified value"
+echo @outer2.member	# "modified outer value"
+
+@outer1=@outer2
+
+echo @outer1.inner.member # "modified value"
+echo @outer1.member	# "modified outer value"
+
+@outer2.inner.member="changed again"
+@outer2.member="changed outer again"
+
+echo @outer1.inner.member # "modified value"
+echo @outer1.member	# "modified outer value"
+
+echo @outer2.inner.member # "changed again"
+echo @outer2.member	# "changed outer again"

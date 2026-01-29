@@ -206,6 +206,7 @@ class bpp_entity {
 		std::unordered_map<std::string, std::shared_ptr<bpp_object>> local_objects;
 		std::shared_ptr<bpp_class> type = nullptr;
 		std::weak_ptr<bpp_class> containing_class;
+		std::weak_ptr<bpp_program> containing_program;
 		std::vector<std::weak_ptr<bpp_class>> parents;
 		std::weak_ptr<bpp_method> overridden_method;
 		bpp::SymbolPosition initial_definition;
@@ -220,9 +221,11 @@ class bpp_entity {
 		virtual void set_name(const std::string& name);
 		virtual std::string get_name() const;
 		virtual std::weak_ptr<bpp::bpp_class> get_containing_class();
+		virtual std::weak_ptr<bpp_program> get_containing_program();
 		virtual bool set_containing_class(std::weak_ptr<bpp::bpp_class> containing_class);
 
-		virtual void inherit(std::shared_ptr<bpp_entity> parent);
+		void inherit(std::shared_ptr<bpp_entity> parent);
+		void inherit(std::shared_ptr<bpp_program> program);
 		virtual void inherit(std::shared_ptr<bpp_class> parent);
 
 		void set_definition_position(const std::string& file, uint64_t line, uint64_t column);
@@ -490,8 +493,8 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 		std::shared_ptr<bpp_datamember> get_datamember(const std::string& name, std::shared_ptr<bpp_entity> context);
 		std::shared_ptr<bpp_datamember> get_datamember_UNSAFE(const std::string& name);
 
+		using bpp_entity::inherit;
 		void inherit(std::shared_ptr<bpp_class> parent) override;
-		void inherit(std::shared_ptr<bpp_entity> parent) override;
 		std::shared_ptr<bpp::bpp_class> get_parent();
 
 		void finalize(std::shared_ptr<bpp_program> program);
@@ -604,6 +607,8 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 		bool add_class(std::shared_ptr<bpp_class> class_) override;
 
 		std::shared_ptr<bpp_class> get_primitive_class() const;
+
+		std::weak_ptr<bpp_program> get_containing_program() override;
 
 		void set_include_paths(std::shared_ptr<std::vector<std::string>> paths);
 		std::shared_ptr<std::vector<std::string>> get_include_paths() const;

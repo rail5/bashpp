@@ -131,7 +131,16 @@ bool bpp_code_entity::add_object(std::shared_ptr<bpp_object> object, bool make_l
 		object_code += object->get_address() + "=" + object->get_assignment_value() + "\n";
 	} else {
 		if (object->get_copy_from() != nullptr) {
-			object_code += "bpp__" + type + "____copy " + object->get_copy_from()->get_address() + " " + object->get_address() + "\n";
+			auto copy_call = generate_method_call_code(
+				object->get_address(),
+				"__copy",
+				object->get_class(),
+				false,
+				get_containing_program().lock()
+			);
+			object_code += copy_call.pre_code + "\n";
+			object_code += copy_call.code + " " + object->get_copy_from()->get_address() + "\n";
+			object_code += copy_call.post_code + "\n";
 		} else {
 			object_code += "bpp__" + type + "____new " + object->get_address() + " >/dev/null\n";
 			// Call the constructor if it exists

@@ -67,6 +67,10 @@ std::weak_ptr<bpp::bpp_class> bpp_entity::get_containing_class() {
 	return containing_class;
 }
 
+std::weak_ptr<bpp::bpp_program> bpp_entity::get_containing_program() {
+	return containing_program;
+}
+
 bool bpp_entity::set_containing_class(std::weak_ptr<bpp::bpp_class> containing_class) {
 	this->containing_class = containing_class;
 	return true;
@@ -112,7 +116,17 @@ void bpp_entity::inherit(std::shared_ptr<bpp_entity> parent) {
 	}
 }
 
+void bpp_entity::inherit(std::shared_ptr<bpp_program> program) {
+	containing_program = program;
+	inherit(std::dynamic_pointer_cast<bpp_entity>(program));
+}
+
 void bpp_entity::inherit(std::shared_ptr<bpp_class> parent) {
+	// If we have no `containing_program`, inherit it from the parent class
+	if (containing_program.expired()) {
+		auto parent_program = parent->get_containing_program().lock();
+		containing_program = parent_program;
+	}
 	inherit(std::dynamic_pointer_cast<bpp_entity>(parent));
 }
 

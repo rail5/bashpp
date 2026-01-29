@@ -74,6 +74,8 @@ void BashppListener::exitClassDefinition(std::shared_ptr<AST::ClassDefinition> n
 
 	entity_stack.pop();
 
+	auto copy_method = bpp::generate_copy_method(new_class, program);
+	new_class->add_method(copy_method);
 	new_class->finalize(program);
 
 	// Add the class to the program

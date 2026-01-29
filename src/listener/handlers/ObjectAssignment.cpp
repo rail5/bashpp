@@ -42,11 +42,18 @@ void BashppListener::exitObjectAssignment(std::shared_ptr<AST::ObjectAssignment>
 		}
 
 		// Call the __copy method
-		// Form: bpp__CLASSNAME____copy copyFromAddress copyToAddress
-		std::string method_call = "bpp__" + lvalue_object->get_class()->get_name() + "____copy ";
+		auto copy_call = generate_method_call_code(
+			object_assignment->get_lvalue(),
+			"__copy",
+			lvalue_object->get_class(),
+			false,
+			get_program()
+		);
 
-		// Get the addresses of the objects
-		method_call += object_assignment->get_rvalue() + " " + object_assignment->get_lvalue();
+		std::string method_call;
+		method_call += copy_call.pre_code + "\n";
+		method_call += copy_call.code + " " + object_assignment->get_rvalue() + "\n";
+		method_call += copy_call.post_code + "\n";
 
 		std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 		if (current_code_entity != nullptr) {

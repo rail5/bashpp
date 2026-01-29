@@ -33,6 +33,10 @@ std::shared_ptr<bpp::bpp_class> bpp_program::get_primitive_class() const {
 	return primitive_class;
 }
 
+std::weak_ptr<bpp::bpp_program> bpp_program::get_containing_program() {
+	return weak_from_this();
+}
+
 /**
  * @brief Prepare a class for addition to the program by adding it to the classes map
  * 
@@ -69,7 +73,6 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	// Add the code for the class
 	std::string class_code = "";
 	class_code += template_new_function;
-	class_code += template_copy_function;
 
 	// Each of these templates has placeholders that need to be replaced, in the format %PLACEHOLDER-NAME%
 
@@ -113,21 +116,6 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	}
 	class_code = replace_all(class_code, "%ASSIGNMENTS%", assignments);
 	assignments = "";
-
-	// Replace all instances of %COPIES% with the copies for the __copy function
-	std::string copies = "";
-	for (auto& dm : class_->get_datamembers()) {
-		copies += dm->get_pre_access_code() + "\n";
-		if (dm->get_class()->get_name() == "primitive" || dm->is_pointer()) {
-			copies += "	local __copyFrom__" + dm->get_name() + "=\"${__copyFromAddress}__" + dm->get_name() + "\"\n";
-			copies += "	eval \"${__copyToAddress}__" + dm->get_name() + "=\\${!__copyFrom__" + dm->get_name() + "}\"\n";
-		} else {
-			copies += "	bpp__" + dm->get_class()->get_name() + "____copy ${__copyFromAddress}__" + dm->get_name() + " ${__copyToAddress}__" + dm->get_name() + "\n";
-		}
-		copies += dm->get_post_access_code() + "\n";
-	}
-	class_code = replace_all(class_code, "%COPIES%", copies);
-	copies = "";
 
 	// Replace all instances of %CLASS% with the class name
 	class_code = replace_all(class_code, "%CLASS%", class_->get_name());

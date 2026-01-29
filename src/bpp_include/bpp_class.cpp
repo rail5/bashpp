@@ -294,21 +294,6 @@ void bpp_class::inherit(std::shared_ptr<bpp_class> parent) {
 	parents.push_back(parent);
 }
 
-/**
- * @brief Inherit from an entity without marking it as a parent
- * 
- * Since we're in a bpp_class, we should only mark parent classes as parents
- * However, we may still need to inherit references to global objects and classes from a parent context entity such as the program
- */
-void bpp_class::inherit(std::shared_ptr<bpp_entity> parent) {
-	for (auto& c : parent->get_classes()) {
-		classes[c.first] = c.second;
-	}
-	for (auto& o : parent->get_objects()) {
-		objects[o.first] = o.second;
-	}
-}
-
 std::shared_ptr<bpp::bpp_class> bpp_class::get_parent() {
 	if (parents.size() == 0) {
 		return nullptr;

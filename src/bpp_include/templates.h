@@ -124,40 +124,6 @@ function bpp____supershell() {
 }
 )EOF";
 
-[[maybe_unused]] static const char* template_copy_function = R"EOF(function bpp__%CLASS%____copy() {
-	local __copyFromAddress="$1" __copyToAddress="$2"
-	while : ; do
-		if ! eval "declare -p \"${__copyFromAddress}\"" &>/dev/null; then
-			break
-		fi
-		[[ -z "${!__copyFromAddress}" ]] && break
-		__copyFromAddress="${!__copyFromAddress}"
-	done
-	while : ; do
-		if ! eval "declare -p \"${__copyToAddress}\"" &>/dev/null; then
-			break
-		fi
-		[[ -z "${!__copyToAddress}" ]] && break
-		__copyToAddress="${!__copyToAddress}"
-	done
-	local __copyFromVPointer="${__copyFromAddress}____vPointer" __copyToVPointer="${__copyToAddress}____vPointer"
-	if [[ "${__copyFromAddress}" == "0" ]] || [[ -z "${!__copyFromVPointer}" ]]; then
-		>&2 echo "Bash++: Error: %CLASS%: Attempted to copy from null object"
-		return
-	fi
-	if [[ "${__copyToAddress}" == "0" ]] || [[ -z "${!__copyToVPointer}" ]]; then
-		>&2 echo "Bash++: Error: %CLASS%: Attempted to copy to null object"
-		return
-	fi
-	if [[ "${!__copyFromVPointer}" != "${!__copyToVPointer}" ]]; then
-		>&2 echo "Bash++: Error: %CLASS%: Attempted to copy between different types"
-		return
-	fi
-%COPIES%
-	eval "${__copyToVPointer}=${!__copyFromVPointer}"
-}
-)EOF";
-
 [[maybe_unused]] static const char* template_method = R"EOF(function bpp__%CLASS%__%SIGNATURE%() {
 	local __this="$1"
 	shift 1

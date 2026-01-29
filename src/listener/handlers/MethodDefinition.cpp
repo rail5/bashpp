@@ -41,7 +41,6 @@ void BashppListener::enterMethodDefinition(std::shared_ptr<AST::MethodDefinition
 	// If the method is toPrimitive, verify that the scope is public
 	if (method->get_name() == "toPrimitive" && method->get_scope() != bpp::bpp_scope::SCOPE_PUBLIC) {
 		throw bpp::ErrorHandling::SyntaxError(this, node->NAME(), "toPrimitive method must be public");
-		return;
 	}
 
 	// Verify that the method name does not contain a double underscore
@@ -96,7 +95,6 @@ void BashppListener::enterMethodDefinition(std::shared_ptr<AST::MethodDefinition
 			method->add_code_to_previous_line(dynamic_cast_code.pre_code);
 			method->add_code_to_next_line(dynamic_cast_code.post_code);
 			method->add_code(param_name + "=" + dynamic_cast_code.code + "\n");
-			program->increment_dynamic_cast_counter();
 		}
 
 		std::shared_ptr<bpp::bpp_method_parameter> parameter = std::make_shared<bpp::bpp_method_parameter>(param_name);

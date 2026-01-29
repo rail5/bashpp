@@ -96,7 +96,7 @@ class ErrorOrWarning : public std::runtime_error {
 		explicit ErrorOrWarning(const std::string& msg) = delete;
 
 		template <bpp::detail::ErrorReportableListener Listener, bpp::detail::ASTNodePtrORToken T>
-		inline ErrorOrWarning(Listener* listener, T error_ctx, const std::string& msg) : std::runtime_error(msg) {
+		inline ErrorOrWarning(Listener* listener, const T& error_ctx, const std::string& msg) : std::runtime_error(msg) {
 			set_from_listener(listener, error_ctx);
 		}
 		
@@ -129,7 +129,7 @@ class SyntaxError : public ErrorOrWarning {
 		explicit SyntaxError(const std::string& msg) = delete;
 
 		template <bpp::detail::ErrorReportableListener Listener, bpp::detail::ASTNodePtrORToken T>
-		inline SyntaxError(Listener* listener, T error_ctx, const std::string& msg) : ErrorOrWarning(listener, error_ctx, msg) {
+		inline SyntaxError(Listener* listener, const T& error_ctx, const std::string& msg) : ErrorOrWarning(listener, error_ctx, msg) {
 			is_warning = false;
 		}
 };
@@ -149,7 +149,7 @@ class Warning : public ErrorOrWarning {
 		explicit Warning(const std::string& msg) = delete;
 
 		template <bpp::detail::ErrorReportableListener Listener, bpp::detail::ASTNodePtrORToken T>
-		inline Warning(Listener* listener, T error_ctx, const std::string& msg) : ErrorOrWarning(listener, error_ctx, msg) {
+		inline Warning(Listener* listener, const T& error_ctx, const std::string& msg) : ErrorOrWarning(listener, error_ctx, msg) {
 			is_warning = true;
 		}
 };

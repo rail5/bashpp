@@ -465,12 +465,9 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 		std::vector<std::shared_ptr<bpp_method>> methods;
 		std::vector<std::shared_ptr<bpp_datamember>> datamembers;
 		bool has_custom_toPrimitive = false;
-		bool has_custom_destructor = false;
 
 		void remove_default_toPrimitive();
 		void add_default_toPrimitive();
-		void remove_default_destructor();
-		void add_default_destructor();
 
 		bool finalized = false;
 	public:

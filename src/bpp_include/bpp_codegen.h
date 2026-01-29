@@ -66,6 +66,13 @@ code_segment generate_constructor_call_code(
 	std::shared_ptr<bpp_class>			assumed_class
 	);
 
+code_segment generate_destructor_call_code(
+	const std::string&					reference_code,
+	std::shared_ptr<bpp_class>			assumed_class,
+	bool force_static_reference,
+	std::shared_ptr<bpp::bpp_program>	program
+	);
+
 code_segment generate_method_call_code(
 	const std::string&					reference_code,
 	const std::string&					method_name,

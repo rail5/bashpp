@@ -135,7 +135,7 @@ void bpp_method::destruct_local_objects(std::shared_ptr<bpp_program> program) {
 
 		code_segment delete_code = generate_delete_code(o.second, o.second->get_address(), program);
 
-		*code << delete_code.pre_code << "\n" << std::flush;
+		*code << delete_code.full_code() << "\n" << std::flush;
 	}
 }
 

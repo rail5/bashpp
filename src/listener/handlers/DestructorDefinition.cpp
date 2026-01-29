@@ -43,6 +43,22 @@ void BashppListener::exitDestructorDefinition(std::shared_ptr<AST::DestructorDef
 
 	// Call destructors for any objects created in the destructor before we exit it
 	destructor->destruct_local_objects(program);
+
+	// If this is a destructor for a derived class, and the parent class has a destructor, call it
+	auto containing_class = destructor->get_containing_class().lock();
+	if (containing_class == nullptr) {
+		throw bpp::ErrorHandling::InternalError("Containing class not found for destructor");
+	}
+	auto parent_class = containing_class->get_parent();
+	if (parent_class != nullptr) {
+		auto parent_destructor = parent_class->get_method_UNSAFE("__destructor");
+		if (parent_destructor != nullptr) {
+			// Call the parent destructor
+			code_segment parent_destructor_call = generate_destructor_call_code("${__this}", parent_class, true, program);
+			destructor->add_code(parent_destructor_call.full_code() + "\n");
+		}
+	}
+
 	destructor->flush_code_buffers();
 
 	// Add the destructor to the class

@@ -48,40 +48,6 @@ void bpp_class::add_default_toPrimitive()  {
 	}
 }
 
-/**
- * @brief Remove the default destructor method.
- */
-void bpp_class::remove_default_destructor()  {
-	if (!has_custom_destructor) {
-		// Remove the destructor method from the methods vector
-		for (auto it = methods.begin(); it != methods.end(); it++) {
-			if ((*it)->get_name() == "__destructor") {
-				methods.erase(it);
-				break;
-			}
-		}
-	}
-}
-
-/**
- * @brief Add the default destructor method.
- * 
- * The default destructor does nothing.
- * The reason we add it is to ensure that a destructor is always present, even if the user does not define one.
- * This is important because destructors are called automatically in some cases, such as when an object goes out of scope.
- */
-void bpp_class::add_default_destructor()  {
-	if (!has_custom_destructor) {
-		std::shared_ptr<bpp_method> destructor = std::make_shared<bpp_method>();
-		destructor->set_name("__destructor");
-		destructor->set_scope(bpp_scope::SCOPE_PUBLIC);
-		destructor->set_virtual(true);
-		destructor->set_last_override(name);
-		remove_default_destructor();
-		methods.push_back(destructor);
-	}
-}
-
 std::weak_ptr<bpp::bpp_class> bpp_class::get_containing_class() {
 	return weak_from_this();
 }
@@ -96,9 +62,7 @@ bool bpp_class::set_containing_class(std::weak_ptr<bpp::bpp_class> containing_cl
 
 void bpp_class::set_name(const std::string& name) {
 	this->name = name;
-
 	add_default_toPrimitive();
-	add_default_destructor();
 }
 
 /**
@@ -117,14 +81,6 @@ bool bpp_class::add_method(std::shared_ptr<bpp_method> method) {
 		method->set_containing_class(weak_from_this());
 		remove_default_toPrimitive();
 		has_custom_toPrimitive = true;
-	}
-
-	if (name == "__destructor" && !has_custom_destructor) {
-		method->set_virtual(true);
-		method->set_last_override(this->name);
-		method->set_containing_class(weak_from_this());
-		remove_default_destructor();
-		has_custom_destructor = true;
 	}
 
 	for (auto it = methods.begin(); it != methods.end(); it++) {
@@ -385,7 +341,7 @@ void bpp_class::finalize(std::shared_ptr<bpp_program> program) {
 			delete_method->add_code("	unset ${__this}__" + dm->get_name() + "\n");
 		} else {
 			code_segment delete_code = generate_delete_code(dm, "${__this}__" + dm->get_name(), program);
-			delete_method->add_code(delete_code.pre_code + "\n");
+			delete_method->add_code(delete_code.full_code() + "\n");
 			delete_method->add_code("	unset ${__this}__" + dm->get_name() + "\n");
 		}
 		delete_method->add_code(dm->get_post_access_code() + "\n");

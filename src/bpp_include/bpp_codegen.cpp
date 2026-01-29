@@ -89,15 +89,27 @@ code_segment generate_delete_code(
 	// Ie, if the object is a pointer, this should be the address of the object
 	code_segment result;
 
-	code_segment destructor_code = generate_method_call_code(object_ref, "__destructor", object->get_class(), false, program);
-	result.pre_code += destructor_code.pre_code;
-	result.pre_code += destructor_code.code + "\n";
-	result.pre_code += destructor_code.post_code;
+	code_segment destructor_code = generate_destructor_call_code(object_ref, object->get_class(), false, program);
+	result.pre_code += destructor_code.full_code() + "\n";
 
 	code_segment delete_code = generate_method_call_code(object_ref, "__delete", object->get_class(), false, program);
-	result.pre_code += delete_code.pre_code;
-	result.pre_code += delete_code.code + "\n";
-	result.pre_code += delete_code.post_code;
+	result.pre_code += delete_code.full_code() + "\n";
+
+	return result;
+}
+
+inline code_segment _generate_virtual_method_call_code(
+	const std::string& reference_code,
+	const std::string& method_name,
+	std::shared_ptr<bpp::bpp_program> program
+) {
+	code_segment result;
+
+	// Perform a vTable lookup, store the result in the temporary variable, and execute
+	result.pre_code = "if bpp____vTable__lookup \"" + reference_code + "\" \"" + method_name + "\" __func" + std::to_string(program->get_function_counter()) + "; then\n";
+	result.post_code = "	unset __func" + std::to_string(program->get_function_counter()) + "\nfi\n";
+	result.code = "	${!__func" + std::to_string(program->get_function_counter()) + "} " + reference_code;
+	program->increment_function_counter();
 
 	return result;
 }
@@ -148,11 +160,7 @@ code_segment generate_method_call_code(
 
 	// Is the method virtual?
 	if (assumed_method->is_virtual() && !force_static_reference) {
-		// Look up the method in the vTable
-		result.pre_code = "if bpp____vTable__lookup \"" + reference_code + "\" \"" + method_name + "\" __func" + std::to_string(program->get_function_counter()) + "; then\n";
-		result.post_code = "	unset __func" + std::to_string(program->get_function_counter()) + "\nfi\n";
-		result.code = "	${!__func" + std::to_string(program->get_function_counter()) + "} " + reference_code;
-		program->increment_function_counter();
+		return _generate_virtual_method_call_code(reference_code, method_name, program);
 	} else {
 		std::string class_name = assumed_class->get_name();
 		auto class_containing_the_method = assumed_method->get_containing_class().lock();
@@ -165,7 +173,8 @@ code_segment generate_method_call_code(
 	return result;
 }
 
-code_segment generate_constructor_call_code(const std::string &reference_code,
+code_segment generate_constructor_call_code(
+	const std::string& reference_code,
 	std::shared_ptr<bpp_class> assumed_class
 ) {
 	code_segment result;
@@ -182,6 +191,31 @@ code_segment generate_constructor_call_code(const std::string &reference_code,
 
 	return result;
 }
+
+code_segment generate_destructor_call_code(
+	const std::string& reference_code,
+	std::shared_ptr<bpp_class> assumed_class,
+	bool force_static_reference,
+	std::shared_ptr<bpp::bpp_program> program
+) {
+	auto destructor_method = assumed_class->get_method_UNSAFE("__destructor");
+	if (destructor_method == nullptr) return code_segment();
+
+	// All destructors are virtual
+	if (!force_static_reference) {
+		return _generate_virtual_method_call_code(reference_code, "__destructor", program);
+	} else {
+		std::string class_name = assumed_class->get_name();
+		auto class_containing_the_destructor = destructor_method->get_containing_class().lock();
+		if (class_containing_the_destructor != nullptr) {
+			class_name = class_containing_the_destructor->get_name();
+		}
+		code_segment result;
+		result.code = "bpp__" + class_name + "____destructor " + reference_code;
+		return result;
+	}
+}
+
 
 /**
  * @brief Generates a code segment for performing a dynamic cast.

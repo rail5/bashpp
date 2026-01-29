@@ -1,0 +1,48 @@
+@class Base {	
+}
+
+@class Derived : Base {
+	@destructor {
+		echo "Derived destructor called"
+	}
+}
+
+@class FurtherDerived : Derived {
+	@destructor {
+		echo "FurtherDerived destructor called"
+	}
+}
+
+@class AnotherDerived : Derived {
+	@destructor {
+		echo "AnotherDerived destructor called"
+	}
+}
+
+@class EvenFurtherDerived : FurtherDerived {
+	# No destructor defined here
+}
+
+@class FurthestDerived : EvenFurtherDerived {
+	@destructor {
+		echo "FurthestDerived destructor called"
+	}
+}
+
+@Base baseObj
+@delete @baseObj # Nothing should be echoed
+
+@Derived derivedObj
+@delete @derivedObj # "Derived destructor called"
+
+@FurtherDerived furtherDerivedObj
+@delete @furtherDerivedObj # "FurtherDerived destructor called" followed by "Derived destructor called"
+
+@AnotherDerived anotherDerivedObj
+@delete @anotherDerivedObj # "AnotherDerived destructor called" followed by "Derived destructor called"
+
+@EvenFurtherDerived evenFurtherDerivedObj
+@delete @evenFurtherDerivedObj # "FurtherDerived destructor called" followed by "Derived destructor called"
+
+@FurthestDerived furthestDerivedObj
+@delete @furthestDerivedObj # "FurthestDerived destructor called" followed by "FurtherDerived destructor called" followed by "Derived destructor called"

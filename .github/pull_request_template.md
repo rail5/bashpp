@@ -1,9 +1,9 @@
 ## Checks
 
 <!-- Verify all of the following before submitting your pull request -->
-- [&#10003;] The code follows the [general style of this project](/CONTRIBUTING.md#design-principles)
+- [&#10003;] The code follows the [general style of this project](CONTRIBUTING.md#design-principles)
 
-- [&#10003;] All [tests are passing](/test-suite/README.md) within this branch (`make test`)
+- [&#10003;] All [tests are passing](test-suite/README.md) within this branch (`make test`)
 
 
 <!-- Check/keep one of the following -->

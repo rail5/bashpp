@@ -26,6 +26,21 @@ In general, there are some design principles we try to follow in Bash++ developm
  - **K.I.S.S.**
    - Prefer simple, straightforward solutions
    - Don't be clever
+<details>
+<summary>See example</summary>
+<table>
+<tr><th>Bad</th><th>Good</th></tr>
+<tr><td>
+<pre>char* ptr = dest;
+char* str = src;
+while (*ptr++ = *str++);</pre>
+</td>
+<td>
+<pre>std::string source;
+std::string string_copy = source;</pre>
+</td></tr>
+</table>
+</details>
 
  - **Write code to be read by humans**
    - Prioritize readability and maintainability
@@ -33,9 +48,43 @@ In general, there are some design principles we try to follow in Bash++ developm
    - Use clear, descriptive names for variables, functions, classes, etc
    - *Don't abbreviate!* An excessively long/verbose name is preferable to an unclear one
    - Performance is secondary to correctness and maintainability
+<details>
+<summary>See example</summary>
+<table>
+<tr><th>Bad</th><th>Good</th></tr>
+<tr><td>
+<pre>int x = y + z;
+if (x &gt; 10) f();</pre>
+</td>
+<td>
+<pre>int price = cost_price + markup;
+if (price &gt; max_price_allowed) apply_discount();</pre>
+</td></tr>
+</table>
+</details>
 
  - **Process as little Bash as possible**
    - Let Bash do what Bash does, and focus on Bash++-specific functionality
+
+<details>
+<summary>See example</summary>
+<table>
+<tr><th>Bad</th><th>Good</th></tr>
+<tr><td>
+<pre>auto resolved_binary
+  = find_in_path(command->program_name());
+if (!resolved_binary) {
+  report_error("command not found: "
+    + command->program_name()); 
+}</pre>
+</td>
+<td>
+<pre>// The user gave a shell command
+// We don't need to care what it is or if it works
+// We let Bash handle that at runtime.</pre>
+</td></tr>
+</table>
+</details>
 
  - **When in doubt, do whatever C++ does**
    - If you're not sure how something should behave, look to C++ for guidance
@@ -44,6 +93,31 @@ In general, there are some design principles we try to follow in Bash++ developm
  - **Unify, unify, unify!**
    - "Special-casing" should be labelled explicitly as a **hack** and marked with a **TODO** comment
    - Try your best to find a general solution that covers all cases
+<details>
+<summary>See example</summary>
+<table>
+<tr><th>Bad</th><th>Good</th></tr>
+<tr><td>
+<pre>for (const auto& m : methods) {
+  // TODO(@developer): HACK.
+  // System methods treated specially.
+  // This should be unified later.
+  if (m->get_name() == "__delete") {
+    procedure_1();
+  } else if (m->get_name() == "__new") {
+    procedure_2();
+  } else {
+    procedure_3();
+  }
+}</pre>
+</td>
+<td>
+<pre>for (const auto& m : methods) {
+  general_procedure();
+}</pre>
+</td></tr>
+</table>
+</details>
 
 ## License
 

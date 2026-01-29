@@ -70,55 +70,7 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 		return false;
 	}
 
-	// Add the code for the class
 	std::string class_code = "";
-	class_code += template_new_function;
-
-	// Each of these templates has placeholders that need to be replaced, in the format %PLACEHOLDER-NAME%
-
-	// Replace all instances of %ASSIGNMENTS% with the assignments for the __new function
-	std::string assignments = "";
-	for (auto& dm : class_->get_datamembers()) {
-		assignments += dm->get_pre_access_code() + "\n";
-		if (dm->get_class()->get_name() == "primitive") {
-			// Is it an array?
-			if (dm->is_array()) {
-				assignments += "	eval \"${__this}__" + dm->get_name() + "=" + dm->get_default_value() + "\"\n";
-			} else {
-				assignments += "	local __objAssignment=" + dm->get_default_value() + "\n";
-				assignments += "	eval \"${__this}__" + dm->get_name() + "=\\$__objAssignment\"\n";
-				assignments += "	unset __objAssignment\n";
-			}
-		} else if (dm->is_pointer()) {
-			std::string default_value = dm->get_default_value();
-			std::string default_value_preface = "";
-			if (!default_value.empty() && default_value[0] == '$') {
-				default_value_preface = "\\";
-			}
-			assignments += "	eval \"${__this}__" + dm->get_name() + "=" + default_value_preface + default_value + "\"\n";
-		} else {
-			// Call 'new' in a supershell and assign its output
-			code_segment supershell_code = generate_supershell_code(
-				"bpp__" + dm->get_class()->get_name() + "____new",
-				shared_from_this()
-			);
-			assignments += supershell_code.pre_code;
-			assignments += "	eval \"${__this}__" + dm->get_name() + "=" + supershell_code.code + "\"\n";
-			assignments += supershell_code.post_code;
-
-			// Call the constructor if it exists
-			if (dm->get_class()->get_method_UNSAFE("__constructor") != nullptr) {
-				auto constructor_code = generate_constructor_call_code("${__this}__" + dm->get_name(), dm->get_class());
-				assignments += constructor_code.full_code();
-			}
-		}
-		assignments += dm->get_post_access_code() + "\n";
-	}
-	class_code = replace_all(class_code, "%ASSIGNMENTS%", assignments);
-	assignments = "";
-
-	// Replace all instances of %CLASS% with the class name
-	class_code = replace_all(class_code, "%CLASS%", class_->get_name());
 
 	// Declare the vTable
 	std::string class_vTable = "declare -A bpp__" + name + "____vTable\n";
@@ -149,6 +101,12 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 			if (i < method->get_parameters().size() - 1) {
 				params += " ";
 			}
+		}
+		if (method->get_name() == "__new") {
+			// __new is the only method that doesn't need this_pointer_validation
+			method_code = replace_all(method_code, "%THIS_POINTER_VALIDATION%", "");
+		} else {
+			method_code = replace_all(method_code, "%THIS_POINTER_VALIDATION%", this_pointer_validation);
 		}
 		method_code = replace_all(method_code, "%CLASS%", class_->get_name());
 		method_code = replace_all(method_code, "%SIGNATURE%", method->get_name());

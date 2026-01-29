@@ -109,26 +109,16 @@ function bpp____supershell() {
 }
 )EOF";
 
-[[maybe_unused]] static const char* template_new_function = R"EOF(function bpp__%CLASS%____new() {
-	local __this="$1"
-	if [[ "${__this}" == "" ]]; then
-		while : ; do
-			__this="bpp__%CLASS%__$RANDOM$RANDOM$RANDOM$RANDOM"
-			local __unusedVar="${__this}____vPointer"
-			[[ -z "${!__unusedVar+x}" ]] && break
-		done
-	fi
-	eval "${__this}____vPointer=bpp__%CLASS%____vTable"
-%ASSIGNMENTS%
-	echo "${__this}"
-}
-)EOF";
-
 [[maybe_unused]] static const char* template_method = R"EOF(function bpp__%CLASS%__%SIGNATURE%() {
 	local __this="$1"
 	shift 1
 	%PARAMS%
-	while : ; do
+	%THIS_POINTER_VALIDATION%
+%METHODBODY%
+}
+)EOF";
+
+[[maybe_unused]] static const char* this_pointer_validation = R"EOF(while : ; do
 		if ! eval "declare -p \"${__this}\"" &>/dev/null; then
 			break
 		fi
@@ -138,8 +128,6 @@ function bpp____supershell() {
 	local __vPointer="${__this}____vPointer"
 	if [[ "${__this}" == "0" ]] || [[ -z "${!__vPointer}" ]]; then
 		>&2 echo "Bash++: Error: Attempted to call @%CLASS%.%SIGNATURE% on null object"
-		return
+		return 1
 	fi
-%METHODBODY%
-}
 )EOF";

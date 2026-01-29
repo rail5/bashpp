@@ -76,6 +76,10 @@ void BashppListener::exitClassDefinition(std::shared_ptr<AST::ClassDefinition> n
 
 	auto copy_method = bpp::generate_copy_method(new_class, program);
 	new_class->add_method(copy_method);
+
+	auto new_method = bpp::generate_new_method(new_class);
+	new_class->add_method(new_method);
+
 	new_class->finalize(program);
 
 	// Add the class to the program

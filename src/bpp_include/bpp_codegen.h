@@ -92,11 +92,11 @@ code_segment generate_typeof_code(
 	std::shared_ptr<bpp::bpp_program>	program
 	);
 
-code_segment inline_new(
-	const std::string&					new_address,
-	std::shared_ptr<bpp::bpp_class>		new_class
+code_segment generate_new_code(
+	const std::string&                  new_address,
+	std::shared_ptr<bpp::bpp_class>     new_class,
+	bool inline_new
 	);
-
 
 // Generators for standardized system methods
 std::shared_ptr<bpp::bpp_method> generate_copy_method(
@@ -104,7 +104,9 @@ std::shared_ptr<bpp::bpp_method> generate_copy_method(
 	std::shared_ptr<bpp::bpp_program> program
 	);
 
-
+std::shared_ptr<bpp::bpp_method> generate_new_method(
+	std::shared_ptr<bpp::bpp_class> containing_class
+	);
 
 std::string get_encased_ref(const std::string& ref, uint8_t indirection_level);
 

@@ -6,7 +6,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
-#include <stack>
+#include <vector>
 
 #include <unistd.h>
 #include <sys/ioctl.h>
@@ -20,10 +20,10 @@ namespace bpp {
 namespace ErrorHandling {
 
 void print_syntax_error_or_warning(
-	std::string source_file,
+	const std::string& source_file,
 	uint32_t line, uint32_t column, uint32_t text_length,
 	const std::string& msg,
-	std::stack<std::string> include_chain,
+	const std::vector<std::string>& include_chain,
 	std::shared_ptr<bpp::bpp_program> program,
 	bool lsp_mode,
 	bool is_warning
@@ -59,9 +59,8 @@ void print_syntax_error_or_warning(
 		<< std::endl;
 	
 	// Print the include chain that led to the problematic file
-	while (!include_chain.empty()) {
-		std::cerr << "In file included from " << color_purple << include_chain.top() << color_reset << std::endl;
-		include_chain.pop();
+	for (auto it = include_chain.rbegin(); it != include_chain.rend(); it++) {
+		std::cerr << "In file included from " << color_purple << *it << color_reset << std::endl;
 	}
 
 	// Print the warning / error message
@@ -116,12 +115,12 @@ void print_syntax_error_or_warning(
 }
 
 void print_syntax_error_from_parser(
-	std::string source_file,
+	const std::string& source_file,
 	uint32_t line,
 	uint32_t start_column,
 	uint32_t end_column,
 	const std::string& msg,
-	std::stack<std::string> include_chain
+	const std::vector<std::string>& include_chain
 ) {
 	print_syntax_error_or_warning(
 		source_file,

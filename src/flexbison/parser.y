@@ -23,7 +23,7 @@ void yyerror(const char *s);
 %}
 
 %lex-param { yyscan_t yyscanner }
-%parse-param { std::shared_ptr<AST::Program>& program } { bool& current_command_can_receive_lvalues } { const std::string& source_file } { const std::stack<std::string>& include_chain } { yyscan_t yyscanner }
+%parse-param { std::shared_ptr<AST::Program>& program } { bool& current_command_can_receive_lvalues } { const std::string& source_file } { const std::vector<std::string>& include_chain } { yyscan_t yyscanner }
 
 %define parse.error verbose
 

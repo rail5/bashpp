@@ -127,7 +127,7 @@ void AST::BashppParser::setInputFromStringContents(const std::string& contents) 
 	input_source = contents;
 }
 
-void AST::BashppParser::setIncludeChain(const std::stack<std::string>& includes) {
+void AST::BashppParser::setIncludeChain(const std::vector<std::string>& includes) {
 	include_chain = includes;
 }
 

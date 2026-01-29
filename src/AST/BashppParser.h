@@ -31,7 +31,7 @@ class BashppParser {
 		bool display_lexer_output = false;
 
 		std::string input_file_path = "<stdin>";
-		std::stack<std::string> include_chain;
+		std::vector<std::string> include_chain;
 		
 		enum class InputType {
 			FILEPATH,
@@ -60,7 +60,7 @@ class BashppParser {
 		void setInputFromFilePtr(FILE* file_ptr, const std::string& file_path);
 		void setInputFromStringContents(const std::string& contents);
 
-		void setIncludeChain(const std::stack<std::string>& includes);
+		void setIncludeChain(const std::vector<std::string>& includes);
 
 		std::shared_ptr<AST::Program> program();
 };

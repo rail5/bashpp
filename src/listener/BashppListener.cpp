@@ -23,7 +23,7 @@ void BashppListener::set_included(bool included) {
 void BashppListener::set_included_from(BashppListener* included_from) {
 	this->included_from = included_from;
 	include_stack = included_from->get_include_stack();
-	include_stack.push(included_from->source_file);
+	include_stack.push_back(included_from->source_file);
 }
 
 /**
@@ -73,7 +73,7 @@ std::shared_ptr<std::set<std::string>> BashppListener::get_included_files() {
 	return included_files;
 }
 
-std::stack<std::string> BashppListener::get_include_stack() {
+const std::vector<std::string>& BashppListener::get_include_stack() {
 	return include_stack;
 }
 

@@ -56,7 +56,7 @@ concept ASTNodePtrORToken = ASTNodePtrType<T> || ASTStringToken<T> || ASTParamet
 template <typename T>
 concept ErrorReportableListener = requires(T t) {
 	{ t.get_program() } -> std::same_as<std::shared_ptr<bpp::bpp_program>>;
-	{ t.get_include_stack() } -> std::same_as<std::stack<std::string>>;
+	{ t.get_include_stack() } -> std::same_as<const std::vector<std::string>&>;
 	{ t.get_source_file() } -> std::same_as<std::string>;
 	{ t.get_lsp_mode() } -> std::same_as<bool>;
 };

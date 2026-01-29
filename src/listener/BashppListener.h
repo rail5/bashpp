@@ -83,7 +83,7 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 		 * @var include_stack
 		 * @brief A chain of included files, from the main file to the current file (used for error reporting)
 		 */
-		std::stack<std::string> include_stack;
+		std::vector<std::string> include_stack;
 
 		/**
 		 * @var output_stream
@@ -173,7 +173,7 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 
 	std::shared_ptr<bpp::bpp_program> get_program();
 	std::shared_ptr<std::set<std::string>> get_included_files();
-	std::stack<std::string> get_include_stack();
+	const std::vector<std::string>& get_include_stack();
 	std::string get_source_file();
 	bool get_lsp_mode();
 

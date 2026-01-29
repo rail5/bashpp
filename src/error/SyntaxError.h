@@ -27,23 +27,23 @@ namespace ErrorHandling {
  * @param is_warning Whether the message is a warning or an error
  */
 void print_syntax_error_or_warning(
-	std::string source_file,
+	const std::string& source_file,
 	uint32_t line,
 	uint32_t column,
 	uint32_t text_length,
 	const std::string& msg,
-	std::stack<std::string> include_chain,
+	const std::vector<std::string>& include_chain,
 	std::shared_ptr<bpp::bpp_program> program,
 	bool lsp_mode,
 	bool is_warning = false);
 
 void print_syntax_error_from_parser(
-	std::string source_file,
+	const std::string& source_file,
 	uint32_t line,
 	uint32_t start_column,
 	uint32_t end_column,
 	const std::string& msg,
-	std::stack<std::string> include_chain
+	const std::vector<std::string>& include_chain
 );
 
 class ErrorOrWarning : public std::runtime_error {
@@ -52,7 +52,7 @@ class ErrorOrWarning : public std::runtime_error {
 		uint32_t line;
 		uint32_t column;
 		uint32_t text_length;
-		std::stack<std::string> include_chain;
+		std::vector<std::string> include_chain;
 		std::shared_ptr<bpp::bpp_program> program;
 		bool lsp_mode;
 		bool is_warning;

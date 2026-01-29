@@ -27,4 +27,22 @@ Calling `run.bpp` with no arguments will run all the test cases.
 
 The test suite is itself written in Bash++.
 
-Individual test cases are located in the `tests/sources` subdirectory. Each test case is a Bash++ script. The script is executed and its output is compared to the expected output, stored in `tests/expected`.
+ - A test case is a Bash++ script saved in `test-suite/tests/sources/test-name.bpp`
+ - The expected output of the test is saved in `test-suite/tests/expected/test-name` (no file extension)
+ - The test runner compares the actual output of the test case to the expected output. If they match, the test passes. If they don't match, the test fails.
+
+### Adding New Test Cases
+
+To add a new test case:
+
+1. Create a new Bash++ script in `test-suite/tests/sources/` with a `.bpp` extension.
+2. Create a corresponding "expected output" file in `test-suite/tests/expected/` with the same name as the test case (but no `.bpp` extension).
+
+The test runner treats each line of the expected output file as a **regular expression**. This allows for variable output to be matched correctly.
+
+For example, suppose a test is expected to print "hello world" on line 1, and the phrase "Your lucky number is: X" on line 2, where X can be any integer. The expected output file would be written as:
+
+```
+hello world
+Your lucky number is: [0-9]+
+```

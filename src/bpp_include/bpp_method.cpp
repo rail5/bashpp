@@ -85,6 +85,11 @@ void bpp_method::set_scope(bpp_scope scope) {
 
 void bpp_method::set_virtual(bool is_virtual) {
 	m_is_virtual = is_virtual;
+	m_is_overridable = is_virtual; // Virtual methods are overridable by default
+}
+
+void bpp_method::set_overridable(bool is_overridable) {
+	m_is_overridable = is_overridable;
 }
 
 void bpp_method::set_inherited(bool is_inherited) {
@@ -109,6 +114,10 @@ bpp_scope bpp_method::get_scope() const {
 
 bool bpp_method::is_virtual() const {
 	return m_is_virtual;
+}
+
+bool bpp_method::is_overridable() const {
+	return m_is_overridable;
 }
 
 bool bpp_method::is_inherited() const {

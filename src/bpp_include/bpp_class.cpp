@@ -85,9 +85,10 @@ bool bpp_class::add_method(std::shared_ptr<bpp_method> method) {
 
 	for (auto it = methods.begin(); it != methods.end(); it++) {
 		if ((*it)->get_name() == name) {
-			if ((*it)->is_inherited() && (*it)->is_virtual() && (*it)->get_last_override() != this->name) {
-				// Override the inherited virtual method
-				method->set_virtual(true);
+			if ((*it)->is_inherited() && (*it)->is_overridable() && (*it)->get_last_override() != this->name) {
+				// Override the inherited method
+				method->set_virtual((*it)->is_virtual());
+				method->set_overridable(true);
 				method->set_last_override(this->name);
 				method->set_overridden_method(*it);
 				method->set_containing_class(weak_from_this());
@@ -106,7 +107,7 @@ bool bpp_class::add_method(std::shared_ptr<bpp_method> method) {
 	}
 
 	// If this is the initial definition of a virtual method, set the last_override to this (the base) class
-	if (!method->is_inherited() && method->is_virtual()) {
+	if (!method->is_inherited() && method->is_overridable()) {
 		method->set_last_override(this->name);
 	}
 

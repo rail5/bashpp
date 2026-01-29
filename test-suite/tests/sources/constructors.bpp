@@ -1,0 +1,25 @@
+@class Base {
+	@constructor {
+		echo "Base constructor called"
+	}
+}
+
+@class Derived : Base {
+	@constructor {
+		echo "Derived constructor called"
+	}
+}
+
+@class FurtherDerived : Derived {
+}
+
+@class FurthestDerived : FurtherDerived {
+	@constructor {
+		echo "FurthestDerived constructor called"
+	}
+}
+
+@Base baseObj # "Base constructor called"
+@Derived derivedObj # "Base constructor called" "Derived constructor called"
+@FurtherDerived furtherDerivedObj # "Base constructor called" "Derived constructor called"
+@FurthestDerived furthestDerivedObj # "Base constructor called" "Derived constructor called" "FurthestDerived constructor called"

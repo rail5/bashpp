@@ -22,6 +22,7 @@ void BashppListener::enterConstructorDefinition(std::shared_ptr<AST::Constructor
 	constructor->set_name("__constructor");
 	constructor->set_scope(bpp::bpp_scope::SCOPE_PUBLIC);
 	constructor->set_containing_class(current_class);
+	constructor->set_overridable(true); // Constructors are overridable, but not virtual
 	constructor->inherit(program);
 	entity_stack.push(constructor);
 
@@ -30,6 +31,21 @@ void BashppListener::enterConstructorDefinition(std::shared_ptr<AST::Constructor
 		node->getLine(),
 		node->getCharPositionInLine()
 	);
+
+	// If this is a constructor for a derived class, and the parent class has a constructor, call it
+	auto containing_class = constructor->get_containing_class().lock();
+	if (containing_class == nullptr) {
+		throw bpp::ErrorHandling::InternalError("Containing class not found for constructor");
+	}
+	auto parent_class = containing_class->get_parent();
+	if (parent_class != nullptr) {
+		auto parent_constructor = parent_class->get_method_UNSAFE("__constructor");
+		if (parent_constructor != nullptr) {
+			// Call the parent constructor
+			code_segment parent_constructor_call = generate_constructor_call_code("${__this}", parent_class);
+			constructor->add_code(parent_constructor_call.full_code() + "\n");
+		}
+	}
 }
 
 void BashppListener::exitConstructorDefinition(std::shared_ptr<AST::ConstructorDefinition> node) {

@@ -1024,6 +1024,11 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 		emit(STRING_CONTENT, AST::Token<std::string>("@", get_lexer_extra(yyscanner)->lexerState.token_beginning.line, get_lexer_extra(yyscanner)->lexerState.token_beginning.column));
 	}
 
+	\\\$ {
+		// Escaped dollar sign
+		emit(STRING_CONTENT, tokenText);
+	}
+
 	\$@ {
 		// Bash variable: '$@'
 		emit(STRING_CONTENT, tokenText);

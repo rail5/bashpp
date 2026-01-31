@@ -2,9 +2,9 @@
 	@public member="value"
 
 	@public @method tryHereString {
-		cat <<<"abc def @this.member hij"
+		cat <<<"abc def @this.member \@this.member \$@this.member hij"
 	}
 }
 
 @HereStringsTest test
-@test.tryHereString
+@test.tryHereString # "abc def value @this.member $value hij"

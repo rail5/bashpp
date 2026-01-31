@@ -4,7 +4,7 @@ title: String Interpolation
 ---
 # NAME
 
-String Interpolation - Embedding expressions within string literals
+Interpolation - Embedding expressions within string literals
 
 # SYNOPSIS
 

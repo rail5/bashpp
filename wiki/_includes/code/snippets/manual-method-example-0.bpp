@@ -1,0 +1,11 @@
+@public @method myMethod1 arg1 arg2 arg3 {
+	# Method body
+}
+
+@public @method myMethod2 @MyClass* objectPointer @AnotherClass* anotherPointer {
+	# Method body
+}
+
+@public @method myMethod3 arg1 @MyClass* objectPointer arg3 @AnotherClass* anotherPointer {
+	# Method body
+}

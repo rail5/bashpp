@@ -18,21 +18,27 @@ description: "Define a method for a class"
 
 # DESCRIPTION
 
-The `@method` directive is used to define a method for a class. A method is a function that operates on the data members of the class. It can be declared as `@private`, `@protected`, or `@public`. Methods can also be declared as `@virtual`, which means that they can be overridden in a derived class.
+The `@method` directive is used to define a method for a class. A method is a function that is associated with a class and is owned by particular instances of that class. It can be declared as `@private`, `@protected`, or `@public`. Methods can also be declared as `@virtual`, which means that they can be overridden in derived classes and will be dynamically dispatched.
 
-The method name must be a valid Bash++ identifier. This means that it can only contain letters, numbers, and underscores, cannot start with a number, cannot be a reserved word, and cannot contain two consecutive underscores. The method name is case-sensitive. The method name must be unique within the class. If a method with the same name already exists in the class, an error will be generated.
+The method name must be a valid Bash++ identifier. This means that it can only contain letters, numbers, and underscores, cannot start with a number, cannot be a reserved word, and cannot contain two consecutive underscores. The method name is case-sensitive. The method name must be unique within the class. If the method name is not unique, a compile-time error will be generated.
 
-The arguments to the method are optional.
+A method can be declared to expect arguments. The arguments are specified after the method name as a space-separated list containing primitives and/or pointers to objects. For example:
+
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/manual-method-example-0.html -%}
+</code></pre></div>
+
+All arguments to methods are optional. Although a method can be declared to expect a specific number of arguments, it can still be called with any number of arguments, including none at all.
 
 If no arguments are specified, any arguments which are passed can still be accessed using `$1`, `$2`, etc, as in any other Bash function.
 
-Methods cannot accept non-primitive arguments. They can, however, accept *pointers* to objects. For example:
+Methods cannot accept non-primitive arguments. They can, however, accept *pointers* to objects as arguments. For example:
 
 <div class="highlight"><pre class="highlight"><code>
 {%- include code/snippets/manual-method-example-1.html -%}
 </code></pre></div>
 
-Declaring a pointer as an argument will run an implicit `@dynamic_cast` on the pointer to the expected type. This means that if the pointer is invalid, it will be set to `@nullptr` within the method.
+Declaring a pointer as an argument will run an implicit `@dynamic_cast` on the pointer to the expected type at the start of the method. This means that if the pointer is invalid, it will be set to `@nullptr` within the method.
 
 Primitives can be declared as arguments as follows:
 
@@ -42,7 +48,7 @@ Primitives can be declared as arguments as follows:
 
 The arguments can be accessed using `$1`, `$2`, etc, as in any other Bash function.
 
-Declaring a method as `@virtual` means that it can be overridden in a derived class. This means that if a derived class has a method with the same name, the derived class's method will be called instead of the base class's method. The correct method to call is determined at runtime.
+Declaring a method to be `@virtual` means that it can be overridden in a derived class and will be dynamically dispatched. This means that if a derived class has a method with the same name, the derived class's method will be called instead of the base class's method. The correct method to call is determined at runtime.
 
 # EXAMPLE
 
@@ -55,6 +61,8 @@ Declaring a method as `@virtual` means that it can be overridden in a derived cl
 Methods can only be defined within a class. They cannot be defined outside of a class.
 
 Methods can be called using the `@object.method` syntax. For example, if you have an object called `myObject` and a method called `myMethod`, you can call the method using `@myObject.myMethod`.
+
+You can pass arguments to methods using the same syntax as for ordinary commands. For example, to pass the arguments `arg1` and `arg2` to the method `myMethod`, you can call the method using `@myObject.myMethod arg1 arg2`.
 
 Calling an object's method in a place where a primitive is expected will run the method in a supershell and substitute its output. For example:
 

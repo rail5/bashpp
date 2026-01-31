@@ -16,7 +16,7 @@ Objects - Object-Oriented Programming in Bash++
 
 # DESCRIPTION
 
-Bash++ objects are instances of classes that encapsulate data and behavior. They are created from class definitions and can have their own state and methods. Objects are the fundamental building blocks of object-oriented programming in Bash++.
+Objects are instances of classes. They are created from class definitions and can have their own state and methods.
 
 ## Creating and deleting an object
 
@@ -47,9 +47,9 @@ The dot signals that we are descending the object hierarchy to access something 
 {%- include code/snippets/objects-example-3.html -%}
 </code></pre></div>
 
-The notation for descending into an object's methods or variables is the same for both objects and pointers to objects. You do not need to use the spooky `->` operator in the case of pointers. Bash++ pointers are automatically dereferenced as needed.
+The notation for descending into an object's methods or variables is the same for both objects and pointers to objects. You do not need to use a different operator in the case of pointers, as in many other languages. Bash++ pointers are automatically dereferenced as needed.
 
-Referencing an object in a place where a primitive is expected (e.g., in an `echo` command) will implicitly call the object's `toPrimitive` method. All classes in Bash++ have a `toPrimitive` method, which is used to convert the object to a primitive value. This method can be overridden to provide custom behavior.
+Referencing an object in a place where a primitive is expected (e.g., as an argument to a command) will implicitly call the object's `toPrimitive` method. All classes in Bash++ have a `toPrimitive` method, which is used to convert the object to a primitive value. This method can be overridden to provide custom behavior.
 
 # SEE ALSO
 - [bpp-classes(3)](classes.md) for more information on classes

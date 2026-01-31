@@ -22,7 +22,7 @@ It first calls the object's destructor (if it exists) and then deletes the objec
 
 The input can be either a pointer to an object or an object itself. If the input is a pointer, the pointer will be set to `@nullptr` after the object is deleted.
 
-The `@delete` directive gives no output unless there is an error. If the input to `@delete` is an invalid pointer, it will output an error message.
+The `@delete` directive gives no output unless there is an error. If the input to `@delete` is an invalid pointer, or an object which has already been deleted, it will output an error message at runtime.
 
 # EXAMPLE
 
@@ -32,7 +32,7 @@ The `@delete` directive gives no output unless there is an error. If the input t
 
 # NOTES
 
-All constructors and destructors are virtual. This means that calling `@delete` will always call the destructor of the correct type for the object, even if given a pointer of the wrong type. For example:
+All destructors are virtual. This means that calling `@delete` will always call the destructor of the correct type for the object, even if given a pointer of the wrong type. For example:
 
 <div class="highlight"><pre class="highlight"><code>
 {%- include code/snippets/manual-delete-example-2.html -%}

@@ -18,9 +18,7 @@ description: "Create a new instance of a class"
 
 The `@new` directive is used to create a new instance of a class.
 
-It initializes the object, calls its constructor (if it exists), and then returns a pointer to the object.
-
-The output of the `@new` directive is a pointer to the newly created object.
+It initializes the object, and calls its constructor (if it exists). At runtime, the directive itself is replaced with a pointer to the newly created object.
 
 # EXAMPLE
 

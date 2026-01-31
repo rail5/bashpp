@@ -16,11 +16,7 @@ toPrimitive - Convert an object to a primitive type
 
 # DESCRIPTION
 
-The `toPrimitive` method is a built-in method that is automatically available to all classes. It is used to convert an object to a primitive type.
-
-The `toPrimitive` method is called when an object is used in a context where a primitive type is expected.
-
-The method is automatically included in all classes. It is always **virtual** and always **public**.
+The `toPrimitive` method is a built-in method that is automatically available to all classes. It is used to convert an object to a primitive type. The `toPrimitive` method is called when an object is used in a context where a primitive type is expected. The method is automatically included in all classes. It is always **virtual** and always **public**.
 
 A custom implementation can be provided in a class, but is not required. The default implementation will echo `{CLASS-NAME} Instance`. For example, if the class is `MyClass`, the default implementation will echo `MyClass Instance`.
 

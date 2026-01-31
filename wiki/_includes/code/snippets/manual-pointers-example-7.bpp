@@ -1,0 +1,2 @@
+@MyClass* myPointer=@new MyClass
+@delete @myPointer

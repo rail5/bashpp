@@ -1,2 +1,3 @@
 @MyClass* myPointer=@new MyClass
-@delete @myPointer
+@myPointer.dataMember="Hello, world!"
+echo @myPointer.dataMember

@@ -2,11 +2,11 @@
 layout: custom
 title: Includes
 brief: "@include"
-description: "Include a file in the current script"
+description: "Include a file in the current program"
 ---
 # NAME
 
-@include - Include a file in the current script
+@include - Include a file in the current program
 
 # SYNOPSIS
 
@@ -17,19 +17,19 @@ description: "Include a file in the current script"
 
 # DESCRIPTION
 
-The `@include` and `@include_once` directives are used to include files in the current script.
+The `@include` and `@include_once` directives are used to include files in the current program.
 
-The `@include` directive will include the specified file every time it is called, while `@include_once` will include the file only once, even if it is called multiple times.
+The `@include` directive will include the specified file every time it is called. The `@include_once` directive will be ignored if the specified file has already been included in the current program.
 
 You can specify the type of include (dynamic or static) using the `dynamic` or `static` keyword. If you do not specify a type, the default is `static`.
 
-A statically-included file will have its compiled code written to the current script.
+A statically-included file will have its compiled code written to the current program.
 
 A dynamically-included file will be linked at runtime, and the compiled code will be expected to be found somewhere in the system at runtime.
 
 If you specify `dynamic`, you may like to specify *where* the compiled file will be found at runtime. This is done using the `as` keyword, followed by the path to the file. If you do not specify a path, the default is the *original* path of the file, with the extension replaced by `.sh`.
 
-The FILE can be any Bash++ script. If you give the file in **quotes** (`"FILE"`), it will be interpreted as a relative or absolute path. If you give the file in **angle-brackets** (`<FILE>`), the compiler will search for the file in the include paths. You can add more directories to the compiler's include paths using the `-I` option.
+The FILE can be any Bash++ source file. If you give the file in **quotes** (`"FILE"`), it will be interpreted as a relative or absolute path. If you give the file in **angle-brackets** (`<FILE>`), the compiler will search for the file in the include paths. You can add more directories to the compiler's include paths using the `-I` option.
 
 # EXAMPLE
 
@@ -41,7 +41,7 @@ The FILE can be any Bash++ script. If you give the file in **quotes** (`"FILE"`)
 
 The default include type is `static`. If you do not specify a type, the file will be included as a static include.
 
-The default include path (for angle-bracket includes) is `/usr/lib/bpp/stdlib/`. You can add more directories to the compiler's include paths using the `-I` option.
+The default include path (for angle-bracket includes) is `/usr/lib/bpp/stdlib/`. You can add more directories to the compiler's include paths using the `-I` option. The include paths are searched in the order they are given.
 
 # SEE ALSO
 

@@ -27,7 +27,7 @@ In general, since Bash++ is a superset of Bash, the details of Bash syntax and s
 			to try and get the "brief" and "description" fields for the card.
 			{%- endcomment -%}
 
-			{% assign after_name = p.content | split: '# NAME' | last %}
+			{% assign after_name = page.content | split: '# NAME' | last %}
 			{% assign name_section = after_name | split: "\n#" | first %}
 			{% assign name_lines = name_section | split: "\n" %}
 
@@ -37,7 +37,7 @@ In general, since Bash++ is a superset of Bash, the details of Bash syntax and s
 				{% if t != '' %}
 					{% assign name_line = t %}
 					{% break %}
-				{% endif %
+				{% endif %}
 			{% endfor %}
 
 			{%- comment -%}

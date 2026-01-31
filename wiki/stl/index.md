@@ -9,20 +9,22 @@ The Bash++ Standard Library is a collection of common data structures and algori
 <div class="cards-grid">
 {% assign stl_pages = site.pages | where_exp: "page", "page.path contains 'stl/'" %}
 	{% for page in stl_pages %}
-		{% unless page.path == 'stl/index.md' %}
-			{% assign includeDirective = '@include &lt;' | append: page.sourceFile | append: '&gt;' %}
-			{% assign declaration = '@class ' | append: page.title %}
-			{% if page.parent %}
-				{% assign declaration = declaration | append: ' : ' | append: page.parent %}
-			{% endif %}
+		{% if page.path | slice: -3, 3 == '.md' %}
+			{% unless page.path == 'stl/index.md' %}
+				{% assign includeDirective = '@include &lt;' | append: page.sourceFile | append: '&gt;' %}
+				{% assign declaration = '@class ' | append: page.title %}
+				{% if page.parent %}
+					{% assign declaration = declaration | append: ' : ' | append: page.parent %}
+				{% endif %}
 
-			{% include card.html
-				url=page.url
-				title=page.title
-				subtitle=includeDirective
-				brief=declaration
-				description=page.description
-			%}
-		{% endunless %}
+				{% include card.html
+					url=page.url
+					title=page.title
+					subtitle=includeDirective
+					brief=declaration
+					description=page.description
+				%}
+			{% endunless %}
+		{% endif %}
 	{% endfor %}
 </div>

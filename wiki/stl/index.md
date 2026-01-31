@@ -9,8 +9,8 @@ The Bash++ Standard Library is a collection of common data structures and algori
 <div class="cards-grid">
 {% assign stl_pages = site.pages | where_exp: "page", "page.path contains 'stl/'" %}
 	{% for page in stl_pages %}
-		{% if page.path | slice: -3, 3 == '.md' %}
-			{% unless page.path == 'stl/index.md' %}
+		{% unless page.path == 'stl/index.md' %}
+			{% unless page.path contains '.source' %}
 				{% assign includeDirective = '@include &lt;' | append: page.sourceFile | append: '&gt;' %}
 				{% assign declaration = '@class ' | append: page.title %}
 				{% if page.parent %}
@@ -25,6 +25,6 @@ The Bash++ Standard Library is a collection of common data structures and algori
 					description=page.description
 				%}
 			{% endunless %}
-		{% endif %}
+		{% endunless %}
 	{% endfor %}
 </div>

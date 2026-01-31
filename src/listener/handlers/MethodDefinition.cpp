@@ -98,7 +98,7 @@ void BashppListener::enterMethodDefinition(std::shared_ptr<AST::MethodDefinition
 		}
 
 		std::shared_ptr<bpp::bpp_method_parameter> parameter = std::make_shared<bpp::bpp_method_parameter>(param_name);
-		parameter->set_type(type);
+		parameter->set_class(type);
 
 		parameter->set_definition_position(
 			source_file,

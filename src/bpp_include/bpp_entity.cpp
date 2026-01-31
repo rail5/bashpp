@@ -43,7 +43,7 @@ bool bpp_entity::add_object(std::shared_ptr<bpp_object> object, bool make_local)
 }
 
 std::shared_ptr<bpp_class> bpp_entity::get_class() {
-	return type;
+	return type.lock();
 }
 
 std::string bpp_entity::get_address() const {

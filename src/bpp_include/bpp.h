@@ -204,7 +204,7 @@ class bpp_entity {
 		 * The type is shared_ptr because this entity **owns** its own local objects.
 		 */
 		std::unordered_map<std::string, std::shared_ptr<bpp_object>> local_objects;
-		std::shared_ptr<bpp_class> type = nullptr;
+		std::weak_ptr<bpp_class> type;
 		std::weak_ptr<bpp_class> containing_class;
 		std::weak_ptr<bpp_program> containing_program;
 		std::vector<std::weak_ptr<bpp_class>> parents;
@@ -457,8 +457,7 @@ class bpp_method_parameter : public bpp_entity {
 	public:
 		explicit bpp_method_parameter(const std::string& name);
 
-		void set_type(std::shared_ptr<bpp_class>);
-		std::shared_ptr<bpp_class> get_type() const;
+		void set_class(std::shared_ptr<bpp_class>);
 };
 
 /**
@@ -527,7 +526,6 @@ class bpp_object : public bpp_entity {
 
 		std::string get_address() const override;
 		std::string get_assignment_value() const;
-		std::shared_ptr<bpp_class> get_class() override;
 		std::string get_pre_access_code() const;
 		std::string get_post_access_code() const;
 		std::shared_ptr<bpp::bpp_object> get_copy_from() const;

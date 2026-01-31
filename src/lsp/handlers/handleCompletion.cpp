@@ -205,10 +205,10 @@ CompletionList bpp::BashppServer::handleDOTCompletion(const CompletionParams& pa
 		detail += "@method " + method->get_name();
 
 		for (const auto& param : method->get_parameters()) {
-			if (param->get_type() == program->get_primitive_class()) {
+			if (param->get_class() == program->get_primitive_class()) {
 				detail += " $" + param->get_name();
 			} else {
-				detail += " @" + param->get_type()->get_name() + "* " + param->get_name();
+				detail += " @" + param->get_class()->get_name() + "* " + param->get_name();
 			}
 		}
 

@@ -361,7 +361,7 @@ std::shared_ptr<bpp::bpp_method> generate_copy_method(
 	const std::string param_name = "__copyFromPtr";
 
 	auto from_param = std::make_shared<bpp::bpp_method_parameter>(param_name);
-	from_param->set_type(containing_class);
+	from_param->set_class(containing_class);
 	if (!copy_method->add_parameter(from_param)) {
 		throw bpp::ErrorHandling::InternalError("Failed to add parameter to copy method");
 	}

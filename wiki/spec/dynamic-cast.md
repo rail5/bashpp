@@ -1,6 +1,8 @@
 ---
 layout: custom
 title: Dynamic Cast
+brief: "@dynamic_cast"
+description: "Safely cast an object to a different type at runtime"
 ---
 # NAME
 

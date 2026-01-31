@@ -39,7 +39,7 @@ detailed-manuals: clean-detailed-manuals
 			continue; \
 		fi; \
 		base=$$(basename "$$file" .md); \
-		tail -n +5 "$$file" > "detailed-manuals/bpp-$$base.md"; \
+		tail -n +7 "$$file" > "detailed-manuals/bpp-$$base.md"; \
 		sed -i '1s/^/% bpp-'"$$base"'(3) Version '"$(VERSION)"' | Manual for the Bash++ language\n/' "detailed-manuals/bpp-$$base.md"; \
 		$(MAKE) process-manual-code-snippets FILE="detailed-manuals/bpp-$$base.md"; \
 	done

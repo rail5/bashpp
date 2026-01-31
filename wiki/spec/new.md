@@ -1,6 +1,8 @@
 ---
 layout: custom
 title: New
+brief: "@new"
+description: "Create a new instance of a class"
 ---
 # NAME
 

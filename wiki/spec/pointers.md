@@ -1,6 +1,8 @@
 ---
 layout: custom
 title: Pointers
+brief: "Pointer"
+description: "A pointer to an object"
 ---
 # NAME
 

@@ -1,6 +1,8 @@
 ---
 layout: custom
 title: Methods
+brief: "@method"
+description: "Define a method for a class"
 ---
 # NAME
 

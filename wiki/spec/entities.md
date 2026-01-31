@@ -1,6 +1,8 @@
 ---
 layout: custom
 title: Entities
+brief: "Entities"
+description: "Structural Units of Program Identity and Accessibility"
 ---
 # NAME
 

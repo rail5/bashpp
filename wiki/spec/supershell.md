@@ -1,6 +1,8 @@
 ---
 layout: custom
 title: Supershells
+brief: "Supershell"
+description: "Capture the output of a command while allowing it to modify the environment"
 ---
 # NAME
 

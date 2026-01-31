@@ -1,6 +1,8 @@
 ---
 layout: custom
 title: Super
+brief: "@super"
+description: "Change context to a parent class"
 ---
 # NAME
 

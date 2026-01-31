@@ -1,6 +1,8 @@
 ---
 layout: custom
-title: Include
+title: Includes
+brief: "@include"
+description: "Include a file in the current script"
 ---
 # NAME
 

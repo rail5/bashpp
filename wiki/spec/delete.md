@@ -1,6 +1,8 @@
 ---
 layout: custom
 title: Delete
+brief: "@delete"
+description: "Delete an object"
 ---
 # NAME
 

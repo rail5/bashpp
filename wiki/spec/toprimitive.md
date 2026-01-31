@@ -1,6 +1,8 @@
 ---
 layout: custom
 title: toPrimitive
+brief: "toPrimitive"
+description: "Convert an object to a primitive type"
 ---
 # NAME
 

@@ -1,6 +1,8 @@
 ---
 layout: custom
 title: Classes
+brief: "@class"
+description: "Define a class"
 ---
 # NAME
 

@@ -1,6 +1,8 @@
 ---
 layout: custom
 title: Objects
+brief: "Objects"
+description: "Object-Oriented Programming in Bash++"
 ---
 # NAME
 

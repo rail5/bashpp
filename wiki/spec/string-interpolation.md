@@ -1,6 +1,8 @@
 ---
 layout: custom
 title: String Interpolation
+brief: "Interpolation"
+description: "Embedding expressions within string literals"
 ---
 # NAME
 

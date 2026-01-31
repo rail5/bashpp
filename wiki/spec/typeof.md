@@ -1,6 +1,8 @@
 ---
 layout: custom
 title: Typeof
+brief: "@typeof"
+description: "Determine the type of an object at runtime"
 ---
 # NAME
 

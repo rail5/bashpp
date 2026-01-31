@@ -1,6 +1,8 @@
 ---
 layout: custom
 title: Language Interoperability
+brief: "Interoperability"
+description: "Interoperability with Bash Features"
 ---
 # NAME
 

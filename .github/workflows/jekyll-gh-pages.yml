@@ -98,7 +98,16 @@ jobs:
             if [[ $(basename $file) == "index.md" ]]; then
               continue
             fi
-            cp "$file" wiki/stl/$(basename $file .md).source.txt
+            # Note: Jekyll strips leading front-matter from published output
+            # regardless of the file extension
+            # So here's a hack for you:
+            # We'll wrap the source in a small front-matter header
+            # to be consumed by Jekyll,
+            # leaving the *real* front-matter intact in the .source.txt file
+            fileName="wiki/stl/$(basename $file .md).source.txt"
+            cp "$file" "$fileName"
+            # Now prepend the front-matter header to the original file
+            sed -i '1s;^;---\nlayout: base\n---\n;' "$fileName"
           done
           # These copies will be used in later runs to preserve the old documentation if we don't need to regenerate it
         shell: bash

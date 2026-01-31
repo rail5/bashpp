@@ -1,0 +1,28 @@
+	<a href="{{ include.url | relative_url }}" class="card-link">
+	  <article class="card">
+		<!-- Card Header -->
+		<header class="card__header">
+		  <div class="card__header-row">
+			<h3 class="card__title">{{ include.title }}</h3>
+		  </div>
+
+		  <p class="card__subtitle">{{ include.manpage }}</p>
+		</header>
+
+		<!-- Card Body -->
+		<div class="card__body">
+		  <!-- Overview -->
+		  <dl class="overview">
+			<dt class="label">{{ include.brief }}</dt>
+			<dd class="value value--muted">
+			  {{ include.description }}
+			</dd>
+		  </dl>
+		</div>
+
+		<!-- Card Footer -->
+		<footer class="card__footer">
+		  <span class="card__footer-link">View details →</span>
+		</footer>
+	  </article>
+	</a>

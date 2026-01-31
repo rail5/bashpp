@@ -95,9 +95,13 @@ jobs:
           bin/bpp -I$(pwd)/stdlib/ autodoc-bpp/autodoc.bpp -d "$(pwd)/stdlib/" -n "Bash++ Standard Library" -e -o "wiki/stl/" -m md
           # Create copies for each of these to preserve their sources
           for file in wiki/stl/*.md; do
+            if [[ $(basename $file) == "index.md" ]]; then
+              continue
+            fi
             cp "$file" wiki/stl/$(basename $file .md).source.txt
           done
           # These copies will be used in later runs to preserve the old documentation if we don't need to regenerate it
+        shell: bash
       - name: Preserve old STL documentation
         if: steps.code_changed.outputs.code == 'false'
         run: |

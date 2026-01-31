@@ -69,6 +69,7 @@ jobs:
               - 'test-suite/**'
               - '.github/workflows/jekyll-gh-pages.yml'
               - 'makefile'
+              - 'mk/**'
               - 'Doxyfile'
       - name: Install build dependencies
         if: steps.code_changed.outputs.code == 'true'

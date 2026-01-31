@@ -38,12 +38,26 @@ Consider the following structure:
 {%- include code/snippets/manual-entities-1.html -%}
 </code></pre></div>
 
-From within `methodB`, the following accessibility rules apply:
+For the above program, the entity tree looks like this:
+
+                       Program
+            ┌─────────────┴─────────────┐
+       globalObject                  MyClass
+                         ┌──────────┬───┴───────┬───────────┐
+                    dataMember   methodA     methodB     methodC
+                                    │
+                               localObject
+
+From within *<u>methodB</u>*, the following accessibility rules apply:
+
+ - `globalObject` *is accessible* -- reaching it only requires moving *up* once, then *left*
 
  - `dataMember` *is accessible* -- reaching it only requires moving *left* (it's an earlier sibling)
+
  - `methodA` *is accessible* -- reaching it only requires moving *left* (it's an earlier sibling)
- - `globalObject` *is accessible* -- reaching it only requires moving *up* to the program entity
+ 
  - `localObject` is *not accessible* -- reaching it requires moving *left* to `methodA`, then *down* into its children, which is not allowed
+
  - `methodC` is *not accessible* -- reaching it requires moving *right*, which is not allowed
 
 User-defined visibility modifiers (`@public`, `@private`, `@protected`) impose additional constraints on accessibility, but do not override these fundamental structural rules.

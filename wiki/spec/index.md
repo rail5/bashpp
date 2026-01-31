@@ -24,11 +24,10 @@ In general, since Bash++ is a superset of Bash, the details of Bash syntax and s
 			{% include card.html
 				url=page.url
 				title=page.title
-				manpage=manpage
+				subtitle=manpage
 				brief=page.brief
 				description=page.description
 			%}
 		{% endunless %}
 	{% endfor %}
-
 </div>

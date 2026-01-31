@@ -1,0 +1,18 @@
+@Object globalObject
+
+@class MyClass {
+	@public dataMember="default value"
+
+	@public @method methodA {
+		@Object localObject
+		...
+	}
+
+	@public @method methodB {
+		...
+	}
+
+	@public @method methodC {
+		...
+	}
+}

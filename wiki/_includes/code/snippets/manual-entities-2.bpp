@@ -1,0 +1,3 @@
+@class InvalidExample {
+	echo "This will fail to compile" # Error: Command sequence outside of a code entity
+}

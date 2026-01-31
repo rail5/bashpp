@@ -107,7 +107,7 @@ jobs:
             fileName="wiki/stl/$(basename $file .md).source.txt"
             cp "$file" "$fileName"
             # Now prepend the front-matter header to the original file
-            sed -i '1s;^;---\nlayout: base\n---\n;' "$fileName"
+            sed -i '1s;^;---\nlayout: null\n---\n;' "$fileName"
           done
           # These copies will be used in later runs to preserve the old documentation if we don't need to regenerate it
         shell: bash

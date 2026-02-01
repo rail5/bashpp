@@ -92,7 +92,7 @@ jobs:
         run: |
           git clone https://github.com/rail5/autodoc-bpp.git autodoc-bpp
           # Generate the docs with autodoc-bpp
-          bin/bpp -I$(pwd)/stdlib/ autodoc-bpp/autodoc.bpp -d "$(pwd)/stdlib/" -n "Bash++ Standard Library" -e -o "wiki/stl/" -m md
+          bin/bpp -I$(pwd)/stdlib/ autodoc-bpp/autodoc.bpp -d "$(pwd)/stdlib/" -o "wiki/stl/" -m md
           # Create copies for each of these to preserve their sources
           for file in wiki/stl/*.md; do
             if [[ $(basename $file) == "index.md" ]]; then

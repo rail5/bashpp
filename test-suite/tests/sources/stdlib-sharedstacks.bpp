@@ -9,14 +9,14 @@
 @stack.push b
 @stack.push c
 @stack.size # 3
-@stack.empty # false
+@stack.empty && echo true || echo false # false
 @stack.top # c
 @stack.pop # c
 @stack.size # 2
 @stack.pop # b
 @stack.pop # a
 @stack.size # 0
-@stack.empty # true
+@stack.empty && echo true || echo false # true
 
 @delete @stack
 
@@ -28,14 +28,14 @@
 @stack2.push b
 @stack2.push c
 @stack2.size # 3
-@stack2.empty # false
+@stack2.empty && echo true || echo false # false
 @stack2.top # c
 @stack2.pop # c
 @stack2.size # 2
 @stack2.pop # b
 @stack2.pop # a
 @stack2.size # 0
-@stack2.empty # true
+@stack2.empty && echo true || echo false # true
 
 @delete @stack2
 
@@ -57,14 +57,14 @@
 
 wait
 @stack3.size # 6
-@stack3.empty # false
+@stack3.empty && echo true || echo false # false
 
 elements=()
-while [[ @stack3.empty == "false" ]]; do
+while ! @stack3.empty; do
 	elements+=(@stack3.pop)
 done
 @stack3.size # 0
-@stack3.empty # true
+@stack3.empty && echo true || echo false # true
 sort <<< $(tr ' ' '\n' <<< "${elements[@]}") # a b c d e f (each on a new line)
 @delete @stack3
 
@@ -86,13 +86,13 @@ sort <<< $(tr ' ' '\n' <<< "${elements[@]}") # a b c d e f (each on a new line)
 
 wait
 @stack4.size # 6
-@stack4.empty # false
+@stack4.empty && echo true || echo false # false
 
 elements=()
-while [[ @stack4.empty == "false" ]]; do
+while ! @stack4.empty; do
 	elements+=(@stack4.pop)
 done
 @stack4.size # 0
-@stack4.empty # true
+@stack4.empty && echo true || echo false # true
 sort <<< $(tr ' ' '\n' <<< "${elements[@]}") # a b c d e f (each on a new line)
 @delete @stack4

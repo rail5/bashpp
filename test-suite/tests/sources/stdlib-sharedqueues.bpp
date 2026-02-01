@@ -9,7 +9,7 @@
 @queue.enqueue b
 @queue.enqueue c
 @queue.size # 3
-@queue.empty # false
+@queue.empty && echo true || echo false # false
 @queue.front # a
 @queue.back # c
 @queue.dequeue # a
@@ -22,7 +22,7 @@
 @queue.size # 1
 @queue.dequeue # c
 @queue.size # 0
-@queue.empty # true
+@queue.empty && echo true || echo false # true
 @queue.front # No output
 @queue.back # No output
 
@@ -37,7 +37,7 @@
 @queue2.enqueue b
 @queue2.enqueue c
 @queue2.size # 3
-@queue2.empty # false
+@queue2.empty && echo true || echo false # false
 @queue2.front # a
 @queue2.back # c
 @queue2.dequeue # a
@@ -50,7 +50,7 @@
 @queue2.size # 1
 @queue2.dequeue # c
 @queue2.size # 0
-@queue2.empty # true
+@queue2.empty && echo true || echo false # true
 @queue2.front # No output
 @queue2.back # No output
 
@@ -74,7 +74,7 @@
 } &
 wait
 @queue3.size # 6
-@queue3.empty # false
+@queue3.empty && echo true || echo false # false
 
 elements=()
 while [[ @queue3.size -gt 0 ]]; do
@@ -82,7 +82,7 @@ while [[ @queue3.size -gt 0 ]]; do
 done
 
 @queue3.size # 0
-@queue3.empty # true
+@queue3.empty && echo true || echo false # true
 
 sort <<< $(tr ' ' '\n' <<< "${elements[@]}") # a b c d e f (each on a new line)
 @delete @queue3
@@ -105,7 +105,7 @@ sort <<< $(tr ' ' '\n' <<< "${elements[@]}") # a b c d e f (each on a new line)
 } &
 wait
 @queue4.size # 6
-@queue4.empty # false
+@queue4.empty && echo true || echo false # false
 
 elements=()
 while [[ @queue4.size -gt 0 ]]; do
@@ -113,7 +113,7 @@ while [[ @queue4.size -gt 0 ]]; do
 done
 
 @queue4.size # 0
-@queue4.empty # true
+@queue4.empty && echo true || echo false # true
 
 sort <<< $(tr ' ' '\n' <<< "${elements[@]}") # a b c d e f (each on a new line)
 @delete @queue4

@@ -31,4 +31,4 @@
 
 @queue.dequeue # Should echo the pointer to obj2
 @queue.dequeue # Should echo the pointer to obj1
-@queue.empty # Should echo "true" since all elements are removed
+@queue.empty && echo true || echo false # Should echo "true" since all elements are removed

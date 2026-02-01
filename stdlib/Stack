@@ -1,56 +1,62 @@
 #!/usr/bin/env bpp
-#AUTODOC#
 
 # Copyright (C) 2025 Andrew S. Rightenburg
 # GNU General Public License v3.0
 # This file is part of the Bash++ Standard Library.
 
-#CLASS Stack
-## The Stack class provides a simple stack implementation in Bash++.
+## Simple Stack implementation
 @class Stack {
+	## @ignore
 	@protected stack=()
 
-	##METHOD public size
-	### Echoes the number of elements in the stack.
+	## Echo the number of elements in the stack.
+	## @outputs The number of elements in the stack.
 	@virtual @public @method size {
 		echo "@{#this.stack[@]}"
 	}
 
-	##METHOD public push
-	### Pushes a value onto the top of the stack.
-	###PARAM primitive value
-	#### The value to push onto the top of the stack.
+	## Push a value onto the top of the stack.
+	## @param value The value to push onto the top of the stack.
 	@virtual @public @method push value {
 		@this.stack+=("$value")
 	}
 
-	##METHOD public pop
-	### Pops the top element off the stack and echoes it.
+	## Pop the top element off the stack and echo it.
+	## @outputs The value at the top of the stack.
+	## @returns 1 if the stack is empty, 0 otherwise.
 	@virtual @public @method pop {
 		if [[ @{#this.stack[@]} -gt 0 ]]; then
 			echo "@{this.stack[$((@{#this.stack[@]} - 1))]}"
 			unset &@this.stack[$((@{#this.stack[@]} - 1))]
+			return 0
 		fi
+		return 1
 	}
 
-	##METHOD public top
-	### Echoes the top element of the stack.
+	## Echo the top element of the stack without removing it.
+	## @outputs The value at the top of the stack.
+	## @returns 1 if the stack is empty, 0 otherwise.
 	@virtual @public @method top {
 		if [[ @{#this.stack[@]} -gt 0 ]]; then
 			echo "@{this.stack[$((@{#this.stack[@]} - 1))]}"
+			return 0
 		fi
+		return 1
 	}
 
-	##METHOD public clear
-	### Removes all elements from the stack.
+	## Clear the stack by removing all elements.
 	@virtual @public @method clear {
 		unset &@this.stack
 	}
 
-	##METHOD public empty
-	### Echoes "true" if the stack is empty, "false" otherwise.
+	## Silently check whether the stack is empty.
+	## @outputs nothing
+	## @returns 0 if the stack is empty, 1 otherwise.
 	@virtual @public @method empty {
-		[[ @{#this.stack[@]} -eq 0 ]] && echo "true" || echo "false"
+		if [[ @{#this.stack[@]} -eq 0 ]]; then
+			return 0
+		else
+			return 1
+		fi
 	}
 }
-#ENDAUTODOC#

@@ -1,5 +1,4 @@
 #!/usr/bin/env bpp
-#AUTODOC#
 
 # Copyright (C) 2025 Andrew S. Rightenburg
 # GNU General Public License v3.0
@@ -12,18 +11,14 @@ if ! command -v base64 &> /dev/null; then
 	exit 1
 fi
 
-#CLASS SharedVar : SharedObject
-## The SharedVar class provides a way to create and manage shared primitive variables across multiple processes.
-## This class is useful for scenarios in which we're forking processes and need a shared variable between them.
+## Primitive variable that can be shared between multiple concurrent processes
 ##
 ## Reads and writes are atomic and concurrency-safe.
-##
 ## The variable can be encrypted for security.
-##
-## Internally, it uses the file system to store the variable.
+## Internally, it uses the file system to store the variable state.
 @class SharedVar : SharedObject {
-	##METHOD public get
-	### Gets the value of the shared variable.
+	## Get the value of the shared variable.
+	## @outputs The value of the shared variable.
 	@public @method get {
 		@this._lock
 		local value=$(< "@this.object_file")
@@ -35,10 +30,8 @@ fi
 		@this._unlock
 	}
 
-	##METHOD public set
-	### Sets the value of the shared variable.
-	###PARAM primitive value
-	#### The value to set for the shared variable.
+	## Set the value of the shared variable.
+	## @param value The value to set for the shared variable.
 	@public @method set value {
 		@this.used=1
 		@this._lock
@@ -50,5 +43,3 @@ fi
 		@this._unlock
 	}
 }
-
-#ENDAUTODOC#

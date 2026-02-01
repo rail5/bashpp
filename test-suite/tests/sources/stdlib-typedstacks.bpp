@@ -30,4 +30,4 @@
 @stack.pop # obj2 pointer
 @stack.pop # obj1 pointer
 
-@stack.empty # Should echo "true" since all elements are removed
+@stack.empty && echo true || echo false # Should echo "true" since all elements are removed

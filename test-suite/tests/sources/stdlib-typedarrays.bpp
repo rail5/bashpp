@@ -35,4 +35,4 @@
 
 @arr.pop # obj1 pointer
 @arr.pop # obj1 pointer
-@arr.empty # Should echo "true" since all elements are removed
+@arr.empty && echo true || echo false # Should echo "true" since all elements are removed

@@ -7,7 +7,7 @@
 @queue.enqueue b
 @queue.enqueue c
 @queue.size # 3
-@queue.empty # false
+@queue.empty && echo true || echo false # false
 @queue.front # a
 @queue.back # c
 @queue.dequeue # a
@@ -15,11 +15,11 @@
 @queue.dequeue # b
 @queue.dequeue # c
 @queue.size # 0
-@queue.empty # true
+@queue.empty && echo true || echo false # true
 @queue.enqueue hello
 @queue.enqueue world
 @queue.enqueue !
 @queue.size # 3
 @queue.clear
 @queue.size # 0
-@queue.empty # true
+@queue.empty && echo true || echo false # true

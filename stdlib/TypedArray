@@ -1,5 +1,4 @@
 #!/usr/bin/env bpp
-#AUTODOC#
 
 # Copyright (C) 2025 Andrew S. Rightenburg
 # GNU General Public License v3.0
@@ -7,19 +6,22 @@
 
 @include_once "Array"
 
-#CLASS TypedArray : Array
-## The TypedArray class provides an array implementation which enforces type restrictions on its elements.
-## After setting the array's type, all elements must be pointers to objects of that type or its subclasses.
+## Array which enforces type restrictions on its elements
+##
+## The type must be set before adding any elements to the array.
+## Once elements have been added, the type cannot be changed.
 @class TypedArray : Array {
+	## @ignore
 	@protected type=""
+	## @ignore
 	@protected used=0
 
-	##METHOD public set_type
-	### Sets the type of elements that this array will hold.
-	### This method must be called before adding elements to the array.
-	### The array's type cannot be changed after elements have been added.
-	###PARAM primitive type
-	#### The type to enforce for the elements of this array.
+	## Set the type of elements that this array will hold.
+	##
+	## This method must be called before adding elements to the array.
+	## The array's type cannot be changed after elements have been added.
+	## @param type The type to enforce for the elements of this array.
+	## @returns 1 if the type cannot be changed, 0 otherwise.
 	@virtual @public @method set_type type {
 		if [[ @this.used -ne 0 ]]; then
 			>&2 echo "Error: TypedArray: Cannot change type after the array has been used."
@@ -28,6 +30,7 @@
 		@this.type="$type"
 	}
 
+	## @ignore
 	@protected @method _check_type value {
 		local check=@dynamic_cast<@this.type> "$value"
 		if [[ "$check" == @nullptr ]]; then
@@ -37,10 +40,9 @@
 		return 0
 	}
 
-	##METHOD public push
-	### Adds a value to the end of the array, enforcing the specified type.
-	###PARAM primitive value
-	#### The value to add to the array.
+	## Add a value to the end of the array, enforcing the specified type.
+	## @param value The value to add to the array.
+	## @returns 1 if the value is of the wrong type, 0 otherwise.
 	@public @method push value {
 		@this.used=1
 		if @this._check_type "$value"; then
@@ -50,12 +52,10 @@
 		fi
 	}
 
-	##METHOD public insert
-	### Inserts a value at a specific index in the array, enforcing the specified type.
-	###PARAM primitive index
-	#### The index at which to insert the value.
-	###PARAM primitive value
-	#### The value to insert into the array.
+	## Insert a value at a specific index in the array, enforcing the specified type.
+	## @param index The index at which to insert the value.
+	## @param value The value to insert into the array.
+	## @returns 1 if the value is of the wrong type or index is out of bounds, 0 otherwise.
 	@public @method insert index value {
 		@this.used=1
 		if @this._check_type "$value"; then

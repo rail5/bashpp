@@ -1,5 +1,4 @@
 #!/usr/bin/env bpp
-#AUTODOC#
 
 # Copyright (C) 2025 Andrew S. Rightenburg
 # GNU General Public License v3.0
@@ -7,19 +6,22 @@
 
 @include_once "Queue"
 
-#CLASS TypedQueue : Queue
-## The TypedQueue class provides a queue implementation which enforces type restrictions on its elements.
-## After setting the queue's type, all elements must be pointers to objects of that type or its subclasses.
+## Queue which enforces type restrictions on its elements
+##
+## The type must be set before adding any elements to the queue.
+## Once elements have been added, the type cannot be changed.
 @class TypedQueue : Queue {
+	## @ignore
 	@protected type=""
+	## @ignore
 	@protected used=0
 
-	##METHOD public set_type
-	### Sets the type of elements that this queue will hold.
-	### This method must be called before adding elements to the queue.
-	### The queue's type cannot be changed after elements have been added.
-	###PARAM primitive type
-	#### The type to enforce for the elements of this queue.
+	## Set the type of elements that this queue will hold.
+	##
+	## This method must be called before adding elements to the queue.
+	## The queue's type cannot be changed after elements have been added.
+	## @param type The type to enforce for the elements of this queue.
+	## @returns 1 if the type cannot be changed, 0 otherwise.
 	@virtual @public @method set_type type {
 		if [[ @this.used -ne 0 ]]; then
 			>&2 echo "Error: TypedQueue: Cannot change type after the queue has been used."
@@ -28,6 +30,7 @@
 		@this.type="$type"
 	}
 
+	## @ignore
 	@protected @method _check_type value {
 		local check=@dynamic_cast<@this.type> "$value"
 		if [[ "$check" == @nullptr ]]; then
@@ -37,10 +40,9 @@
 		return 0
 	}
 
-	##METHOD public enqueue
-	### Adds a value to the end of the queue, enforcing the specified type.
-	###PARAM primitive value
-	#### The value to add to the queue.
+	## Add a value to the end of the queue, enforcing the specified type.
+	## @param value The value to add to the queue.
+	## @returns 1 if the value is of the wrong type, 0 otherwise.
 	@public @method enqueue value {
 		@this.used=1
 		if @this._check_type "$value"; then

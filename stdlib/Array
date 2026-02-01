@@ -1,31 +1,29 @@
 #!/usr/bin/env bpp
-#AUTODOC#
 
 # Copyright (C) 2025 Andrew S. Rightenburg
 # GNU General Public License v3.0
 # This file is part of the Bash++ Standard Library.
 
-#CLASS Array
-## The Array class provides a simple array implementation in Bash++.
+## Simple Array implementation
 @class Array {
+	## @ignore
 	@protected array=()
 
-	##METHOD public size
-	### Echoes the number of elements in the array.
+	## Get the number of elements in the array.
+	## @outputs The number of elements in the array.
 	@virtual @public @method size {
 		echo "@{#this.array[@]}"
 	}
 
-	##METHOD public push
-	### Adds a value to the end of the array.
-	###PARAM primitive value
-	#### The value to add to the array.
+	## Add a value to the end of the array.
+	## @param value The value to add to the array.
 	@virtual @public @method push value {
 		@this.array+=("$value")
 	}
 
-	##METHOD public pop
-	### Removes and echoes the last element of the array.
+	## Remove and echo the last element of the array.
+	## @outputs The last element of the array.
+	## @returns 1 if the array is empty, 0 otherwise.
 	@virtual @public @method pop {
 		if [[ @{#this.array[@]} -gt 0 ]]; then
 			echo "@{this.array[-1]}"
@@ -35,12 +33,10 @@
 		fi
 	}
 
-	##METHOD public insert
-	### Inserts a value at a specific index in the array.
-	###PARAM primitive index
-	#### The index at which to insert the value.
-	###PARAM primitive value
-	#### The value to insert into the array.
+	## Insert a value at a specific index in the array.
+	## @param index The index at which to insert the value.
+	## @param value The value to insert into the array.
+	## @returns 1 if the index is out of bounds, 0 otherwise.
 	@virtual @public @method insert index value {
 		if [[ $index -lt 0 || $index -gt @{#this.array[@]} ]]; then
 			return 1
@@ -54,10 +50,9 @@
 		@this.array=("${array_copy[@]:0:$index}" "$value" "${array_copy[@]:$index}")
 	}
 
-	##METHOD public remove
-	### Removes the specified index from the array.
-	###PARAM primitive index
-	#### The index of the value to remove.
+	## Remove the specified index from the array.
+	## @param index The index of the value to remove.
+	## @returns 1 if the index is out of bounds, 0 otherwise.
 	@virtual @public @method remove index {
 		if [[ $index -lt 0 || $index -ge @{#this.array[@]} ]]; then
 			return 1
@@ -66,16 +61,16 @@
 		@this.array=("${array_copy[@]:0:$index}" "${array_copy[@]:$((index + 1))}")
 	}
 
-	##METHOD public at
-	### Gets the value at a specific index.
-	###PARAM primitive index
-	#### The index of the value to retrieve.
+	## Get the value at a specific index.
+	## @param index The index of the value to retrieve.
+	## @outputs The value at the specified index.
 	@virtual @public @method at index {
 		echo "@{this.array[$index]}"
 	}
 
-	##METHOD public front
-	### Echoes the first element of the array.
+	## Echo the first element of the array.
+	## @outputs The first element of the array.
+	## @returns 1 if the array is empty, 0 otherwise.
 	@virtual @public @method front {
 		if [[ @{#this.array[@]} -gt 0 ]]; then
 			echo "@{this.array[0]}"
@@ -84,8 +79,9 @@
 		fi
 	}
 
-	##METHOD public back
-	### Echoes the last element of the array.
+	## Echo the last element of the array.
+	## @outputs The last element of the array.
+	## @returns 1 if the array is empty, 0 otherwise.
 	@virtual @public @method back {
 		if [[ @{#this.array[@]} -gt 0 ]]; then
 			echo "@{this.array[-1]}"
@@ -94,8 +90,9 @@
 		fi
 	}
 
-	##METHOD public all
-	### Echoes all elements of the array.
+	## Echo all elements of the array.
+	## @outputs All elements of the array separated by spaces.
+	## @returns 1 if the array is empty, 0 otherwise.
 	@virtual @public @method all {
 		if [[ @{#this.array[@]} -gt 0 ]]; then
 			echo "@{this.array[@]}"
@@ -104,24 +101,22 @@
 		fi
 	}
 
-	##METHOD public empty
-	### Echoes "true" if the array is empty, "false" otherwise.
+	## Silently returns whether the array is empty.
+	## @outputs nothing
+	## @returns 0 if the array is empty, 1 otherwise.
 	@virtual @public @method empty {
 		if [[ @{#this.array[@]} -eq 0 ]]; then
-			echo "true"
 			return 0
 		else
-			echo "false"
 			return 1
 		fi
 	}
 
-	##METHOD public slice
-	### Returns a slice of the array from start to end indices.
-	###PARAM primitive start
-	#### The starting index of the slice (inclusive).
-	###PARAM primitive end
-	#### The ending index of the slice (inclusive).
+	## Echo a slice of the array from start to end indices.
+	## @param start The starting index of the slice (inclusive).
+	## @param end The ending index of the slice (inclusive).
+	## @outputs The elements in the specified slice separated by spaces.
+	## @returns 1 if the start index is greater than the end index or if the array is empty, 0 otherwise.
 	@virtual @public @method slice start end {
 		if [[ $start -gt $end || @{#this.array[@]} -eq 0 ]]; then
 			return 1
@@ -136,11 +131,8 @@
 		echo "${array_copy[@]:$start:$((end - start + 1))}"
 	}
 
-	##METHOD public clear
-	### Removes all elements from the array.
+	## Clear the array by removing all elements.
 	@virtual @public @method clear {
 		unset &@this.array
 	}
 }
-
-#ENDAUTODOC#

@@ -1,5 +1,4 @@
 #!/usr/bin/env bpp
-#AUTODOC#
 
 # Copyright (C) 2025 Andrew S. Rightenburg
 # GNU General Public License v3.0
@@ -16,30 +15,34 @@ if ! command -v chmod &> /dev/null; then
 	exit 1
 fi
 
-#CLASS SharedObject
-## The SharedObject class provides a base implementation for shared objects that can be used across multiple processes
+
+## Base class for objects that can be used across multiple concurrent processes
 ##
 ## This is an abstract class and should not be instantiated directly.
 ## It provides methods for locking, unlocking, and setting encryption.
 ## Subclasses should implement their own methods for reading and writing data.
 ##
-## Internally, it uses the file system to store the shared object state.
-## The file is created with permissions that allow only the owner to read and write.
+## Internally, it uses the file system to store the object's state.
 @class SharedObject {
+	## @ignore
 	@protected object_file
+	## @ignore
 	@protected encrypted=0
+	## @ignore
 	@protected encryption_key
+	## @ignore
 	@protected extended_lock=0
+	## @ignore
 	@protected used=0
+	## @ignore
 	@protected fd_variable_name
 
-	##METHOD public setEncrypted
-	### Sets whether the object should be encrypted.
-	### Encrypting the object can mitigate unauthorized reads by other processes.
-	###
-	### This cannot be changed after the object has been used.
-	###PARAM primitive value
-	#### '1' or 'true' enables encryption, any other value disables it.
+	## Set whether the object should be encrypted.
+	##
+	## Encrypting the object can mitigate unauthorized reads by other processes.
+	## This flag cannot be changed after the object has been used.
+	## @param value '1' or 'true' enables encryption, any other value disables it.
+	## @returns 1 if the object has already been used or 'openssl' is unavailable, 0 otherwise.
 	@public @method setEncrypted value {
 		if [[ @this.used -ne 0 ]]; then
 			>&2 echo "Error: SharedObject: Cannot change encryption setting after the array has been used."
@@ -59,6 +62,7 @@ fi
 	# This is an internal method for locking the shared object.
 	# It should not be called directly by users of the class.
 	# Use the `lock` method to lock the object for exclusive access.
+	## @ignore
 	@protected @method _lock {
 		local fd=@{this.fd_variable_name}
 		if [[ ! -v ${fd} ]]; then
@@ -69,6 +73,7 @@ fi
 		fi
 	}
 
+	## @ignore
 	@protected @method _unlock {
 		local fd=@{this.fd_variable_name}
 		if [[ -v ${fd} ]] && [[ @this.extended_lock -eq 0 ]]; then
@@ -83,16 +88,11 @@ fi
 		fi
 	}
 
-	##METHOD public lock
-	### Locks the shared object for exclusive access.
-	###
-	### Once locked, only the process which locked it can access the object until it is unlocked.
-	###
-	### Attempts by other processes access the object while it is locked will block until it is unlocked.
-	###
-	### Using this method (as opposed to the internal `_lock` method) sets the `extended_lock` flag to 1,
-	### indicating that the lock should not be dropped until explicitly unlocked.
-	### I.e., subsequent calls to `_unlock` (internal) will not release the lock until `unlock` (public) is called.
+	## Lock the shared object for exclusive access
+	##
+	## Once locked, only the process which locked it can access the object until it is unlocked.
+	## Attempts by other processes to access the object will block until it is unlocked.
+	## @returns 1 if the lock could not be acquired, 0 otherwise.
 	@public @method lock {
 		if @this._lock; then
 			@this.extended_lock=1 # Setting extended_lock to 1 indicates that the lock should not be dropped until explicitly unlocked
@@ -101,10 +101,8 @@ fi
 		fi
 	}
 
-	##METHOD public unlock
-	### Unlocks the shared object, allowing other processes to access it.
-	###
-	### This also resets the `extended_lock` flag to 0.
+	## Unlock the shared object, allowing other processes to access it.
+	## @returns 1 if the object was not locked by this process, 0 otherwise.
 	@public @method unlock {
 		if [[ @this.extended_lock -eq 1 ]]; then
 			@this.extended_lock=0
@@ -134,5 +132,3 @@ fi
 		fi
 	}
 }
-
-#ENDAUTODOC#

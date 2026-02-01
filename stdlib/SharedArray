@@ -1,5 +1,4 @@
 #!/usr/bin/env bpp
-#AUTODOC#
 
 # Copyright (C) 2025 Andrew S. Rightenburg
 # GNU General Public License v3.0
@@ -20,28 +19,22 @@ if ! command -v sed &> /dev/null; then
 	exit 1
 fi
 
-#CLASS SharedArray : SharedObject
-## The SharedArray class provides an array implementation that shares its state across multiple instances.
-## This class is useful for scenarios in which we're forking processes and need a shared array between them.
-## 
+## Array that can be shared between multiple concurrent processes
+##
 ## Reads and writes are atomic and concurrency-safe.
-## 
 ## The array can be encrypted for security.
-## 
 ## Internally, it uses the file system to store the array state.
 @class SharedArray : SharedObject {
-	##METHOD public size
-	### Echoes the number of elements in the shared array.
+	## the number of elements in the shared array.
+	## @outputs The number of elements in the shared array.
 	@virtual @public @method size {
 		@this._lock
 		wc -l 2>/dev/null < @this.object_file || echo 0
 		@this._unlock
 	}
 
-	##METHOD public push
-	### Adds a value to the end of the shared array.
-	###PARAM primitive value
-	#### The value to add to the shared array.
+	## Add a value to the end of the shared array.
+	## @param value The value to add to the shared array.
 	@virtual @public @method push value {
 		@this.used=1
 		@this._lock
@@ -53,6 +46,7 @@ fi
 		@this._unlock
 	}
 
+	## @ignore
 	@private @method _get_front {
 		local first_line=@(sed -n 1p "@this.object_file" | base64 -d)
 		if [[ -z "$first_line" ]]; then
@@ -65,6 +59,7 @@ fi
 		fi
 	}
 
+	## @ignore
 	@private @method _get_back {
 		local last_line=@(sed -n '$p' "@this.object_file" | base64 -d)
 		if [[ -z "$last_line" ]]; then
@@ -77,8 +72,9 @@ fi
 		fi
 	}
 
-	##METHOD public pop
-	### Removes and echoes the last element of the shared array.
+	## Remove and echo the last element of the shared array.
+	## @outputs The last element of the shared array.
+	## @returns 1 if the shared array is empty, 0 otherwise.
 	@virtual @public @method pop {
 		@this.used=1
 		@this._lock
@@ -93,12 +89,10 @@ fi
 		@this._unlock
 	}
 
-	##METHOD public insert
-	### Inserts a value at a specific index in the shared array.
-	###PARAM primitive index
-	### The index at which to insert the value.
-	###PARAM primitive value
-	### The value to insert into the shared array.
+	## Insert a value at a specific index in the shared array.
+	## @param index The index at which to insert the value.
+	## @param value The value to insert into the shared array.
+	## @returns 1 if the index is out of bounds, 0 otherwise.
 	@virtual @public @method insert index value {
 		@this.used=1
 		if [[ $index -lt 0 || $index -gt @this.size ]]; then
@@ -131,10 +125,9 @@ fi
 		@this._unlock
 	}
 
-	##METHOD public remove
-	### Removes the value at a specific index from the shared array.
-	###PARAM primitive index
-	### The index of the value to remove.
+	## Remove the value at a specific index from the shared array.
+	## @param index The index of the value to remove.
+	## @returns 1 if the index is out of bounds, 0 otherwise.
 	@virtual @public @method remove index {
 		@this.used=1
 		if [[ $index -lt 0 || $index -ge @this.size ]]; then
@@ -149,10 +142,10 @@ fi
 		@this._unlock
 	}
 
-	##METHOD public at
-	### Gets the value at a specific index in the shared array.
-	###PARAM primitive index
-	### The index of the value to retrieve.
+	## Get the value at a specific index in the shared array.
+	## @param index The index of the value to retrieve.
+	## @returns The value at the specified index, or an error if out of bounds.
+	## @outputs The value at the specified index.
 	@virtual @public @method at index {
 		if [[ $index -lt 0 || $index -ge @this.size ]]; then
 			>&2 echo "Error: SharedArray: Index out of bounds."
@@ -167,8 +160,9 @@ fi
 		@this._unlock
 	}
 
-	##METHOD public front
-	### Echoes the first element of the shared array.
+	## Echo the first element of the shared array.
+	## @outputs The first element of the shared array.
+	## @returns 1 if the shared array is empty, 0 otherwise.
 	@virtual @public @method front {
 		@this._lock
 		@this._get_front
@@ -179,8 +173,9 @@ fi
 		@this._unlock
 	}
 
-	##METHOD public back
-	### Echoes the last element of the shared array.
+	## Echo the last element of the shared array.
+	## @outputs The last element of the shared array.
+	## @returns 1 if the shared array is empty, 0 otherwise.
 	@virtual @public @method back {
 		@this._lock
 		@this._get_back
@@ -191,8 +186,8 @@ fi
 		@this._unlock
 	}
 
-	##METHOD public all
-	### Echoes all elements of the shared array.
+	## Echo all elements of the shared array.
+	## @outputs All elements of the shared array.
 	@virtual @public @method all {
 		@this._lock
 		local array_copy=()
@@ -207,24 +202,22 @@ fi
 		@this._unlock
 	}
 
-	##METHOD public empty
-	### Echoes "true" if the shared array is empty, "false" otherwise.
+	## Silently check if the shared array is empty.
+	## @outputs nothing
+	## @returns 0 if the shared array is empty, 1 otherwise.
 	@virtual @public @method empty {
 		if [[ @this.size -eq 0 ]]; then
-			echo "true"
 			return 0
 		else
-			echo "false"
 			return 1
 		fi
 	}
 
-	##METHOD public slice
-	### Returns a slice of the shared array from start to end indices.
-	###PARAM primitive start
-	### The starting index of the slice (inclusive).
-	###PARAM primitive end
-	### The ending index of the slice (inclusive).
+	## Echo a slice of the shared array from start to end indices.
+	## @param start The starting index of the slice (inclusive).
+	## @param end The ending index of the slice (inclusive).
+	## @outputs The elements in the specified slice (separated by spaces).
+	## @returns 1 if the start index is greater than the end index or if the shared array is empty, 0 otherwise.
 	@virtual @public @method slice start end {
 		if [[ $start -gt $end || @this.size -eq 0 ]]; then
 			return 1
@@ -248,8 +241,7 @@ fi
 		@this._unlock
 	}
 
-	##METHOD public clear
-	### Removes all elements from the shared array.
+	## Remove all elements from the shared array.
 	@virtual @public @method clear {
 		@this._lock
 		> "@this.object_file" # Clear the file
@@ -257,5 +249,3 @@ fi
 	}
 
 }
-
-#ENDAUTODOC#

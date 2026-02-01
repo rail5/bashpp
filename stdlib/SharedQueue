@@ -1,5 +1,4 @@
 #!/usr/bin/env bpp
-#AUTODOC#
 
 # Copyright (C) 2025 Andrew S. Rightenburg
 # GNU General Public License v3.0
@@ -19,26 +18,23 @@ if ! command -v sed &> /dev/null; then
 	>&2 echo "Bash++: SharedQueue requires the 'sed' command to be available."
 	exit 1
 fi
-#CLASS SharedQueue : SharedObject
-## The SharedQueue class provides a queue implementation that shares its state across multiple instances.
-## This class is useful for scenarios in which we're forking processes and need a shared queue between them.
-## 
+
+## Queue which can be shared between multiple concurrent processes
+##
 ## Reads and writes are atomic and concurrency-safe.
-## 
 ## The queue can be encrypted for security.
-## 
 ## Internally, it uses the file system to store the queue state.
 @class SharedQueue : SharedObject {
-	##METHOD public size
-	### Echoes the number of elements in the queue.
+	## Echo the number of elements in the queue.
+	## @outputs The number of elements in the queue.
 	@virtual @public @method size {
+		@this._lock
 		wc -l 2>/dev/null < @this.object_file || echo 0
+		@this._unlock
 	}
 
-	##METHOD public enqueue
-	### Adds a value to the back of the queue.
-	###PARAM primitive value
-	#### The value to add to the queue.
+	## Add a value to the back of the queue.
+	## @param value The value to add to the queue.
 	@virtual @public @method enqueue value {
 		@this.used=1
 		@this._lock
@@ -50,6 +46,7 @@ fi
 		@this._unlock
 	}
 
+	## @ignore
 	@private @method _get_front {
 		local first_line=@(sed -n 1p "@this.object_file" | base64 -d)
 		if [[ -z "$first_line" ]]; then
@@ -63,6 +60,7 @@ fi
 		fi
 	}
 
+	## @ignore
 	@private @method _get_back {
 		local last_line=@(sed -n '$p' "@this.object_file" | base64 -d)
 		if [[ -z "$last_line" ]]; then
@@ -76,8 +74,9 @@ fi
 		fi
 	}
 
-	##METHOD public dequeue
-	### Removes the front element from the queue and echoes it.
+	## Remove the front element from the queue and echo it.
+	## @outputs The value at the front of the queue.
+	## @returns 1 if the queue is empty, 0 otherwise.
 	@virtual @public @method dequeue {
 		@this.used=1
 		@this._lock
@@ -90,8 +89,9 @@ fi
 		@this._unlock
 	}
 
-	##METHOD public front
-	### Echoes the front element of the queue without removing it.
+	## Echo the front element of the queue without removing it.
+	## @outputs The value at the front of the queue.
+	## @returns 1 if the queue is empty, 0 otherwise.
 	@virtual @public @method front {
 		@this.used=1
 		@this._lock
@@ -103,8 +103,9 @@ fi
 		@this._unlock
 	}
 
-	##METHOD public back
-	### Echoes the back element of the queue without removing it.
+	## Echo the back element of the queue without removing it.
+	## @outputs The value at the back of the queue.
+	## @returns 1 if the queue is empty, 0 otherwise.
 	@virtual @public @method back {
 		@this.used=1
 		@this._lock
@@ -116,25 +117,21 @@ fi
 		@this._unlock
 	}
 
-	##METHOD public clear
-	### Removes all elements from the queue.
+	## Clear all elements from the queue.
 	@virtual @public @method clear {
 		@this._lock
 		> "@this.object_file"
 		@this._unlock
 	}
 
-	##METHOD public empty
-	### Echoes "true" if the queue is empty, "false" otherwise.
+	## Silently check whether the queue is empty.
+	## @outputs nothing
+	## @returns 0 if the queue is empty, 1 otherwise.
 	@virtual @public @method empty {
-		@this._lock
-		if [[ -z @(sed -n 1p "@this.object_file") ]]; then
-			echo "true"
+		if [[ @this.size -eq 0 ]]; then
+			return 0
 		else
-			echo "false"
+			return 1
 		fi
-		@this._unlock
 	}
 }
-
-#ENDAUTODOC#

@@ -1,5 +1,4 @@
 #!/usr/bin/env bpp
-#AUTODOC#
 
 # Copyright (C) 2025 Andrew S. Rightenburg
 # GNU General Public License v3.0
@@ -7,19 +6,22 @@
 
 @include_once "Stack"
 
-#CLASS TypedStack : Stack
-## The TypedStack class provides a stack implementation which enforces type restrictions on its elements.
-## After setting the stack's type, all elements must be pointers to objects of that type or its subclasses.
+## Stack which enforces type restrictions on its elements
+##
+## The type must be set before adding any elements to the stack.
+## Once elements have been added, the type cannot be changed.
 @class TypedStack : Stack {
+	## @ignore
 	@protected type=""
+	## @ignore
 	@protected used=0
 
-	##METHOD public set_type
-	### Sets the type of elements that this stack will hold.
-	### This method must be called before adding elements to the stack.
-	### The stack's type cannot be changed after elements have been added.
-	###PARAM primitive type
-	#### The type to enforce for the elements of this stack.
+	## Set the type of elements that this stack will hold.
+	##
+	## This method must be called before adding elements to the stack.
+	## The stack's type cannot be changed after elements have been added.
+	## @param type The type to enforce for the elements of this stack.
+	## @returns 1 if the type cannot be changed, 0 otherwise.
 	@virtual @public @method set_type type {
 		if [[ @this.used -ne 0 ]]; then
 			>&2 echo "Error: TypedStack: Cannot change type after the stack has been used."
@@ -28,6 +30,7 @@
 		@this.type="$type"
 	}
 
+	## @ignore
 	@protected @method _check_type value {
 		local check=@dynamic_cast<@this.type> "$value"
 		if [[ "$check" == @nullptr ]]; then
@@ -37,10 +40,9 @@
 		return 0
 	}
 
-	##METHOD public push
-	### Adds a value to the top of the stack, enforcing the specified type.
-	###PARAM primitive value
-	#### The value to add to the stack.
+	## Add a value to the top of the stack, enforcing the specified type.
+	## @param value The value to add to the stack.
+	## @returns 1 if the value is of the wrong type, 0 otherwise.
 	@public @method push value {
 		@this.used=1
 		if @this._check_type "$value"; then

@@ -1,5 +1,4 @@
 #!/usr/bin/env bpp
-#AUTODOC#
 
 # Copyright (C) 2025 Andrew S. Rightenburg
 # GNU General Public License v3.0
@@ -20,26 +19,22 @@ if ! command -v sed &> /dev/null; then
 	exit 1
 fi
 
-#CLASS SharedStack : SharedObject
-## The SharedStack class provides a stack implementation that shares its state across multiple instances.
-## This class is useful for scenarios in which we're forking processes and need a shared stack between them.
-## 
+## Stack that can be shared between multiple concurrent processes
+##
 ## Reads and writes are atomic and concurrency-safe.
-## 
 ## The stack can be encrypted for security.
-## 
 ## Internally, it uses the file system to store the stack state.
 @class SharedStack : SharedObject {
-	##METHOD public size
-	### Echoes the number of elements in the stack.
+	## Echo the number of elements in the stack.
+	## @outputs The number of elements in the stack.
 	@virtual @public @method size {
+		@this._lock
 		wc -l 2>/dev/null < @this.object_file || echo 0
+		@this._unlock
 	}
 
-	##METHOD public push
-	### Pushes a value onto the top of the stack.
-	###PARAM primitive value
-	#### The value to push onto the top of the stack.
+	## Push a value onto the top of the stack.
+	## @param value The value to push onto the top of the stack.
 	@virtual @public @method push value {
 		@this.used=1
 		@this._lock
@@ -51,6 +46,7 @@ fi
 		@this._unlock
 	}
 
+	## @ignore
 	@private @method _get_top {
 		local last_line=@(sed -n '$p' "@this.object_file" | base64 -d)
 		if [[ -z "$last_line" ]]; then
@@ -64,8 +60,9 @@ fi
 		fi
 	}
 
-	##METHOD public pop
-	### Pops the top element off the stack and echoes it.
+	## Pop the top element off the stack and echo it.
+	## @outputs The value at the top of the stack.
+	## @returns 1 if the stack is empty, 0 otherwise.
 	@virtual @public @method pop {
 		@this.used=1
 		@this._lock
@@ -80,8 +77,9 @@ fi
 		@this._unlock
 	}
 
-	##METHOD public top
-	### Echoes the top element of the stack without removing it.
+	## Echo the top element of the stack without removing it.
+	## @outputs The value at the top of the stack.
+	## @returns 1 if the stack is empty, 0 otherwise.
 	@virtual @public @method top {
 		@this.used=1
 		@this._lock
@@ -95,25 +93,21 @@ fi
 		@this._unlock
 	}
 
-	##METHOD public clear
-	### Removes all elements from the stack.
+	## Clear all elements from the stack.
 	@virtual @public @method clear {
 		@this._lock
 		> "@this.object_file"
 		@this._unlock
 	}
 
-	##METHOD public empty
-	### Echoes "true" if the stack is empty, "false" otherwise.
+	## Silently check whether the stack is empty.
+	## @outputs nothing
+	## @returns 0 if the stack is empty, 1 otherwise.
 	@virtual @public @method empty {
-		@this._lock
-		if [[ -z @(sed -n 1p "@this.object_file") ]]; then
-			echo "true"
+		if [[ @this.size -eq 0 ]]; then
+			return 0
 		else
-			echo "false"
+			return 1
 		fi
-		@this._unlock
 	}
 }
-
-#ENDAUTODOC#

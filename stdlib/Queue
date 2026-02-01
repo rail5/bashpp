@@ -1,44 +1,43 @@
 #!/usr/bin/env bpp
-#AUTODOC#
 
 # Copyright (C) 2025 Andrew S. Rightenburg
 # GNU General Public License v3.0
 # This file is part of the Bash++ Standard Library.
 
+## @ignore
 @class QueueNode {
 	@public data
 	@public @QueueNode* next
 }
 
-#CLASS Queue
-## The Queue class provides a simple queue implementation in Bash++.
+## Simple Queue implementation
 @class Queue {
+	## @ignore
 	@protected @QueueNode* head
+	## @ignore
 	@protected @QueueNode* tail
+	## @ignore
 	@protected queueSize=0
 
-	##METHOD public size
-	### Echoes the number of elements in the queue.
+	## Echo the number of elements in the queue.
+	## @outputs The number of elements in the queue.
 	@virtual @public @method size {
 		echo "@this.queueSize"
 	}
 
-	##METHOD public empty
-	### Echoes "true" if the queue is empty, "false" otherwise.
+	## Silently check if the queue is empty.
+	## @outputs nothing
+	## @returns 0 if the queue is empty, 1 otherwise.
 	@virtual @public @method empty {
 		if [[ @this.queueSize -eq 0 ]]; then 
-			echo "true"
 			return 0
 		else
-			echo "false"
 			return 1
 		fi
 	}
 
-	##METHOD public enqueue
-	### Adds a value to the end of the queue.
-	###PARAM primitive value
-	#### The value to add to the queue.
+	##  Add a value to the end of the queue.
+	## @param value The value to add to the queue.
 	@virtual @public @method enqueue value {
 		@QueueNode* node=@new QueueNode
 		@node.data="$value"
@@ -54,8 +53,9 @@
 		@this.queueSize=$((@this.queueSize + 1))
 	}
 
-	##METHOD public dequeue
-	### Removes and echoes the value at the front of the queue.
+	##  Remove and echo the value at the front of the queue.
+	## @outputs The value at the front of the queue.
+	## @returns 1 if the queue is empty, 0 otherwise.
 	@virtual @public @method dequeue {
 		if [[ @this.queueSize -gt 0 ]]; then
 			@QueueNode* node=@this.head
@@ -63,27 +63,34 @@
 			@this.queueSize=$((@this.queueSize - 1))
 			echo "@node.data"
 			@delete @node
+			return 0
 		fi
+		return 1
 	}
 
-	##METHOD public front
-	### Echoes the value at the front of the queue.
+	## Echo the value at the front of the queue.
+	## @outputs The value at the front of the queue.
+	## @returns 1 if the queue is empty, 0 otherwise.
 	@virtual @public @method front {
 		if [[ @this.queueSize -gt 0 ]]; then
 			echo "@this.head.data"
+			return 0
 		fi
+		return 1
 	}
 
-	##METHOD public back
-	### Echoes the value at the back of the queue.
+	## Echo the value at the back of the queue.
+	## @outputs The value at the back of the queue.
+	## @returns 1 if the queue is empty, 0 otherwise.
 	@virtual @public @method back {
 		if [[ @this.queueSize -gt 0 ]]; then
 			echo "@this.tail.data"
+			return 0
 		fi
+		return 1
 	}
 
-	##METHOD public clear
-	### Removes all elements from the queue.
+	## Clear the queue by removing all elements.
 	@virtual @public @method clear {
 		local size=@this.queueSize
 		while [[ $size -gt 0 ]]; do
@@ -92,4 +99,3 @@
 		done
 	}
 }
-#ENDAUTODOC#

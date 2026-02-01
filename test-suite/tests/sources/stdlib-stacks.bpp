@@ -7,14 +7,14 @@
 @stack.push b
 @stack.push c
 @stack.size # 3
-@stack.empty # false
+@stack.empty && echo true || echo false # false
 @stack.top # c
 @stack.pop # c
 @stack.size # 2
 @stack.pop # b
 @stack.pop # a
 @stack.size # 0
-@stack.empty # true
+@stack.empty && echo true || echo false # true
 @stack.push hello
 @stack.push world
 @stack.push !
@@ -22,4 +22,4 @@
 @stack.top # !
 @stack.clear
 @stack.size # 0
-@stack.empty # true
+@stack.empty && echo true || echo false # true

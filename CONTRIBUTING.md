@@ -61,6 +61,10 @@ if (x &gt; 10) f();</pre>
 if (price &gt; max_price_allowed) apply_discount();</pre>
 </td></tr>
 </table>
+
+> The phrase "don't abbreviate" might sound extreme -- treat it like "always fasten your seatbelt." Sometimes, you're just moving the car in the driveway, but other times, the seatbelt saves lives.
+>
+> Terms like `AST`, `IO`, and `URL` are obviously perfectly acceptable. But often, we *think* our shorthand is clear to *everyone* just because it's clear to *us*. When in doubt, spell it out.
 </details>
 
  - **Process as little Bash as possible**
@@ -118,7 +122,7 @@ if (!resolved_binary) {
 </td></tr>
 </table>
 
-Here's also an [animated video](https://www.youtube.com/watch?v=3QsTymdofV4) describing one example of unification in Bash++'s design: the "[entity](https://bpp.sh/spec/entities.html)" concept.
+> Here's also an [animated video](https://www.youtube.com/watch?v=3QsTymdofV4) describing one example of unification in Bash++'s design: the "[entity](https://bpp.sh/spec/entities.html)" concept.
 </details>
 
 ## License

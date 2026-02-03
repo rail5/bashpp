@@ -156,6 +156,21 @@ void bpp::BashppServer::cleanup() {
 	log_file.close();
 }
 
+std::string bpp::BashppServer::readHeaderLine(std::streambuf* buffer) {
+	std::string header;
+	char c;
+	while (true) {
+		const std::streamsize n = buffer->sgetn(&c, 1);
+		if (n != 1) {
+			throw;
+		}
+		if (c == '\n') break;
+		if (c == '\r') continue;
+		header += c;
+	}
+	return header;
+}
+
 void bpp::BashppServer::mainLoop() {
 	if (!input_stream || !output_stream) {
 		throw std::runtime_error("Input or output stream not set.");
@@ -163,12 +178,12 @@ void bpp::BashppServer::mainLoop() {
 
 	std::streambuf* buffer = input_stream->rdbuf();
 	while (true) {
-		// Read headers
 		std::string header;
-		char c;
-		while (buffer->sgetn(&c, 1) == 1 && c != '\n') {
-			if (c == '\r') continue;
-			header += c;
+		try {
+			header = readHeaderLine(buffer);
+		} catch (...) {
+			log("End of input stream or error encountered.");
+			break;
 		}
 		
 		if (header.empty()) continue;

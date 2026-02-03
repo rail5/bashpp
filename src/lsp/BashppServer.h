@@ -106,6 +106,8 @@ class BashppServer {
 		DebounceStateMap debounce_states = DebounceStateMap(&program_pool);
 		std::atomic<bool> processing_didChange{false};
 
+		static std::string readHeaderLine(std::streambuf* buffer);
+
 		void _sendMessage(const std::string& message);
 
 		static std::mutex output_mutex; // Mutex for thread-safe output

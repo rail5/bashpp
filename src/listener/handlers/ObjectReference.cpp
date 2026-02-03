@@ -84,7 +84,6 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 
 	if (self_reference) {
 		// Verify that we're inside a class
-		auto current_class = current_code_entity->get_containing_class().lock();
 		if (current_class == nullptr) {
 			throw bpp::ErrorHandling::SyntaxError(this, node, "Self-reference outside of a class context");
 		}

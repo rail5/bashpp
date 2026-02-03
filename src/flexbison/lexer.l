@@ -1184,6 +1184,10 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 	[^a-zA-Z_0-9@\*&\n\$`\\]+ {
 		emit(STRING_CONTENT, tokenText);
 	}
+
+	[0-9]+ {
+		emit(STRING_CONTENT, tokenText);
+	}
 }
 
 <BASH_CASE_MODE>{

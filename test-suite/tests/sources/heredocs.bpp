@@ -23,3 +23,7 @@ EOF
 
 cat bpptestExampleOut
 rm bpptestExampleOut
+
+cat <<DELIM
+ABC-8-DEFG
+DELIM

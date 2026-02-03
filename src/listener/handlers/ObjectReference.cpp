@@ -82,6 +82,14 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 		throw bpp::ErrorHandling::InternalError("Detected simultaneous pointer dereference and object address");
 	}
 
+	if (self_reference) {
+		// Verify that we're inside a class
+		auto current_class = current_code_entity->get_containing_class().lock();
+		if (current_class == nullptr) {
+			throw bpp::ErrorHandling::SyntaxError(this, node, "Self-reference outside of a class context");
+		}
+	}
+
 	std::deque<AST::Token<std::string>> ids;
 	ids.push_back(node->IDENTIFIER());
 	for (const auto& id : node->IDENTIFIERS()) {

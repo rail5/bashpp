@@ -121,8 +121,6 @@ if (!resolved_binary) {
 }</pre>
 </td></tr>
 </table>
-
-> Here's also an [animated video](https://www.youtube.com/watch?v=3QsTymdofV4) describing one example of unification in Bash++'s design: the "[entity](https://bpp.sh/spec/entities.html)" concept.
 </details>
 
 ## License

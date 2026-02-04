@@ -1,3 +1,37 @@
+bpp (0.8.4) unstable; urgency=medium
+
+  * Lexer/Parser/AST:
+    Full and proper support for array indexing in object references and lvalue
+    assignments; parser and listener logic updated accordingly.
+    Bug fix: Properly lex isolated digits in heredoc content and escaped dollar
+    signs in string interpolations.
+    Improved error handling: Parser errors are now propagated to listeners and
+    main program logic, enabling better diagnostics and LSP support.
+    Added new test cases for parser errors and self-reference outside of class
+    context.
+    Bug fix: Verify we're inside a class if processing a self-reference.
+    Improved output line comparison in the test suite.
+  * Standard Library:
+    All container `empty` methods now return status code
+    (0 if empty, 1 otherwise) instead of echoing "true"/"false", for
+    shell-friendly checks.
+    Documentation and test cases updated to reflect new `empty` method behavior
+    Consistent return conventions across Array, Stack, Queue, SharedArray,
+    SharedStack, SharedQueue, SharedVar, TypedArray, TypedStack, and TypedQueue
+  * Documentation:
+    Added and clarified language specification pages, including a new page on
+    the "entity" concept.
+    Improved CONTRIBUTING.md with style guidelines and examples.
+    Added PR template and clarified how to add test cases.
+  * Language Server:
+    Bug fix: If the input stream is halted, clean up and exit rather than
+    hanging.
+    Improved debounce logic for didChange notifications.
+    Bug fix: Provide completions after 'this'/'super' keywords.
+    Improved error propagation and diagnostics for parser errors.
+
+ -- rail5 <andrew@rail5.org>  Tue, 4 Feb 2026 15:00:00 +0800
+
 bpp (0.8.3) unstable; urgency=medium
 
   * Internal system methods refactored:

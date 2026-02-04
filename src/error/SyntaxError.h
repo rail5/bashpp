@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <bpp_include/bpp.h>
 #include <error/detail.h>
+#include <error/ParserError.h>
 
 namespace bpp {
 namespace ErrorHandling {
@@ -37,13 +38,12 @@ void print_syntax_error_or_warning(
 	bool lsp_mode,
 	bool is_warning = false);
 
-void print_syntax_error_from_parser(
+void print_parser_errors(
+	const std::vector<AST::ParserError>& errors,
 	const std::string& source_file,
-	uint32_t line,
-	uint32_t start_column,
-	uint32_t end_column,
-	const std::string& msg,
-	const std::vector<std::string>& include_chain
+	const std::vector<std::string>& include_chain,
+	std::shared_ptr<bpp::bpp_program> program,
+	bool lsp_mode
 );
 
 class ErrorOrWarning : public std::runtime_error {

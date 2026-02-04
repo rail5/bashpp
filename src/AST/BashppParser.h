@@ -8,8 +8,10 @@
 #include <memory>
 #include <variant>
 #include <stack>
+#include <vector>
 #include <AST/ASTNode.h>
 #include <AST/Nodes/Nodes.h>
+#include <error/ParserError.h>
 
 typedef void* yyscan_t;
 
@@ -29,6 +31,8 @@ class BashppParser {
 
 		bool utf16_mode = false; // Whether to use UTF-16 mode for character counting
 		bool display_lexer_output = false;
+
+		std::vector<ParserError> errors;
 
 		std::string input_file_path = "<stdin>";
 		std::vector<std::string> include_chain;
@@ -63,6 +67,8 @@ class BashppParser {
 		void setIncludeChain(const std::vector<std::string>& includes);
 
 		std::shared_ptr<AST::Program> program();
+
+		const std::vector<ParserError>& get_errors() const;
 };
 
 } // namespace AST

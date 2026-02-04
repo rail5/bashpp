@@ -114,24 +114,31 @@ void print_syntax_error_or_warning(
 		<< color_reset << std::endl;
 }
 
-void print_syntax_error_from_parser(
+void print_parser_errors(
+	const std::vector<AST::ParserError>& errors,
 	const std::string& source_file,
-	uint32_t line,
-	uint32_t start_column,
-	uint32_t end_column,
-	const std::string& msg,
-	const std::vector<std::string>& include_chain
+	const std::vector<std::string>& include_chain,
+	std::shared_ptr<bpp::bpp_program> program,
+	bool lsp_mode
 ) {
-	print_syntax_error_or_warning(
-		source_file,
-		line,
-		start_column,
-		end_column - start_column,
-		msg,
-		include_chain,
-		nullptr,
-		false,
-		false);
+	for (const auto& error : errors) {
+		uint32_t text_length
+			= (error.end.line == error.start.line)
+			? (error.end.column - error.start.column)
+			: UINT32_MAX;
+
+		print_syntax_error_or_warning(
+			source_file,
+			error.start.line,
+			error.start.column,
+			text_length,
+			error.message,
+			include_chain,
+			program,
+			lsp_mode,
+			false
+		);
+	}
 }
 
 std::string utf8_substr(const std::string& str, uint32_t start, uint32_t length) {

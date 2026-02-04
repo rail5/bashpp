@@ -8,6 +8,7 @@
 #include <listener/BashppListener.h>
 #include <include/exit_code.h>
 #include <bpp_include/templates.h>
+#include <error/SyntaxError.h>
 
 void BashppListener::enterProgram(std::shared_ptr<AST::Program> node) {
 	program->set_output_stream(code_buffer);
@@ -34,6 +35,14 @@ void BashppListener::enterProgram(std::shared_ptr<AST::Program> node) {
 	entity_stack.push(program);
 	primitive = program->get_primitive_class();	
 	program->set_source_file_ast(source_file, node);
+
+	bpp::ErrorHandling::print_parser_errors(
+		parser_errors,
+		source_file,
+		include_stack,
+		program,
+		lsp_mode
+	);
 }
 
 void BashppListener::exitProgram(std::shared_ptr<AST::Program> node) {

@@ -13,6 +13,7 @@
 #include <AST/Nodes/Nodes.h>
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>
+#include <error/ParserError.h>
 
 namespace AST {
 
@@ -115,6 +116,7 @@ class BaseListener {
 
 	protected:
 		bool program_has_errors = false;
+		std::vector<AST::ParserError> parser_errors;
 
 	public:
 		virtual ~BaseListener() = default;
@@ -153,6 +155,11 @@ class BaseListener {
 
 		inline void set_has_errors(bool has_errors) {
 			this->program_has_errors = has_errors;
+		}
+
+		inline void set_parser_errors(const std::vector<AST::ParserError>& errors) {
+			this->parser_errors = errors;
+			if (!errors.empty()) this->program_has_errors = true;
 		}
 };
 

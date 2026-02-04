@@ -166,8 +166,9 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::_parse_program(const std::string&
 		}
 
 		auto program = parser.program();
+		listener.set_parser_errors(parser.get_errors());
 		if (program == nullptr) {
-			return nullptr; // Parsing failed
+			program = std::make_shared<AST::Program>(); // Parsing failed
 		}
 
 		// Walk the tree

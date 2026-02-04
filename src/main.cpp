@@ -36,6 +36,7 @@ volatile int bpp_exit_code = 0;
 #include <listener/BashppListener.h>
 
 #include <error/InternalError.h>
+#include <error/SyntaxError.h>
 
 int main(int argc, char* argv[]) {
 	std::shared_ptr<std::ostream> output_stream(&std::cout, [](std::ostream*){});
@@ -100,12 +101,27 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
+	std::string full_path;
+	char resolved_path[PATH_MAX];
+	if (realpath(args.input_file.value_or("").c_str(), resolved_path) == nullptr) {
+		if (!args.input_file.has_value()) {
+			full_path = "<stdin>";
+		} else {
+			std::cerr << "Error: Could not get full path of source file '" << args.input_file.value() << "'" << std::endl;
+			return 1;
+		}
+	} else {
+		full_path = std::string(resolved_path);
+	}
+
 	AST::BashppParser parser;
 	parser.setInputFromFilePtr(input_file, input_file_path);
 	parser.setDisplayLexerOutput(args.display_tokens);
 	
 	auto program = parser.program();
+	const auto& parser_errors = parser.get_errors();
 	if (program == nullptr) {
+		bpp::ErrorHandling::print_parser_errors(parser_errors, full_path, {}, nullptr, false);
 		std::cerr << program_name << ": Error: Failed to parse program." << std::endl;
 		return 1;
 	}
@@ -143,18 +159,6 @@ int main(int argc, char* argv[]) {
 	try {
 		// Walk the tree
 		std::unique_ptr<BashppListener> listener = std::make_unique<BashppListener>();
-		std::string full_path;
-		char resolved_path[PATH_MAX];
-		if (realpath(args.input_file.value_or("").c_str(), resolved_path) == nullptr) {
-			if (!args.input_file.has_value()) {
-				full_path = "<stdin>";
-			} else {
-				std::cerr << "Error: Could not get full path of source file '" << args.input_file.value() << "'" << std::endl;
-				return 1;
-			}
-		} else {
-			full_path = std::string(resolved_path);
-		}
 		listener->set_source_file(full_path);
 		listener->set_include_paths(args.include_paths);
 		listener->set_code_buffer(code_buffer);
@@ -164,6 +168,7 @@ int main(int argc, char* argv[]) {
 		listener->set_suppress_warnings(args.suppress_warnings);
 		listener->set_target_bash_version(args.target_bash_version);
 		listener->set_arguments(args.program_arguments);
+		listener->set_parser_errors(parser_errors);
 		listener->walk(program);
 
 	} catch (const bpp::ErrorHandling::InternalError& e) {

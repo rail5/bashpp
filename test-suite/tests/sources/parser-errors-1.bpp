@@ -1,0 +1,6 @@
+@class Inner {
+	@public value="something"
+}
+
+@Inner in
+&@in.value="hello"

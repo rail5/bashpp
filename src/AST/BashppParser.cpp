@@ -6,6 +6,7 @@
 #include "BashppParser.h"
 
 #include <error/InternalError.h>
+#include <error/ParserError.h>
 #include <stdexcept>
 
 struct LexerExtra;
@@ -86,6 +87,7 @@ void AST::BashppParser::_parse() {
 			current_command_can_receive_lvalues,
 			input_file_path,
 			include_chain,
+			errors,
 			lexer);
 		parser.parse(); // Returns an int, not needed by us
 	} catch (...) {
@@ -136,4 +138,8 @@ std::shared_ptr<AST::Program> AST::BashppParser::program() {
 		_parse();
 	}
 	return m_program;
+}
+
+const std::vector<AST::ParserError>& AST::BashppParser::get_errors() const {
+	return errors;
 }

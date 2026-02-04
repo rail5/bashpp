@@ -127,6 +127,7 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 	}
 
 	auto tree = parser.program();
+	listener.set_parser_errors(parser.get_errors());
 	if (tree == nullptr) {
 		auto nodeCopy = source_path;
 		nodeCopy.setValue(nodeCopy.getValue() + "  "); // HACK

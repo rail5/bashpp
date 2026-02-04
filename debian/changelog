@@ -30,7 +30,7 @@ bpp (0.8.4) unstable; urgency=medium
     Bug fix: Provide completions after 'this'/'super' keywords.
     Improved error propagation and diagnostics for parser errors.
 
- -- rail5 <andrew@rail5.org>  Tue, 4 Feb 2026 15:00:00 +0800
+ -- rail5 <andrew@rail5.org>  Wed, 4 Feb 2026 15:00:00 +0800
 
 bpp (0.8.3) unstable; urgency=medium
 

@@ -1,0 +1,54 @@
+@class Innermost {
+	@public array=()
+}
+
+@class Inner {
+	@public array=()
+	@public @Innermost inner
+}
+
+@class Object {
+	@public array=()
+	@public @Inner inner
+
+	@public @method action {
+		@this.array[0]="value set from inside"
+	}
+
+	@public @method innerAction {
+		@this.inner.array[0]="inner value set from inside"
+		@this.inner.inner.array[0]="innermost value set from inside"
+	}
+}
+
+@Object obj
+
+@obj.array+=("value1")
+@obj.array+=("value2")
+echo @{obj.array[@]} # "value1 value2"
+echo @{#obj.array[@]} # 2
+@obj.array=()
+@obj.array[0]="new value"
+echo @{obj.array[0]} # "new value"
+@obj.action
+echo @{obj.array[0]} # "value set from inside"
+
+@obj.inner.array[0]="inner value1"
+echo @{obj.inner.array[0]} # "inner value1"
+@obj.inner.array[1]="inner value2"
+echo @{obj.inner.array[1]} # "inner value2"
+@obj.inner.array+=("inner value3")
+echo @{obj.inner.array[@]} # "inner value1 inner value2 inner value3"
+echo @{#obj.inner.array[@]} # 3
+@obj.inner.inner.array[0]="innermost value1"
+echo @{obj.inner.inner.array[0]} # "innermost value1"
+@obj.inner.inner.array+=("innermost value2")
+echo @{obj.inner.inner.array[@]} # "innermost value1 innermost value2"
+echo @{#obj.inner.inner.array[@]} # 2
+
+@obj.innerAction
+echo @{obj.inner.array[0]} # "inner value set from inside"
+echo @{obj.inner.inner.array[0]} # "innermost value set from inside"
+
+@{obj.array[0]}="value" # This should fail (brace-enclosed) ["command not found" error]
+echo @{obj.array[0]} # "value set from inside"

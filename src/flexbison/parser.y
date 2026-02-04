@@ -1174,7 +1174,7 @@ object_reference:
 	;
 
 object_reference_lvalue:
-	AT_LVALUE IDENTIFIER maybe_descend_object_hierarchy {
+	AT_LVALUE IDENTIFIER maybe_descend_object_hierarchy maybe_array_index {
 		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($3);
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
@@ -1184,6 +1184,8 @@ object_reference_lvalue:
 		node->setIdentifier($2);
 		node->setLvalue(true);
 		node->setSelfReference(false);
+
+		node->addChild($4);
 
 		$$ = node;
 	}
@@ -1276,7 +1278,7 @@ self_reference:
 	;
 
 self_reference_lvalue:
-	KEYWORD_THIS_LVALUE maybe_descend_object_hierarchy {
+	KEYWORD_THIS_LVALUE maybe_descend_object_hierarchy maybe_array_index {
 		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
@@ -1286,6 +1288,8 @@ self_reference_lvalue:
 		node->setIdentifier(AST::Token<std::string>("this", @1.begin.line, @1.begin.column));
 		node->setLvalue(true);
 		node->setSelfReference(true);
+
+		node->addChild($3);
 
 		$$ = node;
 	}

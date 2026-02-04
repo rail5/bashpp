@@ -307,6 +307,8 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 
 
 		/* Abandon all hope, ye who enter here */
+		// TODO(@rail5): This section is shameful and must be rewritten at the earliest opportunity
+		// It is a disgusting hack to handle array indices in object references
 		std::string counting = node->hasHashkey() ? "#" : "";		
 		if (object_reference_entity->has_array_index()) {
 			// Special procedure needed to handle array indices
@@ -333,6 +335,9 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 
 			if (have_to_dereference_a_pointer) {
 				temporary_variable_rvalue = counting + "${" + ref.reference_code.code + "}" + object_reference_entity->get_array_index();
+			} else if (lvalue) {
+				temporary_variable_rvalue = counting + ref.reference_code.code + object_reference_entity->get_array_index();
+				indirection_level = 2;
 			} else {
 				// Can grab it directly
 				temporary_variable_rvalue = "${" + counting + indirection + ref.reference_code.code +  object_reference_entity->get_array_index() + "}";

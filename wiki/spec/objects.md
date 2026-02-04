@@ -51,6 +51,22 @@ The notation for descending into an object's methods or variables is the same fo
 
 Referencing an object in a place where a primitive is expected (e.g., as an argument to a command) will implicitly call the object's `toPrimitive` method. All classes in Bash++ have a `toPrimitive` method, which is used to convert the object to a primitive value. This method can be overridden to provide custom behavior.
 
+### Accessing array elements in object variables
+
+In ordinary Bash, you can index arrays using the syntax `${array[index]}`. The syntax to index arrays which are data members in objects should be easily intuited:
+
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/objects-example-4.html -%}
+</code></pre></div>
+
+One minor peculiarity is in *assigning* values to specific indices of a data member array. In ordinary Bash, when doing this, the array element becomes an *lvalue* reference and therefore must drop the `${}` encasement, as in `array[index]="value"`.
+
+In Bash++, however, we cannot follow *quite* this same rule (dropping the entire `@{}` encasement) because the reference would then be syntactically indistinguishable from a primitive array assignment, and would be very difficult to parse with an LALR(1) parser. The rule therefore is to drop the `{}` encasement but retain the `@` sigil, as in:
+
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/objects-example-5.html -%}
+</code></pre></div>
+
 # SEE ALSO
 - [bpp-classes(3)](classes.md) for more information on classes
 - [bpp-new(3)](new.md) for creating new instances of classes

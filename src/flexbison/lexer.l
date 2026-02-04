@@ -1302,6 +1302,19 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 		reconsume_token();
 	}
 
+	"[" {
+		// @object.array[index] is acceptable as a single reference string IFF it's an lvalue reference
+		// If it's an rvalue reference instead, the reference string ends BEFORE the '['
+		// To put array indexing inside rvalue references, the reference must be brace-enclosed, as in @{object.array[index]}
+		if (get_lexer_extra(yyscanner)->lexerState.currently_lexing_lvalue_reference) {
+			get_lexer_extra(yyscanner)->modeStack.push(ARRAY_INDEX_MODE);
+			emit(ARRAY_INDEX_START);
+		} else {
+			get_lexer_extra(yyscanner)->modeStack.pop(); // Exit BPP_REFERENCE_MODE
+			reconsume_token(); // Let the main lexer mode handle the '['
+		}
+	}
+
 	(.|\n) {
 		get_lexer_extra(yyscanner)->modeStack.pop(); // Exit BPP_REFERENCE_MODE if we see anything other than IDENTIFIER or DOT coming up next
 		if (get_lexer_extra(yyscanner)->lexerState.currently_lexing_lvalue_reference) {

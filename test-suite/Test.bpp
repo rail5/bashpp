@@ -97,9 +97,8 @@
 		local i=0
 		@this.status="pass"
 		while [[ "$i" -lt "${#outputLines[@]}" ]]; do
-			if [[ "@(grep -o -P "^${expectedOutputLines[$i]}$" <<<"${outputLines[$i]}")" != "${outputLines[$i]}" ]]; then
+			if ! grep -P -x -- "${expectedOutputLines[$i]}" <<<"${outputLines[$i]}" >/dev/null 2>&1; then
 				@this.status="fail"
-				@this.finishTest
 				break
 			fi
 			i=$((i+1))

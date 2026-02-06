@@ -169,6 +169,9 @@ class BashppServer {
 				return; // Not logging
 			}
 			std::lock_guard<std::mutex> lock(log_mutex);
+			auto now = std::chrono::system_clock::now();
+			auto now_time_t = std::chrono::system_clock::to_time_t(now);
+			log_file << "[" << std::put_time(std::localtime(&now_time_t), "%Y-%m-%d %H:%M:%S") << "] ";
 			log_file << "[" << std::to_string(pid) << "] ";
 			((printValue(log_file, std::forward<Args>(args))), ...);
 			log_file << std::endl;

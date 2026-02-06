@@ -13,12 +13,12 @@
 #include <ext/stdio_filebuf.h> // Non-portable GNU extension
 
 #include <unistd.h>
-#include <getopt.h>
 
 #include <lsp/BashppServer.h>
 #include <lsp/helpers.h>
 
 #include <include/BashVersion.h>
+#include <include/xgetopt.h>
 
 #include <version.h>
 #include <updated_year.h>
@@ -52,18 +52,20 @@ int main(int argc, char* argv[]) {
 	}
 	server.log("Command line arguments: ", args);
 
-	constexpr const char* help_string = "Bash++ Language Server " bpp_compiler_version "\n"
-		"Usage: bpp-lsp [options]\n"
-		"Options:\n"
-		"  -h, --help                  Show this help message\n"
-		"  -v, --version               Show version information\n"
-		"  -l, --log <file>            Log messages to the specified file\n"
-		"  -s, --no-warnings           Suppress warnings\n"
-		"  -b, --target-bash <version> Set target Bash version (e.g., 5.2)\n"
-		"  -I, --include <path>        Add a directory to include path\n"
-		"      --stdio                 Use standard input/output for communication (default)\n"
-		"      --port <port>           Use TCP port for communication\n"
-		"      --socket <path>         Use Unix domain socket for communication\n";
+	constexpr auto OptionParser = XGETOPT_PARSER(
+		XGETOPT_OPTION('h', "help", "Show this help message", XGetOpt::NoArgument),
+		XGETOPT_OPTION('v', "version", "Show version information", XGetOpt::NoArgument),
+		XGETOPT_OPTION('l', "log", "Log messages to the specified file", XGetOpt::RequiredArgument, "file"),
+		XGETOPT_OPTION('s', "no-warnings", "Suppress warnings", XGetOpt::NoArgument),
+		XGETOPT_OPTION('b', "target-bash", "Set target Bash version (e.g., 5.2)", XGetOpt::RequiredArgument, "version"),
+		XGETOPT_OPTION('I', "include", "Add a directory to include path", XGetOpt::RequiredArgument, "path"),
+		XGETOPT_OPTION(1001, "stdio", "Use standard input/output for communication (default)", XGetOpt::NoArgument),
+		XGETOPT_OPTION(1002, "port", "Use TCP port for communication", XGetOpt::RequiredArgument, "port"),
+		XGETOPT_OPTION(1003, "socket", "Use Unix domain socket for communication", XGetOpt::RequiredArgument, "path")
+	);
+	
+	constexpr const char* help_intro = "Bash++ Language Server " bpp_compiler_version "\n"
+		"Usage: bpp-lsp [options]\n";
 
 	constexpr const char* version_string = "Bash++ Language Server " bpp_compiler_version "\n"
 		"Copyright (C) 2024-" bpp_compiler_updated_year " Andrew S. Rightenburg\n"
@@ -81,41 +83,33 @@ int main(int argc, char* argv[]) {
 		"You should have received a copy of the GNU General Public License\n"
 		"along with this program. If not, see http://www.gnu.org/licenses/.\n";
 
-	// getopt
-	int opt;
 
-	// Long options
-	static struct option long_options[] = {
-		{"help", no_argument, nullptr, 'h'},
-		{"version", no_argument, nullptr, 'v'},
-		{"log", required_argument, nullptr, 'l'},
-		{"include", required_argument, nullptr, 'I'},
-		{"no-warnings", no_argument, nullptr, 's'},
-		{"target-bash", required_argument, nullptr, 'b'},
-		{"stdio", no_argument, nullptr, 10000},
-		{"port", required_argument, nullptr, 10001},
-		{"socket", required_argument, nullptr, 10002},
-		{nullptr, 0, nullptr, 0} // Sentinel
-	};
+	XGetOpt::OptionSequence parsed_options;
+	try {
+		parsed_options = OptionParser.parse(argc, argv);
+	} catch (const std::exception& e) {
+		std::cerr << "bpp-lsp: Error parsing arguments: " << e.what() << std::endl;
+		return 1;
+	}
 
-	while ((opt = getopt_long(argc, argv, "b:hI:svl:", long_options, nullptr)) != -1) {
-		switch (opt) {
+	for (const auto& arg : parsed_options) {
+		switch (arg.getShortOpt()) {
 			case 'h':
-				std::cout << help_string << std::flush;
+				std::cout << help_intro << OptionParser.getHelpString();
 				return 0;
 			case 'I':
-				server.add_include_path(optarg);
+				server.add_include_path(std::string(arg.getArgument()));
 				break;
 			case 's':
 				server.set_suppress_warnings(true);
 				break;
 			case 'b':
 				{
-					std::istringstream version_stream(optarg);
+					std::istringstream version_stream(std::string(arg.getArgument()));
 					uint16_t major, minor;
 					char dot;
 					if (!(version_stream >> major >> dot >> minor) || dot != '.') {
-						std::cerr << "Invalid Bash version format: " << std::string(optarg)
+						std::cerr << "Invalid Bash version format: " << std::string(arg.getArgument())
 							<< std::endl << "Expected format: <major>.<minor> (e.g., 5.2)" << std::endl;
 						return 1;
 					}
@@ -127,7 +121,7 @@ int main(int argc, char* argv[]) {
 				return 0;
 			case 'l':
 				try {
-					server.setLogFile(optarg);
+					server.setLogFile(std::string(arg.getArgument()));
 				} catch (const std::exception& e) {
 					std::cerr << "Error setting log file: " << e.what() << std::endl;
 					return 1;
@@ -142,9 +136,9 @@ int main(int argc, char* argv[]) {
 			case 10001: // --port
 				// Use TCP port for communication
 				try {
-					socket_port = std::stoi(optarg);
+					socket_port = std::stoi(std::string(arg.getArgument()));
 				} catch (...) {
-					std::cerr << "Invalid port number: " << optarg << std::endl;
+					std::cerr << "Invalid port number: " << arg.getArgument() << std::endl;
 					return 1;
 				}
 				server_fd = setup_tcp_server(socket_port);
@@ -163,7 +157,7 @@ int main(int argc, char* argv[]) {
 			case 10002: // --socket
 				// Use Unix domain socket for communication
 				{
-					std::string socket_path = optarg;
+					std::string socket_path(arg.getArgument());
 					server_fd = setup_unix_socket_server(socket_path);
 					server.setSocketPath(socket_path);
 					if (server_fd < 0) {
@@ -179,9 +173,6 @@ int main(int argc, char* argv[]) {
 					}
 				}
 				break;
-			default:
-				std::cerr << "Unknown option: " << optopt << std::endl;
-				return 1;
 		}
 	}
 	std::cerr << "Client connected, running..." << std::endl;

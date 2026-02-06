@@ -12,12 +12,12 @@
 #include <optional>
 #include <filesystem>
 #include <memory>
-#include <getopt.h>
 #include <unistd.h>
 #include <algorithm>
 
 #include <include/FixedString.h>
 #include <include/BashVersion.h>
+#include <include/xgetopt.h>
 
 #include <version.h>
 #include <updated_year.h>
@@ -38,162 +38,22 @@ constexpr const char* copyright = "Copyright (C) 2024-"
 	"You should have received a copy of the GNU General Public License\n"
 	"along with this program. If not, see http://www.gnu.org/licenses/.\n";
 
-/**
- * @struct Option
- * @brief Represents a command-line option for the Bash++ compiler
- *
- * This struct defines a command-line option, including its short and long forms,
- * a description, and whether it takes an argument.
- * It is fully constexpr to allow compile-time generation of help strings.
- * 
- */
-struct Option {
-	const char shortopt;
-	const char* longopt;
-	const char* description;
-	const bool takes_argument;
-
-	constexpr Option(
-		char shortopt,
-		const char* longopt,
-		const char* description,
-		bool takes_argument)
-		: shortopt(shortopt),
-			longopt(longopt),
-			description(description),
-			takes_argument(takes_argument) {}
-};
-
-constexpr Option options[] = {
-	{'o', "output", "Specify output file (default: run on exit)", true},
-	{'b', "target-bash", "Target Bash version (default: 5.2)", true},
-	{'s', "no-warnings", "Suppress warnings", false},
-	{'I', "include", "Add directory to include path", true},
-	{'p', "parse-tree", "Display parse tree (do not compile program)", false},
-	{'t', "tokens", "Display tokens (do not compile program)", false},
-	{'v', "version", "Display version information", false},
-	{'h', "help", "Display this help message", false},
-	{0, nullptr, nullptr, false} // Sentinel
-};
-
-consteval size_t option_label_length(const Option& opt) {
-	size_t length = 0;
-	if (opt.shortopt) {
-		length += 2; // '-x'
-	}
-
-	if (opt.shortopt && opt.longopt) {
-		length += 2; // ', '
-	}
-
-	if (opt.longopt) {
-		length += 2 + string_length(opt.longopt); // '--longopt'
-	}
-
-	if (opt.takes_argument) {
-		length += 6; // ' <arg>'
-	}
-	
-	return length;
-}
-
-consteval size_t max_option_label_length() {
-	size_t max_length = 0;
-	for (size_t i = 0; options[i].shortopt || options[i].longopt; i++) {
-		size_t length = option_label_length(options[i]);
-		if (length > max_length) {
-			max_length = length;
-		}
-	}
-
-	return max_length;
-}
-
 constexpr const char* help_intro = 
 	"Usage: bpp [options] [file] ...\n"
 	"If no file is specified, read from stdin\n"
 	"All arguments after the file are passed to the compiled program\n"
 	"Options:\n";
 
-consteval size_t calculate_help_string_length() {
-	size_t total_length = string_length(help_intro);
-	constexpr size_t max_label_length = max_option_label_length();
-
-	for (size_t i = 0; options[i].shortopt || options[i].longopt; i++) {
-		const auto& opt = options[i];
-
-		// Base line: "  -x, --longopt <arg>"
-		total_length += 2; // "  "
-		if (opt.shortopt) {
-			total_length += 2; // "-x"
-		}
-
-		if (opt.shortopt && opt.longopt) {
-			total_length += 2; // ", "
-		}
-
-		if (opt.longopt) {
-			total_length += 2 + string_length(opt.longopt); // "--longopt"
-		}
-
-		if (opt.takes_argument) {
-			total_length += 6; // " <arg>"
-		}
-
-		// Padding + space + description + newline
-		size_t label_length = option_label_length(opt);
-		size_t padding_amount = max_label_length - label_length;
-		total_length += padding_amount + 1 + string_length(opt.description) + 1;
-	}
-
-	return total_length + 1; // +1 for null terminator
-}
-
-// Generate the help string at compile-time
-consteval auto generate_help_string() {
-	constexpr size_t total_size = calculate_help_string_length();
-	FixedString<total_size> result;
-
-	result.append(help_intro);
-
-	constexpr size_t max_label_length = max_option_label_length();
-
-	for (size_t i = 0; options[i].shortopt || options[i].longopt; i++) {
-		const auto& opt = options[i];
-
-		result.append("  ");
-
-		if (opt.shortopt) {
-			result.append('-');
-			result.append(opt.shortopt);
-		}
-
-		if (opt.shortopt && opt.longopt) {
-			result.append(", ");
-		}
-
-		if (opt.longopt) {
-			result.append("--");
-			result.append(opt.longopt);
-		}
-
-		if (opt.takes_argument) {
-			result.append(" <arg>");
-		}
-
-		// Add padding
-		size_t label_length = option_label_length(opt);
-		size_t padding_amount = max_label_length - label_length;
-		result.append(' ', padding_amount + 1); // Padding + space
-		result.append(opt.description);
-		result.append('\n');
-	}
-
-	result.append('\0'); // Null-terminate the string
-	return result;
-}
-
-constexpr auto help_string = generate_help_string();
+constexpr auto OptionParser = XGETOPT_PARSER(
+	XGETOPT_OPTION('o', "output", "Specify output file (default: run on exit)", XGetOpt::RequiredArgument),
+	XGETOPT_OPTION('b', "target-bash", "Target Bash version (default: 5.2)", XGetOpt::RequiredArgument),
+	XGETOPT_OPTION('s', "no-warnings", "Suppress warnings", XGetOpt::NoArgument),
+	XGETOPT_OPTION('I', "include", "Add directory to include path", XGetOpt::RequiredArgument),
+	XGETOPT_OPTION('t', "tokens", "Display tokens from lexer (do not compile program)", XGetOpt::NoArgument),
+	XGETOPT_OPTION('p', "parse-tree", "Display parse tree (do not compile program)", XGetOpt::NoArgument),
+	XGETOPT_OPTION('v', "version", "Display version information and exit", XGetOpt::NoArgument),
+	XGETOPT_OPTION('h', "help", "Display this help message and exit", XGetOpt::NoArgument)
+);
 
 /**
  * @struct Arguments
@@ -232,9 +92,11 @@ inline std::pair<std::vector<char*>, std::vector<char*>> separate_compiler_and_p
 	
 	std::vector<std::pair<char, const char*>> options_with_arguments;
 
+	const auto options = OptionParser.getOptions();
+
 	for (const auto& opt : options) {
-		if (opt.takes_argument) {
-			options_with_arguments.emplace_back(opt.shortopt, opt.longopt);
+		if (opt.argRequirement == XGetOpt::RequiredArgument) {
+			options_with_arguments.emplace_back(opt.shortopt, opt.longopt.c_str());
 		}
 	}
 
@@ -294,86 +156,55 @@ inline Arguments parse_arguments(int argc, char* argv[]) {
 	auto [compiler_arguments, program_arguments] = separate_compiler_and_program_options(&args, argc, argv);
 	args.program_arguments = std::move(program_arguments);
 	
-	// Getopt
-	int c;
-	opterr = 0;
-	int option_index = 0;
-
-	std::vector<char> options_with_arguments;
-
-	std::string short_options;
-	for (const auto& opt : options) {
-		if (opt.shortopt) {
-			short_options += opt.shortopt;
-			if (opt.takes_argument) {
-				short_options += ":";
-				options_with_arguments.push_back(opt.shortopt);
-			}
-		}
-	}
-	short_options += '\0'; // Null-terminate the string
-
-	// Long options
-	static struct option long_options[(sizeof(options) / sizeof(options[0])) + 1];
-
-	for (const auto& opt : options) {
-		if (opt.longopt) {
-			long_options[option_index++] = {opt.longopt, opt.takes_argument ? required_argument : no_argument, nullptr, opt.shortopt};
-		}
-	}
-	long_options[option_index] = {nullptr, 0, nullptr, 0}; // Sentinel
-
-	option_index = 0;
+	// Will throw if invalid arguments are provided
+	XGetOpt::OptionSequence provided_arguments = OptionParser.parse(
+		static_cast<int>(compiler_arguments.size()),
+		compiler_arguments.data());
+	
+	auto non_option_args = provided_arguments.getNonOptionArguments();
 
 	bool received_output_filename = false;
 
-	while (
-		(c = getopt_long(
-			static_cast<int>(compiler_arguments.size()),
-			compiler_arguments.data(),
-			short_options.c_str(),
-			long_options,
-			&option_index)
-		) != -1
-	) {
-		switch (c) {
+	for (const auto& arg : provided_arguments) {
+		switch (arg.getShortOpt()) {
 			case 'b':
 				// Parse the target Bash version
 				{
-					std::istringstream version_stream(optarg);
+					std::istringstream version_stream(std::string(arg.getArgument()));
 					uint16_t major, minor;
 					char dot;
 					if (!(version_stream >> major >> dot >> minor) || dot != '.') {
-						throw std::runtime_error("Invalid Bash version format: " + std::string(optarg) +
+						throw std::runtime_error("Invalid Bash version format: " + std::string(arg.getArgument()) +
 							"\nExpected format: <major>.<minor> (e.g., 5.2)");
 					}
 					args.target_bash_version = {major, minor};
 				}
 				break;
 			case 'h':
-				std::cout << program_name << " " << bpp_compiler_version << std::endl << help_string;
+				std::cout << program_name << " " << bpp_compiler_version << std::endl
+					<< help_intro << OptionParser.getHelpString();
 				args.exit_early = true;
 				return args;
 				break;
 			case 'I':
 				// Verify the given include path is a directory
-				if (!std::filesystem::exists(optarg) || !std::filesystem::is_directory(optarg)) {
-					throw std::runtime_error("Include path '" + std::string(optarg) + "' does not exist or is not a directory");
+				if (!std::filesystem::exists(arg.getArgument()) || !std::filesystem::is_directory(arg.getArgument())) {
+					throw std::runtime_error("Include path '" + std::string(arg.getArgument()) + "' does not exist or is not a directory");
 				}
-				args.include_paths->push_back(std::string(optarg));
+				args.include_paths->push_back(std::string(arg.getArgument()));
 				break;
 			case 'o':
 				if (received_output_filename) {
 					throw std::runtime_error("Multiple output files specified");
 				}
 
-				if (std::string(optarg) == "-") {
-					args.output_file = optarg;
+				if (std::string(arg.getArgument()) == "-") {
+					args.output_file = arg.getArgument();
 					break;
 				}
 
 				{
-					std::filesystem::path output_path(optarg);
+					std::filesystem::path output_path(arg.getArgument());
 					if (output_path.is_absolute()) {
 						args.output_file = output_path.string();
 					} else {
@@ -417,13 +248,6 @@ inline Arguments parse_arguments(int argc, char* argv[]) {
 				std::cout << program_name << " " << bpp_compiler_version << std::endl << copyright;
 				args.exit_early = true;
 				return args;
-				break;
-			case '?':
-				if (std::find(options_with_arguments.begin(), options_with_arguments.end(), optopt) != options_with_arguments.end()) {
-					throw std::runtime_error(std::string("Option -") + static_cast<char>(optopt) + " requires an argument\nUse -h for help");
-				} else {
-					throw std::runtime_error("Unknown option: -" + std::string(1, optopt));
-				}
 				break;
 		}
 	}

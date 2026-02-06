@@ -94,7 +94,8 @@ int main(int argc, char* argv[]) {
 
 	/* If the user didn't provide input, let them know, rather than just hang waiting for cin */
 	if (input_file == stdin && isatty(fileno(stdin))) {
-		std::cerr << program_name << " " << bpp_compiler_version << std::endl << OptionParser.getHelpString();
+		std::cerr << program_name << " " << bpp_compiler_version << std::endl
+			<< help_intro << OptionParser.getHelpString();
 		if (input_file != nullptr && input_file != stdin) {
 			fclose(input_file);
 		}

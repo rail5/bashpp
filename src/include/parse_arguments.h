@@ -77,95 +77,23 @@ struct Arguments {
 	bool exit_early = false; // Exit early if the request is just -h/--help or -v/--version
 };
 
-inline std::pair<std::vector<char*>, std::vector<char*>> separate_compiler_and_program_options(Arguments* args, int argc, char* argv[]) {
-	std::vector<char*> program_arguments;
-	std::vector<char*> compiler_arguments;
-	
-	program_arguments.reserve(static_cast<std::vector<char*>::size_type>(argc));
-	compiler_arguments.reserve(static_cast<std::vector<char*>::size_type>(argc));
-	compiler_arguments.push_back(argv[0]);
-
-	// Scan through each argument:
-	// The first non-option argument should be interpreted as the source file to compile
-	// Everything before it should be interpreted as arguments to the compiler
-	// Everything after it should be interpreted as arguments to the compiled program
-	
-	std::vector<std::pair<char, const char*>> options_with_arguments;
-
-	const auto options = OptionParser.getOptions();
-
-	for (const auto& opt : options) {
-		if (opt.argRequirement == XGetOpt::RequiredArgument) {
-			options_with_arguments.emplace_back(opt.shortopt, opt.longopt.c_str());
-		}
-	}
-
-	bool expecting_argument = false;
-	bool received_filename = false;
-	for (int i = 1; i < argc; i++) {
-		// If we've already received a filename, everything else is a program argument
-		if (received_filename) {
-			program_arguments.push_back(argv[i]);
-			continue;
-		}
-
-		// If the last option we processed expected an argument,
-		// Then this one is the argument for that option
-		if (expecting_argument) {
-			compiler_arguments.push_back(argv[i]);
-			expecting_argument = false;
-			continue;
-		}
-
-		// If this argument is an option, check if it takes an argument
-		// If it does, set expecting_argument to true so we can process that next
-		if (argv[i][0] == '-') {
-			for (const auto& opt : options_with_arguments) {
-				// Make sure we handle attached arguments to options, like -o- or --output=file.sh
-				if (argv[i][1] == opt.first && argv[i][2] == '\0') {
-					// Expect next opt to be the argument for this option
-					expecting_argument = true;
-				} else if (opt.second
-					&& strcmp(argv[i] + 2, opt.second) == 0
-					&& argv[i][2 + std::char_traits<char>::length(opt.second)] == '\0'
-				) {
-					// Expect next opt to be the argument for this option
-					expecting_argument = true;
-				}
-			}
-		}
-
-		// Add the argument to the compiler_arguments array
-		compiler_arguments.push_back(argv[i]);
-		// If this argument is not an option, and we haven't received a filename yet,
-		// Then this is the source file to compile
-		if (!received_filename && argv[i][0] != '-') {
-			args->input_file = argv[i];
-			received_filename = true;
-		}
-	}
-
-	return {compiler_arguments, program_arguments};
-}
-
 inline Arguments parse_arguments(int argc, char* argv[]) {
 	Arguments args;
 
 	args.include_paths->push_back("/usr/lib/bpp/stdlib/");
 
-	auto [compiler_arguments, program_arguments] = separate_compiler_and_program_options(&args, argc, argv);
-	args.program_arguments = std::move(program_arguments);
-	
 	// Will throw if invalid arguments are provided
-	XGetOpt::OptionSequence provided_arguments = OptionParser.parse(
-		static_cast<int>(compiler_arguments.size()),
-		compiler_arguments.data());
-	
-	auto non_option_args = provided_arguments.getNonOptionArguments();
+	auto [compiler_arguments, program_arguments]
+		= OptionParser.parse_until<XGetOpt::StopCondition::AfterFirstNonOptionArgument>(argc, argv);
+
+	args.program_arguments = std::vector<char*>{program_arguments.argv, program_arguments.argv + program_arguments.argc};
+
+	if (compiler_arguments.getNonOptionArguments().size() > 0) {
+		args.input_file = std::string(compiler_arguments.getNonOptionArguments()[0]);
+	}
 
 	bool received_output_filename = false;
-
-	for (const auto& arg : provided_arguments) {
+	for (const auto& arg : compiler_arguments) {
 		switch (arg.getShortOpt()) {
 			case 'b':
 				// Parse the target Bash version

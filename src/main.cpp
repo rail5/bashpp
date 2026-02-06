@@ -46,7 +46,8 @@ int main(int argc, char* argv[]) {
 	try {
 		args = parse_arguments(argc, argv);
 	} catch (const std::runtime_error& e) {
-		std::cerr << program_name << ": Error: " << e.what() << std::endl;
+		std::cerr << program_name << ": Error: " << e.what() << std::endl
+			<< "Use -h for help" << std::endl;
 		return 1;
 	}
 

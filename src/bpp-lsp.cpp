@@ -42,16 +42,6 @@ int main(int argc, char* argv[]) {
 	bpp::BashppServer server;
 	p_server = &server;
 
-	server.log("Bash++ Language Server " bpp_compiler_version " starting...");
-	std::string args;
-	for (int i = 0; i < argc; ++i) {
-		args += argv[i];
-		if (i < argc - 1) {
-			args += " ";
-		}
-	}
-	server.log("Command line arguments: ", args);
-
 	constexpr auto OptionParser = XGETOPT_PARSER(
 		XGETOPT_OPTION('h', "help", "Show this help message", XGetOpt::NoArgument),
 		XGETOPT_OPTION('v', "version", "Show version information", XGetOpt::NoArgument),

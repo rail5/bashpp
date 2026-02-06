@@ -162,7 +162,7 @@ std::string bpp::BashppServer::readHeaderLine(std::streambuf* buffer) {
 	while (true) {
 		const std::streamsize n = buffer->sgetn(&c, 1);
 		if (n != 1) {
-			throw;
+			throw std::runtime_error("End of input stream reached while reading header.");
 		}
 		if (c == '\n') break;
 		if (c == '\r') continue;

@@ -32,14 +32,14 @@ $(LSP_GENERATED_STAMP): $(LSP_OBJDIR)/generateLSPClasses
 
 
 # META HEADER FILES GENERATION (VERSION NUMBER, UPDATED YEAR)
-$(SRCDIR)/version.h:
+$(SRCDIR)/version.h: debian/changelog
 	@if [ ! -z "$(VERSION)" ]; then \
 		echo "#define bpp_compiler_version \"$(VERSION)\"" > $@; \
 	else \
 		echo "#define bpp_compiler_version \"0.1\"" > $@; \
 	fi
 
-$(SRCDIR)/updated_year.h:
+$(SRCDIR)/updated_year.h: debian/changelog
 	@if [ ! -z "$(YEAR)" ]; then \
 		echo "#define bpp_compiler_updated_year \"$(YEAR)\"" > $@; \
 	else \

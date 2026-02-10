@@ -205,26 +205,6 @@ struct Option {
 	static constexpr auto argumentPlaceholder = ArgumentPlaceholder;
 };
 
-// Syntactic sugar (macro): looks like a function call but instantiates Option<...>
-#define _XGETOPT_OPTION_4(shortopt, longopt, description, req) \
-	(::XGetOpt::Option<(shortopt), \
-		::XGetOpt::Helpers::FixedString{longopt}, \
-		::XGetOpt::Helpers::FixedString{description}, \
-		(req)>{})
-
-#define _XGETOPT_OPTION_5(shortopt, longopt, description, req, argplaceholder) \
-	(::XGetOpt::Option<(shortopt), \
-		::XGetOpt::Helpers::FixedString{longopt}, \
-		::XGetOpt::Helpers::FixedString{description}, \
-		(req), \
-		::XGetOpt::Helpers::FixedString{argplaceholder}>{})
-
-// Macro dispatcher: If 5 args, use WITHPLACEHOLDER, else use NOPLACEHOLDER
-#define _XGETOPT_OPTION_SELECT(_1, _2, _3, _4, _5, NAME, ...) NAME
-
-#define XGETOPT_OPTION(...) \
-	_XGETOPT_OPTION_SELECT(__VA_ARGS__, _XGETOPT_OPTION_5, _XGETOPT_OPTION_4)(__VA_ARGS__)
-
 namespace Helpers {
 
 struct OptionView {
@@ -541,6 +521,32 @@ class OptionParser {
 			}...
 		}};
 
+		// Compile-time guarantee: no two options have the same shortopt value
+		static_assert([]{
+			for (size_t i = 0; i < N; i++) {
+				for (size_t j = i + 1; j < N; j++) {
+					if (options[i].shortopt == options[j].shortopt) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}(), "OptionParser error: Duplicate shortopt values detected in option definitions.");
+
+		// Likewise: no two options have the same (non-empty) longopt value
+		static_assert([]{
+			for (size_t i = 0; i < N; i++) {
+				if (options[i].longopt.length() == 0) continue;
+				for (size_t j = i + 1; j < N; j++) {
+					if (options[j].longopt.length() == 0) continue;
+					if (options[i].longopt.view() == options[j].longopt.view()) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}(), "OptionParser error: Duplicate longopt values detected in option definitions.");
+
 		static constexpr size_t help_string_length = Helpers::calculate_help_string_length<N>(options);
 		
 		static constexpr std::array<char, 3*N + 2> build_short_options_(const OptionArray& opts) {
@@ -813,6 +819,18 @@ class OptionParser {
 				parsed_options.addOption(ParsedOption(opt, argument));
 			}
 
+			// GNU getopt treats `--` as an end-of-options marker and returns -1 without
+			// yielding the remaining arguments via RETURN_IN_ORDER.
+			// We still want those remaining tokens to be treated as non-option arguments.
+			if constexpr (parseUntil == AllOptions || parseUntil == BeforeFirstError) {
+				if (remainder_start < 0) {
+					for (int i = optind; i < argc; i++) {
+						parsed_options.addNonOptionArgument(std::string_view(argv[i]));
+					}
+					optind = argc;
+				}
+			}
+
 			const int start = (remainder_start >= 0) ? remainder_start : optind;
 			unparsed_options.argc = argc - start;
 			unparsed_options.argv = &argv[start];
@@ -859,16 +877,6 @@ class OptionParser {
 			return parse_impl<end>(argc, argv);
 		}
 };
-
-template<Helpers::option_like... Opts>
-[[nodiscard]] constexpr OptionParser<Opts...> make_option_parser(Opts... opts) {
-	return OptionParser<Opts...>{};
-}
-
-// More macro sugar:
-//  constexpr auto parser = XGETOPT_PARSER(XGETOPT_OPTION(...), XGETOPT_OPTION(...), ...);
-#define XGETOPT_PARSER(...) \
-	(::XGetOpt::make_option_parser(__VA_ARGS__))
 
 } // namespace XGetOpt
 

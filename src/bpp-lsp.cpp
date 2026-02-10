@@ -42,17 +42,17 @@ int main(int argc, char* argv[]) {
 	bpp::BashppServer server;
 	p_server = &server;
 
-	constexpr auto OptionParser = XGETOPT_PARSER(
-		XGETOPT_OPTION('h', "help", "Show this help message", XGetOpt::NoArgument),
-		XGETOPT_OPTION('v', "version", "Show version information", XGetOpt::NoArgument),
-		XGETOPT_OPTION('l', "log", "Log messages to the specified file", XGetOpt::RequiredArgument, "file"),
-		XGETOPT_OPTION('s', "no-warnings", "Suppress warnings", XGetOpt::NoArgument),
-		XGETOPT_OPTION('b', "target-bash", "Set target Bash version (e.g., 5.2)", XGetOpt::RequiredArgument, "version"),
-		XGETOPT_OPTION('I', "include", "Add a directory to include path", XGetOpt::RequiredArgument, "path"),
-		XGETOPT_OPTION(1001, "stdio", "Use standard input/output for communication (default)", XGetOpt::NoArgument),
-		XGETOPT_OPTION(1002, "port", "Use TCP port for communication", XGetOpt::RequiredArgument, "port"),
-		XGETOPT_OPTION(1003, "socket", "Use Unix domain socket for communication", XGetOpt::RequiredArgument, "path")
-	);
+	constexpr XGetOpt::OptionParser<
+		XGetOpt::Option<'h', "help", "Show this help message", XGetOpt::NoArgument>,
+		XGetOpt::Option<'v', "version", "Show version information", XGetOpt::NoArgument>,
+		XGetOpt::Option<'l', "log", "Log messages to the specified file", XGetOpt::RequiredArgument, "file">,
+		XGetOpt::Option<'s', "no-warnings", "Suppress warnings", XGetOpt::NoArgument>,
+		XGetOpt::Option<'b', "target-bash", "Set target Bash version (e.g., 5.2)", XGetOpt::RequiredArgument, "version">,
+		XGetOpt::Option<'I', "include", "Add a directory to include path", XGetOpt::RequiredArgument, "path">,
+		XGetOpt::Option<1001, "stdio", "Use standard input/output for communication (default)", XGetOpt::NoArgument>,
+		XGetOpt::Option<1002, "port", "Use TCP port for communication", XGetOpt::RequiredArgument, "port">,
+		XGetOpt::Option<1003, "socket", "Use Unix domain socket for communication", XGetOpt::RequiredArgument, "path">
+	> OptionParser;
 	
 	constexpr const char* help_intro = "Bash++ Language Server " bpp_compiler_version "\n"
 		"Usage: bpp-lsp [options]\n";

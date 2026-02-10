@@ -44,16 +44,16 @@ constexpr const char* help_intro =
 	"All arguments after the file are passed to the compiled program\n"
 	"Options:\n";
 
-constexpr auto OptionParser = XGETOPT_PARSER(
-	XGETOPT_OPTION('o', "output", "Specify output file (default: run on exit)", XGetOpt::RequiredArgument),
-	XGETOPT_OPTION('b', "target-bash", "Target Bash version (default: 5.2)", XGetOpt::RequiredArgument),
-	XGETOPT_OPTION('s', "no-warnings", "Suppress warnings", XGetOpt::NoArgument),
-	XGETOPT_OPTION('I', "include", "Add directory to include path", XGetOpt::RequiredArgument),
-	XGETOPT_OPTION('t', "tokens", "Display tokens from lexer (do not compile program)", XGetOpt::NoArgument),
-	XGETOPT_OPTION('p', "parse-tree", "Display parse tree (do not compile program)", XGetOpt::NoArgument),
-	XGETOPT_OPTION('v', "version", "Display version information and exit", XGetOpt::NoArgument),
-	XGETOPT_OPTION('h', "help", "Display this help message and exit", XGetOpt::NoArgument)
-);
+constexpr XGetOpt::OptionParser<
+	XGetOpt::Option<'o', "output", "Specify output file (default: run on exit)", XGetOpt::RequiredArgument>,
+	XGetOpt::Option<'b', "target-bash", "Target Bash version (default: 5.2)", XGetOpt::RequiredArgument>,
+	XGetOpt::Option<'s', "no-warnings", "Suppress warnings", XGetOpt::NoArgument>,
+	XGetOpt::Option<'I', "include", "Add directory to include path", XGetOpt::RequiredArgument>,
+	XGetOpt::Option<'t', "tokens", "Display tokens from lexer (do not compile program)", XGetOpt::NoArgument>,
+	XGetOpt::Option<'p', "parse-tree", "Display parse tree (do not compile program)", XGetOpt::NoArgument>,
+	XGetOpt::Option<'v', "version", "Display version information and exit", XGetOpt::NoArgument>,
+	XGetOpt::Option<'h', "help", "Display this help message and exit", XGetOpt::NoArgument>
+> OptionParser;
 
 /**
  * @struct Arguments

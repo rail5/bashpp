@@ -12,7 +12,7 @@
 @class Bashpp {
   @public author="Andrew S. Rightenburg"
   @public source="https://github.com/rail5/bashpp"
-  @public license="GNU GPL v3"
+  @public license="GNU GPL v3+"
 
   @public @method printInfo {
 	echo "Bash++ is a superset of Bash that adds support for classes and objects."
@@ -32,7 +32,7 @@ More documentation is available on the [website](https://bpp.sh).
 ![GPLv3](https://www.gnu.org/graphics/gplv3-with-text-136x68.png)
 
 
-The Bash++ language and compiler are licensed under the GNU General Public License v3.
+The Bash++ language and compiler are licensed under the GNU General Public License v3 or later (GPL-3.0-or-later).
 
 This does not affect any code you write in Bash++ – only the Bash++ language and compiler themselves. You are perfectly free to use Bash++ to write software under a different license.
 

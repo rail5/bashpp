@@ -1,7 +1,7 @@
 #!/usr/bin/env bpp
 
 # Copyright (C) 2025 Andrew S. Rightenburg
-# GNU General Public License v3.0
+# GNU General Public License v3.0 or later (GPL-3.0-or-later)
 # This file is part of the Bash++ Standard Library.
 
 @include_once "Queue"

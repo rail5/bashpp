@@ -47,7 +47,7 @@
 	</div>
 	<div>
 		The Bash++ language and compiler are licensed under the
-		<a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU General Public License v3</a>.
+		<a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU General Public License v3 or later</a>.
 	</div>
 </div>
 

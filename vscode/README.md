@@ -27,9 +27,9 @@ This will create a `.vsix` file that you can install in VSCode.
 
 ## Extension Information
 
-### License: GNU GPL v3
+### License: GNU GPL v3 or later
 
-This extension (as well as the Bash++ language and compiler) are licensed under the [GNU General Public License v3](https://www.gnu.org/licenses/gpl-3.0.html).
+This extension (as well as the Bash++ language and compiler) are licensed under the [GNU General Public License v3 or later](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ### Language Server Support
 
@@ -43,7 +43,7 @@ You can configure the path to the language server (as well as other options) in 
 
 The TextMate grammar is a modified version of the [Bash](https://github.com/microsoft/vscode-textmate/blob/main/test-cases/themes/syntaxes/Shell-Unix-Bash.tmLanguage.json) grammar provided by Microsoft.
 
-The original grammar is licensed under the [MIT License](https://choosealicense.com/licenses/mit/)
+The original grammar is licensed under the [MIT License](https://choosealicense.com/licenses/mit/). In compliance with its terms, the full text of the MIT License is provided below.
 
 #### MIT License
 

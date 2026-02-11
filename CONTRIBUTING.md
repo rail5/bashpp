@@ -121,6 +121,6 @@ if (!resolved_binary) {
 
 ## License
 
-By contributing to Bash++, you **confirm** that the work is **your own** and you **agree** that your contributions will be licensed under the same license as the project, which is the GNU General Public License v3.0 (GPL-3.0).
+By contributing to Bash++, you **confirm** that the work is **your own** and you **agree** that your contributions will be licensed under the same license as the project, which is the GNU General Public License v3.0 or later (GPL-3.0-or-later).
 
 Thank you for helping to make Bash++ better!

@@ -30,4 +30,4 @@
 	Pull Requests without explicit license agreement will NOT be merged.
 -->
 
-I hereby **confirm** that the work submitted in this pull request is **my own** and I **agree** that my contributions will be licensed under the same license as the project, which is the GNU General Public License v3.0 (GPL-3.0).
+I hereby **confirm** that the work submitted in this pull request is **my own** and I **agree** that my contributions will be licensed under the same license as the project, which is the GNU General Public License **v3.0 or later** (GPL-3.0-or-later).

@@ -12,7 +12,7 @@
 @class Bashpp {
   @public author="Andrew S. Rightenburg"
   @public source="https://github.com/rail5/bashpp"
-  @public license="GNU GPL v3+"
+  @public license="GNU GPL v3"
 
   @public @method printInfo {
 	echo "Bash++ is a superset of Bash that adds support for classes and objects."

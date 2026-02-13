@@ -413,12 +413,35 @@ class OptionSequence {
 	private:
 		std::vector<ParsedOption> options;
 		std::vector<std::string_view> nonOptionArguments;
+
+		/**
+		 * @brief Add another OptionSequence to this one
+		 *
+		 * The options and non-option arguments from the other sequence are appended to this one.
+		 * This is accessible via operator+= and operator+.
+		 * 
+		 * @param other The other OptionSequence to add
+		 */
+		void add(const OptionSequence& other) {
+			options.insert(options.end(), other.options.begin(), other.options.end());
+			nonOptionArguments.insert(nonOptionArguments.end(),
+				other.nonOptionArguments.begin(), other.nonOptionArguments.end());
+		}
 	public:
 		void addOption(const ParsedOption& opt) {
 			options.push_back(opt);
 		}
 		void addNonOptionArgument(std::string_view arg) {
 			nonOptionArguments.push_back(arg);
+		}
+
+		OptionSequence& operator+=(const OptionSequence& rhs) {
+			add(rhs);
+			return *this;
+		}
+		friend OptionSequence operator+(OptionSequence lhs, const OptionSequence& rhs) {
+			lhs.add(rhs);
+			return lhs;
 		}
 
 		auto begin() const {
@@ -553,9 +576,12 @@ class OptionParser {
 			size_t short_opt_index = 0;
 			std::array<char, 3*N + 2> short_opts{};
 
-			// GNU getopt extension: RETURN_IN_ORDER
-			// Non-option arguments are returned as character code 1, with optarg set to the argument.
-			short_opts[short_opt_index++] = '-';
+			// Flag: REQUIRE_ORDER
+			// This means that option processing stops at the first non-option argument as mandated by POSIX
+			// Represented by a leading '+' in the short options string
+			// This flag is supported in the vast majority of getopt implementations
+			// Including GNU libc, every BSD variant, and musl, among others.
+			short_opts[short_opt_index++] = '+';
 
 			for (size_t i = 0; i < N; i++) {
 				if (opts[i].shortopt >= 33 && opts[i].shortopt <= 126) {
@@ -709,8 +735,26 @@ class OptionParser {
 			OptionSequence parsed_options;
 			OptionRemainder unparsed_options{argc, argv};
 
+			// Reset in case parse() is called more than once in a process.
 			opterr = 0; // Don't let getopt print messages.
-			optind = 1; // Reset in case parse() is called more than once in a process.
+			optind = 1;
+			
+			// Platform-specific:
+			// GNU or Haiku: Set optind = 0 to reset getopt state fully
+			// Any of the BSDs or musl: Set optreset = 1 to reset getopt state fully
+			//
+			// Setting optind = 0 is UB outside of GNU/Haiku, so only do it there.
+			//
+			// GNU and Haiku have no concept of "optreset"
+			//
+			// On any unidentified platforms, we'll just have to cross our fingers.
+			//
+			// TODO(@rail5): Solaris?
+		#if defined(__GLIBC__) || defined(__HAIKU__)
+			optind = 0;
+		#elif defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__MUSL__)
+			optreset = 1;
+		#endif
 
 			int remainder_start = -1;
 
@@ -745,28 +789,54 @@ class OptionParser {
 			int longindex = 0;
 
 			for (;;) {
-				const int token_index = optind; // argv index examined by this call
+				const int token_index = (optind == 0) ? 1 : optind; // The argv examined by this call
 				const int opt = getopt_long(argc, argv, short_options.data(), long_options.data(), &longindex);
-				if (opt == -1) break;
+				if (opt == -1) {
+					if (optind >= argc) break; // All tokens processed
 
-				if (opt == 1) {
-					// RETURN_IN_ORDER: optarg is the non-option, from argv[token_index]
-					if (optarg != nullptr) {
+					// Special-case:
+					// `--` ends option parsing.
+					// getopt_long consumes it, sets optind to the first token after `--`,
+					// and then returns -1.
+					// In our case, we still want to collect the remaining tokens as non-option arguments.
+					if (optind > 0 && std::string_view(argv[optind - 1]) == "--") {
 						if constexpr (parseUntil == BeforeFirstNonOptionArgument) {
-							remainder_start = token_index; // include the non-option in remainder
+							remainder_start = token_index;
+							break;
+						} else if constexpr (parseUntil == AfterFirstNonOptionArgument) {
+							// Include the first non-option argument (which is argv[optind])
+							parsed_options.addNonOptionArgument(std::string_view(argv[optind]));
+							optind++; // Consume
+							remainder_start = optind;
 							break;
 						}
-
-						parsed_options.addNonOptionArgument(std::string_view(optarg));
-
-						if constexpr (parseUntil == AfterFirstNonOptionArgument) {
-							// optind is already positioned after this non-option
-							break;
+						// Otherwise (AllOptions or BeforeFirstError), collect all remaining tokens
+						for (int i = optind; i < argc; i++) {
+							parsed_options.addNonOptionArgument(std::string_view(argv[i]));
 						}
+						optind = argc; // All tokens consumed
+						break;
 					}
+
+					// If we're here, we have a non-option argument to process
+					if constexpr (parseUntil == BeforeFirstNonOptionArgument) {
+						remainder_start = token_index;
+						break;
+					} else if constexpr (parseUntil == AfterFirstNonOptionArgument) {
+						parsed_options.addNonOptionArgument(std::string_view(argv[optind]));
+						optind++; // Consume
+						remainder_start = optind;
+						break;
+					}
+
+					// Otherwise, continue processing
+					// AllOptions or BeforeFirstError
+					parsed_options.addNonOptionArgument(std::string_view(argv[optind]));
+					optind++; // Consume
 					continue;
 				}
 
+				// Error handling
 				if (opt == '?') {
 					if constexpr (parseUntil == BeforeFirstError) {
 						remainder_start = token_index; // include offending token in remainder
@@ -817,18 +887,6 @@ class OptionParser {
 				std::optional<std::string_view> argument;
 				if (optarg != nullptr) argument = std::string_view(optarg);
 				parsed_options.addOption(ParsedOption(opt, argument));
-			}
-
-			// GNU getopt treats `--` as an end-of-options marker and returns -1 without
-			// yielding the remaining arguments via RETURN_IN_ORDER.
-			// We still want those remaining tokens to be treated as non-option arguments.
-			if constexpr (parseUntil == AllOptions || parseUntil == BeforeFirstError) {
-				if (remainder_start < 0) {
-					for (int i = optind; i < argc; i++) {
-						parsed_options.addNonOptionArgument(std::string_view(argv[i]));
-					}
-					optind = argc;
-				}
 			}
 
 			const int start = (remainder_start >= 0) ? remainder_start : optind;

@@ -1,3 +1,19 @@
+bpp (0.8.5) unstable; urgency=medium
+
+  * Bug fix: bpp-lsp: Don't re-throw exceptions
+    When the input stream is unexpectedly halted, make sure we go through our
+    necessary clean-up procedure. Re-throwing the received exception in this
+    case would suddenly halt the program sans clean-up.
+  * Bug fix: bpp: Concatenated lvalues in the parser
+    Updated the parser grammar to allow operative command words to be
+    composed of multiple adjacent tokens, matching Bash's behavior for
+    command names.
+    Added accompanying regression test
+  * Replaced homegrown CLI option parsing with XGetOpt
+    Vendored XGetOpt header in src/include
+
+ -- rail5 <andrew@rail5.org>  Sun, 15 Feb 2026 10:03:35 +0800
+
 bpp (0.8.4) unstable; urgency=medium
 
   * Lexer/Parser/AST:

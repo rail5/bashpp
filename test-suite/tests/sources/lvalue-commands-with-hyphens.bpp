@@ -1,0 +1,9 @@
+@class Object {
+
+}
+
+@Object obj
+
+command-with-hyphens a b @obj c d # "command-with-hyphens not found" error
+
+cmd -with-hyphens-in-arg a b @obj c d # "cmd not found" error

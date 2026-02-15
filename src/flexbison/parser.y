@@ -191,6 +191,10 @@ void yyerror(const char *s);
 %type <ASTNodePtr> operative_command_element simple_command_element simple_command simple_pipeline simple_command_sequence
 %type <ASTNodePtr> pipeline shell_command_sequence shell_command
 
+%type <ASTNodePtr> operative_command_word
+
+%type <AST::Token<std::string>> raw_text_token
+
 %type <std::vector<ASTNodePtr>> command_redirections
 
 %type <ASTNodePtr> bash_if_statement bash_if_condition bash_if_root_branch bash_if_else_branch
@@ -495,6 +499,49 @@ simple_command_element:
 	;
 
 operative_command_element:
+	operative_command_word { $$ = $1; }
+	| object_reference_lvalue { $$ = $1; }
+	| self_reference_lvalue { $$ = $1; }
+	| pointer_dereference_lvalue { $$ = $1; }
+	;
+
+/*
+ * In Bash syntax, a single "word" can be composed of multiple adjacent tokens with no whitespace.
+ * We already support this for rvalues via concatenated_rvalue, but the first word of a command
+ * is frequently lexed as IDENTIFIER_LVALUE (because that information is important for later parsing).
+ *
+ * Without this rule, `command-with-hyphens` is forced to reduce `command` as a complete command word,
+ * and then `-with-hyphens` is parsed as a second command.
+ *
+ *
+ * TODO(@rail5): Consider the possibility of re-working the grammar for recursive lexing/parsing of "WORD" tokens, the way Bash does it
+ *
+ * Bash, for example, when it sees `var=value`, sees a single ASSIGNMENT_WORD token,
+ * Which it later expands by again "parsing" the internal *contents* of that token.
+ *   (not using the same parser, but "expanding" nonetheless to figure out what the lvalue is, what the rvalue is, etc.)
+ *
+ * This means that the Bash lexer/parser does an indeterminate number of passes over source,
+ *   (indeterminate if you don't know the source beforehand, that is)
+ * possibly expanding further and further with each inner layer/command substitution/etc.
+ *   (e.g., if there are 5 nested subshells, that's 5 passes, each time lexing a new "single token" that then needs to be parsed again)
+ *
+ * By contrast, our lexer/parser does only a *single* pass over the source,
+ * lexing every component separately and relying on the *parser* to understand how they fit together.
+ * This is more traditional, but maybe less "true to Bash" in spirit.
+ *
+ * In the above example, where Bash sees `var=value` => ASSIGNMENT_WORD,
+ * we instead see `var=value` => IDENTIFIER_LVALUE `=` IDENTIFIER,
+ * and our parser then understands that this is an assignment *statement*.
+ *
+ * Our approach is arguably simpler and arguably more efficient since we avoid multiple passes over the source,
+ * but it also necessitates that the lexer retain extra state about the current parsing context,
+ * and more than this: it's a goddamned rat-race to make sure we're parsing Bash correctly.
+ *
+ * The single greatest advantage I can think of to "doing it the way Bash does it"
+ * would be that we could *know* that we're parsing Bash correctly,
+ * without always feeling like we're running on this treadmill to get the Bash parts of the language right.
+ */
+operative_command_word:
 	IDENTIFIER_LVALUE {
 		auto node = std::make_shared<AST::RawText>();
 		uint32_t line_number = @1.begin.line;
@@ -504,9 +551,21 @@ operative_command_element:
 		node->setText($1);
 		$$ = node;
 	}
-	| object_reference_lvalue { $$ = $1; }
-	| self_reference_lvalue { $$ = $1; }
-	| pointer_dereference_lvalue { $$ = $1; }
+	| operative_command_word raw_text_token {
+		auto node = std::dynamic_pointer_cast<AST::RawText>($1);
+		assert(node != nullptr);
+		node->appendText($2.getValue());
+		node->setEndPosition(@2.end.line, @2.end.column);
+		$$ = node;
+	}
+	;
+
+raw_text_token:
+	IDENTIFIER { $$ = $1; }
+	| INTEGER { $$ = $1; }
+	| SINGLEQUOTED_STRING { $$ = $1; }
+	| CATCHALL { $$ = $1; }
+	| KEYWORD_NULLPTR { $$ = AST::Token<std::string>("0", @1.begin.line, @1.begin.column); }
 	;
 
 redirection:

@@ -577,7 +577,18 @@ redirection:
 		// But:
 		// echo hi >file var=value
 		// In this case, 'var=value' is a simple string. Because we had already seen 'echo', lvalues are no longer allowed
-		set_incoming_token_can_be_lvalue(current_command_can_receive_lvalues, yyscanner);
+
+		// NOTE on why "if (current_command_can_receive_lvalues)" is necessary here:
+		// The lexer's lookahead token may have been a token which signals the start of a NEW command,
+		// E.g., a pipe, logical connective, or delimiter
+		// In that case, the lexer will have set the "can be lvalue" flag to true in anticipation of the next command,
+		// and here we'd accidentally end up overriding that to false!
+		// (LALR(1) is no joke)
+		// So, refuse to *ever* set it to false if the lexer disagrees,
+		// And only ever tell the lexer "hey, you missed a spot" -- never "hey, you got a spot wrong"
+
+		if (current_command_can_receive_lvalues)
+			set_incoming_token_can_be_lvalue(true, yyscanner);
 
 		auto node = std::make_shared<AST::BashRedirection>();
 		uint32_t line_number = @1.begin.line;
@@ -589,7 +600,8 @@ redirection:
 		$$ = node;
 	}
 	| heredoc_header {
-		set_incoming_token_can_be_lvalue(current_command_can_receive_lvalues, yyscanner);
+		if (current_command_can_receive_lvalues)
+			set_incoming_token_can_be_lvalue(true, yyscanner);
 		auto node = std::make_shared<AST::RawText>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
@@ -599,7 +611,8 @@ redirection:
 		$$ = node;
 	}
 	| herestring {
-		set_incoming_token_can_be_lvalue(current_command_can_receive_lvalues, yyscanner);
+		if (current_command_can_receive_lvalues)
+			set_incoming_token_can_be_lvalue(true, yyscanner);
 		$$ = $1;
 	}
 	;

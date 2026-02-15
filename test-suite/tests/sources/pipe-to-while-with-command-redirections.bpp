@@ -1,0 +1,23 @@
+@class Object {
+	@public @method log message {
+		if [[ -z "$message" ]]; then
+			# Redirect stdin to stdout
+			cat - 2>&1 | while read line 2>&1; do
+				echo "line: $line"
+			done
+		else
+			echo "message: $message"
+		fi
+	}
+
+	@public @method doSomething {
+		echo "hello" 2>&1 | @this.log # "line: hello"
+
+		echo "hello" 2>&1 | while IFS= read -r line || [[ -n "$line" ]]; do
+				@this.log "$line" # "message: hello"
+			done
+	}
+}
+
+@Object obj
+@obj.doSomething

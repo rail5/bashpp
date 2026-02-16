@@ -1,3 +1,28 @@
+bpp (0.8.6) unstable; urgency=medium
+
+  * Supershells: Preserve stderr as subshells do
+    Supershells in Bash++ now handle stderr identically to subshell
+    substitution, matching Bash 5.3's native supershells.
+    Previously, supershells in 5.2-compatibility mode discarded stderr; now it
+    is preserved.
+    Added regression test for supershell stderr handling.
+  * Dynamic cast codegen: Don't force-quote reference code
+    Fixed edge-case bug where generated code for dynamic casts would
+    incorrectly add quotes around the reference code. Now preserves original
+    quoting as written in source.
+    Added regression test for dynamic cast quoting.
+  * Parser: Never override lexer's positive lvalue judgment
+    Fixed bug where parser could incorrectly override the lexer's
+    determination that a token could be an lvalue.
+    Ensures correct handling of lvalue/rvalue distinctions, especially around
+    redirections and pipes.
+    Added regression test for this behavior.
+  * Test suite: Run tests for Bash 5.2 and 5.3
+    Tests are now run twice if Bash >=5.3 is installed:
+    once for 5.2 compatibility, once for 5.3.
+
+ -- rail5 <andrew@rail5.org>  Mon, 16 Feb 2026 12:34:34 +0800
+
 bpp (0.8.5) unstable; urgency=medium
 
   * Bug fix: bpp-lsp: Don't re-throw exceptions

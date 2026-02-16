@@ -1,0 +1,54 @@
+@class Base {
+	@public typeName="Base"
+	@public @method echoTypeName {
+		echo @this.typeName
+	}
+}
+@class Derived : Base {
+}
+@class FurtherDerived : Derived {
+}
+@class Sibling : Base {
+}
+@class Unrelated {
+}
+@Base base
+@Derived derived
+@FurtherDerived further_derived
+@Sibling sibling
+@Unrelated unrelated
+
+shell_var="Base"
+
+echo @dynamic_cast<Base> &@base # Valid pointer
+echo @dynamic_cast<Base> &@derived # Valid pointer (upcast)
+echo @dynamic_cast<Base> &@further_derived # Valid pointer (upcast)
+echo @dynamic_cast<Base> &@sibling # Valid pointer (upcast)
+echo @dynamic_cast<Base> &@unrelated # "0" (@nullptr)
+echo @dynamic_cast<Derived> &@base # "0" (@nullptr)
+echo @dynamic_cast<Derived> &@derived # Valid pointer
+echo @dynamic_cast<Derived> &@further_derived # Valid pointer (upcast)
+echo @dynamic_cast<Derived> &@sibling # "0" (@nullptr)
+echo @dynamic_cast<Derived> &@unrelated # "0" (@nullptr)
+echo @dynamic_cast<FurtherDerived> &@base # "0" (@nullptr)
+echo @dynamic_cast<FurtherDerived> &@derived # "0" (@nullptr)
+echo @dynamic_cast<FurtherDerived> &@further_derived # Valid pointer
+echo @dynamic_cast<FurtherDerived> &@sibling # "0" (@nullptr)
+echo @dynamic_cast<FurtherDerived> &@unrelated # "0" (@nullptr)
+
+echo @dynamic_cast<@base.typeName> &@base # Valid pointer (using data member as cast target)
+echo @dynamic_cast<@base.typeName> &@derived # Valid pointer (using data member as cast target)
+echo @dynamic_cast<@base.typeName> &@unrelated # "0" (@nullptr) (using data member as cast target)
+
+echo @dynamic_cast<@base.echoTypeName> &@base # Valid pointer (using method output as cast target)
+echo @dynamic_cast<@base.echoTypeName> &@derived # Valid pointer (using method output as cast target)
+echo @dynamic_cast<@base.echoTypeName> &@unrelated # "0" (@nullptr) (using method output as cast target)
+
+echo @dynamic_cast<$shell_var> &@base # Valid pointer (using shell variable as cast target)
+echo @dynamic_cast<$shell_var> &@derived # Valid pointer (using shell variable as cast target)
+echo @dynamic_cast<$shell_var> &@unrelated # "0" (@nullptr) (using shell variable as cast target)
+
+echo @dynamic_cast<Base> "This string is not a valid pointer." # "0" (@nullptr)
+
+# Edge case: Valid pointer padded with garbage
+echo @dynamic_cast<Base> "&@base abc" # "0" (@nullptr)

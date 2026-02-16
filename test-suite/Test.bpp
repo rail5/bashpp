@@ -1,5 +1,4 @@
-@include_once "bpp_path.bpp"
-@include_once "detect-tty.bpp"
+@include_once "basic_meta.bpp"
 @include_once "TestStats.bpp"
 
 @class Test {
@@ -77,8 +76,18 @@
 			return
 		fi
 
+		# If BASH_VERSION >= 5.3,
+		# Then we should run each test twice:
+		# Once with -b 5.2, and once with -b 5.3
+		# And verify that the 5.3 output also matches the expected output
+		local baseTargetFlag duplicate=0
+		if [[ $majorVersion -gt 5 ]] || [[ $majorVersion -eq 5 && $minorVersion -ge 3 ]]; then
+			baseTargetFlag="-b 5.2"
+			duplicate=1
+		fi
+
 		local output="" outputLines="" expectedOutputLines=""
-		IFS= read -r -d '' output < <(BPP="@compiler.full_path" bin/bpp @this.sourceFile 2>&1; printf "\0")
+		IFS= read -r -d '' output < <(BPP="@compiler.full_path" bin/bpp $baseTargetFlag @this.sourceFile 2>&1; printf "\0")
 		
 		# Split the output into lines and split the expected output into lines
 		mapfile -t outputLines < <(echo "$output")
@@ -103,6 +112,31 @@
 			fi
 			i=$((i+1))
 		done
+
+		if [[ @this.status != "fail" ]] && [[ $duplicate -eq 1 ]]; then
+			# Run the test again with -b 5.3 and compare outputs
+			local output53="" output53Lines=""
+			IFS= read -r -d '' output53 < <(BPP="@compiler.full_path" bin/bpp -b 5.3 @this.sourceFile 2>&1; printf "\0")
+
+			mapfile -t output53Lines < <(echo "$output53")
+
+			if [[ "${#output53Lines[@]}" -ne "${#expectedOutputLines[@]}" ]]; then
+				echo "Output (5.3) and expected output have different number of lines. Test name: @this.name"
+				echo "Output (5.3) lines: ${#output53Lines[@]}, Expected output lines: ${#expectedOutputLines[@]}"
+				@this.status="fail"
+				@this.finishTest
+				return
+			fi
+
+			local j=0
+			while [[ "$j" -lt "${#output53Lines[@]}" ]]; do
+				if ! grep -P -x -- "${expectedOutputLines[$j]}" <<<"${output53Lines[$j]}" >/dev/null 2>&1; then
+					@this.status="fail"
+					break
+				fi
+				j=$((j+1))
+			done
+		fi
 
 		@this.finishTest
 	}

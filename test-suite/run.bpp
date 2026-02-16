@@ -1,6 +1,6 @@
 #!/usr/bin/env bpp
 
-@include_once "detect-tty.bpp"
+@include_once "basic_meta.bpp"
 @include_once "TestStats.bpp"
 @include_once "Test.bpp"
 @include_once "TestRunner.bpp"

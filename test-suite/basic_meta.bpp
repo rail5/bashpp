@@ -1,3 +1,4 @@
+# Find the Bash++ compiler
 @class bpp {
 	@public path="bin/bpp"
 	@public full_path="@(realpath @this.path)"
@@ -13,3 +14,14 @@
 }
 
 @bpp compiler
+
+# Get the locally-installed version of Bash
+majorVersion=@(awk -F. '{print $1}' <<< "$BASH_VERSION")
+minorVersion=@(awk -F. '{print $2}' <<< "$BASH_VERSION")
+
+# Set a flag if we are running in a tty
+in_tty=false
+
+if [[ -t 1 ]]; then
+	in_tty=true
+fi

@@ -36,7 +36,7 @@ function bpp____supershell() {
 	else
 		__temporaryStorage=$(< "/dev/fd/${!__supershellFD}")
 	fi
-	$__command 1>"/dev/fd/${!__supershellFD}" 2>/dev/null
+	$__command 1>"/dev/fd/${!__supershellFD}"
 	eval "$__outputVar=\$(< "/dev/fd/${!__supershellFD}")"
 	echo "${__temporaryStorage}">"/dev/fd/${!__supershellFD}"
 }

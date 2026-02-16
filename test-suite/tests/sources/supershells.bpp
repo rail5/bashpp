@@ -1,9 +1,24 @@
 if [[ "@(echo "expected output")" == "expected output" ]]; then
-	echo "Command matches expected output"
+	echo "Command matches expected output" # "Command matches expected output"
 fi
 
 for i in @(seq 1 10); do
-	echo "Iteration $i"
+	echo "Iteration $i" # "Iteration 1" ... "Iteration 10"
 done
 
-@(echo "echo hi")
+@(echo "echo hi") # "hi"
+
+# Identical behavior check:
+# Both subshell substitutions and Bash-5.3's native supershells treat stdout/stderr as follows:
+# - stdout is captured
+# - stderr is printed as normal
+# Bash++ supershells (even in 5.2-compatibility mode) should behave identically
+function something() {
+	>&2 echo "stderr"
+	echo "stdout"
+}
+
+echo "---" # "---"
+supershellCapture=@(something) # "stderr"
+echo "---" # "---"
+echo "Captured: '$supershellCapture'" # "Captured: 'stdout'"

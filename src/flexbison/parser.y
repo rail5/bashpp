@@ -1000,8 +1000,21 @@ datamember_declaration:
 		node->setEndPosition(@2.end.line, @2.end.column);
 
 		if (std::dynamic_pointer_cast<AST::ObjectInstantiation>($2) == nullptr) {
-			// ERROR: `@public @className` is not sufficient to declare a datamember
-			// TBD: Handle this error properly later
+			// Special-case: `@public @id`
+			// where `@id` has been given to us by ObjectInstantiation
+			// ObjectInstantiation should NOT capture that as one of its alternatives,
+			// but DOES (presently) in order to handle an ambiguity between object instantiations and object references in other contexts
+			// However:
+			// In the event that an ObjectInstantiation DOES capture `@id` alone (instead of `@id id`),
+			// it does not return it as a pointer to AST::ObjectInstantiation, but instead returns it
+			// as a pointer to AST::ObjectReference with the lvalue flag set.
+			// At the very least, this allows us to detect this case.
+			// This whole thing reeks of one massive HACK however, from the way we chose to resolve the ambiguity to handling it here.
+			// TODO(@rail5): Clean this up
+
+			// Error out and stop parsing
+			error(@2, "Invalid datamember declaration");
+			YYERROR;
 		}
 
 		node->setAccessModifier($1);

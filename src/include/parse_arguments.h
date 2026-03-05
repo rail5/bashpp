@@ -145,9 +145,6 @@ inline Arguments parse_arguments(int argc, char* argv[]) {
 				// If the file exists, verify write access; if it doesn't, verify write access on its parent directory
 				try {
 					if (std::filesystem::exists(args.output_file.value())) {
-						if (!std::filesystem::is_regular_file(args.output_file.value())) {
-							throw std::runtime_error("Output file '" + args.output_file.value() + "' is not a regular file");
-						}
 						if (access(args.output_file.value().c_str(), W_OK) != 0) {
 							throw std::runtime_error("No write permission for output file '" + args.output_file.value() + "'");
 						}

@@ -78,7 +78,7 @@
 
 		if [[ "$testOnlyCompileTimes" -eq 1 ]]; then
 			# Just compile the test and return
-			bin/bpp -o - @this.sourceFile &>/dev/null
+			bin/bpp -o /dev/null @this.sourceFile &>/dev/null
 			@this.status="untested"
 			@this.finishTest
 			return

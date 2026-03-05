@@ -62,7 +62,7 @@
 		@this.toPrimitive
 	}
 
-	@public @method run {
+	@public @method run testOnlyCompileTimes {
 		if [[ -z "@this.name" ]] || [[ -z "@this.sourceFile" ]]; then
 			echo "Test name and source file must be set before running the test."
 			exit 1
@@ -73,6 +73,14 @@
 				@this.stats.incrementUntestedTests
 			fi
 			@this.toPrimitive
+			return
+		fi
+
+		if [[ "$testOnlyCompileTimes" -eq 1 ]]; then
+			# Just compile the test and return
+			bin/bpp -o - @this.sourceFile &>/dev/null
+			@this.status="untested"
+			@this.finishTest
 			return
 		fi
 

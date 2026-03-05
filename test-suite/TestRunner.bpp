@@ -4,6 +4,9 @@
 	@public @TestStats* stats=@new TestStats
 	@public tests=() # Hack. Array of pointers
 
+	@public testOnlyCompileTimes=0 # If 1, we're not testing output correctness, just compile each test and then exit
+		# This is for benchmarking compiler performance
+
 	@public @method updateStats test {
 		@Test* test="$test"
 
@@ -55,7 +58,7 @@
 
 		for i in @(seq 0 $((@{#this.tests[@]} - 1))); do
 			@Test* test="@{this.tests[$i]}"
-			@test.run &
+			@test.run "@{this.testOnlyCompileTimes}" &
 			if [[ $((i % concurrentTests)) -eq 0 ]]; then
 				wait
 			fi
@@ -72,7 +75,7 @@
 		for i in @(seq 0 $((@{#this.tests[@]} - 1))); do
 			@Test* test="@{this.tests[$i]}"
 			if [[ "@test.getName" == "$name" ]]; then
-				@test.run
+				@test.run "@{this.testOnlyCompileTimes}"
 				return
 			fi
 		done

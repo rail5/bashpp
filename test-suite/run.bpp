@@ -7,7 +7,7 @@
 
 @TestRunner runner
 
-while getopts "lh" opt; do
+while getopts "lhc" opt; do
 	case $opt in
 		l)
 			for file in test-suite/tests/sources/*.bpp; do
@@ -17,11 +17,19 @@ while getopts "lh" opt; do
 			exit 0
 			;;
 		h)
-			echo "Usage: run.bpp [-l] [test1 test2 ...]"
+			echo "Usage: run.bpp [-c] [test1 test2 ...]"
 			echo "If no tests are specified, all tests will be run"
-			echo "  -l: List all tests"
-			echo "  -h: Display this help message"
+			echo "  -l: List all tests and exit"
+			echo "  -c: Just compile tests without running them. This is for benchmarking"
+			echo "      compiler performance."
+			echo "  -h: Display this help message and exit"
 			exit 0
+			;;
+		c)
+			# Just compile the tests, don't run them. This is for benchmarking compiler performance.
+			@runner.testOnlyCompileTimes=1
+			# Remove -c from the arguments so it doesn't interfere with test names
+			shift 1
 			;;
 	esac
 done

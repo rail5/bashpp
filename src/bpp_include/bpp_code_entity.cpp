@@ -26,7 +26,7 @@ void bpp_code_entity::add_code(const std::string& code, bool add_newline) {
 		return;
 	}
 	// If the code has a newline char, flush the nextline_buffer and the postline_buffer
-	size_t newline_index = code.find("\n");
+	size_t newline_index = code.find('\n');
 	if (newline_index != std::string::npos && add_newline && (newline_index == 0 || code[newline_index - 1] != '\\')) {
 		flush_nextline_buffer();
 
@@ -109,20 +109,20 @@ void bpp_code_entity::clear_all_buffers() {
  */
 bool bpp_code_entity::add_object(std::shared_ptr<bpp_object> object, bool make_local) {
 	std::string name = object->get_name();
-	if (objects.find(name) != objects.end() || local_objects.find(name) != local_objects.end()) {
+	if (objects.contains(name) || local_objects.contains(name)) {
 		return false;
 	}
 
 	// Verify that the type of the object is a valid class
 	std::string type = object->get_class()->get_name();
-	if (classes.find(type) == classes.end()) {
+	if (!classes.contains(type)) {
 		return false;
 	}
 
 	local_objects[name] = object;
 
 	// Add the code for the object
-	std::string object_code = "";
+	std::string object_code;
 
 	// Is it a pointer?
 	if (object->is_pointer()) {

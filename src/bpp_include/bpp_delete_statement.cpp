@@ -9,7 +9,7 @@
 namespace bpp {
 
 void bpp_delete_statement::set_object_to_delete(std::shared_ptr<bpp_object> object) {
-	this->object_to_delete = object;
+	this->object_to_delete = std::move(object);
 }
 
 std::shared_ptr<bpp_object> bpp_delete_statement::get_object_to_delete() const {

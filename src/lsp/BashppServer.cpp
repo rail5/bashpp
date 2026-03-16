@@ -120,11 +120,11 @@ bpp::BashppServer::BashppServer() {
 bpp::BashppServer::~BashppServer() {}
 
 void bpp::BashppServer::setInputStream(std::shared_ptr<std::istream> stream) {
-	input_stream = stream;
+	input_stream = std::move(stream);
 }
 
 void bpp::BashppServer::setOutputStream(std::shared_ptr<std::ostream> stream) {
-	output_stream = stream;
+	output_stream = std::move(stream);
 }
 
 void bpp::BashppServer::setSocketPath(const std::string& path) {
@@ -192,7 +192,7 @@ void bpp::BashppServer::mainLoop() {
 		log("Received header: ", header);
 
 		size_t content_length = 0;
-		if (header.find("Content-Length: ") == 0) {
+		if (header.starts_with("Content-Length: ")) {
 			content_length = std::stoul(header.substr(16));
 		}
 
@@ -252,7 +252,7 @@ void bpp::BashppServer::processRequest(const GenericRequestMessage& request) {
 	GenericResponseMessage response;
 	response.id = request.id;
 	std::function<GenericResponseMessage(const GenericRequestMessage&)> request_handler = invalidRequestHandler;
-	auto it = request_handlers.find(frozen::string(request.method.c_str()));
+	const auto* it = request_handlers.find(frozen::string(request.method));
 	if (it != request_handlers.end()) {
 		request_handler = std::bind(it->second, this, std::placeholders::_1); // Bind the method to the current instance
 	} else {
@@ -274,7 +274,7 @@ void bpp::BashppServer::processRequest(const GenericRequestMessage& request) {
 
 void bpp::BashppServer::processNotification(const GenericNotificationMessage& notification) {
 	std::function<void(const GenericNotificationMessage&)> notification_handler = invalidNotificationHandler;
-	auto it = notification_handlers.find(frozen::string(notification.method.c_str()));
+	const auto* it = notification_handlers.find(frozen::string(notification.method));
 	if (it != notification_handlers.end()) {
 		notification_handler = std::bind(it->second, this, std::placeholders::_1); // Bind the method to the current instance
 	} else {

@@ -15,7 +15,7 @@ namespace bpp {
  */
 bool bpp_entity::add_class(std::shared_ptr<bpp_class> class_) {
 	std::string name = class_->get_name();
-	if (classes.find(name) != classes.end()) {
+	if (classes.contains(name)) {
 		return false;
 	}
 	classes[name] = class_;
@@ -29,13 +29,13 @@ bool bpp_entity::add_class(std::shared_ptr<bpp_class> class_) {
  */
 bool bpp_entity::add_object(std::shared_ptr<bpp_object> object, bool make_local) {
 	std::string name = object->get_name();
-	if (objects.find(name) != objects.end()) {
+	if (objects.contains(name)) {
 		return false;
 	}
 
 	// Verify that the type of the object is a valid class
 	std::string type = object->get_class()->get_name();
-	if (classes.find(type) == classes.end()) {
+	if (!classes.contains(type)) {
 		return false;
 	}
 
@@ -73,7 +73,7 @@ std::weak_ptr<bpp::bpp_program> bpp_entity::get_containing_program() {
 }
 
 bool bpp_entity::set_containing_class(std::weak_ptr<bpp::bpp_class> containing_class) {
-	this->containing_class = containing_class;
+	this->containing_class = std::move(containing_class);
 	return true;
 }
 
@@ -134,7 +134,7 @@ void bpp_entity::inherit(std::shared_ptr<bpp_class> parent) {
 std::unordered_map<std::string, std::shared_ptr<bpp_class>> bpp_entity::get_classes() const {
 	std::unordered_map<std::string, std::shared_ptr<bpp_class>> classes;
 	classes.reserve(this->classes.size());
-	for (auto& c : this->classes) {
+	for (const auto& c : this->classes) {
 		classes[c.first] = c.second.lock();
 	}
 	return classes;
@@ -143,10 +143,10 @@ std::unordered_map<std::string, std::shared_ptr<bpp_class>> bpp_entity::get_clas
 std::unordered_map<std::string, std::shared_ptr<bpp_object>> bpp_entity::get_objects() const {
 	std::unordered_map<std::string, std::shared_ptr<bpp_object>> all_objects;
 	all_objects.reserve(objects.size() + local_objects.size());
-	for (auto& o : objects) {
+	for (const auto& o : objects) {
 		all_objects[o.first] = o.second.lock();
 	}
-	for (auto& o : local_objects) {
+	for (const auto& o : local_objects) {
 		all_objects[o.first] = o.second;
 	}
 	return all_objects;
@@ -162,11 +162,11 @@ std::shared_ptr<bpp::bpp_class> bpp_entity::get_class(const std::string& name) {
 }
 
 std::shared_ptr<bpp::bpp_object> bpp_entity::get_object(const std::string& name) {
-	if (local_objects.find(name) != local_objects.end()) {
+	if (local_objects.contains(name)) {
 		return local_objects[name];
 	}
 
-	if (objects.find(name) != objects.end()) {
+	if (objects.contains(name)) {
 		return objects[name].lock();
 	}
 

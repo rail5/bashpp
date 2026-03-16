@@ -161,7 +161,7 @@ code_segment generate_method_call_code(
 
 	// Is the method virtual?
 	if (assumed_method->is_virtual() && !force_static_reference) {
-		return _generate_virtual_method_call_code(reference_code, method_name, program);
+		return _generate_virtual_method_call_code(reference_code, method_name, std::move(program));
 	} else {
 		std::string class_name = assumed_class->get_name();
 		auto class_containing_the_method = assumed_method->get_containing_class().lock();
@@ -204,7 +204,7 @@ code_segment generate_destructor_call_code(
 
 	// All destructors are virtual
 	if (!force_static_reference) {
-		return _generate_virtual_method_call_code(reference_code, "__destructor", program);
+		return _generate_virtual_method_call_code(reference_code, "__destructor", std::move(program));
 	} else {
 		std::string class_name = assumed_class->get_name();
 		auto class_containing_the_destructor = destructor_method->get_containing_class().lock();
@@ -300,7 +300,7 @@ code_segment generate_new_code(
 			}
 		} else if (dm->is_pointer()) {
 			std::string default_value = dm->get_default_value();
-			std::string default_value_preface = "";
+			std::string default_value_preface;
 			if (!default_value.empty() && default_value[0] == '$') {
 				default_value_preface = "\\";
 			}
@@ -589,7 +589,7 @@ entity_reference resolve_reference_impl(
 
 	if (!self_reference) {
 		// Get the first object
-		std::string first_object_name = ids.front();
+		const std::string& first_object_name = ids.front();
 		object = context->get_object(first_object_name);
 		result.entity = object;
 
@@ -598,8 +598,8 @@ entity_reference resolve_reference_impl(
 				error_token = nds.at(0);
 			}
 			result.error = entity_reference::reference_error{
-				"Object not found: " + first_object_name,
-				error_token
+				.message="Object not found: " + first_object_name,
+				.token=error_token
 			};
 			return result;
 		}
@@ -622,8 +622,8 @@ entity_reference resolve_reference_impl(
 				error_token = nds.at(0);
 			}
 			result.error = entity_reference::reference_error{
-				derived_class_name + " has no parent class to reference with @super",
-				error_token
+				.message=derived_class_name + " has no parent class to reference with @super",
+				.token=error_token
 			};
 			return result;
 		}
@@ -670,22 +670,22 @@ entity_reference resolve_reference_impl(
 				break;
 			case bpp::reference_type::ref_primitive:
 				result.error = entity_reference::reference_error{
-					"Unexpected identifier after primitive object reference",
-					error_token
+					.message="Unexpected identifier after primitive object reference",
+					.token=error_token
 				};
 				return result;
 			case bpp::reference_type::ref_method:
 				result.error = entity_reference::reference_error{
-					"Unexpected identifier after method reference",
-					error_token
+					.message="Unexpected identifier after method reference",
+					.token=error_token
 				};
 				return result;
 		}
 
-		if (ids.front().find("__") != std::string::npos) {
+		if (ids.front().contains("__")) {
 			result.error = entity_reference::reference_error{
-				"Invalid identifier: " + ids.front() + "\nBash++ identifiers cannot contain double underscores",
-				error_token
+				.message="Invalid identifier: " + ids.front() + "\nBash++ identifiers cannot contain double underscores",
+				.token=error_token
 			};
 			return result;
 		}
@@ -698,8 +698,8 @@ entity_reference resolve_reference_impl(
 
 		if (datamember == bpp::inaccessible_datamember || method == bpp::inaccessible_method) {
 			result.error = entity_reference::reference_error{
-				ids.front() + " is inaccessible in this context",
-				error_token
+				.message=ids.front() + " is inaccessible in this context",
+				.token=error_token
 			};
 			return result;
 		}
@@ -744,8 +744,8 @@ entity_reference resolve_reference_impl(
 			}
 		} else {
 			result.error = entity_reference::reference_error{
-				result.entity->get_name() + " has no member named " + ids.front(),
-				error_token
+				.message=result.entity->get_name() + " has no member named " + ids.front(),
+				.token=error_token
 			};
 			return result;
 		}

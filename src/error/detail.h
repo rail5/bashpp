@@ -29,12 +29,12 @@ consteval bool starts_with(std::string_view str, std::string_view prefix) {
 }
 
 consteval bool is_enter_context(std::string_view function_name) {
-	if (function_name.find("::enter") != std::string_view::npos) return true;
+	if (function_name.contains("::enter")) return true;
 	return starts_with(unqualified_function_name(function_name), "enter");
 }
 
 consteval bool is_exit_context(std::string_view function_name) {
-	if (function_name.find("::exit") != std::string_view::npos) return true;
+	if (function_name.contains("::exit")) return true;
 	return starts_with(unqualified_function_name(function_name), "exit");
 }
 

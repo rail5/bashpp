@@ -34,8 +34,8 @@ volatile int bpp_exit_code = 0;
 
 int main(int argc, char* argv[]) {
 	// Trap signals
-	std::signal(SIGINT, signal_handler);
-	std::signal(SIGTERM, signal_handler);
+	(void)std::signal(SIGINT, signal_handler);
+	(void)std::signal(SIGTERM, signal_handler);
 
 	std::shared_ptr<std::istream> input_stream;
 	std::shared_ptr<std::ostream> output_stream;

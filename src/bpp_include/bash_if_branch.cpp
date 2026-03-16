@@ -11,7 +11,7 @@ namespace bpp {
 bash_if_branch::bash_if_branch() {}
 
 void bash_if_branch::set_if_statement(std::shared_ptr<bpp::bash_if> if_statement) {
-	this->if_statement = if_statement;
+	this->if_statement = std::move(if_statement);
 }
 
 std::shared_ptr<bpp::bash_if> bash_if_branch::get_if_statement() const {

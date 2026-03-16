@@ -50,8 +50,9 @@ class Token {
 		operator T() const {
 			return value;
 		}
-		void operator=(const T& new_value) {
+		Token& operator=(const T& new_value) {
 			value = new_value;
+			return *this;
 		}
 		void operator+=(const T& append_value) {
 			value += append_value;

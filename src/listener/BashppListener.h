@@ -105,7 +105,7 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 		 * @var arguments
 		 * @brief Command-line arguments to pass to the compiled program if run_on_exit is true
 		 */
-		std::vector<char*> arguments = {};
+		std::vector<char*> arguments;
 
 		std::shared_ptr<bpp::bpp_program> program = std::make_shared<bpp::bpp_program>();
 

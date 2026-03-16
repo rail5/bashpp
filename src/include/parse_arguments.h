@@ -16,7 +16,6 @@
 #include <unistd.h>
 #include <algorithm>
 
-#include <include/FixedString.h>
 #include <include/BashVersion.h>
 #include <include/xgetopt.h>
 

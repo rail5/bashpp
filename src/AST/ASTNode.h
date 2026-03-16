@@ -34,6 +34,7 @@ class ASTNode {
 
 	public:
 		ASTNode() = default;
+		virtual ~ASTNode() = default;
 		
 		virtual constexpr AST::NodeType getType() const = 0;
 

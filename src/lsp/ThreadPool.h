@@ -29,7 +29,7 @@ class ThreadPool {
 		std::condition_variable condition;
 		bool stop;
 	public:
-		ThreadPool(size_t threads = std::thread::hardware_concurrency());
+		explicit ThreadPool(size_t threads = std::thread::hardware_concurrency());
 		~ThreadPool();
 
 		/**

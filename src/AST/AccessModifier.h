@@ -5,10 +5,11 @@
  */
 
 #pragma once
+#include <cstdint>
 
 namespace AST {
 
-enum class AccessModifier {
+enum class AccessModifier : uint8_t {
 	PUBLIC,
 	PROTECTED,
 	PRIVATE

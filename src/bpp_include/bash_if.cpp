@@ -11,7 +11,7 @@ namespace bpp {
 bash_if::bash_if() {}
 
 void bash_if::new_branch() {
-	conditional_branches.push_back(std::make_pair("", ""));
+	conditional_branches.emplace_back("", "");
 }
 
 void bash_if::add_condition_code(const std::string& condition_code) {

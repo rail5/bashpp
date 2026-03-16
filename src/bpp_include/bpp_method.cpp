@@ -25,18 +25,18 @@ bool bpp_method::add_object_as_parameter(std::shared_ptr<bpp_object> object) {
 	std::string name = object->get_name();
 	
 	// Verify the object's name isn't already in use by another object
-	if (objects.find(name) != objects.end() || local_objects.find(name) != local_objects.end()) {
+	if (objects.contains(name) || local_objects.contains(name)) {
 		return false;
 	}
 
 	// Verify the object's name doesn't conflict with a class name
-	if (classes.find(name) != classes.end()) {
+	if (classes.contains(name)) {
 		return false;
 	}
 
 	// Verify that the type of the object is a valid class
 	std::string type = object->get_class()->get_name();
-	if (classes.find(type) == classes.end() && type != this->containing_class.lock()->get_name()) {
+	if (!classes.contains(type) && type != this->containing_class.lock()->get_name()) {
 		return false;
 	}
 	object->set_pointer(true);
@@ -102,7 +102,7 @@ void bpp_method::set_last_override(const std::string& class_name) {
 }
 
 void bpp_method::set_overridden_method(std::weak_ptr<bpp_method> method) {
-	overridden_method = method;
+	overridden_method = std::move(method);
 }
 
 std::vector<std::shared_ptr<bpp_method_parameter>> bpp_method::get_parameters() const {
@@ -151,20 +151,20 @@ void bpp_method::destruct_local_objects(std::shared_ptr<bpp_program> program) {
 
 bool bpp_method::add_object(std::shared_ptr<bpp_object> object, bool make_local) {
 	std::string name = object->get_name();
-	if (objects.find(name) != objects.end() || local_objects.find(name) != local_objects.end()) {
+	if (objects.contains(name) || local_objects.contains(name)) {
 		return false;
 	}
 
 	// Verify that the type of the object is a valid class
 	std::string type = object->get_class()->get_name();
-	if (classes.find(type) == classes.end()) {
+	if (!classes.contains(type)) {
 		return false;
 	}
 
 	local_objects[name] = object;
 
 	// Add the code for the object
-	std::string object_code = "";
+	std::string object_code;
 
 	// Is it a pointer?
 	if (object->is_pointer()) {

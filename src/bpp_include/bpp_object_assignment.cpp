@@ -27,11 +27,11 @@ void bpp_object_assignment::set_rvalue_nonprimitive(bool is_nonprimitive) {
 }
 
 void bpp_object_assignment::set_lvalue_object(std::shared_ptr<bpp_entity> object) {
-	lvalue_object = object;
+	lvalue_object = std::move(object);
 }
 
 void bpp_object_assignment::set_rvalue_object(std::shared_ptr<bpp_entity> object) {
-	rvalue_object = object;
+	rvalue_object = std::move(object);
 }
 
 void bpp_object_assignment::set_adding(bool is_adding) {

@@ -38,7 +38,7 @@ class BashppParser {
 		std::string input_file_path = "<stdin>";
 		std::vector<std::string> include_chain;
 		
-		enum class InputType {
+		enum class InputType : uint8_t {
 			FILEPATH,
 			FILEPTR,
 			STRING_CONTENTS

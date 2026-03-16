@@ -160,7 +160,7 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::_parse_program(const std::string&
 		AST::BashppParser parser;
 		parser.setUTF16Mode(utf16_mode);
 
-		if (unsaved_changes.find(file_path) != unsaved_changes.end()) {
+		if (unsaved_changes.contains(file_path)) {
 			parser.setInputFromStringContents(unsaved_changes[file_path]);
 		} else {
 			parser.setInputFromFilePath(file_path);
@@ -237,7 +237,7 @@ bool ProgramPool::has_program(const std::string& file_path) {
 	// Scan the SNAPSHOT for the program
 	Snapshot snapshot_copy = load_snapshot();
 	const auto& program_indices_snapshot = snapshot_copy.program_indices_snapshot;
-	return program_indices_snapshot.find(file_path) != program_indices_snapshot.end();
+	return program_indices_snapshot.contains(file_path);
 }
 
 std::shared_ptr<bpp::bpp_program> ProgramPool::re_parse_program(const std::string& file_path) {
@@ -292,7 +292,7 @@ void ProgramPool::close_file(const std::string& file_path) {
 				size_t index = program_it->second;
 				bool program_still_has_some_files_open = false;
 				for (const auto& source_file : programs[index]->get_source_files()) {
-					if (open_files.find(source_file) != open_files.end()) {
+					if (open_files.contains(source_file)) {
 						program_still_has_some_files_open = true;
 						break; // At least one file is still open, so we don't remove the program
 					}

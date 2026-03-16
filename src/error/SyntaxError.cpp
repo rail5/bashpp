@@ -50,7 +50,7 @@ void print_syntax_error_or_warning(
 	std::string color_orange = is_tty ? "\033[0;33m" : "";
 	std::string color_reset = is_tty ? "\033[0m" : "";
 
-	std::setlocale(LC_ALL, "");
+	(void)std::setlocale(LC_ALL, "");
 
 	// Print the source file and line/column number
 	// Internally, we 0-index lines and columns, but for user display we'll 1-index them

@@ -21,20 +21,20 @@
 
 namespace bpp {
 
-enum bpp_scope {
+enum bpp_scope : uint8_t {
 	SCOPE_PUBLIC,
 	SCOPE_PROTECTED,
 	SCOPE_PRIVATE,
 	SCOPE_INACCESSIBLE
 };
 
-enum reference_type {
+enum reference_type : uint8_t {
 	ref_primitive,
 	ref_method,
 	ref_object
 };
 
-enum diagnostic_type {
+enum diagnostic_type : uint8_t {
 	DIAGNOSTIC_ERROR,
 	DIAGNOSTIC_WARNING,
 	DIAGNOSTIC_INFO,
@@ -147,9 +147,7 @@ inline bool is_valid_identifier(const std::string& identifier) {
 	}
 
 	// Verify it doesn't contain two consecutive underscores
-	if (identifier.find("__") != std::string::npos) {
-		return false;
-	}
+	if (identifier.contains("__")) return false;
 
 	// Verify it starts with a letter or underscore, and contains only letters, digits, and underscores
 	if (!isalpha(identifier[0]) && identifier[0] != '_') {
@@ -185,7 +183,7 @@ struct SymbolPosition {
  */
 class bpp_entity {
 	protected:
-		std::string name = "";
+		std::string name;
 		/**
 		 * @var classes
 		 * @brief A map of class names to class objects within this entity
@@ -263,8 +261,8 @@ class bpp_entity {
 class bpp_code_entity : public bpp_entity {
 	protected:
 		std::shared_ptr<std::ostream> code = std::make_shared<std::ostringstream>();
-		std::string nextline_buffer = "";
-		std::string postline_buffer = "";
+		std::string nextline_buffer;
+		std::string postline_buffer;
 		bool buffers_flushed = false;
 
 		/**
@@ -391,7 +389,7 @@ class bpp_string : public bpp_code_entity {
  */
 class bash_command_sequence : public bpp_string {
 	protected:
-		std::string joined_code = "";
+		std::string joined_code;
 		bool contains_multiple_commands = false;
 
 		bool perfect_forwarding = false;
@@ -506,10 +504,10 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
  */
 class bpp_object : public bpp_entity {
 	protected:
-		std::string address = "";
-		std::string assignment_value = "";
-		std::string pre_access_code = "";
-		std::string post_access_code = "";
+		std::string address;
+		std::string assignment_value;
+		std::string pre_access_code;
+		std::string post_access_code;
 		bool m_is_pointer = false;
 		std::shared_ptr<bpp::bpp_object> copy_from = nullptr;
 	public:
@@ -541,7 +539,7 @@ class bpp_object : public bpp_entity {
  */
 class bpp_datamember : public bpp_object {
 	private:
-		std::string default_value = "";
+		std::string default_value;
 		bpp_scope scope = SCOPE_PRIVATE;
 		bool array = false;
 	public:
@@ -724,7 +722,7 @@ class bash_while_or_until_condition : public bpp_string {
  */
 class bash_if : public bpp_string {
 	private:
-		std::vector<std::pair<std::string, std::string>> conditional_branches = {};
+		std::vector<std::pair<std::string, std::string>> conditional_branches;
 	public:
 		bash_if();
 
@@ -769,7 +767,7 @@ class bash_if_branch : public bpp_code_entity {
  */
 class bash_case : public bpp_string {
 	private:
-		std::string cases = "";
+		std::string cases;
 	public:
 		bash_case();
 
@@ -789,7 +787,7 @@ class bash_case : public bpp_string {
  */
 class bash_case_pattern : public bpp_code_entity {
 	private:
-		std::string pattern = "";
+		std::string pattern;
 		std::shared_ptr<bpp::bash_case> containing_case;
 	public:
 		bash_case_pattern();
@@ -812,9 +810,9 @@ class bash_case_pattern : public bpp_code_entity {
  */
 class bash_for_or_select : public bpp_code_entity {
 	private:
-		std::string header_pre_code = "";
-		std::string header_post_code = "";
-		std::string header_code = "";
+		std::string header_pre_code;
+		std::string header_post_code;
+		std::string header_code;
 	public:
 		bash_for_or_select();
 
@@ -939,8 +937,8 @@ class bpp_value_assignment : public bpp_string {
  */
 class bpp_object_assignment : public bpp_string {
 	private:
-		std::string lvalue = "";
-		std::string rvalue = "";
+		std::string lvalue;
+		std::string rvalue;
 		bool lvalue_nonprimitive = false;
 		bool rvalue_nonprimitive = false;
 		std::shared_ptr<bpp_entity> lvalue_object;
@@ -979,7 +977,7 @@ class bpp_object_assignment : public bpp_string {
 class bpp_object_reference : public bpp_string {
 	private:
 		bpp::reference_type reference_type;
-		std::string array_index = "";
+		std::string array_index;
 	public:	
 		bpp_object_reference();
 

@@ -6,8 +6,10 @@
 
 #pragma once
 
+#include <cstdint>
+
 namespace AST {
-enum class NodeType : int {
+enum class NodeType : uint8_t {
 	Program = 0,
 	ArrayAssignment,
 	ArrayIndex,

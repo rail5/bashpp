@@ -27,7 +27,7 @@ bool bpp_program::set_containing_class(std::weak_ptr<bpp_class> containing_class
 }
 
 void bpp_program::set_output_stream(std::shared_ptr<std::ostream> output_stream) {
-	code = output_stream;
+	code = std::move(output_stream);
 }
 
 std::shared_ptr<bpp::bpp_class> bpp_program::get_primitive_class() const {
@@ -50,7 +50,7 @@ std::weak_ptr<bpp::bpp_program> bpp_program::get_containing_program() {
  */
 bool bpp_program::prepare_class(std::shared_ptr<bpp_class> class_) {
 	std::string name = class_->get_name();
-	if (classes.find(name) != classes.end()) {
+	if (classes.contains(name)) {
 		return false; // Class already exists
 	}
 	classes[name] = class_;
@@ -67,11 +67,11 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	std::string name = class_->get_name();
 
 	// Verify that the class has been prepared
-	if (classes.find(name) == classes.end()) {
+	if (!classes.contains(name)) {
 		return false;
 	}
 
-	std::string class_code = "";
+	std::string class_code;
 
 	// Declare the vTable
 	std::string class_vTable = "declare -A bpp__" + name + "____vTable\n";
@@ -122,7 +122,7 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 }
 
 void bpp_program::set_include_paths(std::shared_ptr<std::vector<std::string>> paths) {
-	include_paths = paths;
+	include_paths = std::move(paths);
 }
 
 std::shared_ptr<std::vector<std::string>> bpp_program::get_include_paths() const {
@@ -243,6 +243,7 @@ std::shared_ptr<bpp::bpp_entity> bpp_program::get_active_entity(
 
 std::vector<std::string> bpp_program::get_source_files() const {
 	std::vector<std::string> files;
+	files.reserve(entity_maps.size());
 	for (const auto& pair : entity_maps) {
 		files.push_back(pair.first);
 	}
@@ -256,20 +257,20 @@ std::string bpp_program::get_main_source_file() const {
 void bpp_program::set_main_source_file(const std::string& file) {
 	main_source_file = file;
 	// Create an empty entity map for the main source file if it doesn't exist
-	if (entity_maps.find(file) == entity_maps.end()) {
+	if (!entity_maps.contains(file)) {
 		entity_maps[file] = EntityMap();
 	}
 }
 
 void bpp_program::add_source_file(const std::string& file) {
 	// Create an empty entity map for the source file if it doesn't exist
-	if (entity_maps.find(file) == entity_maps.end()) {
+	if (!entity_maps.contains(file)) {
 		entity_maps[file] = EntityMap();
 	}
 }
 
 void bpp_program::set_source_file_ast(const std::string& file, std::shared_ptr<AST::Program> ast) {
-	source_file_asts[file] = ast;
+	source_file_asts[file] = std::move(ast);
 }
 
 std::shared_ptr<AST::Program> bpp_program::get_source_file_ast(const std::string& file) const {

@@ -15,7 +15,7 @@ void bpp_value_assignment::set_nonprimitive_assignment(bool is_nonprimitive) {
 }
 
 void bpp_value_assignment::set_nonprimitive_object(std::shared_ptr<bpp_entity> object) {
-	nonprimitive_object = object;
+	nonprimitive_object = std::move(object);
 }
 
 void bpp_value_assignment::set_lvalue_nonprimitive(bool is_nonprimitive) {

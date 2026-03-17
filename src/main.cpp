@@ -68,9 +68,6 @@ int main(int argc, char* argv[]) {
 		run_on_exit = true; // If no output file was given, we run the program on exit
 	}
 
-	FILE* input_file = stdin;
-	std::string input_file_path = "<stdin>";
-
 	if (args.input_file.has_value()) {
 		// Verify that the file exists, is readable, and is a regular file
 		if (!std::filesystem::exists(args.input_file.value())) {
@@ -81,44 +78,32 @@ int main(int argc, char* argv[]) {
 			std::cerr << program_name << ": Error: Source file '" << args.input_file.value() << "' is not a regular file" << std::endl;
 			return 1;
 		}
-		input_file = fopen(args.input_file.value().c_str(), "r");
-		input_file_path = args.input_file.value();
-		if (input_file == nullptr) {
-			std::cerr << program_name << ": Error: Could not open source file '" << args.input_file.value() << "'" << std::endl;
-			return 1;
-		}
-	}
-
-	if (input_file == nullptr) {
-		std::cerr << program_name << ": Error: Could not open source file" << std::endl;
-		return 1;
 	}
 
 	/* If the user didn't provide input, let them know, rather than just hang waiting for cin */
-	if (input_file == stdin && isatty(fileno(stdin))) {
+	if (!args.input_file.has_value() && isatty(fileno(stdin))) {
 		std::cerr << program_name << " " << bpp_compiler_version << std::endl
 			<< help_intro << OptionParser.getHelpString();
-		if (input_file != nullptr && input_file != stdin) {
-			fclose(input_file);
-		}
 		return 1;
 	}
 
 	std::string full_path;
 	char resolved_path[PATH_MAX];
-	if (realpath(args.input_file.value_or("").c_str(), resolved_path) == nullptr) {
-		if (!args.input_file.has_value()) {
-			full_path = "<stdin>";
-		} else {
-			std::cerr << "Error: Could not get full path of source file '" << args.input_file.value() << "'" << std::endl;
-			return 1;
-		}
+	if (!args.input_file.has_value()) {
+		full_path = "<stdin>";
+	} else if (realpath(args.input_file.value().c_str(), resolved_path) == nullptr) {
+		std::cerr << "Error: Could not get full path of source file '" << args.input_file.value() << "'" << std::endl;
+		return 1;
 	} else {
 		full_path = std::string(resolved_path);
 	}
 
 	AST::BashppParser parser;
-	parser.setInputFromFilePtr(input_file, input_file_path);
+	if (!args.input_file.has_value()) {
+		parser.setInputFromFilePtr(stdin, "<stdin>");
+	} else {
+		parser.setInputFromFilePath(full_path);
+	}
 	parser.setDisplayLexerOutput(args.display_tokens);
 	
 	auto program = parser.program();

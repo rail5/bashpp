@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <cstdio>
 #include <memory>
 #include <variant>
 #include <stack>
@@ -48,6 +49,7 @@ class BashppParser {
 		std::string input_string_contents;
 
 		FILE* input_file = nullptr;
+		std::unique_ptr<FILE, int(*)(FILE*)> owned_input_file{nullptr, &fclose};
 
 		void _initialize_lexer();
 		void _destroy_lexer();

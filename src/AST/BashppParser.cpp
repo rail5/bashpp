@@ -38,14 +38,16 @@ void AST::BashppParser::_initialize_lexer() {
 	switch (input_type) {
 		case InputType::FILEPATH: {
 			std::string file_path = std::get<std::string>(input_source);
-			input_file = fopen(file_path.c_str(), "r");
-			if (input_file == nullptr) {
+				owned_input_file = std::unique_ptr<FILE, int(*)(FILE*)>(fopen(file_path.c_str(), "r"), &fclose);
+				input_file = owned_input_file.get();
+				if (input_file == nullptr) {
 				throw std::runtime_error("Could not open source file: " + file_path);
 			}
 			yyset_in(input_file, lexer);
 			break;
 		}
 		case InputType::FILEPTR: {
+				owned_input_file.reset();
 			input_file = std::get<FILE*>(input_source);
 			if (input_file == nullptr) {
 				throw bpp::ErrorHandling::InternalError("Input FILE* is null");
@@ -56,7 +58,15 @@ void AST::BashppParser::_initialize_lexer() {
 		case InputType::STRING_CONTENTS: {
 			input_string_contents = std::get<std::string>(input_source);
 			// Create a temporary FILE* from the string contents
-			input_file = fmemopen(reinterpret_cast<void*>(const_cast<char*>(input_string_contents.c_str())), input_string_contents.size(), "r");
+			owned_input_file = std::unique_ptr<FILE, int(*)(FILE*)>(
+				fmemopen(
+					reinterpret_cast<void*>(const_cast<char*>(input_string_contents.c_str())),
+					input_string_contents.size(),
+					"r"
+				),
+				&fclose
+			);
+			input_file = owned_input_file.get();
 			if (input_file == nullptr) {
 				throw bpp::ErrorHandling::InternalError("Could not create FILE* from string contents");
 			}
@@ -72,11 +82,7 @@ void AST::BashppParser::_initialize_lexer() {
 
 void AST::BashppParser::_destroy_lexer() {
 	destroyLexer(lexer);
-
-	// Don't fclose() if:
-	// a. We didn't **fopen()** (no FILE* is open)
-	// b. **We** didn't fopen() (caller owns the FILE*)
-	if (input_file != nullptr && input_type != InputType::FILEPTR) fclose(input_file);
+	owned_input_file.reset();
 	input_file = nullptr;
 }
 

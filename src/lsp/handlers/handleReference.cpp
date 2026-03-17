@@ -7,7 +7,7 @@
 #include <lsp/BashppServer.h>
 #include <lsp/generated/ReferencesRequest.h>
 #include <lsp/include/resolve_entity.h>
-
+#include <lsp/include/validateUri.h>
 
 GenericResponseMessage bpp::BashppServer::handleReferences(const GenericRequestMessage& request) {
 	ReferencesRequestResponse response;
@@ -15,15 +15,13 @@ GenericResponseMessage bpp::BashppServer::handleReferences(const GenericRequestM
 	ReferencesRequest reference_request = request.toSpecific<ReferenceParams>();
 	std::string uri = reference_request.params.textDocument.uri;
 
-	// Verify the URI starts with "file://"
-	if (uri.find("file://") != 0) {
-		log("Ignoring request to find references for non-local file: ", uri);
+	try {
+		uri = validateUri(reference_request.params.textDocument.uri);
+	} catch (const std::exception& e) {
+		log("Invalid URI in References request: ", e.what());
 		response.error.code = static_cast<int>(ErrorCodes::InvalidParams);
-		response.error.message = "Invalid URI: " + uri;
+		response.error.message = "Invalid URI: " + reference_request.params.textDocument.uri;
 		return response;
-	} else {
-		// Strip the "file://" prefix
-		uri = uri.substr(7);
 	}
 
 	std::shared_ptr<bpp::bpp_entity> entity = resolve_entity_at(

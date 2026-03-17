@@ -6,6 +6,7 @@
 
 #include <lsp/BashppServer.h>
 #include <lsp/generated/DidCloseTextDocumentNotification.h>
+#include <lsp/include/validateUri.h>
 
 void bpp::BashppServer::handleDidClose(const GenericNotificationMessage& request) {
 	DidCloseTextDocumentNotification did_close_notification = request.toSpecific<DidCloseTextDocumentParams>();
@@ -13,13 +14,11 @@ void bpp::BashppServer::handleDidClose(const GenericNotificationMessage& request
 
 	log("Received DidClose notification for URI: ", uri);
 
-	// Ensure the URI starts with "file://"
-	if (uri.find("file://") != 0) {
-		log("Ignoring request to close non-local file: ", uri);
+	try {
+		uri = validateUri(did_close_notification.params.textDocument.uri);
+	} catch (const std::exception& e) {
+		log("Invalid URI in DidClose notification: ", e.what());
 		return;
-	} else {
-		// Strip the "file://" prefix
-		uri = uri.substr(7);
 	}
 
 	// If we've stored unsaved changes for this URI, we can remove them

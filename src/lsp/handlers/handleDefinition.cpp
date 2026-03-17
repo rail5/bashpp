@@ -7,6 +7,7 @@
 #include <lsp/BashppServer.h>
 #include <lsp/generated/DefinitionRequest.h>
 #include <lsp/include/resolve_entity.h>
+#include <lsp/include/validateUri.h>
 
 GenericResponseMessage bpp::BashppServer::handleDefinition(const GenericRequestMessage& request) {
 	DefinitionRequest definition_request = request.toSpecific<DefinitionParams>();
@@ -14,15 +15,14 @@ GenericResponseMessage bpp::BashppServer::handleDefinition(const GenericRequestM
 	response.id = request.id;
 
 	std::string uri = definition_request.params.textDocument.uri;
-	// Verify the URI starts with "file://"
-	if (uri.find("file://") != 0) {
-		log("Ignoring request to go to definition for non-local file: ", uri);
+
+	try {
+		uri = validateUri(definition_request.params.textDocument.uri);
+	} catch (const std::exception& e) {
+		log("Invalid URI in definition request: ", e.what());
 		response.error.code = static_cast<int>(ErrorCodes::InvalidParams);
-		response.error.message = "Invalid URI: " + uri;
+		response.error.message = "Invalid URI: " + definition_request.params.textDocument.uri;
 		return response;
-	} else {
-		// Strip the "file://" prefix
-		uri = uri.substr(7);
 	}
 
 	Position position = definition_request.params.position;

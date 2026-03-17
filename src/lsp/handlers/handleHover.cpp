@@ -7,6 +7,7 @@
 #include <lsp/BashppServer.h>
 #include <lsp/generated/HoverRequest.h>
 #include <lsp/include/resolve_entity.h>
+#include <lsp/include/validateUri.h>
 
 GenericResponseMessage bpp::BashppServer::handleHover(const GenericRequestMessage& request) {
 	HoverRequestResponse response;
@@ -17,14 +18,12 @@ GenericResponseMessage bpp::BashppServer::handleHover(const GenericRequestMessag
 
 	log("Received Hover request for URI: ", uri, ", Position: (", position.line, ", ", position.character, ")");
 
-	// Verify the URI starts with "file://"
-	if (uri.find("file://") != 0) {
-		log("Ignoring request to provide hover for non-local file: ", uri);
+	try {
+		uri = validateUri(hover_request.params.textDocument.uri);
+	} catch (const std::exception& e) {
+		log("Invalid URI in Hover request: ", e.what());
 		response.result = nullptr;
 		return response;
-	} else {
-		// Strip the "file://" prefix
-		uri = uri.substr(7);
 	}
 
 	std::shared_ptr<bpp::bpp_program> program = program_pool.get_program(uri, true); // Jump the queue and get the program immediately

@@ -6,6 +6,7 @@
 
 #include <lsp/BashppServer.h>
 #include <lsp/generated/DidChangeTextDocumentNotification.h>
+#include <lsp/include/validateUri.h>
 
 void bpp::BashppServer::handleDidChange(const GenericNotificationMessage& request) {
 	DidChangeTextDocumentNotification did_change_notification = request.toSpecific<DidChangeTextDocumentParams>();
@@ -13,13 +14,11 @@ void bpp::BashppServer::handleDidChange(const GenericNotificationMessage& reques
 
 	log("Received DidChange notification for URI: ", uri);
 
-	// Ensure the URI starts with "file://"
-	if (uri.find("file://") != 0) {
-		log("Ignoring request to re-parse non-local file: ", uri);
+	try {
+		uri = validateUri(did_change_notification.params.textDocument.uri);
+	} catch (const std::exception& e) {
+		log("Invalid URI in DidChange notification: ", e.what());
 		return;
-	} else {
-		// Strip the "file://" prefix
-		uri = uri.substr(7);
 	}
 
 	if (did_change_notification.params.contentChanges.size() != 1) {

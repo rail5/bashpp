@@ -7,22 +7,21 @@
 #include <lsp/BashppServer.h>
 #include <lsp/generated/RenameRequest.h>
 #include <lsp/include/resolve_entity.h>
+#include <lsp/include/validateUri.h>
 
 GenericResponseMessage bpp::BashppServer::handleRename(const GenericRequestMessage& request) {
 	RenameRequestResponse response;
 	response.id = request.id;
 	RenameRequest rename_request = request.toSpecific<RenameParams>();
 	std::string uri = rename_request.params.textDocument.uri;
-	
-	// Verify the URI starts with "file://"
-	if (uri.find("file://") != 0) {
-		log("Ignoring request to handle rename for non-local file: ", uri);
+
+	try {
+		uri = validateUri(rename_request.params.textDocument.uri);
+	} catch (const std::exception& e) {
+		log("Invalid URI in Rename request: ", e.what());
 		response.error.code = static_cast<int>(ErrorCodes::InvalidParams);
-		response.error.message = "Invalid URI: " + uri;
+		response.error.message = "Invalid URI: " + rename_request.params.textDocument.uri;
 		return response;
-	} else {
-		// Strip the "file://" prefix
-		uri = uri.substr(7);
 	}
 
 	std::shared_ptr<bpp::bpp_entity> entity = resolve_entity_at(

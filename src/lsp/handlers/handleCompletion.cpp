@@ -7,6 +7,7 @@
 #include <lsp/BashppServer.h>
 #include <lsp/generated/CompletionRequest.h>
 #include <lsp/include/resolve_entity.h>
+#include <lsp/include/validateUri.h>
 
 GenericResponseMessage bpp::BashppServer::handleCompletion(const GenericRequestMessage& request) {
 	CompletionRequestResponse response;
@@ -14,14 +15,13 @@ GenericResponseMessage bpp::BashppServer::handleCompletion(const GenericRequestM
 	CompletionRequest completion_request = request.toSpecific<CompletionParams>();
 
 	std::string uri = completion_request.params.textDocument.uri;
-	// Verify the URI starts with "file://"
-	if (!uri.starts_with("file://")) {
-		log("Ignoring request to provide completions for non-local file: ", uri);
+
+	try {
+		uri = validateUri(uri);
+	} catch (const std::exception& e) {
+		log("Invalid URI in completion request: ", e.what());
 		response.result = nullptr;
 		return response;
-	} else {
-		// Strip the "file://" prefix
-		uri = uri.substr(7);
 	}
 
 	// Wait for stored_changes_content_updating to be false before proceeding
@@ -78,14 +78,7 @@ CompletionList bpp::BashppServer::handleATCompletion(const CompletionParams& par
 	// Suggest class names, object names, and standard operators like include or dynamic_cast
 	CompletionList completion_list = default_completion_list; // Start with the default completion list
 
-	std::string uri = params.textDocument.uri;
-	// Verify the URI starts with "file://"
-	if (!uri.starts_with("file://")) {
-		throw std::runtime_error("Ignoring request to provide completions for non-local file: " + uri);
-	} else {
-		// Strip the "file://" prefix
-		uri = uri.substr(7);
-	}
+	std::string uri = validateUri(params.textDocument.uri);
 
 	std::shared_ptr<bpp::bpp_program> program = program_pool.get_program(uri, true); // Jump the queue and get the program immediately
 	if (program == nullptr) {
@@ -127,14 +120,7 @@ CompletionList bpp::BashppServer::handleDOTCompletion(const CompletionParams& pa
 	// Suggest method names and data members of the current object
 	CompletionList completion_list;
 
-	std::string uri = params.textDocument.uri;
-	// Verify the URI starts with "file://"
-	if (!uri.starts_with("file://")) {
-		throw std::runtime_error("Ignoring request to provide completions for non-local file: " + uri);
-	} else {
-		// Strip the "file://" prefix
-		uri = uri.substr(7);
-	}
+	std::string uri = validateUri(params.textDocument.uri);
 
 	std::shared_ptr<bpp::bpp_program> program = program_pool.get_program(uri, true); // Jump the queue and get the program immediately
 	if (program == nullptr) {

@@ -6,6 +6,7 @@
 
 #include <lsp/BashppServer.h>
 #include <lsp/generated/DidChangeWatchedFilesNotification.h>
+#include <lsp/include/validateUri.h>
 
 void bpp::BashppServer::handleDidChangeWatchedFiles(const GenericNotificationMessage& request) {
 	DidChangeWatchedFilesNotification did_change_notification = request.toSpecific<DidChangeWatchedFilesParams>();
@@ -18,14 +19,14 @@ void bpp::BashppServer::handleDidChangeWatchedFiles(const GenericNotificationMes
 	
 	for (const auto& change : changes) {
 		log("File change detected: ", change.uri);
-		// Ensure the URI starts with "file://"
+
 		std::string uri = change.uri;
-		if (uri.find("file://") != 0) {
-			log("Ignoring request to re-parse non-local file: ", uri);
+
+		try {
+			uri = validateUri(change.uri);
+		} catch (const std::exception& e) {
+			log("Invalid URI in DidChangeWatchedFiles notification: ", e.what());
 			return;
-		} else {
-			// Strip the "file://" prefix
-			uri = uri.substr(7);
 		}
 
 		program_pool.remove_unsaved_file_contents(uri); // Remove unsaved changes for this URI

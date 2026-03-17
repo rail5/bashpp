@@ -6,6 +6,7 @@
 
 #include <lsp/BashppServer.h>
 #include <lsp/generated/DidOpenTextDocumentNotification.h>
+#include <lsp/include/validateUri.h>
 
 void bpp::BashppServer::handleDidOpen(const GenericNotificationMessage& request) {
 	DidOpenTextDocumentNotification did_open_notification = request.toSpecific<DidOpenTextDocumentParams>();
@@ -15,12 +16,12 @@ void bpp::BashppServer::handleDidOpen(const GenericNotificationMessage& request)
 	// Ensure the URI starts with "file://"
 	// We will reject any URIs that do not point to a file
 	std::string uri = did_open_notification.params.textDocument.uri;
-	if (uri.find("file://") != 0) {
-		log("Ignoring request to parse non-local file: ", uri);
+
+	try {
+		uri = validateUri(did_open_notification.params.textDocument.uri);
+	} catch (const std::exception& e) {
+		log("Invalid URI in DidOpen notification: ", e.what());
 		return;
-	} else {
-		// Strip the "file://" prefix
-		uri = uri.substr(7);
 	}
 
 	std::shared_ptr<bpp::bpp_program> program = program_pool.get_program(uri);
@@ -31,5 +32,4 @@ void bpp::BashppServer::handleDidOpen(const GenericNotificationMessage& request)
 	}
 	publishDiagnostics(program);
 	program_pool.open_file(uri); // Mark the file as open
-	return;
 }

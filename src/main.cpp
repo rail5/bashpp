@@ -132,7 +132,8 @@ int main(int argc, char* argv[]) {
 		temp_file_vec.push_back('\0'); // Null-terminate the string for mkstemp
 		int fd = mkstemp(temp_file_vec.data());
 		if (fd == -1) {
-			throw std::runtime_error("Failed to create temporary file");
+			std::cerr << program_name << ": Error: Could not create temporary file for output" << std::endl;
+			return 1;
 		}
 		close(fd);
 		std::shared_ptr<std::ofstream> ostream = std::make_shared<std::ofstream>(temp_file_vec.data());

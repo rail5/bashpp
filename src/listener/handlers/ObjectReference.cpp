@@ -194,7 +194,7 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 		for (const auto& id : ids) {
 			to_primitive_ids.push_back(id.getValue());
 		}
-		to_primitive_ids.push_back("toPrimitive");
+		to_primitive_ids.emplace_back("toPrimitive");
 
 		ref = bpp::resolve_reference(
 			source_file,

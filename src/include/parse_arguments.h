@@ -80,7 +80,7 @@ struct Arguments {
 inline Arguments parse_arguments(int argc, char* argv[]) {
 	Arguments args;
 
-	args.include_paths->push_back("/usr/lib/bpp/stdlib/");
+	args.include_paths->emplace_back("/usr/lib/bpp/stdlib/");
 
 	// Will throw if invalid arguments are provided
 	auto [compiler_arguments, program_arguments]

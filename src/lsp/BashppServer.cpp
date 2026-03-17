@@ -117,7 +117,6 @@ bpp::BashppServer::BashppServer() {
 	default_completion_list.items.push_back(i_nullptr);
 
 }
-bpp::BashppServer::~BashppServer() {}
 
 void bpp::BashppServer::setInputStream(std::shared_ptr<std::istream> stream) {
 	input_stream = std::move(stream);
@@ -222,7 +221,7 @@ void bpp::BashppServer::mainLoop() {
 	}
 }
 
-const GenericResponseMessage bpp::BashppServer::invalidRequestHandler(const GenericRequestMessage& request) {
+GenericResponseMessage bpp::BashppServer::invalidRequestHandler(const GenericRequestMessage& request) {
 	throw std::runtime_error("Request not understood: " + request.method);
 }
 

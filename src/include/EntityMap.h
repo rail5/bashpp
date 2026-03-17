@@ -13,7 +13,7 @@
 // Forward decl.
 namespace bpp {
 class bpp_entity;
-}
+} // namespace bpp
 
 /**
  * @struct FilePosition

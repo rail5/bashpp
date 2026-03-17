@@ -70,7 +70,7 @@ void BashppListener::exitSupershell(std::shared_ptr<AST::Supershell> node) {
 		code_to_run += "\n" + supershell_entity->get_post_code();
 	}
 
-	code_segment supershell_code = generate_supershell_code(
+	bpp::code_segment supershell_code = generate_supershell_code(
 		code_to_run,
 		program);
 

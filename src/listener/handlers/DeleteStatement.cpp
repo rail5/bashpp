@@ -60,7 +60,7 @@ void BashppListener::exitDeleteStatement(std::shared_ptr<AST::DeleteStatement> n
 	}
 
 	// Generate the delete code
-	code_segment delete_code = generate_delete_code(delete_entity->get_object_to_delete(), delete_entity->get_code(), program);
+	bpp::code_segment delete_code = generate_delete_code(delete_entity->get_object_to_delete(), delete_entity->get_code(), program);
 
 	// Add any necessary access code to the code entity
 	code_entity->add_code_to_previous_line(delete_entity->get_pre_code());

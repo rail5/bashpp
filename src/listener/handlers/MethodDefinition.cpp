@@ -92,7 +92,7 @@ void BashppListener::enterMethodDefinition(std::shared_ptr<AST::MethodDefinition
 			}
 
 			// Run an implicit dynamic cast in the event that the type is non-primitive
-			code_segment dynamic_cast_code = generate_dynamic_cast_code(param_name, type->get_name(), program);
+			bpp::code_segment dynamic_cast_code = generate_dynamic_cast_code(param_name, type->get_name(), program);
 			method->add_code_to_previous_line(dynamic_cast_code.pre_code);
 			method->add_code_to_next_line(dynamic_cast_code.post_code);
 			method->add_code(param_name + "=" + dynamic_cast_code.code + "\n");

@@ -21,11 +21,6 @@
 class BashppListener;
 
 #include <bpp_include/bpp_codegen.h>
-using code_segment = bpp::code_segment;
-using bpp::generate_supershell_code;
-using bpp::generate_delete_code;
-using bpp::generate_method_call_code;
-using bpp::generate_dynamic_cast_code;
 
 #include <bpp_include/bpp.h>
 #include <include/BashVersion.h>

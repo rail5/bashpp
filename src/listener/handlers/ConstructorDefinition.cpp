@@ -43,7 +43,7 @@ void BashppListener::enterConstructorDefinition(std::shared_ptr<AST::Constructor
 		auto parent_constructor = parent_class->get_method_UNSAFE("__constructor");
 		if (parent_constructor != nullptr) {
 			// Call the parent constructor
-			code_segment parent_constructor_call = generate_constructor_call_code("${__this}", parent_class);
+			bpp::code_segment parent_constructor_call = generate_constructor_call_code("${__this}", parent_class);
 			constructor->add_code(parent_constructor_call.full_code() + "\n");
 		}
 	}

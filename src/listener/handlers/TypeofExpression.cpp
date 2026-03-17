@@ -40,7 +40,7 @@ void BashppListener::exitTypeofExpression(std::shared_ptr<AST::TypeofExpression>
 		throw bpp::ErrorHandling::InternalError("Current code entity was not found in the entity stack");
 	}
 
-	code_segment typeof_code = bpp::generate_typeof_code(typeof_entity->get_code(), program);
+	bpp::code_segment typeof_code = bpp::generate_typeof_code(typeof_entity->get_code(), program);
 
 	current_code_entity->add_code_to_previous_line(typeof_entity->get_pre_code());
 	current_code_entity->add_code_to_previous_line(typeof_code.pre_code);

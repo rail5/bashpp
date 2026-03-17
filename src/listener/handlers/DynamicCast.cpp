@@ -55,7 +55,7 @@ void BashppListener::exitDynamicCast(std::shared_ptr<AST::DynamicCast> node) {
 		throw bpp::ErrorHandling::SyntaxError(this, node, "Dynamic cast target not specified");
 	}
 
-	code_segment dynamic_cast_code = generate_dynamic_cast_code(dynamic_cast_entity->get_code(), dynamic_cast_entity->get_cast_to(), program);
+	bpp::code_segment dynamic_cast_code = generate_dynamic_cast_code(dynamic_cast_entity->get_code(), dynamic_cast_entity->get_cast_to(), program);
 
 	current_code_entity->add_code_to_previous_line(dynamic_cast_entity->get_pre_code());
 	current_code_entity->add_code_to_previous_line(dynamic_cast_code.pre_code);

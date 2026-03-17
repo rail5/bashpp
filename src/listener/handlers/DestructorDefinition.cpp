@@ -55,7 +55,7 @@ void BashppListener::exitDestructorDefinition(std::shared_ptr<AST::DestructorDef
 		auto parent_destructor = parent_class->get_method_UNSAFE("__destructor");
 		if (parent_destructor != nullptr) {
 			// Call the parent destructor
-			code_segment parent_destructor_call = generate_destructor_call_code("${__this}", parent_class, true, program);
+			bpp::code_segment parent_destructor_call = generate_destructor_call_code("${__this}", parent_class, true, program);
 			destructor->add_code(parent_destructor_call.full_code() + "\n");
 		}
 	}

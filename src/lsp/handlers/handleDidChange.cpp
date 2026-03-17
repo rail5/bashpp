@@ -129,7 +129,7 @@ void bpp::BashppServer::handleDidChange(const GenericNotificationMessage& reques
 			const uint64_t scaled_component_in_milliseconds =
 				(scale_numerator * new_average_reparse_time_in_milliseconds) / scale_denominator;
 			
-			uint32_t new_debounce_time_in_milliseconds =
+			auto new_debounce_time_in_milliseconds =
 				static_cast<uint32_t>(
 					baseline_debounce_time_in_milliseconds + scaled_component_in_milliseconds
 				);

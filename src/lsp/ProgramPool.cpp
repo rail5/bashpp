@@ -18,7 +18,7 @@ ProgramPool::ProgramPool(size_t max_programs) : max_programs(max_programs) {
 	programs.reserve(max_programs);
 
 	// Set default settings
-	this->include_paths->push_back("/usr/lib/bpp/stdlib/");
+	this->include_paths->emplace_back("/usr/lib/bpp/stdlib/");
 }
 
 void ProgramPool::add_include_path(const std::string& path) {

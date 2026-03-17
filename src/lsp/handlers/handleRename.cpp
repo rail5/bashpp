@@ -61,7 +61,7 @@ GenericResponseMessage bpp::BashppServer::handleRename(const GenericRequestMessa
 		log("Invalid new name for entity: ", new_name);
 		response.error.code = static_cast<int>(ErrorCodes::InvalidParams);
 
-		if (new_name.find("__") != std::string::npos) {
+		if (new_name.contains("__")) {
 			response.error.message = "Invalid new name: " + new_name + "\nBash++ identifiers cannot contain double underscores";
 		} else {
 			response.error.message = "Invalid new name: " + new_name;

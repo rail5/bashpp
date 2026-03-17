@@ -57,7 +57,7 @@ void BashppListener::enterDatamemberDeclaration(std::shared_ptr<AST::DatamemberD
 		);
 
 		// Verify the name doesn't contain a double underscore
-		if (member_name.find("__") != std::string::npos) {
+		if (member_name.contains("__")) {
 			entity_stack.pop();
 			throw bpp::ErrorHandling::SyntaxError(this, id.value(), "Invalid member name: " + member_name + "\nBash++ identifiers cannot contain double underscores");
 		}

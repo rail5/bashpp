@@ -23,8 +23,8 @@ void BashppListener::enterObjectInstantiation(std::shared_ptr<AST::ObjectInstant
 		throw bpp::ErrorHandling::SyntaxError(this, node, "Stray object instantiation inside class body.\nDid you mean to declare a data member?\nIf so, start by declaring the data member with a visibility keyword (@public, @private, @protected)");
 	}
 
-	std::string object_type_text = object_type.getValue();
-	std::string object_name_text = object_name.getValue();
+	const std::string& object_type_text = object_type.getValue();
+	const std::string& object_name_text = object_name.getValue();
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = latest_code_entity();
 
@@ -65,7 +65,7 @@ void BashppListener::enterObjectInstantiation(std::shared_ptr<AST::ObjectInstant
 	if (!bpp::is_valid_identifier(new_object->get_name())) {
 		entity_stack.pop();
 		// If, specifically, it contains a double underscore, we can provide a more specific error message
-		if (new_object->get_name().find("__") != std::string::npos) {
+		if (new_object->get_name().contains("__")) {
 			throw bpp::ErrorHandling::SyntaxError(this, object_name, "Invalid object name: " + new_object->get_name() + "\nBash++ identifiers cannot contain double underscores");
 		} else {
 			throw bpp::ErrorHandling::SyntaxError(this, object_name, "Invalid object name: " + new_object->get_name());

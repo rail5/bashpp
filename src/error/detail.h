@@ -16,8 +16,7 @@
 #include <AST/Nodes/Nodes.h>
 #include <bpp_include/bpp.h>
 
-namespace bpp {
-namespace detail {
+namespace bpp::detail {
 consteval std::string_view unqualified_function_name(std::string_view function_signature) {
 	// Strip it to the identifier after the last "::"
 	const auto position = function_signature.rfind("::");
@@ -62,5 +61,4 @@ concept ErrorReportableListener = requires(T t) {
 	{ t.get_lsp_mode() } -> std::same_as<bool>;
 };
 
-} // namespace detail
-} // namespace bpp
+} // namespace bpp::detail

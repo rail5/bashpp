@@ -81,7 +81,6 @@ void BashppListener::exitValueAssignment(std::shared_ptr<AST::ValueAssignment> n
 		if (value_assignment_entity->is_nonprimitive_assignment()) {
 			current_object_assignment->set_rvalue_nonprimitive(true);
 			current_object_assignment->set_rvalue_object(value_assignment_entity->get_nonprimitive_object());
-			std::string rvalue;
 			std::shared_ptr<bpp::bpp_object> rvalue_object = std::dynamic_pointer_cast<bpp::bpp_object>(value_assignment_entity->get_nonprimitive_object());
 			if (rvalue_object == nullptr) {
 				throw bpp::ErrorHandling::InternalError("Rvalue object not found for copy");

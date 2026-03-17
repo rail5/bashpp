@@ -17,8 +17,7 @@
 
 #include <utf8cpp/utf8.h>
 
-namespace bpp {
-namespace ErrorHandling {
+namespace bpp::ErrorHandling {
 
 void print_syntax_error_or_warning(
 	const std::string& source_file,
@@ -217,5 +216,4 @@ std::string equal_width_padding(const std::string& str, char padding_char) {
 	return result;
 }
 
-} // namespace ErrorHandling
-} // namespace bpp
+} // namespace bpp::ErrorHandling

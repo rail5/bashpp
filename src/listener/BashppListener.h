@@ -172,11 +172,11 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 
 	void set_replacement_file_contents(const std::string& file_path, const std::string& contents);
 
-	std::shared_ptr<bpp::bpp_program> get_program();
-	std::shared_ptr<std::set<std::string>> get_included_files();
-	const std::vector<std::string>& get_include_stack();
-	std::string get_source_file();
-	bool get_lsp_mode();
+	std::shared_ptr<bpp::bpp_program> get_program() const;
+	std::shared_ptr<std::set<std::string>> get_included_files() const;
+	const std::vector<std::string>& get_include_stack() const;
+	std::string get_source_file() const;
+	bool get_lsp_mode() const;
 
 	std::shared_ptr<bpp::bpp_code_entity> latest_code_entity();
 

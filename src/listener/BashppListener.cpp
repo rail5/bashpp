@@ -7,11 +7,11 @@
 #include "BashppListener.h"
 
 void BashppListener::set_source_file(std::string source_file) {
-	this->source_file = source_file;
+	this->source_file = std::move(source_file);
 }
 
 void BashppListener::set_include_paths(std::shared_ptr<std::vector<std::string>> include_paths) {
-	this->include_paths = include_paths;
+	this->include_paths = std::move(include_paths);
 }
 
 void BashppListener::set_included(bool included) {
@@ -31,19 +31,19 @@ void BashppListener::set_included_from(BashppListener* included_from) {
  * @brief Sets the included_files pointer to the given set of included files.
  */
 void BashppListener::set_included_files(std::shared_ptr<std::set<std::string>> included_files) {
-	this->included_files = included_files;
+	this->included_files = std::move(included_files);
 }
 
 void BashppListener::set_code_buffer(std::shared_ptr<std::ostream> code_buffer) {
-	this->code_buffer = code_buffer;
+	this->code_buffer = std::move(code_buffer);
 }
 
 void BashppListener::set_output_stream(std::shared_ptr<std::ostream> output_stream) {
-	this->output_stream = output_stream;
+	this->output_stream = std::move(output_stream);
 }
 
 void BashppListener::set_output_file(std::string output_file) {
-	this->output_file = output_file;
+	this->output_file = std::move(output_file);
 }
 
 void BashppListener::set_run_on_exit(bool run_on_exit) {
@@ -59,30 +59,30 @@ void BashppListener::set_target_bash_version(BashVersion target_bash_version) {
 }
 
 void BashppListener::set_arguments(std::vector<char*> arguments) {
-	this->arguments = arguments;
+	this->arguments = std::move(arguments);
 }
 
 void BashppListener::set_lsp_mode(bool lsp_mode) {
 	this->lsp_mode = lsp_mode;
 }
 
-std::shared_ptr<bpp::bpp_program> BashppListener::get_program() {
+std::shared_ptr<bpp::bpp_program> BashppListener::get_program() const {
 	return program;
 }
 
-std::shared_ptr<std::set<std::string>> BashppListener::get_included_files() {
+std::shared_ptr<std::set<std::string>> BashppListener::get_included_files() const {
 	return included_files;
 }
 
-const std::vector<std::string>& BashppListener::get_include_stack() {
+const std::vector<std::string>& BashppListener::get_include_stack() const {
 	return include_stack;
 }
 
-std::string BashppListener::get_source_file() {
+std::string BashppListener::get_source_file() const {
 	return source_file;
 }
 
-bool BashppListener::get_lsp_mode() {
+bool BashppListener::get_lsp_mode() const {
 	return lsp_mode;
 }
 

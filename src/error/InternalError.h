@@ -8,8 +8,7 @@
 
 #include <stdexcept>
 
-namespace bpp {
-namespace ErrorHandling {
+namespace bpp::ErrorHandling {
 
 /**
  * @struct InternalError
@@ -25,5 +24,4 @@ struct InternalError : public std::runtime_error {
 	
 };
 
-} // namespace ErrorHandling
-} // namespace bpp
+} // namespace bpp::ErrorHandling

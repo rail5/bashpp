@@ -8,8 +8,6 @@
 
 namespace bpp {
 
-bpp_object_assignment::bpp_object_assignment() {}
-
 void bpp_object_assignment::set_lvalue(const std::string& lvalue) {
 	this->lvalue = lvalue;
 }

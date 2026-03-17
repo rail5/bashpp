@@ -9,8 +9,6 @@
 
 namespace bpp {
 
-bpp_method::bpp_method() {}
-
 bpp_method::bpp_method(const std::string& name) {
 	set_name(name);
 }

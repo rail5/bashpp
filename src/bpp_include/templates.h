@@ -20,7 +20,7 @@
  */
 
 
-[[maybe_unused]] static const char* bpp_supershell_function = R"EOF(function bpp____initsupershell() {
+[[maybe_unused]] constexpr static const char* bpp_supershell_function = R"EOF(function bpp____initsupershell() {
 	local bpp____supershellDirectory="/dev/shm/"
 	if [[ ! -d "${bpp____supershellDirectory}" ]]; then
 		bpp____supershellDirectory="${TMPDIR:-/tmp/}"
@@ -42,11 +42,11 @@ function bpp____supershell() {
 }
 )EOF";
 
-[[maybe_unused]] static const char* bpp_repeat = R"EOF(function bpp____repeat() {
+[[maybe_unused]] constexpr static const char* bpp_repeat = R"EOF(function bpp____repeat() {
 	return $1
 })EOF";
 
-[[maybe_unused]] static const char* bpp_vtable_lookup = R"EOF(function bpp____vTable__lookup() {
+[[maybe_unused]] constexpr static const char* bpp_vtable_lookup = R"EOF(function bpp____vTable__lookup() {
 	local __this="$1" __method="$2" __outputVar="$3"
 	([[ -z "${__this}" ]] || [[ -z "${__method}" ]] || [[ -z "${__outputVar}" ]]) && >&2 echo "Bash++: Error: Invalid vTable lookup" && exit 1
 	while : ; do
@@ -66,7 +66,7 @@ function bpp____supershell() {
 }
 )EOF";
 
-[[maybe_unused]] static const char* bpp_dynamic_cast = R"EOF(function bpp____dynamic__cast() {
+[[maybe_unused]] constexpr static const char* bpp_dynamic_cast = R"EOF(function bpp____dynamic__cast() {
 	local __type="$1" __outputVar="$2" __this="$3"
 	([[ -z "${__outputVar}" ]]) && >&2 echo "Bash++: Error: Invalid dynamic_cast" && exit 1
 	eval "${__outputVar}=0"
@@ -89,7 +89,7 @@ function bpp____supershell() {
 }
 )EOF";
 
-[[maybe_unused]] static const char* bpp_typeof_function = R"EOF(function bpp____typeof() {
+[[maybe_unused]] constexpr static const char* bpp_typeof_function = R"EOF(function bpp____typeof() {
 	local __this="$1" __outputVar="$2"
 	[[ -z "${__this}" ]] && >&2 echo "Bash++: Error: Invalid type name request" && exit 1
 	while : ; do
@@ -110,7 +110,7 @@ function bpp____supershell() {
 }
 )EOF";
 
-[[maybe_unused]] static const char* template_method = R"EOF(function bpp__%CLASS%__%SIGNATURE%() {
+[[maybe_unused]] constexpr static const char* template_method = R"EOF(function bpp__%CLASS%__%SIGNATURE%() {
 	local __this="$1"
 	shift 1
 	%PARAMS%
@@ -119,7 +119,7 @@ function bpp____supershell() {
 }
 )EOF";
 
-[[maybe_unused]] static const char* this_pointer_validation = R"EOF(while : ; do
+[[maybe_unused]] constexpr static const char* this_pointer_validation = R"EOF(while : ; do
 		if ! eval "declare -p \"${__this}\"" &>/dev/null; then
 			break
 		fi

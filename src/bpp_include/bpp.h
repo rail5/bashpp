@@ -169,7 +169,7 @@ struct SymbolPosition {
 	uint64_t line;
 	uint64_t column;
 
-	SymbolPosition() {}
+	SymbolPosition() = default;
 	SymbolPosition(const std::string& file, uint64_t line, uint64_t column)
 		: file(file), line(line), column(column) {}
 };
@@ -272,7 +272,7 @@ class bpp_code_entity : public bpp_entity {
 		 */
 		bool requires_perfect_forwarding = false;
 	public:
-		bpp_code_entity();
+		bpp_code_entity() = default;
 
 		virtual void add_code(const std::string& code, bool add_newline = true);
 		virtual void add_code_to_previous_line(const std::string& code);
@@ -357,7 +357,7 @@ class bpp_code_entity : public bpp_entity {
 */
 class bpp_string : public bpp_code_entity {
 	public:
-		bpp_string();
+		bpp_string() = default;
 
 		void add_code(const std::string& code, bool add_newline = true) override;
 		void add_code_to_previous_line(const std::string& code) override;
@@ -424,7 +424,7 @@ class bpp_method : public bpp_code_entity {
 		bool add_object_as_parameter(std::shared_ptr<bpp_object> object);
 		std::string last_override; // Name of the latest class to override this virtual method
 	public:
-		bpp_method();
+		bpp_method() = default;
 		explicit bpp_method(const std::string& name);
 		bpp_method(const std::string& name, bool is_virtual);
 
@@ -473,7 +473,7 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 		void remove_default_toPrimitive();
 		void add_default_toPrimitive();
 	public:
-		bpp_class();
+		bpp_class() = default;
 
 		std::weak_ptr<bpp_class> get_containing_class() override;
 		bool set_containing_class(std::weak_ptr<bpp::bpp_class> containing_class) override;
@@ -511,7 +511,7 @@ class bpp_object : public bpp_entity {
 		bool m_is_pointer = false;
 		std::shared_ptr<bpp::bpp_object> copy_from = nullptr;
 	public:
-		bpp_object();
+		bpp_object() = default;
 		explicit bpp_object(const std::string& name);
 		bpp_object(const std::string& name, bool is_pointer);
 
@@ -543,7 +543,7 @@ class bpp_datamember : public bpp_object {
 		bpp_scope scope = SCOPE_PRIVATE;
 		bool array = false;
 	public:
-		bpp_datamember();
+		bpp_datamember() = default;
 
 		void set_default_value(const std::string& default_value);
 		void set_scope(bpp_scope scope);
@@ -680,7 +680,7 @@ class bash_while_or_until_loop : public bpp_code_entity {
 	private:
 		std::shared_ptr<bpp::bash_while_or_until_condition> condition;
 	public:
-		bash_while_or_until_loop();
+		bash_while_or_until_loop() = default;
 
 		void set_condition(std::shared_ptr<bpp::bash_while_or_until_condition> condition);
 		std::shared_ptr<bpp::bash_while_or_until_condition> get_condition() const;
@@ -724,7 +724,7 @@ class bash_if : public bpp_string {
 	private:
 		std::vector<std::pair<std::string, std::string>> conditional_branches;
 	public:
-		bash_if();
+		bash_if() = default;
 
 		void new_branch();
 		void add_condition_code(const std::string& condition_code);
@@ -746,7 +746,7 @@ class bash_if_branch : public bpp_code_entity {
 	private:
 		std::shared_ptr<bpp::bash_if> if_statement;
 	public:
-		bash_if_branch();
+		bash_if_branch() = default;
 
 		void set_if_statement(std::shared_ptr<bpp::bash_if> if_statement);
 		std::shared_ptr<bpp::bash_if> get_if_statement() const;
@@ -769,7 +769,7 @@ class bash_case : public bpp_string {
 	private:
 		std::string cases;
 	public:
-		bash_case();
+		bash_case() = default;
 
 		void add_case(const std::string& case_);
 
@@ -790,7 +790,7 @@ class bash_case_pattern : public bpp_code_entity {
 		std::string pattern;
 		std::shared_ptr<bpp::bash_case> containing_case;
 	public:
-		bash_case_pattern();
+		bash_case_pattern() = default;
 
 		void set_pattern(const std::string& pattern);
 		void set_containing_case(std::shared_ptr<bpp::bash_case> containing_case);
@@ -814,7 +814,7 @@ class bash_for_or_select : public bpp_code_entity {
 		std::string header_post_code;
 		std::string header_code;
 	public:
-		bash_for_or_select();
+		bash_for_or_select() = default;
 
 		void set_header_pre_code(const std::string& pre_code);
 		void set_header_post_code(const std::string& post_code);
@@ -836,7 +836,7 @@ class bash_for_or_select : public bpp_code_entity {
  */
 class bash_function : public bpp_code_entity {
 	public:
-		bash_function();
+		bash_function() = default;
 };
 
 /**
@@ -875,7 +875,7 @@ class bpp_dynamic_cast_statement : public bpp_string {
 	private:
 		std::string cast_to;
 	public:
-		bpp_dynamic_cast_statement();
+		bpp_dynamic_cast_statement() = default;
 
 		void set_cast_to(const std::string& cast_to);
 		std::string get_cast_to() const;
@@ -913,7 +913,7 @@ class bpp_value_assignment : public bpp_string {
 		bool array_assignment = false;
 		bool adding = false;
 	public:
-		bpp_value_assignment();
+		bpp_value_assignment() = default;
 
 		void set_nonprimitive_assignment(bool is_nonprimitive);
 		void set_nonprimitive_object(std::shared_ptr<bpp_entity> object);
@@ -946,7 +946,7 @@ class bpp_object_assignment : public bpp_string {
 		bool adding = false;
 		bool rvalue_array = false;
 	public:
-		bpp_object_assignment();
+		bpp_object_assignment() = default;
 
 		void set_lvalue(const std::string& lvalue);
 		void set_rvalue(const std::string& rvalue);
@@ -979,7 +979,7 @@ class bpp_object_reference : public bpp_string {
 		bpp::reference_type reference_type;
 		std::string array_index;
 	public:	
-		bpp_object_reference();
+		bpp_object_reference() = default;
 
 		void set_reference_type(bpp::reference_type reference_type);
 		void set_array_index(const std::string& array_index);

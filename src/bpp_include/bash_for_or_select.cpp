@@ -8,8 +8,6 @@
 
 namespace bpp {
 
-bash_for_or_select::bash_for_or_select() {}
-
 void bash_for_or_select::set_header_pre_code(const std::string& pre_code) {
 	header_pre_code = pre_code;
 }

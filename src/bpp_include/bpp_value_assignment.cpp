@@ -8,8 +8,6 @@
 
 namespace bpp {
 
-bpp_value_assignment::bpp_value_assignment() {}
-
 void bpp_value_assignment::set_nonprimitive_assignment(bool is_nonprimitive) {
 	nonprimitive_assignment = is_nonprimitive;
 }

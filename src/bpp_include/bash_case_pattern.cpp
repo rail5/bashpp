@@ -8,8 +8,6 @@
 
 namespace bpp {
 
-bash_case_pattern::bash_case_pattern() {}
-
 void bash_case_pattern::set_pattern(const std::string& pattern) {
 	this->pattern = pattern;
 }

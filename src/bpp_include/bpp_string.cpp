@@ -8,8 +8,6 @@
 
 namespace bpp {
 
-bpp_string::bpp_string() {}
-
 /**
  * @brief Add code to the primary buffer
  * 

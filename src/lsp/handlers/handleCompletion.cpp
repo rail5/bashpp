@@ -15,7 +15,7 @@ GenericResponseMessage bpp::BashppServer::handleCompletion(const GenericRequestM
 
 	std::string uri = completion_request.params.textDocument.uri;
 	// Verify the URI starts with "file://"
-	if (uri.find("file://") != 0) {
+	if (!uri.starts_with("file://")) {
 		log("Ignoring request to provide completions for non-local file: ", uri);
 		response.result = nullptr;
 		return response;
@@ -32,7 +32,7 @@ GenericResponseMessage bpp::BashppServer::handleCompletion(const GenericRequestM
 	// is up-to-date before we resolve the reference and provide completions.
 	do {
 		std::this_thread::sleep_for(std::chrono::milliseconds(50));
-	} while (processing_didChange.load(std::memory_order_acquire) == true);
+	} while (processing_didChange.load(std::memory_order_acquire));
 	
 	// Which character triggered the request?
 	char trigger_character = '.';
@@ -80,7 +80,7 @@ CompletionList bpp::BashppServer::handleATCompletion(const CompletionParams& par
 
 	std::string uri = params.textDocument.uri;
 	// Verify the URI starts with "file://"
-	if (uri.find("file://") != 0) {
+	if (!uri.starts_with("file://")) {
 		throw std::runtime_error("Ignoring request to provide completions for non-local file: " + uri);
 	} else {
 		// Strip the "file://" prefix
@@ -129,7 +129,7 @@ CompletionList bpp::BashppServer::handleDOTCompletion(const CompletionParams& pa
 
 	std::string uri = params.textDocument.uri;
 	// Verify the URI starts with "file://"
-	if (uri.find("file://") != 0) {
+	if (!uri.starts_with("file://")) {
 		throw std::runtime_error("Ignoring request to provide completions for non-local file: " + uri);
 	} else {
 		// Strip the "file://" prefix
@@ -176,7 +176,7 @@ CompletionList bpp::BashppServer::handleDOTCompletion(const CompletionParams& pa
 	}
 
 	for (const auto& method : methods) {
-		if (method->get_name().find("__") != std::string::npos) {
+		if (method->get_name().contains("__")) {
 			continue; // Skip system methods
 		}
 
@@ -184,7 +184,7 @@ CompletionList bpp::BashppServer::handleDOTCompletion(const CompletionParams& pa
 		item.label = method->get_name();
 		item.kind = CompletionItemKind::Method;
 
-		std::string detail = "";
+		std::string detail;
 
 		if (method->is_virtual()) {
 			detail += "@virtual ";

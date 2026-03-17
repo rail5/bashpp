@@ -80,8 +80,8 @@ void BashppListener::exitProgram(std::shared_ptr<AST::Program> node) {
 			chmod(output_file.c_str(), 0755);
 		}
 	} else {
-		std::string arguments_string = "";
-		for (auto argument : arguments) {
+		std::string arguments_string;
+		for (auto* argument : arguments) {
 			arguments_string += " \"" + replace_all(std::string(argument), "\"", "\\\"") + "\"";
 		}
 

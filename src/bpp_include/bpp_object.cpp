@@ -8,8 +8,6 @@
 
 namespace bpp {
 
-bpp_object::bpp_object() {}
-
 bpp_object::bpp_object(const std::string& name) {
 	set_name(name);
 }

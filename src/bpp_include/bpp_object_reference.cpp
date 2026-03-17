@@ -8,8 +8,6 @@
 
 namespace bpp {
 
-bpp_object_reference::bpp_object_reference() {}
-
 void bpp_object_reference::set_reference_type(bpp::reference_type reference_type) {
 	this->reference_type = reference_type;
 }

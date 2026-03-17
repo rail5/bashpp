@@ -15,8 +15,7 @@
 #include <error/detail.h>
 #include <error/ParserError.h>
 
-namespace bpp {
-namespace ErrorHandling {
+namespace bpp::ErrorHandling {
 
 /**
  * @brief Print a syntax error or warning message to stderr
@@ -161,5 +160,4 @@ std::string utf8_substr(const std::string& str, uint32_t start, uint32_t length)
 uint32_t utf8_length(const std::string& str);
 std::string equal_width_padding(const std::string& str, char padding_char = ' ');
 
-} // namespace ErrorHandling
-} // namespace bpp
+} // namespace bpp::ErrorHandling

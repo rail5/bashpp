@@ -9,8 +9,6 @@
 
 namespace bpp {
 
-bpp_code_entity::bpp_code_entity() {}
-
 /**
  * @brief Add code to the code entity
  * 

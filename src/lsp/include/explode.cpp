@@ -31,7 +31,7 @@ std::vector<std::string> explode(
 	bool escaped = false;
 
 	std::string current_element;
-	for (auto& c : input) {
+	for (const auto& c : input) {
 		if (c == '\\') {
 			if (escaped) {
 				// If we are already escaped or escaping is not allowed, treat it as a normal character

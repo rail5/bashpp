@@ -9,8 +9,6 @@
 
 namespace bpp {
 
-bpp_class::bpp_class() {}
-
 /**
  * @brief Remove the default toPrimitive method
  * 

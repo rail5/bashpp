@@ -14,7 +14,7 @@
 #include <AST/Nodes/Nodes.h>
 #include <error/ParserError.h>
 
-typedef void* yyscan_t;
+using yyscan_t = void*;
 
 namespace AST {
 

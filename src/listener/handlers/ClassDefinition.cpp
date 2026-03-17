@@ -26,7 +26,7 @@ void BashppListener::enterClassDefinition(std::shared_ptr<AST::ClassDefinition> 
 	if (!bpp::is_valid_identifier(class_name)) {
 		entity_stack.pop();
 		// If, specifically, it contains a double underscore, we can provide a more specific error message
-		if (class_name.find("__") != std::string::npos) {
+		if (class_name.contains("__")) {
 			throw bpp::ErrorHandling::SyntaxError(this, node->CLASSNAME(), "Invalid class name: " + class_name + "\nBash++ identifiers cannot contain double underscores");
 		} else {
 			throw bpp::ErrorHandling::SyntaxError(this, node->CLASSNAME(), "Invalid class name: " + class_name);
@@ -50,7 +50,7 @@ void BashppListener::enterClassDefinition(std::shared_ptr<AST::ClassDefinition> 
 	// Inherit from a parent class if specified
 	if (node->PARENTCLASSNAME().has_value()) {
 		auto parent_class_node = node->PARENTCLASSNAME().value();
-		std::string parent_class_name = parent_class_node.getValue();
+		const std::string& parent_class_name = parent_class_node.getValue();
 		std::shared_ptr<bpp::bpp_class> parent_class = program->get_class(parent_class_name);
 		if (parent_class == nullptr) {
 			entity_stack.pop();

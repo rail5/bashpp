@@ -8,8 +8,6 @@
 
 namespace bpp {
 
-bpp_dynamic_cast_statement::bpp_dynamic_cast_statement() {}
-
 void bpp_dynamic_cast_statement::set_cast_to(const std::string& cast_to) {
 	this->cast_to = cast_to;
 }

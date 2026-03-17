@@ -8,8 +8,6 @@
 
 namespace bpp {
 
-bash_if::bash_if() {}
-
 void bash_if::new_branch() {
 	conditional_branches.emplace_back("", "");
 }

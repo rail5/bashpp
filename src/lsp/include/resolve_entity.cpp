@@ -320,7 +320,7 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 				for (const auto& param : parameters) {
 					uint64_t param_start = (static_cast<uint64_t>(param.getLine()) << 32) | param.getCharPositionInLine();
 
-					std::string param_string = "";
+					std::string param_string;
 					if (param.getValue().type.has_value()) {
 						param_string += "@" + param.getValue().type.value().getValue();
 						if (param.getValue().pointer) {
@@ -350,7 +350,7 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 					}
 
 					if (!param_type_token_opt.has_value()) continue;
-					auto param_type_token = param_type_token_opt.value();
+					const auto& param_type_token = param_type_token_opt.value();
 					uint64_t param_type_start = (static_cast<uint64_t>(param_type_token.getLine()) << 32) | param_type_token.getCharPositionInLine();
 					uint64_t param_type_end = param_type_start + param_type_token.getValue().length();
 					if (target_position >= param_type_start && target_position <= param_type_end) {

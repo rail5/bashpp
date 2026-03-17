@@ -8,8 +8,6 @@
 
 namespace bpp {
 
-bash_case::bash_case() {}
-
 void bash_case::add_case(const std::string& case_) {
 	cases += case_;
 }

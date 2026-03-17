@@ -8,8 +8,6 @@
 
 namespace bpp {
 
-bash_while_or_until_loop::bash_while_or_until_loop() {}
-
 void bash_while_or_until_loop::set_condition(std::shared_ptr<bpp::bash_while_or_until_condition> condition) {
 	this->condition = std::move(condition);
 }

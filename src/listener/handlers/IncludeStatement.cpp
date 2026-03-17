@@ -87,7 +87,7 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 	}
 
 	auto result = included_files->insert(full_path);
-	if (result.second == false && include_once) {
+	if (!result.second && include_once) {
 		// If the file was already included and this is an @include_once, skip it
 		return;
 	}
@@ -121,7 +121,7 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 	new_include_stack.push_back(source_file);
 	parser.setIncludeChain(new_include_stack);
 	
-	if (replacement_file_contents.find(full_path) != replacement_file_contents.end()) {
+	if (replacement_file_contents.contains(full_path)) {
 		parser.setInputFromStringContents(replacement_file_contents[full_path]);
 	} else {
 		parser.setInputFromFilePath(full_path);

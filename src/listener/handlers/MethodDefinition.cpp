@@ -45,7 +45,7 @@ void BashppListener::enterMethodDefinition(std::shared_ptr<AST::MethodDefinition
 	}
 
 	// Verify that the method name does not contain a double underscore
-	if (method_name.find("__") != std::string::npos) {
+	if (method_name.contains("__")) {
 		throw bpp::ErrorHandling::SyntaxError(this, node->NAME(), "Invalid method name: " + method_name + "\nBash++ identifiers cannot contain double underscores");
 	}
 
@@ -60,7 +60,7 @@ void BashppListener::enterMethodDefinition(std::shared_ptr<AST::MethodDefinition
 
 	// Check the method's parameters in the parameter list
 	for (const auto& p : node->PARAMETERS()) {
-		auto param = p.getValue();
+		const auto& param = p.getValue();
 		std::string param_name = param.name.getValue();
 		std::shared_ptr<bpp::bpp_class> type = program->get_primitive_class();
 		if (param.type.has_value()) {
@@ -84,7 +84,7 @@ void BashppListener::enterMethodDefinition(std::shared_ptr<AST::MethodDefinition
 			// Verify that the parameter name is valid
 			if (!bpp::is_valid_identifier(param_name)) {
 				// If, specifically, it contains a double underscore, we can provide a more specific error message
-				if (param_name.find("__") != std::string::npos) {
+				if (param_name.contains("__")) {
 					throw bpp::ErrorHandling::SyntaxError(this, param.name, "Invalid parameter name: " + param_name + "\nBash++ identifiers cannot contain double underscores");
 				} else {
 					throw bpp::ErrorHandling::SyntaxError(this, param.name, "Invalid parameter name: " + param_name);

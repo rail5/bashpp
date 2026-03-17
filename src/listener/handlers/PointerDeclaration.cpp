@@ -19,8 +19,8 @@ void BashppListener::enterPointerDeclaration(std::shared_ptr<AST::PointerDeclara
 	// Actually get the containing class
 	current_class = entity_stack.top()->get_containing_class().lock();
 
-	std::string object_type_text = object_type.getValue();
-	std::string object_name_text = object_name.getValue();
+	const std::string& object_type_text = object_type.getValue();
+	const std::string& object_name_text = object_name.getValue();
 
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = latest_code_entity();
@@ -61,7 +61,7 @@ void BashppListener::enterPointerDeclaration(std::shared_ptr<AST::PointerDeclara
 	if (!bpp::is_valid_identifier(new_object->get_name())) {
 		entity_stack.pop();
 		// If, specifically, it contains a double underscore, we can provide a more specific error message
-		if (new_object->get_name().find("__") != std::string::npos) {
+		if (new_object->get_name().contains("__")) {
 			throw bpp::ErrorHandling::SyntaxError(this, object_name, "Invalid object name: " + new_object->get_name() + "\nBash++ identifiers cannot contain double underscores");
 		} else {
 			throw bpp::ErrorHandling::SyntaxError(this, object_name, "Invalid object name: " + new_object->get_name());
@@ -118,5 +118,4 @@ void BashppListener::exitPointerDeclaration(std::shared_ptr<AST::PointerDeclarat
 	current_code_entity->add_code_to_previous_line(new_object->get_pre_access_code());
 	current_code_entity->add_code_to_next_line(new_object->get_post_access_code());
 	current_code_entity->add_object(new_object, in_method);
-	return;
 }

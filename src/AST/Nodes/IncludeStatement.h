@@ -13,17 +13,17 @@ namespace AST {
 
 class IncludeStatement : public ASTNode {
 	public:
-		enum class IncludeKeyword {
+		enum class IncludeKeyword : uint8_t {
 			INCLUDE,
 			INCLUDE_ONCE
 		};
 
-		enum class IncludeType {
+		enum class IncludeType : uint8_t {
 			STATIC,
 			DYNAMIC
 		};
 
-		enum class PathType {
+		enum class PathType : uint8_t {
 			ANGLEBRACKET,
 			QUOTED
 		};
@@ -81,7 +81,7 @@ class IncludeStatement : public ASTNode {
 			m_ASPATH = std::nullopt;
 		}
 
-		std::ostream& prettyPrint(std::ostream& os, int indentation_level = 0) const override {
+		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(IncludeStatement\n"
 				<< indent << "  @" << ((m_KEYWORD.getValue() == IncludeKeyword::INCLUDE) ? "include" : "include_once") << " "

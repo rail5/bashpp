@@ -99,7 +99,7 @@ code_segment generate_delete_code(
 	return result;
 }
 
-inline code_segment _generate_virtual_method_call_code(
+static inline code_segment _generate_virtual_method_call_code(
 	const std::string& reference_code,
 	const std::string& method_name,
 	std::shared_ptr<bpp::bpp_program> program

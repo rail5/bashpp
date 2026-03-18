@@ -54,7 +54,7 @@ class DatamemberDeclaration : public ASTNode {
 			m_IDENTIFIER = std::nullopt;
 		}
 
-		std::ostream& prettyPrint(std::ostream& os, int indentation_level = 0) const override {
+		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(DatamemberDeclaration\n"
 				<< indent << "  ";
@@ -65,6 +65,7 @@ class DatamemberDeclaration : public ASTNode {
 				case AccessModifier::PROTECTED:
 					os << "@protected ";
 					break;
+				default: // TODO(@rail5): Is this an error case we should handle explicitly?
 				case AccessModifier::PRIVATE:
 					os << "@private ";
 					break;

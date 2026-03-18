@@ -52,7 +52,7 @@ class StringType : public ASTNode {
 			}
 		}
 
-		std::ostream& prettyPrint(std::ostream& os, int indentation_level = 0) const = 0; // Pure virtual, to prevent direct instantiation
+		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override = 0; // Pure virtual, to prevent direct instantiation
 };
 
 } // namespace AST

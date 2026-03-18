@@ -145,8 +145,8 @@ struct entity_reference {
 entity_reference resolve_reference_impl(
 	const std::string& file,
 	std::shared_ptr<bpp::bpp_entity> context,
-	std::deque<AST::Token<std::string>>* identifiers,
-	std::deque<std::string>* identifier_texts,
+	std::deque<AST::Token<std::string>>* nodes,
+	std::deque<std::string>* identifiers,
 	bool declare_local,
 	std::shared_ptr<bpp::bpp_program> program
 );

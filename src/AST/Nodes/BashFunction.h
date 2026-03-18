@@ -24,7 +24,7 @@ class BashFunction : public ASTNode {
 			m_NAME = name;
 		}
 
-		std::ostream& prettyPrint(std::ostream& os, int indentation_level = 0) const override {
+		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashFunction function " << m_NAME.getValue() << "()";
 			for (const auto& child : children) {

@@ -12,7 +12,7 @@ namespace AST {
 
 class Connective : public ASTNode {
 	public:
-		enum class ConnectiveType {
+		enum class ConnectiveType : uint8_t {
 			AND,
 			OR
 		};
@@ -29,7 +29,7 @@ class Connective : public ASTNode {
 			m_TYPE = type;
 		}
 
-		std::ostream& prettyPrint(std::ostream& os, int indentation_level = 0) const override {
+		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(Connective "
 				<< (m_TYPE == ConnectiveType::AND ? "&&" : "||")

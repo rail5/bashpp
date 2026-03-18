@@ -59,7 +59,7 @@ class ASTNode {
 		void clear();
 		void clearChildren();
 
-		virtual std::ostream& prettyPrint(std::ostream& os, int indentation_level = 0) const = 0;
+		virtual std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const = 0;
 		friend std::ostream& operator<<(std::ostream& os, const ASTNode& node) {
 			return node.prettyPrint(os, 0);
 		}

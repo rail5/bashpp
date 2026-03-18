@@ -15,7 +15,7 @@ class BashArithmeticSubstitution : public ASTNode {
 		static constexpr AST::NodeType static_type = AST::NodeType::BashArithmeticSubstitution;
 		constexpr AST::NodeType getType() const override { return static_type; }
 
-		std::ostream& prettyPrint(std::ostream& os, int indentation_level = 0) const override {
+		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashArithmeticSubstitution $((";
 			for (const auto& child : children) {

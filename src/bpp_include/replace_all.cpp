@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "replace_all.h"
+
 /**
  * @brief Replace all occurences of a substring in a string
  * @param str The string to search in

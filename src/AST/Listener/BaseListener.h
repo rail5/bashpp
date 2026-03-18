@@ -154,11 +154,11 @@ class BaseListener {
 		}
 		#undef AST_LISTENER_NODE_LIST
 
-		inline void set_has_errors(bool has_errors) {
+		void set_has_errors(bool has_errors) {
 			this->program_has_errors = has_errors;
 		}
 
-		inline void set_parser_errors(const std::vector<AST::ParserError>& errors) {
+		void set_parser_errors(const std::vector<AST::ParserError>& errors) {
 			this->parser_errors = errors;
 			if (!errors.empty()) this->program_has_errors = true;
 		}

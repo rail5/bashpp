@@ -60,7 +60,7 @@ class MethodDefinition : public ASTNode {
 			m_PARAMETERS.insert(m_PARAMETERS.end(), parameters.begin(), parameters.end());
 		}
 
-		std::ostream& prettyPrint(std::ostream& os, int indentation_level = 0) const override {
+		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(MethodDefinition\n"
 				<< indent << "  " << (m_VIRTUAL ? "@virtual " : "");
@@ -71,6 +71,7 @@ class MethodDefinition : public ASTNode {
 				case AccessModifier::PROTECTED:
 					os << "@protected ";
 					break;
+				default: // TODO(@rail5): Is this an error case we should handle explicitly?
 				case AccessModifier::PRIVATE:
 					os << "@private ";
 					break;

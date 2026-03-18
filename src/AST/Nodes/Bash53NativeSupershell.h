@@ -24,7 +24,7 @@ class Bash53NativeSupershell : public ASTNode {
 			m_STARTTOKEN = start;
 		}
 
-		std::ostream& prettyPrint(std::ostream& os, int indentation_level = 0) const override {
+		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(Bash53NativeSupershell ${ ";
 			for (const auto& child : children) {

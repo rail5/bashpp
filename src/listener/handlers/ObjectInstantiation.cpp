@@ -28,7 +28,8 @@ void BashppListener::enterObjectInstantiation(std::shared_ptr<AST::ObjectInstant
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = latest_code_entity();
 
-	std::shared_ptr<bpp::bpp_object> new_object = std::make_shared<bpp::bpp_object>(object_name_text);
+	std::shared_ptr<bpp::bpp_object> new_object = std::make_shared<bpp::bpp_object>();
+	new_object->set_name(object_name_text);
 	entity_stack.push(new_object);
 
 	new_object->set_definition_position(

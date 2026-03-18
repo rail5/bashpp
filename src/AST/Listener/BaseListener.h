@@ -120,8 +120,6 @@ class BaseListener {
 		std::vector<AST::ParserError> parser_errors;
 
 	public:
-		virtual ~BaseListener() = default;
-
 		void walk(std::shared_ptr<AST::ASTNode> node) {
 			try {
 				switch (node->getType()) {

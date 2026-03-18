@@ -125,6 +125,11 @@ class BashppServer {
 		BashppServer();
 		~BashppServer() = default;
 
+		BashppServer(const BashppServer& other) = delete; // Non-copyable
+		BashppServer& operator=(const BashppServer& other) = delete;
+		BashppServer(BashppServer&& other) noexcept = delete; // Non-movable
+		BashppServer& operator=(BashppServer&& other) noexcept = delete;
+
 		void mainLoop();
 
 		void setInputStream(std::shared_ptr<std::istream> stream);

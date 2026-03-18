@@ -35,6 +35,11 @@ class ASTNode {
 	public:
 		ASTNode() = default;
 		virtual ~ASTNode() = default;
+
+		ASTNode(const ASTNode& other) = default;
+		ASTNode& operator=(const ASTNode& other) = default;
+		ASTNode(ASTNode&& other) noexcept = default;
+		ASTNode& operator=(ASTNode&& other) noexcept = default;
 		
 		virtual constexpr AST::NodeType getType() const = 0;
 

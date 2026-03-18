@@ -55,8 +55,6 @@ class BashppParser {
 		void _destroy_lexer();
 		void _parse();
 	public:
-		BashppParser() = default;
-		
 		void setUTF16Mode(bool enabled);
 		bool getUTF16Mode() const;
 

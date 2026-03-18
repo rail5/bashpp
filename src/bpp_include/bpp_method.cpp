@@ -9,10 +9,6 @@
 
 namespace bpp {
 
-bpp_method::bpp_method(const std::string& name) {
-	set_name(name);
-}
-
 /**
  * @brief Add a pointer to a non-primitive object as a parameter to the method
  * 
@@ -60,9 +56,10 @@ bool bpp_method::add_parameter(std::shared_ptr<bpp_method_parameter> parameter) 
 
 	if (parameter->get_class()->get_name() != "primitive") {
 		// Instantiate a temporary object for the parameter
-		std::shared_ptr<bpp_object> object = std::make_shared<bpp_object>(name, true);
+		std::shared_ptr<bpp_object> object = std::make_shared<bpp_object>();
 		object->set_class(parameter->get_class());
 		object->set_name(name);
+		object->set_pointer(true);
 		object->set_address(name);
 		object->set_definition_position(
 			parameter->get_initial_definition().file,

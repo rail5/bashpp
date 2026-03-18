@@ -32,6 +32,11 @@ class ThreadPool {
 		explicit ThreadPool(size_t threads = std::thread::hardware_concurrency());
 		~ThreadPool();
 
+		ThreadPool(const ThreadPool& other) = delete; // Non-copyable
+		ThreadPool& operator=(const ThreadPool& other) = delete;
+		ThreadPool(ThreadPool&& other) noexcept = delete; // Non-movable
+		ThreadPool& operator=(ThreadPool&& other) noexcept = delete;
+
 		/**
 		 * @brief Enqueue a new task to be executed by the thread pool.
 		 * 

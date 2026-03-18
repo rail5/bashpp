@@ -16,7 +16,8 @@ void BashppListener::enterMethodDefinition(std::shared_ptr<AST::MethodDefinition
 	std::string method_name = node->NAME().getValue();
 
 	// Add the method to entity stack
-	std::shared_ptr<bpp::bpp_method> method = std::make_shared<bpp::bpp_method>(method_name);
+	std::shared_ptr<bpp::bpp_method> method = std::make_shared<bpp::bpp_method>();
+	method->set_name(method_name);
 	method->inherit(program);
 	method->set_containing_class(current_class);
 

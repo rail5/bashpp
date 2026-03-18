@@ -35,7 +35,8 @@ void BashppListener::enterPointerDeclaration(std::shared_ptr<AST::PointerDeclara
 		throw bpp::ErrorHandling::SyntaxError(this, object_type, "Class not found: " + object_type_text);
 	}
 
-	std::shared_ptr<bpp::bpp_object> new_object = std::make_shared<bpp::bpp_object>(object_name_text);
+	std::shared_ptr<bpp::bpp_object> new_object = std::make_shared<bpp::bpp_object>();
+	new_object->set_name(object_name_text);
 	new_object->set_pointer(true);
 	new_object->set_containing_class(current_class);
 	entity_stack.push(new_object);

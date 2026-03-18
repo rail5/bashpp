@@ -8,13 +8,6 @@
 
 namespace bpp {
 
-bpp_object::bpp_object(const std::string& name) {
-	set_name(name);
-}
-bpp_object::bpp_object(const std::string& name, bool is_pointer) : m_is_pointer(is_pointer) {
-	set_name(name);
-}
-
 void bpp_object::set_class(std::shared_ptr<bpp_class> object_class) {
 	this->type = object_class;
 }

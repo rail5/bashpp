@@ -27,6 +27,13 @@ class Token {
 	public:
 		Token() = default;
 		Token(const T& value, uint32_t line, uint32_t column) : value(value), line(line), column(column) {}
+		~Token() = default;
+
+		Token(const Token& other) = default;
+		Token& operator=(const Token& other) = default;
+		Token(Token&& other) noexcept = default;
+		Token& operator=(Token&& other) noexcept = default;
+
 		const T& getValue() const {
 			return value;
 		}

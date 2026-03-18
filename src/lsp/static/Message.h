@@ -54,19 +54,16 @@ struct Message {
 struct RequestMessageBase : Message {
 	std::variant<int, std::string, std::nullptr_t> id;
 	std::string method;
-	virtual ~RequestMessageBase() = default;
 };
 
 struct ResponseMessageBase : Message {
 	std::variant<int, std::string, std::nullptr_t> id;
 	ResponseError error; // Error information if any
-	virtual ~ResponseMessageBase() = default;
 };
 
 struct NotificationMessageBase : Message {
 	std::string method;
 	// Notifications do not have an ID
-	virtual ~NotificationMessageBase() = default;
 };
 
 template<typename ParamsType>
@@ -281,7 +278,7 @@ struct RequestMessage : public RequestMessageBase {
 	ParamsType params;
 
 	RequestMessage() {
-		static_assert(std::is_base_of<RequestTraits<ParamsType>, RequestTraits<ParamsType>>::value,
+		static_assert(std::is_base_of_v<RequestTraits<ParamsType>, RequestTraits<ParamsType>>,
 			"No RequestTraits specialization found for this ParamsType");
 		method = RequestTraits<ParamsType>::method; // Set method from traits
 	}
@@ -388,7 +385,7 @@ struct NotificationMessage : public NotificationMessageBase {
 	ParamsType params;
 
 	NotificationMessage() {
-		static_assert(std::is_base_of<NotificationTraits<ParamsType>, NotificationTraits<ParamsType>>::value,
+		static_assert(std::is_base_of_v<NotificationTraits<ParamsType>, NotificationTraits<ParamsType>>,
 			"No NotificationTraits specialization found for this ParamsType");
 		method = NotificationTraits<ParamsType>::method; // Set method from traits
 	}

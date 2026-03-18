@@ -27,7 +27,7 @@ namespace AST {
  */
 class BashppParser {
 	private:
-		yyscan_t lexer;
+		yyscan_t lexer = nullptr;
 		std::shared_ptr<AST::Program> m_program = nullptr;
 		bool current_command_can_receive_lvalues = true; // State variable needed by the parser
 

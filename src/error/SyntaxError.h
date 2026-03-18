@@ -49,13 +49,13 @@ void print_parser_errors(
 class ErrorOrWarning : public std::runtime_error {
 	protected:
 		std::string source_file;
-		uint32_t line;
-		uint32_t column;
-		uint32_t text_length;
+		uint32_t line = 0;
+		uint32_t column = 0;
+		uint32_t text_length = 0;
 		std::vector<std::string> include_chain;
 		std::shared_ptr<bpp::bpp_program> program;
-		bool lsp_mode;
-		bool is_warning;
+		bool lsp_mode = false;
+		bool is_warning = false;
 
 		template <bpp::detail::ErrorReportableListener Listener, bpp::detail::ASTNodePtrORToken T>
 		void set_from_listener(Listener* listener, T error_ctx) {

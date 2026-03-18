@@ -22,8 +22,8 @@ template <class T>
 class Token {
 	private:
 		T value;
-		uint32_t line;
-		uint32_t column;
+		uint32_t line = 0;
+		uint32_t column = 0;
 	public:
 		Token() = default;
 		Token(const T& value, uint32_t line, uint32_t column) : value(value), line(line), column(column) {}

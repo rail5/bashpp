@@ -27,7 +27,7 @@ struct ParserPosition {
 	explicit ParserPosition(const std::string* f = nullptr, uint32_t l = 0, uint32_t c = 0)
 		: filename(f), line(l), column(c) {}
 
-	inline void initialize(const std::string* fn = nullptr, uint32_t l = 0, uint32_t c = 0) {
+	void initialize(const std::string* fn = nullptr, uint32_t l = 0, uint32_t c = 0) {
 		filename = fn;
 		line = l;
 		column = c;
@@ -38,7 +38,7 @@ struct ParserPosition {
 	 * 
 	 * @param count The number of lines to advance
 	 */
-	inline void lines(uint32_t count = 1) {
+	void lines(uint32_t count = 1) {
 		if (count) {
 			column = 0;
 			line += count;
@@ -50,7 +50,7 @@ struct ParserPosition {
 	 * 
 	 * @param count The number of columns to advance
 	 */
-	inline void columns(uint32_t count = 1) {
+	void columns(uint32_t count = 1) {
 		column += count;
 	}
 };
@@ -108,7 +108,7 @@ struct ParserLocation {
 	explicit ParserLocation(const std::string* f, uint32_t l = 0, uint32_t c = 0)
 		: begin(f, l, c), end(f, l, c) {}
 	
-	inline void initialize(const std::string* f = nullptr, uint32_t l = 0, uint32_t c = 0) {
+	void initialize(const std::string* f = nullptr, uint32_t l = 0, uint32_t c = 0) {
 		begin.initialize(f, l, c);
 		end = begin;
 	}
@@ -117,15 +117,15 @@ struct ParserLocation {
 	 * @brief Reset initial position to the end position
 	 * 
 	 */
-	inline void step() {
+	void step() {
 		begin = end;
 	}
 
-	inline void columns(uint32_t count = 1) {
+	void columns(uint32_t count = 1) {
 		end.columns(count);
 	}
 
-	inline void lines(uint32_t count = 1) {
+	void lines(uint32_t count = 1) {
 		end.lines(count);
 	}
 };

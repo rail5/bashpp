@@ -166,8 +166,8 @@ inline bool is_valid_identifier(const std::string& identifier) {
 
 struct SymbolPosition {
 	std::string file;
-	uint64_t line;
-	uint64_t column;
+	uint64_t line = 0;
+	uint64_t column = 0;
 
 	SymbolPosition() = default;
 	SymbolPosition(const std::string& file, uint64_t line, uint64_t column)
@@ -976,7 +976,7 @@ class bpp_object_assignment : public bpp_string {
  */
 class bpp_object_reference : public bpp_string {
 	private:
-		bpp::reference_type reference_type;
+		bpp::reference_type reference_type = bpp::reference_type::ref_object;
 		std::string array_index;
 	public:	
 		bpp_object_reference() = default;

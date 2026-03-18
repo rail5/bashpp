@@ -27,7 +27,7 @@ class ThreadPool {
 		std::queue<std::function<void()>> tasks;
 		std::mutex queue_mutex;
 		std::condition_variable condition;
-		bool stop;
+		bool stop = false;
 	public:
 		explicit ThreadPool(size_t threads = std::thread::hardware_concurrency());
 		~ThreadPool();

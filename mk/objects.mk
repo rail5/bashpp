@@ -1,57 +1,33 @@
-include mk/config.mk
+# Generic compilation rules
+#
+# Mirror the src/ directory structure into the object directory and compile
+# everything with a single pattern rule. Subtree-specific prerequisites are
+# expressed via dependency-only pattern rules below.
 
-$(BPP_OBJDIR)/%.o: $(BPP_INCLUDEDIR)/%.cpp $(BPP_HEADERS) $(LISTENER_HEADER) $(FLEXBISON_GENERATED_STAMP)
-	@mkdir -p $(BPP_OBJDIR)
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
 
-$(FLEXBISON_OBJDIR)/%.o: $(FLEXBISONDIR)/%.cpp
-	@mkdir -p $(FLEXBISON_OBJDIR)
-	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
-
-$(FLEXBISON_GENERATED_OBJDIR)/%.o: $(FLEXBISON_GENERATEDDIR)/%.cpp
-	@mkdir -p $(FLEXBISON_GENERATED_OBJDIR)
-	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
-
-$(LISTENER_OBJDIR)/%.o: $(LISTENER_SRCDIR)/%.cpp $(BPP_HEADERS) $(LISTENER_HEADER) $(FLEXBISON_GENERATED_STAMP)
-	@mkdir -p $(LISTENER_OBJDIR)
-	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
-
-$(COMPILER_HANDLERS_OBJDIR)/%.o: $(COMPILER_HANDLERS_SRCDIR)/%.cpp $(BPP_HEADERS) $(LISTENER_HEADER) $(FLEXBISON_GENERATED_STAMP)
-	@mkdir -p $(COMPILER_HANDLERS_OBJDIR)
-	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
-
-$(AST_OBJDIR)/%.o: $(AST_SRCDIR)/%.cpp $(FLEXBISON_GENERATED_STAMP)
-	@mkdir -p $(AST_OBJDIR)
-	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
-
-$(ERROR_OBJDIR)/%.o: $(SRCDIR)/error/%.cpp $(FLEXBISON_GENERATED_STAMP)
-	@mkdir -p $(ERROR_OBJDIR)
-	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
-
-$(MAIN_OBJ): $(MAIN) $(FLEXBISON_GENERATED_STAMP) $(FLEXBISON_GENERATED_SRCS) $(BPP_HEADERS) $(LISTENER_HEADER) $(SRCDIR)/version.h $(SRCDIR)/updated_year.h
-	@mkdir -p $(OBJDIR)
-	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
-
-
-$(LSP_OBJDIR)/%.o: $(LSPDIR)/%.cpp $(LSP_GENERATED_STAMP) $(FLEXBISON_GENERATED_STAMP)
-	@mkdir -p $(LSP_OBJDIR)
-	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
-
-$(LSP_INCLUDE_OBJDIR)/%.o: $(LSP_INCLUDEDIR)/%.cpp $(LSP_GENERATED_STAMP) $(FLEXBISON_GENERATED_STAMP) $(BPP_HEADERS) $(LISTENER_HEADER)
-	@mkdir -p $(LSP_INCLUDE_OBJDIR)
-	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
-
-$(LSP_HANDLERS_OBJDIR)/%.o: $(LSP_HANDLERDIR)/%.cpp $(LSP_GENERATED_STAMP) $(FLEXBISON_GENERATED_STAMP) $(BPP_HEADERS) $(LISTENER_HEADER)
-	@mkdir -p $(LSP_HANDLERS_OBJDIR)
-	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
-
-$(LSP_GENERATOR_OBJDIR)/%.o: $(LSP_GENERATORDIR)/%.cpp $(LSPDIR)/metaModel.json
-	@mkdir -p $(LSP_GENERATOR_OBJDIR)
+# The LSP generator is not part of the compiler itself.
+# It's an intermediary tool that we use to generate classes for the LSP implementation
+$(OBJDIR)/lsp/generator/%.o: $(SRCDIR)/lsp/generator/%.cpp $(LSPDIR)/metaModel.json
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(OBJDIR)/bpp-lsp.o: $(SRCDIR)/bpp-lsp.cpp $(FLEXBISON_GENERATED_STAMP) $(LSP_GENERATED_STAMP) $(BPP_HEADERS) $(LISTENER_HEADER) $(LSP_STATIC_FILES) $(SRCDIR)/version.h $(SRCDIR)/updated_year.h
-	@mkdir -p $(OBJDIR)
-	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
+# Generated-code prerequisites
+#
+# We avoid per-subtree pattern rules; instead, we attach the generator stamps to
+# the explicit object lists that need them.
+
+# Flex/Bison-generated sources are prerequisites for everything, since the generated
+# headers are included throughout the compiler and language server code.
+$(BPP_OBJS) $(FLEXBISON_GENERATED_OBJS) $(MAIN_OBJ) $(LSP_MAIN_OBJ) $(LSP_OBJS): $(FLEXBISON_GENERATED_STAMP)
+
+# LSP-generated sources are prerequisites for the language server objects and entrypoint
+$(LSP_MAIN_OBJ) $(LSP_OBJS): $(LSP_GENERATED_STAMP)
+
+# Both entrypoints depend on the version and updated year headers, which are generated from debian/changelog
+$(MAIN_OBJ) $(LSP_MAIN_OBJ): $(SRCDIR)/version.h $(SRCDIR)/updated_year.h
 
 
 clean-objects:

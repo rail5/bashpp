@@ -7,7 +7,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <listener/BashppListener.h>
-#include <include/exit_code.h>
 #include <bpp_include/templates.h>
 #include <error/SyntaxError.h>
 
@@ -60,7 +59,7 @@ void BashppListener::exitProgram(std::shared_ptr<AST::Program> node) {
 	}
 
 	if (program_has_errors) {
-		bpp_exit_code = EXIT_FAILURE;
+		this->exit_code = EXIT_FAILURE;
 		if (!included) {
 			unlink(output_file.c_str());
 		}
@@ -91,7 +90,7 @@ void BashppListener::exitProgram(std::shared_ptr<AST::Program> node) {
 		// Below is a small bit of code to compensate for the fact that WEXITSTATUS doesn't work the same on all systems
 		// This code will work on all systems
 		// The exit code is stored in the lower 8 bits of the return value of the system() function
-		bpp_exit_code = (system(command.c_str()) & 0xff00) >> 8;
+		this->exit_code = (system(command.c_str()) & 0xff00) >> 8;
 		unlink(output_file.c_str());
 	}
 }

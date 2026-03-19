@@ -24,7 +24,7 @@ GenericResponseMessage bpp::BashppServer::handleCompletion(const GenericRequestM
 		return response;
 	}
 
-	// Wait for stored_changes_content_updating to be false before proceeding
+	// Wait for processing_didChange to be false before proceeding
 	// Just to make sure we're suggesting completions based on the latest content
 	// When the user types '.', the client will send a didChange notification,
 	// and then immediately after, it'll send a completion request.

@@ -53,6 +53,13 @@ class BashppListener;
 class BashppListener : public AST::BaseListener<BashppListener>, std::enable_shared_from_this<BashppListener> {
     private:
 		/**
+		 * @var exit_code
+		 * @brief The exit code to return when the compiler finishes (default is 0, which means success)
+		 * 
+		 */
+		int exit_code = 0;
+
+		/**
 		 * @var source_file
 		 * @brief Path to the source file being compiled (used for error reporting)
 		 */
@@ -172,6 +179,8 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 	const std::vector<std::string>& get_include_stack() const;
 	std::string get_source_file() const;
 	bool get_lsp_mode() const;
+
+	int get_exit_code() const;
 
 	std::shared_ptr<bpp::bpp_code_entity> latest_code_entity();
 

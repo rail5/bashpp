@@ -16,9 +16,6 @@
  * As for the rest, the Doxygen documentation will provide details on the compiler's different classes and functions.
 */
 
-#include <include/exit_code.h>
-volatile int bpp_exit_code = 0;
-
 #include <iostream>
 #include <fstream>
 #include <filesystem>
@@ -145,30 +142,34 @@ int main(int argc, char* argv[]) {
 		args.output_file = std::string(temp_file_vec.data());
 	}
 
+	std::unique_ptr<BashppListener> listener = std::make_unique<BashppListener>();
+	listener->set_source_file(full_path);
+	listener->set_include_paths(args.include_paths);
+	listener->set_code_buffer(code_buffer);
+	listener->set_output_stream(output_stream);
+	listener->set_output_file(args.output_file.value_or(""));
+	listener->set_run_on_exit(run_on_exit);
+	listener->set_suppress_warnings(args.suppress_warnings);
+	listener->set_target_bash_version(args.target_bash_version);
+	listener->set_arguments(args.program_arguments);
+	listener->set_parser_errors(parser_errors);
+
 	try {
 		// Walk the tree
-		std::unique_ptr<BashppListener> listener = std::make_unique<BashppListener>();
-		listener->set_source_file(full_path);
-		listener->set_include_paths(args.include_paths);
-		listener->set_code_buffer(code_buffer);
-		listener->set_output_stream(output_stream);
-		listener->set_output_file(args.output_file.value_or(""));
-		listener->set_run_on_exit(run_on_exit);
-		listener->set_suppress_warnings(args.suppress_warnings);
-		listener->set_target_bash_version(args.target_bash_version);
-		listener->set_arguments(args.program_arguments);
-		listener->set_parser_errors(parser_errors);
 		listener->walk(program);
 
 	} catch (const bpp::ErrorHandling::InternalError& e) {
 		std::cerr << "Internal error: " << e.what() << std::endl;
+		return 1;
 	} catch (const std::exception& e) {
 		std::cerr << "Standard exception: " << e.what() << std::endl;
 		// Output the type of the exception
 		std::cerr << "Exception type: " << typeid(e).name() << std::endl;
+		return 1;
 	} catch (...) {
 		std::cerr << "Unknown exception occurred" << std::endl;
+		return 1;
 	}
 
-	return bpp_exit_code;
+	return listener->get_exit_code();
 }

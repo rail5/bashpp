@@ -29,9 +29,6 @@ int client_fd = -1;
 int server_fd = -1;
 int socket_port = 0;
 
-#include <include/exit_code.h>
-volatile int bpp_exit_code = 0;
-
 int main(int argc, char* argv[]) {
 	// Trap signals
 	(void)std::signal(SIGINT, signal_handler);

@@ -86,6 +86,10 @@ bool BashppListener::get_lsp_mode() const {
 	return lsp_mode;
 }
 
+int BashppListener::get_exit_code() const {
+	return exit_code;
+}
+
 bool BashppListener::should_declare_local() const {
 	return in_class || in_method || (!bash_function_stack.empty());
 }

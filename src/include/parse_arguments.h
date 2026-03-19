@@ -86,7 +86,8 @@ inline Arguments parse_arguments(int argc, char* argv[]) {
 	auto [compiler_arguments, program_arguments]
 		= OptionParser.parse_until<XGetOpt::StopCondition::AfterFirstNonOptionArgument>(argc, argv);
 
-	args.program_arguments = std::vector<char*>{program_arguments.argv, program_arguments.argv + program_arguments.argc};
+	auto remainder = std::span<char*>{program_arguments.argv, static_cast<size_t>(program_arguments.argc)};
+	args.program_arguments = std::vector<char*>(remainder.begin(), remainder.end());
 
 	if (compiler_arguments.getNonOptionArguments().size() > 0) {
 		args.input_file = std::string(compiler_arguments.getNonOptionArguments()[0]);
@@ -95,6 +96,10 @@ inline Arguments parse_arguments(int argc, char* argv[]) {
 	bool received_output_filename = false;
 	for (const auto& arg : compiler_arguments) {
 		switch (arg.getShortOpt()) {
+			default:
+				// This should never happen since XGetOpt should throw on unrecognized options
+				std::cerr << program_name << ": Warning: Unhandled option '" << arg.getArgument() << "'" << std::endl;
+				break;
 			case 'b':
 				// Parse the target Bash version
 				{
@@ -119,7 +124,7 @@ inline Arguments parse_arguments(int argc, char* argv[]) {
 				if (!std::filesystem::exists(arg.getArgument()) || !std::filesystem::is_directory(arg.getArgument())) {
 					throw std::runtime_error("Include path '" + std::string(arg.getArgument()) + "' does not exist or is not a directory");
 				}
-				args.include_paths->push_back(std::string(arg.getArgument()));
+				args.include_paths->emplace_back(arg.getArgument());
 				break;
 			case 'o':
 				if (received_output_filename) {

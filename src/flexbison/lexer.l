@@ -913,7 +913,7 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 }
 
 "fi"/[ \t\n] {
-	if (thisLexerState.if_depth > 0) {
+	if (thisLexerState.incoming_token_can_be_lvalue && thisLexerState.if_depth > 0) {
 		thisLexerState.if_depth--;
 		emit(BASH_KEYWORD_FI);
 	} else {
@@ -922,7 +922,7 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 }
 
 "elif"/[ \t\n] {
-	if (thisLexerState.if_depth > 0) {
+	if (thisLexerState.incoming_token_can_be_lvalue && thisLexerState.if_depth > 0) {
 		// The next token can and should be an lvalue
 		thisModeStack.push(BASH_IF_MODE);
 		emit(BASH_KEYWORD_ELIF);
@@ -932,7 +932,7 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 }
 
 "else"/[ \t\n] {
-	if (thisLexerState.if_depth > 0) {
+	if (thisLexerState.incoming_token_can_be_lvalue && thisLexerState.if_depth > 0) {
 		emit(BASH_KEYWORD_ELSE);
 	} else {
 		emit(IDENTIFIER, tokenText);

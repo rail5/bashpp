@@ -59,3 +59,35 @@
 @myObject.secondPass # "@this.anothermember is case1"
 @myObject.updateAnother "default"
 @myObject.secondPass # "default"
+
+function success() {
+	return 0
+}
+
+function failure() {
+	return 1
+}
+
+if success; then
+	echo something
+elif failure; then
+	echo something else
+else
+	echo something still different
+fi
+
+if failure; then
+	echo something
+elif success; then
+	echo something else
+else
+	echo something still different
+fi
+
+if failure; then
+	echo something
+elif failure; then
+	echo something else
+else
+	echo something still different
+fi

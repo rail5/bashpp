@@ -49,36 +49,36 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	if (args.exit_early) {
+	if (args.exit_early()) {
 		return 0;
 	}
 
 	bool run_on_exit = false;
 
-	if (args.output_file.has_value() && args.output_file.value() != "-") {
-		output_stream = std::make_shared<std::ofstream>(args.output_file.value());
+	if (args.output_file().has_value() && args.output_file().value() != "-") {
+		output_stream = std::make_shared<std::ofstream>(args.output_file().value());
 		if (!std::dynamic_pointer_cast<std::ofstream>(output_stream)->is_open()) {
-			std::cerr << program_name << ": Error: Could not open output file '" << args.output_file.value() << "'" << std::endl;
+			std::cerr << program_name << ": Error: Could not open output file '" << args.output_file().value() << "'" << std::endl;
 			return 1;
 		}
-	} else if (!args.output_file.has_value()) {
+	} else if (!args.output_file().has_value()) {
 		run_on_exit = true; // If no output file was given, we run the program on exit
 	}
 
-	if (args.input_file.has_value()) {
+	if (args.input_file().has_value()) {
 		// Verify that the file exists, is readable, and is a regular file
-		if (!std::filesystem::exists(args.input_file.value())) {
-			std::cerr << program_name << ": Error: Source file '" << args.input_file.value() << "' does not exist" << std::endl;
+		if (!std::filesystem::exists(args.input_file().value())) {
+			std::cerr << program_name << ": Error: Source file '" << args.input_file().value() << "' does not exist" << std::endl;
 			return 1;
 		}
-		if (!std::filesystem::is_regular_file(args.input_file.value())) {
-			std::cerr << program_name << ": Error: Source file '" << args.input_file.value() << "' is not a regular file" << std::endl;
+		if (!std::filesystem::is_regular_file(args.input_file().value())) {
+			std::cerr << program_name << ": Error: Source file '" << args.input_file().value() << "' is not a regular file" << std::endl;
 			return 1;
 		}
 	}
 
 	/* If the user didn't provide input, let them know, rather than just hang waiting for cin */
-	if (!args.input_file.has_value() && isatty(fileno(stdin))) {
+	if (!args.input_file().has_value() && isatty(fileno(stdin))) {
 		std::cerr << program_name << " " << bpp_compiler_version << std::endl
 			<< help_intro << OptionParser.getHelpString();
 		return 1;
@@ -86,22 +86,22 @@ int main(int argc, char* argv[]) {
 
 	std::string full_path;
 	char resolved_path[PATH_MAX];
-	if (!args.input_file.has_value()) {
+	if (!args.input_file().has_value()) {
 		full_path = "<stdin>";
-	} else if (realpath(args.input_file.value().c_str(), resolved_path) == nullptr) {
-		std::cerr << "Error: Could not get full path of source file '" << args.input_file.value() << "'" << std::endl;
+	} else if (realpath(args.input_file().value().c_str(), resolved_path) == nullptr) {
+		std::cerr << "Error: Could not get full path of source file '" << args.input_file().value() << "'" << std::endl;
 		return 1;
 	} else {
 		full_path = std::string(resolved_path);
 	}
 
 	AST::BashppParser parser;
-	if (!args.input_file.has_value()) {
+	if (!args.input_file().has_value()) {
 		parser.setInputFromFilePtr(stdin, "<stdin>");
 	} else {
 		parser.setInputFromFilePath(full_path);
 	}
-	parser.setDisplayLexerOutput(args.display_tokens);
+	parser.setDisplayLexerOutput(args.display_tokens());
 	
 	auto program = parser.program();
 	const auto& parser_errors = parser.get_errors();
@@ -111,11 +111,11 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	if (args.display_parse_tree) {
+	if (args.display_parse_tree()) {
 		// '-p' given, exit after displaying the parse tree
 		std::cout << *program << std::endl;
 		return 0;
-	} else if (args.display_tokens) {
+	} else if (args.display_tokens()) {
 		// '-t' given (lexer tokens displayed), exit now even if we didn't display the parse tree
 		return 0;
 	}
@@ -139,19 +139,19 @@ int main(int argc, char* argv[]) {
 			return 1;
 		}
 		output_stream = std::dynamic_pointer_cast<std::ostream>(ostream);
-		args.output_file = std::string(temp_file_vec.data());
+		args.set_output_file(std::string(temp_file_vec.data()));
 	}
 
 	std::unique_ptr<BashppListener> listener = std::make_unique<BashppListener>();
 	listener->set_source_file(full_path);
-	listener->set_include_paths(args.include_paths);
+	listener->set_include_paths(args.include_paths());
 	listener->set_code_buffer(code_buffer);
 	listener->set_output_stream(output_stream);
-	listener->set_output_file(args.output_file.value_or(""));
+	listener->set_output_file(args.output_file().value_or(""));
 	listener->set_run_on_exit(run_on_exit);
-	listener->set_suppress_warnings(args.suppress_warnings);
-	listener->set_target_bash_version(args.target_bash_version);
-	listener->set_arguments(args.program_arguments);
+	listener->set_suppress_warnings(args.suppress_warnings());
+	listener->set_target_bash_version(args.target_bash_version());
+	listener->set_arguments(args.program_arguments());
 	listener->set_parser_errors(parser_errors);
 
 	try {

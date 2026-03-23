@@ -65,18 +65,6 @@ int main(int argc, char* argv[]) {
 		run_on_exit = true; // If no output file was given, we run the program on exit
 	}
 
-	if (args.input_file().has_value()) {
-		// Verify that the file exists, is readable, and is a regular file
-		if (!std::filesystem::exists(args.input_file().value())) {
-			std::cerr << program_name << ": Error: Source file '" << args.input_file().value() << "' does not exist" << std::endl;
-			return 1;
-		}
-		if (!std::filesystem::is_regular_file(args.input_file().value())) {
-			std::cerr << program_name << ": Error: Source file '" << args.input_file().value() << "' is not a regular file" << std::endl;
-			return 1;
-		}
-	}
-
 	/* If the user didn't provide input, let them know, rather than just hang waiting for cin */
 	if (!args.input_file().has_value() && isatty(fileno(stdin))) {
 		std::cerr << program_name << " " << bpp_compiler_version << std::endl

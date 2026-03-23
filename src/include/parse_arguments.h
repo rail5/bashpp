@@ -97,7 +97,23 @@ class Arguments {
 			return this->m_program_arguments;
 		}
 
+		/**
+		 * @brief Sets the input file for the compiler
+		 *
+		 * If no input file is set, the compiler will read from stdin.
+		 * The method verifies that the provided input file exists and is a regular file.
+		 * 
+		 * @param input_file The path to the input file to compile
+		 * @throws std::runtime_error if the input file does not exist or is not a regular file
+		 */
 		void set_input_file(const std::string_view& input_file) {
+			// Verify that the file exists and is a regular file
+			if (!std::filesystem::exists(input_file)) {
+				throw std::runtime_error("Source file '" + std::string(input_file) + "' does not exist");
+			}
+			if (!std::filesystem::is_regular_file(input_file)) {
+				throw std::runtime_error("Source file '" + std::string(input_file) + "' is not a regular file");
+			}
 			this->m_input_file = input_file;
 		}
 		const std::optional<std::string>& input_file() const {

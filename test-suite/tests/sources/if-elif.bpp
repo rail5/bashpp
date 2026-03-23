@@ -60,33 +60,25 @@
 @myObject.updateAnother "default"
 @myObject.secondPass # "default"
 
-function success() {
-	return 0
-}
-
-function failure() {
-	return 1
-}
-
-if success; then
+if true; then
 	echo something
-elif failure; then
+elif false; then
 	echo something else
 else
 	echo something still different
 fi
 
-if failure; then
+if false; then
 	echo something
-elif success; then
+elif true; then
 	echo something else
 else
 	echo something still different
 fi
 
-if failure; then
+if false; then
 	echo something
-elif failure; then
+elif false; then
 	echo something else
 else
 	echo something still different

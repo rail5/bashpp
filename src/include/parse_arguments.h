@@ -120,9 +120,8 @@ inline Arguments parse_arguments(int argc, char* argv[]) {
 				return args;
 				break;
 			case 'I':
-				// Verify the given include path is a directory
-				if (!std::filesystem::exists(arg.getArgument()) || !std::filesystem::is_directory(arg.getArgument())) {
-					throw std::runtime_error("Include path '" + std::string(arg.getArgument()) + "' does not exist or is not a directory");
+				if (!std::filesystem::is_directory(arg.getArgument())) {
+					throw std::runtime_error("Include path '" + std::string(arg.getArgument()) + "' is not a directory");
 				}
 				args.include_paths->emplace_back(arg.getArgument());
 				break;

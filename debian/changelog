@@ -1,3 +1,33 @@
+bpp (0.8.7) unstable; urgency=medium
+
+  * Lexer bug fix: Only register elif/else/fi as keywords if they're
+    lvalues
+  * Build system: Simplified and generalized build system with
+    auto-discovered sources
+    Refactored the build system to remove per- directory object rules
+    and replace them with a single generic pattern that mirrors the
+    source tree into bin/obj.
+  * Code style improvements:
+    Replaced global bpp_exit_code with data member of the Listener class
+    Replaced pointer arithmetic in parse_arguments() with std::span usage
+    Added default case to xgetopt switch
+    No need to explicitly default virtual destructors for LSP message
+    base types
+    Explicit member initialization everywhere
+    Use emplace_back() for temporaries
+    Explicitly handle ownership semantics in BashppParser
+    Use BashppParser.setInputFromFilePath instead of from FilePtr where
+    ownership may be ambiguous
+    bpp-lsp: Moved URI validation to freestanding function
+    Option parsing: Allow non-regular files (such as /dev/null) for output,
+    just check whether we have write permission
+  * Test suite: Added '-c' option to benchmark compile times without actually
+    *running* the compiled tests 
+  * Parser: error out of datamember declarations when given an lvalue object
+    reference instead of a proper object instantiation
+
+ -- rail5 <andrew@rail5.org>  Mon, 23 Mar 2026 08:07:44 +0800
+
 bpp (0.8.6) unstable; urgency=medium
 
   * Supershells: Preserve stderr as subshells do

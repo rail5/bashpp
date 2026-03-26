@@ -41,7 +41,11 @@ The FILE can be any Bash++ source file. If you give the file in **quotes** (`"FI
 
 The default include type is `static`. If you do not specify a type, the file will be included as a static include.
 
-The default include path (for angle-bracket includes) is `/usr/lib/bpp/stdlib/`. You can add more directories to the compiler's include paths using the `-I` option. The include paths are searched in the order they are given.
+You can add more directories to the compiler's include paths using the `-I` option.
+
+The include paths are searched in the order they are given.
+
+The *last* include path is always `/usr/lib/bpp/stdlib`, which contains the Bash++ standard library. This also means that you can override standard library files by providing your own versions as `-I/path/to/stdlib/`, which will then be searched *before* the default standard library directory.
 
 # SEE ALSO
 

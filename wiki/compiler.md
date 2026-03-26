@@ -37,9 +37,11 @@ The default is Bash 5.2. This affects how the program is compiled, but does not 
 
 Add a directory to the include paths.
 
-The default include path is `/usr/lib/bpp/stdlib`
+Files in the include paths can be included with `@include <file>`.
 
-Files in the include paths can be included with `@include <file>`. Include paths are searched in the order they are given.
+Include paths are searched in the order they are given.
+
+The *last* include path is always `/usr/lib/bpp/stdlib`.
 
 ###### `-s`, `--no-warnings`
 
@@ -63,6 +65,4 @@ Display the version of the Bash++ compiler.
 
 # Include Paths
 
-When an include directive is given with angle-brackets (as in `@include <file>`), the compiler will search for the file in the include paths. By default, `/usr/lib/bpp/stdlib` is the first include path.
-
-Multiple include paths can be added with the `-I` option. The paths are searched in the order they are given.
+When an include directive is given with angle-brackets (as in `@include <file>`), the compiler will search for the file in the include paths. The last include path is always `/usr/lib/bpp/stdlib`, which contains the Bash++ standard library. The include paths are searched in the order they are given.

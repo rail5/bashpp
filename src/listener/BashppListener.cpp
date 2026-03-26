@@ -12,6 +12,10 @@ void BashppListener::set_source_file(std::string source_file) {
 
 void BashppListener::set_include_paths(std::shared_ptr<std::vector<std::string>> include_paths) {
 	this->include_paths = std::move(include_paths);
+	// Ensure that the standard library directory is always included
+	//  and is always the LAST include path
+	//  (so that user-provided include paths can override the standard library if needed)
+	this->include_paths->emplace_back("/usr/lib/bpp/stdlib/");
 }
 
 void BashppListener::set_included(bool included) {

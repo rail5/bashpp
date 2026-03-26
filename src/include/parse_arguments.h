@@ -77,22 +77,6 @@ class Arguments {
 		bool f_exit_early = false; // Exit early if the request is just -h/--help or -v/--version
 
 	public:
-		constexpr Arguments() {
-			// Ensure that the standard library directory is the very first include path
-			//
-			// TODO(@rail5): This does not seem like the proper place to make this guarantee.
-			// In what sense is "ensuring the standard library is in the include paths" the
-			//  responsibility of the CLI argument parser?
-			// Review the design of how include paths are managed and consider whether this
-			//  guarantee should be made elsewhere.
-			m_include_paths->emplace_back("/usr/lib/bpp/stdlib3/");
-		}
-		~Arguments() = default;
-		Arguments(const Arguments&) = delete;
-		Arguments& operator=(const Arguments&) = delete;
-		Arguments(Arguments&&) = default;
-		Arguments& operator=(Arguments&&) = default;
-
 		/**
 		 * @brief Sets the program arguments to be passed to the compiled program
 		 *
@@ -216,8 +200,9 @@ class Arguments {
 		 * @brief Adds a directory to the include paths
 		 *
 		 * The include paths are directories that the compiler will search for included files.
-		 * The first include path is always /usr/lib/bpp/stdlib/, which contains the standard library for Bash++.
-		 * Additional include paths are searched in the order they are given
+		 * The last include path is always /usr/lib/bpp/stdlib/, which contains the standard library for Bash++.
+		 * Additional include paths are searched in the order they are given, and all include paths are searched
+		 *  before the standard library path, allowing users to override standard library files if needed.
 		 * 
 		 * @param path The directory path to add to the include paths
 		 * @throws std::runtime_error if the provided path is not a directory

@@ -39,6 +39,10 @@ constexpr bool is_ws(char c) {
 	return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f' || c == '\v';
 }
 
+constexpr bool is_ws_but_not_newline(char c) {
+	return c == ' ' || c == '\t' || c == '\r' || c == '\f' || c == '\v';
+}
+
 /**
  * @struct FixedString
  * @brief A fixed-size string class for compile-time string manipulation
@@ -59,6 +63,10 @@ struct FixedString {
 			if (size < N) data[size] = '\0';
 		}
 		constexpr ~FixedString() = default;
+		constexpr FixedString(const FixedString& other) = default;
+		constexpr FixedString(FixedString&& other) noexcept = default;
+		constexpr FixedString& operator=(const FixedString& other) = default;
+		constexpr FixedString& operator=(FixedString&& other) = default;
 		
 		constexpr const char* c_str() const {
 			return data.data();
@@ -276,8 +284,6 @@ constexpr size_t option_label_length(const T& option) {
 			break;
 	}
 
-	//length += 1; // Null terminator
-
 	return length;
 }
 
@@ -331,8 +337,18 @@ constexpr size_t calculate_help_string_length(const std::array<T, N>& options) {
 
 		while (idx < desc.size()) {
 			// Skip whitespace
-			while (idx < desc.size() && is_ws(desc[idx])) ++idx;
+			while (idx < desc.size() && is_ws_but_not_newline(desc[idx])) ++idx;
 			if (idx >= desc.size()) break;
+
+			// On newline,
+			// Add a line break, and then indent to the description column on the next line
+			if (desc[idx] == '\n') {
+				total_length += 1; // '\n'
+				total_length += max_label_length + 3; // indentation to description column
+				pos = max_label_length + 3;
+				idx++;
+				continue;
+			}
 
 			// Find word end
 			size_t end = idx;
@@ -510,7 +526,7 @@ class OptionSequence {
  *     and it as well as any subsequent arguments are left unparsed
  * 
  */
-enum StopCondition {
+enum StopCondition : uint8_t {
 	AllOptions,
 	BeforeFirstNonOptionArgument,
 	AfterFirstNonOptionArgument,
@@ -572,9 +588,9 @@ class OptionParser {
 
 		static constexpr size_t help_string_length = Helpers::calculate_help_string_length<N>(options);
 		
-		static constexpr std::array<char, 3*N + 2> build_short_options_(const OptionArray& opts) {
+		static constexpr std::array<char, (3*N) + 2> build_short_options_(const OptionArray& opts) {
 			size_t short_opt_index = 0;
-			std::array<char, 3*N + 2> short_opts{};
+			std::array<char, (3*N) + 2> short_opts{};
 
 			// Flag: REQUIRE_ORDER
 			// This means that option processing stops at the first non-option argument as mandated by POSIX
@@ -626,7 +642,7 @@ class OptionParser {
 			return long_opts;
 		}
 
-		static constexpr std::array<char, 3*N + 2> short_options = build_short_options_(options);
+		static constexpr std::array<char, (3*N) + 2> short_options = build_short_options_(options);
 		static constexpr std::array<struct option, N + 1> long_options = build_long_options_(options);
 
 		static constexpr Helpers::FixedString<help_string_length> generateHelpString(const OptionArray& options) {
@@ -688,8 +704,18 @@ class OptionParser {
 				size_t idx = 0;
 
 				while (idx < desc.size()) {
-					while (idx < desc.size() && Helpers::is_ws(desc[idx])) ++idx;
+					while (idx < desc.size() && Helpers::is_ws_but_not_newline(desc[idx])) ++idx;
 					if (idx >= desc.size()) break;
+
+					// On newline,
+					// Add a line break, and then indent to the description column on the next line
+					if (desc[idx] == '\n') {
+						help_string.append('\n');
+						help_string.append(' ', desc_col);
+						pos = desc_col;
+						idx++;
+						continue;
+					}
 
 					size_t end = idx;
 					while (end < desc.size() && !Helpers::is_ws(desc[end])) ++end;
@@ -778,7 +804,7 @@ class OptionParser {
 			auto token_to_long_name = [&](const char* tok) -> std::string_view {
 				if (!tok) return {};
 				std::string_view sv(tok);
-				if (sv.rfind("--", 0) != 0) return {};
+				if (!sv.starts_with("--")) return {};
 				sv.remove_prefix(2);
 				if (auto eq = sv.find('='); eq != std::string_view::npos) {
 					sv = sv.substr(0, eq);

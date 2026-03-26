@@ -77,6 +77,22 @@ class Arguments {
 		bool f_exit_early = false; // Exit early if the request is just -h/--help or -v/--version
 
 	public:
+		constexpr Arguments() {
+			// Ensure that the standard library directory is the very first include path
+			//
+			// TODO(@rail5): This does not seem like the proper place to make this guarantee.
+			// In what sense is "ensuring the standard library is in the include paths" the
+			//  responsibility of the CLI argument parser?
+			// Review the design of how include paths are managed and consider whether this
+			//  guarantee should be made elsewhere.
+			m_include_paths->emplace_back("/usr/lib/bpp/stdlib3/");
+		}
+		~Arguments() = default;
+		Arguments(const Arguments&) = delete;
+		Arguments& operator=(const Arguments&) = delete;
+		Arguments(Arguments&&) = default;
+		Arguments& operator=(Arguments&&) = default;
+
 		/**
 		 * @brief Sets the program arguments to be passed to the compiled program
 		 *
@@ -247,8 +263,6 @@ class Arguments {
 
 inline Arguments parse_arguments(int argc, char* argv[]) {
 	Arguments args;
-
-	args.add_include_path("/usr/lib/bpp/stdlib/");
 
 	// Will throw if invalid arguments are provided
 	auto [compiler_arguments, program_arguments]

@@ -82,6 +82,10 @@ int main(int argc, char* argv[]) {
 
 	for (const auto& arg : parsed_options) {
 		switch (arg.getShortOpt()) {
+			default:
+				// This should never happen since XGetOpt should throw on unrecognized options
+				std::cerr << "bpp-lsp: Warning: Unhandled option '" << static_cast<char>(arg.getShortOpt()) << "'" << std::endl;
+				break;
 			case 'h':
 				std::cout << help_intro << OptionParser.getHelpString();
 				return 0;

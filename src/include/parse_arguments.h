@@ -263,7 +263,7 @@ inline Arguments parse_arguments(int argc, char* argv[]) {
 		switch (arg.getShortOpt()) {
 			default:
 				// This should never happen since XGetOpt should throw on unrecognized options
-				std::cerr << program_name << ": Warning: Unhandled option '" << arg.getArgument() << "'" << std::endl;
+				std::cerr << program_name << ": Warning: Unhandled option '" << static_cast<char>(arg.getShortOpt()) << "'" << std::endl;
 				break;
 			case 'b':
 				args.set_target_bash_version(arg.getArgument());

@@ -65,7 +65,7 @@ void yyerror(const char *s);
 		if (command->getChildren().size() != 1) return false;
 		auto redirection = std::dynamic_pointer_cast<AST::BashRedirection>(command->getChildren()[0]);
 		if (redirection == nullptr) return false;
-		if (redirection->OPERATOR().getValue().find('<') == std::string::npos) return false;
+		if (!redirection->OPERATOR().getValue().contains('<')) return false;
 		return true;
 	}
 }

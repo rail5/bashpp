@@ -146,7 +146,7 @@ code_segment generate_method_call_code(
 
 	std::shared_ptr<bpp::bpp_method> assumed_method = assumed_class->get_method_UNSAFE(method_name);
 	if (assumed_method == nullptr) {
-		if (method_name.rfind("__", 0) == 0) {
+		if (method_name.starts_with("__")) {
 			// If the method is a system method, we assume it exists
 			// This is a hack to allow system methods to be called without being defined
 			// TODO(@rail5): Replace this hack with proper system method registry

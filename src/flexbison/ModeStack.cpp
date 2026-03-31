@@ -11,9 +11,7 @@ extern void scanner_pop_state(yyscan_t yyscanner);
 extern int scanner_current_state(yyscan_t yyscanner);
 
 void ModeStack::bind(yyscan_t lexer) {
-	if (relevant_lexer != nullptr) {
-		return; // Already bound
-	}
+	if (relevant_lexer != nullptr) return; // Already bound
 	relevant_lexer = lexer;
 }
 
@@ -30,28 +28,24 @@ void ModeStack::push(int mode) {
 }
 
 void ModeStack::pop() {
-	if (!modeStack.empty()) {
-		assert(inSync() && "Mode stack out of sync with lexer");
-		modeStack.pop();
-		scanner_pop_state(relevant_lexer);
-	}
+	if (modeStack.empty()) return; // Nothing to pop
+	assert(inSync() && "Mode stack out of sync with lexer");
+	modeStack.pop();
+	scanner_pop_state(relevant_lexer);
 }
 
 void ModeStack::clear() {
-	while (!modeStack.empty()) {
-		pop();
-	}
+	while (!modeStack.empty()) pop();
 	relevant_lexer = nullptr;
 }
 
 int ModeStack::top() const {
-	if (!modeStack.empty()) {
-		assert(inSync() && "Mode stack out of sync with lexer");
-		return modeStack.top();
-	}
-	return 0; // Default: INITIAL
-			// CAREFUL. This depends on generated code from Flex
-			// We're relying on Flex doing #define INITIAL 0
+	if (modeStack.empty()) return 0; // Default: INITIAL
+		// CAREFUL. This depends on generated code from Flex
+		// We're relying on Flex doing #define INITIAL 0
+
+	assert(inSync() && "Mode stack out of sync with lexer");
+	return modeStack.top();
 }
 
 bool ModeStack::empty() const {

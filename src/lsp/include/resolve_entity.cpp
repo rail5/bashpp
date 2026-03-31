@@ -28,13 +28,10 @@ std::shared_ptr<AST::ASTNode> find_node_at_position(std::shared_ptr<AST::ASTNode
 		return nullptr; // Position is outside the range of this node
 	}
 
-	for (size_t i = 0; i < node->getChildren().size(); i++) {
-		const std::shared_ptr<AST::ASTNode>& child = node->getChildren()[i];
+	for (const auto& child : node->getChildren()) {
 		if (child) {
 			std::shared_ptr<AST::ASTNode> result = find_node_at_position(child, line, column);
-			if (result) {
-				return result; // Found a child node that matches the column
-			}
+			if (result) return result; // Found a child node that matches the column
 		}
 	}
 	return node;

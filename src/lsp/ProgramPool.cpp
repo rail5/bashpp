@@ -150,6 +150,7 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::_parse_program(const std::string&
 		listener.set_include_paths(include_paths);
 		listener.set_target_bash_version(target_bash_version);
 		listener.set_lsp_mode(true);
+		listener.set_utf16_mode(utf16_mode);
 		for (const auto& pair : unsaved_changes) {
 			listener.set_replacement_file_contents(pair.first, pair.second);
 		}

@@ -149,6 +149,7 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 		std::shared_ptr<bpp::bpp_class> primitive;
 
 		bool lsp_mode = false; // Whether this listener is just running as part of the language server (i.e., not really compiling anything)
+		bool utf16_mode = false; // If we're in a language server, whether the client has demanded UTF-16 position encoding
 
 		#define show_warning(token, msg) \
 			if (!suppress_warnings) { \
@@ -171,6 +172,7 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 	void set_target_bash_version(BashVersion target_bash_version);
 	void set_arguments(std::vector<char*> arguments);
 	void set_lsp_mode(bool lsp_mode);
+	void set_utf16_mode(bool utf16_mode);
 
 	void set_replacement_file_contents(const std::string& file_path, const std::string& contents);
 
@@ -179,6 +181,7 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 	const std::vector<std::string>& get_include_stack() const;
 	std::string get_source_file() const;
 	bool get_lsp_mode() const;
+	bool get_utf16_mode() const;
 
 	int get_exit_code() const;
 

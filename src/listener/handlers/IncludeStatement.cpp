@@ -116,7 +116,8 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 	listener.set_output_file("");
 
 	// Create a new parser
-	AST::BashppParser parser; // TODO(@rail5): Propagation of UTF16 flag from the language server?
+	AST::BashppParser parser;
+	parser.setUTF16Mode(utf16_mode);
 	std::vector<std::string> new_include_stack = this->include_stack;
 	new_include_stack.push_back(source_file);
 	parser.setIncludeChain(new_include_stack);

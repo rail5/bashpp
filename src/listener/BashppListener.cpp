@@ -70,6 +70,10 @@ void BashppListener::set_lsp_mode(bool lsp_mode) {
 	this->lsp_mode = lsp_mode;
 }
 
+void BashppListener::set_utf16_mode(bool utf16_mode) {
+	this->utf16_mode = utf16_mode;
+}
+
 std::shared_ptr<bpp::bpp_program> BashppListener::get_program() const {
 	return program;
 }
@@ -88,6 +92,10 @@ std::string BashppListener::get_source_file() const {
 
 bool BashppListener::get_lsp_mode() const {
 	return lsp_mode;
+}
+
+bool BashppListener::get_utf16_mode() const {
+	return utf16_mode;
 }
 
 int BashppListener::get_exit_code() const {

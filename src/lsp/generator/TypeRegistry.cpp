@@ -193,7 +193,7 @@ std::vector<std::string> TypeRegistry::get_base_classes(const nlohmann::json& de
 	return bases;
 }
 
-void TypeRegistry::generate_inheritance(std::ofstream& file, const std::vector<std::string>& base_classes) const {
+void TypeRegistry::generate_inheritance(std::ofstream& file, const std::vector<std::string>& base_classes) {
 	if (!base_classes.empty()) {
 		file << " : ";
 		for (size_t i = 0; i < base_classes.size(); ++i) {
@@ -207,7 +207,7 @@ std::string TypeRegistry::get_variant_deserialization_code(
 	const std::string& prop_name, 
 	const std::string& variant_type,
 	bool is_optional
-) const {
+) {
 	// Extract types between < and >
 	size_t start = variant_type.find('<');
 	size_t end = variant_type.rfind('>');
@@ -463,7 +463,7 @@ void TypeRegistry::generate_LSP_types() const {
 	file_array.close();
 }
 
-std::string TypeRegistry::get_sanitized_name(const std::string& name) const {
+std::string TypeRegistry::get_sanitized_name(const std::string& name) {
 	static const std::set<std::string> reserved_keywords = {
 		"int", "float", "double", "char", "void", "bool", "if", "else",
 		"for", "while", "return", "class", "struct", "enum", "export",
@@ -479,7 +479,7 @@ std::string TypeRegistry::get_sanitized_name(const std::string& name) const {
 	return name;
 }
 
-std::string TypeRegistry::get_sanitized_description(const std::string& description) const {
+std::string TypeRegistry::get_sanitized_description(const std::string& description) {
 	std::string sanitized = description;
 	// Remove any '@' symbols from the description
 	sanitized.erase(std::remove(sanitized.begin(), sanitized.end(), '@'), sanitized.end());

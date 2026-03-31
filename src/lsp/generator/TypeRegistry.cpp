@@ -66,7 +66,7 @@ std::string TypeRegistry::resolve_type(const nlohmann::json& type_def, std::set<
 		return resolve_base_type(get_sanitized_name(type_def["name"].get<std::string>()));
 	} else if (kind == "reference") {
 		const std::string name = get_sanitized_name(type_def["name"].get<std::string>());
-		if (visited.find(name) != visited.end()) {
+		if (visited.contains(name)) {
 			return name; // Return name for forward declaration
 		}
 		visited.insert(name);
@@ -113,9 +113,9 @@ std::string TypeRegistry::resolve_reference_type(const std::string& name, std::s
 	if (name == "LSPObject") {
 		return "std::unordered_map<std::string, LSPAny>";
 	}
-	if (structs.find(name) != structs.end()) return name;
-	if (enums.find(name) != enums.end()) return name;
-	if (type_aliases.find(name) != type_aliases.end()) {
+	if (structs.contains(name)) return name;
+	if (enums.contains(name)) return name;
+	if (type_aliases.contains(name)) {
 		return resolve_type(type_aliases.at(name)["type"], visited);
 	}
 	return "UnresolvedType_" + name;
@@ -263,10 +263,10 @@ std::string TypeRegistry::get_variant_deserialization_code(
 		} else if (clean_type == "std::nullptr_t") {
 			condition = "is_null()";
 		} else if (clean_type == "LSPArray" || 
-					clean_type.find("std::vector") != std::string::npos) {
+					clean_type.contains("std::vector")) {
 			condition = "is_array()";
 		} else if (clean_type == "LSPObject" || 
-					clean_type.find("std::unordered_map") != std::string::npos) {
+					clean_type.contains("std::unordered_map")) {
 			condition = "is_object()";
 		} else {
 			// Assume other types are objects
@@ -274,7 +274,7 @@ std::string TypeRegistry::get_variant_deserialization_code(
 		}
 		
 		// Only add condition if not already used
-		if (conditions_used.find(condition) == conditions_used.end()) {
+		if (!conditions_used.contains(condition)) {
 			conditions_used.insert(condition);
 			
 			if (clean_type == "std::nullptr_t") {
@@ -380,11 +380,9 @@ void TypeRegistry::generate_serialization(std::ofstream& file,
 		const std::string prop_name = get_sanitized_name(prop["name"].get<std::string>());
 		const bool is_optional = prop.value("optional", false);
 
-		std::string get_to_str;
-
 		// Is it a std::variant?
 		std::string type_str = resolve_type(prop["type"]);
-		if (type_str.find("std::variant") == 0) {
+		if (type_str.starts_with("std::variant")) {
 			file << get_variant_deserialization_code(prop_name, type_str, is_optional);
 		} else {
 			// Normal property handling
@@ -475,7 +473,7 @@ std::string TypeRegistry::get_sanitized_name(const std::string& name) const {
 		"throw", "switch", "case", "default", "break", "continue",
 		"operator"
 	};
-	if (reserved_keywords.find(name) != reserved_keywords.end()) {
+	if (reserved_keywords.contains(name)) {
 		return name + "_"; // Append underscore to avoid conflicts with keywords
 	}
 	return name;
@@ -594,7 +592,7 @@ void TypeRegistry::generate_type_alias(const std::string& name, const nlohmann::
 			"string", "integer", "uinteger", "decimal", "boolean", "null"
 		};
 
-		if (base_types.find(ref) == base_types.end()) {
+		if (!base_types.contains(ref)) {
 			includes.insert("#include \"" + ref + ".h\"");
 		}
 	}
@@ -647,7 +645,7 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 				"string", "integer", "uinteger", "decimal", "boolean", "null"
 			};
 			
-			if (base_types.find(ref) == base_types.end()) {
+			if (!base_types.contains(ref)) {
 				includes.insert("#include \"" + ref + ".h\"");
 			}
 		}
@@ -749,7 +747,7 @@ void TypeRegistry::generate_request(const std::string& name, const nlohmann::jso
 			"string", "integer", "uinteger", "decimal", "boolean", "null"
 		};
 
-		if (base_types.find(inc) == base_types.end()) {
+		if (!base_types.contains(inc)) {
 			file << "#include \"" << inc << ".h\"\n";
 		}
 	}
@@ -826,7 +824,7 @@ void TypeRegistry::generate_notification(const std::string& name, const nlohmann
 			"string", "integer", "uinteger", "decimal", "boolean", "null"
 		};
 
-		if (base_types.find(inc) == base_types.end()) {
+		if (!base_types.contains(inc)) {
 			file << "#include \"" << inc << ".h\"\n";
 		}
 	}

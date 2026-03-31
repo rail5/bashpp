@@ -55,8 +55,8 @@ std::shared_ptr<bpp_class> bpp_class::get_class() {
 	return shared_from_this();
 }
 
-bool bpp_class::set_containing_class(std::weak_ptr<bpp::bpp_class> containing_class) {
-	return false;
+bool bpp_class::set_containing_class(std::weak_ptr<bpp::bpp_class> /* containing_class */) {
+	return false; // Classes can't be nested in Bash++
 }
 
 void bpp_class::set_name(const std::string& name) {

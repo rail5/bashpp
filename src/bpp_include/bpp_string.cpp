@@ -14,7 +14,7 @@ namespace bpp {
  * @param code The code to add
  * @param add_newline Ignored in the case of bpp_string
  */
-void bpp_string::add_code(const std::string& code, bool add_newline) {
+void bpp_string::add_code(const std::string& code, bool /* add_newline */) {
 	nextline_buffer += code;
 }
 

@@ -6,6 +6,9 @@
 
 #include "helpers.h"
 
+// TODO(@rail5): Refactor signal handling
+// Probably end up using a dedicated signal handling thread
+
 void signal_handler(int signum) {
 	if (p_server != nullptr) {
 		p_server->log("Received signal: ", signum, ", cleaning up and exiting.");

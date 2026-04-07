@@ -9,6 +9,7 @@
 #include <unistd.h>
 
 #include "generated/PublishDiagnosticsNotification.h"
+#include "generated/ErrorCodes.h"
 
 std::mutex bpp::BashppServer::output_mutex;
 std::mutex bpp::BashppServer::log_mutex;

@@ -7,6 +7,7 @@
 #include "bpp.h"
 #include "bpp_codegen.h"
 #include "templates.h"
+#include "replace_all.h"
 
 namespace bpp {
 

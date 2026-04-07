@@ -9,11 +9,8 @@
 #include <iostream>
 #include <vector>
 #include <set>
-#include <list>
 #include <memory>
 #include <stack>
-#include <optional>
-#include <fstream>
 #include <unordered_map>
 
 #include <AST/Listener/BaseListener.h>

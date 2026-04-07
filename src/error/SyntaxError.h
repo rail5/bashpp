@@ -7,7 +7,6 @@
 #pragma once
 
 #include <string>
-#include <stack>
 #include <memory>
 #include <cstdint>
 #include <stdexcept>

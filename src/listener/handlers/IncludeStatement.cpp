@@ -8,6 +8,7 @@
 #include <AST/BashppParser.h>
 
 #include <unistd.h>
+#include <fstream>
 
 /**
  * @brief Handles @include and @include_once statements

@@ -5,7 +5,6 @@
  */
 
 #pragma once
-#include <optional>
 #include <memory>
 #include "IntervalTree.h"
 

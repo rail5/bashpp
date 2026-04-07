@@ -14,7 +14,6 @@
 #include <filesystem>
 #include <memory>
 #include <unistd.h>
-#include <algorithm>
 
 #include <include/BashVersion.h>
 #include <include/xgetopt.h>

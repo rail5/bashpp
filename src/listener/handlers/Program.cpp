@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <listener/BashppListener.h>
 #include <bpp_include/templates.h>
+#include <bpp_include/replace_all.h>
 #include <error/SyntaxError.h>
 
 void BashppListener::enterProgram(std::shared_ptr<AST::Program> node) {

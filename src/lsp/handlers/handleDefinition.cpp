@@ -6,6 +6,7 @@
 
 #include <lsp/BashppServer.h>
 #include <lsp/generated/DefinitionRequest.h>
+#include <lsp/generated/ErrorCodes.h>
 #include <lsp/include/resolve_entity.h>
 #include <lsp/include/validateUri.h>
 

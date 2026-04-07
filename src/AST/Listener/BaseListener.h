@@ -7,7 +7,6 @@
 #pragma once
 
 #include <memory>
-#include <type_traits>
 
 #include <AST/ASTNode.h>
 #include <AST/NodeTypes.h>

@@ -25,7 +25,6 @@
 #include "ProgramPool.h"
 
 #include "static/Message.h"
-#include "generated/ErrorCodes.h"
 
 #include "generated/CompletionList.h"
 #include "generated/CompletionParams.h"

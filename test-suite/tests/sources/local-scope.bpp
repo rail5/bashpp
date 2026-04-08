@@ -32,3 +32,33 @@ echo "Entering block"
 	# "Object destructor called"
 }
 echo "Exited block"
+
+echo "Entering subshell command substitution"
+var=$(
+	@Object obj
+	# obj's destructor should be called here
+	# "Object destructor called"
+)
+echo "Exited subshell command substitution"
+
+echo "Entering backtick-subshell command substitution"
+var=`@Object obj`
+# obj's destructor should be called here
+# "Object destructor called"
+echo "Exited backtick-subshell command substitution"
+
+echo "Entering raw subshell"
+(
+	@Object obj
+	# obj's destructor should be called here
+	# "Object destructor called"
+)
+echo "Exited raw subshell"
+
+echo "Entering process substitution"
+cat < <(
+	@Object obj
+	# obj's destructor should be called here
+	# "Object destructor called"
+)
+echo "Exited process substitution"

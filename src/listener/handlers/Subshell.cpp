@@ -21,6 +21,7 @@ void BashppListener::enterSubshellSubstitution(std::shared_ptr<AST::SubshellSubs
 
 	if (node->isCatReplacement()) {
 		subshell_entity->set_requires_perfect_forwarding(true);
+		// TODO(@rail5): Why does this require perfect forwarding again? Document the reason.
 	}
 
 	// Push the subshell entity onto the entity stack
@@ -41,6 +42,10 @@ void BashppListener::exitSubshellSubstitution(std::shared_ptr<AST::SubshellSubst
 	}
 
 	entity_stack.pop();
+
+	if (!node->isCatReplacement()) {
+		subshell_entity->destruct_local_objects(program);
+	}
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
@@ -79,6 +84,10 @@ void BashppListener::enterRawSubshell(std::shared_ptr<AST::RawSubshell> node) {
 		node->getLine(),
 		node->getCharPositionInLine()
 	);
+
+	// Add the opening parenthesis to the current code entity
+	// TODO(@rail5): Does the opening parenthesis properly belong as part of the subshell entity rather than its parent code entity?
+	code_entity->add_code("(\n", false);
 }
 
 void BashppListener::exitRawSubshell(std::shared_ptr<AST::RawSubshell> node) {
@@ -91,10 +100,18 @@ void BashppListener::exitRawSubshell(std::shared_ptr<AST::RawSubshell> node) {
 	entity_stack.pop();
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
+	if (current_code_entity == nullptr) {
+		throw bpp::ErrorHandling::InternalError("Containing code entity was not found in the entity stack");
+	}
 
-	current_code_entity->add_code_to_previous_line(subshell_entity->get_pre_code());
-	current_code_entity->add_code_to_next_line("\n" + subshell_entity->get_post_code());
-	current_code_entity->add_code("(" + subshell_entity->get_code() + ")");
+	subshell_entity->destruct_local_objects(program);
+	subshell_entity->flush_code_buffers();
+
+	current_code_entity->add_code(subshell_entity->get_pre_code());
+	current_code_entity->add_code(subshell_entity->get_code());
+	current_code_entity->add_code(subshell_entity->get_post_code());
+
+	current_code_entity->add_code("\n)", false);
 
 	program->mark_entity(
 		source_file,

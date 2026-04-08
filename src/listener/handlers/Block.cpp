@@ -71,7 +71,7 @@ void BashppListener::exitBlock(std::shared_ptr<AST::Block> node) {
 
 	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
-		throw bpp::ErrorHandling::SyntaxError(this, node, "Statement block outside of code entity");
+		throw bpp::ErrorHandling::InternalError("Containing code entity was not found in the entity stack");
 	}
 
 	block_entity->destruct_local_objects(program);

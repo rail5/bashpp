@@ -7,3 +7,15 @@ Exited method
 Entering block
 Object destructor called
 Exited block
+Entering subshell command substitution
+Object destructor called
+Exited subshell command substitution
+Entering backtick-subshell command substitution
+Object destructor called
+Exited backtick-subshell command substitution
+Entering raw subshell
+Object destructor called
+Exited raw subshell
+Entering process substitution
+Object destructor called
+Exited process substitution

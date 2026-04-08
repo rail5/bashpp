@@ -155,6 +155,30 @@ bool bpp_code_entity::add_object(std::shared_ptr<bpp_object> object, bool make_l
 }
 
 /**
+ * @brief Destruct all local objects in the code entity
+ *
+ * This function generates the code necessary to destruct all local objects in the code entity, and adds it to the code buffer.
+ * That code calls the destructor for each local object, if it exists, and then deletes the object.
+ *
+ * It does not destruct local pointers, whose memory management is the responsibility of the programmer.
+ *
+ * This function is called by the compiler at the end of the scope of code entities which hold "block-local" scope
+ * Class methods, bash functions, subshells, or simple blocks ("{ ... }") have block-local scope
+ *   (i.e., their local objects are only accessible within the block of code they are defined in, and not in any nested blocks)
+ * Supershells, by contrast, do not have block-local scope, and objects instantiated within them are expected to persist
+ *  until the end of the containing method or function
+ * 
+ * @param program Pointer to the bpp_program
+ */
+void bpp_code_entity::destruct_local_objects(std::shared_ptr<bpp_program> program) {
+	for (auto& [name, object] : local_objects) {
+		if (object->is_pointer()) continue;
+		code_segment delete_code = generate_delete_code(object, object->get_address(), program);
+		*code << delete_code.full_code() << "\n" << std::flush;
+	}
+}
+
+/**
  * @brief Return the contents of the main code buffer as a string
  */
 std::string bpp_code_entity::get_code() const {

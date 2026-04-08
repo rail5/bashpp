@@ -9,7 +9,9 @@ function localScope() {
 	# obj's destructor should be called here
 }
 
+echo "Entering plain function"
 localScope # "Object destructor called"
+echo "Exited plain function"
 
 @class Test {
 	@public @method doSomething {
@@ -19,4 +21,14 @@ localScope # "Object destructor called"
 }
 
 @Test testObject
+echo "Entering method"
 @testObject.doSomething # "Object destructor called"
+echo "Exited method"
+
+echo "Entering block"
+{
+	@Object obj
+	# obj's destructor should be called here
+	# "Object destructor called"
+}
+echo "Exited block"

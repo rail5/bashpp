@@ -289,6 +289,8 @@ class bpp_code_entity : public bpp_entity {
 
 		virtual void clear_all_buffers();
 
+		void destruct_local_objects(std::shared_ptr<bpp_program> program);
+
 		virtual std::string get_code() const;
 		virtual std::string get_pre_code() const;
 		virtual std::string get_post_code() const;
@@ -438,8 +440,6 @@ class bpp_method : public bpp_code_entity {
 		bool is_overridable() const;
 		bool is_inherited() const;
 		std::string get_last_override() const;
-
-		void destruct_local_objects(std::shared_ptr<bpp_program> program);
 };
 
 /**
@@ -814,8 +814,6 @@ class bash_for_or_select : public bpp_code_entity {
  * 
  */
 class bash_function : public bpp_code_entity {
-	public:
-		void destruct_local_objects(std::shared_ptr<bpp_program> program);
 };
 
 /**

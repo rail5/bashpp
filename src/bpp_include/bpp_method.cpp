@@ -124,26 +124,6 @@ std::string bpp_method::get_last_override() const {
 	return last_override;
 }
 
-/**
- * @brief Destruct all local objects
- * 
- * This function destructs all local objects in the method by calling their destructors (if they exist) and then deleting them.
- * 
- * This is called as we exit the method, to ensure that all local objects are cleaned up.
- */
-void bpp_method::destruct_local_objects(std::shared_ptr<bpp_program> program) {
-	for (auto& o : local_objects) {
-		// If it's a pointer, don't delete it
-		if (o.second->is_pointer()) {
-			continue;
-		}
-
-		code_segment delete_code = generate_delete_code(o.second, o.second->get_address(), program);
-
-		*code << delete_code.full_code() << "\n" << std::flush;
-	}
-}
-
 bool bpp_method::add_object(std::shared_ptr<bpp_object> object, bool make_local) {
 	std::string name = object->get_name();
 	if (objects.contains(name) || local_objects.contains(name)) {

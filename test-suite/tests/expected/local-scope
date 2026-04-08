@@ -1,2 +1,9 @@
+Entering plain function
 Object destructor called
+Exited plain function
+Entering method
 Object destructor called
+Exited method
+Entering block
+Object destructor called
+Exited block

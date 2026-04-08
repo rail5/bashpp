@@ -109,7 +109,7 @@ void BashppListener::exitObjectInstantiation(std::shared_ptr<AST::ObjectInstanti
 	// Add the object to the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity != nullptr) {
-		current_code_entity->add_object(new_object);
+		current_code_entity->add_object(new_object, should_declare_local());
 		return;
 	}
 }

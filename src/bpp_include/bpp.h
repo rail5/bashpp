@@ -814,6 +814,8 @@ class bash_for_or_select : public bpp_code_entity {
  * 
  */
 class bash_function : public bpp_code_entity {
+	public:
+		void destruct_local_objects(std::shared_ptr<bpp_program> program);
 };
 
 /**

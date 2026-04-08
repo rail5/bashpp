@@ -141,7 +141,7 @@ bool bpp_code_entity::add_object(std::shared_ptr<bpp_object> object, bool make_l
 			object_code += copy_call.code + " " + object->get_copy_from()->get_address() + "\n";
 			object_code += copy_call.post_code + "\n";
 		} else {
-			object_code += "bpp__" + type + "____new " + object->get_address() + " >/dev/null\n";
+			object_code += generate_new_code(object->get_address(), object->get_class(), make_local, true).full_code() + "\n";
 			// Call the constructor if it exists
 			if (object->get_class()->get_method_UNSAFE("__constructor") != nullptr) {
 				auto constructor_code = generate_constructor_call_code(object->get_address(), object->get_class());

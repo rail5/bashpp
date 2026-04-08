@@ -200,7 +200,7 @@ code_segment generate_destructor_call_code(
 	std::shared_ptr<bpp::bpp_program> program
 ) {
 	auto destructor_method = assumed_class->get_method_UNSAFE("__destructor");
-	if (destructor_method == nullptr) return code_segment();
+	if (destructor_method == nullptr) return {};
 
 	// All destructors are virtual
 	if (!force_static_reference) {
@@ -277,7 +277,7 @@ code_segment generate_typeof_code(
  * @param inline_new Whether to inline this new operation (make data members local variables)
  * @return code_segment The code segment to create the new object
  */
-code_segment generate_new_code(
+code_segment generate_code_for_new_method(
 	const std::string& new_address,
 	std::shared_ptr<bpp::bpp_class> new_class,
 	bool inline_new
@@ -308,7 +308,7 @@ code_segment generate_new_code(
 		} else {
 			if (inline_new) {
 				// Recursively inline 'new' for the data member
-				code_segment inline_new_code = generate_new_code(new_address + "__" + dm->get_name(), dm->get_class(), true);
+				code_segment inline_new_code = generate_code_for_new_method(new_address + "__" + dm->get_name(), dm->get_class(), true);
 				result.pre_code += inline_new_code.full_code() + "\n";
 			} else {
 				// Call 'new' in a supershell and assign its output
@@ -329,6 +329,23 @@ code_segment generate_new_code(
 		}
 		result.pre_code += dm->get_post_access_code() + "\n";
 	}
+	return result;
+}
+
+code_segment generate_new_code(
+	const std::string& new_address,
+	std::shared_ptr<bpp_class> new_class,
+	bool inline_new,
+	bool silent
+) {
+	if (inline_new) {
+		return generate_code_for_new_method(new_address, new_class, true);
+	}
+
+	code_segment result;
+	result.pre_code += "bpp__" + new_class->get_name() + "____new " + new_address;
+	if (silent) result.pre_code += " >/dev/null";
+	result.pre_code += "\n";
 	return result;
 }
 
@@ -435,7 +452,7 @@ std::shared_ptr<bpp::bpp_method> generate_new_method(
 		"fi\n"
 	);
 
-	auto assignments = generate_new_code("${__this}", containing_class, false);
+	auto assignments = generate_code_for_new_method("${__this}", containing_class, false);
 	new_method->add_code_to_previous_line(assignments.full_code() + "\n");
 
 	new_method->add_code_to_previous_line("echo \"${__this}\"\n");

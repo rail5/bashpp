@@ -1,0 +1,22 @@
+@class Object {
+	@destructor {
+		echo "Object destructor called"
+	}
+}
+
+function localScope() {
+	@Object obj
+	# obj's destructor should be called here
+}
+
+localScope # "Object destructor called"
+
+@class Test {
+	@public @method doSomething {
+		@Object obj
+		# obj's destructor should be called here
+	}
+}
+
+@Test testObject
+@testObject.doSomething # "Object destructor called"

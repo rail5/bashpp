@@ -94,15 +94,22 @@ code_segment generate_typeof_code(
 	);
 
 code_segment generate_new_code(
-	const std::string&                  new_address,
-	std::shared_ptr<bpp::bpp_class>     new_class,
-	bool inline_new
+	const std::string&					new_address,
+	std::shared_ptr<bpp_class>			new_class,
+	bool inline_new,
+	bool silent
 	);
 
 // Generators for standardized system methods
 std::shared_ptr<bpp::bpp_method> generate_copy_method(
 	std::shared_ptr<bpp::bpp_class> containing_class,
 	std::shared_ptr<bpp::bpp_program> program
+	);
+
+code_segment generate_code_for_new_method(
+	const std::string&                  new_address,
+	std::shared_ptr<bpp::bpp_class>     new_class,
+	bool inline_new
 	);
 
 std::shared_ptr<bpp::bpp_method> generate_new_method(

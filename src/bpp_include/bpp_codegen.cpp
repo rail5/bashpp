@@ -265,6 +265,35 @@ code_segment generate_typeof_code(
 }
 
 /**
+ * @brief Generates a code segment for creating a new object of a given class.
+ *
+ * This function either generates code to create a new object by calling the class's __new method,
+ * or inlines the new operation by directly assigning the data members, depending on the value of inline_new.
+ * 
+ * @param new_address Where to store the new object (empty string for runtime-determined address)
+ * @param new_class The class of the new object
+ * @param inline_new Whether to inline this new operation (make data members local variables)
+ * @param silent If true, the resulting pointer from a call to __new will not be outputted
+ * @return code_segment The code segment to create the new object
+ */
+code_segment generate_new_code(
+	const std::string& new_address,
+	std::shared_ptr<bpp_class> new_class,
+	bool inline_new,
+	bool silent
+) {
+	if (inline_new) {
+		return generate_code_for_new_method(new_address, new_class, true);
+	}
+
+	code_segment result;
+	result.pre_code += "bpp__" + new_class->get_name() + "____new " + new_address;
+	if (silent) result.pre_code += " >/dev/null";
+	result.pre_code += "\n";
+	return result;
+}
+
+/**
  * @brief Generate the assignments necessary to create a new object of a given class.
  *
  * This is used when generating the code for the __new method of a class,
@@ -329,23 +358,6 @@ code_segment generate_code_for_new_method(
 		}
 		result.pre_code += dm->get_post_access_code() + "\n";
 	}
-	return result;
-}
-
-code_segment generate_new_code(
-	const std::string& new_address,
-	std::shared_ptr<bpp_class> new_class,
-	bool inline_new,
-	bool silent
-) {
-	if (inline_new) {
-		return generate_code_for_new_method(new_address, new_class, true);
-	}
-
-	code_segment result;
-	result.pre_code += "bpp__" + new_class->get_name() + "____new " + new_address;
-	if (silent) result.pre_code += " >/dev/null";
-	result.pre_code += "\n";
 	return result;
 }
 

@@ -71,7 +71,7 @@ System methods are special methods that are automatically added to every class b
  - `__delete`: This method is called when an object of the class is destroyed, after the destructor is called. It is responsible for deallocating any memory that was allocated for the object and performing any necessary cleanup.
  - `__copy`: This method is called when a non-primitive copy of an object is made. It uses the compiler's internal map of the class's data layout to duplicate the object correctly.
 
-All system methods are prefixed with double underscores to avoid naming conflicts with user-defined methods. For this reason, you cannot define your own methods, data members, classes, or objects with names that start with double underscores. If you try to do so, you'll get a compile-time error.
+All system methods are prefixed with double underscores to avoid naming conflicts with user-defined methods.
 
 ## INITIALIZATION
 

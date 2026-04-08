@@ -63,6 +63,24 @@ The class can contain the following:
 
 Classes are not code entities and therefore cannot contain commands directly. All commands must be contained within methods, constructors, or destructors. If you place commands directly in a class, you'll get a compile-time error along the lines of "code outside of a code entity."
 
+## SYSTEM METHODS
+
+System methods are special methods that are automatically added to every class by the compiler, cannot be overridden, and are called automatically at specific points in the object's lifecycle. The three system methods are:
+
+ - `__new`: This method is called when an object of the class is created, before the constructor is called. It initializes all of the data members of the class to their default values and sets the object's vPointer to the class's vTable.
+ - `__delete`: This method is called when an object of the class is destroyed, after the destructor is called. It is responsible for deallocating any memory that was allocated for the object and performing any necessary cleanup.
+ - `__copy`: This method is called when a non-primitive copy of an object is made. It uses the compiler's internal map of the class's data layout to duplicate the object correctly.
+
+All system methods are prefixed with double underscores to avoid naming conflicts with user-defined methods. For this reason, you cannot define your own methods, data members, classes, or objects with names that start with double underscores. If you try to do so, you'll get a compile-time error.
+
+## INITIALIZATION
+
+The `__new` system method is responsible for an object's initialization.
+
+Data members are initialized in precisely the order they are declared in the class.
+
+No data members are ever left uninitialized by `__new`. If a data member is not given a default value in the class definition, it will be default-initialized to an empty string. Non-primitive data members (objects) are initialized by calling their `__new` method. Pointers are default-initialized to `@nullptr` if no default value is provided.
+
 # SEE ALSO
 
  - [bpp-methods(3)](methods.md) for more information on object methods

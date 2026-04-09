@@ -1,3 +1,41 @@
+bpp (0.8.8) unstable; urgency=medium
+
+  * Spec: Automatic object lifetime management is now explicitly
+    defined by the spec. Destructors will automatically be called for
+    scope-local objects at the end of all scoped constructs, including:
+    Plain bash functions, class methods, curly-braced blocks, subshells,
+    process substitutions, and all control-flow constructs (if/else, while
+    until, for, case, select).
+    Some of these cases were not properly handled before, having the spec
+    state explicitly what the behavior *should* be helps us to verify that
+    the compiler is behaving *properly*.
+  * Include path handling: The standard library directory is now always the
+    *last* include path, allowing user-supplied `-I` directories to override
+    standard library files. This behavior is now consistent between both the
+    compiler and the language server.
+  * Lexer bug fix: Correctly exit the class-header lexer mode after a class
+    declaration that does *not* inherit from a parent class. This resolves
+    a parser failure where ':' no-op commands would appear later in the
+    source.
+  * Redirections and pipes with compound constructs: Fixed a bug where 'if'
+    and 'case' statements would incorrectly append delimiters after their
+    terminal tokens (that is, after 'fi', 'esac').
+    Added relevant test case for redirections and pipes into and out of
+    all compound shell constructs (if, while, until, for, select, and case)
+  * bpp-lsp: The 'UTF16' flag is now correctly propagated to included files.
+  * Code hygiene (internal): Replaced legacy .rfind()/.find() string checks
+    with modern .starts_with()/.contains()
+    Removed unused include directives and commented out unused function
+    parameters.
+    Updated vendored XGetOpt version to 1.0.1
+  * Documentation: Added comprehensive spec pages on scope and object
+    lifetime management.
+    Clarified the definition of 'system methods'
+    Updated compiler and language manuals to reflect new include path
+    behavior.
+
+ -- rail5 <andrew@rail5.org>  Thu, 09 Apr 2026 18:47:38 +0800
+
 bpp (0.8.7) unstable; urgency=medium
 
   * Lexer bug fix: Only register elif/else/fi as keywords if they're

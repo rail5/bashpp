@@ -20,11 +20,11 @@ However, if an object is created at global scope, its destructor will not be cal
 
 The management of the lifetimes of objects created via `@new` is the responsibility of the programmer. Destructors for these objects are not called automatically, and you must explicitly call `@delete` to trigger the destructor when you are done with the object.
 
-## LOCAL SCOPE
+## SCOPE'S IMPACT ON OBJECT LIFETIMES
 
-Some code entities carry local scope. If a code entity has local scope, this means that any objects created within that code entity will have their destructors automatically called when the code entity finishes executing, as long as the objects were not created via `@new`.
+If a code entity carries local scope, this means that any objects created within that code entity will have their destructors automatically called when the code entity finishes executing, as long as the objects were not created via `@new`.
 
-Supershells, notably, do *not* carry local scope. The primary defining characteristic of supershells is that all changes to the shell environment within a supershell are preserved -- or, that execution within a supershell is not isolated from the parent shell. This means that objects created within a supershell are not automatically destroyed when the supershell finishes executing.
+Supershells, notably, do *not* carry local scope. Any objects created within a supershell will not have their destructors automatically called when the supershell finishes executing, and will continue to be accessible from the parent scope after the supershell finishes.
 
 The supershell is *not* an isolated scope -- the parent scope of the supershell is responsible for managing the lifetimes of objects created within the supershell. For example, if a function contains a supershell, any objects created within that supershell will be destroyed when the function finishes. On the other hand, if a supershell is created at global scope, any objects created within that supershell will not be automatically destroyed, since the global scope does not have its destructors called at program termination.
 
@@ -37,7 +37,12 @@ Below is the list of code entities which are considered to carry local scope:
  - Process substitutions (`<( ... )` or `>( ... )`)
  - Control flow constructs (`if` branches, `while` loops, `until` loops, `for` loops, `case` branches, and `select` branches)
 
-Only the above code entities are considered to carry local scope.
+And the following code entities are *not* considered to carry local scope:
+
+ - Supershells (`@( ... )`)
+ - The program itself (i.e., global scope)
+
+The rule, simply put, is: an object's destructor will automatically be called when and if it goes out of scope, as long as the object was not created via `@new`.
 
 # SEE ALSO
 

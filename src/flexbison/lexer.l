@@ -629,7 +629,13 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		emit(PIPE);
 	}
 }
-{LBRACE}                             { thisModeStack.push(BLOCK_MODE); emit(LBRACE); }
+{LBRACE} {
+	if (thisModeStack.top() == BPP_CLASS_HEADER_MODE) {
+		thisModeStack.pop(); // Exit BPP_CLASS_HEADER_MODE
+	}
+	thisModeStack.push(BLOCK_MODE);
+	emit(LBRACE);
+}
 <BLOCK_MODE>{
 	{RBRACE} {
 		thisModeStack.pop(); // Exit BLOCK_MODE

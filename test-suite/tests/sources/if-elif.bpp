@@ -63,23 +63,23 @@
 if true; then
 	echo something
 elif false; then
-	echo something else
+	:
 else
-	echo something still different
+	:
 fi
 
 if false; then
-	echo something
+	:
 elif true; then
 	echo something else
 else
-	echo something still different
+	:
 fi
 
 if false; then
-	echo something
+	:
 elif false; then
-	echo something else
+	:
 else
 	echo something still different
 fi

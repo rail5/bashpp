@@ -240,6 +240,7 @@ class bpp_entity {
 
 		std::unordered_map<std::string, std::shared_ptr<bpp_class>> get_classes() const;
 		std::unordered_map<std::string, std::shared_ptr<bpp_object>> get_objects() const;
+		const std::unordered_map<std::string, std::shared_ptr<bpp_object>>& get_local_objects() const;
 		std::shared_ptr<bpp_class> get_class(const std::string& name);
 		std::shared_ptr<bpp_object> get_object(const std::string& name);
 
@@ -297,6 +298,8 @@ class bpp_code_entity : public bpp_entity {
 
 		void set_requires_perfect_forwarding(bool require);
 		bool get_requires_perfect_forwarding() const;
+
+		void adopt(std::shared_ptr<bpp_entity> entity);
 };
 
 /**

@@ -56,7 +56,7 @@ void BashppListener::exitSupershell(std::shared_ptr<AST::Supershell> node) {
 	if (current_code_entity == nullptr) {
 		throw bpp::ErrorHandling::InternalError("Current code entity was not found in the entity stack");
 	}
-	current_code_entity->inherit(supershell_entity);
+	current_code_entity->adopt(supershell_entity);
 
 	std::string code_to_run;
 

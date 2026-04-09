@@ -56,3 +56,7 @@ Exited select statement
 Entering case statement
 Object destructor called
 Exited case statement
+
+Entering another plain function
+Object destructor called
+Exited another plain function

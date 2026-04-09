@@ -103,7 +103,7 @@ int BashppListener::get_exit_code() const {
 }
 
 bool BashppListener::should_declare_local() const {
-	return in_class || in_method || (!bash_function_stack.empty());
+	return in_class || in_method || !bash_function_stack.empty();
 }
 
 std::shared_ptr<bpp::bpp_code_entity> BashppListener::latest_code_entity() {

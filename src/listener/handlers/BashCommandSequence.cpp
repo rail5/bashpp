@@ -38,5 +38,5 @@ void BashppListener::exitBashCommandSequence(std::shared_ptr<AST::BashCommandSeq
 
 	// Pass any instantiated objects etc up the chain
 	// (A command sequence is not a closed scope)
-	current_code_entity->inherit(command_sequence_entity);
+	current_code_entity->adopt(command_sequence_entity);
 }

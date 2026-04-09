@@ -152,6 +152,10 @@ std::unordered_map<std::string, std::shared_ptr<bpp_object>> bpp_entity::get_obj
 	return all_objects;
 }
 
+const std::unordered_map<std::string, std::shared_ptr<bpp_object>>& bpp_entity::get_local_objects() const {
+	return local_objects;
+}
+
 std::shared_ptr<bpp::bpp_class> bpp_entity::get_class(const std::string& name) {
 	auto it = classes.find(name);
 	if (it != classes.end()) {

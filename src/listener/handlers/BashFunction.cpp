@@ -64,7 +64,6 @@ void BashppListener::exitBashFunction(std::shared_ptr<AST::BashFunction> node) {
 
 	function_entity->destruct_local_objects(program);
 	current_code_entity->add_code_to_previous_line("function " + function_entity->get_name() + " {\n");
-	current_code_entity->add_code_to_next_line("}");
 	function_entity->flush_code_buffers();
 	
 	std::string code_to_add = function_entity->get_pre_code();
@@ -76,6 +75,7 @@ void BashppListener::exitBashFunction(std::shared_ptr<AST::BashFunction> node) {
 		code_to_add += "\n" + function_entity->get_post_code();
 	}
 	current_code_entity->add_code(code_to_add);
+	current_code_entity->add_code("}\n", false);
 
 	program->mark_entity(
 		source_file,

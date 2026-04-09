@@ -154,3 +154,15 @@ case 1 in
 		;;
 esac
 echo "Exited case statement"
+
+echo "" # Blank line
+
+function anotherLocalScope() {
+	echo @(@Object fancy) &>/dev/null
+	# obj's destructor should be called at the end of this function
+	# "Object destructor called"
+}
+
+echo "Entering another plain function"
+anotherLocalScope # "Object destructor called"
+echo "Exited another plain function"

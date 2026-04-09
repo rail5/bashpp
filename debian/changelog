@@ -9,6 +9,14 @@ bpp (0.8.8) unstable; urgency=medium
     Some of these cases were not properly handled before, having the spec
     state explicitly what the behavior *should* be helps us to verify that
     the compiler is behaving *properly*.
+  * Spec: Define explicitly that objects instantiated within a supershell
+    are owned (and therefore have their lifetimes managed) by the
+    code entity containing that supershell, not by the supershell itself.
+    Having this defined also illuminated another bug: namely, that the
+    compiler didn't do this. This is therefore also a bug fix. To this end,
+    an internal adopt() function was added to bpp::bpp_code_entity,
+    used by parent scopes to adopt the objects instantiated by supershells
+    that they contain.
   * Include path handling: The standard library directory is now always the
     *last* include path, allowing user-supplied `-I` directories to override
     standard library files. This behavior is now consistent between both the

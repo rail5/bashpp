@@ -13,9 +13,6 @@
 
 #include <listener/BashppListener.h>
 
-// FIXME(@rail5): Test cases for redirections and pipes out of compound shell constructs
-// E.g., `for i in 1 2 3; do echo $i; done > output.txt`
-// Or `while true; do echo hi; done | grep h`
 void BashppListener::enterBashForStatement(std::shared_ptr<AST::BashForStatement> node) {
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {

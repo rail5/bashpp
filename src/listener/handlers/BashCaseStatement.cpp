@@ -54,7 +54,7 @@ void BashppListener::exitBashCaseStatement(std::shared_ptr<AST::BashCaseStatemen
 
 	current_code_entity->add_code_to_previous_line(case_statement_entity->get_pre_code());
 	current_code_entity->add_code_to_next_line(case_statement_entity->get_post_code());
-	current_code_entity->add_code("case " + case_statement_entity->get_code() + " in\n" + case_statement_entity->get_cases() + "\nesac\n");
+	current_code_entity->add_code("case " + case_statement_entity->get_code() + " in\n" + case_statement_entity->get_cases() + "\nesac ", false);
 }
 
 // It's not necessary to handle BashCaseInput nodes specially.

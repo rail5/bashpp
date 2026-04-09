@@ -107,7 +107,7 @@ void BashppListener::exitBashIfStatement(std::shared_ptr<AST::BashIfStatement> n
 		current_code_entity->add_code(branch.second);
 	}
 
-	current_code_entity->add_code("fi\n");
+	current_code_entity->add_code("fi ", false);
 }
 
 void BashppListener::enterBashIfRootBranch(std::shared_ptr<AST::BashIfRootBranch> node) {

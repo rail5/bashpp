@@ -1,0 +1,213 @@
+# Compound shell constructs:
+# - if
+# - while
+# - until
+# - for
+# - select
+# - case
+#
+# Test redirections and pipes out of and into these constructs
+
+outputfile=$(mktemp)
+
+function cleanUp() {
+	rm -f "${outputfile:?}"
+}
+
+trap cleanUp EXIT
+trap cleanUp SIGINT
+trap cleanUp SIGTERM
+
+# If:
+
+## 1. Redirection out of an if statement
+if true; then
+	echo "This is the if branch"
+else
+	echo "This is the else branch"
+fi > "$outputfile"
+
+cat "$outputfile" # "This is the if branch"
+
+## 2. Redirection into an if statement
+if true; then
+	# Cat stdin
+	cat
+fi < "$outputfile" # "This is the if branch"
+
+## 3. Pipe out of an if statement
+if false; then
+	echo "This is the if branch"
+else
+	echo "This is the else branch"
+fi | cat # "This is the else branch"
+
+## 4. Pipe into an if statement
+echo "This is the input" | if true; then
+	# Cat stdin
+	cat
+fi # "This is the input"
+
+>"$outputfile" # Clear the output file
+
+# While:
+
+## 1. Redirection out of a while loop
+var=0
+while [[ $var -le 1 ]]; do
+	echo "This is the while loop"
+	var=$((var + 1))
+done > "$outputfile"
+
+cat "$outputfile" # "This is the while loop" printed twice
+
+## 2. Redirection into a while loop
+var=0
+while [[ $var -le 1 ]]; do
+	# Cat stdin
+	cat
+	var=$((var + 1))
+done < "$outputfile" # "This is the while loop" printed twice
+
+## 3. Pipe out of a while loop
+var=0
+while [[ $var -le 1 ]]; do
+	echo "Piping from while loop"
+	var=$((var + 1))
+done | cat # "Piping from while loop" printed twice
+
+## 4. Pipe into a while loop
+echo -e "Line 1\nLine 2" | while read line; do
+	echo "Read line: $line"
+done # "Read line: Line 1" and "Read line: Line 2"
+
+>"$outputfile" # Clear the output file
+
+# Until:
+
+## 1. Redirection out of an until loop
+var=0
+until [[ $var -gt 1 ]]; do
+	echo "This is the until loop"
+	var=$((var + 1))
+done > "$outputfile"
+
+cat "$outputfile" # "This is the until loop" printed twice
+
+## 2. Redirection into an until loop
+var=0
+until [[ $var -gt 1 ]]; do
+	# Cat stdin
+	cat
+	var=$((var + 1))
+done < "$outputfile" # "This is the until loop" printed twice
+
+## 3. Pipe out of an until loop
+var=0
+until [[ $var -gt 1 ]]; do
+	echo "Piping from until loop"
+	var=$((var + 1))
+done | cat # "Piping from until loop" printed twice
+
+## 4. Pipe into an until loop
+echo -e "Line 1\nLine 2" | until ! read line; do
+	echo "Read line: $line"
+done # "Read line: Line 1" and "Read line: Line 2"
+
+>"$outputfile" # Clear the output file
+
+# For:
+
+## 1. Redirection out of a for loop
+for i in 1 2; do
+	echo "This is the for loop"
+done > "$outputfile"
+
+cat "$outputfile" # "This is the for loop" printed twice
+
+## 2. Redirection into a for loop
+for i in 1 2; do
+	# Cat stdin
+	cat
+done < "$outputfile" # "This is the for loop" printed twice
+
+## 3. Pipe out of a for loop
+for i in 1 2; do
+	echo "Piping from for loop"
+done | cat # "Piping from for loop" printed twice
+
+## 4. Pipe into a for loop
+echo "Piping into for loop" | for i in 1; do
+	# Cat stdin
+	cat
+done # "Piping into for loop" printed once
+	# Note: Even if we iterated the loop multiple times, it would only print once, because the stdin would be consumed on the first iteration
+
+>"$outputfile" # Clear the output file
+
+# Select:
+## As it happens, each test will *also* be testing redirecting or piping *into* a select statement,
+## because the select statement will be consuming stdin for the user input
+## and if we didn't redirect or pipe into it, this couldn't be run in an automated test suite without hanging waiting for user input
+
+## 1. Redirection out of a select statement and pipe into a select statement
+echo 1 | select i in 1 2; do
+	echo -n "This is the select statement"
+done 2>/dev/null >"$outputfile"  # Redirect stderr to /dev/null to suppress the "Please enter a number" prompt from select
+
+cat "$outputfile" # "This is the select statement" printed once
+
+## 2. Pipe out of a select statement and redirect into a select statement
+echo 1 >"$outputfile"
+
+select i in 1 2; do
+	echo -n "Selected: $i"
+done 2>/dev/null <"$outputfile" | cat # "Selected: 1" printed once
+
+>"$outputfile" # Clear the output file
+
+# Case:
+
+## 1. Redirection out of a case statement
+case 1 in
+	1)
+		echo "This is case 1"
+		;;
+	2)
+		echo "This is case 2"
+		;;
+esac > "$outputfile"
+
+cat "$outputfile" # "This is case 1"
+
+## 2. Redirection into a case statement
+echo 1 > "$outputfile"
+
+case $(cat) in
+	1)
+		echo "This is case 1"
+		;;
+	2)
+		echo "This is case 2"
+		;;
+esac < "$outputfile" # "This is case 1"
+
+## 3. Pipe out of a case statement
+case 2 in
+	1)
+		echo "This is case 1"
+		;;
+	2)
+		echo "This is case 2"
+		;;
+esac | cat # "This is case 2"
+
+## 4. Pipe into a case statement
+echo 2 | case $(cat) in
+	1)
+		echo "This is case 1"
+		;;
+	2)
+		echo "This is case 2"
+		;;
+esac # "This is case 2"

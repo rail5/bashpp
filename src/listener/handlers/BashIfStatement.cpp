@@ -146,6 +146,9 @@ void BashppListener::exitBashIfRootBranch(std::shared_ptr<AST::BashIfRootBranch>
 		throw bpp::ErrorHandling::InternalError("If statement entity not found");
 	}
 
+	branch_entity->destruct_local_objects(program);
+	branch_entity->flush_code_buffers();
+
 	if_statement_entity->add_branch_code(branch_entity->get_pre_code());
 	if_statement_entity->add_branch_code(branch_entity->get_code());
 	if_statement_entity->add_branch_code(branch_entity->get_post_code());
@@ -202,6 +205,9 @@ void BashppListener::exitBashIfElseBranch(std::shared_ptr<AST::BashIfElseBranch>
 	if (if_statement_entity == nullptr) {
 		throw bpp::ErrorHandling::InternalError("If statement entity not found");
 	}
+
+	branch_entity->destruct_local_objects(program);
+	branch_entity->flush_code_buffers();
 
 	if_statement_entity->add_branch_code(branch_entity->get_pre_code());
 	if_statement_entity->add_branch_code(branch_entity->get_code());

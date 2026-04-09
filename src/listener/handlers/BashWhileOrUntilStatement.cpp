@@ -46,6 +46,9 @@ void BashppListener::exitBashWhileStatement(std::shared_ptr<AST::BashWhileStatem
 		throw bpp::ErrorHandling::InternalError("Current code entity not found in the entity stack");
 	}
 
+	while_statement->destruct_local_objects(program);
+	while_statement->flush_code_buffers();
+
 	current_code_entity->add_code_to_previous_line(while_statement->get_condition()->get_pre_code());
 	current_code_entity->add_code_to_next_line(while_statement->get_condition()->get_post_code());
 
@@ -94,6 +97,9 @@ void BashppListener::exitBashUntilStatement(std::shared_ptr<AST::BashUntilStatem
 	if (current_code_entity == nullptr) {
 		throw bpp::ErrorHandling::InternalError("Current code entity not found in the entity stack");
 	}
+
+	until_statement->destruct_local_objects(program);
+	until_statement->flush_code_buffers();
 
 	current_code_entity->add_code_to_previous_line(until_statement->get_condition()->get_pre_code());
 	current_code_entity->add_code_to_next_line(until_statement->get_condition()->get_post_code());

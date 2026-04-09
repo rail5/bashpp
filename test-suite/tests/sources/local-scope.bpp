@@ -19,11 +19,14 @@ echo "Exited plain function"
 		# obj's destructor should be called here
 	}
 }
+echo "" # Blank line
 
 @Test testObject
 echo "Entering method"
 @testObject.doSomething # "Object destructor called"
 echo "Exited method"
+
+echo "" # Blank line
 
 echo "Entering block"
 {
@@ -33,6 +36,8 @@ echo "Entering block"
 }
 echo "Exited block"
 
+echo "" # Blank line
+
 echo "Entering subshell command substitution"
 var=$(
 	@Object obj
@@ -41,11 +46,15 @@ var=$(
 )
 echo "Exited subshell command substitution"
 
+echo "" # Blank line
+
 echo "Entering backtick-subshell command substitution"
 var=`@Object obj`
 # obj's destructor should be called here
 # "Object destructor called"
 echo "Exited backtick-subshell command substitution"
+
+echo "" # Blank line
 
 echo "Entering raw subshell"
 (
@@ -55,6 +64,8 @@ echo "Entering raw subshell"
 )
 echo "Exited raw subshell"
 
+echo "" # Blank line
+
 echo "Entering process substitution"
 cat < <(
 	@Object obj
@@ -62,3 +73,84 @@ cat < <(
 	# "Object destructor called"
 )
 echo "Exited process substitution"
+
+echo "" # Blank line
+
+echo "Entering If (root) branch"
+if true; then
+	@Object obj
+	# obj's destructor should be called here
+	# "Object destructor called"
+fi
+echo "Exited If (root) branch"
+
+echo "" # Blank line
+
+echo "Entering If (else) branch"
+if false; then
+	echo "This should not be printed"
+else
+	@Object obj
+	# obj's destructor should be called here
+	# "Object destructor called"
+fi
+echo "Exited If (else) branch"
+
+echo "" # Blank line
+
+var=1
+echo "Entering while loop"
+while [[ $var -le 2 ]]; do
+	@Object obj
+	# obj's destructor should be called here on each iteration
+	# "Object destructor called" twice
+	var=$((var + 1))
+done
+echo "Exited while loop"
+
+echo "" # Blank line
+
+var=1
+echo "Entering until loop"
+until [[ $var -gt 2 ]]; do
+	@Object obj
+	# obj's destructor should be called here on each iteration
+	# "Object destructor called" twice
+	var=$((var + 1))
+done
+echo "Exited until loop"
+
+echo "" # Blank line
+
+echo "Entering for loop"
+for i in 1 2; do
+	@Object obj
+	# obj's destructor should be called here on each iteration
+	# "Object destructor called" twice
+done
+echo "Exited for loop"
+
+echo "" # Blank line
+
+# Script a 'select' statement so that we don't have to provide user input during testing
+echo "Entering select statement"
+echo 1 | select i in 1 2; do
+	@Object obj
+	# obj's destructor should be called here on each iteration
+	# "Object destructor called" twice
+	break
+done 2>/dev/null # To suppress the prompt for user input
+echo "Exited select statement"
+
+echo "" # Blank line
+
+echo "Entering case statement"
+
+case 1 in
+	1)
+		@Object obj
+		# obj's destructor should be called here
+		# "Object destructor called"
+		;;
+esac
+echo "Exited case statement"

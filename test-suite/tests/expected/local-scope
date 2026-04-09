@@ -1,21 +1,58 @@
 Entering plain function
 Object destructor called
 Exited plain function
+
 Entering method
 Object destructor called
 Exited method
+
 Entering block
 Object destructor called
 Exited block
+
 Entering subshell command substitution
 Object destructor called
 Exited subshell command substitution
+
 Entering backtick-subshell command substitution
 Object destructor called
 Exited backtick-subshell command substitution
+
 Entering raw subshell
 Object destructor called
 Exited raw subshell
+
 Entering process substitution
 Object destructor called
 Exited process substitution
+
+Entering If \(root\) branch
+Object destructor called
+Exited If \(root\) branch
+
+Entering If \(else\) branch
+Object destructor called
+Exited If \(else\) branch
+
+Entering while loop
+Object destructor called
+Object destructor called
+Exited while loop
+
+Entering until loop
+Object destructor called
+Object destructor called
+Exited until loop
+
+Entering for loop
+Object destructor called
+Object destructor called
+Exited for loop
+
+Entering select statement
+Object destructor called
+Exited select statement
+
+Entering case statement
+Object destructor called
+Exited case statement

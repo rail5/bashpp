@@ -98,6 +98,9 @@ void BashppListener::exitBashCasePattern(std::shared_ptr<AST::BashCasePattern> n
 		throw bpp::ErrorHandling::InternalError("Case statement entity not found in the entity stack");
 	}
 
+	case_pattern_entity->destruct_local_objects(program);
+	case_pattern_entity->flush_code_buffers();
+
 	case_statement_entity->add_case(case_pattern_entity->get_pattern() + ")\n"
 		+ case_pattern_entity->get_pre_code() + "\n"
 		+ case_pattern_entity->get_code() + "\n"

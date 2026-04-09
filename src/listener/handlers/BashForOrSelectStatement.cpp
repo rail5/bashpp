@@ -13,6 +13,9 @@
 
 #include <listener/BashppListener.h>
 
+// FIXME(@rail5): Test cases for redirections and pipes out of compound shell constructs
+// E.g., `for i in 1 2 3; do echo $i; done > output.txt`
+// Or `while true; do echo hi; done | grep h`
 void BashppListener::enterBashForStatement(std::shared_ptr<AST::BashForStatement> node) {
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {
@@ -48,13 +51,14 @@ void BashppListener::exitBashForStatement(std::shared_ptr<AST::BashForStatement>
 		throw bpp::ErrorHandling::InternalError("Current code entity not found in the entity stack");
 	}
 
+	for_loop->destruct_local_objects(program);
 	for_loop->flush_code_buffers();
 
 	current_code_entity->add_code_to_previous_line(for_loop->get_header_pre_code());
-	current_code_entity->add_code_to_next_line("done\n");
 	current_code_entity->add_code_to_next_line(for_loop->get_header_post_code());
-	current_code_entity->add_code_to_previous_line(for_loop->get_header_code());
+	current_code_entity->add_code(for_loop->get_header_code());
 	current_code_entity->add_code(for_loop->get_pre_code() + for_loop->get_code() + for_loop->get_post_code());
+	current_code_entity->add_code("done ", false);
 
 	program->mark_entity(
 		source_file,
@@ -101,13 +105,15 @@ void BashppListener::exitBashSelectStatement(std::shared_ptr<AST::BashSelectStat
 		throw bpp::ErrorHandling::InternalError("Current code entity not found in the entity stack");
 	}
 
+	select_statement->destruct_local_objects(program);
 	select_statement->flush_code_buffers();
 
 	current_code_entity->add_code_to_previous_line(select_statement->get_header_pre_code());
-	current_code_entity->add_code_to_next_line("done\n");
 	current_code_entity->add_code_to_next_line(select_statement->get_header_post_code());
-	current_code_entity->add_code_to_previous_line(select_statement->get_header_code());
+	current_code_entity->add_code(select_statement->get_header_code());
 	current_code_entity->add_code(select_statement->get_pre_code() + select_statement->get_code() + select_statement->get_post_code());
+	current_code_entity->add_code("done ", false);
+
 
 	program->mark_entity(
 		source_file,

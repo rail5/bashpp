@@ -35,6 +35,7 @@ Below is the list of code entities which are considered to carry local scope:
  - Curly-braced blocks (`{ ... }`)
  - Subshells (`( ... )`, `$( ... )`, or backtick-enclosed command substitutions)
  - Process substitutions (`<( ... )` or `>( ... )`)
+ - Control flow constructs (`if` branches, `while` loops, `until` loops, `for` loops, `case` branches, and `select` branches)
 
 Only the above code entities are considered to carry local scope.
 

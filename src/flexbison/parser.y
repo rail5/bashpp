@@ -264,6 +264,35 @@ statement:
 	| pointer_declaration { $$ = $1; }
 	| delete_statement { $$ = $1; }
 	| bash_function { $$ = $1; }
+	| error DELIM {
+		set_incoming_token_can_be_lvalue(true, yyscanner);
+		set_received_local_keyword(false, yyscanner);
+
+		$$ = nullptr; // Don't create an AST node for this
+
+		/**
+		 * From GNU Bison 3.8.1 manual, Section 6 "Error Recovery":
+		 * > To prevent an outpouring of error messages, the parser
+		 * > will output no error message for another syntax error
+		 * > that happens shortly after the first; only after three
+		 * > consecutive input tokens have been successfully shifted
+		 * > will error messages resume.
+		 * > ...
+		 * > You can make error messages resume immediately by using
+		 * > the macro yyerrok in an action.
+		 */
+		yyerrok; // Allow error messages to resume immediately
+
+		/**
+		 * From GNU Bison 3.8.1 manual, Section 6 "Error Recovery":
+		 * > The previous lookahead token is reanalyzed immediately
+		 * > after an error. If this is unacceptable, then the macro
+		 * > yyclearin may be used to clear this token.
+		 */
+		 yyclearin; // Clear the lookahead token: re-analyzing it would produce
+			// odd and difficult-to-reason-about behavior in the lexer,
+			// since each tokenization modifies the lexer's internal state.
+	}
 	;
 
 shell_command_sequence:

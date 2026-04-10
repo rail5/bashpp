@@ -9,7 +9,6 @@
 #include <cstdio>
 #include <memory>
 #include <variant>
-#include <stack>
 #include <vector>
 #include <AST/ASTNode.h>
 #include <AST/Nodes/Nodes.h>

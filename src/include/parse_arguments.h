@@ -44,10 +44,10 @@ constexpr const char* help_intro =
 	"Options:\n";
 
 constexpr XGetOpt::OptionParser<
-	XGetOpt::Option<'o', "output", "Specify output file (default: run on exit)", XGetOpt::RequiredArgument>,
-	XGetOpt::Option<'b', "target-bash", "Target Bash version (default: 5.2)", XGetOpt::RequiredArgument>,
+	XGetOpt::Option<'o', "output", "Specify output file (default: run on exit)", XGetOpt::RequiredArgument, "file">,
+	XGetOpt::Option<'b', "target-bash", "Compile to Bash version (default: 5.2)", XGetOpt::RequiredArgument, "version">,
 	XGetOpt::Option<'s', "no-warnings", "Suppress warnings", XGetOpt::NoArgument>,
-	XGetOpt::Option<'I', "include", "Add directory to include path", XGetOpt::RequiredArgument>,
+	XGetOpt::Option<'I', "include", "Add directory to include path", XGetOpt::RequiredArgument, "directory">,
 	XGetOpt::Option<'t', "tokens", "Display tokens from lexer (do not compile program)", XGetOpt::NoArgument>,
 	XGetOpt::Option<'p', "parse-tree", "Display parse tree (do not compile program)", XGetOpt::NoArgument>,
 	XGetOpt::Option<'v', "version", "Display version information and exit", XGetOpt::NoArgument>,

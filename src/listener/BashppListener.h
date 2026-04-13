@@ -119,7 +119,7 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 		 *
 		 * The rule essentially is: if it's possible to declare 'local', then we should.
 		 * 
-		 * @return true if we should declare 'local', false otherwise
+		 * @return true if we should declare 'local'
 		 * @return false if we should not declare 'local'
 		 */
 		bool should_declare_local() const;

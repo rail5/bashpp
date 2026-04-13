@@ -106,6 +106,10 @@ bool BashppListener::should_declare_local() const {
 	return in_class || in_method || !bash_function_stack.empty();
 }
 
+bool BashppListener::should_localize_object_instantiation() const {
+	return should_declare_local() && supershell_stack.empty();
+}
+
 std::shared_ptr<bpp::bpp_code_entity> BashppListener::latest_code_entity() {
 	// Traverse the entity stack to find the most recent code entity
 	std::stack<std::shared_ptr<bpp::bpp_entity>> temp_stack;

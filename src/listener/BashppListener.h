@@ -111,9 +111,38 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 		bool in_method = false;
 
 		bool in_class = false;
-		bool in_supershell = false;
+		std::stack<std::monostate> supershell_stack;
 		std::stack<std::monostate> bash_function_stack;
+
+		/**
+		 * @brief Whether the compiler should declare its temporary variables to be 'local' in the generated Bash code
+		 *
+		 * The rule essentially is: if it's possible to declare 'local', then we should.
+		 * 
+		 * @return true if we should declare 'local', false otherwise
+		 * @return false if we should not declare 'local'
+		 */
 		bool should_declare_local() const;
+
+		/**
+		 * @brief Whether an instantiated object should be made 'local' in the generated Bash code
+		 *
+		 * Essentially the same rule applies as with temporaries, with the exception that
+		 * we should not declare 'local' when inside of a supershell, 
+		 * because supershells (per the spec) should *not* be isolated scopes, and objects
+		 * instantiated within them should be accessible from the containing scope as well.
+		 *
+		 * This check would not be necessary except for the fact that the runtime implementation
+		 * of supershells uses Bash functions, which *do* create new scope, affecting the visibility
+		 * of any 'local' variables declared within them.
+		 *
+		 * TODO(@rail5): Investigate whether alternative implementations (without using functions) are possible
+		 * and if so, replace this check with a simple should_declare_local()
+		 * 
+		 * @return true if instantiated objects should be made 'local'
+		 * @return false if instantiated objects should not be made 'local'
+		 */
+		bool should_localize_object_instantiation() const;
 
 		// Diagnostic information (not used for compilation):
 		std::stack<std::monostate> dynamic_cast_stack; // Used to track whether we're inside a dynamic_cast statement

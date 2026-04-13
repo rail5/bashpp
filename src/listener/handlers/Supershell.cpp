@@ -14,7 +14,7 @@ void BashppListener::enterSupershell(std::shared_ptr<AST::Supershell> node) {
 	 * Supershells can be nested
 	 */
 	
-	in_supershell = true;
+	supershell_stack.push({});
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
@@ -74,7 +74,7 @@ void BashppListener::exitSupershell(std::shared_ptr<AST::Supershell> node) {
 		code_to_run,
 		program);
 
-	in_supershell = false;
+	supershell_stack.pop();
 
 	// If we're in an assignment, add the supershell code to the assignment
 	std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(current_code_entity);

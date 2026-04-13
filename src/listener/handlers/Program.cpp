@@ -5,11 +5,10 @@
  */
 
 #include <sys/stat.h>
-#include <unistd.h>
 #include <listener/BashppListener.h>
 #include <bpp_include/templates.h>
-#include <bpp_include/replace_all.h>
 #include <error/SyntaxError.h>
+#include <include/run_bash.h>
 
 void BashppListener::enterProgram(std::shared_ptr<AST::Program> node) {
 	program->set_output_stream(code_buffer);
@@ -79,18 +78,7 @@ void BashppListener::exitProgram(std::shared_ptr<AST::Program> node) {
 			chmod(output_file.c_str(), 0755);
 		}
 	} else {
-		std::string arguments_string;
-		for (auto* argument : arguments) {
-			arguments_string += " \"" + replace_all(std::string(argument), "\"", "\\\"") + "\"";
-		}
-
-		std::string command = "bash " + output_file + arguments_string;
-
-		// Run the program and get its exit code
-		// Below is a small bit of code to compensate for the fact that WEXITSTATUS doesn't work the same on all systems
-		// This code will work on all systems
-		// The exit code is stored in the lower 8 bits of the return value of the system() function
-		this->exit_code = (system(command.c_str()) & 0xff00) >> 8;
+		this->exit_code = run_bash(output_file, arguments);
 		unlink(output_file.c_str());
 	}
 }

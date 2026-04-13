@@ -172,8 +172,6 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 		 */
 		std::unordered_map<std::string, std::string> replacement_file_contents;
 
-		std::shared_ptr<bpp::bpp_class> primitive;
-
 		bool lsp_mode = false; // Whether this listener is just running as part of the language server (i.e., not really compiling anything)
 		bool utf16_mode = false; // If we're in a language server, whether the client has demanded UTF-16 position encoding
 

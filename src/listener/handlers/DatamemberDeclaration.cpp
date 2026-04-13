@@ -41,7 +41,7 @@ void BashppListener::enterDatamemberDeclaration(std::shared_ptr<AST::DatamemberD
 	 * If it's a pointer, then pointer_declaration will be set, and we'll handle that in the pointer_declaration rule
 	 */
 
-	new_datamember->set_class(primitive); // Set the class to primitive by default (until changed by another parser rule)
+	new_datamember->set_class(program->get_primitive_class()); // Set the class to primitive by default (until changed by another parser rule)
 
 	auto id = node->IDENTIFIER();
 

@@ -109,11 +109,11 @@ void BashppListener::enterMethodDefinition(std::shared_ptr<AST::MethodDefinition
 		);
 
 		if (!method->add_parameter(parameter)) {
-			if (parameter->get_class() != primitive && method->get_object(param_name) != nullptr) {
+			if (parameter->get_class() != program->get_primitive_class() && method->get_object(param_name) != nullptr) {
 				throw bpp::ErrorHandling::SyntaxError(this, param.name, "Parameter name conflicts with existing object: " + param_name);
 			}
 			
-			if (parameter->get_class() != primitive && method->get_class(param_name) != nullptr) {
+			if (parameter->get_class() != program->get_primitive_class() && method->get_class(param_name) != nullptr) {
 				throw bpp::ErrorHandling::SyntaxError(this, param.name, "Parameter name conflicts with existing class: " + param_name);
 			}
 

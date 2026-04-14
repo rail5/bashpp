@@ -105,7 +105,7 @@ class Arguments {
 		 * @param input_file The path to the input file to compile
 		 * @throws std::runtime_error if the input file does not exist or is not a regular file
 		 */
-		void set_input_file(const std::string_view& input_file) {
+		void set_input_file(std::string_view input_file) {
 			// Verify that the file exists and is a regular file
 			if (!std::filesystem::exists(input_file)) {
 				throw std::runtime_error("Source file '" + std::string(input_file) + "' does not exist");
@@ -129,7 +129,7 @@ class Arguments {
 		* @param output_file_arg The output file argument string to parse
 		* @throws std::runtime_error if the output file argument is invalid or not writable
 		*/
-		void set_output_file(const std::string_view& output_file_arg) {
+		void set_output_file(std::string_view output_file_arg) {
 			if (output_file_arg == "-") {
 				this->m_output_file = output_file_arg;
 				return;
@@ -181,15 +181,8 @@ class Arguments {
 		 * @param version_arg The target Bash version argument string to parse
 		 * @throws std::runtime_error if the version argument is in an invalid format
 		 */
-		void set_target_bash_version(const std::string_view& version_arg) {
-					std::istringstream version_stream((std::string(version_arg)));
-					uint16_t major, minor;
-					char dot;
-					if (!(version_stream >> major >> dot >> minor) || dot != '.') {
-						throw std::runtime_error("Invalid Bash version format: " + std::string(version_arg) +
-							"\nExpected format: <major>.<minor> (e.g., 5.2)");
-					}
-					this->m_target_bash_version = {major, minor};
+		void set_target_bash_version(std::string_view version_arg) {
+			this->m_target_bash_version = BashVersion(version_arg);
 		}
 		const BashVersion& target_bash_version() const {
 			return this->m_target_bash_version;
@@ -206,7 +199,7 @@ class Arguments {
 		 * @param path The directory path to add to the include paths
 		 * @throws std::runtime_error if the provided path is not a directory
 		 */
-		void add_include_path(const std::string_view& path) {
+		void add_include_path(std::string_view path) {
 			if (!std::filesystem::is_directory(path)) {
 				throw std::runtime_error("Include path '" + std::string(path) + "' is not a directory");
 			}

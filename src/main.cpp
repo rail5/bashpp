@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
 	Arguments args;
 	try {
 		args = parse_arguments(argc, argv);
-	} catch (const std::runtime_error& e) {
+	} catch (const std::exception& e) {
 		std::cerr << program_name << ": Error: " << e.what() << std::endl
 			<< "Use -h for help" << std::endl;
 		return 1;

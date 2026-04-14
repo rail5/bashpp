@@ -96,16 +96,12 @@ int main(int argc, char* argv[]) {
 				server.set_suppress_warnings(true);
 				break;
 			case 'b':
-				{
-					std::istringstream version_stream(std::string(arg.getArgument()));
-					uint16_t major, minor;
-					char dot;
-					if (!(version_stream >> major >> dot >> minor) || dot != '.') {
-						std::cerr << "Invalid Bash version format: " << std::string(arg.getArgument())
-							<< std::endl << "Expected format: <major>.<minor> (e.g., 5.2)" << std::endl;
-						return 1;
-					}
-					server.setTargetBashVersion(BashVersion{major, minor});
+				try {
+					server.setTargetBashVersion(BashVersion(arg.getArgument()));
+				} catch (const std::exception& e) {
+					std::cerr << "Invalid Bash version: " << arg.getArgument() << std::endl
+						<< "Expected format: <major>[.<minor>] (e.g., 5.2)" << std::endl;
+					return 1;
 				}
 				break;
 			case 'v':

@@ -73,14 +73,15 @@ int main(int argc, char* argv[]) {
 	}
 
 	std::string full_path;
-	char resolved_path[PATH_MAX];
 	if (!args.input_file().has_value()) {
 		full_path = "<stdin>";
-	} else if (realpath(args.input_file().value().c_str(), resolved_path) == nullptr) {
-		std::cerr << "Error: Could not get full path of source file '" << args.input_file().value() << "'" << std::endl;
-		return 1;
 	} else {
-		full_path = std::string(resolved_path);
+		try {
+			full_path = std::filesystem::canonical(args.input_file().value()).string();
+		} catch (const std::filesystem::filesystem_error& e) {
+			std::cerr << "Error: Could not get full path of source file '" << args.input_file().value() << "': " << e.what() << std::endl;
+			return 1;
+		}
 	}
 
 	AST::BashppParser parser;

@@ -73,6 +73,7 @@ class Arguments {
 		bool f_suppress_warnings = false;
 		bool f_display_tokens = false;
 		bool f_display_parse_tree = false;
+		bool f_run_on_exit = true;
 		bool f_exit_early = false; // Exit early if the request is just -h/--help or -v/--version
 
 	public:
@@ -236,6 +237,25 @@ class Arguments {
 		bool exit_early() const {
 			return this->f_exit_early;
 		}
+
+		void set_run_on_exit(bool run_on_exit) {
+			this->f_run_on_exit = run_on_exit;
+		}
+		bool run_on_exit() const {
+			return this->f_run_on_exit;
+		}
+
+		bool output_to_stdout() const {
+			return this->m_output_file == "-";
+		}
+
+		bool output_to_file() const {
+			return this->m_output_file.has_value() && this->m_output_file.value() != "-";
+		}
+
+		bool input_from_stdin() const {
+			return !this->m_input_file.has_value();
+		}
 };
 
 inline Arguments parse_arguments(int argc, char* argv[]) {
@@ -270,6 +290,7 @@ inline Arguments parse_arguments(int argc, char* argv[]) {
 				args.add_include_path(arg.getArgument());
 				break;
 			case 'o':
+				args.set_run_on_exit(false);
 				args.set_output_file(arg.getArgument());
 				break;
 			case 'p':

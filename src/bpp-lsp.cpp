@@ -53,7 +53,9 @@ int main(int argc, char* argv[]) {
 	> OptionParser;
 	
 	constexpr const char* help_intro = "Bash++ Language Server " bpp_compiler_version "\n"
-		"Usage: bpp-lsp [options]\n";
+		"Usage: bpp-lsp [options]\n"
+		"This program should be used via an editor plugin rather than invoked directly.\n"
+		"Options:\n";
 
 	constexpr const char* version_string = "Bash++ Language Server " bpp_compiler_version "\n"
 		"Copyright (C) 2024-" bpp_compiler_updated_year " Andrew S. Rightenburg\n"

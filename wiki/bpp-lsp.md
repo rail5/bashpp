@@ -24,14 +24,6 @@ It is not required for running Bash++ scripts, but enhances the development expe
 
 Run the language server over standard input/output. This is the default mode of operation.
 
-###### `--port <port>`
-
-Run the language server with a TCP socket on the specified port. This allows the language server to be accessed over a network.
-
-###### `--socket <path>`
-
-Run the language server with a Unix domain socket at the specified path. This is useful for local communication between processes.
-
 ###### `-l <file>`, `--log <file>`
 
 Log debug messages to the specified file.
@@ -39,6 +31,10 @@ Log debug messages to the specified file.
 ###### `-I <path>`, `--include <path>`
 
 Add a directory to the include paths for Bash++ libraries. This allows the language server to resolve symbols and provide completions for libraries located in these directories.
+
+##### `-b <version>`, `--target-bash <version>`
+
+Specify the target Bash version for compilation. This affects how the language server analyzes code and provides diagnostics. The default is 5.2.
 
 ###### `-s`, `--no-warnings`
 

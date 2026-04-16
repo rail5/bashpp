@@ -127,15 +127,9 @@ void bpp::BashppServer::setOutputStream(std::shared_ptr<std::ostream> stream) {
 	output_stream = std::move(stream);
 }
 
-void bpp::BashppServer::setSocketPath(const std::string& path) {
-	socket_path = path;
-}
-
 void bpp::BashppServer::setLogFile(const std::string& path) {
 	log_file.open(path, std::ios::app);
-	if (!log_file.is_open()) {
-		throw std::runtime_error("Failed to open log file: " + path);
-	}
+	if (!log_file.is_open()) throw std::runtime_error("Failed to open log file: " + path);
 }
 
 void bpp::BashppServer::setTargetBashVersion(const BashVersion& version) {
@@ -143,14 +137,9 @@ void bpp::BashppServer::setTargetBashVersion(const BashVersion& version) {
 }
 
 void bpp::BashppServer::cleanup() {
-	if (output_stream) {
-		output_stream->flush();
-	}
+	if (shutting_down.exchange(true)) return; // Already shutting down
 
-	if (socket_path.has_value()) {
-		// Unlink the Unix socket file if it exists
-		unlink(socket_path.value().c_str());
-	}
+	if (output_stream) output_stream->flush();
 
 	thread_pool.cleanup();
 	log("Bash++ Language Server cleaned up and exiting.");
@@ -314,7 +303,7 @@ void bpp::BashppServer::processMessage(const std::string& message) {
 	if (request.method == "shutdown") {
 		log("Received shutdown request, cleaning up and exiting.");
 		cleanup();
-		exit(0);
+		_exit(0);
 	}
 }
 

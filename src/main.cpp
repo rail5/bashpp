@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	// If the user didn't provide input, let them know, rather than just hang waiting for stdin
-	if (args.input_from_stdin() && isatty(fileno(stdin))) {
+	if (args.input_from_stdin() && isatty(STDIN_FILENO)) {
 		std::cerr << program_name << " " << bpp_compiler_version << std::endl
 			<< help_intro << OptionParser.getHelpString();
 		return 1;
@@ -128,7 +128,7 @@ int main(int argc, char* argv[]) {
 			std::cerr << program_name << ": Error: Could not open temporary file for output" << std::endl;
 			return 1;
 		}
-		
+
 		output_stream = std::static_pointer_cast<std::ostream>(ostream);
 		args.set_output_file(std::string(temp_file_vec.data()));
 	}

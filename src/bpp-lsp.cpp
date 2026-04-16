@@ -25,9 +25,6 @@
 #include <updated_year.h>
 
 bpp::BashppServer* p_server;
-int client_fd = -1;
-int server_fd = -1;
-int socket_port = 0;
 
 int main(int argc, char* argv[]) {
 	// Trap signals
@@ -47,9 +44,7 @@ int main(int argc, char* argv[]) {
 		XGetOpt::Option<'s', "no-warnings", "Suppress warnings", XGetOpt::NoArgument>,
 		XGetOpt::Option<'b', "target-bash", "Set target Bash version (e.g., 5.2)", XGetOpt::RequiredArgument, "version">,
 		XGetOpt::Option<'I', "include", "Add a directory to include path", XGetOpt::RequiredArgument, "path">,
-		XGetOpt::Option<1001, "stdio", "Use standard input/output for communication (default)", XGetOpt::NoArgument>,
-		XGetOpt::Option<1002, "port", "Use TCP port for communication", XGetOpt::RequiredArgument, "port">,
-		XGetOpt::Option<1003, "socket", "Use Unix domain socket for communication", XGetOpt::RequiredArgument, "path">
+		XGetOpt::Option<1001, "stdio", "Use standard input/output for communication (default)", XGetOpt::NoArgument>
 	> OptionParser;
 	
 	constexpr const char* help_intro = "Bash++ Language Server " bpp_compiler_version "\n"
@@ -117,74 +112,17 @@ int main(int argc, char* argv[]) {
 					return 1;
 				}
 				break;
-			case 10000: // --stdio
-				// Use standard input/output for communication
-				server.log("Using standard input/output for communication.");
-				input_stream = std::make_shared<std::istream>(std::cin.rdbuf());
-				output_stream = std::make_shared<std::ostream>(std::cout.rdbuf());
-				break;
-			case 10001: // --port
-				// Use TCP port for communication
-				try {
-					socket_port = std::stoi(std::string(arg.getArgument()));
-				} catch (...) {
-					std::cerr << "Invalid port number: " << arg.getArgument() << std::endl;
-					return 1;
-				}
-				server_fd = setup_tcp_server(socket_port);
-				if (server_fd < 0) {
-					return 1;
-				}
-				std::cerr << "Listening on TCP port " << socket_port << std::endl;
-				server.log("Using TCP socket for communication on port ", socket_port);
-				client_fd = accept(server_fd, nullptr, nullptr);
-				if (client_fd < 0) {
-					std::cerr << "Error accepting connection" << std::endl;
-					close(server_fd);
-					return 1;
-				}
-				break;
-			case 10002: // --socket
-				// Use Unix domain socket for communication
-				{
-					std::string socket_path(arg.getArgument());
-					server_fd = setup_unix_socket_server(socket_path);
-					server.setSocketPath(socket_path);
-					if (server_fd < 0) {
-						return 1;
-					}
-					std::cerr << "Listening on Unix socket " << socket_path << std::endl;
-					server.log("Using Unix domain socket for communication at ", socket_path);
-					client_fd = accept(server_fd, nullptr, nullptr);
-					if (client_fd < 0) {
-						std::cerr << "Error accepting connection" << std::endl;
-						close(server_fd);
-						return 1;
-					}
-				}
+			case 1001: // --stdio
+				// No-op
+				// The language server does not yet support any other communication method
 				break;
 		}
 	}
 	std::cerr << "Client connected, running..." << std::endl;
 
-	if (client_fd != -1) {
-		auto filebuf = std::make_shared<__gnu_cxx::stdio_filebuf<char>>(client_fd, std::ios::in | std::ios::out);
-		if (!filebuf->is_open()) {
-			std::cerr << "Error opening filebuf for client_fd" << std::endl;
-			close(client_fd);
-			close(server_fd);
-			return 1;
-		}
-		input_stream = std::make_shared<std::istream>(filebuf.get());
-		output_stream = std::make_shared<std::ostream>(filebuf.get());
-	}
-
-	if (!input_stream || !output_stream) {
-		// Default to stdio if no other method is specified
-		input_stream = std::make_shared<std::istream>(std::cin.rdbuf());
-		output_stream = std::make_shared<std::ostream>(std::cout.rdbuf());
-		server.log("Defaulting to standard input/output for communication.");
-	}
+	input_stream = std::make_shared<std::istream>(std::cin.rdbuf());
+	output_stream = std::make_shared<std::ostream>(std::cout.rdbuf());
+	server.log("Defaulting to standard input/output for communication.");
 
 	server.setInputStream(input_stream);
 	server.setOutputStream(output_stream);
@@ -192,11 +130,5 @@ int main(int argc, char* argv[]) {
 	server.mainLoop();
 	server.cleanup();
 	p_server = nullptr;
-	if (client_fd != -1) {
-		close(client_fd);
-	}
-	if (server_fd != -1) {
-		close(server_fd);
-	}
 	return 0;
 }

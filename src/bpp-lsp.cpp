@@ -16,26 +16,17 @@
 #include <unistd.h>
 
 #include <lsp/BashppServer.h>
-#include <lsp/helpers.h>
-
 #include <include/BashVersion.h>
 #include <include/xgetopt.h>
 
 #include <version.h>
 #include <updated_year.h>
 
-bpp::BashppServer* p_server;
-
 int main(int argc, char* argv[]) {
-	// Trap signals
-	(void)std::signal(SIGINT, signal_handler);
-	(void)std::signal(SIGTERM, signal_handler);
-
 	std::shared_ptr<std::istream> input_stream;
 	std::shared_ptr<std::ostream> output_stream;
 
 	bpp::BashppServer server;
-	p_server = &server;
 
 	constexpr XGetOpt::OptionParser<
 		XGetOpt::Option<'h', "help", "Show this help message", XGetOpt::NoArgument>,
@@ -129,6 +120,5 @@ int main(int argc, char* argv[]) {
 
 	server.mainLoop();
 	server.cleanup();
-	p_server = nullptr;
 	return 0;
 }

@@ -7,12 +7,10 @@
 #pragma once
 
 #include <memory>
-#include <thread>
 #include <mutex>
 #include <unordered_map>
 #include <string>
 #include <vector>
-#include <optional>
 
 #include <bpp_include/bpp.h>
 #include <include/BashVersion.h>

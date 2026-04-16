@@ -12,7 +12,6 @@
 #include <chrono>
 #include <atomic>
 #include <memory>
-#include <optional>
 #include <unordered_map>
 #include <fstream>
 #include <nlohmann/json.hpp>
@@ -60,8 +59,8 @@ class BashppServer {
 		pid_t pid = getpid();
 		std::atomic<bool> shutting_down = false;
 		// Resources
-		std::shared_ptr<std::istream> input_stream;
-		std::shared_ptr<std::ostream> output_stream;
+		std::istream* input_stream = &std::cin;  // Held as std::stream* for future extensions beyond stdio
+		std::ostream* output_stream = &std::cout;
 		ThreadPool thread_pool = ThreadPool(std::thread::hardware_concurrency());
 		ProgramPool program_pool = ProgramPool(10); // Maximum 10 programs in the pool
 		std::ofstream log_file;
@@ -131,8 +130,6 @@ class BashppServer {
 
 		void mainLoop();
 
-		void setInputStream(std::shared_ptr<std::istream> stream);
-		void setOutputStream(std::shared_ptr<std::ostream> stream);
 		void setLogFile(const std::string& path);
 		void setTargetBashVersion(const BashVersion& version);
 
@@ -169,9 +166,8 @@ class BashppServer {
 
 		template <typename... Args>
 		void log(Args&&... args) {
-			if (!log_file.is_open()) {
-				return; // Not logging
-			}
+			if (!log_file.is_open()) return; // Not logging
+
 			std::lock_guard<std::mutex> lock(log_mutex);
 			auto now = std::chrono::system_clock::now();
 			auto now_time_t = std::chrono::system_clock::to_time_t(now);

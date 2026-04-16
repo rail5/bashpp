@@ -119,14 +119,6 @@ bpp::BashppServer::BashppServer() {
 
 }
 
-void bpp::BashppServer::setInputStream(std::shared_ptr<std::istream> stream) {
-	input_stream = std::move(stream);
-}
-
-void bpp::BashppServer::setOutputStream(std::shared_ptr<std::ostream> stream) {
-	output_stream = std::move(stream);
-}
-
 void bpp::BashppServer::setLogFile(const std::string& path) {
 	log_file.open(path, std::ios::app);
 	if (!log_file.is_open()) throw std::runtime_error("Failed to open log file: " + path);

@@ -8,10 +8,7 @@
 
 #include <iostream>
 #include <string>
-#include <memory>
 #include <csignal>
-
-#include <ext/stdio_filebuf.h> // Non-portable GNU extension
 
 #include <unistd.h>
 
@@ -23,9 +20,6 @@
 #include <updated_year.h>
 
 int main(int argc, char* argv[]) {
-	std::shared_ptr<std::istream> input_stream;
-	std::shared_ptr<std::ostream> output_stream;
-
 	bpp::BashppServer server;
 
 	constexpr XGetOpt::OptionParser<
@@ -110,13 +104,7 @@ int main(int argc, char* argv[]) {
 		}
 	}
 	std::cerr << "Client connected, running..." << std::endl;
-
-	input_stream = std::make_shared<std::istream>(std::cin.rdbuf());
-	output_stream = std::make_shared<std::ostream>(std::cout.rdbuf());
 	server.log("Defaulting to standard input/output for communication.");
-
-	server.setInputStream(input_stream);
-	server.setOutputStream(output_stream);
 
 	server.mainLoop();
 	server.cleanup();

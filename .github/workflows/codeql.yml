@@ -67,6 +67,8 @@ jobs:
         git config --global --add safe.directory "$GITHUB_WORKSPACE"
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        ref: main
 
     - name: Install build dependencies
       run: |

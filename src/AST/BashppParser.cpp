@@ -108,15 +108,9 @@ void AST::BashppParser::_parse() {
 void AST::BashppParser::setUTF16Mode(bool enabled) {
 	utf16_mode = enabled;
 }
-bool AST::BashppParser::getUTF16Mode() const {
-	return utf16_mode;
-}
 
 void AST::BashppParser::setDisplayLexerOutput(bool enabled) {
 	display_lexer_output = enabled;
-}
-bool AST::BashppParser::getDisplayLexerOutput() const {
-	return display_lexer_output;
 }
 
 void AST::BashppParser::setInputFromFilePath(const std::string& file_path) {

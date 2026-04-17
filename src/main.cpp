@@ -21,10 +21,8 @@
 #include <filesystem>
 #include <cstring>
 #include <memory>
-#include <getopt.h>
 #include <unistd.h>
-#include <sys/stat.h>
-#include <cstdio>
+#include <cstdlib>
 
 #include <version.h>
 #include <updated_year.h>

@@ -5,7 +5,6 @@
  */
 #pragma once
 
-#include <fstream>
 #include <memory>
 #include <string>
 #include <cstdint>
@@ -13,7 +12,6 @@
 #include <lsp/ProgramPool.h>
 #include <AST/ASTNode.h>
 #include <bpp_include/bpp_codegen.h>
-#include "explode.h"
 
 std::shared_ptr<AST::ASTNode> find_node_at_position(std::shared_ptr<AST::ASTNode> node, uint32_t line, uint32_t column);
 

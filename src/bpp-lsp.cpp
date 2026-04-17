@@ -7,10 +7,6 @@
 // Bash++ Language Server
 
 #include <iostream>
-#include <string>
-#include <csignal>
-
-#include <unistd.h>
 
 #include <lsp/BashppServer.h>
 #include <include/BashVersion.h>

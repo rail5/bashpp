@@ -55,10 +55,7 @@ class BashppParser {
 		void _parse();
 	public:
 		void setUTF16Mode(bool enabled);
-		bool getUTF16Mode() const;
-
 		void setDisplayLexerOutput(bool enabled);
-		bool getDisplayLexerOutput() const;
 
 		void setInputFromFilePath(const std::string& file_path);
 		void setInputFromFilePtr(FILE* file_ptr, const std::string& file_path);

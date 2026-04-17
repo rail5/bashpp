@@ -26,7 +26,9 @@ class SubshellSubstitution : public ASTNode {
 
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
-			os << indent << "(SubshellSubstitution $(";
+			os << indent << "(SubshellSubstitution ";
+			if (is_cat_replacement) os << "[cat replacement] ";
+			os << "$(";
 			for (const auto& child : children) {
 				os << std::endl;
 				child->prettyPrint(os, indentation_level + 1);

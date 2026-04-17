@@ -1,3 +1,41 @@
+bpp (0.8.9) unstable; urgency=medium
+
+  * Subshell code generation: Fixed critical bug where normal command
+    substitution subshells (`$(...)`) and cat‑replacement subshells
+    (`$(< file)`) incorrectly shared buffer placement logic.
+    - Cat‑replacement subshells now enforce perfect forwarding: pre‑code
+      and post‑code are placed strictly outside the substitution, and
+      local object destruction is deferred until after buffers are flushed.
+    - Normal subshells now correctly scope pre‑code, post‑code, and
+      destructor calls *inside* the substitution, ensuring proper lifetime
+      management and output capture.
+    - Added test cases for cat‑replacement and corrected expectations in
+      the local‑scope test.
+  * AST pretty‑printing: SubshellSubstitution nodes now display whether
+    they represent a cat‑replacement subshell, aiding debugging.
+  * Parser error recovery: The parser now attempts to recover from syntax
+    errors and continue building the AST, allowing multiple parser errors to
+    be reported in a single compilation pass rather than aborting on the
+    first failure.
+  * bpp‑lsp improvements:
+    - Removed unused `--port` and `--socket` options; the language server
+      now communicates exclusively over stdio.
+    - Eliminated unnecessary signal handlers; the server simply exits on
+      signals as no extra cleanup is required.
+    - Added a note to the help text describing LSP usage.
+  * Code hygiene and refactoring:
+    - Replaced `system()` with `fork()` + `execvp()` for the `--run‑on‑exit`
+      feature, avoiding an unnecessary shell interpreter.
+    - Changed `in_supershell` boolean flag to a `stack<std::monostate>`
+      to correctly track nested supershell contexts.
+    - Unified multiple `NullOStream` implementations into a single common
+      definition.
+    - Migrated from `realpath()` to `std::filesystem::canonical()`.
+    - Refined argument parsing: Bash version string parsing moved into a
+      `constexpr` constructor of `BashVersion`.
+
+ -- rail5 <andrew@rail5.org>  Fri, 17 Apr 2026 22:21:04 +0800
+
 bpp (0.8.8) unstable; urgency=medium
 
   * Spec: Automatic object lifetime management is now explicitly

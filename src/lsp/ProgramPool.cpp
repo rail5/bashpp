@@ -11,7 +11,7 @@
 #include <AST/BashppParser.h>
 #include <listener/BashppListener.h>
 
-#include <lsp/include/NullStream.h>
+#include <include/NullStream.h>
 
 ProgramPool::ProgramPool(size_t max_programs) : max_programs(max_programs) {
 	// Initialize the program pool with a maximum number of programs
@@ -137,7 +137,7 @@ void ProgramPool::_remove_program(size_t index) {
 std::shared_ptr<bpp::bpp_program> ProgramPool::_parse_program(const std::string& file_path) {
 	// Create output streams that will discard output
 	std::shared_ptr<std::ostream> output_stream = std::make_shared<NullOStream>();
-	std::shared_ptr<std::ostringstream> code_buffer = std::make_shared<NullOStringStream>();
+	std::shared_ptr<std::ostream> code_buffer = std::make_shared<NullOStream>();
 
 	try {
 		BashppListener listener;

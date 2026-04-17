@@ -8,7 +8,8 @@
 #include <AST/BashppParser.h>
 
 #include <unistd.h>
-#include <fstream>
+
+#include <include/NullStream.h>
 
 /**
  * @brief Handles @include and @include_once statements
@@ -111,7 +112,7 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 		listener.set_code_buffer(code_buffer);
 	} else {
 		// Otherwise, throw its output in the garbage
-		std::shared_ptr<std::ofstream> garbage_stream = std::make_shared<std::ofstream>("/dev/null");
+		std::shared_ptr<std::ostream> garbage_stream = std::make_shared<NullOStream>();
 		listener.set_code_buffer(garbage_stream);
 	}
 	listener.set_output_file("");

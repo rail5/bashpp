@@ -67,12 +67,11 @@ void BashppListener::exitProgram(std::shared_ptr<AST::Program> node) {
 
 	// Copy the contents of the code stream to the output stream
 	std::shared_ptr<std::ostringstream> cd = std::dynamic_pointer_cast<std::ostringstream>(code_buffer);
-	if (cd == nullptr) {
-		throw bpp::ErrorHandling::InternalError("code_buffer is not a stringstream");
+	if (cd != nullptr) {
+		*output_stream << cd->str() << std::flush;
+		cd->clear();
 	}
-	*output_stream << cd->str() << std::flush;
-	cd->clear();
-
+	
 	if (!run_on_exit) {
 		if (output_file != "") {
 			chmod(output_file.c_str(), 0755);

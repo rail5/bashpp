@@ -20,8 +20,12 @@ void BashppListener::enterSubshellSubstitution(std::shared_ptr<AST::SubshellSubs
 	subshell_entity->inherit(code_entity);
 
 	if (node->isCatReplacement()) {
+		// "Perfect forwarding" is required for "cat replacement" subshells (i.e., ones of the form $(< file))
+		// Reason being: those "cat replacements" cannot contain any non-trivial logic such as function calls etc,
+		// and can *only* contain the redirection
+		// Meaning that this entity needs to assert to all other entities: "I need total control of where my pre-code and post-code go."
+		// (The definition of "perfect forwarding," that is, keeping the 3 code buffers separate)
 		subshell_entity->set_requires_perfect_forwarding(true);
-		// TODO(@rail5): Why does this require perfect forwarding again? Document the reason.
 	}
 
 	// Push the subshell entity onto the entity stack
@@ -43,15 +47,47 @@ void BashppListener::exitSubshellSubstitution(std::shared_ptr<AST::SubshellSubst
 
 	entity_stack.pop();
 
-	if (!node->isCatReplacement()) {
-		subshell_entity->destruct_local_objects(program);
-	}
-
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
-	current_code_entity->add_code_to_previous_line(subshell_entity->get_pre_code());
-	current_code_entity->add_code_to_next_line("\n" + subshell_entity->get_post_code());
-	current_code_entity->add_code("$(" + subshell_entity->get_code() + ")");
+	
+
+	if (node->isCatReplacement()) {
+		// If this is a `$(< file)` "cat replacement" subshell
+		// (i.e., a shell-builtin replacement for the `cat` utility to read from some file),
+		// then it cannot contain any nontrivial logic such as function calls etc, but can *only* contain the redirection
+		// therefore we need to make sure that the entity's pre-code comes *before* the entity,
+		// and its post-code comes *after* the entity
+		// e.g.: If, as part of this "cat replacement," we fetch an object's data member,
+		// then the temporary variables for the fetch need to come *before* the $(< ...) business,
+		//  (inside the $(< ...) should *only* be the final variable reference)
+		// and the clean-up should come *after* the $(< ...)
+		current_code_entity->add_code_to_previous_line(subshell_entity->get_pre_code());
+		current_code_entity->add_code_to_next_line(subshell_entity->get_post_code());
+		current_code_entity->add_code("$(" + subshell_entity->get_code() + ")");
+
+		// Only *now* should we destruct local objects and flush the code buffers
+		// -- since these operations can potentially rotate the buffers (e.g., moving the contents of the "code" buffer into the "pre-code" buffer)
+		// or insert new content into any of the 3 buffers
+		subshell_entity->clear_all_buffers(); // To avoid sending the same code up twice
+		subshell_entity->destruct_local_objects(program);
+		subshell_entity->flush_code_buffers();
+
+		current_code_entity->add_code(subshell_entity->get_pre_code());
+		current_code_entity->add_code(subshell_entity->get_code());
+		current_code_entity->add_code(subshell_entity->get_post_code());
+	} else {
+		// Otherwise, if this is a normal subshell (i.e., one containing commands),
+		// Then we actually need to do the opposite: all of the pre- and post- code should be contained *within*
+		// the subshell, for proper scoping concerns
+		// (likewise, destructors for local objects etc should be called within the same subshell)
+		subshell_entity->destruct_local_objects(program);
+		subshell_entity->flush_code_buffers();
+		current_code_entity->add_code("$(", false);
+		current_code_entity->add_code(subshell_entity->get_pre_code());
+		current_code_entity->add_code(subshell_entity->get_code());
+		current_code_entity->add_code(subshell_entity->get_post_code());
+		current_code_entity->add_code(")", false);
+	}
 
 	program->mark_entity(
 		source_file,

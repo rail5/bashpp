@@ -1,0 +1,32 @@
+outputfile=@(mktemp)
+
+function cleanUp() {
+	rm -f "${outputfile:?}"
+}
+
+trap cleanUp EXIT
+trap cleanUp SIGINT
+trap cleanUp SIGTERM
+
+@class Innermost {
+	@public member="$outputfile"
+}
+
+@class Inner {
+	@public @Innermost inner
+}
+
+@class Outer {
+	@public @Inner inner
+}
+
+@class Outermost {
+	@public @Outer outer
+}
+
+@Outermost obj
+
+echo "some data" > @obj.outer.inner.inner.member
+
+var=$(< @obj.outer.inner.inner.member) # Read from the file using subshell cat replacement
+echo "Read from file: $var" # Should output "Read from file: some data"

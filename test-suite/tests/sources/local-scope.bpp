@@ -42,8 +42,9 @@ echo "Entering subshell command substitution"
 var=$(
 	@Object obj
 	# obj's destructor should be called here
-	# "Object destructor called"
+	# "Object destructor called" stored in 'var'
 )
+echo "$var" # "Object destructor called"
 echo "Exited subshell command substitution"
 
 echo "" # Blank line
@@ -51,7 +52,8 @@ echo "" # Blank line
 echo "Entering backtick-subshell command substitution"
 var=`@Object obj`
 # obj's destructor should be called here
-# "Object destructor called"
+# "Object destructor called" stored in 'var'
+echo "$var" # "Object destructor called"
 echo "Exited backtick-subshell command substitution"
 
 echo "" # Blank line

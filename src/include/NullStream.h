@@ -23,6 +23,13 @@ class NullBuffer : public std::streambuf {
 		std::streamsize xsputn(const char* /*s*/, std::streamsize n) override {
 			return n; // Indicate success, but discard the characters
 		}
+	public:
+		NullBuffer() noexcept = default;
+		NullBuffer(const NullBuffer&) noexcept = default;
+		NullBuffer& operator=(const NullBuffer&) noexcept = default;
+		NullBuffer(NullBuffer&&) noexcept = default;
+		NullBuffer& operator=(NullBuffer&&) noexcept = default;
+		~NullBuffer() noexcept override = default;
 };
 
 /**

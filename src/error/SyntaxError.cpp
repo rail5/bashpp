@@ -5,6 +5,7 @@
  */
 
 #include <iostream>
+#include <ranges>
 #include <string>
 #include <fstream>
 #include <vector>
@@ -59,8 +60,8 @@ void print_syntax_error_or_warning(
 		<< std::endl;
 	
 	// Print the include chain that led to the problematic file
-	for (auto it = include_chain.rbegin(); it != include_chain.rend(); it++) {
-		std::cerr << "In file included from " << color_purple << *it << color_reset << std::endl;
+	for (const auto& filename : std::ranges::reverse_view(include_chain)) {
+		std::cerr << "In file included from " << color_purple << filename << color_reset << std::endl;
 	}
 
 	// Print the warning / error message

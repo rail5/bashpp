@@ -38,16 +38,16 @@ void AST::BashppParser::_initialize_lexer() {
 	switch (input_type) {
 		case InputType::FILEPATH: {
 			std::string file_path = std::get<std::string>(input_source);
-				owned_input_file = std::unique_ptr<FILE, int(*)(FILE*)>(fopen(file_path.c_str(), "r"), &fclose);
-				input_file = owned_input_file.get();
-				if (input_file == nullptr) {
+			owned_input_file = std::unique_ptr<FILE, int(*)(FILE*)>(fopen(file_path.c_str(), "r"), &fclose);
+			input_file = owned_input_file.get();
+			if (input_file == nullptr) {
 				throw std::runtime_error("Could not open source file: " + file_path);
 			}
 			yyset_in(input_file, lexer);
 			break;
 		}
 		case InputType::FILEPTR: {
-				owned_input_file.reset();
+			owned_input_file.reset();
 			input_file = std::get<FILE*>(input_source);
 			if (input_file == nullptr) {
 				throw bpp::ErrorHandling::InternalError("Input FILE* is null");

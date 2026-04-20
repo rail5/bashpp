@@ -57,7 +57,7 @@ class ErrorOrWarning : public std::runtime_error {
 		bool is_warning = false;
 
 		template <bpp::detail::ErrorReportableListener Listener, bpp::detail::ASTNodePtrORToken T>
-		void set_from_listener(Listener* listener, T error_ctx) {
+		void set_from_listener(Listener* listener, const T& error_ctx) {
 			source_file = listener->get_source_file();
 			include_chain = listener->get_include_stack();
 			program = listener->get_program();

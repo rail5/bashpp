@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <string>
 #include <stdexcept>
+#include <limits>
 
 /**
  * @struct BashVersion
@@ -83,6 +84,9 @@ struct BashVersion {
 		for (const auto& c : version_string) {
 			switch (c) {
 				case '0' ... '9':
+					// Verify we don't overflow the major or minor version
+					if (value > (std::numeric_limits<uint16_t>::max() - (c - '0')) / 10)
+						throw std::invalid_argument("Invalid Bash version: " + std::string(version_string));
 					value = (value * 10) + (c - '0');
 					break;
 				case '.':

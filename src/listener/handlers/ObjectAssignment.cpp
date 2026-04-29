@@ -19,9 +19,7 @@ void BashppListener::exitObjectAssignment(std::shared_ptr<AST::ObjectAssignment>
 	entity_stack.pop();
 	context_expectations_stack.pop();
 
-	if (object_assignment == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Object assignment context was not found in the entity stack");
-	}
+	bpp_assert(object_assignment != nullptr, "Object assignment context was not found in the entity stack");
 
 	bool is_nonprimitive_copy = object_assignment->lvalue_is_nonprimitive() && object_assignment->rvalue_is_nonprimitive();
 
@@ -30,13 +28,8 @@ void BashppListener::exitObjectAssignment(std::shared_ptr<AST::ObjectAssignment>
 		// Verify that they're both of the same class
 		std::shared_ptr<bpp::bpp_entity> lvalue_object = object_assignment->get_lvalue_object();
 		std::shared_ptr<bpp::bpp_entity> rvalue_object = object_assignment->get_rvalue_object();
-		if (lvalue_object == nullptr || rvalue_object == nullptr) {
-			throw bpp::ErrorHandling::InternalError("Objects are null");
-		}
-
-		if (lvalue_object->get_class() == nullptr || rvalue_object->get_class() == nullptr) {
-			throw bpp::ErrorHandling::InternalError("Objects have no class");
-		}
+		bpp_assert(!(lvalue_object == nullptr || rvalue_object == nullptr), "Objects are null");
+		bpp_assert(!(lvalue_object->get_class() == nullptr || rvalue_object->get_class() == nullptr), "Objects have no class");
 
 		if (lvalue_object->get_class()->get_name() != rvalue_object->get_class()->get_name()) {
 			throw bpp::ErrorHandling::SyntaxError(this, node, "Cannot copy objects of different classes");

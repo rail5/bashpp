@@ -50,9 +50,7 @@ void BashppListener::exitValueAssignment(std::shared_ptr<AST::ValueAssignment> n
 	entity_stack.pop();
 	context_expectations_stack.pop();
 
-	if (value_assignment_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Value assignment context was not found in the entity stack");
-	}
+	bpp_assert(value_assignment_entity != nullptr, "Value assignment context was not found in the entity stack");
 
 	// Check if we're in a member declaration
 	std::shared_ptr<bpp::bpp_datamember> current_datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(entity_stack.top());
@@ -82,9 +80,7 @@ void BashppListener::exitValueAssignment(std::shared_ptr<AST::ValueAssignment> n
 			current_object_assignment->set_rvalue_nonprimitive(true);
 			current_object_assignment->set_rvalue_object(value_assignment_entity->get_nonprimitive_object());
 			std::shared_ptr<bpp::bpp_object> rvalue_object = std::dynamic_pointer_cast<bpp::bpp_object>(value_assignment_entity->get_nonprimitive_object());
-			if (rvalue_object == nullptr) {
-				throw bpp::ErrorHandling::InternalError("Rvalue object not found for copy");
-			}
+			bpp_assert(rvalue_object != nullptr, "Rvalue object not found for copy");
 		}
 		return;
 	}
@@ -107,9 +103,7 @@ void BashppListener::exitValueAssignment(std::shared_ptr<AST::ValueAssignment> n
 
 	// Default case: just send it up the chain
 	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	if (current_code_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Current code entity was not found in the entity stack");
-	}
+	bpp_assert(current_code_entity != nullptr, "Current code entity was not found in the entity stack");
 
 	current_code_entity->add_code_to_previous_line(value_assignment_entity->get_pre_code());
 	current_code_entity->add_code_to_next_line(value_assignment_entity->get_post_code());

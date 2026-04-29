@@ -221,10 +221,10 @@ bool bpp_code_entity::get_requires_perfect_forwarding() const {
  */
 void bpp_code_entity::adopt(std::shared_ptr<bpp_entity> entity) {
 	for (const auto& [name, object] : entity->get_local_objects()) {
-		if (local_objects.contains(name) || objects.contains(name)) {
-			// Should never happen, there should've been a compiler error when the object was created in the first place
-			throw bpp::ErrorHandling::InternalError("Name conflict when adopting local objects from supershell: " + name);
-		}
+		bpp_assert(
+			!(local_objects.contains(name) || objects.contains(name)),
+			"Name conflict when adopting local objects from supershell: " + name
+		);
 		local_objects[name] = object;
 	}
 }

@@ -49,16 +49,12 @@ void BashppListener::enterBashFunction(std::shared_ptr<AST::BashFunction> node) 
 
 void BashppListener::exitBashFunction(std::shared_ptr<AST::BashFunction> node) {
 	std::shared_ptr<bpp::bash_function> function_entity = std::dynamic_pointer_cast<bpp::bash_function>(entity_stack.top());
-	if (function_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Function context was not found in the entity stack");
-	}
+	bpp_assert(function_entity != nullptr, "Function context was not found in the entity stack");
 	entity_stack.pop();
 
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	if (current_code_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Couldn't find the current code entity");
-	}
+	bpp_assert(current_code_entity != nullptr, "Current code entity was not found in the entity stack");
 
 	// Add the function to the current code entity
 

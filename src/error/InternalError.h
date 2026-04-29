@@ -22,6 +22,19 @@ struct InternalError : public std::runtime_error {
 	explicit InternalError(const std::string& msg)
 		: std::runtime_error(msg + "\nYou've found a bug! Please report it.") {}
 	
+	InternalError(const std::string& msg, const std::string& file, int line)
+		: std::runtime_error(msg + "\nYou've found a bug! Please report it.\nAt " + file + ":" + std::to_string(line)) {}
 };
 
 } // namespace bpp::ErrorHandling
+
+#if !defined (NDEBUG)
+	#define bpp_assert(expr, msg) \
+		do { \
+			if (!(expr)) { \
+				throw bpp::ErrorHandling::InternalError(msg, __FILE__, __LINE__); \
+			} \
+		} while (false)
+#else
+	#define bpp_assert(expr, msg) ((void)0)
+#endif

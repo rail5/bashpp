@@ -31,9 +31,7 @@ void BashppListener::exitDoublequotedString(std::shared_ptr<AST::DoublequotedStr
 	std::shared_ptr<bpp::bpp_code_entity> string_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	entity_stack.pop();
 
-	if (string_code_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("String context was not found in the entity stack");
-	}
+	bpp_assert(string_code_entity != nullptr, "String context was not found in the entity stack");
 
 	// If we're not in a broader context, simply add the current string contents + a close quote to the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());

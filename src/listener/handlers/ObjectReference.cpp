@@ -40,15 +40,11 @@ void BashppListener::enterObjectReference(std::shared_ptr<AST::ObjectReference> 
 
 void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> node) {
 	auto object_reference_entity = std::dynamic_pointer_cast<bpp::bpp_object_reference>(entity_stack.top());
-	if (object_reference_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Object reference context was not found in the entity stack");
-	}
+	bpp_assert(object_reference_entity != nullptr, "Object reference context was not found in the entity stack");
 	entity_stack.pop();
 
 	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	if (current_code_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Current code entity was not found in the entity stack");
-	}
+	bpp_assert(current_code_entity != nullptr, "Current code entity was not found in the entity stack");
 
 	auto current_class = current_code_entity->get_containing_class().lock();
 
@@ -79,9 +75,7 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 	 * 
 	 */
 	
-	if (pointer_dereference && object_address) {
-		throw bpp::ErrorHandling::InternalError("Detected simultaneous pointer dereference and object address");
-	}
+	bpp_assert(!(pointer_dereference && object_address), "Detected simultaneous pointer dereference and object address");
 
 	if (self_reference) {
 		// Verify that we're inside a class

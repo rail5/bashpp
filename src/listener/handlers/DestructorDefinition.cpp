@@ -36,9 +36,7 @@ void BashppListener::enterDestructorDefinition(std::shared_ptr<AST::DestructorDe
 
 void BashppListener::exitDestructorDefinition(std::shared_ptr<AST::DestructorDefinition> node) {
 	std::shared_ptr<bpp::bpp_method> destructor = std::dynamic_pointer_cast<bpp::bpp_method>(entity_stack.top());
-	if (destructor == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Destructor definition not found on the entity stack");
-	}
+	bpp_assert(destructor != nullptr, "Destructor definition not found on the entity stack");
 
 	entity_stack.pop();
 
@@ -47,9 +45,7 @@ void BashppListener::exitDestructorDefinition(std::shared_ptr<AST::DestructorDef
 
 	// If this is a destructor for a derived class, and the parent class has a destructor, call it
 	auto containing_class = destructor->get_containing_class().lock();
-	if (containing_class == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Containing class not found for destructor");
-	}
+	bpp_assert(containing_class != nullptr, "Containing class not found for destructor");
 	auto parent_class = containing_class->get_parent();
 	if (parent_class != nullptr) {
 		auto parent_destructor = parent_class->get_method_UNSAFE("__destructor");
@@ -64,10 +60,7 @@ void BashppListener::exitDestructorDefinition(std::shared_ptr<AST::DestructorDef
 
 	// Add the destructor to the class
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
-
-	if (current_class == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Class not found on the entity stack");
-	}
+	bpp_assert(current_class != nullptr, "Class not found on the entity stack");
 
 	program->mark_entity(
 		source_file,

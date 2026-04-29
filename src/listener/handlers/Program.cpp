@@ -48,9 +48,7 @@ void BashppListener::exitProgram(std::shared_ptr<AST::Program> node) {
 	program->flush_code_buffers();
 
 	entity_stack.pop();
-	if (!entity_stack.empty()) {
-		throw bpp::ErrorHandling::InternalError("entity_stack is not empty after exiting program");
-	}
+	bpp_assert(entity_stack.empty(), "entity_stack is not empty after exiting program");
 
 	if (included) {
 		included_from->set_has_errors(program_has_errors);

@@ -41,10 +41,7 @@ void BashppListener::enterBash53NativeSupershell(std::shared_ptr<AST::Bash53Nati
 
 void BashppListener::exitBash53NativeSupershell(std::shared_ptr<AST::Bash53NativeSupershell> node) {
 	std::shared_ptr<bpp::bpp_string> bash_53_native_supershell_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
-
-	if (bash_53_native_supershell_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Subshell substitution context was not found in the entity stack");
-	}
+	bpp_assert(bash_53_native_supershell_entity != nullptr, "Subshell substitution context was not found in the entity stack");
 
 	entity_stack.pop();
 

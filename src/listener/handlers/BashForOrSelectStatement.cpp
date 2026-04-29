@@ -37,16 +37,12 @@ void BashppListener::enterBashForStatement(std::shared_ptr<AST::BashForStatement
 
 void BashppListener::exitBashForStatement(std::shared_ptr<AST::BashForStatement> node) {
 	std::shared_ptr<bpp::bash_for_or_select> for_loop = std::dynamic_pointer_cast<bpp::bash_for_or_select>(entity_stack.top());
-	if (for_loop == nullptr) {
-		throw bpp::ErrorHandling::InternalError("For loop entity not found in the entity stack");
-	}
+	bpp_assert(for_loop != nullptr, "For loop entity not found in the entity stack");
 
 	entity_stack.pop();
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	if (current_code_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Current code entity not found in the entity stack");
-	}
+	bpp_assert(current_code_entity != nullptr, "Current code entity not found in the entity stack");
 
 	for_loop->destruct_local_objects(program);
 	for_loop->flush_code_buffers();
@@ -91,16 +87,12 @@ void BashppListener::enterBashSelectStatement(std::shared_ptr<AST::BashSelectSta
 
 void BashppListener::exitBashSelectStatement(std::shared_ptr<AST::BashSelectStatement> node) {
 	auto select_statement = std::dynamic_pointer_cast<bpp::bash_for_or_select>(entity_stack.top());
-	if (select_statement == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Select statement entity not found in the entity stack");
-	}
+	bpp_assert(select_statement != nullptr, "Select statement entity not found in the entity stack");
 
 	entity_stack.pop();
 
 	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	if (current_code_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Current code entity not found in the entity stack");
-	}
+	bpp_assert(current_code_entity != nullptr, "Current code entity not found in the entity stack");
 
 	select_statement->destruct_local_objects(program);
 	select_statement->flush_code_buffers();
@@ -124,9 +116,7 @@ void BashppListener::exitBashSelectStatement(std::shared_ptr<AST::BashSelectStat
 
 void BashppListener::enterBashInCondition(std::shared_ptr<AST::BashInCondition> node) {
 	auto parent_statement = std::dynamic_pointer_cast<bpp::bash_for_or_select>(entity_stack.top());
-	if (parent_statement == nullptr) {
-		throw bpp::ErrorHandling::InternalError("In condition outside of for/select statement");
-	}
+	bpp_assert(parent_statement != nullptr, "For/select statement entity not found in the entity stack");
 
 	std::shared_ptr<bpp::bpp_string> in_condition = std::make_shared<bpp::bpp_string>();
 	in_condition->set_containing_class(parent_statement->get_containing_class());
@@ -136,16 +126,12 @@ void BashppListener::enterBashInCondition(std::shared_ptr<AST::BashInCondition> 
 
 void BashppListener::exitBashInCondition(std::shared_ptr<AST::BashInCondition> node) {
 	auto in_condition = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
-	if (in_condition == nullptr) {
-		throw bpp::ErrorHandling::InternalError("In condition entity not found in the entity stack");
-	}
+	bpp_assert(in_condition != nullptr, "In condition entity not found in the entity stack");
 
 	entity_stack.pop();
 
 	auto parent_statement = std::dynamic_pointer_cast<bpp::bash_for_or_select>(entity_stack.top());
-	if (parent_statement == nullptr) {
-		throw bpp::ErrorHandling::InternalError("For/select statement entity not found in the entity stack");
-	}
+	bpp_assert(parent_statement != nullptr, "For/select statement entity not found in the entity stack");
 
 	parent_statement->set_header_pre_code(in_condition->get_pre_code());
 	parent_statement->set_header_post_code(in_condition->get_post_code());

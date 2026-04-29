@@ -40,10 +40,7 @@ void BashppListener::enterSubshellSubstitution(std::shared_ptr<AST::SubshellSubs
 
 void BashppListener::exitSubshellSubstitution(std::shared_ptr<AST::SubshellSubstitution> node) {
 	std::shared_ptr<bpp::bpp_string> subshell_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
-
-	if (subshell_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Subshell substitution context was not found in the entity stack");
-	}
+	bpp_assert(subshell_entity != nullptr, "Subshell substitution context was not found in the entity stack");
 
 	entity_stack.pop();
 
@@ -128,17 +125,12 @@ void BashppListener::enterRawSubshell(std::shared_ptr<AST::RawSubshell> node) {
 
 void BashppListener::exitRawSubshell(std::shared_ptr<AST::RawSubshell> node) {
 	std::shared_ptr<bpp::bpp_string> subshell_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
-
-	if (subshell_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Subshell context was not found in the entity stack");
-	}
+	bpp_assert(subshell_entity != nullptr, "Subshell context was not found in the entity stack");
 
 	entity_stack.pop();
 
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	if (current_code_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Containing code entity was not found in the entity stack");
-	}
+	bpp_assert(current_code_entity != nullptr, "Containing code entity was not found in the entity stack");
 
 	subshell_entity->destruct_local_objects(program);
 	subshell_entity->flush_code_buffers();

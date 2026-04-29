@@ -88,19 +88,13 @@ void BashppListener::enterBashIfStatement(std::shared_ptr<AST::BashIfStatement> 
 
 void BashppListener::exitBashIfStatement(std::shared_ptr<AST::BashIfStatement> node) {
 	std::shared_ptr<bpp::bash_if> if_statement_entity = std::dynamic_pointer_cast<bpp::bash_if>(entity_stack.top());
-
-	if (if_statement_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("If statement context was not found in the entity stack");
-	}
+	bpp_assert(if_statement_entity != nullptr, "If statement context was not found in the entity stack");
 
 	entity_stack.pop();
 
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-
-	if (current_code_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Code entity not found in the entity stack");
-	}
+	bpp_assert(current_code_entity != nullptr, "Code entity not found in the entity stack");
 
 	for (const auto& branch : if_statement_entity->get_conditional_branches()) {
 		current_code_entity->add_code(branch.first);
@@ -112,9 +106,7 @@ void BashppListener::exitBashIfStatement(std::shared_ptr<AST::BashIfStatement> n
 
 void BashppListener::enterBashIfRootBranch(std::shared_ptr<AST::BashIfRootBranch> node) {
 	auto if_statement_entity = std::dynamic_pointer_cast<bpp::bash_if>(entity_stack.top());
-	if (if_statement_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("If statement entity not found in the entity stack");
-	}
+	bpp_assert(if_statement_entity != nullptr, "If statement entity not found in the entity stack");
 
 	if_statement_entity->new_branch();
 	if_statement_entity->add_condition_code("if ");
@@ -135,16 +127,12 @@ void BashppListener::enterBashIfRootBranch(std::shared_ptr<AST::BashIfRootBranch
 
 void BashppListener::exitBashIfRootBranch(std::shared_ptr<AST::BashIfRootBranch> node) {
 	auto branch_entity = std::dynamic_pointer_cast<bpp::bash_if_branch>(entity_stack.top());
-	if (branch_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Root branch entity not found in the entity stack");
-	}
+	bpp_assert(branch_entity != nullptr, "Root branch entity not found in the entity stack");
 
 	entity_stack.pop();
 
 	auto if_statement_entity = branch_entity->get_if_statement();
-	if (if_statement_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("If statement entity not found");
-	}
+	bpp_assert(if_statement_entity != nullptr, "If statement entity not found");
 
 	branch_entity->destruct_local_objects(program);
 	branch_entity->flush_code_buffers();
@@ -167,9 +155,7 @@ void BashppListener::exitBashIfRootBranch(std::shared_ptr<AST::BashIfRootBranch>
 void BashppListener::enterBashIfElseBranch(std::shared_ptr<AST::BashIfElseBranch> node) {
 	// Get the if statement entity
 	std::shared_ptr<bpp::bash_if> if_statement_entity = std::dynamic_pointer_cast<bpp::bash_if>(entity_stack.top());
-	if (if_statement_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("If statement entity not found in the entity stack");
-	}
+	bpp_assert(if_statement_entity != nullptr, "If statement entity not found in the entity stack");
 
 	if_statement_entity->new_branch();
 
@@ -195,16 +181,12 @@ void BashppListener::enterBashIfElseBranch(std::shared_ptr<AST::BashIfElseBranch
 
 void BashppListener::exitBashIfElseBranch(std::shared_ptr<AST::BashIfElseBranch> node) {
 	std::shared_ptr<bpp::bash_if_branch> branch_entity = std::dynamic_pointer_cast<bpp::bash_if_branch>(entity_stack.top());
-	if (branch_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Condition entity not found in the entity stack");
-	}
+	bpp_assert(branch_entity != nullptr, "Branch entity not found in the entity stack");
 
 	entity_stack.pop();
 
 	std::shared_ptr<bpp::bash_if> if_statement_entity = branch_entity->get_if_statement();
-	if (if_statement_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("If statement entity not found");
-	}
+	bpp_assert(if_statement_entity != nullptr, "If statement entity not found");
 
 	branch_entity->destruct_local_objects(program);
 	branch_entity->flush_code_buffers();
@@ -226,9 +208,7 @@ void BashppListener::exitBashIfElseBranch(std::shared_ptr<AST::BashIfElseBranch>
 void BashppListener::enterBashIfCondition(std::shared_ptr<AST::BashIfCondition> node) {
 	// Get the if branch entity
 	std::shared_ptr<bpp::bash_if_branch> if_branch_entity = std::dynamic_pointer_cast<bpp::bash_if_branch>(entity_stack.top());
-	if (if_branch_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("'If' branch entity not found in the entity stack");
-	}
+	bpp_assert(if_branch_entity != nullptr, "'If' branch entity not found in the entity stack");
 
 	// Create a new code entity for the condition
 	std::shared_ptr<bpp::bpp_string> condition_entity = std::make_shared<bpp::bpp_string>();
@@ -241,23 +221,17 @@ void BashppListener::enterBashIfCondition(std::shared_ptr<AST::BashIfCondition> 
 
 void BashppListener::exitBashIfCondition(std::shared_ptr<AST::BashIfCondition> node) {
 	std::shared_ptr<bpp::bpp_string> condition_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
-	if (condition_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Condition entity not found in the entity stack");
-	}
+	bpp_assert(condition_entity != nullptr, "Condition entity not found in the entity stack");
 
 	entity_stack.pop();
 
 	// Get the if branch entity
 	std::shared_ptr<bpp::bash_if_branch> if_branch_entity = std::dynamic_pointer_cast<bpp::bash_if_branch>(entity_stack.top());
-	if (if_branch_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("'If' branch entity not found in the entity stack");
-	}
+	bpp_assert(if_branch_entity != nullptr, "'If' branch entity not found in the entity stack");
 
 	// Get the if statement entity
 	std::shared_ptr<bpp::bash_if> if_statement_entity = if_branch_entity->get_if_statement();
-	if (if_statement_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("If statement entity not found");
-	}
+	bpp_assert(if_statement_entity != nullptr, "If statement entity not found");
 
 	std::string condition_code = condition_entity->get_pre_code();
 	if (!condition_code.empty() && condition_code.back() != '\n') condition_code += "\n";

@@ -35,9 +35,7 @@ void BashppListener::enterConstructorDefinition(std::shared_ptr<AST::Constructor
 
 	// If this is a constructor for a derived class, and the parent class has a constructor, call it
 	auto containing_class = constructor->get_containing_class().lock();
-	if (containing_class == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Containing class not found for constructor");
-	}
+	bpp_assert(containing_class != nullptr, "Containing class not found for constructor");
 	auto parent_class = containing_class->get_parent();
 	if (parent_class != nullptr) {
 		auto parent_constructor = parent_class->get_method_UNSAFE("__constructor");
@@ -51,9 +49,7 @@ void BashppListener::enterConstructorDefinition(std::shared_ptr<AST::Constructor
 
 void BashppListener::exitConstructorDefinition(std::shared_ptr<AST::ConstructorDefinition> node) {
 	std::shared_ptr<bpp::bpp_method> constructor = std::dynamic_pointer_cast<bpp::bpp_method>(entity_stack.top());
-	if (constructor == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Constructor definition not found on the entity stack");
-	}
+	bpp_assert(constructor != nullptr, "Constructor definition not found on the entity stack");
 
 	entity_stack.pop();
 
@@ -63,10 +59,7 @@ void BashppListener::exitConstructorDefinition(std::shared_ptr<AST::ConstructorD
 
 	// Add the constructor to the class
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
-
-	if (current_class == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Class not found on the entity stack");
-	}
+	bpp_assert(current_class != nullptr, "Class not found on the entity stack");
 
 	program->mark_entity(
 		source_file,

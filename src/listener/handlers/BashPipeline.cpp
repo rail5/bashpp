@@ -20,16 +20,12 @@ void BashppListener::enterBashPipeline(std::shared_ptr<AST::BashPipeline> node) 
 
 void BashppListener::exitBashPipeline(std::shared_ptr<AST::BashPipeline> node) {
 	auto pipeline = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
-	if (pipeline == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Pipeline context was not found in the entity stack");
-	}
+	bpp_assert(pipeline != nullptr, "Pipeline context was not found in the entity stack");
 
 	entity_stack.pop();
 
 	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	if (current_code_entity == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Current code entity was not found in the entity stack");
-	}
+	bpp_assert(current_code_entity != nullptr, "Current code entity was not found in the entity stack");
 
 	current_code_entity->add_code_to_previous_line(pipeline->get_pre_code());
 	current_code_entity->add_code_to_next_line(pipeline->get_post_code());

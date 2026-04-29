@@ -66,9 +66,7 @@ void BashppListener::enterDatamemberDeclaration(std::shared_ptr<AST::DatamemberD
 
 void BashppListener::exitDatamemberDeclaration(std::shared_ptr<AST::DatamemberDeclaration> node) {
 	std::shared_ptr<bpp::bpp_datamember> new_datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(entity_stack.top());
-	if (new_datamember == nullptr) {
-		throw bpp::ErrorHandling::InternalError("entity_stack top is not a bpp_datamember");
-	}
+	bpp_assert(new_datamember != nullptr, "Data member declaration context was not found in the entity stack");
 
 	entity_stack.pop();
 

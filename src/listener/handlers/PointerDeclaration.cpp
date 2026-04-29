@@ -81,9 +81,7 @@ void BashppListener::enterPointerDeclaration(std::shared_ptr<AST::PointerDeclara
 
 void BashppListener::exitPointerDeclaration(std::shared_ptr<AST::PointerDeclaration> node) {
 	std::shared_ptr<bpp::bpp_object> new_object = std::dynamic_pointer_cast<bpp::bpp_object>(entity_stack.top());
-	if (new_object == nullptr) {
-		throw bpp::ErrorHandling::InternalError("entity_stack top is not a bpp_object");
-	}
+	bpp_assert(new_object != nullptr, "Pointer declaration context was not found in the entity stack");
 
 	entity_stack.pop();
 

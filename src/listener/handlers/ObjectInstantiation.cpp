@@ -86,9 +86,7 @@ void BashppListener::enterObjectInstantiation(std::shared_ptr<AST::ObjectInstant
 
 void BashppListener::exitObjectInstantiation(std::shared_ptr<AST::ObjectInstantiation> node) {
 	std::shared_ptr<bpp::bpp_object> new_object = std::dynamic_pointer_cast<bpp::bpp_object>(entity_stack.top());
-	if (new_object == nullptr) {
-		throw bpp::ErrorHandling::InternalError("entity_stack top is not a bpp_object");
-	}
+	bpp_assert(new_object != nullptr, "Object instantiation context was not found in the entity stack");
 
 	entity_stack.pop();
 

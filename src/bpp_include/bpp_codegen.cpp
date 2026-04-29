@@ -140,9 +140,7 @@ code_segment generate_method_call_code(
 ) {
 	code_segment result;
 
-	if (assumed_class == nullptr) {
-		throw bpp::ErrorHandling::InternalError("Assumed class is null");
-	}
+	bpp_assert(assumed_class != nullptr, "Assumed class is null");
 
 	std::shared_ptr<bpp::bpp_method> assumed_method = assumed_class->get_method_UNSAFE(method_name);
 	if (assumed_method == nullptr) {

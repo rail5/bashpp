@@ -1,7 +1,11 @@
 # C++ CONFIG
-CXX          := g++
-CXXFLAGS     := -std=gnu++23 -O2 -s -Wall -MMD -MP
-INCLUDEFLAGS := -Isrc/
+CXX      ?= g++
+CXXFLAGS ?= -O2 -s
+# С++ required flags
+CXXFLAGS += -std=gnu++23 -Wall -MMD -MP
+# standard preprocessor and linker variables
+CPPFLAGS ?=
+CPPFLAGS += -Isrc/
 
 # Can we parse debian/changelog?
 PARSECHANGELOG := $(shell command -v dpkg-parsechangelog 2>/dev/null)

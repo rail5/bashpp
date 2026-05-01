@@ -1,7 +1,11 @@
 # C++ CONFIG
-CXX          := g++
-CXXFLAGS     := -std=gnu++23 -O2 -s -Wall -MMD -MP
-INCLUDEFLAGS := -Isrc/
+CXX      ?= g++
+CXXFLAGS ?= -O2 -s
+# С++ required flags
+CXXFLAGS += -std=gnu++23 -Wall -MMD -MP
+# standard preprocessor and linker variables
+CPPFLAGS ?=
+CPPFLAGS += -Isrc/
 
 # Can we parse debian/changelog?
 PARSECHANGELOG := $(shell command -v dpkg-parsechangelog 2>/dev/null)
@@ -10,8 +14,8 @@ ifdef PARSECHANGELOG
 	VERSION := $(shell dpkg-parsechangelog -l debian/changelog --show-field version)
 	YEAR    := $(shell date +%Y -d@$(shell dpkg-parsechangelog -l debian/changelog --show-field timestamp))
 else
-	VERSION := $(shell head -n1 debian/changelog | grep -o "[[:digit:].]*" || echo "0.1")
-	YEAR    := $(shell grep "^ \-- " debian/changelog | head -n 1 | cut -d, -f2 | date -d +%Y || date +%Y || echo "2025")
+	VERSION := $(shell head -n1 debian/changelog | grep -o '[[:digit:].]*' || echo "0.1")
+	YEAR    := $(shell date +%Y --date="$(shell grep '^ -- ' debian/changelog | head -n 1 | cut -d, -f2 || date +%s)" || date +%Y || echo "2025")
 endif
 
 # DIRECTORIES FOR COMPILED FILES

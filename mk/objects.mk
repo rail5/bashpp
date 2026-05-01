@@ -6,13 +6,13 @@
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) $(INCLUDEFLAGS) -c $< -o $@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 # The LSP generator is not part of the compiler itself.
 # It's an intermediary tool that we use to generate classes for the LSP implementation
 $(OBJDIR)/lsp/generator/%.o: $(SRCDIR)/lsp/generator/%.cpp $(LSPDIR)/metaModel.json
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 # Generated-code prerequisites
 #

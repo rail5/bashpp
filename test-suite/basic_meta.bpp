@@ -25,3 +25,11 @@ in_tty=false
 if [[ -t 1 ]]; then
 	in_tty=true
 fi
+
+# Verify that grep supports Perl-compatible regular expressions (`-P` flag)
+if ! grep -P -x "abc" <<<"abc" &>/dev/null; then
+	echo "Error: The 'grep' command on this system does not support Perl-compatible regular expressions (PCRE)."
+	echo "The test suite requires a version of 'grep' with PCRE support to function correctly."
+	echo "Please install GNU grep or ensure that your version of grep is built with PCRE support."
+	exit 1
+fi

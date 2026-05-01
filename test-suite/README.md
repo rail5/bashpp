@@ -16,6 +16,8 @@ Then, run the test suite by running `make test` in the root directory of the pro
 
 You can run *specific* test cases by passing an argument to the script. For example, `bin/bpp test-suite/run.bpp "Hello, World" "Supershells"` will run only the test cases named "Hello, World" and "Supershells".
 
+**Note**: The test suite requires a build of `grep` that supports Perl-compatible regular expressions (PCRE). This is the default on most Linux distributions, but some may build `grep` with `--disable-perl-regexp` which will cause the test suite to fail. If you are on a system with a non-PCRE `grep`, you can install GNU `grep` and ensure it is in your `PATH` before the non-PCRE version.
+
 ### Options
 
  - `-h`: Display help

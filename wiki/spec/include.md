@@ -25,7 +25,7 @@ You can specify the type of include (dynamic or static) using the `dynamic` or `
 
 A statically-included file will have its compiled code written to the current program.
 
-A dynamically-included file will be linked at runtime, and the compiled code will be expected to be found somewhere in the system at runtime.
+A dynamically-included file will be linked at runtime, and the compiled code will be expected to be found somewhere in the system at runtime. If the file cannot be found at runtime, the program will print an error message to stderr and halt execution with a non-zero exit code.
 
 If you specify `dynamic`, you may like to specify *where* the compiled file will be found at runtime. This is done using the `as` keyword, followed by the path to the file. If you do not specify a path, the default is the *original* path of the file, with the extension replaced by `.sh`.
 

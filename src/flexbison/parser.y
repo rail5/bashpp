@@ -874,8 +874,8 @@ maybe_include_type:
 	;
 
 maybe_as_clause:
-	/* empty */ { $$ = ""; }
-	| WS KEYWORD_AS WS INCLUDE_PATH { $$ = $4; }
+	maybe_whitespace { $$ = ""; }
+	| WS KEYWORD_AS WS INCLUDE_PATH maybe_whitespace { $$ = $4; }
 	;
 
 object_instantiation:

@@ -1519,6 +1519,7 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 		thisLexerState.received_local_keyword = false;
 		emit(DELIM, tokenText);
 	}
+	[\#][^\n]* { /* Ignore comments */ }
 }
 
 <*>. {

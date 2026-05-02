@@ -163,6 +163,7 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 	// If we're linking statically, the code was also added
 	// If we're linking dynamically, we need to add a little source directive here
 	if (dynamic_linking) {
+		std::string dynamic_include_path;
 		if (!as_path.has_value()) {
 			// If the 'full path' has an extension, we should remove it
 			std::string full_path_str = full_path;
@@ -179,13 +180,18 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 
 			// Append a '.sh' extension
 			basename += ".sh";
-			
-			// Add a source directive
-			current_code_entity->add_code("source \"" + directory + "/" + basename + "\"\n");
+
+			dynamic_include_path = directory + "/" + basename;
 		} else {
 			// If the 'as' path is given, we should use that instead
-			current_code_entity->add_code("source \"" + as_path.value().getValue() + "\"\n");
+			dynamic_include_path = as_path.value().getValue();
 		}
+
+		// Add the source directive to the current code entity, and error out if the file can't be sourced at runtime
+		current_code_entity->add_code("if ! source \"" + dynamic_include_path + "\"; then\n"
+			"	>&2 echo \"Bash++: Error: Failed to include file '" + dynamic_include_path + "'\"\n"
+			"	exit 1\n"
+			"fi\n");
 	}
 }
 

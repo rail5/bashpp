@@ -112,25 +112,20 @@ static const char bpp_nullptr[] = "0";
  * @var protected_keywords
  * @brief A list of keywords that are reserved and cannot be used as identifiers in Bash++
  */
-inline constexpr const char* protected_keywords[] = {
-			"class", "constructor", "delete", "destructor",
-			"dynamic_cast", "include", "include_once", "local", "method",
-			"new", "nullptr", "primitive", "private",
-			"protected", "public", "super", "this",
-			"typeof", "virtual"
-		};
+inline constexpr std::array<std::string_view, 19> protected_keywords = {
+	"class", "constructor", "delete", "destructor",
+	"dynamic_cast", "include", "include_once", "local", "method",
+	"new", "nullptr", "primitive", "private",
+	"protected", "public", "super", "this",
+	"typeof", "virtual"
+};
 
 /**
  * @brief Check if a string matches any of our protected keywords
  * @param keyword The string to check
  */
 inline bool is_protected_keyword(const std::string& keyword) {
-	for (const char* protected_keyword : protected_keywords) {
-		if (keyword == protected_keyword) {
-			return true;
-		}
-	}
-	return false;
+	return std::ranges::contains(protected_keywords, keyword);
 }
 
 /**

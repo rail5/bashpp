@@ -9,7 +9,6 @@
 #include <cstddef>
 #include <memory>
 #include <vector>
-#include <string>
 #include <iostream>
 
 #include <AST/NodeTypes.h>

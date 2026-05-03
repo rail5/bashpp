@@ -46,11 +46,11 @@ void BashppListener::exitValueAssignment(std::shared_ptr<AST::ValueAssignment> n
 	 * 	4. Object assignments
 	 */
 
-	std::shared_ptr<bpp::bpp_value_assignment> value_assignment_entity = std::dynamic_pointer_cast<bpp::bpp_value_assignment>(entity_stack.top());
+	bpp_assert(topmost_entity_is<bpp::bpp_value_assignment>(), "Value assignment context was not found in the entity stack");
+	auto value_assignment_entity = std::static_pointer_cast<bpp::bpp_value_assignment>(entity_stack.top());
+
 	entity_stack.pop();
 	context_expectations_stack.pop();
-
-	bpp_assert(value_assignment_entity != nullptr, "Value assignment context was not found in the entity stack");
 
 	// Check if we're in a member declaration
 	std::shared_ptr<bpp::bpp_datamember> current_datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(entity_stack.top());
@@ -79,8 +79,10 @@ void BashppListener::exitValueAssignment(std::shared_ptr<AST::ValueAssignment> n
 		if (value_assignment_entity->is_nonprimitive_assignment()) {
 			current_object_assignment->set_rvalue_nonprimitive(true);
 			current_object_assignment->set_rvalue_object(value_assignment_entity->get_nonprimitive_object());
-			std::shared_ptr<bpp::bpp_object> rvalue_object = std::dynamic_pointer_cast<bpp::bpp_object>(value_assignment_entity->get_nonprimitive_object());
-			bpp_assert(rvalue_object != nullptr, "Rvalue object not found for copy");
+			bpp_assert(
+				std::dynamic_pointer_cast<bpp::bpp_object>(value_assignment_entity->get_nonprimitive_object()) != nullptr,
+				"Rvalue object not found for copy"
+			);
 		}
 		return;
 	}
@@ -102,8 +104,8 @@ void BashppListener::exitValueAssignment(std::shared_ptr<AST::ValueAssignment> n
 	}
 
 	// Default case: just send it up the chain
-	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	bpp_assert(current_code_entity != nullptr, "Current code entity was not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bpp_code_entity>(), "Current code entity was not found in the entity stack");
+	auto current_code_entity = std::static_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	current_code_entity->add_code_to_previous_line(value_assignment_entity->get_pre_code());
 	current_code_entity->add_code_to_next_line(value_assignment_entity->get_post_code());

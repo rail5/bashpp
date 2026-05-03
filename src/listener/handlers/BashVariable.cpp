@@ -19,13 +19,13 @@ void BashppListener::enterBashVariable(std::shared_ptr<AST::BashVariable> node) 
 }
 
 void BashppListener::exitBashVariable(std::shared_ptr<AST::BashVariable> node) {
-	auto bash_variable_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
-	bpp_assert(bash_variable_entity != nullptr, "Bash variable context was not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bpp_string>(), "Bash variable context was not found in the entity stack");
+	auto bash_variable_entity = std::static_pointer_cast<bpp::bpp_string>(entity_stack.top());
 
 	entity_stack.pop();
 
-	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	bpp_assert(current_code_entity != nullptr, "Current code entity was not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bpp_code_entity>(), "Current code entity was not found in the entity stack");
+	auto current_code_entity = std::static_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	current_code_entity->add_code_to_previous_line(bash_variable_entity->get_pre_code());
 	current_code_entity->add_code_to_next_line(bash_variable_entity->get_post_code());

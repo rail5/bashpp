@@ -34,13 +34,13 @@ void BashppListener::enterBashWhileStatement(std::shared_ptr<AST::BashWhileState
 }
 
 void BashppListener::exitBashWhileStatement(std::shared_ptr<AST::BashWhileStatement> node) {
-	std::shared_ptr<bpp::bash_while_or_until_loop> while_statement = std::dynamic_pointer_cast<bpp::bash_while_or_until_loop>(entity_stack.top());
-	bpp_assert(while_statement != nullptr, "While statement entity not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bash_while_or_until_loop>(), "While statement entity not found in the entity stack");
+	auto while_statement = std::static_pointer_cast<bpp::bash_while_or_until_loop>(entity_stack.top());
 
 	entity_stack.pop();
 
-	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	bpp_assert(current_code_entity != nullptr, "Current code entity not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bpp_code_entity>(), "Current code entity not found in the entity stack");
+	auto current_code_entity = std::static_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	while_statement->destruct_local_objects(program);
 	while_statement->flush_code_buffers();
@@ -82,13 +82,13 @@ void BashppListener::enterBashUntilStatement(std::shared_ptr<AST::BashUntilState
 }
 
 void BashppListener::exitBashUntilStatement(std::shared_ptr<AST::BashUntilStatement> node) {
-	std::shared_ptr<bpp::bash_while_or_until_loop> until_statement = std::dynamic_pointer_cast<bpp::bash_while_or_until_loop>(entity_stack.top());
-	bpp_assert(until_statement != nullptr, "Until statement entity not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bash_while_or_until_loop>(), "Until statement entity not found in the entity stack");
+	auto until_statement = std::static_pointer_cast<bpp::bash_while_or_until_loop>(entity_stack.top());
 
 	entity_stack.pop();
 
-	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	bpp_assert(current_code_entity != nullptr, "Current code entity not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bpp_code_entity>(), "Current code entity not found in the entity stack");
+	auto current_code_entity = std::static_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	until_statement->destruct_local_objects(program);
 	until_statement->flush_code_buffers();
@@ -113,8 +113,8 @@ void BashppListener::exitBashUntilStatement(std::shared_ptr<AST::BashUntilStatem
 }
 
 void BashppListener::enterBashWhileOrUntilCondition(std::shared_ptr<AST::BashWhileOrUntilCondition> node) {
-	std::shared_ptr<bpp::bash_while_or_until_loop> loop = std::dynamic_pointer_cast<bpp::bash_while_or_until_loop>(entity_stack.top());
-	bpp_assert(loop != nullptr, "While/until statement entity not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bash_while_or_until_loop>(), "While/until statement entity not found in the entity stack");
+	auto loop = std::static_pointer_cast<bpp::bash_while_or_until_loop>(entity_stack.top());
 
 	std::shared_ptr<bpp::bash_while_or_until_condition> condition = std::make_shared<bpp::bash_while_or_until_condition>();
 	condition->set_containing_class(loop->get_containing_class());
@@ -126,8 +126,8 @@ void BashppListener::enterBashWhileOrUntilCondition(std::shared_ptr<AST::BashWhi
 }
 
 void BashppListener::exitBashWhileOrUntilCondition(std::shared_ptr<AST::BashWhileOrUntilCondition> node) {
-	std::shared_ptr<bpp::bash_while_or_until_condition> condition = std::dynamic_pointer_cast<bpp::bash_while_or_until_condition>(entity_stack.top());
-	bpp_assert(condition != nullptr, "While/until condition entity not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bash_while_or_until_condition>(), "While/until condition entity not found in the entity stack");
+	auto condition = std::static_pointer_cast<bpp::bash_while_or_until_condition>(entity_stack.top());
 
 	entity_stack.pop();
 }

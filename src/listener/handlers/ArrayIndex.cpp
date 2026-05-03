@@ -15,8 +15,8 @@ void BashppListener::enterArrayIndex(std::shared_ptr<AST::ArrayIndex> node) {
 	 */
 
 	// Get the current code entity
-	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	bpp_assert(current_code_entity != nullptr, "Current code entity was not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bpp_code_entity>(), "Current code entity was not found in the entity stack");
+	auto current_code_entity = std::static_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	// Create a new code entity for the array index
 	std::shared_ptr<bpp::bpp_string> array_index_entity = std::make_shared<bpp::bpp_string>();
@@ -30,8 +30,8 @@ void BashppListener::enterArrayIndex(std::shared_ptr<AST::ArrayIndex> node) {
 }
 
 void BashppListener::exitArrayIndex(std::shared_ptr<AST::ArrayIndex> node) {
-	std::shared_ptr<bpp::bpp_string> array_index_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
-	bpp_assert(array_index_entity != nullptr, "Array index context was not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bpp_string>(), "Array index context was not found in the entity stack");
+	auto array_index_entity = std::static_pointer_cast<bpp::bpp_string>(entity_stack.top());
 
 	entity_stack.pop();
 
@@ -47,9 +47,9 @@ void BashppListener::exitArrayIndex(std::shared_ptr<AST::ArrayIndex> node) {
 	}
 
 	// Otherwise, standard procedure
-	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	bpp_assert(current_code_entity != nullptr, "Current code entity was not found in the entity stack");
-	
+	bpp_assert(topmost_entity_is<bpp::bpp_code_entity>(), "Current code entity was not found in the entity stack");
+	auto current_code_entity = std::static_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
+
 	current_code_entity->add_code_to_previous_line(array_index_entity->get_pre_code());
 	current_code_entity->add_code_to_next_line(array_index_entity->get_post_code());
 	current_code_entity->add_code("[" + array_index_entity->get_code() + "]");

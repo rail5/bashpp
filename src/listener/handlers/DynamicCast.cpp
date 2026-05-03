@@ -38,14 +38,14 @@ void BashppListener::enterDynamicCast(std::shared_ptr<AST::DynamicCast> node) {
 }
 
 void BashppListener::exitDynamicCast(std::shared_ptr<AST::DynamicCast> node) {
-	std::shared_ptr<bpp::bpp_dynamic_cast_statement> dynamic_cast_entity = std::dynamic_pointer_cast<bpp::bpp_dynamic_cast_statement>(entity_stack.top());
-	bpp_assert(dynamic_cast_entity != nullptr, "Dynamic cast context was not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bpp_dynamic_cast_statement>(), "Dynamic cast context was not found in the entity stack");
+	auto dynamic_cast_entity = std::static_pointer_cast<bpp::bpp_dynamic_cast_statement>(entity_stack.top());
 
 	entity_stack.pop();
 	dynamic_cast_stack.pop();
 
-	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	bpp_assert(current_code_entity != nullptr, "Current code entity was not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bpp_code_entity>(), "Current code entity was not found in the entity stack");
+	auto current_code_entity = std::static_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	if (dynamic_cast_entity->get_cast_to().empty()) {
 		throw bpp::ErrorHandling::SyntaxError(this, node, "Dynamic cast target not specified");

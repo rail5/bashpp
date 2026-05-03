@@ -29,8 +29,8 @@ void BashppListener::enterDeleteStatement(std::shared_ptr<AST::DeleteStatement> 
 
 void BashppListener::exitDeleteStatement(std::shared_ptr<AST::DeleteStatement> node) {
 	// Get the delete entity from the entity stack
-	std::shared_ptr<bpp::bpp_delete_statement> delete_entity = std::dynamic_pointer_cast<bpp::bpp_delete_statement>(entity_stack.top());
-	bpp_assert(delete_entity != nullptr, "Delete statement context was not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bpp_delete_statement>(), "Delete statement context was not found in the entity stack");
+	auto delete_entity = std::static_pointer_cast<bpp::bpp_delete_statement>(entity_stack.top());
 
 	entity_stack.pop();
 	context_expectations_stack.pop();
@@ -39,8 +39,8 @@ void BashppListener::exitDeleteStatement(std::shared_ptr<AST::DeleteStatement> n
 	std::shared_ptr<bpp::bpp_code_entity> code_entity = latest_code_entity();
 
 	if (delete_entity->get_object_to_delete() == nullptr) {
-		auto objectReferenceEntity = std::dynamic_pointer_cast<AST::ObjectReference>(node->getFirstChild());
-		bpp_assert(objectReferenceEntity != nullptr, "Delete statement does not contain a valid object reference");
+		bpp_assert(std::dynamic_pointer_cast<AST::ObjectReference>(node->getFirstChild()) != nullptr, "Delete statement does not contain a valid object reference");
+		auto objectReferenceEntity = std::static_pointer_cast<AST::ObjectReference>(node->getFirstChild());
 
 		std::string object_ref_name = "@" + objectReferenceEntity->IDENTIFIER().getValue();
 		for (const auto& id : objectReferenceEntity->IDENTIFIERS()) {

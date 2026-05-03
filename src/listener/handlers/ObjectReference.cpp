@@ -39,12 +39,12 @@ void BashppListener::enterObjectReference(std::shared_ptr<AST::ObjectReference> 
 }
 
 void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> node) {
-	auto object_reference_entity = std::dynamic_pointer_cast<bpp::bpp_object_reference>(entity_stack.top());
-	bpp_assert(object_reference_entity != nullptr, "Object reference context was not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bpp_object_reference>(), "Object reference context was not found in the entity stack");
+	auto object_reference_entity = std::static_pointer_cast<bpp::bpp_object_reference>(entity_stack.top());
 	entity_stack.pop();
 
-	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	bpp_assert(current_code_entity != nullptr, "Current code entity was not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bpp_code_entity>(), "Current code entity was not found in the entity stack");
+	auto current_code_entity = std::static_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	auto current_class = current_code_entity->get_containing_class().lock();
 

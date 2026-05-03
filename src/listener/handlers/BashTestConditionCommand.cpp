@@ -29,10 +29,10 @@ void BashppListener::enterBashTestConditionCommand(std::shared_ptr<AST::BashTest
 }
 
 void BashppListener::exitBashTestConditionCommand(std::shared_ptr<AST::BashTestConditionCommand> node) {
-	std::shared_ptr<bpp::bpp_code_entity> test_command = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	entity_stack.pop();
+	bpp_assert(topmost_entity_is<bpp::bpp_code_entity>(), "Test command context was not found in the entity stack");
+	auto test_command = std::static_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
-	bpp_assert(test_command != nullptr, "Test command context was not found in the entity stack");
+	entity_stack.pop();
 
 	// If we're not in a broader context, simply add the current string contents + a close quote to the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());

@@ -19,13 +19,13 @@ void BashppListener::enterPrimitiveAssignment(std::shared_ptr<AST::PrimitiveAssi
 }
 
 void BashppListener::exitPrimitiveAssignment(std::shared_ptr<AST::PrimitiveAssignment> node) {
-	auto assignment_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	bpp_assert(assignment_entity != nullptr, "Primitive assignment context was not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bpp_code_entity>(), "Primitive assignment context was not found in the entity stack");
+	auto assignment_entity = std::static_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	entity_stack.pop();
 
-	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	bpp_assert(current_code_entity != nullptr, "Current code entity was not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bpp_code_entity>(), "Current code entity was not found in the entity stack");
+	auto current_code_entity = std::static_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	std::string assignment_lvalue;
 	if (node->isLocal()) assignment_lvalue += "local ";

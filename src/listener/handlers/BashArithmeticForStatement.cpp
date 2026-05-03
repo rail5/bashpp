@@ -19,12 +19,12 @@ void BashppListener::enterBashArithmeticForStatement(std::shared_ptr<AST::BashAr
 }
 
 void BashppListener::exitBashArithmeticForStatement(std::shared_ptr<AST::BashArithmeticForStatement> node) {
-	auto for_statement = std::dynamic_pointer_cast<bpp::bash_for_or_select>(entity_stack.top());
-	bpp_assert(for_statement != nullptr, "For loop entity not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bash_for_or_select>(), "For loop entity not found in the entity stack");
+	auto for_statement = std::static_pointer_cast<bpp::bash_for_or_select>(entity_stack.top());
 	entity_stack.pop();
 
-	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	bpp_assert(current_code_entity != nullptr, "Current code entity not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bpp_code_entity>(), "Current code entity not found in the entity stack");
+	auto current_code_entity = std::static_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	current_code_entity->add_code_to_previous_line(for_statement->get_header_pre_code());
 	current_code_entity->add_code_to_next_line("done\n");
@@ -43,8 +43,8 @@ void BashppListener::exitBashArithmeticForStatement(std::shared_ptr<AST::BashAri
 }
 
 void BashppListener::enterBashArithmeticForCondition(std::shared_ptr<AST::BashArithmeticForCondition> node) {
-	auto for_statement = std::dynamic_pointer_cast<bpp::bash_for_or_select>(entity_stack.top());
-	bpp_assert(for_statement != nullptr, "For condition outside of for/select statement");
+	bpp_assert(topmost_entity_is<bpp::bash_for_or_select>(), "For condition outside of for/select statement");
+	auto for_statement = std::static_pointer_cast<bpp::bash_for_or_select>(entity_stack.top());
 
 	std::shared_ptr<bpp::bpp_string> for_condition = std::make_shared<bpp::bpp_string>();
 	for_condition->set_containing_class(for_statement->get_containing_class());
@@ -53,13 +53,13 @@ void BashppListener::enterBashArithmeticForCondition(std::shared_ptr<AST::BashAr
 }
 
 void BashppListener::exitBashArithmeticForCondition(std::shared_ptr<AST::BashArithmeticForCondition> node) {
-	auto condition = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
-	bpp_assert(condition != nullptr, "For condition entity not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bpp_string>(), "For condition entity not found in the entity stack");
+	auto condition = std::static_pointer_cast<bpp::bpp_string>(entity_stack.top());
 
 	entity_stack.pop();
 
-	auto for_statement = std::dynamic_pointer_cast<bpp::bash_for_or_select>(entity_stack.top());
-	bpp_assert(for_statement != nullptr, "For/select statement entity not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bash_for_or_select>(), "For/select statement entity not found in the entity stack");
+	auto for_statement = std::static_pointer_cast<bpp::bash_for_or_select>(entity_stack.top());
 
 
 	for_statement->set_header_pre_code(condition->get_pre_code());

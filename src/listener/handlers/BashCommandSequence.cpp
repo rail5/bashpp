@@ -20,13 +20,13 @@ void BashppListener::enterBashCommandSequence(std::shared_ptr<AST::BashCommandSe
 }
 
 void BashppListener::exitBashCommandSequence(std::shared_ptr<AST::BashCommandSequence> node) {
-	auto command_sequence_entity = std::dynamic_pointer_cast<bpp::bash_command_sequence>(entity_stack.top());
-	bpp_assert(command_sequence_entity != nullptr, "Bash command sequence context was not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bash_command_sequence>(), "Bash command sequence context was not found in the entity stack");
+	auto command_sequence_entity = std::static_pointer_cast<bpp::bash_command_sequence>(entity_stack.top());
 
 	entity_stack.pop();
 
-	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	bpp_assert(current_code_entity != nullptr, "Current code entity was not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bpp_code_entity>(), "Current code entity was not found in the entity stack");
+	auto current_code_entity = std::static_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	current_code_entity->add_code_to_previous_line(command_sequence_entity->get_pre_code());
 	current_code_entity->add_code_to_next_line(command_sequence_entity->get_post_code());

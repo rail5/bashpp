@@ -67,9 +67,9 @@ void BashppListener::enterClassDefinition(std::shared_ptr<AST::ClassDefinition> 
 }
 
 void BashppListener::exitClassDefinition(std::shared_ptr<AST::ClassDefinition> node) {
-	std::shared_ptr<bpp::bpp_class> new_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
+	bpp_assert(topmost_entity_is<bpp::bpp_class>(), "entity_stack top is not a bpp_class");
 
-	bpp_assert(new_class != nullptr, "entity_stack top is not a bpp_class");
+	auto new_class = std::static_pointer_cast<bpp::bpp_class>(entity_stack.top());
 
 	entity_stack.pop();
 

@@ -15,11 +15,11 @@ void BashppListener::enterObjectAssignment(std::shared_ptr<AST::ObjectAssignment
 }
 
 void BashppListener::exitObjectAssignment(std::shared_ptr<AST::ObjectAssignment> node) {
-	std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::dynamic_pointer_cast<bpp::bpp_object_assignment>(entity_stack.top());
+	bpp_assert(topmost_entity_is<bpp::bpp_object_assignment>(), "Object assignment context was not found in the entity stack");
+	auto object_assignment = std::static_pointer_cast<bpp::bpp_object_assignment>(entity_stack.top());
+
 	entity_stack.pop();
 	context_expectations_stack.pop();
-
-	bpp_assert(object_assignment != nullptr, "Object assignment context was not found in the entity stack");
 
 	bool is_nonprimitive_copy = object_assignment->lvalue_is_nonprimitive() && object_assignment->rvalue_is_nonprimitive();
 

@@ -63,12 +63,12 @@ void BashppListener::exitBlock(std::shared_ptr<AST::Block> node) {
 
 	if (is_surrounded_by_larger_construct) return;
 
-	auto block_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	bpp_assert(block_entity != nullptr, "Block context was not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bpp_code_entity>(), "Block context was not found in the entity stack");
+	auto block_entity = std::static_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	entity_stack.pop();
 
-	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
-	bpp_assert(current_code_entity != nullptr, "Containing code entity was not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bpp_code_entity>(), "Containing code entity was not found in the entity stack");
+	auto current_code_entity = std::static_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 
 	block_entity->destruct_local_objects(program);
 	block_entity->flush_code_buffers();

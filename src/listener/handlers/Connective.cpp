@@ -7,8 +7,8 @@
 #include <listener/BashppListener.h>
 
 void BashppListener::enterConnective(std::shared_ptr<AST::Connective> node) {
-	auto current_command_sequence = std::dynamic_pointer_cast<bpp::bash_command_sequence>(entity_stack.top());
-	bpp_assert(current_command_sequence != nullptr, "Connective found outside of bash command sequence");
+	bpp_assert(topmost_entity_is<bpp::bash_command_sequence>(), "Connective found outside of bash command sequence");
+	auto current_command_sequence = std::static_pointer_cast<bpp::bash_command_sequence>(entity_stack.top());
 
 	bool is_and = (node->TYPE() == AST::Connective::ConnectiveType::AND);
 	current_command_sequence->add_connective(is_and);

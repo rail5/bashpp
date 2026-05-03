@@ -28,8 +28,8 @@ void BashppListener::enterProcessSubstitution(std::shared_ptr<AST::ProcessSubsti
 }
 
 void BashppListener::exitProcessSubstitution(std::shared_ptr<AST::ProcessSubstitution> node) {
-	auto substitution_entity = std::dynamic_pointer_cast<bpp::bpp_string>(entity_stack.top());
-	bpp_assert(substitution_entity != nullptr, "Process substitution context was not found in the entity stack");
+	bpp_assert(topmost_entity_is<bpp::bpp_string>(), "Process substitution context was not found in the entity stack");
+	auto substitution_entity = std::static_pointer_cast<bpp::bpp_string>(entity_stack.top());
 
 	entity_stack.pop();
 

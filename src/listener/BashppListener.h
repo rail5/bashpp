@@ -210,6 +210,19 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 
 		std::shared_ptr<bpp::bpp_code_entity> latest_code_entity();
 
+		/**
+		 * @brief Helper function to check the type of the top of the entity stack
+		 * 
+		 * @tparam T The type to check against
+		 * @return true if the top of the entity stack is of type T (or derived from T)
+		 * @return false if the top of the entity stack is not of type T and not derived from T
+		 */
+		template <class T>
+		bool topmost_entity_is() const {
+			if (entity_stack.empty()) return false;
+			return std::dynamic_pointer_cast<T>(entity_stack.top()) != nullptr;
+		}
+
 		void enterProgram(std::shared_ptr<AST::Program> node);
 		void exitProgram(std::shared_ptr<AST::Program> node);
 		void enterArrayAssignment(std::shared_ptr<AST::ArrayAssignment> node);

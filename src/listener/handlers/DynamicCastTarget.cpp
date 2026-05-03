@@ -6,7 +6,7 @@
 
 #include <listener/BashppListener.h>
 
-void BashppListener::enterDynamicCastTarget(std::shared_ptr<AST::DynamicCastTarget> node) {
+void BashppListener::enterDynamicCastTarget(std::shared_ptr<AST::DynamicCastTarget> /*node*/) {
 	/**
 	 * Dynamic cast targets are the part of a dynamic cast statement that specifies the class we're casting to
 	 * This can be either an identifier (the name of the class), a shell variable (the name of the class is stored in the variable),

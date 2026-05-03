@@ -48,7 +48,7 @@ void BashppListener::enterBlock(std::shared_ptr<AST::Block> node) {
 	entity_stack.push(block_entity);
 }
 
-void BashppListener::exitBlock(std::shared_ptr<AST::Block> node) {
+void BashppListener::exitBlock(std::shared_ptr<AST::Block> /*node*/) {
 	auto parent_entity = entity_stack.top();
 	auto surrounding_class = std::dynamic_pointer_cast<bpp::bpp_class>(parent_entity);
 	auto surrounding_method = std::dynamic_pointer_cast<bpp::bpp_method>(parent_entity);

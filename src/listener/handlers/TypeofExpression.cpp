@@ -26,7 +26,7 @@ void BashppListener::enterTypeofExpression(std::shared_ptr<AST::TypeofExpression
 	typeof_stack.push({});
 }
 
-void BashppListener::exitTypeofExpression(std::shared_ptr<AST::TypeofExpression> node) {
+void BashppListener::exitTypeofExpression(std::shared_ptr<AST::TypeofExpression> /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::bpp_string>(), "Typeof context was not found in the entity stack");
 	auto typeof_entity = std::static_pointer_cast<bpp::bpp_string>(entity_stack.top());
 

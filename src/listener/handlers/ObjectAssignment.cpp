@@ -6,7 +6,7 @@
 
 #include <listener/BashppListener.h>
 
-void BashppListener::enterObjectAssignment(std::shared_ptr<AST::ObjectAssignment> node) {
+void BashppListener::enterObjectAssignment(std::shared_ptr<AST::ObjectAssignment> /*node*/) {
 	std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::make_shared<bpp::bpp_object_assignment>();
 	object_assignment->set_containing_class(entity_stack.top()->get_containing_class());
 	object_assignment->inherit(latest_code_entity());

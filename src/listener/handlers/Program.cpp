@@ -44,7 +44,7 @@ void BashppListener::enterProgram(std::shared_ptr<AST::Program> node) {
 	);
 }
 
-void BashppListener::exitProgram(std::shared_ptr<AST::Program> node) {
+void BashppListener::exitProgram(std::shared_ptr<AST::Program> /*node*/) {
 	program->flush_code_buffers();
 
 	entity_stack.pop();

@@ -31,7 +31,7 @@ void BashppListener::enterBashArithmeticSubstitution(std::shared_ptr<AST::BashAr
 	entity_stack.push(arithmetic_entity);
 }
 
-void BashppListener::exitBashArithmeticSubstitution(std::shared_ptr<AST::BashArithmeticSubstitution> node) {
+void BashppListener::exitBashArithmeticSubstitution(std::shared_ptr<AST::BashArithmeticSubstitution> /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::bpp_string>(), "Bash arithmetic context was not found in the entity stack");
 	auto arithmetic_entity = std::static_pointer_cast<bpp::bpp_string>(entity_stack.top());
 

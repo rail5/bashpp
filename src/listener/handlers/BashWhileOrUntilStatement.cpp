@@ -112,7 +112,7 @@ void BashppListener::exitBashUntilStatement(std::shared_ptr<AST::BashUntilStatem
 	);
 }
 
-void BashppListener::enterBashWhileOrUntilCondition(std::shared_ptr<AST::BashWhileOrUntilCondition> node) {
+void BashppListener::enterBashWhileOrUntilCondition(std::shared_ptr<AST::BashWhileOrUntilCondition> /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::bash_while_or_until_loop>(), "While/until statement entity not found in the entity stack");
 	auto loop = std::static_pointer_cast<bpp::bash_while_or_until_loop>(entity_stack.top());
 
@@ -125,7 +125,7 @@ void BashppListener::enterBashWhileOrUntilCondition(std::shared_ptr<AST::BashWhi
 	entity_stack.push(condition);
 }
 
-void BashppListener::exitBashWhileOrUntilCondition(std::shared_ptr<AST::BashWhileOrUntilCondition> node) {
+void BashppListener::exitBashWhileOrUntilCondition(std::shared_ptr<AST::BashWhileOrUntilCondition> /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::bash_while_or_until_condition>(), "While/until condition entity not found in the entity stack");
 	auto condition = std::static_pointer_cast<bpp::bash_while_or_until_condition>(entity_stack.top());
 

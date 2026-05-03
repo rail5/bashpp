@@ -27,7 +27,7 @@ void BashppListener::enterDoublequotedString(std::shared_ptr<AST::DoublequotedSt
 	}
 }
 
-void BashppListener::exitDoublequotedString(std::shared_ptr<AST::DoublequotedString> node) {
+void BashppListener::exitDoublequotedString(std::shared_ptr<AST::DoublequotedString> /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::bpp_string>(), "String context was not found in the entity stack");
 	auto string_code_entity = std::static_pointer_cast<bpp::bpp_string>(entity_stack.top());
 

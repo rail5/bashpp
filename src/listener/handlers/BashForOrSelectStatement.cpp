@@ -114,7 +114,7 @@ void BashppListener::exitBashSelectStatement(std::shared_ptr<AST::BashSelectStat
 	);
 }
 
-void BashppListener::enterBashInCondition(std::shared_ptr<AST::BashInCondition> node) {
+void BashppListener::enterBashInCondition(std::shared_ptr<AST::BashInCondition> /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::bash_for_or_select>(), "For/select statement entity not found in the entity stack");
 	auto parent_statement = std::static_pointer_cast<bpp::bash_for_or_select>(entity_stack.top());
 
@@ -124,7 +124,7 @@ void BashppListener::enterBashInCondition(std::shared_ptr<AST::BashInCondition> 
 	entity_stack.push(in_condition);
 }
 
-void BashppListener::exitBashInCondition(std::shared_ptr<AST::BashInCondition> node) {
+void BashppListener::exitBashInCondition(std::shared_ptr<AST::BashInCondition> /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::bpp_string>(), "In condition entity not found in the entity stack");
 	auto in_condition = std::static_pointer_cast<bpp::bpp_string>(entity_stack.top());
 

@@ -86,7 +86,7 @@ void BashppListener::enterBashIfStatement(std::shared_ptr<AST::BashIfStatement> 
 	entity_stack.push(if_statement_entity);
 }
 
-void BashppListener::exitBashIfStatement(std::shared_ptr<AST::BashIfStatement> node) {
+void BashppListener::exitBashIfStatement(std::shared_ptr<AST::BashIfStatement> /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::bash_if>(), "If statement context was not found in the entity stack");
 	auto if_statement_entity = std::static_pointer_cast<bpp::bash_if>(entity_stack.top());
 
@@ -205,7 +205,7 @@ void BashppListener::exitBashIfElseBranch(std::shared_ptr<AST::BashIfElseBranch>
 	);
 }
 
-void BashppListener::enterBashIfCondition(std::shared_ptr<AST::BashIfCondition> node) {
+void BashppListener::enterBashIfCondition(std::shared_ptr<AST::BashIfCondition> /*node*/) {
 	// Get the if branch entity
 	bpp_assert(topmost_entity_is<bpp::bash_if_branch>(), "'If' branch entity not found in the entity stack");
 	auto if_branch_entity = std::static_pointer_cast<bpp::bash_if_branch>(entity_stack.top());
@@ -219,7 +219,7 @@ void BashppListener::enterBashIfCondition(std::shared_ptr<AST::BashIfCondition> 
 	entity_stack.push(condition_entity);
 }
 
-void BashppListener::exitBashIfCondition(std::shared_ptr<AST::BashIfCondition> node) {
+void BashppListener::exitBashIfCondition(std::shared_ptr<AST::BashIfCondition> /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::bpp_string>(), "Condition entity not found in the entity stack");
 	auto condition_entity = std::static_pointer_cast<bpp::bpp_string>(entity_stack.top());
 

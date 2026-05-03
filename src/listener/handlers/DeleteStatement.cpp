@@ -6,7 +6,7 @@
 
 #include <listener/BashppListener.h>
 
-void BashppListener::enterDeleteStatement(std::shared_ptr<AST::DeleteStatement> node) {
+void BashppListener::enterDeleteStatement(std::shared_ptr<AST::DeleteStatement> /*node*/) {
 	/**
 	 * Delete statements take the form
 	 * 	@delete @object

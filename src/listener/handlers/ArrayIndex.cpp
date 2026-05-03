@@ -6,7 +6,7 @@
 
 #include <listener/BashppListener.h>
 
-void BashppListener::enterArrayIndex(std::shared_ptr<AST::ArrayIndex> node) {
+void BashppListener::enterArrayIndex(std::shared_ptr<AST::ArrayIndex> /*node*/) {
 	/**
 	 * Array indices take the form:
 	 * 	[...]
@@ -29,7 +29,7 @@ void BashppListener::enterArrayIndex(std::shared_ptr<AST::ArrayIndex> node) {
 	entity_stack.push(array_index_entity);
 }
 
-void BashppListener::exitArrayIndex(std::shared_ptr<AST::ArrayIndex> node) {
+void BashppListener::exitArrayIndex(std::shared_ptr<AST::ArrayIndex> /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::bpp_string>(), "Array index context was not found in the entity stack");
 	auto array_index_entity = std::static_pointer_cast<bpp::bpp_string>(entity_stack.top());
 

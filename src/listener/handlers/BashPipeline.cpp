@@ -18,7 +18,7 @@ void BashppListener::enterBashPipeline(std::shared_ptr<AST::BashPipeline> node) 
 	entity_stack.push(pipeline);
 }
 
-void BashppListener::exitBashPipeline(std::shared_ptr<AST::BashPipeline> node) {
+void BashppListener::exitBashPipeline(std::shared_ptr<AST::BashPipeline> /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::bpp_string>(), "Pipeline context was not found in the entity stack");
 	auto pipeline = std::static_pointer_cast<bpp::bpp_string>(entity_stack.top());
 

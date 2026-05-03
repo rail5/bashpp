@@ -42,7 +42,7 @@ void BashppListener::exitBashArithmeticForStatement(std::shared_ptr<AST::BashAri
 	);
 }
 
-void BashppListener::enterBashArithmeticForCondition(std::shared_ptr<AST::BashArithmeticForCondition> node) {
+void BashppListener::enterBashArithmeticForCondition(std::shared_ptr<AST::BashArithmeticForCondition> /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::bash_for_or_select>(), "For condition outside of for/select statement");
 	auto for_statement = std::static_pointer_cast<bpp::bash_for_or_select>(entity_stack.top());
 
@@ -52,7 +52,7 @@ void BashppListener::enterBashArithmeticForCondition(std::shared_ptr<AST::BashAr
 	entity_stack.push(for_condition);
 }
 
-void BashppListener::exitBashArithmeticForCondition(std::shared_ptr<AST::BashArithmeticForCondition> node) {
+void BashppListener::exitBashArithmeticForCondition(std::shared_ptr<AST::BashArithmeticForCondition> /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::bpp_string>(), "For condition entity not found in the entity stack");
 	auto condition = std::static_pointer_cast<bpp::bpp_string>(entity_stack.top());
 

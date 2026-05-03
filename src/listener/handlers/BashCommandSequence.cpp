@@ -19,7 +19,7 @@ void BashppListener::enterBashCommandSequence(std::shared_ptr<AST::BashCommandSe
 	entity_stack.push(command_sequence_entity);
 }
 
-void BashppListener::exitBashCommandSequence(std::shared_ptr<AST::BashCommandSequence> node) {
+void BashppListener::exitBashCommandSequence(std::shared_ptr<AST::BashCommandSequence> /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::bash_command_sequence>(), "Bash command sequence context was not found in the entity stack");
 	auto command_sequence_entity = std::static_pointer_cast<bpp::bash_command_sequence>(entity_stack.top());
 

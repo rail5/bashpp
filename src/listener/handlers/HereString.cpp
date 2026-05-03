@@ -19,7 +19,7 @@ void BashppListener::enterHereString(std::shared_ptr<AST::HereString> node) {
 	entity_stack.push(herestring_entity);
 }
 
-void BashppListener::exitHereString(std::shared_ptr<AST::HereString> node) {
+void BashppListener::exitHereString(std::shared_ptr<AST::HereString> /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::bpp_string>(), "Herestring entity not found in the entity stack");
 	auto herestring_entity = std::static_pointer_cast<bpp::bpp_string>(entity_stack.top());
 

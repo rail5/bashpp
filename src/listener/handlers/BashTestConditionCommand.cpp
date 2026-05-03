@@ -28,7 +28,7 @@ void BashppListener::enterBashTestConditionCommand(std::shared_ptr<AST::BashTest
 	}
 }
 
-void BashppListener::exitBashTestConditionCommand(std::shared_ptr<AST::BashTestConditionCommand> node) {
+void BashppListener::exitBashTestConditionCommand(std::shared_ptr<AST::BashTestConditionCommand> /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::bpp_code_entity>(), "Test command context was not found in the entity stack");
 	auto test_command = std::static_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 

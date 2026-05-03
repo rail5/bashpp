@@ -19,20 +19,20 @@
 
 namespace bpp {
 
-enum bpp_scope : uint8_t {
+enum class bpp_scope : uint8_t {
 	SCOPE_PUBLIC,
 	SCOPE_PROTECTED,
 	SCOPE_PRIVATE,
 	SCOPE_INACCESSIBLE
 };
 
-enum reference_type : uint8_t {
+enum class reference_type : uint8_t {
 	ref_primitive,
 	ref_method,
 	ref_object
 };
 
-enum diagnostic_type : uint8_t {
+enum class diagnostic_type : uint8_t {
 	DIAGNOSTIC_ERROR,
 	DIAGNOSTIC_WARNING,
 	DIAGNOSTIC_INFO,
@@ -421,7 +421,7 @@ class bash_command_sequence : public bpp_string {
 class bpp_method : public bpp_code_entity {
 	private:
 		std::vector<std::shared_ptr<bpp_method_parameter>> parameters;
-		bpp_scope scope = SCOPE_PUBLIC;
+		bpp_scope scope = bpp_scope::SCOPE_PUBLIC;
 		bool m_is_virtual = false;
 		bool m_is_overridable = false;
 		bool inherited = false;
@@ -532,7 +532,7 @@ class bpp_object : public bpp_entity {
 class bpp_datamember : public bpp_object {
 	private:
 		std::string default_value;
-		bpp_scope scope = SCOPE_PRIVATE;
+		bpp_scope scope = bpp_scope::SCOPE_PRIVATE;
 		bool array = false;
 	public:
 		void set_default_value(const std::string& default_value);

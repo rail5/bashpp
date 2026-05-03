@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2025 Andrew S. Rightenburg
  * 
  * This file is part of a C++ implementation of the Language Server Protocol (LSP) types.

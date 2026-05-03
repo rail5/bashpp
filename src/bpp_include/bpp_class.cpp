@@ -18,12 +18,7 @@ namespace bpp {
 void bpp_class::remove_default_toPrimitive()  {
 	if (!has_custom_toPrimitive) {
 		// Remove the toPrimitive method from the methods vector
-		for (auto it = methods.begin(); it != methods.end(); it++) {
-			if ((*it)->get_name() == "toPrimitive") {
-				methods.erase(it);
-				break;
-			}
-		}
+		std::erase_if(methods, [](const std::shared_ptr<bpp_method>& m) { return m->get_name() == "toPrimitive"; });
 	}
 }
 

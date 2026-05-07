@@ -1,12 +1,12 @@
 Source: bpp
 Priority: optional
 Maintainer: rail5 <andrew@rail5.org>
+Homepage: https://bpp.sh
 Build-Depends: debhelper (>= 10), pandoc, flex, bison, perl, nlohmann-json3-dev, libfrozen-dev, libutfcpp-dev
-Standards-Version: 4.6.2
+Standards-Version: 4.7.0
 Section: utils
 
 Package: bpp
-Priority: optional
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libstd-bpp
 Recommends: bpp-lsp
@@ -16,7 +16,6 @@ Description: Bash++: Bash with classes
  This package provides the Bash++ compiler.
 
 Package: libstd-bpp
-Priority: optional
 Architecture: all
 Depends: ${misc:Depends}
 Description: Standard library for Bash++
@@ -26,7 +25,6 @@ Description: Standard library for Bash++
  which includes common data structures and algorithms.
 
 Package: bpp-lsp
-Priority: optional
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libstd-bpp
 Recommends: bpp

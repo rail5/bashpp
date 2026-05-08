@@ -1,4 +1,4 @@
-@include "../../../stdlib/TypedQueue"
+@include <TypedQueue>
 
 @class Object {
 	@public member="default value"

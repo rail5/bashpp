@@ -1,4 +1,4 @@
-@include "../../../stdlib/Stack"
+@include <Stack>
 
 @Stack stack
 

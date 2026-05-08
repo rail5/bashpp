@@ -1,4 +1,4 @@
-@include_once "../stdlib/SharedVar"
+@include_once <SharedVar>
 @class TestStats {
 	@private @SharedVar* passedTests=@new SharedVar
 	@private @SharedVar* failedTests=@new SharedVar

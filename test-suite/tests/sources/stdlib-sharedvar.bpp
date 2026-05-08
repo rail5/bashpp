@@ -1,4 +1,4 @@
-@include "../../../stdlib/SharedVar"
+@include <SharedVar>
 
 @SharedVar shared_var
 @shared_var.set "Hello, World!"

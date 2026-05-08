@@ -78,7 +78,7 @@
 
 		if [[ "$testOnlyCompileTimes" -eq 1 ]]; then
 			# Just compile the test and return
-			bin/bpp -o /dev/null @this.sourceFile &>/dev/null
+			bin/bpp -o /dev/null -I "@{compiler.full_stdlib_path}" @this.sourceFile &>/dev/null
 			@this.status="untested"
 			@this.finishTest
 			return
@@ -95,7 +95,7 @@
 		fi
 
 		local output="" outputLines="" expectedOutputLines=""
-		IFS= read -r -d '' output < <(BPP="@compiler.full_path" bin/bpp $baseTargetFlag @this.sourceFile 2>&1; printf "\0")
+		IFS= read -r -d '' output < <(BPP="@compiler.full_path" bin/bpp $baseTargetFlag -I "@{compiler.full_stdlib_path}" @this.sourceFile 2>&1; printf "\0")
 		
 		# Split the output into lines and split the expected output into lines
 		mapfile -t outputLines < <(echo "$output")
@@ -124,7 +124,7 @@
 		if [[ @this.status != "fail" ]] && [[ $duplicate -eq 1 ]]; then
 			# Run the test again with -b 5.3 and compare outputs
 			local output53="" output53Lines=""
-			IFS= read -r -d '' output53 < <(BPP="@compiler.full_path" bin/bpp -b 5.3 @this.sourceFile 2>&1; printf "\0")
+			IFS= read -r -d '' output53 < <(BPP="@compiler.full_path" bin/bpp -b 5.3 -I "@{compiler.full_stdlib_path}" @this.sourceFile 2>&1; printf "\0")
 
 			mapfile -t output53Lines < <(echo "$output53")
 

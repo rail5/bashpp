@@ -3,9 +3,19 @@
 	@public path="bin/bpp"
 	@public full_path="@(realpath @this.path)"
 
+	@public stdlib_path="stdlib"
+	@public full_stdlib_path="@(realpath @this.stdlib_path)"
+
 	@constructor {
 		if [[ ! -f "@this.path" ]]; then
 			echo "The bpp compiler was not found at @this.path"
+			echo "Run 'make' to build the compiler, and run the test suite via 'make test'"
+			echo "CWD: $(pwd)"
+			exit 1
+		fi
+
+		if [[ ! -d "@this.stdlib_path" ]]; then
+			echo "The standard library directory was not found at @this.stdlib_path"
 			echo "Run 'make' to build the compiler, and run the test suite via 'make test'"
 			echo "CWD: $(pwd)"
 			exit 1

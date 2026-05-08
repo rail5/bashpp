@@ -1,4 +1,4 @@
-@include "../../../stdlib/Array"
+@include <Array>
 
 @Array array
 @array.push a

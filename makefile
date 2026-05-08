@@ -12,7 +12,7 @@ include mk/stdlib.mk
 include mk/docs.mk
 
 test:
-	bin/bpp test-suite/run.bpp
+	bin/bpp -Istdlib/ test-suite/run.bpp
 
 vscode:
 	@cd vscode && $(MAKE) --no-print-directory

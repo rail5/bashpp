@@ -119,7 +119,7 @@ void bpp_entity::inherit(std::shared_ptr<bpp_entity> parent) {
 
 void bpp_entity::inherit(std::shared_ptr<bpp_program> program) {
 	containing_program = program;
-	inherit(std::dynamic_pointer_cast<bpp_entity>(program));
+	inherit(std::static_pointer_cast<bpp_entity>(program));
 }
 
 void bpp_entity::inherit(std::shared_ptr<bpp_class> parent) {
@@ -128,7 +128,7 @@ void bpp_entity::inherit(std::shared_ptr<bpp_class> parent) {
 		auto parent_program = parent->get_containing_program().lock();
 		containing_program = parent_program;
 	}
-	inherit(std::dynamic_pointer_cast<bpp_entity>(parent));
+	inherit(std::static_pointer_cast<bpp_entity>(parent));
 }
 
 std::unordered_map<std::string, std::shared_ptr<bpp_class>> bpp_entity::get_classes() const {

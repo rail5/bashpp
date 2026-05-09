@@ -119,8 +119,10 @@ std::shared_ptr<bpp::bpp_code_entity> BashppListener::latest_code_entity() {
 		entity_stack.pop();
 		temp_stack.push(entity);
 
-		if (std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity) != nullptr) {
-			latest_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity);
+		auto code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity);
+
+		if (code_entity != nullptr) {
+			latest_entity = code_entity;
 			break;
 		}
 	}

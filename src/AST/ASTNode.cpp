@@ -25,8 +25,8 @@ void ASTNode::addChild(const std::shared_ptr<ASTNode>& child) {
 		&& children.back()->getType() == AST::NodeType::RawText
 	) {
 		// Merge with last RawText child
-		auto lastRawText = std::dynamic_pointer_cast<AST::RawText>(children.back());
-		auto newRawText = std::dynamic_pointer_cast<AST::RawText>(child);
+		auto lastRawText = std::static_pointer_cast<AST::RawText>(children.back());
+		auto newRawText = std::static_pointer_cast<AST::RawText>(child);
 		lastRawText->appendText(newRawText->TEXT());
 		return;
 	}
@@ -60,11 +60,11 @@ void ASTNode::addChildren(const std::vector<std::shared_ptr<ASTNode>>& childs) {
 		// Child is RawText
 		if (lastRawText != nullptr) {
 			// Merge with last RawText child
-			auto newRawText = std::dynamic_pointer_cast<AST::RawText>(child);
+			auto newRawText = std::static_pointer_cast<AST::RawText>(child);
 			lastRawText->appendText(newRawText->TEXT());
 		} else {
 			children.push_back(child);
-			lastRawText = std::dynamic_pointer_cast<AST::RawText>(child);
+			lastRawText = std::static_pointer_cast<AST::RawText>(child);
 		}
 	}
 }

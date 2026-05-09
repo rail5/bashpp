@@ -32,7 +32,7 @@ class StringType : public ASTNode {
 		void addText(const AST::Token<std::string>& text) {
 			auto lastChild = getLastChild();
 			if (lastChild && lastChild->getType() == AST::NodeType::RawText) {
-				std::dynamic_pointer_cast<AST::RawText>(lastChild)->appendText(text);
+				std::static_pointer_cast<AST::RawText>(lastChild)->appendText(text);
 			} else {
 				auto rawTextNode = std::make_shared<AST::RawText>();
 				rawTextNode->setText(text);
@@ -43,7 +43,7 @@ class StringType : public ASTNode {
 		void addText(const std::string& text) {
 			auto lastChild = getLastChild();
 			if (lastChild && lastChild->getType() == AST::NodeType::RawText) {
-				std::dynamic_pointer_cast<AST::RawText>(lastChild)->appendText(text);
+				std::static_pointer_cast<AST::RawText>(lastChild)->appendText(text);
 			} else {
 				auto rawTextNode = std::make_shared<AST::RawText>();
 				AST::Token<std::string> token(text, UINT32_MAX, UINT32_MAX); // Line and column unknown

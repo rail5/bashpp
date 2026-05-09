@@ -15,21 +15,18 @@ void BashppListener::enterProgram(std::shared_ptr<AST::Program> node) {
 	program->set_include_paths(include_paths);
 	program->set_target_bash_version(target_bash_version);
 
-	if (!included) {
+	if (included_status == IncludedStatus::NotIncluded) {
 		program->set_main_source_file(source_file);
 	} else {
 		program->add_source_file(source_file);
 	}
 
-	if (included) {
+	if (included_status != IncludedStatus::NotIncluded) {
 		program = included_from->get_program();
 		program->set_output_stream(code_buffer);
 
 		// Inherit all of the parent program's included files
 		included_files = included_from->get_included_files();
-	} else {
-		program->add_code("#!/usr/bin/env bash\n");
-		program->add_code(bpp_repeat);
 	}
 
 	entity_stack.push(program);
@@ -45,23 +42,28 @@ void BashppListener::enterProgram(std::shared_ptr<AST::Program> node) {
 }
 
 void BashppListener::exitProgram(std::shared_ptr<AST::Program> /*node*/) {
+	if (included_status == IncludedStatus::NotIncluded) {
+		program->verify_requirements(); // Write code for all @requires statements at the top of the compiled program
+	}
 	program->flush_code_buffers();
 
 	entity_stack.pop();
 	bpp_assert(entity_stack.empty(), "entity_stack is not empty after exiting program");
 
-	if (included) {
+	if (included_status != IncludedStatus::NotIncluded) {
 		included_from->set_has_errors(program_has_errors);
 		return;
 	}
 
 	if (program_has_errors) {
 		this->exit_code = EXIT_FAILURE;
-		if (!included) {
+		if (included_status == IncludedStatus::NotIncluded) {
 			unlink(output_file.c_str());
 		}
 		return;
 	}
+
+	*output_stream << program->get_header() << std::flush;
 
 	// Copy the contents of the code stream to the output stream
 	std::shared_ptr<std::ostringstream> cd = std::dynamic_pointer_cast<std::ostringstream>(code_buffer);

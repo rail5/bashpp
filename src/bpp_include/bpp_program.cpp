@@ -11,10 +11,12 @@
 
 namespace bpp {
 
-bpp_program::bpp_program() {
+bpp_program::bpp_program() : program_header("#!/usr/bin/env bash\n\n") {
 	primitive_class = std::make_shared<bpp_class>();
 	primitive_class->set_name("primitive");
 	classes["primitive"] = primitive_class;
+
+	add_to_header(bpp_repeat);
 
 	// Pre-allocate space for the unordered_maps:
 	// classes, objects
@@ -211,6 +213,52 @@ void bpp_program::set_target_bash_version(BashVersion target_bash_version) {
 
 BashVersion bpp_program::get_target_bash_version() const {
 	return target_bash_version;
+}
+
+void bpp_program::add_to_header(const std::string& code) {
+	program_header += code;
+	if (code.back() != '\n') program_header += '\n';
+}
+
+const std::string& bpp_program::get_header() const {
+	return program_header;
+}
+
+void bpp_program::add_requirement(const std::string& required_command, const std::optional<std::string>& required_arguments) {
+	program_requirements.insert({required_command, required_arguments});
+}
+
+const std::set<program_requirement>& bpp_program::get_requirements() const {
+	return program_requirements;
+}
+
+void bpp_program::verify_requirements() {
+	for (const auto& requirement : program_requirements) {
+		std::string verification_command = "\nif ! ";
+		if (!requirement.required_arguments.has_value()) {
+			verification_command += "command -v ";
+			verification_command += requirement.required_command;
+			verification_command += " >/dev/null 2>&1; then\n";
+			verification_command += "	>&2 echo \"Bash++: Error: This program requires '";
+			verification_command += requirement.required_command;
+			verification_command += "' to be available.\"\n";
+			verification_command += "	exit 1\n";
+			verification_command += "fi\n";
+		} else {
+			verification_command += requirement.required_command;
+			verification_command += " ";
+			verification_command += requirement.required_arguments.value();
+			verification_command += " >/dev/null 2>&1; then\n";
+			verification_command += "	>&2 echo \"Bash++: Error: This program requires '";
+			verification_command += requirement.required_command;
+			verification_command += " ";
+			verification_command += requirement.required_arguments.value();
+			verification_command += "' to execute successfully.\"\n";
+			verification_command += "	exit 1\n";
+			verification_command += "fi\n";
+		}
+		add_to_header(verification_command);
+	}
 }
 
 void bpp_program::mark_entity(

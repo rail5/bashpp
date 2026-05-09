@@ -68,6 +68,7 @@ enum class NodeType : uint8_t {
 	Supershell,
 	TypeofExpression,
 	ValueAssignment,
+	RequiresStatement,
 	ERROR_TYPE
 };
 } // namespace AST

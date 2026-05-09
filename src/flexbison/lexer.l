@@ -331,6 +331,7 @@ KEYWORD_THIS            @this
 KEYWORD_SUPER           @super
 KEYWORD_TYPEOF          @typeof
 KEYWORD_VIRTUAL         @virtual
+KEYWORD_REQUIRES		@requires
 
 LANGLE                  [<]
 RANGLE                  [>]
@@ -356,6 +357,10 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 /* Parsing @include statements */
 %x BPP_INCLUDE_MODE
+
+/* Parsing @requires statements */
+%x BPP_REQUIRES_MODE1
+%x BPP_REQUIRES_MODE2
 
 /* Handling single-quoted strings as single tokens */
 %x SINGLEQUOTE_MODE
@@ -534,6 +539,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	{KEYWORD_TYPEOF}/[^a-zA-Z0-9_]       { thisModeStack.pop(); emit(KEYWORD_TYPEOF); }
 	{KEYWORD_THIS}/[^a-zA-Z0-9_]         { thisModeStack.pop(); thisModeStack.push(BPP_REFERENCE_MODE); emit(KEYWORD_THIS); }
 	{KEYWORD_SUPER}/[^a-zA-Z0-9_]        { thisModeStack.pop(); thisModeStack.push(BPP_REFERENCE_MODE); emit(KEYWORD_SUPER); }
+	{KEYWORD_REQUIRES}/[^a-zA-Z0-9_]     { thisModeStack.pop(); thisModeStack.push(BPP_REQUIRES_MODE1); emit(KEYWORD_REQUIRES); }
 
 	"@{"                                 { thisModeStack.pop(); thisModeStack.push(BPP_BRACEREFERENCE_MODE); emit(REF_START); }
 	"@("                                 { thisModeStack.pop(); thisModeStack.push(SUPERSHELL_MODE); emit(SUPERSHELL_START); }
@@ -1520,6 +1526,29 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 		emit(DELIM, tokenText);
 	}
 	[\#][^\n]* { /* Ignore comments */ }
+}
+
+<BPP_REQUIRES_MODE1>{
+	[^ \t\n]+ {
+		thisModeStack.pop(); // Exit BPP_REQUIRES_MODE1
+		thisModeStack.push(BPP_REQUIRES_MODE2);
+		emit(REQUIRED_COMMAND, tokenText);
+	}
+	[\n] {
+		thisModeStack.pop(); // Exit BPP_REQUIRES_MODE1
+		thisLexerState.received_local_keyword = false;
+		emit(DELIM, tokenText);
+	}
+	[ \t]+ { /* skip */ }
+}
+
+<BPP_REQUIRES_MODE2>{
+	[^\n]+ { emit(REQUIRED_ARGUMENTS, tokenText); }
+	[\n] {
+		thisModeStack.pop(); // Exit BPP_REQUIRES_MODE2
+		thisLexerState.received_local_keyword = false;
+		emit(DELIM, tokenText);
+	}
 }
 
 <*>. {

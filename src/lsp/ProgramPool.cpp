@@ -143,7 +143,7 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::_parse_program(const std::string&
 		BashppListener listener;
 		listener.set_source_file(file_path);
 		listener.set_run_on_exit(false);
-		listener.set_included(false);
+		listener.set_included_status(BashppListener::IncludedStatus::NotIncluded);
 		listener.set_output_stream(output_stream);
 		listener.set_code_buffer(code_buffer);
 		listener.set_suppress_warnings(suppress_warnings);

@@ -77,6 +77,7 @@ namespace AST {
 	X(Supershell) \
 	X(TypeofExpression) \
 	X(ValueAssignment) \
+	X(RequiresStatement) \
 
 /**
  * @class BaseListener

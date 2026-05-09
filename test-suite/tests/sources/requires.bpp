@@ -1,0 +1,5 @@
+@requires grep
+
+@requires grep -P -e 'abc'<<<'abc'
+
+@requires thiscommanddoesnotexistonanysystem

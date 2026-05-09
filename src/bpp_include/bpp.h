@@ -11,6 +11,7 @@
 #include <vector>
 #include <unordered_map>
 #include <list>
+#include <set>
 #include <memory>
 
 #include <include/EntityMap.h>
@@ -112,12 +113,12 @@ static const char bpp_nullptr[] = "0";
  * @var protected_keywords
  * @brief A list of keywords that are reserved and cannot be used as identifiers in Bash++
  */
-inline constexpr std::array<std::string_view, 19> protected_keywords = {
+inline constexpr std::array<std::string_view, 20> protected_keywords = {
 	"class", "constructor", "delete", "destructor",
 	"dynamic_cast", "include", "include_once", "local", "method",
 	"new", "nullptr", "primitive", "private",
-	"protected", "public", "super", "this",
-	"typeof", "virtual"
+	"protected", "public", "requires", "super",
+	"this", "typeof", "virtual"
 };
 
 /**
@@ -540,6 +541,36 @@ class bpp_datamember : public bpp_object {
 		bool is_array() const;
 };
 
+struct program_requirement {
+	std::string required_command;
+	std::optional<std::string> required_arguments;
+
+	bool operator<(const program_requirement& other) const {
+		if (required_command != other.required_command) return required_command < other.required_command;
+		return required_arguments < other.required_arguments;
+	}
+
+	bool operator==(const program_requirement& other) const {
+		return required_command == other.required_command && required_arguments == other.required_arguments;
+	}
+
+	bool operator!=(const program_requirement& other) const {
+		return !(*this == other);
+	}
+
+	bool operator>(const program_requirement& other) const {
+		return other < *this;
+	}
+
+	bool operator<=(const program_requirement& other) const {
+		return !(*this > other);
+	}
+
+	bool operator>=(const program_requirement& other) const {
+		return !(*this < other);
+	}
+};
+
 /**
  * @class bpp_program
  * 
@@ -547,6 +578,7 @@ class bpp_datamember : public bpp_object {
  */
 class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<bpp_program> {
 	private:
+		std::string program_header;
 		std::shared_ptr<bpp_class> primitive_class;
 		uint64_t supershell_counter = 0;
 		uint64_t assignment_counter = 0;
@@ -562,6 +594,8 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 		// To ensure that the bpp_program **owns** its classes
 		// I.e., that those classes don't get destroyed before we're done with them
 		std::unordered_map<std::string, std::shared_ptr<bpp::bpp_class>> owned_classes;
+
+		std::set<program_requirement> program_requirements;
 
 		// Source file -> AST
 		// Used for advanced analysis, e.g. LSP features
@@ -620,6 +654,13 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 
 		void set_target_bash_version(BashVersion target_bash_version);
 		BashVersion get_target_bash_version() const;
+
+		void add_to_header(const std::string& code);
+		const std::string& get_header() const;
+
+		void add_requirement(const std::string& required_command, const std::optional<std::string>& required_arguments = std::nullopt);
+		const std::set<program_requirement>& get_requirements() const;
+		void verify_requirements();
 
 		void mark_entity(
 			const std::string& file,

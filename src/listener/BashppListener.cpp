@@ -18,8 +18,8 @@ void BashppListener::set_include_paths(std::shared_ptr<std::vector<std::string>>
 	this->include_paths->emplace_back("/usr/lib/bpp/stdlib/");
 }
 
-void BashppListener::set_included(bool included) {
-	this->included = included;
+void BashppListener::set_included_status(BashppListener::IncludedStatus included_status) {
+	this->included_status = included_status;
 }
 
 /**

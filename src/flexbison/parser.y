@@ -129,6 +129,9 @@ void yyerror(const char *s);
 %token <AST::Token<std::string>> BASH_53_NATIVE_SUPERSHELL_START
 %token BASH_53_NATIVE_SUPERSHELL_END
 
+%token KEYWORD_REQUIRES
+%token <AST::Token<std::string>> REQUIRED_COMMAND REQUIRED_ARGUMENTS
+
 /* Handling unrecognized tokens */
 %token <AST::Token<std::string>> CATCHALL
 
@@ -212,6 +215,8 @@ void yyerror(const char *s);
 %type <ASTNodePtr> bash_53_native_supershell
 %type <ASTNodePtr> array_assignment
 
+%type <ASTNodePtr> requires_statement
+
 %type <AST::Token<std::string>> maybe_include_type maybe_as_clause maybe_parent_class
 %type <AST::Token<std::string>> assignment_operator
 %type <AST::Token<std::string>> maybe_exclam
@@ -255,6 +260,7 @@ statement:
 	}
 	| shell_command_sequence %prec CONCAT_STOP { $$ = $1; }
 	| include_statement { $$ = $1; }
+	| requires_statement { $$ = $1; }
 	| class_definition { $$ = $1; }
 	| datamember_declaration {  $$ = $1; }
 	| method_definition { $$ = $1; }
@@ -2506,6 +2512,28 @@ bash_53_native_supershell:
 		node->addChildren($2);
 		$$ = node;
 	}
+
+requires_statement:
+	KEYWORD_REQUIRES REQUIRED_COMMAND {
+		auto node = std::make_shared<AST::RequiresStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setEndPosition(@2.end.line, @2.end.column);
+		node->setRequiredCommand($2);
+		$$ = node;
+	}
+	| KEYWORD_REQUIRES REQUIRED_COMMAND REQUIRED_ARGUMENTS {
+		auto node = std::make_shared<AST::RequiresStatement>();
+		uint32_t line_number = @1.begin.line;
+		uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setEndPosition(@3.end.line, @3.end.column);
+		node->setRequiredCommand($2);
+		node->setRequiredArguments($3);
+		$$ = node;
+	}
+	;
 
 %%
 

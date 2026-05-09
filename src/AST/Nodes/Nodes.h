@@ -65,3 +65,4 @@
 #include <AST/Nodes/Supershell.h>
 #include <AST/Nodes/TypeofExpression.h>
 #include <AST/Nodes/ValueAssignment.h>
+#include <AST/Nodes/RequiresStatement.h>

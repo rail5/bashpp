@@ -62,7 +62,14 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 		 */
 		std::string source_file;
 
-		bool included = false;
+	public:
+		enum class IncludedStatus : uint8_t {
+			NotIncluded,
+			Included,
+			DynamicallyIncluded
+		};
+	private:
+		IncludedStatus included_status = IncludedStatus::NotIncluded;
 
 		/**
 		 * @var include_paths
@@ -184,7 +191,7 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 	public:
 		void set_source_file(std::string source_file);
 		void set_include_paths(std::shared_ptr<std::vector<std::string>> include_paths);
-		void set_included(bool included);
+		void set_included_status(BashppListener::IncludedStatus included_status);
 		void set_included_from(BashppListener* included_from);
 		void set_included_files(std::shared_ptr<std::set<std::string>> included_files);
 		void set_code_buffer(std::shared_ptr<std::ostream> code_buffer);
@@ -335,4 +342,6 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 		void exitTypeofExpression(std::shared_ptr<AST::TypeofExpression> node);
 		void enterValueAssignment(std::shared_ptr<AST::ValueAssignment> node);
 		void exitValueAssignment(std::shared_ptr<AST::ValueAssignment> node);
+		void enterRequiresStatement(std::shared_ptr<AST::RequiresStatement> node);
+		void exitRequiresStatement(std::shared_ptr<AST::RequiresStatement> node);
 };

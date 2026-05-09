@@ -98,7 +98,7 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 	BashppListener listener;
 	listener.set_source_file(full_path);
 	listener.set_include_paths(include_paths);
-	listener.set_included(true);
+	listener.set_included_status(BashppListener::IncludedStatus::Included);
 	listener.set_included_from(this);
 	listener.set_run_on_exit(false);
 	listener.set_suppress_warnings(suppress_warnings);
@@ -114,6 +114,7 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 		// Otherwise, throw its output in the garbage
 		std::shared_ptr<std::ostream> garbage_stream = std::make_shared<NullOStream>();
 		listener.set_code_buffer(garbage_stream);
+		listener.set_included_status(BashppListener::IncludedStatus::DynamicallyIncluded);
 	}
 	listener.set_output_file("");
 

@@ -15,8 +15,7 @@ class ParameterExpansion : public StringType {
 	protected:
 		AST::Token<std::string> m_EXPANSIONBEGIN;
 	public:
-		static constexpr AST::NodeType static_type = AST::NodeType::ParameterExpansion;
-		constexpr AST::NodeType getType() const override { return static_type; }
+		constexpr ParameterExpansion() : StringType(AST::NodeType::ParameterExpansion) {}
 
 		const AST::Token<std::string>& EXPANSIONBEGIN() const {
 			return m_EXPANSIONBEGIN;

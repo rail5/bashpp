@@ -14,8 +14,7 @@ class Bash53NativeSupershell : public ASTNode {
 	protected:
 		AST::Token<std::string> m_STARTTOKEN;
 	public:
-		static constexpr AST::NodeType static_type = AST::NodeType::Bash53NativeSupershell;
-		constexpr AST::NodeType getType() const override { return static_type; }
+		constexpr Bash53NativeSupershell() : ASTNode(AST::NodeType::Bash53NativeSupershell) {}
 
 		const AST::Token<std::string>& STARTTOKEN() const {
 			return m_STARTTOKEN;

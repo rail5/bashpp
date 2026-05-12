@@ -13,8 +13,7 @@ namespace AST {
 
 class HereString : public StringType {
 	public:
-		static constexpr AST::NodeType static_type = AST::NodeType::HereString;
-		constexpr AST::NodeType getType() const override { return static_type; }
+		constexpr HereString() : StringType(AST::NodeType::HereString) {}
 
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');

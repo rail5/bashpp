@@ -13,8 +13,7 @@ namespace AST {
 
 class BashPipeline : public StringType {
 	public:
-		static constexpr AST::NodeType static_type = AST::NodeType::BashPipeline;
-		constexpr AST::NodeType getType() const override { return static_type; }
+		constexpr BashPipeline() : StringType(AST::NodeType::BashPipeline) {}
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashPipeline";

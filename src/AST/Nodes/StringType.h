@@ -22,6 +22,7 @@ namespace AST {
  */
 class StringType : public ASTNode {
 	public:
+		constexpr explicit StringType(AST::NodeType type) : ASTNode(type) {}
 		/**
 		 * @brief Adds text to the string, either by appending to the last RawText child or creating a new one.
 		 * The result should be that the node contains an alternating sequence of RawText nodes and interpolations,

@@ -14,8 +14,7 @@ class BashSelectStatement : public ASTNode {
 	protected:
 		AST::Token<std::string> m_VARIABLE;
 	public:
-		static constexpr AST::NodeType static_type = AST::NodeType::BashSelectStatement;
-		constexpr AST::NodeType getType() const override { return static_type; }
+		constexpr BashSelectStatement() : ASTNode(AST::NodeType::BashSelectStatement) {}
 
 		const AST::Token<std::string>& VARIABLE() const {
 			return m_VARIABLE;

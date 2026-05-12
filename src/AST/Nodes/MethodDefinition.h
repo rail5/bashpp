@@ -26,8 +26,7 @@ class MethodDefinition : public ASTNode {
 		std::vector<AST::Token<Parameter>> m_PARAMETERS;
 
 	public:
-		static constexpr AST::NodeType static_type = AST::NodeType::MethodDefinition;
-		constexpr AST::NodeType getType() const override { return static_type; }
+		constexpr MethodDefinition() : ASTNode(AST::NodeType::MethodDefinition) {}
 
 		const AST::Token<std::string>& NAME() const {
 			return m_NAME;

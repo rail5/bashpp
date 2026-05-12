@@ -20,8 +20,7 @@ class ObjectReference : public ASTNode {
 		bool m_ptr_dereference = false;
 		bool m_address_of = false;
 	public:
-		static constexpr AST::NodeType static_type = AST::NodeType::ObjectReference;
-		constexpr AST::NodeType getType() const override { return static_type; }
+		constexpr ObjectReference() : ASTNode(AST::NodeType::ObjectReference) {}
 
 		void setIdentifier(const AST::Token<std::string>& identifier) {
 			m_IDENTIFIER = identifier;

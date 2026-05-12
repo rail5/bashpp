@@ -19,8 +19,7 @@ class Connective : public ASTNode {
 	protected:
 		ConnectiveType m_TYPE;
 	public:
-		static constexpr AST::NodeType static_type = AST::NodeType::Connective;
-		constexpr AST::NodeType getType() const override { return static_type; }
+		constexpr Connective() : ASTNode(AST::NodeType::Connective) {}
 
 		ConnectiveType TYPE() const {
 			return m_TYPE;

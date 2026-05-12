@@ -13,8 +13,7 @@ namespace AST {
 
 class DoublequotedString : public StringType {
 	public:
-		static constexpr AST::NodeType static_type = AST::NodeType::DoublequotedString;
-		constexpr AST::NodeType getType() const override { return static_type; }
+		constexpr DoublequotedString() : StringType(AST::NodeType::DoublequotedString) {}
 
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');

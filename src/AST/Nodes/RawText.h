@@ -26,8 +26,7 @@ class RawText : public ASTNode {
 			return escaped;
 		}
 	public:
-		static constexpr AST::NodeType static_type = AST::NodeType::RawText;
-		constexpr AST::NodeType getType() const override { return static_type; }
+		constexpr RawText() : ASTNode(AST::NodeType::RawText) {}
 
 		const AST::Token<std::string>& TEXT() const {
 			return m_TEXT;

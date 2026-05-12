@@ -14,8 +14,7 @@ class BashIfElseBranch : public ASTNode {
 	protected:
 		bool m_hasCondition = false;
 	public:
-		static constexpr AST::NodeType static_type = AST::NodeType::BashIfElseBranch;
-		constexpr AST::NodeType getType() const override { return static_type; }
+		constexpr BashIfElseBranch() : ASTNode(AST::NodeType::BashIfElseBranch) {}
 
 		bool hasCondition() const {
 			return m_hasCondition;

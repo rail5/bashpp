@@ -18,8 +18,7 @@ namespace AST {
  */
 class BashArithmeticForStatement : public ASTNode {
 	public:
-		static constexpr AST::NodeType static_type = AST::NodeType::BashArithmeticForStatement;
-		constexpr AST::NodeType getType() const override { return static_type; }
+		constexpr BashArithmeticForStatement() : ASTNode(AST::NodeType::BashArithmeticForStatement) {}
 
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');

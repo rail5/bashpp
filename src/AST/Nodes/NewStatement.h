@@ -14,8 +14,7 @@ class NewStatement : public ASTNode {
 	protected:
 		AST::Token<std::string> m_TYPE;
 	public:
-		static constexpr AST::NodeType static_type = AST::NodeType::NewStatement;
-		constexpr AST::NodeType getType() const override { return static_type; }
+		constexpr NewStatement() : ASTNode(AST::NodeType::NewStatement) {}
 
 		const AST::Token<std::string>& TYPE() const {
 			return m_TYPE;

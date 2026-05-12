@@ -12,8 +12,7 @@ namespace AST {
 
 class TypeofExpression : public ASTNode {
 	public:
-		static constexpr AST::NodeType static_type = AST::NodeType::TypeofExpression;
-		constexpr AST::NodeType getType() const override { return static_type; }
+		constexpr TypeofExpression() : ASTNode(AST::NodeType::TypeofExpression) {}
 
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');

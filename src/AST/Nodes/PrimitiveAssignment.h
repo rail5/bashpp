@@ -15,8 +15,7 @@ class PrimitiveAssignment : public ASTNode {
 		AST::Token<std::string> m_IDENTIFIER;
 		bool m_local = false;
 	public:
-		static constexpr AST::NodeType static_type = AST::NodeType::PrimitiveAssignment;
-		constexpr AST::NodeType getType() const override { return static_type; }
+		constexpr PrimitiveAssignment() : ASTNode(AST::NodeType::PrimitiveAssignment) {}
 
 		const AST::Token<std::string>& IDENTIFIER() const {
 			return m_IDENTIFIER;

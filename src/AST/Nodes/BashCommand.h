@@ -13,8 +13,7 @@ namespace AST {
 
 class BashCommand : public StringType {
 	public:
-		static constexpr AST::NodeType static_type = AST::NodeType::BashCommand;
-		constexpr AST::NodeType getType() const override { return static_type; }
+		constexpr BashCommand() : StringType(AST::NodeType::BashCommand) {}
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashCommand";

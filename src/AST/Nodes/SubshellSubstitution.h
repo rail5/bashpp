@@ -14,8 +14,7 @@ class SubshellSubstitution : public ASTNode {
 	protected:
 		bool is_cat_replacement = false;
 	public:
-		static constexpr AST::NodeType static_type = AST::NodeType::SubshellSubstitution;
-		constexpr AST::NodeType getType() const override { return static_type; }
+		constexpr SubshellSubstitution() : ASTNode(AST::NodeType::SubshellSubstitution) {}
 
 		void setIsCatReplacement(bool value) {
 			is_cat_replacement = value;

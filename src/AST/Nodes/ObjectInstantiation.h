@@ -15,8 +15,7 @@ class ObjectInstantiation : public ASTNode {
 		AST::Token<std::string> m_TYPE;
 		AST::Token<std::string> m_IDENTIFIER;
 	public:
-		static constexpr AST::NodeType static_type = AST::NodeType::ObjectInstantiation;
-		constexpr AST::NodeType getType() const override { return static_type; }
+		constexpr ObjectInstantiation() : ASTNode(AST::NodeType::ObjectInstantiation) {}
 
 		void setType(const AST::Token<std::string>& type) {
 			m_TYPE = type;

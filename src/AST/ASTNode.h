@@ -26,6 +26,8 @@ namespace AST {
  * 
  */
 class ASTNode {
+	private:
+		AST::NodeType _type = AST::NodeType::ERROR_TYPE;
 	protected:
 		std::vector<std::shared_ptr<ASTNode>> children;
 		AST::FilePosition position;
@@ -33,6 +35,7 @@ class ASTNode {
 
 	public:
 		ASTNode() = default;
+		constexpr explicit ASTNode(AST::NodeType type) : _type(type) {}
 		virtual ~ASTNode() = default;
 
 		ASTNode(const ASTNode& other) = default;
@@ -40,7 +43,7 @@ class ASTNode {
 		ASTNode(ASTNode&& other) noexcept = default;
 		ASTNode& operator=(ASTNode&& other) noexcept = default;
 		
-		virtual constexpr AST::NodeType getType() const = 0;
+		constexpr AST::NodeType getType() const { return _type; }
 
 		void addChild(const std::shared_ptr<ASTNode>& child);
 		void addChildren(const std::vector<std::shared_ptr<ASTNode>>& childs);

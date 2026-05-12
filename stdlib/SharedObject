@@ -7,11 +7,11 @@
 # INTERNAL: Base class for all shared objects (SharedArray, SharedStack, SharedQueue, etc.)
 
 if ! command -v flock &> /dev/null; then
-	>&2 echo "Bash++: SharedArray requires the 'flock' command to be available."
+	>&2 echo "Bash++: SharedObject requires the 'flock' command to be available."
 	exit 1
 fi
 if ! command -v chmod &> /dev/null; then
-	>&2 echo "Bash++: SharedArray requires the 'chmod' command to be available."
+	>&2 echo "Bash++: SharedObject requires the 'chmod' command to be available."
 	exit 1
 fi
 

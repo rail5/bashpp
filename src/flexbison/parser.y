@@ -54,18 +54,23 @@ void yyerror(const char *s);
 		//       BashRedirection
 		// If that structure changes, this will break.
 		if (statements.size() != 1) return false;
-		auto commandSequence = std::dynamic_pointer_cast<AST::BashCommandSequence>(statements[0]);
-		if (commandSequence == nullptr) return false;
+		if (statements[0]->getType() != AST::NodeType::BashCommandSequence) return false;
+		auto commandSequence = std::static_pointer_cast<AST::BashCommandSequence>(statements[0]);
+
 		if (commandSequence->getChildren().size() != 1) return false;
-		auto pipeline = std::dynamic_pointer_cast<AST::BashPipeline>(commandSequence->getChildren()[0]);
-		if (pipeline == nullptr) return false;
+		if (commandSequence->getChildren()[0]->getType() != AST::NodeType::BashPipeline) return false;
+		auto pipeline = std::static_pointer_cast<AST::BashPipeline>(commandSequence->getChildren()[0]);
+
 		if (pipeline->getChildren().size() != 1) return false;
-		auto command = std::dynamic_pointer_cast<AST::BashCommand>(pipeline->getChildren()[0]);
-		if (command == nullptr) return false;
+		if (pipeline->getChildren()[0]->getType() != AST::NodeType::BashCommand) return false;
+		auto command = std::static_pointer_cast<AST::BashCommand>(pipeline->getChildren()[0]);
+
 		if (command->getChildren().size() != 1) return false;
-		auto redirection = std::dynamic_pointer_cast<AST::BashRedirection>(command->getChildren()[0]);
-		if (redirection == nullptr) return false;
+		if (command->getChildren()[0]->getType() != AST::NodeType::BashRedirection) return false;
+		auto redirection = std::static_pointer_cast<AST::BashRedirection>(command->getChildren()[0]);
+
 		if (!redirection->OPERATOR().getValue().contains('<')) return false;
+
 		return true;
 	}
 }

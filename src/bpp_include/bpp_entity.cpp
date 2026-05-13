@@ -104,8 +104,11 @@ void bpp_entity::inherit(std::shared_ptr<bpp_entity> parent) {
 	for (auto& c : parent->get_classes()) {
 		classes[c.first] = c.second;
 	}
-	for (auto& o : parent->get_objects()) {
-		objects[o.first] = o.second;
+	for (auto& o : parent->get_foreign_objects()) {
+		foreign_objects[o.first] = o.second;
+	}
+	for (auto& o : parent->get_local_objects()) {
+		foreign_objects[o.first] = o.second;
 	}
 }
 
@@ -127,16 +130,8 @@ const std::unordered_map<std::string, std::weak_ptr<bpp_class>>& bpp_entity::get
 	return classes;
 }
 
-std::unordered_map<std::string, std::shared_ptr<bpp_object>> bpp_entity::get_objects() const {
-	std::unordered_map<std::string, std::shared_ptr<bpp_object>> all_objects;
-	all_objects.reserve(objects.size() + local_objects.size());
-	for (const auto& o : objects) {
-		all_objects[o.first] = o.second.lock();
-	}
-	for (const auto& o : local_objects) {
-		all_objects[o.first] = o.second;
-	}
-	return all_objects;
+const std::unordered_map<std::string, std::weak_ptr<bpp_object>>& bpp_entity::get_foreign_objects() const {
+	return foreign_objects;
 }
 
 const std::unordered_map<std::string, std::shared_ptr<bpp_object>>& bpp_entity::get_local_objects() const {

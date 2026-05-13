@@ -242,7 +242,7 @@ class bpp_entity {
 		bpp::SymbolPosition get_initial_definition() const;
 		std::list<bpp::SymbolPosition> get_references() const;
 
-		std::unordered_map<std::string, std::shared_ptr<bpp_class>> get_classes() const;
+		const std::unordered_map<std::string, std::weak_ptr<bpp_class>>& get_classes() const;
 		std::unordered_map<std::string, std::shared_ptr<bpp_object>> get_objects() const;
 		const std::unordered_map<std::string, std::shared_ptr<bpp_object>>& get_local_objects() const;
 		std::shared_ptr<bpp_class> get_class(const std::string& name);

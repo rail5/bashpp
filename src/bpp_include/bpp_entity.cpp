@@ -123,12 +123,7 @@ void bpp_entity::inherit(std::shared_ptr<bpp_class> parent) {
 	inherit(std::static_pointer_cast<bpp_entity>(parent));
 }
 
-std::unordered_map<std::string, std::shared_ptr<bpp_class>> bpp_entity::get_classes() const {
-	std::unordered_map<std::string, std::shared_ptr<bpp_class>> classes;
-	classes.reserve(this->classes.size());
-	for (const auto& c : this->classes) {
-		classes[c.first] = c.second.lock();
-	}
+const std::unordered_map<std::string, std::weak_ptr<bpp_class>>& bpp_entity::get_classes() const {
 	return classes;
 }
 

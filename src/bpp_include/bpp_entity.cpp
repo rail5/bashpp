@@ -29,17 +29,9 @@ bool bpp_entity::add_class(std::shared_ptr<bpp_class> class_) {
  */
 bool bpp_entity::add_object(std::shared_ptr<bpp_object> object, bool /* make_local */) {
 	std::string name = object->get_name();
-	if (objects.contains(name)) {
-		return false;
-	}
+	if (local_objects.contains(name) || foreign_objects.contains(name)) return false;
 
-	// Verify that the type of the object is a valid class
-	std::string type = object->get_class()->get_name();
-	if (!classes.contains(type)) {
-		return false;
-	}
-
-	objects[name] = object;
+	local_objects[name] = object;
 	return true;
 }
 
@@ -170,8 +162,8 @@ std::shared_ptr<bpp::bpp_object> bpp_entity::get_object(const std::string& name)
 		return local_objects[name];
 	}
 
-	if (objects.contains(name)) {
-		return objects[name].lock();
+	if (foreign_objects.contains(name)) {
+		return foreign_objects[name].lock();
 	}
 
 	return nullptr;

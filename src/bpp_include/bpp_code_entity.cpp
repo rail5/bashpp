@@ -107,7 +107,7 @@ void bpp_code_entity::clear_all_buffers() {
  */
 bool bpp_code_entity::add_object(std::shared_ptr<bpp_object> object, bool make_local) {
 	std::string name = object->get_name();
-	if (objects.contains(name) || local_objects.contains(name)) {
+	if (foreign_objects.contains(name) || local_objects.contains(name)) {
 		return false;
 	}
 
@@ -222,7 +222,7 @@ bool bpp_code_entity::get_requires_perfect_forwarding() const {
 void bpp_code_entity::adopt(std::shared_ptr<bpp_entity> entity) {
 	for (const auto& [name, object] : entity->get_local_objects()) {
 		bpp_assert(
-			!(local_objects.contains(name) || objects.contains(name)),
+			!(local_objects.contains(name) || foreign_objects.contains(name)),
 			"Name conflict when adopting local objects from supershell: " + name
 		);
 		local_objects[name] = object;

@@ -184,16 +184,25 @@ class bpp_entity {
 		std::unordered_map<std::string, std::weak_ptr<bpp_class>> classes;
 
 		/**
-		 * @var objects
-		 * @brief A map of object names to bpp_objects within this entity
+		 * @var foreign_objects
+		 * @brief A map of objects that this entity knows about, but does not own
+		 * These are objects that are owned by parent entities, and are accessible from this entity due to inheritance
+		 *
+		 * The key is a std::string containing the name of the object,
+		 * The value is a weak_ptr to the object itself
 		 */
-		std::unordered_map<std::string, std::weak_ptr<bpp_object>> objects;
+		std::unordered_map<std::string, std::weak_ptr<bpp_object>> foreign_objects;
 
 		/**
 		 * @var local_objects
-		 * @brief Like objects, but only for objects whose scope is local to this entity
+		 * @brief A map of objects that this entity owns
+		 * These are objects that are instantiated within this entity, and are not accessible from parent entities,
+		 * but will be inherited by child entities
 		 *
-		 * The type is shared_ptr because this entity **owns** its own local objects.
+		 * The key is a std::string containing the name of the object,
+		 * The value is a shared_ptr to the object itself
+		 *
+		 * The type shared_ptr indicates that we *own* (manage the lifetime of) the object
 		 */
 		std::unordered_map<std::string, std::shared_ptr<bpp_object>> local_objects;
 		std::weak_ptr<bpp_class> type;

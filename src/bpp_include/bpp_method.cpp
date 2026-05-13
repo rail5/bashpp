@@ -19,7 +19,7 @@ bool bpp_method::add_object_as_parameter(std::shared_ptr<bpp_object> object) {
 	std::string name = object->get_name();
 	
 	// Verify the object's name isn't already in use by another object
-	if (objects.contains(name) || local_objects.contains(name)) {
+	if (foreign_objects.contains(name) || local_objects.contains(name)) {
 		return false;
 	}
 
@@ -126,7 +126,7 @@ std::string bpp_method::get_last_override() const {
 
 bool bpp_method::add_object(std::shared_ptr<bpp_object> object, bool make_local) {
 	std::string name = object->get_name();
-	if (objects.contains(name) || local_objects.contains(name)) {
+	if (foreign_objects.contains(name) || local_objects.contains(name)) {
 		return false;
 	}
 

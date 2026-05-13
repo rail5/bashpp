@@ -1,23 +1,90 @@
+bpp (0.8.10) unstable; urgency=medium
+
+  * Performance: Significant compiler speed-ups from multiple optimizations:
+    - Entity inheritance now pre-reserves map space and uses std::copy()
+      instead of repeated dynamic allocations, yielding a combined speedup
+      of over 200% on large source files.
+    - The old bpp_entity::get_objects() interface, which merged and copied
+      local and foreign object maps, has been removed. Replaced by separate
+      get_local_objects() and get_foreign_objects() returning const
+      references, avoiding unnecessary allocations and copies (roughly 2x
+      speedup on large data).
+    - bpp_entity::get_classes(), get_datamember() and get_method() now return
+      const references instead of copies.
+    - bpp-lsp now obtains class names directly from map keys, eliminating an
+      indirection through bpp_class::get_name().
+    - AST node type handling refactored from a virtual function to a
+      non-virtual base-class member, reducing indirection.
+    - Replaced unnecessary dynamic casts with static casts when the pointer
+      type is already known at compile time.
+  * Compiler & language semantics:
+    - Dynamic includes that fail at runtime now print an error to stderr and
+      terminate with a non-zero exit code, in line with the language spec.
+    - Lexer/parser bug fix: whitespace and comments are now allowed after
+      include/include_once directives.
+    - stdlib: corrected a copy-paste error in SharedObject's start-up checks
+      (was referencing "SharedArray" instead of "SharedObject").
+  * Debian packaging:
+    - Added Homepage field pointing to bpp.sh.
+    - Standards-Version updated to 4.7.0.
+    - Removed explicit "Priority: optional" (now the default in dpkg).
+  * Build system:
+    - Compiler and flags are now overridable (`?=`) to ease cross-compilation
+      and use of non-GNU toolchains. Thanks to @Nizarjh for the patches.
+    - Cleaner fallback logic for obtaining version information when
+      dpkg-parsechangelog is unavailable.
+  * Test suite:
+    - The runner now explicitly checks for Perl-compatible regex support
+      in system grep before any tests are executed, failing with a clear
+      message when support is missing (related to #15).
+    - Test suite switched to angle-bracket includes and `-Istdlib/` to test
+      the local standard library, leveraging the new include-path ordering,
+      rather than relying on quoted includes with a long `../../` series,
+      as we did before.
+  * Code hygiene & modernization:
+    - Replaced manual linear searches with std::erase_if and
+      std::ranges::contains.
+    - Replaced legacy `const char*` arrays with constexpr
+      std::array<std::string_view> for type safety.
+    - Converted bpp.h enums to enum class; omitted unused parameter names in
+      listener handlers.
+    - Introduced a bpp_assert macro that compiles away with NDEBUG; replaced
+      explicit dynamic_pointer_cast + InternalError patterns with a template
+      helper that becomes a zero-cost static cast in release builds (note:
+      NDEBUG builds will not be shipped before v1.0.0).
+    - Renamed the entity "objects" map to "foreign_objects" to better convey
+      ownership intent.
+    - Copyright headers standardized with SPDX-License-Identifier and cleaned
+      up formatting; removed extraneous asterisks that leaked into Doxygen
+      documentation.
+    - Pass const reference in ErrorOrWarning::set_from_listener to avoid a
+      full copy; prevent overflow in BashVersion parsing; declare NullBuffer
+      constructors/destructor noexcept.
+    - Minor style improvements: std::ranges::reverse_view, emplace_back for
+      temporaries, removed unused includes.
+
+ -- rail5 <andrew@rail5.org>  Wed, 13 May 2026 16:59:59 +0800
+
 bpp (0.8.9) unstable; urgency=medium
 
   * Subshell code generation: Fixed critical bug where normal command
-    substitution subshells (`$(...)`) and cat‑replacement subshells
+    substitution subshells (`$(...)`) and cat-replacement subshells
     (`$(< file)`) incorrectly shared buffer placement logic.
-    - Cat‑replacement subshells now enforce perfect forwarding: pre‑code
-      and post‑code are placed strictly outside the substitution, and
+    - Cat-replacement subshells now enforce perfect forwarding: pre-code
+      and post-code are placed strictly outside the substitution, and
       local object destruction is deferred until after buffers are flushed.
-    - Normal subshells now correctly scope pre‑code, post‑code, and
+    - Normal subshells now correctly scope pre-code, post-code, and
       destructor calls *inside* the substitution, ensuring proper lifetime
       management and output capture.
-    - Added test cases for cat‑replacement and corrected expectations in
-      the local‑scope test.
-  * AST pretty‑printing: SubshellSubstitution nodes now display whether
-    they represent a cat‑replacement subshell, aiding debugging.
+    - Added test cases for cat-replacement and corrected expectations in
+      the local-scope test.
+  * AST pretty-printing: SubshellSubstitution nodes now display whether
+    they represent a cat-replacement subshell, aiding debugging.
   * Parser error recovery: The parser now attempts to recover from syntax
     errors and continue building the AST, allowing multiple parser errors to
     be reported in a single compilation pass rather than aborting on the
     first failure.
-  * bpp‑lsp improvements:
+  * bpp-lsp improvements:
     - Removed unused `--port` and `--socket` options; the language server
       now communicates exclusively over stdio.
     - Eliminated unnecessary signal handlers; the server simply exits on

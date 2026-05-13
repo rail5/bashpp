@@ -101,15 +101,19 @@ std::list<bpp::SymbolPosition> bpp_entity::get_references() const {
  * @param parent The parent entity to inherit from
  */
 void bpp_entity::inherit(std::shared_ptr<bpp_entity> parent) {
-	for (auto& c : parent->get_classes()) {
-		classes[c.first] = c.second;
-	}
-	for (auto& o : parent->get_foreign_objects()) {
-		foreign_objects[o.first] = o.second;
-	}
-	for (auto& o : parent->get_local_objects()) {
-		foreign_objects[o.first] = o.second;
-	}
+	const auto& parent_classes = parent->get_classes();
+	const auto& parent_foreign_objects = parent->get_foreign_objects();
+	const auto& parent_owned_objects = parent->get_local_objects();
+
+	classes.reserve(classes.size() + parent_classes.size());
+	foreign_objects.reserve(foreign_objects.size() + parent_foreign_objects.size() + parent_owned_objects.size());
+
+	std::copy(parent_classes.begin(), parent_classes.end(), std::inserter(classes, classes.end()));
+
+	// Note that we copy both foreign and owned objects into the 'objects' map of this entity.
+	// Objects owned by the parent entity are foreign to *this* entity
+	std::copy(parent_foreign_objects.begin(), parent_foreign_objects.end(), std::inserter(foreign_objects, foreign_objects.end()));
+	std::copy(parent_owned_objects.begin(), parent_owned_objects.end(), std::inserter(foreign_objects, foreign_objects.end()));
 }
 
 void bpp_entity::inherit(std::shared_ptr<bpp_program> program) {

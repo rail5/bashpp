@@ -116,7 +116,7 @@ CompletionList bpp::BashppServer::handleATCompletion(const CompletionParams& par
 			CompletionItem item;
 			item.label = cls.first;
 			item.kind = CompletionItemKind::Class;
-			item.detail = "@class " + cls.second->get_name(); // As in: @class ClassName
+			item.detail = "@class " + cls.first; // As in: @class ClassName
 			completion_list.items.push_back(item);
 		}
 	}

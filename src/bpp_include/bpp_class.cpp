@@ -142,11 +142,11 @@ bool bpp_class::add_datamember(std::shared_ptr<bpp_datamember> datamember) {
 	return true;
 }
 
-std::vector<std::shared_ptr<bpp_method>> bpp_class::get_methods() const {
+const std::vector<std::shared_ptr<bpp_method>>& bpp_class::get_methods() const {
 	return methods;
 }
 
-std::vector<std::shared_ptr<bpp_datamember>> bpp_class::get_datamembers() const {
+const std::vector<std::shared_ptr<bpp_datamember>>& bpp_class::get_datamembers() const {
 	return datamembers;
 }
 

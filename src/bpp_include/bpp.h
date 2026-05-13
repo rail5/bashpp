@@ -484,8 +484,8 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 		bool add_method(std::shared_ptr<bpp_method> method);
 		bool add_datamember(std::shared_ptr<bpp_datamember> datamember);
 
-		std::vector<std::shared_ptr<bpp_method>> get_methods() const;
-		std::vector<std::shared_ptr<bpp_datamember>> get_datamembers() const;
+		const std::vector<std::shared_ptr<bpp_method>>& get_methods() const;
+		const std::vector<std::shared_ptr<bpp_datamember>>& get_datamembers() const;
 
 		std::shared_ptr<bpp_method> get_method(const std::string& name, std::shared_ptr<bpp_entity> context);
 		std::shared_ptr<bpp_method> get_method_UNSAFE(const std::string& name);

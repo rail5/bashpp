@@ -21,8 +21,9 @@ GenericResponseMessage bpp::BashppServer::handleDefinition(const GenericRequestM
 		uri = validateUri(definition_request.params.textDocument.uri);
 	} catch (const std::exception& e) {
 		log("Invalid URI in definition request: ", e.what());
-		response.error.code = static_cast<int>(ErrorCodes::InvalidParams);
-		response.error.message = "Invalid URI: " + definition_request.params.textDocument.uri;
+		response.error = ResponseError{
+			static_cast<int>(ErrorCodes::InvalidParams),
+			"Invalid URI: " + definition_request.params.textDocument.uri, nullptr};
 		return response;
 	}
 
@@ -33,8 +34,9 @@ GenericResponseMessage bpp::BashppServer::handleDefinition(const GenericRequestM
 
 	if (program == nullptr) {
 		log("Program not found for URI: ", uri);
-		response.error.code = static_cast<int>(ErrorCodes::InternalError);
-		response.error.message = "Program not found for URI: " + uri;
+		response.error = ResponseError{
+			static_cast<int>(ErrorCodes::InternalError),
+			"Program not found for URI: " + uri, nullptr};
 		return response;
 	}
 

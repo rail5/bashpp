@@ -13,11 +13,6 @@
 /**
  * @struct ResponseError
  * @brief Represents an error response in the LSP.
- * This implementation is slightly off-spec -- the spec says that ResponseError
- * is an **optional** field in a ResponseMessage, but our implementation always
- * includes it, and makes the distinction that if the code is 0, there is no error.
- * We should definitely change this to be more exactly in-line with the spec, but
- * this has worked for us so far.
  * 
  */
 struct ResponseError {
@@ -58,7 +53,7 @@ struct RequestMessageBase : Message {
 
 struct ResponseMessageBase : Message {
 	std::variant<int, std::string, std::nullptr_t> id;
-	ResponseError error; // Error information if any
+	std::optional<ResponseError> error;
 };
 
 struct NotificationMessageBase : Message {
@@ -152,8 +147,8 @@ struct GenericResponseMessage : public ResponseMessageBase {
 	GenericResponseMessage(const ResponseMessage<ResultType>& msg) {
 		jsonrpc = msg.jsonrpc;
 		id = msg.id;
-		if (msg.error.code != 0) {
-			error = msg.error; // Store error if present
+		if (msg.error.has_value()) {
+			error = msg.error.value(); // Store error if present
 		} else {
 			nlohmann::json j;
 			nlohmann::adl_serializer<ResultType>::to_json(j, msg.result);
@@ -165,8 +160,8 @@ struct GenericResponseMessage : public ResponseMessageBase {
 		j = nlohmann::json::object();
 		j["jsonrpc"] = msg.jsonrpc;
 		j["id"] = msg.id;
-		if (msg.error.code != 0) {
-			j["error"] = msg.error; // Serialize error if present
+		if (msg.error.has_value()) {
+			j["error"] = msg.error.value(); // Serialize error if present
 		} else {
 			j["result"] = msg.result; // Serialize result as LSPAny
 		}
@@ -190,8 +185,8 @@ struct GenericResponseMessage : public ResponseMessageBase {
 		generic.jsonrpc = specific.jsonrpc;
 		generic.id = specific.id;
 
-		if (specific.error.code != 0) {
-			generic.error = specific.error; // Store error if present
+		if (specific.error.has_value()) {
+			generic.error = specific.error.value(); // Store error if present
 		} else {
 			generic.result = specific.result; // Store result as LSPAny
 		}
@@ -316,15 +311,14 @@ struct RequestMessage : public RequestMessageBase {
  */
 template<typename ResultType>
 struct ResponseMessage : public ResponseMessageBase {
-	ResponseError error;
 	ResultType result;
 
 	friend void to_json(nlohmann::json& j, const ResponseMessage<ResultType>& msg) {
 		j = nlohmann::json::object();
 		j["jsonrpc"] = msg.jsonrpc;
 		j["id"] = msg.id;
-		if (msg.error.code != 0) {
-			j["error"] = msg.error;
+		if (msg.error.has_value()) {
+			j["error"] = msg.error.value();
 		} else {
 			j["result"] = msg.result;
 		}
@@ -351,8 +345,8 @@ struct ResponseMessage : public ResponseMessageBase {
 		generic.jsonrpc = jsonrpc;
 		generic.id = id;
 
-		if (error.code != 0) {
-			generic.error = error; // Store error if present
+		if (error.has_value()) {
+			generic.error = error.value(); // Store error if present
 		} else {
 			nlohmann::json j;
 			nlohmann::adl_serializer<ResultType>::to_json(j, result);

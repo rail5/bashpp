@@ -20,8 +20,9 @@ GenericResponseMessage bpp::BashppServer::handleRename(const GenericRequestMessa
 		uri = validateUri(rename_request.params.textDocument.uri);
 	} catch (const std::exception& e) {
 		log("Invalid URI in Rename request: ", e.what());
-		response.error.code = static_cast<int>(ErrorCodes::InvalidParams);
-		response.error.message = "Invalid URI: " + rename_request.params.textDocument.uri;
+		response.error = ResponseError{
+			static_cast<int>(ErrorCodes::InvalidParams),
+			"Invalid URI: " + rename_request.params.textDocument.uri, nullptr};
 		return response;
 	}
 
@@ -43,8 +44,12 @@ GenericResponseMessage bpp::BashppServer::handleRename(const GenericRequestMessa
 	if (obj == nullptr && cls == nullptr && method == nullptr) {
 		log("No valid entity found to rename at position: (", rename_request.params.position.line, ", ", rename_request.params.position.character, ") in URI: ", uri);
 		// The spec says we should return an error here
-		response.error.code = static_cast<int>(ErrorCodes::InvalidParams);
-		response.error.message = "No entity found to rename";
+		response.error = ResponseError{
+			static_cast<int>(ErrorCodes::InvalidParams),
+			"No entity found to rename at position: ("
+				+ std::to_string(rename_request.params.position.line) + ", "
+				+ std::to_string(rename_request.params.position.character)
+				+ ") in URI: " + uri, nullptr};
 		response.result = nullptr;
 		return response;
 	}
@@ -60,12 +65,12 @@ GenericResponseMessage bpp::BashppServer::handleRename(const GenericRequestMessa
 	// Basic validation: Does the name satisfy the Bash++ naming rules?
 	if (!bpp::is_valid_identifier(new_name)) {
 		log("Invalid new name for entity: ", new_name);
-		response.error.code = static_cast<int>(ErrorCodes::InvalidParams);
+		response.error = ResponseError{
+			static_cast<int>(ErrorCodes::InvalidParams),
+			"Invalid new name: " + new_name, nullptr};
 
 		if (new_name.contains("__")) {
-			response.error.message = "Invalid new name: " + new_name + "\nBash++ identifiers cannot contain double underscores";
-		} else {
-			response.error.message = "Invalid new name: " + new_name;
+			response.error->message += "\nBash++ identifiers cannot contain double underscores";
 		}
 
 		response.result = nullptr;
@@ -85,8 +90,9 @@ GenericResponseMessage bpp::BashppServer::handleRename(const GenericRequestMessa
 
 	if (changes.empty()) {
 		log("No references found to rename for entity: ", entity->get_name());
-		response.error.code = static_cast<int>(ErrorCodes::InvalidParams);
-		response.error.message = "No references found to rename";
+		response.error = ResponseError{
+			static_cast<int>(ErrorCodes::InvalidParams),
+			"No references found to rename for entity: " + entity->get_name(), nullptr};
 		response.result = nullptr;
 		return response;
 	}

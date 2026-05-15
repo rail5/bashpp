@@ -20,8 +20,9 @@ GenericResponseMessage bpp::BashppServer::handleReferences(const GenericRequestM
 		uri = validateUri(reference_request.params.textDocument.uri);
 	} catch (const std::exception& e) {
 		log("Invalid URI in References request: ", e.what());
-		response.error.code = static_cast<int>(ErrorCodes::InvalidParams);
-		response.error.message = "Invalid URI: " + reference_request.params.textDocument.uri;
+		response.error = ResponseError{
+			static_cast<int>(ErrorCodes::InvalidParams),
+			"Invalid URI: " + reference_request.params.textDocument.uri, nullptr};
 		return response;
 	}
 

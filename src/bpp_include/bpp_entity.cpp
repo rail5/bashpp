@@ -6,21 +6,9 @@
 
 #include "bpp.h"
 
-namespace bpp {
+#include <error/InternalError.h>
 
-/**
- * @brief Add a class to this entity's list of classes
- * @param class_ The class to add
- * @return true if the class was added, false if the class already exists
- */
-bool bpp_entity::add_class(std::shared_ptr<bpp_class> class_) {
-	std::string name = class_->get_name();
-	if (classes.contains(name)) {
-		return false;
-	}
-	classes[name] = class_;
-	return true;
-}
+namespace bpp {
 
 /**
  * @brief Add an object to this entity's list of objects
@@ -29,9 +17,9 @@ bool bpp_entity::add_class(std::shared_ptr<bpp_class> class_) {
  */
 bool bpp_entity::add_object(std::shared_ptr<bpp_object> object, bool /* make_local */) {
 	std::string name = object->get_name();
-	if (local_objects.contains(name) || foreign_objects.contains(name)) return false;
+	if (this->get_object(name) != nullptr) return false; // Object already exists
 
-	local_objects[name] = object;
+	local_objects.add(object);
 	return true;
 }
 
@@ -95,25 +83,20 @@ std::list<bpp::SymbolPosition> bpp_entity::get_references() const {
 
 /**
  * @brief Inherit from a parent entity
- * 
- * This function copies all classes and objects from the parent entity into this entity.
- * 
+ *
  * @param parent The parent entity to inherit from
  */
 void bpp_entity::inherit(std::shared_ptr<bpp_entity> parent) {
-	const auto& parent_classes = parent->get_classes();
-	const auto& parent_foreign_objects = parent->get_foreign_objects();
-	const auto& parent_owned_objects = parent->get_local_objects();
+	if (containing_program.expired()) {
+		auto parent_program = parent->get_containing_program().lock();
+		containing_program = parent_program;
+	}
+	parent_entity = parent;
 
-	classes.reserve(classes.size() + parent_classes.size());
-	foreign_objects.reserve(foreign_objects.size() + parent_foreign_objects.size() + parent_owned_objects.size());
+	parent_visible_object_count_at_creation = parent->number_of_known_objects();
+	program_visible_class_count_at_creation = containing_program.lock()->number_of_known_classes();
 
-	std::copy(parent_classes.begin(), parent_classes.end(), std::inserter(classes, classes.end()));
-
-	// Note that we copy both foreign and owned objects into the 'objects' map of this entity.
-	// Objects owned by the parent entity are foreign to *this* entity
-	std::copy(parent_foreign_objects.begin(), parent_foreign_objects.end(), std::inserter(foreign_objects, foreign_objects.end()));
-	std::copy(parent_owned_objects.begin(), parent_owned_objects.end(), std::inserter(foreign_objects, foreign_objects.end()));
+	bpp_assert(!containing_program.expired(), std::string("Entity ") + this->get_name() + std::string(" does not have a containing program after inheritance"));
 }
 
 void bpp_entity::inherit(std::shared_ptr<bpp_program> program) {
@@ -130,37 +113,44 @@ void bpp_entity::inherit(std::shared_ptr<bpp_class> parent) {
 	inherit(std::static_pointer_cast<bpp_entity>(parent));
 }
 
-const std::unordered_map<std::string, std::weak_ptr<bpp_class>>& bpp_entity::get_classes() const {
-	return classes;
+std::shared_ptr<bpp::bpp_class> bpp_entity::get_class(const std::string& name, size_t /*max_visible_index*/) {
+	bpp_assert(!containing_program.expired(), std::string("Entity ") + this->get_name() + std::string(" does not have a containing program"));
+	return containing_program.lock()->get_class(name, program_visible_class_count_at_creation);
 }
 
-const std::unordered_map<std::string, std::weak_ptr<bpp_object>>& bpp_entity::get_foreign_objects() const {
-	return foreign_objects;
+std::shared_ptr<bpp::bpp_object> bpp_entity::get_object(const std::string& name, size_t max_visible_index) {
+	auto obj = local_objects.find(name, max_visible_index);
+	if (obj) return obj;
+
+	if (auto parent = parent_entity.lock()) {
+		return parent->get_object(name, parent_visible_object_count_at_creation);
+	}
+
+	return nullptr;
 }
 
-const std::unordered_map<std::string, std::shared_ptr<bpp_object>>& bpp_entity::get_local_objects() const {
+const bpp::OwnedEntityList<bpp::bpp_object>& bpp_entity::get_local_objects() const {
 	return local_objects;
 }
 
-std::shared_ptr<bpp::bpp_class> bpp_entity::get_class(const std::string& name) {
-	auto it = classes.find(name);
-	if (it != classes.end()) {
-		return it->second.lock();
-	}
-
-	return nullptr;
+const bpp::OwnedEntityList<bpp::bpp_class>& bpp_entity::get_classes() const {
+	return containing_program.lock()->get_classes();
 }
 
-std::shared_ptr<bpp::bpp_object> bpp_entity::get_object(const std::string& name) {
-	if (local_objects.contains(name)) {
-		return local_objects[name];
+std::vector<std::shared_ptr<bpp::bpp_object>> bpp_entity::get_all_known_objects() const {
+	std::vector<std::shared_ptr<bpp::bpp_object>> result;
+
+	// Get all from the parent entity
+	if (auto parent = parent_entity.lock()) {
+		auto parent_objects = parent->get_all_known_objects();
+		result.insert(result.end(), parent_objects.begin(), parent_objects.end());
 	}
 
-	if (foreign_objects.contains(name)) {
-		return foreign_objects[name].lock();
-	}
+	// Concatenate with this entity's owned objects
+	const auto& local_objs = local_objects.get_entities();
+	result.insert(result.end(), local_objs.begin(), local_objs.end());
 
-	return nullptr;
+	return result;
 }
 
 std::shared_ptr<bpp::bpp_class> bpp_entity::get_parent() const {
@@ -169,6 +159,18 @@ std::shared_ptr<bpp::bpp_class> bpp_entity::get_parent() const {
 	}
 
 	return nullptr;
+}
+
+size_t bpp_entity::number_of_known_objects() const {
+	size_t count = local_objects.size();
+	if (auto p = parent_entity.lock()) {
+		count += p->number_of_known_objects();
+	}
+	return count;
+}
+
+size_t bpp_entity::number_of_known_classes() const {
+	return containing_program.lock()->number_of_known_classes();
 }
 
 } // namespace bpp

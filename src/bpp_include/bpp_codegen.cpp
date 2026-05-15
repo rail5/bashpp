@@ -314,7 +314,7 @@ code_segment generate_code_for_new_method(
 
 	result.pre_code += "	eval \"" + maybe_local + new_address + "____vPointer=bpp__" + new_class->get_name() + "____vTable\"\n";
 
-	for (auto& dm : new_class->get_datamembers()) {
+	for (const auto& dm : new_class->get_datamembers()) {
 		result.pre_code += dm->get_pre_access_code() + "\n";
 		if (dm->get_class()->get_name() == "primitive") {
 			// Is it an array?
@@ -383,6 +383,7 @@ std::shared_ptr<bpp::bpp_method> generate_copy_method(
 	copy_method->set_name("__copy");
 	copy_method->set_scope(bpp_scope::SCOPE_PUBLIC);
 	copy_method->set_virtual(true);
+	copy_method->inherit(program);
 	copy_method->set_containing_class(containing_class);
 
 	// Add one parameter: the address to copy from
@@ -450,6 +451,7 @@ std::shared_ptr<bpp::bpp_method> generate_new_method(
 	new_method->set_name("__new");
 	new_method->set_scope(bpp_scope::SCOPE_PUBLIC);
 	new_method->set_overridable(true); // __new is overridable but not virtual
+	new_method->inherit(containing_class->get_containing_program().lock());
 	new_method->set_containing_class(containing_class);
 
 	new_method->add_code_to_previous_line(
@@ -478,6 +480,7 @@ std::shared_ptr<bpp::bpp_method> generate_delete_method(
 	delete_method->set_name("__delete");
 	delete_method->set_scope(bpp_scope::SCOPE_PUBLIC);
 	delete_method->set_virtual(true);
+	delete_method->inherit(containing_class->get_containing_program().lock());
 	delete_method->set_containing_class(containing_class);
 
 	for (auto& dm : containing_class->get_datamembers()) {

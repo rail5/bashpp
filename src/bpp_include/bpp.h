@@ -167,6 +167,37 @@ struct SymbolPosition {
 		: file(file), line(line), column(column) {}
 };
 
+template <class T>
+class OwnedEntityList {
+	private:
+		std::vector<std::shared_ptr<T>> entities;
+		std::unordered_map<std::string, size_t> name_to_index;
+	public:
+		bool add(std::shared_ptr<T> entity) {
+			const std::string& name = entity->get_name();
+			if (name_to_index.contains(name)) return false; // Entity with this name already exists
+			entities.push_back(entity);
+			name_to_index[name] = entities.size() - 1;
+			return true;
+		}
+
+		std::shared_ptr<T> find(const std::string& name, size_t max_visible_index = SIZE_MAX) {
+			auto it = name_to_index.find(name);
+			if (it == name_to_index.end()) return nullptr; // No entity with this name
+			size_t index = it->second;
+			if (index > max_visible_index) return nullptr; // Entity exists but is out of bounds
+			return entities[index];
+		}
+
+		size_t size() const {
+			return entities.size();
+		}
+
+		const std::vector<std::shared_ptr<T>>& get_entities() const {
+			return entities;
+		}
+};
+
 /**
  * @class bpp_entity
  * @brief The base class for all entities in the Bash++ compiler
@@ -177,38 +208,21 @@ struct SymbolPosition {
 class bpp_entity {
 	protected:
 		std::string name;
-		/**
-		 * @var classes
-		 * @brief A map of class names to class objects within this entity
-		 */
-		std::unordered_map<std::string, std::weak_ptr<bpp_class>> classes;
+		
+		OwnedEntityList<bpp_object> local_objects; // Objects owned by this entity
+		size_t parent_visible_object_count_at_creation = 0;
+		size_t program_visible_class_count_at_creation = 0;
 
-		/**
-		 * @var foreign_objects
-		 * @brief A map of objects that this entity knows about, but does not own
-		 * These are objects that are owned by parent entities, and are accessible from this entity due to inheritance
-		 *
-		 * The key is a std::string containing the name of the object,
-		 * The value is a weak_ptr to the object itself
-		 */
-		std::unordered_map<std::string, std::weak_ptr<bpp_object>> foreign_objects;
-
-		/**
-		 * @var local_objects
-		 * @brief A map of objects that this entity owns
-		 * These are objects that are instantiated within this entity, and are not accessible from parent entities,
-		 * but will be inherited by child entities
-		 *
-		 * The key is a std::string containing the name of the object,
-		 * The value is a shared_ptr to the object itself
-		 *
-		 * The type shared_ptr indicates that we *own* (manage the lifetime of) the object
-		 */
-		std::unordered_map<std::string, std::shared_ptr<bpp_object>> local_objects;
 		std::weak_ptr<bpp_class> type;
 		std::weak_ptr<bpp_class> containing_class;
 		std::weak_ptr<bpp_program> containing_program;
+
+		/// For classes: the list of parent classes, in order
 		std::vector<std::weak_ptr<bpp_class>> parents;
+
+		/// For all entities (except program), the parent entity from which this entity inherits
+		std::weak_ptr<bpp_entity> parent_entity;
+		
 		std::weak_ptr<bpp_method> overridden_method;
 		bpp::SymbolPosition initial_definition;
 		std::list<bpp::SymbolPosition> references;
@@ -221,7 +235,6 @@ class bpp_entity {
 		bpp_entity(bpp_entity&& other) noexcept = default;
 		bpp_entity& operator=(bpp_entity&& other) noexcept = default;
 
-		virtual bool add_class(std::shared_ptr<bpp_class> class_);
 		virtual bool add_object(std::shared_ptr<bpp_object> object, bool make_local = false);
 
 		virtual std::shared_ptr<bpp_class> get_class();
@@ -242,13 +255,18 @@ class bpp_entity {
 		bpp::SymbolPosition get_initial_definition() const;
 		std::list<bpp::SymbolPosition> get_references() const;
 
-		const std::unordered_map<std::string, std::weak_ptr<bpp_class>>& get_classes() const;
-		const std::unordered_map<std::string, std::weak_ptr<bpp_object>>& get_foreign_objects() const;
-		const std::unordered_map<std::string, std::shared_ptr<bpp_object>>& get_local_objects() const;
-		std::shared_ptr<bpp_class> get_class(const std::string& name);
-		std::shared_ptr<bpp_object> get_object(const std::string& name);
+		virtual std::shared_ptr<bpp_class> get_class(const std::string& name, size_t max_visible_index = SIZE_MAX);
+		std::shared_ptr<bpp_object> get_object(const std::string& name, size_t max_visible_index = SIZE_MAX);
+
+		virtual const OwnedEntityList<bpp_class>& get_classes() const;
+		virtual std::vector<std::shared_ptr<bpp_object>> get_all_known_objects() const;
+
+		const OwnedEntityList<bpp_object>& get_local_objects() const;
 
 		std::shared_ptr<bpp_class> get_parent() const;
+
+		size_t number_of_known_objects() const;
+		virtual size_t number_of_known_classes() const;
 };
 
 /**
@@ -570,7 +588,7 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 
 		// To ensure that the bpp_program **owns** its classes
 		// I.e., that those classes don't get destroyed before we're done with them
-		std::unordered_map<std::string, std::shared_ptr<bpp::bpp_class>> owned_classes;
+		OwnedEntityList<bpp_class> owned_classes;
 
 		// Source file -> AST
 		// Used for advanced analysis, e.g. LSP features
@@ -600,7 +618,12 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 		void set_output_stream(std::shared_ptr<std::ostream> output_stream);
 
 		bool prepare_class(std::shared_ptr<bpp_class> class_);
-		bool add_class(std::shared_ptr<bpp_class> class_) override;
+		bool add_class(std::shared_ptr<bpp_class> class_);
+
+		std::shared_ptr<bpp_class> get_class(const std::string& name, size_t max_visible_index = SIZE_MAX) override;
+
+		const OwnedEntityList<bpp_class>& get_classes() const override;
+		size_t number_of_known_classes() const override;
 
 		std::shared_ptr<bpp_class> get_primitive_class() const;
 

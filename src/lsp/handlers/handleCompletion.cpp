@@ -92,31 +92,25 @@ CompletionList bpp::BashppServer::handleATCompletion(const CompletionParams& par
 	if (active_entity == nullptr) {
 		log("BUG: No active entity found at position: (", position.line, ", ", position.character, ") in URI: ", uri, " - returning default completions.");
 	} else {
-		const auto& classes = active_entity->get_classes();
+		const auto& classes = active_entity->get_classes().get_entities();
 
 		// Collect objects both foreign to & owned by the active entity into a single 'objects' map
-		const auto& entity_foreign_objects = active_entity->get_foreign_objects();
-		const auto& entity_owned_objects = active_entity->get_local_objects();
-		std::unordered_map<std::string, std::weak_ptr<bpp::bpp_object>> objects;
-		objects.reserve(entity_foreign_objects.size() + entity_owned_objects.size());
-		std::copy(entity_foreign_objects.begin(), entity_foreign_objects.end(), std::inserter(objects, objects.end()));
-		std::copy(entity_owned_objects.begin(), entity_owned_objects.end(), std::inserter(objects, objects.end()));
+		const auto& objects = active_entity->get_all_known_objects();
 
 		for (const auto& obj : objects) {
-			auto obj_ptr = obj.second.lock();
-			if (obj_ptr == nullptr) continue; // Skip expired objects
+			if (obj == nullptr) continue; // Skip expired objects
 			CompletionItem item;
-			item.label = obj.first;
+			item.label = obj->get_name();
 			item.kind = CompletionItemKind::Variable;
-			item.detail = "@" + obj_ptr->get_class()->get_name() + " " + obj.first; // As in: @ClassName objectName
+			item.detail = "@" + obj->get_class()->get_name() + " " + obj->get_name(); // As in: @ClassName objectName
 			completion_list.items.push_back(item);
 		}
 
 		for (const auto& cls : classes) {
 			CompletionItem item;
-			item.label = cls.first;
+			item.label = cls->get_name();
 			item.kind = CompletionItemKind::Class;
-			item.detail = "@class " + cls.first; // As in: @class ClassName
+			item.detail = "@class " + cls->get_name(); // As in: @class ClassName
 			completion_list.items.push_back(item);
 		}
 	}

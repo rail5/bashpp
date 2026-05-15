@@ -14,7 +14,7 @@ namespace bpp {
 bpp_program::bpp_program() {
 	primitive_class = std::make_shared<bpp_class>();
 	primitive_class->set_name("primitive");
-	classes["primitive"] = primitive_class;
+	owned_classes.add(primitive_class);
 }
 
 bool bpp_program::set_containing_class(std::weak_ptr<bpp_class> /* containing_class */) {
@@ -33,6 +33,18 @@ std::weak_ptr<bpp::bpp_program> bpp_program::get_containing_program() {
 	return weak_from_this();
 }
 
+std::shared_ptr<bpp::bpp_class> bpp_program::get_class(const std::string& name, size_t max_visible_index) {
+	return owned_classes.find(name, max_visible_index);
+}
+
+const bpp::OwnedEntityList<bpp::bpp_class>& bpp_program::get_classes() const {
+	return owned_classes;
+}
+
+size_t bpp_program::number_of_known_classes() const {
+	return owned_classes.size();
+}
+
 /**
  * @brief Prepare a class for addition to the program by adding it to the classes map
  * 
@@ -45,11 +57,8 @@ std::weak_ptr<bpp::bpp_program> bpp_program::get_containing_program() {
  */
 bool bpp_program::prepare_class(std::shared_ptr<bpp_class> class_) {
 	std::string name = class_->get_name();
-	if (classes.contains(name)) {
-		return false; // Class already exists
-	}
-	classes[name] = class_;
-	owned_classes[name] = class_;
+	if (owned_classes.find(name) != nullptr) return false; // Class already exists
+	owned_classes.add(class_);
 	return true;
 }
 
@@ -62,9 +71,7 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	std::string name = class_->get_name();
 
 	// Verify that the class has been prepared
-	if (!classes.contains(name)) {
-		return false;
-	}
+	if (!owned_classes.find(name)) return false;
 
 	std::string class_code;
 

@@ -19,22 +19,18 @@ bool bpp_method::add_object_as_parameter(std::shared_ptr<bpp_object> object) {
 	std::string name = object->get_name();
 	
 	// Verify the object's name isn't already in use by another object
-	if (foreign_objects.contains(name) || local_objects.contains(name)) {
-		return false;
-	}
+	if (this->get_object(name) != nullptr) return false;
 
 	// Verify the object's name doesn't conflict with a class name
-	if (classes.contains(name)) {
-		return false;
-	}
+	if (this->get_class(name) != nullptr) return false;
 
 	// Verify that the type of the object is a valid class
 	std::string type = object->get_class()->get_name();
-	if (!classes.contains(type) && type != this->containing_class.lock()->get_name()) {
+	if (!this->get_class(type) && type != this->get_containing_class().lock()->get_name()) {
 		return false;
 	}
 	object->set_pointer(true);
-	local_objects[name] = object;
+	local_objects.add(object);
 
 	return true;
 }
@@ -126,17 +122,16 @@ std::string bpp_method::get_last_override() const {
 
 bool bpp_method::add_object(std::shared_ptr<bpp_object> object, bool make_local) {
 	std::string name = object->get_name();
-	if (foreign_objects.contains(name) || local_objects.contains(name)) {
-		return false;
-	}
+	if (this->get_object(name) != nullptr) return false;
+	if (this->get_class(name) != nullptr) return false;
 
 	// Verify that the type of the object is a valid class
 	std::string type = object->get_class()->get_name();
-	if (!classes.contains(type)) {
+	if (!this->get_class(type) && type != this->get_containing_class().lock()->get_name()) {
 		return false;
 	}
 
-	local_objects[name] = object;
+	local_objects.add(object);
 
 	// Add the code for the object
 	std::string object_code;

@@ -35,8 +35,10 @@ GenericResponseMessage bpp::BashppServer::handleInitialize(const GenericRequestM
 	// Advertise that we support references requests
 	result.capabilities.referencesProvider = true;
 
+	// Advertise that we support DocumentSymbol requests
+	result.capabilities.documentSymbolProvider = true;
+
 	// Planned but not yet implemented:
-	//result.capabilities.documentSymbolProvider = true;
 	//result.capabilities.workspaceSymbolProvider = true;
 
 	// If the client advertises that it supports UTF-8 position data, respond to let it know that's what we'll be sending

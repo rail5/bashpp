@@ -129,7 +129,7 @@ void bpp::BashppServer::setTargetBashVersion(const BashVersion& version) {
 }
 
 void bpp::BashppServer::cleanup() {
-	if (shutting_down.exchange(true)) return; // Already shutting down
+	if (exiting.exchange(true)) return; // Already exiting
 
 	if (output_stream) output_stream->flush();
 
@@ -159,7 +159,7 @@ void bpp::BashppServer::mainLoop() {
 	}
 
 	std::streambuf* buffer = input_stream->rdbuf();
-	while (true) {
+	while (!exiting) {
 		std::string header;
 		try {
 			header = readHeaderLine(buffer);
@@ -201,6 +201,7 @@ void bpp::BashppServer::mainLoop() {
 			}
 		});
 	}
+	log("Main loop exiting.");
 }
 
 GenericResponseMessage bpp::BashppServer::invalidRequestHandler(const GenericRequestMessage& request) {
@@ -286,16 +287,21 @@ void bpp::BashppServer::processMessage(const std::string& message) {
 	// Requests are required to have IDs, notifications are required to not have IDs
 	if (json_message.contains("id")) {
 		request = json_message.get<GenericRequestMessage>();
+		if (shutdown_requested) {
+			// LSP spec says we should send an InvalidRequest error for any request received after shutdown is requested
+			GenericResponseMessage response;
+			response.id = request.id;
+			response.error = ResponseError{
+				static_cast<int>(ErrorCodes::InvalidRequest),
+				"Server is shutting down and cannot process new requests.", nullptr};
+			sendResponse(response);
+			log("Received request after shutdown requested, sent error response.");
+			return;
+		}
 		processRequest(request);
 	} else {
 		notification = json_message.get<GenericNotificationMessage>();
 		processNotification(notification);
-	}
-
-	if (request.method == "shutdown") {
-		log("Received shutdown request, cleaning up and exiting.");
-		cleanup();
-		_exit(0);
 	}
 }
 
@@ -304,7 +310,19 @@ GenericResponseMessage bpp::BashppServer::shutdown(const GenericRequestMessage& 
 	response.id = request.id;
 	response.result = nullptr; // No result for shutdown
 	log("Received shutdown request, preparing to shut down the server.");
+	shutdown_requested = true;
 	return response;
+}
+
+void bpp::BashppServer::exit(const GenericNotificationMessage& /*notification*/) {
+	log("Received exit notification, exiting the server.");
+	cleanup();
+
+	if (!shutdown_requested) {
+		// LSP spec says that if we receive an exit notification without a shutdown request,
+		// that we should exit with error code 1
+		_exit(1);
+	}
 }
 
 void bpp::BashppServer::publishDiagnostics(std::shared_ptr<bpp::bpp_program> program) {

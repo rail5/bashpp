@@ -57,7 +57,8 @@ void printValue(std::ostream& os, const std::variant<Ts...>& v) {
 class BashppServer {
 	private:
 		pid_t pid = getpid();
-		std::atomic<bool> shutting_down = false;
+		std::atomic<bool> exiting = false;
+		std::atomic<bool> shutdown_requested = false;
 		// Resources
 		std::istream* input_stream = &std::cin;  // Held as std::stream* for future extensions beyond stdio
 		std::ostream* output_stream = &std::cout;
@@ -134,6 +135,7 @@ class BashppServer {
 		void setTargetBashVersion(const BashVersion& version);
 
 		GenericResponseMessage shutdown(const GenericRequestMessage& request);
+		void exit(const GenericNotificationMessage& notification);
 		void cleanup();
 
 		void processMessage(const std::string& message);
@@ -202,11 +204,12 @@ class BashppServer {
 		 * @brief Maps notification types to the functions that handle them.
 		 * 
 		 */
-		static constexpr frozen::unordered_map<frozen::string, NotificationHandler, 4> notification_handlers = {
+		static constexpr frozen::unordered_map<frozen::string, NotificationHandler, 5> notification_handlers = {
 			{"textDocument/didOpen", &BashppServer::handleDidOpen},
 			{"textDocument/didChange", &BashppServer::handleDidChange},
 			{"workspace/didChangeWatchedFiles", &BashppServer::handleDidChangeWatchedFiles},
-			{"textDocument/didClose", &BashppServer::handleDidClose}
+			{"textDocument/didClose", &BashppServer::handleDidClose},
+			{"exit", &BashppServer::exit}
 		};
 };
 

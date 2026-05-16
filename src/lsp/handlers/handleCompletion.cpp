@@ -92,13 +92,13 @@ CompletionList bpp::BashppServer::handleATCompletion(const CompletionParams& par
 	if (active_entity == nullptr) {
 		log("BUG: No active entity found at position: (", position.line, ", ", position.character, ") in URI: ", uri, " - returning default completions.");
 	} else {
-		const auto& classes = active_entity->get_classes().get_entities();
+		const auto& classes = active_entity->get_all_known_classes();
 
 		// Collect objects both foreign to & owned by the active entity into a single 'objects' map
 		const auto& objects = active_entity->get_all_known_objects();
 
 		for (const auto& obj : objects) {
-			if (obj == nullptr) continue; // Skip expired objects
+			if (obj == nullptr) continue;
 			CompletionItem item;
 			item.label = obj->get_name();
 			item.kind = CompletionItemKind::Variable;
@@ -107,6 +107,8 @@ CompletionList bpp::BashppServer::handleATCompletion(const CompletionParams& par
 		}
 
 		for (const auto& cls : classes) {
+			if (cls == nullptr) continue;
+			if (cls->get_name() == "primitive") continue; // The primitive class is an implementation detail that we don't want to expose in the language server
 			CompletionItem item;
 			item.label = cls->get_name();
 			item.kind = CompletionItemKind::Class;

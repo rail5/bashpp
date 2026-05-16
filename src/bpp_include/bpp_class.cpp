@@ -260,7 +260,7 @@ std::shared_ptr<bpp::bpp_datamember> bpp_class::get_datamember_UNSAFE(const std:
 void bpp_class::inherit(std::shared_ptr<bpp_class> parent) {
 	// Inherit methods
 	methods.reserve(methods.size() + parent->get_methods().size());
-	for (auto& m : parent->get_methods()) {
+	for (const auto& m : parent->get_methods()) {
 		if (m->get_name() == "toPrimitive") continue; // Skip toPrimitive, we handle it separately
 		if (m->get_scope() == bpp_scope::SCOPE_PRIVATE) {
 			m->set_scope(bpp_scope::SCOPE_INACCESSIBLE);
@@ -271,7 +271,7 @@ void bpp_class::inherit(std::shared_ptr<bpp_class> parent) {
 
 	// Inherit datamembers
 	datamembers.reserve(datamembers.size() + parent->get_datamembers().size());
-	for (auto& d : parent->get_datamembers()) {
+	for (const auto& d : parent->get_datamembers()) {
 		datamembers.push_back(d);
 		// If the datamember is marked private, mark it as inaccessible
 		if (d->get_scope() == bpp_scope::SCOPE_PRIVATE) {
@@ -294,6 +294,16 @@ std::shared_ptr<bpp::bpp_class> bpp_class::get_parent() {
 		return nullptr;
 	}
 	return parents.back().lock();
+}
+
+std::vector<std::shared_ptr<bpp_class>> bpp_class::get_all_known_classes() const {
+	auto result = bpp_entity::get_all_known_classes();
+	// Append this class itself to the end of the list
+	// Hacky fix to make sure the language server suggests, e.g., @Object* from within @class Object { ... }
+	// It introduces 1) a special-case and 2) a const_cast. This raises many red flags.
+	// TODO(@rail5): Reconsider this
+	result.push_back(std::const_pointer_cast<bpp_class>(shared_from_this()));
+	return result;
 }
 
 } // namespace bpp

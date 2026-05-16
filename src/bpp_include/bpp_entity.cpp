@@ -105,11 +105,6 @@ void bpp_entity::inherit(std::shared_ptr<bpp_program> program) {
 }
 
 void bpp_entity::inherit(std::shared_ptr<bpp_class> parent) {
-	// If we have no `containing_program`, inherit it from the parent class
-	if (containing_program.expired()) {
-		auto parent_program = parent->get_containing_program().lock();
-		containing_program = parent_program;
-	}
 	inherit(std::static_pointer_cast<bpp_entity>(parent));
 }
 
@@ -133,8 +128,14 @@ const bpp::OwnedEntityList<bpp::bpp_object>& bpp_entity::get_local_objects() con
 	return local_objects;
 }
 
-const bpp::OwnedEntityList<bpp::bpp_class>& bpp_entity::get_classes() const {
-	return containing_program.lock()->get_classes();
+std::vector<std::shared_ptr<bpp_class>> bpp_entity::get_all_known_classes() const {
+	auto all_classes = containing_program.lock()->get_all_known_classes();
+
+	if (program_visible_class_count_at_creation < all_classes.size()) {
+		return {all_classes.begin(), all_classes.begin() + program_visible_class_count_at_creation};
+	}
+
+	return all_classes;
 }
 
 std::vector<std::shared_ptr<bpp::bpp_object>> bpp_entity::get_all_known_objects() const {

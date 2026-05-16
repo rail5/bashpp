@@ -258,7 +258,7 @@ class bpp_entity {
 		virtual std::shared_ptr<bpp_class> get_class(const std::string& name, size_t max_visible_index = SIZE_MAX);
 		std::shared_ptr<bpp_object> get_object(const std::string& name, size_t max_visible_index = SIZE_MAX);
 
-		virtual const OwnedEntityList<bpp_class>& get_classes() const;
+		virtual std::vector<std::shared_ptr<bpp_class>> get_all_known_classes() const;
 		virtual std::vector<std::shared_ptr<bpp_object>> get_all_known_objects() const;
 
 		const OwnedEntityList<bpp_object>& get_local_objects() const;
@@ -513,6 +513,8 @@ class bpp_class : public bpp_entity, public std::enable_shared_from_this<bpp_cla
 		using bpp_entity::inherit;
 		void inherit(std::shared_ptr<bpp_class> parent) override;
 		std::shared_ptr<bpp::bpp_class> get_parent();
+
+		std::vector<std::shared_ptr<bpp_class>> get_all_known_classes() const override;
 };
 
 /**
@@ -622,7 +624,7 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 
 		std::shared_ptr<bpp_class> get_class(const std::string& name, size_t max_visible_index = SIZE_MAX) override;
 
-		const OwnedEntityList<bpp_class>& get_classes() const override;
+		std::vector<std::shared_ptr<bpp_class>> get_all_known_classes() const override;
 		size_t number_of_known_classes() const override;
 
 		std::shared_ptr<bpp_class> get_primitive_class() const;

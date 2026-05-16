@@ -37,8 +37,8 @@ std::shared_ptr<bpp::bpp_class> bpp_program::get_class(const std::string& name, 
 	return owned_classes.find(name, max_visible_index);
 }
 
-const bpp::OwnedEntityList<bpp::bpp_class>& bpp_program::get_classes() const {
-	return owned_classes;
+std::vector<std::shared_ptr<bpp_class>> bpp_program::get_all_known_classes() const {
+	return owned_classes.get_entities();
 }
 
 size_t bpp_program::number_of_known_classes() const {

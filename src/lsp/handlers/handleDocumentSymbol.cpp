@@ -38,7 +38,6 @@ GenericResponseMessage bpp::BashppServer::handleDocumentSymbol(const GenericRequ
 	for (const auto& cls : classes) {
 		if (cls == nullptr) continue;
 		if (cls->get_initial_definition().file != uri) continue;
-		if (cls->get_name() == "primitive") continue; // The primitive class is an implementation detail that we don't want to expose in the language server
 
 		DocumentSymbol symbol;
 		symbol.name = cls->get_name();

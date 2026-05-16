@@ -63,7 +63,7 @@ void BashppListener::enterMethodDefinition(std::shared_ptr<AST::MethodDefinition
 	for (const auto& p : node->PARAMETERS()) {
 		const auto& param = p.getValue();
 		std::string param_name = param.name.getValue();
-		std::shared_ptr<bpp::bpp_class> type = program->get_primitive_class();
+		std::shared_ptr<bpp::bpp_class> type = nullptr; // nullptr indicates a primitive type
 		if (param.type.has_value()) {
 			// Non-primitive type
 			std::string type_name = param.type.value();
@@ -109,11 +109,11 @@ void BashppListener::enterMethodDefinition(std::shared_ptr<AST::MethodDefinition
 		);
 
 		if (!method->add_parameter(parameter)) {
-			if (parameter->get_class() != program->get_primitive_class() && method->get_object(param_name) != nullptr) {
+			if (parameter->get_class() != nullptr && method->get_object(param_name) != nullptr) {
 				throw bpp::ErrorHandling::SyntaxError(this, param.name, "Parameter name conflicts with existing object: " + param_name);
 			}
-			
-			if (parameter->get_class() != program->get_primitive_class() && method->get_class(param_name) != nullptr) {
+
+			if (parameter->get_class() != nullptr && method->get_class(param_name) != nullptr) {
 				throw bpp::ErrorHandling::SyntaxError(this, param.name, "Parameter name conflicts with existing class: " + param_name);
 			}
 

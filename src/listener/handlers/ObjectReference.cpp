@@ -112,7 +112,7 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 	if (method != nullptr) {
 		reference_type = bpp::reference_type::ref_method;
 	} else if (datamember != nullptr) {
-		reference_type = (datamember->get_class() == program->get_primitive_class())
+		reference_type = (datamember->get_class() == nullptr)
 			? bpp::reference_type::ref_primitive
 			: bpp::reference_type::ref_object;
 	} else if (object != nullptr) {

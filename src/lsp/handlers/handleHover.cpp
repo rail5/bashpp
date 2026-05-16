@@ -70,7 +70,7 @@ GenericResponseMessage bpp::BashppServer::handleHover(const GenericRequestMessag
 	if (datamember) {
 		hover_text = "";
 		// If it's a data member, display [@ClassName[*]] @ContainingClass.dataMemberName
-		if (datamember->get_class() != program->get_primitive_class()) {
+		if (datamember->get_class() != nullptr) {
 			hover_text = "@" + datamember->get_class()->get_name();
 			if (datamember->is_pointer()) {
 				hover_text += "*";
@@ -121,7 +121,7 @@ GenericResponseMessage bpp::BashppServer::handleHover(const GenericRequestMessag
 		}
 		hover_text += "." + method->get_name();
 		for (const auto& param : method->get_parameters()) {
-			if (param->get_class() == program->get_primitive_class()) {
+			if (param->get_class() == nullptr) {
 				hover_text += " $" + param->get_name();
 			} else {
 				hover_text += " @" + param->get_class()->get_name() + "* " + param->get_name();

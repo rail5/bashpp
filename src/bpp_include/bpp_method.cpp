@@ -50,7 +50,7 @@ bool bpp_method::add_parameter(std::shared_ptr<bpp_method_parameter> parameter) 
 		}
 	}
 
-	if (parameter->get_class()->get_name() != "primitive") {
+	if (parameter->get_class() != nullptr) {
 		// Instantiate a temporary object for the parameter
 		std::shared_ptr<bpp_object> object = std::make_shared<bpp_object>();
 		object->set_class(parameter->get_class());

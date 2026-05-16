@@ -108,7 +108,6 @@ CompletionList bpp::BashppServer::handleATCompletion(const CompletionParams& par
 
 		for (const auto& cls : classes) {
 			if (cls == nullptr) continue;
-			if (cls->get_name() == "primitive") continue; // The primitive class is an implementation detail that we don't want to expose in the language server
 			CompletionItem item;
 			item.label = cls->get_name();
 			item.kind = CompletionItemKind::Class;
@@ -154,7 +153,7 @@ CompletionList bpp::BashppServer::handleDOTCompletion(const CompletionParams& pa
 	std::vector<std::shared_ptr<bpp::bpp_datamember>> data_members;
 	std::string entity_name;
 
-	if (obj != nullptr && obj->get_class() != program->get_primitive_class()) {
+	if (obj != nullptr && obj->get_class() != nullptr) {
 		methods = obj->get_class()->get_methods();
 		data_members = obj->get_class()->get_datamembers();
 		entity_name = obj->get_name();
@@ -197,7 +196,7 @@ CompletionList bpp::BashppServer::handleDOTCompletion(const CompletionParams& pa
 		detail += "@method " + method->get_name();
 
 		for (const auto& param : method->get_parameters()) {
-			if (param->get_class() == program->get_primitive_class()) {
+			if (param->get_class() == nullptr) {
 				detail += " $" + param->get_name();
 			} else {
 				detail += " @" + param->get_class()->get_name() + "* " + param->get_name();
@@ -218,7 +217,7 @@ CompletionList bpp::BashppServer::handleDOTCompletion(const CompletionParams& pa
 		std::string detail = "@" + entity_name + "." + data_member->get_name();
 		detail += " (";
 
-		if (data_member->get_class() == program->get_primitive_class()) {
+		if (data_member->get_class() == nullptr) {
 			detail += "primitive";
 			if (data_member->is_array()) {
 				detail += " array";

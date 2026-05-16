@@ -112,10 +112,10 @@ static const char bpp_nullptr[] = "0";
  * @var protected_keywords
  * @brief A list of keywords that are reserved and cannot be used as identifiers in Bash++
  */
-inline constexpr std::array<std::string_view, 19> protected_keywords = {
+inline constexpr std::array<std::string_view, 18> protected_keywords = {
 	"class", "constructor", "delete", "destructor",
-	"dynamic_cast", "include", "include_once", "local", "method",
-	"new", "nullptr", "primitive", "private",
+	"dynamic_cast", "include", "include_once", "local",
+	"method", "new", "nullptr","private",
 	"protected", "public", "super", "this",
 	"typeof", "virtual"
 };
@@ -576,7 +576,6 @@ class bpp_datamember : public bpp_object {
  */
 class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<bpp_program> {
 	private:
-		std::shared_ptr<bpp_class> primitive_class;
 		uint64_t supershell_counter = 0;
 		uint64_t assignment_counter = 0;
 		uint64_t function_counter = 0;
@@ -608,7 +607,7 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 		// For debug info:
 		std::shared_ptr<std::vector<std::string>> include_paths;
 	public:
-		bpp_program();
+		bpp_program() = default;
 		~bpp_program() override = default;
 
 		bpp_program(const bpp_program& other) = default;
@@ -626,8 +625,6 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 
 		std::vector<std::shared_ptr<bpp_class>> get_all_known_classes() const override;
 		size_t number_of_known_classes() const override;
-
-		std::shared_ptr<bpp_class> get_primitive_class() const;
 
 		std::weak_ptr<bpp_program> get_containing_program() override;
 

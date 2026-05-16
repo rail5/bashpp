@@ -316,7 +316,8 @@ code_segment generate_code_for_new_method(
 
 	for (const auto& dm : new_class->get_datamembers()) {
 		result.pre_code += dm->get_pre_access_code() + "\n";
-		if (dm->get_class()->get_name() == "primitive") {
+		if (dm->get_class() == nullptr) {
+			// class == nullptr indicates a primitive
 			// Is it an array?
 			if (dm->is_array()) {
 				result.pre_code += "	eval \"" + maybe_local + new_address + "__" + dm->get_name() + "=" + dm->get_default_value() + "\"\n";
@@ -416,9 +417,9 @@ std::shared_ptr<bpp::bpp_method> generate_copy_method(
 
 	// Add the copy code for each data member
 	// WARNING: VERY FRAGILE. Also code duplication
-	for (auto& dm : containing_class->get_datamembers()) {
+	for (const auto& dm : containing_class->get_datamembers()) {
 		copy_code += dm->get_pre_access_code() + "\n";
-		if (dm->get_class()->get_name() == "primitive" || dm->is_pointer()) {
+		if (dm->get_class() == nullptr || dm->is_pointer()) {
 			copy_code += "	local __" + param_name + "__" + dm->get_name()
 				+ "=\"${" + param_name + "}__" + dm->get_name() + "\"\n";
 
@@ -483,9 +484,9 @@ std::shared_ptr<bpp::bpp_method> generate_delete_method(
 	delete_method->inherit(containing_class->get_containing_program().lock());
 	delete_method->set_containing_class(containing_class);
 
-	for (auto& dm : containing_class->get_datamembers()) {
+	for (const auto& dm : containing_class->get_datamembers()) {
 		delete_method->add_code(dm->get_pre_access_code() + "\n");
-		if (dm->get_class()->get_name() == "primitive" || dm->is_pointer()) {
+		if (dm->get_class() == nullptr || dm->is_pointer()) {
 			delete_method->add_code("unset \"${__this}__" + dm->get_name() + "\"\n");
 		} else {
 			code_segment inner_delete_code = generate_delete_code(
@@ -747,7 +748,7 @@ entity_reference resolve_reference_impl(
 				);
 			}
 		} else if (datamember != nullptr) {
-			last_reference_type = (datamember->get_class() == program->get_primitive_class())
+			last_reference_type = (datamember->get_class() == nullptr)
 					? bpp::reference_type::ref_primitive
 					: bpp::reference_type::ref_object;
 			result.entity = datamember;

@@ -11,22 +11,12 @@
 
 namespace bpp {
 
-bpp_program::bpp_program() {
-	primitive_class = std::make_shared<bpp_class>();
-	primitive_class->set_name("primitive");
-	owned_classes.add(primitive_class);
-}
-
 bool bpp_program::set_containing_class(std::weak_ptr<bpp_class> /* containing_class */) {
 	return false;
 }
 
 void bpp_program::set_output_stream(std::shared_ptr<std::ostream> output_stream) {
 	code = std::move(output_stream);
-}
-
-std::shared_ptr<bpp::bpp_class> bpp_program::get_primitive_class() const {
-	return primitive_class;
 }
 
 std::weak_ptr<bpp::bpp_program> bpp_program::get_containing_program() {

@@ -9,8 +9,6 @@
 #include <lsp/include/validateUri.h>
 
 GenericResponseMessage bpp::BashppServer::handleDocumentSymbol(const GenericRequestMessage& request) {
-	// Placeholder for actual implementation
-
 	DocumentSymbolRequestResponse response;
 	response.id = request.id;
 	DocumentSymbolRequest document_symbol_request = request.toSpecific<DocumentSymbolParams>();

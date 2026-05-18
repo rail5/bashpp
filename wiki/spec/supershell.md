@@ -18,7 +18,7 @@ Supershell - Capture the output of a command while allowing it to modify the env
 
 A supershell is used to capture the output of a command (or sequence of commands) while also allowing those commands to modify the environment of the current shell.
 
-The output of the supershell is the output of the command sequence. The commands in the supershell are executed in the same environment as the surrounding code, so any changes made to the environment (such as setting variables or changing directories) will affect the current shell. Their output however is redirected to the output of the supershell rather than the terminal.
+The supershell is expanded to the output of the command sequence. The commands in the supershell are executed in the same environment as the surrounding code, so any changes made to the environment (such as setting variables or changing directories) will affect the current shell. Their output however is redirected to the result of the supershell rather than the terminal.
 
 # EXAMPLE
 

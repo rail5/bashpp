@@ -1,0 +1,3 @@
+echo @typeof @ptr # Passes the result as an argument to 'echo'
+var=@typeof @ptr  # This assigns the result to a variable
+@typeof @ptr      # Watch out! This attempts to run the result as a command; you'll probably see "command not found."

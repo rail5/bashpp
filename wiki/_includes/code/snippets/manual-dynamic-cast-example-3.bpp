@@ -1,0 +1,3 @@
+echo @dynamic_cast<Object> @ptr # Passes the result as an argument to 'echo'
+var=@dynamic_cast<Object> @ptr  # This assigns the result to a variable
+@dynamic_cast<Object> @ptr      # Watch out! This attempts to run the result as a command; you'll probably see "command not found."

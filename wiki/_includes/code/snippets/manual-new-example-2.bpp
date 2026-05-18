@@ -1,0 +1,3 @@
+echo @new Object          # Passes the address of the new object as an argument to 'echo'
+@Object* obj=@new Object  # This assigns the address of the new object to a pointer
+@new Object               # Watch out! This attempts to run the address of the new object as a command; you'll probably see "command not found."

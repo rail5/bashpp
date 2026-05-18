@@ -18,9 +18,9 @@ description: "Safely cast an object to a different type at runtime"
 
 # DESCRIPTION
 
-The `@dynamic_cast` directive is used to safely cast an object to a different type at runtime. At runtime, the directive itself will be replaced with the *output* described below.
+The `@dynamic_cast` operator is used to safely cast an object to a different type at runtime. The directive is expanded to the *result* described below:
 
-The **output** of the `@dynamic_cast` directive will be either:
+The **result** of the `@dynamic_cast` directive will be either:
 
  - **An exact copy of INPUT** if the input is a valid pointer to an object which can be safely cast to the specified type.
  - `@nullptr` otherwise.
@@ -55,7 +55,19 @@ However, we can also give a shell variable or an object reference as the target 
 
 # NOTES
 
+## EXPANSION
+
+The `@dynamic_cast` directive expands to the result described above. This result is then interpreted according to the shell context in which the directive is used. For example, if the directive is used in a context where a command is expected, the result will be treated as a command. If it is used in a context where an argument is expected, the result will be treated as an argument.
+
+<div class="highlight"><pre class="highlight"><code>
+{%- include code/snippets/manual-dynamic-cast-example-3.html -%}
+</code></pre></div>
+
+## INPUT
+
 The *input* to the `@dynamic_cast` directive is that which is being casted. It is typically a pointer to an object, but it may be any rvalue at all, including a call to a method, a simple string, a supershell/subshell, etc. Of course, in most cases, the input should be a pointer to an object.
+
+## USAGE
 
 The `@dynamic_cast` directive is most useful when the type of the object is not known at compile time, or when the object may be of a different type than expected.
 

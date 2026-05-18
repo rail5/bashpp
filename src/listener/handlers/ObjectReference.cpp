@@ -6,6 +6,16 @@
 
 #include <listener/BashppListener.h>
 
+#include <bpp_include/bpp_object_reference.h>
+#include <bpp_include/bpp_code_entity.h>
+#include <bpp_include/bpp_class.h>
+#include <bpp_include/bpp_datamember.h>
+#include <bpp_include/bpp_method.h>
+#include <bpp_include/bpp_dynamic_cast_statement.h>
+#include <bpp_include/bpp_object_assignment.h>
+#include <bpp_include/bpp_value_assignment.h>
+#include <bpp_include/bpp_delete_statement.h>
+
 void BashppListener::enterObjectReference(std::shared_ptr<AST::ObjectReference> node) {
 	/**
 	 * Object references take the form

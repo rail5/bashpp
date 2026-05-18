@@ -6,6 +6,10 @@
 
 #include <listener/BashppListener.h>
 
+#include <bpp_include/bpp_code_entity.h>
+#include <bpp_include/bpp_class.h>
+#include <bpp_include/bpp_program.h>
+
 void BashppListener::enterNewStatement(std::shared_ptr<AST::NewStatement> node) {
 	/**
 	 * New statements take the form

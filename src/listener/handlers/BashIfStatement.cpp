@@ -14,6 +14,9 @@
 
 #include <listener/BashppListener.h>
 
+#include <bpp_include/bash_if.h>
+#include <bpp_include/bpp_program.h>
+
 void BashppListener::enterBashIfStatement(std::shared_ptr<AST::BashIfStatement> node) {
 	/**
 	 * Bash if statement take the form

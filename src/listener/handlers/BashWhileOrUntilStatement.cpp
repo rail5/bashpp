@@ -12,7 +12,9 @@
 */
 
 #include <listener/BashppListener.h>
-#include <memory>
+
+#include <bpp_include/bash_while_or_until_loop.h>
+#include <bpp_include/bpp_program.h>
 
 void BashppListener::enterBashWhileStatement(std::shared_ptr<AST::BashWhileStatement> node) {
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());

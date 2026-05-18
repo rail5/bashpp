@@ -6,6 +6,11 @@
 
 #include <listener/BashppListener.h>
 
+#include <bpp_include/bpp_string.h>
+#include <bpp_include/bpp_code_entity.h>
+#include <bpp_include/bpp_object_assignment.h>
+#include <bpp_include/bpp_program.h>
+
 void BashppListener::enterSupershell(std::shared_ptr<AST::Supershell> node) {
 	/**
 	 * Supershells take the form

@@ -18,6 +18,8 @@
 
 #include <utf8cpp/utf8.h>
 
+#include <bpp_include/bpp_program.h>
+
 namespace bpp::ErrorHandling {
 
 void print_syntax_error_or_warning(

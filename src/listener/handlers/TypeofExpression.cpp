@@ -6,6 +6,8 @@
 
 #include <listener/BashppListener.h>
 
+#include <bpp_include/bpp_string.h>
+
 void BashppListener::enterTypeofExpression(std::shared_ptr<AST::TypeofExpression> node) {
 	/**
 	 * The typeof statement is used to determine the type of a value at runtime.

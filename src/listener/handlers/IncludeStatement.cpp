@@ -11,6 +11,9 @@
 
 #include <include/NullStream.h>
 
+#include <bpp_include/bpp_code_entity.h>
+#include <bpp_include/bpp_program.h>
+
 /**
  * @brief Handles @include and @include_once statements
  * 

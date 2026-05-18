@@ -13,6 +13,9 @@
 
 #include <listener/BashppListener.h>
 
+#include <bpp_include/bash_case.h>
+#include <bpp_include/bpp_program.h>
+
 void BashppListener::enterBashCaseStatement(std::shared_ptr<AST::BashCaseStatement> node) {
 	/**
 	 * Bash case statements take the form

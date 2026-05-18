@@ -10,6 +10,8 @@
 #include <error/SyntaxError.h>
 #include <include/run_bash.h>
 
+#include <bpp_include/bpp_program.h>
+
 void BashppListener::enterProgram(std::shared_ptr<AST::Program> node) {
 	program->set_output_stream(code_buffer);
 	program->set_include_paths(include_paths);

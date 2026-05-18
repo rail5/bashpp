@@ -9,6 +9,12 @@
 #include <lsp/include/resolve_entity.h>
 #include <lsp/include/validateUri.h>
 
+#include <bpp_include/bpp_entity.h>
+#include <bpp_include/bpp_object.h>
+#include <bpp_include/bpp_class.h>
+#include <bpp_include/bpp_method.h>
+#include <bpp_include/bpp_datamember.h>
+
 GenericResponseMessage bpp::BashppServer::handleHover(const GenericRequestMessage& request) {
 	HoverRequestResponse response;
 	response.id = request.id;

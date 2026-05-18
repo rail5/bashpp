@@ -6,6 +6,10 @@
 
 #include <listener/BashppListener.h>
 
+#include <bpp_include/bash_function.h>
+#include <bpp_include/bpp_code_entity.h>
+#include <bpp_include/bpp_program.h>
+
 void BashppListener::enterBashFunction(std::shared_ptr<AST::BashFunction> node) {
 	/**
 	 * Bash functions take the format:

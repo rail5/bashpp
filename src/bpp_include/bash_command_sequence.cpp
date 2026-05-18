@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-#include "bpp.h"
+#include "bash_command_sequence.h"
 
 namespace bpp {
 

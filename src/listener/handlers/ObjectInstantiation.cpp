@@ -6,6 +6,12 @@
 
 #include <listener/BashppListener.h>
 
+#include <bpp_include/bpp_object.h>
+#include <bpp_include/bpp_code_entity.h>
+#include <bpp_include/bpp_class.h>
+#include <bpp_include/bpp_datamember.h>
+#include <bpp_include/bpp_program.h>
+
 void BashppListener::enterObjectInstantiation(std::shared_ptr<AST::ObjectInstantiation> node) {
 	/**
 	 * The object type will be stored in one of either IDENTIFIER_LVALUE or IDENTIFIER(0)

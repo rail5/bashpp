@@ -10,6 +10,12 @@
 #include <lsp/include/resolve_entity.h>
 #include <lsp/include/validateUri.h>
 
+#include <bpp_include/bpp.h>
+#include <bpp_include/bpp_entity.h>
+#include <bpp_include/bpp_object.h>
+#include <bpp_include/bpp_class.h>
+#include <bpp_include/bpp_method.h>
+
 GenericResponseMessage bpp::BashppServer::handleRename(const GenericRequestMessage& request) {
 	RenameRequestResponse response;
 	response.id = request.id;

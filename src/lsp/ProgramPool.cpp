@@ -13,6 +13,8 @@
 
 #include <include/NullStream.h>
 
+#include <bpp_include/bpp_program.h>
+
 ProgramPool::ProgramPool(size_t max_programs) : max_programs(max_programs) {
 	// Initialize the program pool with a maximum number of programs
 	programs.reserve(max_programs);

@@ -6,6 +6,9 @@
 
 #include <listener/BashppListener.h>
 
+#include <bpp_include/bpp_string.h>
+#include <bpp_include/bpp_object_reference.h>
+
 void BashppListener::enterArrayIndex(std::shared_ptr<AST::ArrayIndex> /*node*/) {
 	/**
 	 * Array indices take the form:

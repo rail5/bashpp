@@ -4,7 +4,11 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-#include "bpp.h"
+#include "bpp_entity.h"
+#include "bpp_object.h"
+#include "bpp_method.h"
+#include "bpp_class.h"
+#include "bpp_program.h"
 
 #include <error/InternalError.h>
 

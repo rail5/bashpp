@@ -4,7 +4,9 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-#include "bpp.h"
+#include "bpp_program.h"
+#include "bpp_class.h"
+#include "bpp_method.h"
 #include "bpp_codegen.h"
 #include "templates.h"
 #include "replace_all.h"
@@ -74,7 +76,7 @@ bool bpp_program::add_class(std::shared_ptr<bpp_class> class_) {
 	}
 
 	// Add the methods
-	for (auto& method : class_->get_methods()) {
+	for (const auto& method : class_->get_methods()) {
 		if (method->is_inherited() && !method->is_virtual()) continue;
 
 		if (method->is_virtual()) {

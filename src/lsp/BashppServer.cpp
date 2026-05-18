@@ -11,6 +11,8 @@
 #include "generated/PublishDiagnosticsNotification.h"
 #include "generated/ErrorCodes.h"
 
+#include <bpp_include/bpp_program.h>
+
 std::mutex bpp::BashppServer::output_mutex;
 std::mutex bpp::BashppServer::log_mutex;
 

@@ -5,7 +5,11 @@
  */
 
 #include "bpp_codegen.h"
-#include "bpp.h"
+#include "bpp_program.h"
+#include "bpp_object.h"
+#include "bpp_class.h"
+#include "bpp_method.h"
+#include "bpp_datamember.h"
 
 namespace bpp {
 

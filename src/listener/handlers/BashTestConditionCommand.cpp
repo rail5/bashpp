@@ -6,6 +6,9 @@
 
 #include <listener/BashppListener.h>
 
+#include <bpp_include/bpp_entity.h>
+#include <bpp_include/bpp_string.h>
+
 void BashppListener::enterBashTestConditionCommand(std::shared_ptr<AST::BashTestConditionCommand> node) {
 	std::shared_ptr<bpp::bpp_class> current_class = entity_stack.top()->get_containing_class().lock();
 

@@ -13,6 +13,11 @@
 
 #include <listener/BashppListener.h>
 
+#include <bpp_include/bash_for_or_select.h>
+#include <bpp_include/bpp_code_entity.h>
+#include <bpp_include/bpp_string.h>
+#include <bpp_include/bpp_program.h>
+
 void BashppListener::enterBashForStatement(std::shared_ptr<AST::BashForStatement> node) {
 	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {

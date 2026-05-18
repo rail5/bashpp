@@ -6,6 +6,12 @@
 
 #include <listener/BashppListener.h>
 
+#include <bpp_include/bpp_code_entity.h>
+#include <bpp_include/bpp_class.h>
+#include <bpp_include/bpp_method.h>
+#include <bpp_include/bash_function.h>
+#include <bpp_include/bash_for_or_select.h>
+
 void BashppListener::enterBlock(std::shared_ptr<AST::Block> node) {
 	/**
 	 * Blocks are just groups of statements enclosed in curly-braces

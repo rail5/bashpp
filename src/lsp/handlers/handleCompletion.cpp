@@ -9,6 +9,13 @@
 #include <lsp/include/resolve_entity.h>
 #include <lsp/include/validateUri.h>
 
+#include <bpp_include/bpp_entity.h>
+#include <bpp_include/bpp_program.h>
+#include <bpp_include/bpp_class.h>
+#include <bpp_include/bpp_object.h>
+#include <bpp_include/bpp_method.h>
+#include <bpp_include/bpp_datamember.h>
+
 GenericResponseMessage bpp::BashppServer::handleCompletion(const GenericRequestMessage& request) {
 	CompletionRequestResponse response;
 	response.id = request.id;
@@ -149,23 +156,22 @@ CompletionList bpp::BashppServer::handleDOTCompletion(const CompletionParams& pa
 	std::shared_ptr<bpp::bpp_object> obj = std::dynamic_pointer_cast<bpp::bpp_object>(referenced_entity);
 	std::shared_ptr<bpp::bpp_class> cls = std::dynamic_pointer_cast<bpp::bpp_class>(referenced_entity);
 
-	std::vector<std::shared_ptr<bpp::bpp_method>> methods;
-	std::vector<std::shared_ptr<bpp::bpp_datamember>> data_members;
+	//std::vector<std::shared_ptr<bpp::bpp_method>> methods;
+	//std::vector<std::shared_ptr<bpp::bpp_datamember>> data_members;
+	std::shared_ptr<bpp::bpp_class> entity_class;
 	std::string entity_name;
 
 	if (obj != nullptr && obj->get_class() != nullptr) {
-		methods = obj->get_class()->get_methods();
-		data_members = obj->get_class()->get_datamembers();
+		entity_class = obj->get_class();
 		entity_name = obj->get_name();
 	} else if (cls != nullptr) {
-		methods = cls->get_methods();
-		data_members = cls->get_datamembers();
+		entity_class = cls;
 		entity_name = cls->get_name();
 	} else {
 		throw std::runtime_error("Referenced entity is not a valid object or class at position: (" + std::to_string(position.line) + ", " + std::to_string(position.character) + ") in URI: " + uri);
 	}
 
-	for (const auto& method : methods) {
+	for (const auto& method : entity_class->get_methods()) {
 		if (method->get_name().contains("__")) {
 			continue; // Skip system methods
 		}
@@ -209,7 +215,7 @@ CompletionList bpp::BashppServer::handleDOTCompletion(const CompletionParams& pa
 		completion_list.items.push_back(item);
 	}
 
-	for (const auto& data_member : data_members) {
+	for (const auto& data_member : entity_class->get_datamembers()) {
 		CompletionItem item;
 		item.label = data_member->get_name();
 		item.kind = CompletionItemKind::Field;

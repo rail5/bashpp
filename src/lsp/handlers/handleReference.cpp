@@ -10,6 +10,8 @@
 #include <lsp/include/resolve_entity.h>
 #include <lsp/include/validateUri.h>
 
+#include <bpp_include/bpp_entity.h>
+
 GenericResponseMessage bpp::BashppServer::handleReferences(const GenericRequestMessage& request) {
 	ReferencesRequestResponse response;
 	response.id = request.id;

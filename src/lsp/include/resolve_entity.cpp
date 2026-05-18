@@ -9,6 +9,13 @@
 #include <unistd.h>
 #include <AST/Nodes/Nodes.h>
 
+#include <bpp_include/bpp_entity.h>
+#include <bpp_include/bpp_program.h>
+#include <bpp_include/bpp_class.h>
+#include <bpp_include/bpp_object.h>
+#include <bpp_include/bpp_method.h>
+#include <bpp_include/bpp_datamember.h>
+
 std::shared_ptr<AST::ASTNode> find_node_at_position(std::shared_ptr<AST::ASTNode> node, uint32_t line, uint32_t column) {
 	if (node == nullptr) return nullptr;
 

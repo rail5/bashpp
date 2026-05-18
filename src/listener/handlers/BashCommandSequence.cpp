@@ -6,6 +6,9 @@
 
 #include <listener/BashppListener.h>
 
+#include <bpp_include/bash_command_sequence.h>
+#include <bpp_include/bpp_code_entity.h>
+
 void BashppListener::enterBashCommandSequence(std::shared_ptr<AST::BashCommandSequence> node) {
 	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
 	if (current_code_entity == nullptr) {

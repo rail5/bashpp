@@ -6,6 +6,9 @@
 
 #include <listener/BashppListener.h>
 
+#include <bpp_include/bpp_datamember.h>
+#include <bpp_include/bpp_class.h>
+
 void BashppListener::enterDatamemberDeclaration(std::shared_ptr<AST::DatamemberDeclaration> node) {
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());
 

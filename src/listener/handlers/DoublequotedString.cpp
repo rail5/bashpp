@@ -6,6 +6,10 @@
 
 #include <listener/BashppListener.h>
 
+#include <bpp_include/bpp_entity.h>
+#include <bpp_include/bpp_code_entity.h>
+#include <bpp_include/bpp_string.h>
+
 void BashppListener::enterDoublequotedString(std::shared_ptr<AST::DoublequotedString> node) {
 	std::shared_ptr<bpp::bpp_class> current_class = entity_stack.top()->get_containing_class().lock();
 

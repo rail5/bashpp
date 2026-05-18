@@ -6,6 +6,9 @@
 
 #include <listener/BashppListener.h>
 
+#include <bpp_include/bpp_dynamic_cast_statement.h>
+#include <bpp_include/bpp_class.h>
+
 void BashppListener::enterDynamicCastTarget(std::shared_ptr<AST::DynamicCastTarget> /*node*/) {
 	/**
 	 * Dynamic cast targets are the part of a dynamic cast statement that specifies the class we're casting to

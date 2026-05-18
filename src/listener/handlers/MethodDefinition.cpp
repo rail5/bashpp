@@ -6,6 +6,10 @@
 
 #include <listener/BashppListener.h>
 
+#include <bpp_include/bpp_method.h>
+#include <bpp_include/bpp_class.h>
+#include <bpp_include/bpp_program.h>
+
 void BashppListener::enterMethodDefinition(std::shared_ptr<AST::MethodDefinition> node) {
 	// Verify we're in a class
 	std::shared_ptr<bpp::bpp_class> current_class = std::dynamic_pointer_cast<bpp::bpp_class>(entity_stack.top());

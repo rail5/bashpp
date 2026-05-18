@@ -6,6 +6,8 @@
 
 #include <listener/BashppListener.h>
 
+#include <bpp_include/bpp_string.h>
+
 void BashppListener::enterBashArithmeticSubstitution(std::shared_ptr<AST::BashArithmeticSubstitution> node) {
 	/**
 	 * Bash arithmetic is a series of arithmetic operations

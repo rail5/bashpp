@@ -8,6 +8,8 @@
 #include <lsp/generated/DidChangeTextDocumentNotification.h>
 #include <lsp/include/validateUri.h>
 
+#include <bpp_include/bpp_program.h>
+
 void bpp::BashppServer::handleDidChange(const GenericNotificationMessage& request) {
 	DidChangeTextDocumentNotification did_change_notification = request.toSpecific<DidChangeTextDocumentParams>();
 	std::string uri = did_change_notification.params.textDocument.uri;

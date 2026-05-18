@@ -6,6 +6,10 @@
 
 #include <listener/BashppListener.h>
 
+#include <bpp_include/bpp_method.h>
+#include <bpp_include/bpp_class.h>
+#include <bpp_include/bpp_program.h>
+
 void BashppListener::enterDestructorDefinition(std::shared_ptr<AST::DestructorDefinition> node) {
 	/**
 	 * Destructor definitions take the form

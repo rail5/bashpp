@@ -6,6 +6,12 @@
 
 #include "BashppListener.h"
 
+#include <bpp_include/bpp_program.h>
+
+BashppListener::BashppListener() {
+	program = std::make_shared<bpp::bpp_program>();
+}
+
 void BashppListener::set_source_file(std::string source_file) {
 	this->source_file = std::move(source_file);
 }

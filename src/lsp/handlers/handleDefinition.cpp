@@ -10,6 +10,8 @@
 #include <lsp/include/resolve_entity.h>
 #include <lsp/include/validateUri.h>
 
+#include <bpp_include/bpp_entity.h>
+
 GenericResponseMessage bpp::BashppServer::handleDefinition(const GenericRequestMessage& request) {
 	DefinitionRequest definition_request = request.toSpecific<DefinitionParams>();
 	DefinitionRequestResponse response;

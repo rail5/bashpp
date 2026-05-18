@@ -6,6 +6,13 @@
 
 #include <listener/BashppListener.h>
 
+#include <bpp_include/bpp_entity.h>
+#include <bpp_include/bpp_code_entity.h>
+#include <bpp_include/bpp_value_assignment.h>
+#include <bpp_include/bpp_object_assignment.h>
+#include <bpp_include/bpp_object.h>
+#include <bpp_include/bpp_datamember.h>
+
 void BashppListener::enterValueAssignment(std::shared_ptr<AST::ValueAssignment> node) {
 	std::shared_ptr<bpp::bpp_value_assignment> value_assignment_entity = std::make_shared<bpp::bpp_value_assignment>();
 	value_assignment_entity->set_containing_class(entity_stack.top()->get_containing_class());

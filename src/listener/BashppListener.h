@@ -18,7 +18,6 @@
 class BashppListener;
 
 #include <bpp_include/bpp_codegen.h>
-
 #include <bpp_include/bpp.h>
 #include <include/BashVersion.h>
 #include <listener/ContextExpectations.h>
@@ -106,7 +105,7 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 		 */
 		std::vector<char*> arguments;
 
-		std::shared_ptr<bpp::bpp_program> program = std::make_shared<bpp::bpp_program>();
+		std::shared_ptr<bpp::bpp_program> program;
 
 		bool in_method = false;
 
@@ -182,6 +181,7 @@ class BashppListener : public AST::BaseListener<BashppListener>, std::enable_sha
 			}
 
 	public:
+		BashppListener();
 		void set_source_file(std::string source_file);
 		void set_include_paths(std::shared_ptr<std::vector<std::string>> include_paths);
 		void set_included(bool included);

@@ -6,6 +6,10 @@
 
 #include <listener/BashppListener.h>
 
+#include <bpp_include/bpp_string.h>
+#include <bpp_include/bpp_program.h>
+#include <bpp_include/bpp_value_assignment.h>
+
 void BashppListener::enterArrayAssignment(std::shared_ptr<AST::ArrayAssignment> node) {
 	// Get the current code entity
 	std::shared_ptr<bpp::bpp_code_entity> code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());

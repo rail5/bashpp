@@ -21,10 +21,10 @@ GenericResponseMessage bpp::BashppServer::handleInitialize(const GenericRequestM
 	result.capabilities.hoverProvider = true;
 
 	// Advertise that we support completion requests
-	CompletionOptions completionProvider;
-	result.capabilities.completionProvider = completionProvider;
-	result.capabilities.completionProvider->resolveProvider = false;
-	result.capabilities.completionProvider->triggerCharacters = {".", "@"};
+	result.capabilities.completionProvider = CompletionOptions{
+		.triggerCharacters = std::vector<std::string>{".", "@"},
+		.resolveProvider = false
+	};
 
 	// Advertise that we support definition requests
 	result.capabilities.definitionProvider = true;
@@ -44,11 +44,8 @@ GenericResponseMessage bpp::BashppServer::handleInitialize(const GenericRequestM
 	// If the client advertises that it supports UTF-8 position data, respond to let it know that's what we'll be sending
 	if (initialize_request.params.capabilities.general.has_value()
 		&& initialize_request.params.capabilities.general->positionEncodings.has_value()
-		&& std::find(
-				initialize_request.params.capabilities.general->positionEncodings->begin(),
-				initialize_request.params.capabilities.general->positionEncodings->end(),
-				PositionEncodingKind::UTF8)
-			!= initialize_request.params.capabilities.general->positionEncodings->end()) {
+		&& std::ranges::contains(*initialize_request.params.capabilities.general->positionEncodings, PositionEncodingKind::UTF8)
+	) {
 		result.capabilities.positionEncoding = PositionEncodingKind::UTF8;
 	} else {
 		program_pool.set_utf16_mode(true);

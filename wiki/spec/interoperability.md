@@ -31,3 +31,8 @@ The behavior of `set` is therefore undefined in Bash++ programs.
 # NOTES
 
 These features are not banned and you are free to use them as you see fit. However, their behavior is **undefined** as far as Bash++ is concerned. This means that the Bash++ compiler will not enforce any rules regarding their use, and the behavior of your program may vary depending on how you use them.
+
+# SEE ALSO
+
+ - [bpp-string-interpolation(3)](string-interpolation.md) for more information on string interpolation in Bash++
+ - [bpp-value-categories(3)](value-categories.md) for more information on lvalues and rvalues in Bash++, and how these value categories differ from those in Bash

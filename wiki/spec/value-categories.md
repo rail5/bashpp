@@ -146,3 +146,8 @@ In the above case, we consider `$var` to be an lvalue, because it is the first n
 However, because it expands to the empty string, the "command word" is actually `echo`, and the above code will output "hi" rather than producing an error about an invalid command.
 
 The compiler, however, cannot predict how variables will expand at runtime (this is computationally undecidable). The categorization of symbols into "lvalues" and "rvalues" therefore is based solely on source position, and only incidentally corresponds (in the vast majority of cases) to whether that symbol can be executed as a command.
+
+# SEE ALSO
+
+ - [bpp-methods(3)](methods.md) for more information on object methods
+ - [bpp-supershell(3)](supershell.md) for more information on supershells

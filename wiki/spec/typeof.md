@@ -44,3 +44,7 @@ The `@typeof` directive expands to the result described above. This result is th
 The *input* to the `@typeof` directive is that which is being inspected. The input can be any rvalue at all, but *should* be a pointer to an object.
 
 An easy mistake to make, for example, would be to pass an object directly instead of its address -- this would implicitly call the object's `toPrimitive` method, and attempt to find the "type of" that method's output.
+
+# SEE ALSO
+
+ - [bpp-classes(3)](classes.md) for more information on classes

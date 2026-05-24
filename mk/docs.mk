@@ -1,5 +1,67 @@
 # RULES FOR BUILDING DOCUMENTATION
 
+SPEC_SRCS            := $(filter-out wiki/spec/index.md, $(wildcard wiki/spec/*.md))
+# wiki/spec/*.md -> debian/bpp-*.3
+SPEC_MANPAGES        := $(patsubst wiki/spec/%.md, debian/bpp-%.3, $(SPEC_SRCS))
+
+COMPILER_MANPAGE_SRC := wiki/compiler.md
+COMPILER_MANPAGE     := debian/bpp.1
+
+LSP_MANPAGE_SRC      := wiki/bpp-lsp.md
+LSP_MANPAGE          := debian/bpp-lsp.1
+
+LANGUAGE_MANPAGE_SRC := wiki/language.md
+LANGUAGE_MANPAGE     := debian/bpp.7
+
+MANPAGES := $(SPEC_MANPAGES) $(COMPILER_MANPAGE) $(LSP_MANPAGE) $(LANGUAGE_MANPAGE)
+
+manpages: $(MANPAGES)
+
+bin/man/3/bpp-%.md: wiki/spec/%.md
+	@mkdir -p $(@D)
+	@tail -n +7 $< > $@ # Remove the first 6 lines (YAML front matter)
+	@sed -i '1s/^/% bpp-$*(3) Version '"$(VERSION)"' | Manual for the Bash++ language\n/' $@ # Add manpage header
+	@$(MAKE) process-manual-code-snippets FILE=$@ # Replace Jekyll includes with actual content and convert code snippets to markdown format
+
+debian/bpp-%.3: bin/man/3/bpp-%.md
+	@mkdir -p $(@D)
+	@pandoc --standalone --to man $< -o $@
+
+
+
+bin/man/1/bpp.md: wiki/compiler.md
+	@mkdir -p $(@D)
+	@cp $< $@
+	@sed -i '1s/^/% bpp(1) Version '"$(VERSION)"' | Manual for the Bash++ compiler\n/' $@ # Add manpage header
+	@sed -i 's/Using the Bash++ compiler/NAME\nbpp - Compiler for the Bash++ language/g' $@ # Replace section header
+	@sed -i 's/Basic usage/SYNOPSIS/g' $@ # Replace section header
+
+bin/man/1/bpp-lsp.md: wiki/bpp-lsp.md
+	@mkdir -p $(@D)
+	@tail -n +5 $< > $@ # Remove the first 4 lines (YAML front matter)
+	@sed -i '1s/^/% bpp-lsp(1) Version '"$(VERSION)"' | Bash++ Language Server\n/' $@ # Add manpage header
+
+debian/%.1: bin/man/1/%.md
+	@mkdir -p $(@D)
+	@pandoc --standalone --to man $< -o $@
+
+
+
+bin/man/7/bpp.md: wiki/language.md
+	@mkdir -p $(@D)
+	@tail -n +6 $< > $@ # Remove the first 5 lines (YAML front matter)
+	@sed -i '1s/^/% bpp(7) Version '"$(VERSION)"' | Manual for the Bash++ language\n/' $@ # Add manpage header
+	@sed -i 's/Programming in Bash++/NAME\nbpp - The Bash++ language/g' $@ # Replace section header
+	@$(MAKE) process-manual-code-snippets FILE=$@ # Replace Jekyll includes with actual content and convert code snippets to markdown format
+
+debian/%.7: bin/man/7/%.md
+	@mkdir -p $(@D)
+	@pandoc --standalone --to man $< -o $@
+
+
+technical-docs: clean-technical-docs
+	doxygen Doxyfile
+
 process-manual-code-snippets:
 	@if [ -z "$(FILE)" ]; then \
 		echo "Error: FILE variable is not set. Please provide a file to process."; \
@@ -15,55 +77,22 @@ process-manual-code-snippets:
 	@sed -i 's/<div class="highlight"><pre class="highlight"><code>/```bash/g' $(FILE)
 	@sed -i 's/<\/code><\/pre><\/div>/```/g' $(FILE)
 
-manual: clean-manual detailed-manuals
-	@mkdir tmp
-	@tail -n +6 wiki/language.md > tmp/language.md
-	@cp wiki/compiler.md tmp/
-	@sed -i '1s/^/% bpp(1) Version '"$(VERSION)"' | Manual for the Bash++ compiler\n/' tmp/compiler.md
-	@sed -i 's/Using the Bash++ compiler/NAME\nbpp - Compiler for the Bash++ language/g' tmp/compiler.md
-	@sed -i 's/Basic usage/SYNOPSIS/g' tmp/compiler.md
-	@sed -i '1s/^/% bpp(7) Version '"$(VERSION)"' | Manual for the Bash++ language\n/' tmp/language.md
-	@sed -i 's/Programming in Bash++/NAME\nbpp - The Bash++ language/g' tmp/language.md
-	$(MAKE) process-manual-code-snippets FILE=tmp/language.md
-	@tail -n +5 "wiki/bpp-lsp.md" > tmp/bpp-lsp.md
-	@sed -i '1s/^/% bpp-lsp(1) Version '"$(VERSION)"' | Bash++ Language Server\n/' tmp/bpp-lsp.md
-	@pandoc --standalone --to man tmp/compiler.md -o debian/bpp.1
-	@pandoc --standalone --to man tmp/language.md -o debian/bpp.7
-	@pandoc --standalone --to man tmp/bpp-lsp.md -o debian/bpp-lsp.1
-	@rm -rf tmp
-
-detailed-manuals: clean-detailed-manuals
-	@mkdir detailed-manuals
-	@for file in "wiki/spec/"*.md; do \
-		if [ "$$(basename "$$file")" = "index.md" ]; then \
-			continue; \
-		fi; \
-		base=$$(basename "$$file" .md); \
-		tail -n +7 "$$file" > "detailed-manuals/bpp-$$base.md"; \
-		sed -i '1s/^/% bpp-'"$$base"'(3) Version '"$(VERSION)"' | Manual for the Bash++ language\n/' "detailed-manuals/bpp-$$base.md"; \
-		$(MAKE) process-manual-code-snippets FILE="detailed-manuals/bpp-$$base.md"; \
-	done
-	@for file in "detailed-manuals/"*.md; do \
-		base=$$(basename "$$file" .md); \
-		pandoc --standalone --to man "$$file" -o "debian/$$base.3"; \
-	done
-	@rm -rf detailed-manuals
-
-technical-docs: clean-technical-docs
-	doxygen Doxyfile
-
-clean-manual: clean-detailed-manuals
-	@rm -f debian/*.1
-	@rm -f debian/*.7
-	@rm -rf tmp
-	@echo "Cleaned up manuals."
-
-clean-detailed-manuals:
-	@rm -f debian/bpp-*.3
-	@rm -rf detailed-manuals
 
 clean-technical-docs:
 	@rm -rf docs
-	@echo "Cleaned up technical documentation."
+	@echo "Cleaned technical documentation."
 
-.PHONY: process-manual-code-snippets manual detailed-manuals technical-docs clean-manual clean-detailed-manuals clean-technical-docs
+clean-spec-manpages:
+	@rm -f debian/bpp-*.3
+	@rm -rf bin/man/3
+	@echo "Cleaned spec manpages."
+
+clean-manpages: clean-spec-manpages
+	@rm -f debian/*.1
+	@rm -f debian/*.7
+	@rm -rf bin/man
+	@echo "Cleaned all manpages."
+
+.PHONY: technical-docs manpages process-manual-code-snippets clean-technical-docs clean-spec-manpages clean-manpages
+
+.PRECIOUS: bin/man/3/bpp-%.md bin/man/1/%.md bin/man/7/%.md

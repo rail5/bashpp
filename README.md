@@ -84,9 +84,9 @@ $ sudo apt install build-essential flex bison libutfcpp-dev libfrozen-dev pandoc
 #### Building
 
 ```bash
-$ make        # Build the Bash++ compiler and language server, bin/bpp and bin/bpp-lsp
-$ make manual # Build the manpages, which can then be found under debian/
-$ make test   # Run the test suite to verify the compiler works correctly
+$ make          # Build the Bash++ compiler and language server, bin/bpp and bin/bpp-lsp
+$ make manpages # Build the manpages, which can then be found under debian/
+$ make test     # Run the test suite to verify the compiler works correctly
 ```
 
 ## Using the compiler

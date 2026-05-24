@@ -3,7 +3,7 @@
 	dh $@
 
 override_dh_auto_install:
-	make manual
+	make manpages
 	install -D -m 0755 bin/bpp "$$(pwd)/debian/bpp/usr/bin/bpp"
 	@mkdir -p "$$(pwd)/debian/libstd-bpp/usr/lib/bpp/stdlib"
 	install -D -m 0755 stdlib/* "$$(pwd)/debian/libstd-bpp/usr/lib/bpp/stdlib/"

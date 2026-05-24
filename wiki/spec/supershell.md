@@ -28,11 +28,10 @@ The supershell is expanded to the output of the command sequence. The commands i
 
 # NOTES
 
-If an object's method is referenced in a place where a primitive is expected, the method will be executed in a supershell, and its output will be substituted in place of the method call.
-
-Directly referencing a non-primitive object in a place where a primitive is expected will implicitly call the object's `toPrimitive` method, which will be executed in a supershell. However, referencing a *pointer* to an object in a place where a primitive is expected will simply return the pointer, since pointers are already primitives.
+If an object's method is referenced in an rvalue position, the method will be executed in a supershell, and its output will be substituted in place of the method call. See [bpp-value-categories(3)](value-categories.md) for more information on rvalues and lvalues.
 
 # SEE ALSO
 
  - [bpp-methods(3)](methods.md) for more information on object methods
  - [bpp-toprimitive(3)](toprimitive.md) for more information on the `toPrimitive` method
+ - [bpp-value-categories(3)](value-categories.md) for more information on lvalue and rvalue method calls

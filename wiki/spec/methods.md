@@ -60,11 +60,13 @@ Declaring a method to be `@virtual` means that it can be overridden in a derived
 
 Methods can only be defined within a class. They cannot be defined outside of a class.
 
+## Calling methods
+
 Methods can be called using the `@object.method` syntax. For example, if you have an object called `myObject` and a method called `myMethod`, you can call the method using `@myObject.myMethod`.
 
 You can pass arguments to methods using the same syntax as for ordinary commands. For example, to pass the arguments `arg1` and `arg2` to the method `myMethod`, you can call the method using `@myObject.myMethod arg1 arg2`.
 
-Calling an object's method in a place where a primitive is expected will run the method in a supershell and substitute its output. For example:
+Calling an object's method in an rvalue position will run the method in a supershell and substitute its output. See [bpp-value-categories(3)](value-categories.md) for more information on rvalues and lvalues. For example:
 
 <div class="highlight"><pre class="highlight"><code>
 {%- include code/snippets/manual-method-example-4.html -%}
@@ -77,6 +79,8 @@ This is equivalent to:
 <div class="highlight"><pre class="highlight"><code>
 {%- include code/snippets/manual-method-example-5.html -%}
 </code></pre></div>
+
+## Implicit toPrimitive calls
 
 Referencing a non-primitive object directly in a place where a primitive is expected will run the `toPrimitive` method of the object. This means that the following two lines are equivalent:
 
@@ -93,3 +97,4 @@ The toPrimitive method however will *not* be called if the reference is a **poin
  - [bpp-supershell(3)](supershell.md) for more information on supershells
  - [bpp-dynamic-cast(3)](dynamic-cast.md) for more information on dynamic casting
  - [bpp-pointers(3)](pointers.md) for more information on pointers
+ - [bpp-value-categories(3)](value-categories.md) for more information on lvalue and rvalue method calls

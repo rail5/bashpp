@@ -37,13 +37,12 @@ void bpp::BashppServer::handleDidChange(const GenericNotificationMessage& reques
 
 	processing_didChange.store(true, std::memory_order_release);
 
-	const std::string main_program_uri = program_pool.get_program(uri)->get_main_source_file();
 	const std::string new_content = std::get<TextDocumentContentChangeWholeDocument>(did_change_notification.params.contentChanges.at(0)).text;
 	std::shared_ptr<DebounceState> debounce_state;
 	uint64_t change_generation_for_this_thread = 0;
 	uint32_t debounce_time_in_milliseconds = 100;
 
-	debounce_state = debounce_states.get(main_program_uri);
+	debounce_state = debounce_states.get(uri);
 	change_generation_for_this_thread =
 		debounce_state->change_generation.fetch_add(1, std::memory_order_acq_rel) + 1;
 	
@@ -52,7 +51,6 @@ void bpp::BashppServer::handleDidChange(const GenericNotificationMessage& reques
 
 	std::thread([this,
 		uri,
-		main_program_uri,
 		debounce_state,
 		change_generation_for_this_thread,
 		debounce_time_in_milliseconds,
@@ -65,7 +63,7 @@ void bpp::BashppServer::handleDidChange(const GenericNotificationMessage& reques
 		
 			program_pool.set_unsaved_file_contents(uri, new_content);
 
-			log("Re-parsing program '", main_program_uri, "' due to change in URI: ", uri);
+			log("Re-parsing all programs associated with URI: ", uri);
 
 			// Per the LSP spec, contentChanges is an array of either:
 			// 1. TextDocumentContentChangeWholeDocument
@@ -80,14 +78,20 @@ void bpp::BashppServer::handleDidChange(const GenericNotificationMessage& reques
 
 			// TODO(@rail5): Handling partial changes and handling multiple changes (possibly of different types) **must** be implemented in the future
 			const auto reparse_start_time = std::chrono::steady_clock::now();
-			auto program = program_pool.re_parse_program(main_program_uri);
+			std::vector<std::shared_ptr<bpp::bpp_program>> programs = program_pool.re_parse_programs(uri);
 			const auto reparse_end_time = std::chrono::steady_clock::now();
 
-			if (program != nullptr) {
-				publishDiagnostics(program);
-			} else {
-				log("Failed to re-parse program: ", uri);
+			if (programs.empty()) {
+				log("Failed to re-parse any programs for URI: ", uri);
 				return; // Don't allow failed parses to affect debounce timing
+			}
+
+			for (const auto& program : programs) {
+				if (program != nullptr) {
+					publishDiagnostics(program);
+				} else {
+					log("Failed to re-parse a program for URI: ", uri);
+				}
 			}
 
 			const uint64_t reparse_duration_in_microseconds =

@@ -106,9 +106,8 @@ ProgramPool::Snapshot ProgramPool::load_snapshot() const {
 
 void ProgramPool::_remove_program(size_t index) {
 	std::lock_guard<std::recursive_mutex> lock(pool_mutex);
-	if (index >= programs.size()) {
-		return; // Invalid index
-	}
+	if (index >= programs.size()) return; // Invalid index
+
 	std::shared_ptr<bpp::bpp_program> program = programs[index];
 	if (program != nullptr) {
 		// Close all files associated with this program
@@ -120,20 +119,15 @@ void ProgramPool::_remove_program(size_t index) {
 	// Remove the program at the specified index
 	programs.erase(programs.begin() + static_cast<std::vector<std::shared_ptr<bpp::bpp_program>>::difference_type>(index));
 
-	std::vector<std::string> keys_to_remove;
-
 	// Update the program indices
-	for (auto& entry : program_indices) {
-		if (entry.second > index) {
-			entry.second--; // Decrement indices of all programs after the removed one
-		} else if (entry.second == index) {
-			keys_to_remove.push_back(entry.first); // Mark for removal
-		}
-	}
+	for (auto& [filePath, indices] : program_indices) {
+		std::erase(indices, index); // Remove the index of the removed program
 
-	for (const auto& key : keys_to_remove) {
-		program_indices.erase(key); // Remove the key from the map
+		std::transform(indices.begin(), indices.end(), indices.begin(), [index](size_t i) {
+			return (i > index) ? (i - 1) : i; // Decrement indices of all programs after the removed one
+		});
 	}
+	std::erase_if(program_indices, [](const auto& pair) { return pair.second.empty(); }); // Clean up any file paths with no associated programs
 }
 
 std::shared_ptr<bpp::bpp_program> ProgramPool::_parse_program(const std::string& file_path) {
@@ -191,38 +185,40 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::get_program(const std::string& fi
 		// Instead, read from the snapshot
 		// And REFUSE to modify the pool if the file isn't already in it
 		Snapshot snapshot_copy = load_snapshot();
-		auto it = snapshot_copy.program_indices_snapshot.find(file_path);
-		if (it != snapshot_copy.program_indices_snapshot.end()) {
-			return snapshot_copy.programs_snapshot[it->second];
-		} else {
-			return nullptr;
-		}
+		if (!snapshot_copy.program_indices_snapshot.contains(file_path)) return nullptr;
+
+		// Many different programs may be associated with this file path
+		// We just return the first one, which should be as good as any other
+		// TODO(@rail5): Review this decision in the future
+		const std::vector<size_t>& indices = snapshot_copy.program_indices_snapshot[file_path];
+		if (indices.empty()) return nullptr; // No programs associated with this file path, shouldn't happen since we checked contains() but just in case
+		return snapshot_copy.programs_snapshot[indices[0]];
 	}
+
 	std::shared_ptr<bpp::bpp_program> new_program = nullptr;
 	{
 		std::lock_guard<std::recursive_mutex> lock(pool_mutex);
 
 		// Check if the program is already in the pool
-		auto it = program_indices.find(file_path);
-		if (it != program_indices.end()) {
-			return programs[it->second];
+		if (program_indices.contains(file_path)) {
+			const std::vector<size_t>& indices = program_indices[file_path];
+			if (!indices.empty()) return programs[indices[0]]; // Return the first program associated with this file path
 		}
 
 		// If the pool is full, remove the oldest program
-		if (programs.size() >= max_programs) {
-			_remove_oldest_program();
-		}
+		if (programs.size() >= max_programs) _remove_oldest_program();
 
 		// Create a new program and add it to the pool
 		new_program = _parse_program(file_path);
-		if (new_program == nullptr) {
-			return nullptr; // Return nullptr if parsing fails
-		}
+		if (new_program == nullptr) return nullptr; // Return nullptr if parsing fails
 
 		programs.push_back(new_program);
 		size_t index = programs.size() - 1;
 		for (const auto& path : new_program->get_source_files()) {
-			program_indices[path] = index; // Map the file path to the program index
+			auto& indices_for_path = program_indices[path];
+			if (!std::ranges::contains(indices_for_path, index)) {
+				indices_for_path.push_back(index); // Map the file path to the program index
+			}
 		}
 
 		open_files[file_path] = true; // Mark the file as open
@@ -240,29 +236,43 @@ bool ProgramPool::has_program(const std::string& file_path) {
 	return program_indices_snapshot.contains(file_path);
 }
 
-std::shared_ptr<bpp::bpp_program> ProgramPool::re_parse_program(const std::string& file_path) {
-	if (!has_program(file_path)) {
-		return get_program(file_path); // If it doesn't exist, create it
-	}
-	std::shared_ptr<bpp::bpp_program> result = nullptr;
+std::vector<std::shared_ptr<bpp::bpp_program>> ProgramPool::re_parse_programs(const std::string& file_path) {
+	if (!has_program(file_path)) return { get_program(file_path) }; // If it doesn't exist, create it
+
+	std::vector<std::shared_ptr<bpp::bpp_program>> successful_reparses;
 	{
 		std::lock_guard<std::recursive_mutex> lock(pool_mutex);
-		// The program exists, so we can re-parse it
-		size_t index = program_indices[file_path];
-		std::string main_source_file = programs[index]->get_main_source_file();
+		// There are programs associated with this file, so we need to re-parse all of them
+		std::vector<size_t> indices = program_indices[file_path];
+		for (size_t index : indices) {
+			std::string main_source_file = programs[index]->get_main_source_file();
 
-		auto new_program = _parse_program(main_source_file);
-		if (new_program == nullptr) {
-			return nullptr; // Return nullptr if parsing fails
+			auto new_program = _parse_program(main_source_file);
+			if (new_program != nullptr) {
+				successful_reparses.push_back(new_program);
+				programs[index] = new_program;
+
+				// The new AST may reference a different set of source files than the old AST,
+				// so we need to update the program_indices map accordingly
+				// First, remove all references to this program index from all file paths
+				for (auto& [filePath, indices] : program_indices) {
+					std::erase(indices, index);
+				}
+				// Then, add references to this program index for all file paths referenced by the new AST
+				for (const auto& path : new_program->get_source_files()) {
+					auto& indices_for_path = program_indices[path];
+					if (!std::ranges::contains(indices_for_path, index)) {
+						indices_for_path.push_back(index); // Map the file path to the program index
+					}
+				}
+				// Finally, clean up any file paths that no longer have any programs associated with them
+				std::erase_if(program_indices, [](const auto& pair) { return pair.second.empty(); });
+			}
 		}
-
-		programs[index] = new_program;
-		open_files[file_path] = true; // Mark the file as open
-		result = programs[index];
 	}
 	update_snapshot();
 
-	return result;
+	return successful_reparses;
 }
 
 void ProgramPool::open_file(const std::string& file_path) {
@@ -282,27 +292,31 @@ void ProgramPool::open_file(const std::string& file_path) {
 void ProgramPool::close_file(const std::string& file_path) {
 	{
 		std::lock_guard<std::recursive_mutex> lock(pool_mutex);
-		
-		auto it = open_files.find(file_path);
-		if (it != open_files.end()) {
-			open_files.erase(it); // Remove the file from the open files map
 
-			auto program_it = program_indices.find(file_path);
-			if (program_it != program_indices.end()) {
-				size_t index = program_it->second;
-				bool program_still_has_some_files_open = false;
-				for (const auto& source_file : programs[index]->get_source_files()) {
-					if (open_files.contains(source_file)) {
-						program_still_has_some_files_open = true;
-						break; // At least one file is still open, so we don't remove the program
-					}
-				}
+		if (!open_files.contains(file_path)) return;
 
-				if (!program_still_has_some_files_open) {
-					// If no files are open, remove the program from the pool, free some memory
-					_remove_program(index);
+		open_files.erase(file_path); // Remove the file from the open files map
+
+		// Now, find all of the programs associated with this file
+		if (!program_indices.contains(file_path)) return;
+
+		std::vector<size_t> indices = program_indices[file_path];
+		std::sort(indices.rbegin(), indices.rend()); // Sort in reverse order so we can remove programs without invalidating indices of programs we haven't removed yet
+
+		for (size_t index : indices) {
+			// For each program:
+			// Check if it's associated with any other files that are still open
+			bool program_still_has_some_files_open = false;
+
+			for (const auto& source_file : programs[index]->get_source_files()) {
+				if (open_files.contains(source_file)) {
+					program_still_has_some_files_open = true;
+					break; // At least one file is still open, so we don't remove the program
 				}
 			}
+			// If none of this program's files are still open,
+			// we can remove it from the pool to free up memory
+			if (!program_still_has_some_files_open) _remove_program(index);
 		}
 	}
 	update_snapshot();

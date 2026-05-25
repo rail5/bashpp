@@ -32,11 +32,19 @@ void bpp::BashppServer::handleDidChangeWatchedFiles(const GenericNotificationMes
 		program_pool.remove_unsaved_file_contents(uri); // Remove unsaved changes for this URI
 
 		log("Re-parsing program for URI: ", uri);
-		std::shared_ptr<bpp::bpp_program> program = program_pool.re_parse_program(uri);
-		if (program != nullptr) {
-			publishDiagnostics(program);
-		} else {
-			log("Failed to re-parse program: ", uri);
+		std::vector<std::shared_ptr<bpp::bpp_program>> programs = program_pool.re_parse_programs(uri);
+
+		if (programs.empty()) {
+			log("Failed to re-parse any programs for URI: ", uri);
+			return; // Don't allow failed parses to affect debounce timing
+		}
+
+		for (const auto& program : programs) {
+			if (program != nullptr) {
+				publishDiagnostics(program);
+			} else {
+				log("Failed to re-parse a program for URI: ", uri);
+			}
 		}
 	}
 }

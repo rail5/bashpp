@@ -37,7 +37,7 @@ class ProgramPool {
 	private:
 		size_t max_programs = 10; // Maximum number of programs to keep in the pool
 		std::vector<std::shared_ptr<bpp::bpp_program>> programs;
-		std::unordered_map<std::string, size_t> program_indices; // Maps file paths to program indices in the pool
+		std::unordered_map<std::string, std::vector<size_t>> program_indices; // Maps file paths to program indices in the pool
 		std::unordered_map<std::string, bool> open_files; // Maps file paths to whether they are currently open
 		std::unordered_map<std::string, std::string> unsaved_changes; // Maps file paths to their unsaved contents
 		BashVersion target_bash_version = {5, 2};
@@ -46,7 +46,7 @@ class ProgramPool {
 		// Pool snapshots:
 		struct Snapshot {
 			std::vector<std::shared_ptr<bpp::bpp_program>> programs_snapshot; // Snapshot of the current programs in the pool
-			std::unordered_map<std::string, size_t> program_indices_snapshot; // Snapshot of the current program indices
+			std::unordered_map<std::string, std::vector<size_t>> program_indices_snapshot; // Snapshot of the current program indices
 			std::unordered_map<std::string, bool> open_files_snapshot; // Snapshot of the current open files
 			std::unordered_map<std::string, std::string> unsaved_changes_snapshot; // Snapshot of the current unsaved changes
 		};
@@ -106,16 +106,19 @@ class ProgramPool {
 		/**
 		 * @brief Get or create a program for the given file path
 		 * 
-		 * If a program in the pool reports that it controls the file at the given path,
-		 * that program is returned.
+		 * If any programs in the pool report that they're associated with the given file path,
+		 * the first such program is returned.
 		 * If no program exists for that file, we create a new program, add it to the pool,
 		 * and return the new program.
+		 * If jump_queue is true, we will not create a new program if one does not already exist.
+		 * Instead, we will simply return nullptr.
 		 *
 		 * @param file_path The source file path to get or create a program for.
 		 * @param jump_queue Whether to jump the request queue. If true, the request is
 		 *                processed immediately. However, we will also refuse to create
-		*                 a new program -- if none exists, and you've asked to jump the
-		*                 queue, we will simply return nullptr.
+		 *                a new program -- if none exists, and you've asked to jump the
+		 *                queue, we will simply return nullptr.
+		 * @return std::shared_ptr<bpp::bpp_program> A program associated with the given file path, or nullptr if no such program exists and jump_queue is true.
 		 */
 		std::shared_ptr<bpp::bpp_program> get_program(const std::string& file_path, bool jump_queue = false);
 
@@ -128,12 +131,12 @@ class ProgramPool {
 		bool has_program(const std::string& file_path);
 
 		/**
-		 * @brief Re-parse a program for the given file path.
+		 * @brief Re-parse all programs associated with the given file path
 		 * 
 		 * @param file_path The source file which has been modified, triggering the re-parse.
-		 * @return std::shared_ptr<bpp::bpp_program> The re-parsed program
+		 * @return std::vector<std::shared_ptr<bpp::bpp_program>> A vector of all programs that were re-parsed. If a program failed to re-parse, it will not be included in the returned vector.
 		 */
-		std::shared_ptr<bpp::bpp_program> re_parse_program(const std::string& file_path);
+		std::vector<std::shared_ptr<bpp::bpp_program>> re_parse_programs(const std::string& file_path);
 		
 		/**
 		 * @brief Mark a file as open in the program pool.

@@ -157,6 +157,7 @@ class BashppServer {
 		void handleDidChange(const GenericNotificationMessage& request);
 		void handleDidChangeWatchedFiles(const GenericNotificationMessage& request);
 		void handleDidClose(const GenericNotificationMessage& request);
+		void handleDidSave(const GenericNotificationMessage& request);
 
 		void sendResponse(const GenericResponseMessage& response);
 		void sendNotification(const GenericNotificationMessage& notification);
@@ -204,10 +205,11 @@ class BashppServer {
 		 * @brief Maps notification types to the functions that handle them.
 		 * 
 		 */
-		static constexpr frozen::unordered_map<frozen::string, NotificationHandler, 5> notification_handlers = {
+		static constexpr frozen::unordered_map<frozen::string, NotificationHandler, 6> notification_handlers = {
 			{"textDocument/didOpen", &BashppServer::handleDidOpen},
 			{"textDocument/didChange", &BashppServer::handleDidChange},
 			{"workspace/didChangeWatchedFiles", &BashppServer::handleDidChangeWatchedFiles},
+			{"textDocument/didSave", &BashppServer::handleDidSave},
 			{"textDocument/didClose", &BashppServer::handleDidClose},
 			{"exit", &BashppServer::exit}
 		};

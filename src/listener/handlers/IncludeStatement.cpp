@@ -143,6 +143,13 @@ void BashppListener::enterIncludeStatement(std::shared_ptr<AST::IncludeStatement
 		// Bad design, should just take a length to begin with
 		// Until then, this hack adds two characters to the error token's string so highlighting works
 		// TODO(@rail5): FIX THIS
+
+		// For the sake of the language server,
+		// still add this file to the program's list of source files,
+		// even if it fails to parse.
+		// This way, the language server will know to update diagnostics for this program if the included file is fixed.
+		program->add_source_file(full_path);
+
 		throw bpp::ErrorHandling::SyntaxError(this, nodeCopy, "Failed to parse included file: " + std::string(full_path));
 	}
 	try {

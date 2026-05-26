@@ -50,9 +50,9 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 	uint32_t column,
 	std::shared_ptr<bpp::bpp_program> program
 ) {
-	if (program == nullptr || file.empty()) {
-		return nullptr; // Invalid program or file
-	}
+	if (program == nullptr || file.empty()) return nullptr; // Invalid program or file
+	if (!std::ranges::contains(program->get_source_files(), file)) return nullptr; // The program does not contain the specified file
+
 	std::shared_ptr<bpp::bpp_entity> context = program->get_active_entity(file, line, column);
 	if (context == nullptr) {
 		context = program;
@@ -374,6 +374,20 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 		default:
 			return nullptr; // Not a resolvable node type
 	}
+}
+
+std::vector<std::shared_ptr<bpp::bpp_entity>> find_all_entities_for(
+	const std::string& file,
+	uint32_t line,
+	uint32_t column,
+	const std::vector<std::shared_ptr<bpp::bpp_program>>& programs
+) {
+	std::vector<std::shared_ptr<bpp::bpp_entity>> entities;
+	for (const auto& program : programs) {
+		auto entity = resolve_entity_at(file, line, column, program);
+		if (entity) entities.push_back(entity);
+	}
+	return entities;
 }
 
 std::string find_comments_for_entity(std::shared_ptr<bpp::bpp_entity> entity, ProgramPool* program_pool) {

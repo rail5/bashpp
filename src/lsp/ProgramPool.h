@@ -115,12 +115,27 @@ class ProgramPool {
 		 *
 		 * @param file_path The source file path to get or create a program for.
 		 * @param jump_queue Whether to jump the request queue. If true, the request is
-		 *                processed immediately. However, we will also refuse to create
-		 *                a new program -- if none exists, and you've asked to jump the
-		 *                queue, we will simply return nullptr.
+		 *                   processed immediately. However, we will also refuse to create
+		 *                   a new program -- if none exists, and you've asked to jump the
+		 *                   queue, we will simply return nullptr.
 		 * @return std::shared_ptr<bpp::bpp_program> A program associated with the given file path, or nullptr if no such program exists and jump_queue is true.
 		 */
 		std::shared_ptr<bpp::bpp_program> get_program(const std::string& file_path, bool jump_queue = false);
+
+		/**
+		 * @brief Get all programs associated with the given file path.
+		 * If no programs are associated with the given file path, we create a new
+		 * program for that file path, add it to the pool, and return a vector
+		 * containing just that program.
+		 * 
+		 * @param file_path The source file path to get or create programs for.
+		 * @param jump_queue Whether to jump the request queue. If true, the request is
+		 *                   processed immediately. However, we will also refuse to create
+		 *                   new programs -- if none exist, and you've asked to jump the
+		 *                   queue, we will simply return an empty vector.
+		 * @return std::vector<std::shared_ptr<bpp::bpp_program>> A vector of programs associated with the given file path. If no such programs exist and jump_queue is true, an empty vector is returned.
+		 */
+		std::vector<std::shared_ptr<bpp::bpp_program>> get_programs_for_file(const std::string& file_path, bool jump_queue = false);
 
 		/**
 		 * @brief Check if a program for the given file path exists in the pool.

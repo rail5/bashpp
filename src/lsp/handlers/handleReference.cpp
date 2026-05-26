@@ -28,14 +28,14 @@ GenericResponseMessage bpp::BashppServer::handleReferences(const GenericRequestM
 		return response;
 	}
 
-	std::shared_ptr<bpp::bpp_entity> entity = resolve_entity_at(
+	auto entities = find_all_entities_for(
 		uri,
 		reference_request.params.position.line,
 		reference_request.params.position.character,
-		program_pool.get_program(uri)
+		program_pool.get_programs_for_file(uri)
 	);
 
-	if (!entity) {
+	if (entities.empty()) {
 		// No entity to find references for
 		log("No entity found at position: (", reference_request.params.position.line, ", ", reference_request.params.position.character, ") in URI: ", uri);
 		response.result = nullptr;
@@ -43,16 +43,33 @@ GenericResponseMessage bpp::BashppServer::handleReferences(const GenericRequestM
 	}
 
 	std::vector<Location> locations;
-	for (const auto& pos : entity->get_references()) {
-		log("Found reference in file: ", pos.file, " at line: ", pos.line, " character: ", pos.column);
-		std::string file_uri = "file://" + pos.file;
-		Location loc;
-		loc.uri = file_uri;
-		loc.range.start.line = pos.line;
-		loc.range.start.character = pos.column;
-		loc.range.end.line = pos.line;
-		loc.range.end.character = pos.column + entity->get_name().length();
-		locations.push_back(loc);
+	for (const auto& entity : entities) {
+		for (const auto& pos : entity->get_references()) {
+			log("Found reference in file: ", pos.file, " at line: ", pos.line, " character: ", pos.column);
+			std::string file_uri = "file://" + pos.file;
+			Location loc;
+			loc.uri = file_uri;
+			loc.range.start.line = pos.line;
+			loc.range.start.character = pos.column;
+			loc.range.end.line = pos.line;
+			loc.range.end.character = pos.column + entity->get_name().length();
+
+			// Make sure we don't add duplicate locations
+			// (e.g., in the event that multiple programs
+			// include this source file, we may find the
+			// same reference multiple times)
+			bool already_added = std::ranges::any_of(locations, [&](const Location& existing_loc) {
+				return existing_loc.uri == loc.uri
+					&& existing_loc.range.start.line == loc.range.start.line
+					&& existing_loc.range.start.character == loc.range.start.character
+					&& existing_loc.range.end.line == loc.range.end.line
+					&& existing_loc.range.end.character == loc.range.end.character;
+			});
+
+			if (!already_added) {
+				locations.push_back(loc);
+			}
+		}
 	}
 
 	response.result = locations;

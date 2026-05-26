@@ -243,6 +243,46 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::get_program(const std::string& fi
 	return new_program;
 }
 
+std::vector<std::shared_ptr<bpp::bpp_program>> ProgramPool::get_programs_for_file(const std::string& file_path, bool jump_queue) {
+	if (jump_queue) {
+		// Jump the queue:
+		// Skip getting a lock on the pool's main state, since we're not modifying it
+		// Instead, read from the snapshot
+		// And REFUSE to modify the pool if the file isn't already in it
+		Snapshot snapshot_copy = load_snapshot();
+		if (!snapshot_copy.program_indices_snapshot.contains(file_path)) return {}; // No programs associated with this file path
+
+		std::vector<std::shared_ptr<bpp::bpp_program>> programs_for_file;
+		const std::vector<size_t>& indices = snapshot_copy.program_indices_snapshot[file_path];
+		programs_for_file.reserve(indices.size());
+		for (size_t index : indices) {
+			programs_for_file.push_back(snapshot_copy.programs_snapshot[index]);
+		}
+		return programs_for_file;
+	}
+
+	std::vector<std::shared_ptr<bpp::bpp_program>> programs_for_file;
+	{
+		std::lock_guard<std::recursive_mutex> lock(pool_mutex);
+
+		if (program_indices.contains(file_path)) {
+			const std::vector<size_t>& indices = program_indices[file_path];
+			programs_for_file.reserve(indices.size());
+			for (size_t index : indices) {
+				programs_for_file.push_back(programs[index]);
+			}
+			return programs_for_file; // Return all programs associated with this file path
+		}
+
+		// If we get here, there are no programs associated with this file path, so we create a new one
+		auto new_program = get_program(file_path, jump_queue);
+		if (new_program != nullptr) {
+			programs_for_file.push_back(new_program);
+		}
+	}
+	return programs_for_file;
+}
+
 bool ProgramPool::has_program(const std::string& file_path) {
 	// Scan the SNAPSHOT for the program
 	Snapshot snapshot_copy = load_snapshot();

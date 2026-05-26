@@ -42,6 +42,22 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 );
 
 /**
+ * @brief Calls resolve_entity_at for all programs passed in, and returns a vector of all entities found.
+ * 
+ * @param file The file to resolve the entity in.
+ * @param line The line number to resolve the entity at (0-indexed).
+ * @param column The column number to resolve the entity at (0-indexed).
+ * @param programs The programs to search for the entity.
+ * @return std::vector<std::shared_ptr<bpp::bpp_entity>> A vector of all entities found.
+ */
+std::vector<std::shared_ptr<bpp::bpp_entity>> find_all_entities_for(
+	const std::string& file,
+	uint32_t line,
+	uint32_t column,
+	const std::vector<std::shared_ptr<bpp::bpp_program>>& programs
+);
+
+/**
  * @brief Finds comments ostensibly associated with the given entity's definition.
  * 
  * This function searches for contiguous comment blocks that are located immediately before the entity's definition position.

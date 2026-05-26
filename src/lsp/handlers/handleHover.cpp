@@ -62,16 +62,6 @@ GenericResponseMessage bpp::BashppServer::handleHover(const GenericRequestMessag
 
 	// First, determine what kind of entity it is
 
-	std::shared_ptr<bpp::bpp_object> obj = std::dynamic_pointer_cast<bpp::bpp_object>(entity);
-	if (obj) {
-		// If it's an object, display @ClassName[*] objectName
-		hover_text = "@" + obj->get_class()->get_name();
-		if (obj->is_pointer()) {
-			hover_text += "*";
-		}
-		hover_text += " " + obj->get_name();
-	}
-
 	std::shared_ptr<bpp::bpp_datamember> datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(entity);
 	if (datamember) {
 		hover_text = "";
@@ -92,6 +82,18 @@ GenericResponseMessage bpp::BashppServer::handleHover(const GenericRequestMessag
 			// If we fail to lock the containing class weak ptr:
 			log("Failed to lock containing class for data member: ", datamember->get_name(), " in URI: ", uri);
 			hover_text += "@<error>." + datamember->get_name();
+		}
+	}
+
+	std::shared_ptr<bpp::bpp_object> obj = std::dynamic_pointer_cast<bpp::bpp_object>(entity);
+	if (obj) {
+		// If it's an object, display @ClassName[*] objectName
+		if (obj->get_class() != nullptr) {
+			hover_text = "@" + obj->get_class()->get_name();
+			if (obj->is_pointer()) {
+				hover_text += "*";
+			}
+			hover_text += " " + obj->get_name();
 		}
 	}
 

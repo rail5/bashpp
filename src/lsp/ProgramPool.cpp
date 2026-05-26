@@ -222,6 +222,20 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::get_program(const std::string& fi
 		}
 
 		open_files[file_path] = true; // Mark the file as open
+
+		// If the main source file of any earlier programs is *included* in this program,
+		// we can remove those earlier programs from the pool, effectively subsuming them
+		// into this new program, since this new program's AST contains *all* of the
+		// information in the earlier programs and more.
+		for (size_t i = 0; i < programs.size() - 1; i++) {
+			std::shared_ptr<bpp::bpp_program> program = programs[i];
+			if (program == nullptr) continue;
+			auto main_source_file = program->get_main_source_file();
+			if (std::ranges::contains(new_program->get_source_files(), main_source_file) && main_source_file != file_path) {
+				_remove_program(i);
+				i--; // Decrement i to account for the removed program
+			}
+		}
 	}
 
 	update_snapshot();

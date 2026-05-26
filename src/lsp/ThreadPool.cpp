@@ -45,6 +45,7 @@ ThreadPool::~ThreadPool() {
 }
 
 void ThreadPool::enqueue(std::function<void()> task)  {
+	this->active = true; // Now that we've accepted a task
 	{
 		std::unique_lock<std::mutex> lock(queue_mutex);
 		tasks.push(std::move(task)); // Add the task to the queue
@@ -64,4 +65,8 @@ void ThreadPool::cleanup() {
 
 size_t ThreadPool::getThreadCount() const {
 	return workers.size();
+}
+
+bool ThreadPool::isActive() const {
+	return active;
 }

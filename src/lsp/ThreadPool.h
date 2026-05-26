@@ -28,6 +28,7 @@ class ThreadPool {
 		std::mutex queue_mutex;
 		std::condition_variable condition;
 		bool stop = false;
+		bool active = false; // Whether the thread pool has accepted any tasks yet
 	public:
 		explicit ThreadPool(size_t threads = std::thread::hardware_concurrency());
 		~ThreadPool();
@@ -45,4 +46,5 @@ class ThreadPool {
 		void enqueue(std::function<void()> task);
 		void cleanup();
 		size_t getThreadCount() const;
+		bool isActive() const;
 };

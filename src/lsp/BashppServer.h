@@ -62,7 +62,7 @@ class BashppServer {
 		// Resources
 		std::istream* input_stream = &std::cin;  // Held as std::stream* for future extensions beyond stdio
 		std::ostream* output_stream = &std::cout;
-		ThreadPool thread_pool = ThreadPool(std::thread::hardware_concurrency());
+		std::unique_ptr<ThreadPool> thread_pool = std::make_unique<ThreadPool>(std::thread::hardware_concurrency());
 		ProgramPool program_pool = ProgramPool(10); // Maximum 10 programs in the pool
 		std::ofstream log_file;
 
@@ -133,6 +133,7 @@ class BashppServer {
 
 		void setLogFile(const std::string& path);
 		void setTargetBashVersion(const BashVersion& version);
+		void setThreadCount(size_t num_threads);
 
 		GenericResponseMessage shutdown(const GenericRequestMessage& request);
 		void exit(const GenericNotificationMessage& notification);

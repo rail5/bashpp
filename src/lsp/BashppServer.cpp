@@ -18,7 +18,7 @@ std::mutex bpp::BashppServer::log_mutex;
 
 bpp::BashppServer::BashppServer() {
 	log("Bash++ Language Server initialized.");
-	log("Using ", thread_pool.getThreadCount(), " threads for processing requests.");
+	log("Using ", thread_pool->getThreadCount(), " threads for processing requests.");
 
 	// Populate the default completion list
 	default_completion_list.isIncomplete = false;
@@ -130,12 +130,18 @@ void bpp::BashppServer::setTargetBashVersion(const BashVersion& version) {
 	program_pool.set_target_bash_version(version);
 }
 
+void bpp::BashppServer::setThreadCount(size_t num_threads) {
+	if (thread_pool->isActive()) throw std::runtime_error("Cannot change thread count while the thread pool is active.");
+	thread_pool = std::make_unique<ThreadPool>(num_threads);
+	log("Set number of threads to: ", num_threads);
+}
+
 void bpp::BashppServer::cleanup() {
 	if (exiting.exchange(true)) return; // Already exiting
 
 	if (output_stream) output_stream->flush();
 
-	thread_pool.cleanup();
+	thread_pool->cleanup();
 	log("Bash++ Language Server cleaned up and exiting.");
 	log_file.close();
 }
@@ -195,7 +201,7 @@ void bpp::BashppServer::mainLoop() {
 		log("Received message (", content_length, " bytes): ", message);
 
 		// Grab a thread from the pool to process the message
-		thread_pool.enqueue([this, message]() {
+		thread_pool->enqueue([this, message]() {
 			try {
 				this->processMessage(message);
 			} catch (const std::exception& e) {

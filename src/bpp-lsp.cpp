@@ -19,13 +19,14 @@ int main(int argc, char* argv[]) {
 	bpp::BashppServer server;
 
 	constexpr XGetOpt::OptionParser<
-		XGetOpt::Option<'h', "help", "Show this help message", XGetOpt::NoArgument>,
-		XGetOpt::Option<'v', "version", "Show version information", XGetOpt::NoArgument>,
-		XGetOpt::Option<'l', "log", "Log messages to the specified file", XGetOpt::RequiredArgument, "file">,
 		XGetOpt::Option<'s', "no-warnings", "Suppress warnings", XGetOpt::NoArgument>,
 		XGetOpt::Option<'b', "target-bash", "Set target Bash version (e.g., 5.2)", XGetOpt::RequiredArgument, "version">,
 		XGetOpt::Option<'I', "include", "Add a directory to include path", XGetOpt::RequiredArgument, "path">,
-		XGetOpt::Option<1001, "stdio", "Use standard input/output for communication (default)", XGetOpt::NoArgument>
+		XGetOpt::Option<'j', "threads", "Number of threads to use for parsing and analysis (default: number of CPU cores)", XGetOpt::RequiredArgument, "num_threads">,
+		XGetOpt::Option<'l', "log", "Log messages to the specified file", XGetOpt::RequiredArgument, "file">,
+		XGetOpt::Option<1001, "stdio", "Use standard input/output for communication (default)", XGetOpt::NoArgument>,
+		XGetOpt::Option<'h', "help", "Show this help message", XGetOpt::NoArgument>,
+		XGetOpt::Option<'v', "version", "Show version information", XGetOpt::NoArgument>
 	> OptionParser;
 	
 	constexpr const char* help_intro = "Bash++ Language Server " bpp_compiler_version "\n"
@@ -90,6 +91,22 @@ int main(int argc, char* argv[]) {
 					server.setLogFile(std::string(arg.getArgument()));
 				} catch (const std::exception& e) {
 					std::cerr << "Error setting log file: " << e.what() << std::endl;
+					return 1;
+				}
+				break;
+			case 'j':
+				try {
+					size_t num_threads = std::stoul(std::string(arg.getArgument()));
+					if (num_threads == 0) {
+						std::cerr << "Number of threads must be greater than 0." << std::endl;
+						return 1;
+					}
+					server.setThreadCount(num_threads);
+				} catch (const std::runtime_error& e) {
+					std::cerr << "Error: " << e.what() << std::endl;
+					return 1;
+				} catch (const std::exception& e) {
+					std::cerr << "Invalid number of threads: " << arg.getArgument() << std::endl;
 					return 1;
 				}
 				break;

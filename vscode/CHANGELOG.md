@@ -1,5 +1,14 @@
 # Change Log
 
+## [0.8.1]
+- Added support for bpp-lsp's `-j`/`--threads` option to specify the number of worker threads in the language server
+  - This option allows users to configure the performance of the language server by specifying how many worker threads it should use for processing requests.
+  - Users can set this option in the VSCode extension settings under `Bash++: Language Server: Thread Count`.
+  - By default, the language server will use a number of threads equal to the number of CPU cores available.
+- Gated `-b` and `-j` options behind a check for the language server's version to ensure compatibility
+  - `-b` was introduced in bpp-lsp v0.8.0, and `-j` was introduced in bpp-lsp v0.8.11
+  - If the language server does not support these options, the extension will fall back to default behavior without them, and will show a startup warning to the user
+
 ## [0.8.0]
 
 - Added support for bpp-lsp's `-b`/`--target-bash` option to specify the target Bash version for compilation

@@ -1,8 +1,51 @@
 const vscode = require('vscode');
 const { LanguageClient, TransportKind } = require('vscode-languageclient');
+const { execFile } = require('child_process');
+const { promisify } = require('util');
+const execFileAsync = promisify(execFile);
 
 /** @type {LanguageClient | null} */
 let client = null;
+
+/**
+ * `bpp-lsp --version` outputs:
+ * Bash++ Language Server x.y.z
+ * .. more lines
+ * 
+ * So here, we just call `--version`,
+ * and scan the first line for [0-9]+\.[0-9]+\.[0-9]+
+ * 
+ * We return it as an array of 3 elements: [major, minor, patch]
+ * If the version cannot be determined, we return [0, 0, 0]
+ */
+async function getServerVersion(serverPath) {
+	try {
+		const { stdout } = await execFileAsync(serverPath, ['--version']);
+		const firstLine = stdout.split('\n')[0];
+		const versionMatch = firstLine.match(/(\d+)\.(\d+)\.(\d+)/);
+		if (versionMatch) {
+			return versionMatch.slice(1, 4).map(num => parseInt(num, 10));
+		}
+	} catch (err) {
+		vscode.window.showInformationMessage('Warning: Unable to determine Bash++ Language Server version. Some features may not work as expected. Please ensure the server is installed and accessible.');
+	}
+	return [0, 0, 0];
+}
+
+/**
+ * Function to compare two version arrays [major, minor, patch]
+ * Returns true if versionA >= versionB
+ */
+function isVersionGreaterOrEqual(versionA, versionB) {
+	for (let i = 0; i < 3; i++) {
+		if (versionA[i] > versionB[i]) {
+			return true;
+		} else if (versionA[i] < versionB[i]) {
+			return false;
+		}
+	}
+	return true; // versions are equal
+}
 
 async function stopClient() {
 	if (client) {
@@ -32,6 +75,10 @@ async function startClient(context) {
 			return;
 		}
 
+		// First: get the server version to determine which features are supported
+		const serverVersion = await getServerVersion(serverPath);
+		console.log(`Bash++ Language Server version: ${serverVersion.join('.')}`);
+
 		const args = ['--stdio'];
 
 		if (!config.get('showWarnings', true)) {
@@ -51,8 +98,24 @@ async function startClient(context) {
 		});
 
 		// Get the target bash version
-		const targetBashVersion = config.get('targetBashVersion', '5.2');
-		args.push(`-b${targetBashVersion}`);
+		// Note: '-b' was introduced in 0.8.0
+		if (isVersionGreaterOrEqual(serverVersion, [0, 8, 0])) {
+			const targetBashVersion = config.get('targetBashVersion', '5.2');
+			args.push(`-b${targetBashVersion}`);
+		} else {
+			vscode.window.showInformationMessage('Bash++ Language Server version does not support target bash version configuration. Please upgrade to bpp-lsp 0.8.0 or later to use this feature.');
+		}
+
+		// Get the thread count for the language server
+		// Note: '-j' was introduced in 0.8.11
+		if (isVersionGreaterOrEqual(serverVersion, [0, 8, 11])) {
+			const threadCount = config.get('threadCount', 0);
+			if (threadCount > 0) {
+				args.push(`-j${threadCount}`);
+			}
+		} else {
+			vscode.window.showInformationMessage('Bash++ Language Server version does not support thread count configuration. Please upgrade to bpp-lsp 0.8.11 or later to use this feature.');
+		}
 
 		const serverOptions = {
 			run: {

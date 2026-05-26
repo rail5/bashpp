@@ -2,7 +2,7 @@
   "name": "bashpp",
   "displayName": "Bash++",
   "description": "Language support for Bash++",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "homepage": "https://bpp.sh",
   "publisher": "rail5",
   "repository": {
@@ -85,6 +85,11 @@
           "type": "number",
           "default": 5.2,
           "description": "Target Bash version for compilation (e.g., 5.2, 5.3). This affects diagnostics and compatibility checks."
+        },
+        "bashpp.languageServer.threadCount": {
+          "type": "number",
+          "default": 0,
+          "description": "Number of threads to use for parsing and analysis in the Bash++ language server. Set to 0 to use the number of CPU cores."
         }
       }
     },

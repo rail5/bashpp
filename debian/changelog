@@ -1,3 +1,56 @@
+bpp (0.8.11) unstable; urgency=medium
+
+  * Performance:
+    - Entity inheritance refactored to use lazy parent-chain symbol lookup,
+      completely eliminating the copying of object and class maps during
+      inheritance. Compile time on a development for a 2.4-million-line
+      generated source file dropped from ~30 minutes to ~22 seconds.
+    - bpp-lsp's ProgramPool now subsumes earlier ASTs when a more complete
+      program includes the same file, avoiding duplicate program entities
+      and reducing memory pressure
+  * bpp-lsp:
+    - Added -j/--threads option to control the size of the worker thread pool
+    - Cross-program entity resolution for references and renaming: we now
+      search all programs associated with the given source file for reference
+      or when workspace renames were requested
+    - Fixed a bug in hover requests where a datamember could be
+      misinterpreted as a non-datamember object
+    - Handle didSave notifications to free resources that track unsaved
+      changed
+    - Includes that fail to parse are now tracked, allowing diagnostics to be
+      properly updated when the included file is fixed.
+    - ProgramPool now supports multiple programs per source file (Closes: #23)
+      File changes trigger re-parses and diagnostics for all associated
+      programs.
+    - Added support for DocumentSymbols requests
+    - Shutdown procedure now strictly follows the LSP spec: the server waits
+      for an exit notification after acknowledging a shutdown request, and
+      exits with the correct (spec-mandated) status codes.
+    - ResponseError is now an optional field in protocol messages, in line
+      with the LSP spec
+  * VSCode extension:
+    - Added support for the language server's -j/--threads option
+    - The -b option (target Bash version) and -j option are now gated behind
+      version checks, with a warning when the installed server is too old
+  * Documentation and spec:
+    - New spec page on value categories (lvalues vs. rvalues)
+    - Clarified the semantic meaning of '@super', including its behavior
+      when explicitly dereferenced via '*@super'
+    - Clarified operator expansion rules: replaced ambiguous wording regarding
+      the "output" of an operator with a more explicitly-defined statement
+      about an operator's "result" and how it expands in shell contexts
+    - Corrected wordings in the spec pages for methods and supershells
+  * Build system:
+    - Refactored manpage generation with pattern rules, allowing parallel
+      builds. Make target renamed from 'manual' to 'manpages'
+  * Code hygiene and modernization:
+    - Split the monolithic bpp.h header into several smaller, focused headers
+    - Removed the internal fake "primitive" class; primitives are now
+      represented by class == nullptr, aligning the implementation with the
+      language's model
+
+ -- rail5 <andrew@rail5.org>  Tue, 26 May 2026 18:00:30 +0800
+
 bpp (0.8.10) unstable; urgency=medium
 
   * Performance: Significant compiler speed-ups from multiple optimizations:

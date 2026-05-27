@@ -55,75 +55,9 @@ void printValue(std::ostream& os, const std::variant<Ts...>& v) {
  * 
  */
 class BashppServer {
-	private:
-		pid_t pid = getpid();
-		std::atomic<bool> exiting = false;
-		std::atomic<bool> shutdown_requested = false;
-		// Resources
-		std::istream* input_stream = &std::cin;  // Held as std::stream* for future extensions beyond stdio
-		std::ostream* output_stream = &std::cout;
-		std::unique_ptr<ThreadPool> thread_pool = std::make_unique<ThreadPool>(std::thread::hardware_concurrency());
-		ProgramPool program_pool = ProgramPool(10); // Maximum 10 programs in the pool
-		std::ofstream log_file;
-
-		// Debouncing didChange notifications
-		struct DebounceState {
-			std::atomic<uint64_t> change_generation{0};
-			std::atomic<uint64_t> average_reparse_time_in_microseconds{50'000}; // 50ms initial guess
-			std::atomic<uint32_t> debounce_time_in_milliseconds{100}; // Start with 100ms
-		};
-
-		// Map: program main URI -> DebounceState
-		// Used for adaptive debouncing
-		class DebounceStateMap {
-			private:
-				std::unordered_map<std::string, std::shared_ptr<DebounceState>> states;
-				ProgramPool* pool;
-				std::mutex map_mutex;
-
-				void cleanup() {
-					for (auto it = states.begin(); it != states.end(); ) {
-						if (!pool->has_program(it->first)) {
-							it = states.erase(it);
-						} else {
-							it++;
-						}
-					}
-				}
-			public:
-				DebounceStateMap() = delete;
-				explicit DebounceStateMap(ProgramPool* program_pool) : pool(program_pool) {}
-				std::shared_ptr<DebounceState> get(const std::string& uri) {
-					std::lock_guard<std::mutex> lock(map_mutex);
-					cleanup(); // Clean up stale entries on every access
-					auto it = states.find(uri);
-					if (it != states.end()) return it->second;
-					auto new_state = std::make_shared<DebounceState>();
-					states[uri] = new_state;
-					return new_state;
-				}
-		};
-		DebounceStateMap debounce_states = DebounceStateMap(&program_pool);
-		std::atomic<bool> processing_didChange{false};
-
-		static std::string readHeaderLine(std::streambuf* buffer);
-
-		void _sendMessage(const std::string& message);
-
-		static std::mutex output_mutex; // Mutex for thread-safe output
-		static std::mutex log_mutex; // Mutex for thread-safe logging
-		
-		static GenericResponseMessage invalidRequestHandler(const GenericRequestMessage& request);
-		static void invalidNotificationHandler(const GenericNotificationMessage& request);
-
-		void processRequest(const GenericRequestMessage& request);
-		void processNotification(const GenericNotificationMessage& notification);
-
-		CompletionList default_completion_list;
 	public:
-		BashppServer();
+		BashppServer() = default;
 		~BashppServer() = default;
-
 		BashppServer(const BashppServer& other) = delete; // Non-copyable
 		BashppServer& operator=(const BashppServer& other) = delete;
 		BashppServer(BashppServer&& other) noexcept = delete; // Non-movable
@@ -184,6 +118,161 @@ class BashppServer {
 		}
 
 	private:
+		pid_t pid = getpid();
+		std::atomic<bool> exiting = false;
+		std::atomic<bool> shutdown_requested = false;
+
+		// Resources
+		std::istream* input_stream = &std::cin;  // Held as std::stream* for future extensions beyond stdio
+		std::ostream* output_stream = &std::cout;
+		std::unique_ptr<ThreadPool> thread_pool = std::make_unique<ThreadPool>(std::thread::hardware_concurrency());
+		ProgramPool program_pool = ProgramPool(10); // Maximum 10 programs in the pool
+		std::ofstream log_file;
+
+		// Debouncing didChange notifications
+		struct DebounceState {
+			std::atomic<uint64_t> change_generation{0};
+			std::atomic<uint64_t> average_reparse_time_in_microseconds{50'000}; // 50ms initial guess
+			std::atomic<uint32_t> debounce_time_in_milliseconds{100}; // Start with 100ms
+		};
+
+		// Map: program main URI -> DebounceState
+		// Used for adaptive debouncing
+		class DebounceStateMap {
+			private:
+				std::unordered_map<std::string, std::shared_ptr<DebounceState>> states;
+				ProgramPool* pool;
+				std::mutex map_mutex;
+
+				void cleanup() {
+					for (auto it = states.begin(); it != states.end(); ) {
+						if (!pool->has_program(it->first)) {
+							it = states.erase(it);
+						} else {
+							it++;
+						}
+					}
+				}
+			public:
+				DebounceStateMap() = delete;
+				explicit DebounceStateMap(ProgramPool* program_pool) : pool(program_pool) {}
+				std::shared_ptr<DebounceState> get(const std::string& uri) {
+					std::lock_guard<std::mutex> lock(map_mutex);
+					cleanup(); // Clean up stale entries on every access
+					auto it = states.find(uri);
+					if (it != states.end()) return it->second;
+					auto new_state = std::make_shared<DebounceState>();
+					states[uri] = new_state;
+					return new_state;
+				}
+		};
+		DebounceStateMap debounce_states = DebounceStateMap(&program_pool);
+		std::atomic<bool> processing_didChange{false};
+
+		static std::string readHeaderLine(std::streambuf* buffer);
+
+		void _sendMessage(const std::string& message);
+
+		static std::mutex output_mutex; // Mutex for thread-safe output
+		static std::mutex log_mutex; // Mutex for thread-safe logging
+		
+		static GenericResponseMessage invalidRequestHandler(const GenericRequestMessage& request);
+		static void invalidNotificationHandler(const GenericNotificationMessage& request);
+
+		void processRequest(const GenericRequestMessage& request);
+		void processNotification(const GenericNotificationMessage& notification);
+
+		CompletionList default_completion_list{
+			.isIncomplete = false,
+			.items = {
+				CompletionItem{
+					.label = "class",
+					.kind = CompletionItemKind::Keyword,
+					.detail = "Define a new class"
+				},
+				CompletionItem{
+					.label = "public",
+					.kind = CompletionItemKind::Keyword,
+					.detail = "Public access specifier"
+				},
+				CompletionItem{
+					.label = "private",
+					.kind = CompletionItemKind::Keyword,
+					.detail = "Private access specifier"
+				},
+				CompletionItem{
+					.label = "protected",
+					.kind = CompletionItemKind::Keyword,
+					.detail = "Protected access specifier"
+				},
+				CompletionItem{
+					.label = "method",
+					.kind = CompletionItemKind::Keyword,
+					.detail = "Define a new method in a class"
+				},
+				CompletionItem{
+					.label = "constructor",
+					.kind = CompletionItemKind::Keyword,
+					.detail = "Define a constructor for a class"
+				},
+				CompletionItem{
+					.label = "destructor",
+					.kind = CompletionItemKind::Keyword,
+					.detail = "Define a destructor for a class"
+				},
+				CompletionItem{
+					.label = "virtual",
+					.kind = CompletionItemKind::Keyword,
+					.detail = "Declare a method to be virtual"
+				},
+				CompletionItem{
+					.label = "this",
+					.kind = CompletionItemKind::Keyword,
+					.detail = "Reference the current object"
+				},
+				CompletionItem{
+					.label = "super",
+					.kind = CompletionItemKind::Keyword,
+					.detail = "Reference the current object as an instance of its parent class"
+				},
+				CompletionItem{
+					.label = "include",
+					.kind = CompletionItemKind::Keyword,
+					.detail = "Include a file"
+				},
+				CompletionItem{
+					.label = "include_once",
+					.kind = CompletionItemKind::Keyword,
+					.detail = "Include a file only once"
+				},
+				CompletionItem{
+					.label = "dynamic_cast",
+					.kind = CompletionItemKind::Keyword,
+					.detail = "Perform a dynamic cast"
+				},
+				CompletionItem{
+					.label = "typeof",
+					.kind = CompletionItemKind::Keyword,
+					.detail = "Get the type of a pointer"
+				},
+				CompletionItem{
+					.label = "new",
+					.kind = CompletionItemKind::Keyword,
+					.detail = "Create a new object"
+				},
+				CompletionItem{
+					.label = "delete",
+					.kind = CompletionItemKind::Keyword,
+					.detail = "Delete an object"
+				},
+				CompletionItem{
+					.label = "nullptr",
+					.kind = CompletionItemKind::Keyword,
+					.detail = "Null pointer constant"
+				}
+			}
+		};
+
 		using RequestHandler = GenericResponseMessage (BashppServer::*)(const GenericRequestMessage&);
 		using NotificationHandler = void (BashppServer::*)(const GenericNotificationMessage&);
 

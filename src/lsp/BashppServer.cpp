@@ -16,111 +16,6 @@
 std::mutex bpp::BashppServer::output_mutex;
 std::mutex bpp::BashppServer::log_mutex;
 
-bpp::BashppServer::BashppServer() {
-	log("Bash++ Language Server initialized.");
-	log("Using ", thread_pool->getThreadCount(), " threads for processing requests.");
-
-	// Populate the default completion list
-	default_completion_list.isIncomplete = false;
-
-	CompletionItem i_class;
-	i_class.label = "class";
-	i_class.kind = CompletionItemKind::Keyword;
-	i_class.detail = "Define a new class";
-	default_completion_list.items.push_back(i_class);
-
-	CompletionItem i_public;
-	i_public.label = "public";
-	i_public.kind = CompletionItemKind::Keyword;
-	i_public.detail = "Public access specifier";
-	default_completion_list.items.push_back(i_public);
-
-	CompletionItem i_private;
-	i_private.label = "private";
-	i_private.kind = CompletionItemKind::Keyword;
-	i_private.detail = "Private access specifier";
-	default_completion_list.items.push_back(i_private);
-
-	CompletionItem i_protected;
-	i_protected.label = "protected";
-	i_protected.kind = CompletionItemKind::Keyword;
-	i_protected.detail = "Protected access specifier";
-	default_completion_list.items.push_back(i_protected);
-
-	CompletionItem i_method;
-	i_method.label = "method";
-	i_method.kind = CompletionItemKind::Keyword;
-	i_method.detail = "Define a new method in a class";
-	default_completion_list.items.push_back(i_method);
-
-	CompletionItem i_constructor;
-	i_constructor.label = "constructor";
-	i_constructor.kind = CompletionItemKind::Keyword;
-	i_constructor.detail = "Define a constructor for a class";
-	default_completion_list.items.push_back(i_constructor);
-
-	CompletionItem i_destructor;
-	i_destructor.label = "destructor";
-	i_destructor.kind = CompletionItemKind::Keyword;
-	i_destructor.detail = "Define a destructor for a class";
-	default_completion_list.items.push_back(i_destructor);
-
-	CompletionItem i_virtual;
-	i_virtual.label = "virtual";
-	i_virtual.kind = CompletionItemKind::Keyword;
-	i_virtual.detail = "Declare a method to be virtual";
-	default_completion_list.items.push_back(i_virtual);
-
-	CompletionItem i_this;
-	i_this.label = "this";
-	i_this.kind = CompletionItemKind::Keyword;
-	i_this.detail = "Reference to the current object";
-	default_completion_list.items.push_back(i_this);
-
-	CompletionItem i_super;
-	i_super.label = "super";
-	i_super.kind = CompletionItemKind::Keyword;
-	i_super.detail = "Reference to the current object's parent class";
-	default_completion_list.items.push_back(i_super);
-
-	CompletionItem i_include;
-	i_include.label = "include";
-	i_include.kind = CompletionItemKind::Keyword;
-	i_include.detail = "Include a file";
-	default_completion_list.items.push_back(i_include);
-	
-	CompletionItem i_include_once;
-	i_include_once.label = "include_once";
-	i_include_once.kind = CompletionItemKind::Keyword;
-	i_include_once.detail = "Include a file only once";
-	default_completion_list.items.push_back(i_include_once);
-
-	CompletionItem i_dynamic_cast;
-	i_dynamic_cast.label = "dynamic_cast";
-	i_dynamic_cast.kind = CompletionItemKind::Keyword;
-	i_dynamic_cast.detail = "Perform a dynamic cast";
-	default_completion_list.items.push_back(i_dynamic_cast);
-
-	CompletionItem i_new;
-	i_new.label = "new";
-	i_new.kind = CompletionItemKind::Keyword;
-	i_new.detail = "Create a new object";
-	default_completion_list.items.push_back(i_new);
-
-	CompletionItem i_delete;
-	i_delete.label = "delete";
-	i_delete.kind = CompletionItemKind::Keyword;
-	i_delete.detail = "Delete an object";
-	default_completion_list.items.push_back(i_delete);
-
-	CompletionItem i_nullptr;
-	i_nullptr.label = "nullptr";
-	i_nullptr.kind = CompletionItemKind::Keyword;
-	i_nullptr.detail = "Null pointer constant";
-	default_completion_list.items.push_back(i_nullptr);
-
-}
-
 void bpp::BashppServer::setLogFile(const std::string& path) {
 	log_file.open(path, std::ios::app);
 	if (!log_file.is_open()) throw std::runtime_error("Failed to open log file: " + path);
@@ -165,6 +60,9 @@ void bpp::BashppServer::mainLoop() {
 	if (!input_stream || !output_stream) {
 		throw std::runtime_error("Input or output stream not set.");
 	}
+
+	log("Bash++ Language Server initialized.");
+	log("Using ", thread_pool->getThreadCount(), " threads for processing requests.");
 
 	std::streambuf* buffer = input_stream->rdbuf();
 	while (!exiting) {

@@ -68,7 +68,6 @@ Pre-built packages are available for **amd64** and **arm64**. The .debs can also
 
 Language server-specific prerequisites:
  - `nlohmann-json3-dev`
- - `libfrozen-dev`
 
 Optional:
  - `pandoc` and `perl` for building the documentation
@@ -78,7 +77,7 @@ On Debian-based systems, you can install the prerequisites with:
 
 ```bash
 $ sudo apt update
-$ sudo apt install build-essential flex bison libutfcpp-dev libfrozen-dev pandoc perl debhelper nlohmann-json3-dev
+$ sudo apt install build-essential flex bison libutfcpp-dev pandoc perl debhelper nlohmann-json3-dev
 ```
 
 #### Building

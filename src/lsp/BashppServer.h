@@ -17,9 +17,6 @@
 #include <nlohmann/json.hpp>
 #include <unistd.h>
 
-#include <frozen/string.h>
-#include <frozen/unordered_map.h>
-
 #include "ThreadPool.h"
 #include "ProgramPool.h"
 
@@ -276,33 +273,42 @@ class BashppServer {
 		using RequestHandler = GenericResponseMessage (BashppServer::*)(const GenericRequestMessage&);
 		using NotificationHandler = void (BashppServer::*)(const GenericNotificationMessage&);
 
+		struct RequestHandlerEntry {
+			std::string_view method_name;
+			RequestHandler handler;
+		};
+		struct NotificationHandlerEntry {
+			std::string_view method_name;
+			NotificationHandler handler;
+		};
+
 		/**
 		 * @brief Maps request types to the functions that handle them.
 		 * 
 		 */
-		static constexpr frozen::unordered_map<frozen::string, RequestHandler, 8> request_handlers = {
-			{"initialize", &BashppServer::handleInitialize},
-			{"textDocument/definition", &BashppServer::handleDefinition},
-			{"textDocument/completion", &BashppServer::handleCompletion},
-			{"textDocument/hover", &BashppServer::handleHover},
+		static constexpr std::array<RequestHandlerEntry, 8> request_handlers = {{
+			{"initialize",                  &BashppServer::handleInitialize},
+			{"textDocument/definition",     &BashppServer::handleDefinition},
+			{"textDocument/completion",     &BashppServer::handleCompletion},
+			{"textDocument/hover",          &BashppServer::handleHover},
 			{"textDocument/documentSymbol", &BashppServer::handleDocumentSymbol},
-			{"textDocument/rename", &BashppServer::handleRename},
-			{"textDocument/references", &BashppServer::handleReferences},
-			{"shutdown", &BashppServer::shutdown}
-		};
+			{"textDocument/rename",         &BashppServer::handleRename},
+			{"textDocument/references",     &BashppServer::handleReferences},
+			{"shutdown",                    &BashppServer::shutdown}
+		}};
 
 		/**
 		 * @brief Maps notification types to the functions that handle them.
 		 * 
 		 */
-		static constexpr frozen::unordered_map<frozen::string, NotificationHandler, 6> notification_handlers = {
-			{"textDocument/didOpen", &BashppServer::handleDidOpen},
-			{"textDocument/didChange", &BashppServer::handleDidChange},
+		static constexpr std::array<NotificationHandlerEntry, 6> notification_handlers = {{
+			{"textDocument/didOpen",            &BashppServer::handleDidOpen},
+			{"textDocument/didChange",          &BashppServer::handleDidChange},
 			{"workspace/didChangeWatchedFiles", &BashppServer::handleDidChangeWatchedFiles},
-			{"textDocument/didSave", &BashppServer::handleDidSave},
-			{"textDocument/didClose", &BashppServer::handleDidClose},
-			{"exit", &BashppServer::exit}
-		};
+			{"textDocument/didSave",            &BashppServer::handleDidSave},
+			{"textDocument/didClose",           &BashppServer::handleDidClose},
+			{"exit",                            &BashppServer::exit}
+		}};
 };
 
 } // namespace bpp

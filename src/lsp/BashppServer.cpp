@@ -139,16 +139,22 @@ void bpp::BashppServer::sendNotification(const GenericNotificationMessage& notif
 void bpp::BashppServer::processRequest(const GenericRequestMessage& request) {
 	GenericResponseMessage response;
 	response.id = request.id;
-	std::function<GenericResponseMessage(const GenericRequestMessage&)> request_handler = invalidRequestHandler;
-	const auto* it = request_handlers.find(frozen::string(request.method));
-	if (it != request_handlers.end()) {
-		request_handler = std::bind(it->second, this, std::placeholders::_1); // Bind the method to the current instance
-	} else {
+
+	const auto* it = std::find_if(request_handlers.begin(), request_handlers.end(),
+		[&request](const RequestHandlerEntry& entry) {
+			return entry.method_name == request.method;
+		}
+	);
+
+	if (it == request_handlers.end()) {
 		log("No handler found for request method: ", request.method);
+		response = invalidRequestHandler(request);
+		sendResponse(response);
+		return;
 	}
 
 	try {
-		response = request_handler(request);
+		response = (this->*(it->handler))(request);
 	} catch (const std::exception& e) {
 		log("Error handling request: ", e.what());
 		ResponseError err;
@@ -157,20 +163,25 @@ void bpp::BashppServer::processRequest(const GenericRequestMessage& request) {
 		err.data = e.what();
 		response.error = err;
 	}
+
 	sendResponse(response);
 }
 
 void bpp::BashppServer::processNotification(const GenericNotificationMessage& notification) {
-	std::function<void(const GenericNotificationMessage&)> notification_handler = invalidNotificationHandler;
-	const auto* it = notification_handlers.find(frozen::string(notification.method));
-	if (it != notification_handlers.end()) {
-		notification_handler = std::bind(it->second, this, std::placeholders::_1); // Bind the method to the current instance
-	} else {
+	const auto* it = std::find_if(notification_handlers.begin(), notification_handlers.end(),
+		[&notification](const NotificationHandlerEntry& entry) {
+			return entry.method_name == notification.method;
+		}
+	);
+
+	if (it == notification_handlers.end()) {
 		log("No handler found for notification method: ", notification.method);
+		invalidNotificationHandler(notification);
+		return;
 	}
 
 	try {
-		notification_handler(notification);
+		(this->*(it->handler))(notification);
 	} catch (const std::exception& e) {
 		log("Error handling notification: ", e.what());
 	}

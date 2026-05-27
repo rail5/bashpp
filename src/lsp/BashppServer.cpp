@@ -249,7 +249,7 @@ void bpp::BashppServer::publishDiagnostics(std::shared_ptr<bpp::bpp_program> pro
 		return;
 	}
 
-	std::vector<std::string> source_files = program->get_source_files();
+	const auto source_files = program->get_source_files();
 	for (const auto& file : source_files) {
 		PublishDiagnosticsNotification notification;
 		notification.params.uri = "file://" + file;

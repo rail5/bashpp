@@ -235,16 +235,7 @@ std::shared_ptr<bpp::bpp_entity> bpp_program::get_active_entity(
 	return entity;
 }
 
-std::vector<std::string> bpp_program::get_source_files() const {
-	std::vector<std::string> files;
-	files.reserve(entity_maps.size());
-	for (const auto& pair : entity_maps) {
-		files.push_back(pair.first);
-	}
-	return files;
-}
-
-std::string bpp_program::get_main_source_file() const {
+const std::string& bpp_program::get_main_source_file() const {
 	return main_source_file;
 }
 

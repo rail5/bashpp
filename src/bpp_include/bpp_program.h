@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
+#include <ranges>
 
 #include <include/EntityMap.h>
 #include <include/BashVersion.h>
@@ -114,8 +115,8 @@ class bpp_program : public bpp_code_entity, public std::enable_shared_from_this<
 			uint32_t line, uint32_t column
 		);
 
-		std::vector<std::string> get_source_files() const;
-		std::string get_main_source_file() const;
+		auto get_source_files() const { return entity_maps | std::views::keys; }
+		const std::string& get_main_source_file() const;
 		void set_main_source_file(const std::string& file);
 		void add_source_file(const std::string& file);
 

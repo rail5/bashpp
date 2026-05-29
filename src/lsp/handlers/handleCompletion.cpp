@@ -156,8 +156,6 @@ CompletionList bpp::BashppServer::handleDOTCompletion(const CompletionParams& pa
 	std::shared_ptr<bpp::bpp_object> obj = std::dynamic_pointer_cast<bpp::bpp_object>(referenced_entity);
 	std::shared_ptr<bpp::bpp_class> cls = std::dynamic_pointer_cast<bpp::bpp_class>(referenced_entity);
 
-	//std::vector<std::shared_ptr<bpp::bpp_method>> methods;
-	//std::vector<std::shared_ptr<bpp::bpp_datamember>> data_members;
 	std::shared_ptr<bpp::bpp_class> entity_class;
 	std::string entity_name;
 

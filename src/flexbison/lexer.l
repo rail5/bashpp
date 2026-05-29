@@ -1536,6 +1536,17 @@ extern void scanner_pop_state(yyscan_t yyscanner) {
 	yy_pop_state(yyscanner);
 }
 
+/**
+ * Get the currently-active Start Condition of the lexer.
+ *   In our parlance, get the "top of the mode stack."
+ * Unfortunately, yy_top_state() returns the *previously* active start condition, not the currently-active one
+ *   (For some reason [I'm sure it's a good one], Flex keeps the top of the stack as the previous condition, the current condition is not on the stack
+ *    Therefore `yy_push_state(new_condition)` does *not* in fact push `new_condition` onto the stack,
+ *    but instead pushes whatever is currently active onto the stack, and then marks `new_condition` as active, without pushing it.
+ *    This is, in my opinion, a very odd design choice, and a semantically *wrong* name for the function.
+ *
+ * So we have this little diddy to get the actual current start condition, which is the only one we care about.
+ */
 extern int scanner_current_state(yyscan_t yyscanner) {
 	struct yyguts_t* yyg = (struct yyguts_t*)yyscanner;
 	return YY_START;

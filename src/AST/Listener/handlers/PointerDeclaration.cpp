@@ -6,12 +6,12 @@
 
 #include <AST/Listener/BashppListener.h>
 
-#include <bpp_include/bpp_entity.h>
-#include <bpp_include/bpp_object.h>
-#include <bpp_include/bpp_code_entity.h>
-#include <bpp_include/bpp_class.h>
-#include <bpp_include/bpp_datamember.h>
-#include <bpp_include/bpp_program.h>
+#include <entities/bpp_entity.h>
+#include <entities/bpp_object.h>
+#include <entities/bpp_code_entity.h>
+#include <entities/bpp_class.h>
+#include <entities/bpp_datamember.h>
+#include <entities/bpp_program.h>
 
 void BashppListener::enterPointerDeclaration(std::shared_ptr<AST::PointerDeclaration> node) {
 	auto object_type = node->TYPE();

@@ -6,7 +6,7 @@
 
 #include <AST/Listener/BashppListener.h>
 
-#include <bpp_include/bash_command_sequence.h>
+#include <entities/bash_command_sequence.h>
 
 void BashppListener::enterConnective(std::shared_ptr<AST::Connective> node) {
 	bpp_assert(topmost_entity_is<bpp::bash_command_sequence>(), "Connective found outside of bash command sequence");

@@ -6,9 +6,9 @@
 
 #include <AST/Listener/BashppListener.h>
 
-#include <bpp_include/bpp_string.h>
-#include <bpp_include/bpp_code_entity.h>
-#include <bpp_include/bpp_program.h>
+#include <entities/bpp_string.h>
+#include <entities/bpp_code_entity.h>
+#include <entities/bpp_program.h>
 
 void BashppListener::enterSubshellSubstitution(std::shared_ptr<AST::SubshellSubstitution> node) {
 	// Get the current code entity

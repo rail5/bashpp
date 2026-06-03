@@ -9,12 +9,12 @@
 #include <lsp/include/resolve_entity.h>
 #include <lsp/include/validateUri.h>
 
-#include <bpp_include/bpp_entity.h>
-#include <bpp_include/bpp_program.h>
-#include <bpp_include/bpp_class.h>
-#include <bpp_include/bpp_object.h>
-#include <bpp_include/bpp_method.h>
-#include <bpp_include/bpp_datamember.h>
+#include <entities/bpp_entity.h>
+#include <entities/bpp_program.h>
+#include <entities/bpp_class.h>
+#include <entities/bpp_object.h>
+#include <entities/bpp_method.h>
+#include <entities/bpp_datamember.h>
 
 GenericResponseMessage bpp::BashppServer::handleCompletion(const GenericRequestMessage& request) {
 	CompletionRequestResponse response;

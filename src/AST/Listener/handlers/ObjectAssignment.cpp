@@ -6,10 +6,10 @@
 
 #include <AST/Listener/BashppListener.h>
 
-#include <bpp_include/bpp_object_assignment.h>
-#include <bpp_include/bpp_entity.h>
-#include <bpp_include/bpp_class.h>
-#include <bpp_include/bpp_program.h>
+#include <entities/bpp_object_assignment.h>
+#include <entities/bpp_entity.h>
+#include <entities/bpp_class.h>
+#include <entities/bpp_program.h>
 
 void BashppListener::enterObjectAssignment(std::shared_ptr<AST::ObjectAssignment> /*node*/) {
 	std::shared_ptr<bpp::bpp_object_assignment> object_assignment = std::make_shared<bpp::bpp_object_assignment>();

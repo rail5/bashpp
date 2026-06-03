@@ -6,7 +6,7 @@
 
 #include "BashppListener.h"
 
-#include <bpp_include/bpp_program.h>
+#include <entities/bpp_program.h>
 
 BashppListener::BashppListener() {
 	program = std::make_shared<bpp::bpp_program>();

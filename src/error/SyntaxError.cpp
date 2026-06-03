@@ -18,7 +18,7 @@
 
 #include <utf8cpp/utf8.h>
 
-#include <bpp_include/bpp_program.h>
+#include <entities/bpp_program.h>
 
 namespace bpp::ErrorHandling {
 

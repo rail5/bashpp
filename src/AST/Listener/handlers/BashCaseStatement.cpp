@@ -13,8 +13,8 @@
 
 #include <AST/Listener/BashppListener.h>
 
-#include <bpp_include/bash_case.h>
-#include <bpp_include/bpp_program.h>
+#include <entities/bash_case.h>
+#include <entities/bpp_program.h>
 
 void BashppListener::enterBashCaseStatement(std::shared_ptr<AST::BashCaseStatement> node) {
 	/**

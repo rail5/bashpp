@@ -6,8 +6,8 @@
 
 #include <AST/Listener/BashppListener.h>
 
-#include <bpp_include/bpp_dynamic_cast_statement.h>
-#include <bpp_include/bpp_class.h>
+#include <entities/bpp_dynamic_cast_statement.h>
+#include <entities/bpp_class.h>
 
 void BashppListener::enterDynamicCastTarget(std::shared_ptr<AST::DynamicCastTarget> /*node*/) {
 	/**

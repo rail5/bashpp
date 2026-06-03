@@ -6,7 +6,7 @@
 
 #include <AST/Listener/BashppListener.h>
 
-#include <bpp_include/bpp_string.h>
+#include <entities/bpp_string.h>
 
 void BashppListener::enterBashPipeline(std::shared_ptr<AST::BashPipeline> node) {
 	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());

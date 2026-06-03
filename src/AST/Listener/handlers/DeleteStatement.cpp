@@ -6,8 +6,8 @@
 
 #include <AST/Listener/BashppListener.h>
 
-#include <bpp_include/bpp_delete_statement.h>
-#include <bpp_include/bpp_object.h>
+#include <entities/bpp_delete_statement.h>
+#include <entities/bpp_object.h>
 
 void BashppListener::enterDeleteStatement(std::shared_ptr<AST::DeleteStatement> /*node*/) {
 	/**

@@ -6,7 +6,7 @@
 
 #include <AST/Listener/BashppListener.h>
 
-#include <bpp_include/bpp_string.h>
+#include <entities/bpp_string.h>
 
 void BashppListener::enterBashArithmeticSubstitution(std::shared_ptr<AST::BashArithmeticSubstitution> node) {
 	/**

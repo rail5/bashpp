@@ -6,8 +6,8 @@
 
 #include <AST/Listener/BashppListener.h>
 
-#include <bpp_include/bpp_class.h>
-#include <bpp_include/bpp_program.h>
+#include <entities/bpp_class.h>
+#include <entities/bpp_program.h>
 
 void BashppListener::enterClassDefinition(std::shared_ptr<AST::ClassDefinition> node) {
 	std::shared_ptr<bpp::bpp_class> new_class = std::make_shared<bpp::bpp_class>();

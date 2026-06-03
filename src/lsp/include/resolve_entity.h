@@ -11,7 +11,7 @@
 
 #include <lsp/ProgramPool.h>
 #include <AST/ASTNode.h>
-#include <bpp_include/bpp_codegen.h>
+#include <entities/bpp_codegen.h>
 
 std::shared_ptr<AST::ASTNode> find_node_at_position(std::shared_ptr<AST::ASTNode> node, uint32_t line, uint32_t column);
 

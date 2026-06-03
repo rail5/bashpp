@@ -11,7 +11,7 @@
 
 #include <AST/ASTNode.h>
 #include <AST/Nodes/Nodes.h>
-#include <bpp_include/bpp.h>
+#include <entities/bpp.h>
 
 namespace bpp::detail {
 template <typename T>

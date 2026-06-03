@@ -6,12 +6,12 @@
 
 #include <AST/Listener/BashppListener.h>
 
-#include <bpp_include/bpp_entity.h>
-#include <bpp_include/bpp_code_entity.h>
-#include <bpp_include/bpp_value_assignment.h>
-#include <bpp_include/bpp_object_assignment.h>
-#include <bpp_include/bpp_object.h>
-#include <bpp_include/bpp_datamember.h>
+#include <entities/bpp_entity.h>
+#include <entities/bpp_code_entity.h>
+#include <entities/bpp_value_assignment.h>
+#include <entities/bpp_object_assignment.h>
+#include <entities/bpp_object.h>
+#include <entities/bpp_datamember.h>
 
 void BashppListener::enterValueAssignment(std::shared_ptr<AST::ValueAssignment> node) {
 	std::shared_ptr<bpp::bpp_value_assignment> value_assignment_entity = std::make_shared<bpp::bpp_value_assignment>();

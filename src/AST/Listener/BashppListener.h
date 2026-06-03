@@ -17,8 +17,8 @@
 
 class BashppListener;
 
-#include <bpp_include/bpp_codegen.h>
-#include <bpp_include/bpp.h>
+#include <entities/bpp_codegen.h>
+#include <entities/bpp.h>
 #include <include/BashVersion.h>
 #include "ContextExpectations.h"
 

@@ -1,0 +1,39 @@
+/*
+ * Copyright (C) 2025 Andrew S. Rightenburg
+ * Bash++: Bash with classes
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+#include <AST/Listener/BashppListener.h>
+
+#include <bpp_include/bpp_string.h>
+
+void BashppListener::enterBashPipeline(std::shared_ptr<AST::BashPipeline> node) {
+	auto current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
+	if (current_code_entity == nullptr) {
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Command outside of a code entity");
+	}
+
+	std::shared_ptr<bpp::bpp_string> pipeline = std::make_shared<bpp::bpp_string>();
+	pipeline->set_containing_class(current_code_entity->get_containing_class());
+	pipeline->inherit(current_code_entity);
+	entity_stack.push(pipeline);
+}
+
+void BashppListener::exitBashPipeline(std::shared_ptr<AST::BashPipeline> /*node*/) {
+	bpp_assert(topmost_entity_is<bpp::bpp_string>(), "Pipeline context was not found in the entity stack");
+	auto pipeline = std::static_pointer_cast<bpp::bpp_string>(entity_stack.top());
+
+	entity_stack.pop();
+
+	bpp_assert(topmost_entity_is<bpp::bpp_code_entity>(), "Current code entity was not found in the entity stack");
+	auto current_code_entity = std::static_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
+
+	current_code_entity->add_code_to_previous_line(pipeline->get_pre_code());
+	current_code_entity->add_code_to_next_line(pipeline->get_post_code());
+	current_code_entity->add_code(pipeline->get_code());
+	
+	// Pass any instantiated objects etc up the chain
+	// (A pipeline is not a closed scope)
+	current_code_entity->adopt(pipeline);
+}

@@ -1,0 +1,61 @@
+/*
+ * Copyright (C) 2025 Andrew S. Rightenburg
+ * Bash++: Bash with classes
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+#include <AST/Listener/BashppListener.h>
+
+#include <bpp_include/bpp_dynamic_cast_statement.h>
+#include <bpp_include/bpp_class.h>
+
+void BashppListener::enterDynamicCastTarget(std::shared_ptr<AST::DynamicCastTarget> /*node*/) {
+	/**
+	 * Dynamic cast targets are the part of a dynamic cast statement that specifies the class we're casting to
+	 * This can be either an identifier (the name of the class), a shell variable (the name of the class is stored in the variable),
+	 * or an object reference (the class is determined by the output of the object reference)
+	 */
+
+	bpp_assert(topmost_entity_is<bpp::bpp_dynamic_cast_statement>(), "Dynamic cast context was not found in the entity stack");
+	auto dynamic_cast_entity = std::static_pointer_cast<bpp::bpp_dynamic_cast_statement>(entity_stack.top());
+
+	std::shared_ptr<bpp::bpp_dynamic_cast_target> cast_target_entity = std::make_shared<bpp::bpp_dynamic_cast_target>();
+	cast_target_entity->set_containing_class(dynamic_cast_entity->get_containing_class());
+	cast_target_entity->inherit(dynamic_cast_entity);
+	entity_stack.push(cast_target_entity);
+}
+
+void BashppListener::exitDynamicCastTarget(std::shared_ptr<AST::DynamicCastTarget> node) {
+	bpp_assert(topmost_entity_is<bpp::bpp_dynamic_cast_target>(), "Dynamic cast target context was not found in the entity stack");
+	auto cast_target_entity = std::static_pointer_cast<bpp::bpp_dynamic_cast_target>(entity_stack.top());
+
+	entity_stack.pop();
+
+	bpp_assert(topmost_entity_is<bpp::bpp_dynamic_cast_statement>(), "Dynamic cast context was not found in the entity stack");
+	auto dynamic_cast_entity = std::static_pointer_cast<bpp::bpp_dynamic_cast_statement>(entity_stack.top());
+
+	// Which kind of input did we receive?
+	if (node->TARGETTYPE().has_value()) {
+		// We have an identifier, so this is a class name
+		std::string class_name = node->TARGETTYPE().value().getValue();
+		dynamic_cast_entity->set_cast_to(class_name);
+
+		// Check if the class exists
+		std::shared_ptr<bpp::bpp_class> cast_class = dynamic_cast_entity->get_class(class_name);
+		if (cast_class == nullptr) {
+			show_warning(node->TARGETTYPE().value(), "Class not found: " + class_name + ". This cast may fail at runtime.");
+		} else {
+			cast_class->add_reference(
+				source_file,
+				node->TARGETTYPE().value().getLine(),
+				node->TARGETTYPE().value().getCharPositionInLine()
+			);
+		}
+	} else {
+		// There was an intervening object reference or shell variable, which was handled by its respective parser rule,
+		// And the resolved reference will have been added to this target entity via ->add_code()
+		dynamic_cast_entity->set_cast_to(cast_target_entity->get_code());
+		dynamic_cast_entity->add_code_to_previous_line(cast_target_entity->get_pre_code());
+		dynamic_cast_entity->add_code_to_next_line(cast_target_entity->get_post_code());
+	}
+}

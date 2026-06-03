@@ -29,7 +29,7 @@
 
 #include <include/parse_arguments.h>
 #include <AST/BashppParser.h>
-#include <listener/BashppListener.h>
+#include <AST/Listener/BashppListener.h>
 
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>

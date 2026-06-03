@@ -1,0 +1,65 @@
+/*
+ * Copyright (C) 2025 Andrew S. Rightenburg
+ * Bash++: Bash with classes
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+#include <AST/Listener/BashppListener.h>
+
+#include <bpp_include/bpp_dynamic_cast_statement.h>
+
+void BashppListener::enterDynamicCast(std::shared_ptr<AST::DynamicCast> node) {
+	/**
+	 * Dynamic cast statements take the form
+	 * 	@dynamic_cast<ClassName> Pointer
+	 * or:
+	 *  @dynamic_cast<$shell_variable> Pointer
+	 * or:
+	 *  @dynamic_cast<@object.reference> Pointer
+	 * Where Pointer is what we're casting
+	 *
+	 * If the cast is in the first form, ClassName refers to the class we're casting to
+	 * If it's in the second or third form, we expect that the class we're casting to will be evaluated at runtime
+	 * Ie, the class name is contained in the shell variable or object reference
+	 * 
+	 * This statement performs a runtime check to verify the cast is valid
+	 * And substitutes either the address of the cast object or the @nullptr value
+	*/
+
+	std::shared_ptr<bpp::bpp_code_entity> current_code_entity = std::dynamic_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
+	if (current_code_entity == nullptr) {
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Dynamic cast statement outside of code entity");
+	}
+
+	std::shared_ptr<bpp::bpp_dynamic_cast_statement> dynamic_cast_entity = std::make_shared<bpp::bpp_dynamic_cast_statement>();
+	dynamic_cast_entity->set_containing_class(current_code_entity->get_containing_class());
+	dynamic_cast_entity->inherit(current_code_entity);
+
+	entity_stack.push(dynamic_cast_entity);
+	dynamic_cast_stack.push({});
+}
+
+void BashppListener::exitDynamicCast(std::shared_ptr<AST::DynamicCast> node) {
+	bpp_assert(topmost_entity_is<bpp::bpp_dynamic_cast_statement>(), "Dynamic cast context was not found in the entity stack");
+	auto dynamic_cast_entity = std::static_pointer_cast<bpp::bpp_dynamic_cast_statement>(entity_stack.top());
+
+	entity_stack.pop();
+	dynamic_cast_stack.pop();
+
+	bpp_assert(topmost_entity_is<bpp::bpp_code_entity>(), "Current code entity was not found in the entity stack");
+	auto current_code_entity = std::static_pointer_cast<bpp::bpp_code_entity>(entity_stack.top());
+
+	if (dynamic_cast_entity->get_cast_to().empty()) {
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Dynamic cast target not specified");
+	}
+
+	bpp::code_segment dynamic_cast_code = generate_dynamic_cast_code(dynamic_cast_entity->get_code(), dynamic_cast_entity->get_cast_to(), program);
+
+	current_code_entity->add_code_to_previous_line(dynamic_cast_entity->get_pre_code());
+	current_code_entity->add_code_to_previous_line(dynamic_cast_code.pre_code);
+
+	current_code_entity->add_code_to_next_line(dynamic_cast_entity->get_post_code());
+	current_code_entity->add_code_to_next_line(dynamic_cast_code.post_code);
+
+	current_code_entity->add_code(dynamic_cast_code.code);
+}

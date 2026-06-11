@@ -9,11 +9,11 @@
 #include <AST/ASTNode.h>
 #include <AST/Nodes/StringType.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class BashTestConditionCommand : public StringType {
 	public:
-		constexpr BashTestConditionCommand() : StringType(AST::NodeType::BashTestConditionCommand) {}
+		constexpr BashTestConditionCommand() : StringType(bpp::AST::NodeType::BashTestConditionCommand) {}
 
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
@@ -27,4 +27,4 @@ class BashTestConditionCommand : public StringType {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

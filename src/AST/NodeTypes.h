@@ -8,7 +8,7 @@
 
 #include <cstdint>
 
-namespace AST {
+namespace bpp::AST {
 enum class NodeType : uint8_t {
 	Program = 0,
 	ArrayAssignment,
@@ -70,4 +70,4 @@ enum class NodeType : uint8_t {
 	ValueAssignment,
 	ERROR_TYPE
 };
-} // namespace AST
+} // namespace bpp::AST

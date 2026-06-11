@@ -10,7 +10,7 @@
 #include <AST/AccessModifier.h>
 #include <optional>
 
-namespace AST {
+namespace bpp::AST {
 
 class MethodDefinition : public ASTNode {
 	public:
@@ -26,7 +26,7 @@ class MethodDefinition : public ASTNode {
 		std::vector<AST::Token<Parameter>> m_PARAMETERS;
 
 	public:
-		constexpr MethodDefinition() : ASTNode(AST::NodeType::MethodDefinition) {}
+		constexpr MethodDefinition() : ASTNode(bpp::AST::NodeType::MethodDefinition) {}
 
 		const AST::Token<std::string>& NAME() const {
 			return m_NAME;
@@ -92,4 +92,4 @@ class MethodDefinition : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

@@ -8,11 +8,11 @@
 
 #include <AST/ASTNode.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class DeleteStatement : public ASTNode {
 	public:
-		constexpr DeleteStatement() : ASTNode(AST::NodeType::DeleteStatement) {}
+		constexpr DeleteStatement() : ASTNode(bpp::AST::NodeType::DeleteStatement) {}
 
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
@@ -27,4 +27,4 @@ class DeleteStatement : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

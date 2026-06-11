@@ -8,13 +8,13 @@
 
 #include <AST/ASTNode.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class NewStatement : public ASTNode {
 	protected:
 		AST::Token<std::string> m_TYPE;
 	public:
-		constexpr NewStatement() : ASTNode(AST::NodeType::NewStatement) {}
+		constexpr NewStatement() : ASTNode(bpp::AST::NodeType::NewStatement) {}
 
 		const AST::Token<std::string>& TYPE() const {
 			return m_TYPE;
@@ -37,4 +37,4 @@ class NewStatement : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

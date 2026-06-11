@@ -10,7 +10,7 @@
 #include <AST/Nodes/RawText.h>
 #include <cstdint>
 
-namespace AST {
+namespace bpp::AST {
 
 /**
  * @class StringType
@@ -22,7 +22,7 @@ namespace AST {
  */
 class StringType : public ASTNode {
 	public:
-		constexpr explicit StringType(AST::NodeType type) : ASTNode(type) {}
+		constexpr explicit StringType(bpp::AST::NodeType type) : ASTNode(type) {}
 		/**
 		 * @brief Adds text to the string, either by appending to the last RawText child or creating a new one.
 		 * The result should be that the node contains an alternating sequence of RawText nodes and interpolations,
@@ -32,7 +32,7 @@ class StringType : public ASTNode {
 		 */
 		void addText(const AST::Token<std::string>& text) {
 			auto lastChild = getLastChild();
-			if (lastChild && lastChild->getType() == AST::NodeType::RawText) {
+			if (lastChild && lastChild->getType() == bpp::AST::NodeType::RawText) {
 				std::static_pointer_cast<AST::RawText>(lastChild)->appendText(text);
 			} else {
 				auto rawTextNode = std::make_shared<AST::RawText>();
@@ -43,7 +43,7 @@ class StringType : public ASTNode {
 
 		void addText(const std::string& text) {
 			auto lastChild = getLastChild();
-			if (lastChild && lastChild->getType() == AST::NodeType::RawText) {
+			if (lastChild && lastChild->getType() == bpp::AST::NodeType::RawText) {
 				std::static_pointer_cast<AST::RawText>(lastChild)->appendText(text);
 			} else {
 				auto rawTextNode = std::make_shared<AST::RawText>();
@@ -56,4 +56,4 @@ class StringType : public ASTNode {
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override = 0; // Pure virtual, to prevent direct instantiation
 };
 
-} // namespace AST
+} // namespace bpp::AST

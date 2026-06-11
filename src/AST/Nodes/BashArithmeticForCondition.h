@@ -9,7 +9,7 @@
 #include <AST/ASTNode.h>
 #include <AST/Nodes/StringType.h>
 
-namespace AST {
+namespace bpp::AST {
 
 /**
  * @class BashArithmeticForCondition
@@ -20,7 +20,7 @@ namespace AST {
  */
 class BashArithmeticForCondition : public StringType {
 	public:
-		constexpr BashArithmeticForCondition() : StringType(AST::NodeType::BashArithmeticForCondition) {}
+		constexpr BashArithmeticForCondition() : StringType(bpp::AST::NodeType::BashArithmeticForCondition) {}
 
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
@@ -34,4 +34,4 @@ class BashArithmeticForCondition : public StringType {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

@@ -17,7 +17,7 @@
 
 #define PRETTYPRINT_INDENTATION_AMOUNT 4
 
-namespace AST {
+namespace bpp::AST {
 
 /**
  * @class ASTNode
@@ -27,15 +27,15 @@ namespace AST {
  */
 class ASTNode {
 	private:
-		AST::NodeType _type = AST::NodeType::ERROR_TYPE;
+		bpp::AST::NodeType _type = bpp::AST::NodeType::ERROR_TYPE;
 	protected:
-		std::vector<std::shared_ptr<ASTNode>> children;
-		AST::FilePosition position;
-		AST::FilePosition end_position;
+		std::vector<std::shared_ptr<bpp::AST::ASTNode>> children;
+		bpp::AST::FilePosition position;
+		bpp::AST::FilePosition end_position;
 
 	public:
 		ASTNode() = default;
-		constexpr explicit ASTNode(AST::NodeType type) : _type(type) {}
+		constexpr explicit ASTNode(bpp::AST::NodeType type) : _type(type) {}
 		virtual ~ASTNode() = default;
 
 		ASTNode(const ASTNode& other) = default;
@@ -43,17 +43,17 @@ class ASTNode {
 		ASTNode(ASTNode&& other) noexcept = default;
 		ASTNode& operator=(ASTNode&& other) noexcept = default;
 		
-		constexpr AST::NodeType getType() const { return _type; }
+		constexpr bpp::AST::NodeType getType() const { return _type; }
 
 		void addChild(const std::shared_ptr<ASTNode>& child);
 		void addChildren(const std::vector<std::shared_ptr<ASTNode>>& childs);
 		const std::vector<std::shared_ptr<ASTNode>>& getChildren() const;
-		void setPosition(const AST::FilePosition& pos);
+		void setPosition(const bpp::AST::FilePosition& pos);
 		void setPosition(uint32_t line, uint32_t column);
-		const AST::FilePosition& getPosition() const;
-		void setEndPosition(const AST::FilePosition& pos);
+		const bpp::AST::FilePosition& getPosition() const;
+		void setEndPosition(const bpp::AST::FilePosition& pos);
 		void setEndPosition(uint32_t line, uint32_t column);
-		const AST::FilePosition& getEndPosition() const;
+		const bpp::AST::FilePosition& getEndPosition() const;
 
 		uint32_t getLine() const;
 		uint32_t getCharPositionInLine() const;
@@ -72,4 +72,4 @@ class ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

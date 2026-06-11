@@ -8,6 +8,8 @@
 
 #include <stack>
 
+namespace bpp::AST {
+
 /**
  * @struct ContextExpectations
  * @brief Represents the expectations for the current parsing context.
@@ -81,3 +83,5 @@ class ExpectationsStack {
 			return stack.top().can_take_object;
 		}
 };
+
+} // namespace bpp::AST

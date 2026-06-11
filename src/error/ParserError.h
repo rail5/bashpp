@@ -9,10 +9,10 @@
 #include <string>
 #include <AST/Position.h>
 
-namespace AST {
+namespace bpp::AST {
 struct ParserError {
 	std::string message;
 	AST::FilePosition start;
 	AST::FilePosition end;
 };
-} // namespace AST
+} // namespace bpp::AST

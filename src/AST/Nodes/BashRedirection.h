@@ -9,13 +9,13 @@
 #include <AST/ASTNode.h>
 #include <AST/Nodes/StringType.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class BashRedirection : public StringType {
 	protected:
 		AST::Token<std::string> m_OPERATOR;
 	public:
-		constexpr BashRedirection() : StringType(AST::NodeType::BashRedirection) {}
+		constexpr BashRedirection() : StringType(bpp::AST::NodeType::BashRedirection) {}
 
 		const AST::Token<std::string>& OPERATOR() const {
 			return m_OPERATOR;
@@ -36,4 +36,4 @@ class BashRedirection : public StringType {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

@@ -9,11 +9,11 @@
 #include <AST/ASTNode.h>
 #include <AST/Nodes/StringType.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class Rvalue : public StringType {
 	public:
-		constexpr Rvalue() : StringType(AST::NodeType::Rvalue) {}
+		constexpr Rvalue() : StringType(bpp::AST::NodeType::Rvalue) {}
 
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
@@ -27,4 +27,4 @@ class Rvalue : public StringType {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

@@ -9,14 +9,14 @@
 #include <AST/ASTNode.h>
 #include <optional>
 
-namespace AST {
+namespace bpp::AST {
 
 class ClassDefinition : public ASTNode {
 	protected:
 		AST::Token<std::string> m_CLASSNAME;
 		std::optional<AST::Token<std::string>> m_PARENTCLASSNAME;
 	public:
-		constexpr ClassDefinition() : ASTNode(AST::NodeType::ClassDefinition) {}
+		constexpr ClassDefinition() : ASTNode(bpp::AST::NodeType::ClassDefinition) {}
 
 		const AST::Token<std::string>& CLASSNAME() const {
 			return m_CLASSNAME;
@@ -54,4 +54,4 @@ class ClassDefinition : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

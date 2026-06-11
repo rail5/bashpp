@@ -7,7 +7,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 #include "parser.tab.hpp" // Bison header for token types
-#include <AST/Token.h> // For AST::Token<T>
+#include <AST/Token.h> // For bpp::AST::Token<T>
 #include <flexbison/ModeStack.h>
 #include <cstdint>
 #include <stack>
@@ -456,7 +456,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	/**
 	* Helper to get the text of the current token as a std::string.
 	*/
-	#define tokenText AST::Token<std::string>(std::string(yytext, yyleng), thisLexerState.token_beginning.line, thisLexerState.token_beginning.column)
+	#define tokenText bpp::AST::Token<std::string>(std::string(yytext, yyleng), thisLexerState.token_beginning.line, thisLexerState.token_beginning.column)
 %}
 
 <*>{
@@ -1023,7 +1023,7 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 		uint32_t start_column = thisLexerState.singlequote_start_column;
 		thisLexerState.singlequote_start_line = 0;
 		thisLexerState.singlequote_start_column = 0;
-		emit(SINGLEQUOTED_STRING, AST::Token<std::string>(thisLexerState.singlequote_contents, start_line, start_column));
+		emit(SINGLEQUOTED_STRING, bpp::AST::Token<std::string>(thisLexerState.singlequote_contents, start_line, start_column));
 	}
 }
 
@@ -1031,7 +1031,7 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 	/* The following rules are for handling string interpolations */
 	\\@ {
 		// Literal '@'
-		emit(STRING_CONTENT, AST::Token<std::string>("@", thisLexerState.token_beginning.line, thisLexerState.token_beginning.column));
+		emit(STRING_CONTENT, bpp::AST::Token<std::string>("@", thisLexerState.token_beginning.line, thisLexerState.token_beginning.column));
 	}
 
 	\\\$ {
@@ -1167,7 +1167,7 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 	^[a-zA-Z_][a-zA-Z_0-9]*$ {
 		// The heredoc delimiter must be at the start of the line
 		// And it must be the only thing on the line
-		AST::Token<std::string> id = tokenText;
+		bpp::AST::Token<std::string> id = tokenText;
 		if (!thisLexerState.heredoc_delimiters.empty() && thisLexerState.heredoc_delimiters.front() == id.getValue()) {
 			// End of heredoc content
 			thisModeStack.pop(); // Exit HEREDOC_CONTENT_MODE
@@ -1603,7 +1603,7 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token, yy
 			if (thisLexerState.incoming_token_can_be_lvalue) {
 				thisLexerState.incoming_token_can_be_lvalue = false;
 				std::string text = token.value.as<std::string>();
-				AST::Token<std::string> text_token(text, location.begin.line, location.begin.column);
+				bpp::AST::Token<std::string> text_token(text, location.begin.line, location.begin.column);
 				thisLexerState.expecting_assignment_operator = true; // After an identifier lvalue, we may expect an assignment operator
 				return yy::parser::make_IDENTIFIER_LVALUE(text_token, location);
 			} else if (thisLexerState.might_be_lexing_object_instantiation) {
@@ -1672,7 +1672,7 @@ yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token, yy
 			break;
 		case yy::parser::symbol_kind::S_CATCHALL:
 			{
-				AST::Token<std::string> vl = token.value.as<AST::Token<std::string>>();
+				bpp::AST::Token<std::string> vl = token.value.as<bpp::AST::Token<std::string>>();
 				if (vl.getValue() == "!") {
 					// '!' operator does not change lvalue considerations
 					// Kind of unfortunate that this is caught as a CATCHALL token

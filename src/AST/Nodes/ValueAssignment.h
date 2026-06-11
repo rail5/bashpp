@@ -8,13 +8,13 @@
 
 #include <AST/ASTNode.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class ValueAssignment : public ASTNode {
 	protected:
 		AST::Token<std::string> m_OPERATOR;
 	public:
-		constexpr ValueAssignment() : ASTNode(AST::NodeType::ValueAssignment) {}
+		constexpr ValueAssignment() : ASTNode(bpp::AST::NodeType::ValueAssignment) {}
 
 		const AST::Token<std::string>& OPERATOR() const {
 			return m_OPERATOR;
@@ -36,4 +36,4 @@ class ValueAssignment : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

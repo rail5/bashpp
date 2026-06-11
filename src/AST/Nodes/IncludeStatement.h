@@ -9,7 +9,7 @@
 #include <AST/ASTNode.h>
 #include <optional>
 
-namespace AST {
+namespace bpp::AST {
 
 class IncludeStatement : public ASTNode {
 	public:
@@ -34,7 +34,7 @@ class IncludeStatement : public ASTNode {
 		AST::Token<std::string> m_PATH;
 		std::optional<AST::Token<std::string>> m_ASPATH;
 	public:
-		constexpr IncludeStatement() : ASTNode(AST::NodeType::IncludeStatement) {}
+		constexpr IncludeStatement() : ASTNode(bpp::AST::NodeType::IncludeStatement) {}
 
 		const AST::Token<IncludeKeyword>& KEYWORD() const {
 			return m_KEYWORD;
@@ -95,4 +95,4 @@ class IncludeStatement : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

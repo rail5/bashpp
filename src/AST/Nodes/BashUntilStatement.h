@@ -8,11 +8,11 @@
 
 #include <AST/ASTNode.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class BashUntilStatement : public ASTNode {
 	public:
-		constexpr BashUntilStatement() : ASTNode(AST::NodeType::BashUntilStatement) {}
+		constexpr BashUntilStatement() : ASTNode(bpp::AST::NodeType::BashUntilStatement) {}
 
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
@@ -26,4 +26,4 @@ class BashUntilStatement : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

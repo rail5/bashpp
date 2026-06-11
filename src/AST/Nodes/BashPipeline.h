@@ -9,11 +9,11 @@
 #include <AST/ASTNode.h>
 #include <AST/Nodes/StringType.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class BashPipeline : public StringType {
 	public:
-		constexpr BashPipeline() : StringType(AST::NodeType::BashPipeline) {}
+		constexpr BashPipeline() : StringType(bpp::AST::NodeType::BashPipeline) {}
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashPipeline";
@@ -26,4 +26,4 @@ class BashPipeline : public StringType {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

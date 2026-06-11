@@ -29,7 +29,7 @@
 
 #include <include/parse_arguments.h>
 #include <AST/BashppParser.h>
-#include <AST/Listener/BashppListener.h>
+#include <AST/Listener/Listener.h>
 
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>
@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	AST::BashppParser parser;
+	bpp::AST::BashppParser parser;
 	if (args.input_from_stdin()) {
 		parser.setInputFromFilePtr(stdin, "<stdin>");
 	} else {
@@ -131,16 +131,16 @@ int main(int argc, char* argv[]) {
 		args.set_output_file(std::string(temp_file_vec.data()));
 	}
 
-	std::unique_ptr<BashppListener> listener = std::make_unique<BashppListener>();
-	listener->set_source_file(full_path_of_input_file);
-	listener->set_include_paths(args.include_paths());
-	listener->set_code_buffer(code_buffer);
-	listener->set_output_stream(output_stream);
-	listener->set_output_file(args.output_file().value_or(""));
-	listener->set_run_on_exit(args.run_on_exit());
-	listener->set_suppress_warnings(args.suppress_warnings());
-	listener->set_target_bash_version(args.target_bash_version());
-	listener->set_arguments(args.program_arguments());
+	std::unique_ptr<bpp::AST::Listener> listener = std::make_unique<bpp::AST::Listener>();
+	//listener->set_source_file(full_path_of_input_file);
+	//listener->set_include_paths(args.include_paths());
+	//listener->set_code_buffer(code_buffer);
+	//listener->set_output_stream(output_stream);
+	//listener->set_output_file(args.output_file().value_or(""));
+	//listener->set_run_on_exit(args.run_on_exit());
+	//listener->set_suppress_warnings(args.suppress_warnings());
+	//listener->set_target_bash_version(args.target_bash_version());
+	//listener->set_arguments(args.program_arguments());
 	listener->set_parser_errors(parser_errors);
 
 	try {
@@ -160,5 +160,5 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	return listener->get_exit_code();
+	//return listener->get_exit_code();
 }

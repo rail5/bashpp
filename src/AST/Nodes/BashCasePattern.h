@@ -8,11 +8,11 @@
 
 #include <AST/ASTNode.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class BashCasePattern : public ASTNode {
 	public:
-		constexpr BashCasePattern() : ASTNode(AST::NodeType::BashCasePattern) {}
+		constexpr BashCasePattern() : ASTNode(bpp::AST::NodeType::BashCasePattern) {}
 
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
@@ -26,4 +26,4 @@ class BashCasePattern : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

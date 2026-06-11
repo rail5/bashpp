@@ -13,7 +13,7 @@
 #include <AST/Nodes/Nodes.h>
 #include <include/ParserPosition.h>
 #include <error/ParserError.h>
-typedef std::shared_ptr<AST::ASTNode> ASTNodePtr;
+typedef std::shared_ptr<bpp::AST::ASTNode> ASTNodePtr;
 typedef void* yyscan_t;
 }
 
@@ -24,7 +24,7 @@ void yyerror(const char *s);
 %}
 
 %lex-param { yyscan_t yyscanner }
-%parse-param { std::shared_ptr<AST::Program>& program } { bool& current_command_can_receive_lvalues } { const std::string& source_file } { const std::vector<std::string>& include_chain } { std::vector<AST::ParserError>& errors } { yyscan_t yyscanner }
+%parse-param { std::shared_ptr<bpp::AST::Program>& program } { bool& current_command_can_receive_lvalues } { const std::string& source_file } { const std::vector<std::string>& include_chain } { std::vector<bpp::AST::ParserError>& errors } { yyscan_t yyscanner }
 
 %define parse.error verbose
 
@@ -54,20 +54,20 @@ void yyerror(const char *s);
 		//       BashRedirection
 		// If that structure changes, this will break.
 		if (statements.size() != 1) return false;
-		if (statements[0]->getType() != AST::NodeType::BashCommandSequence) return false;
-		auto commandSequence = std::static_pointer_cast<AST::BashCommandSequence>(statements[0]);
+		if (statements[0]->getType() != bpp::AST::NodeType::BashCommandSequence) return false;
+		auto commandSequence = std::static_pointer_cast<bpp::AST::BashCommandSequence>(statements[0]);
 
 		if (commandSequence->getChildren().size() != 1) return false;
-		if (commandSequence->getChildren()[0]->getType() != AST::NodeType::BashPipeline) return false;
-		auto pipeline = std::static_pointer_cast<AST::BashPipeline>(commandSequence->getChildren()[0]);
+		if (commandSequence->getChildren()[0]->getType() != bpp::AST::NodeType::BashPipeline) return false;
+		auto pipeline = std::static_pointer_cast<bpp::AST::BashPipeline>(commandSequence->getChildren()[0]);
 
 		if (pipeline->getChildren().size() != 1) return false;
-		if (pipeline->getChildren()[0]->getType() != AST::NodeType::BashCommand) return false;
-		auto command = std::static_pointer_cast<AST::BashCommand>(pipeline->getChildren()[0]);
+		if (pipeline->getChildren()[0]->getType() != bpp::AST::NodeType::BashCommand) return false;
+		auto command = std::static_pointer_cast<bpp::AST::BashCommand>(pipeline->getChildren()[0]);
 
 		if (command->getChildren().size() != 1) return false;
-		if (command->getChildren()[0]->getType() != AST::NodeType::BashRedirection) return false;
-		auto redirection = std::static_pointer_cast<AST::BashRedirection>(command->getChildren()[0]);
+		if (command->getChildren()[0]->getType() != bpp::AST::NodeType::BashRedirection) return false;
+		auto redirection = std::static_pointer_cast<bpp::AST::BashRedirection>(command->getChildren()[0]);
 
 		if (!redirection->OPERATOR().getValue().contains('<')) return false;
 
@@ -75,23 +75,23 @@ void yyerror(const char *s);
 	}
 }
 
-%token <AST::Token<std::string>> ESCAPED_CHAR WS DELIM
+%token <bpp::AST::Token<std::string>> ESCAPED_CHAR WS DELIM
 %token DOUBLEAMPERSAND DOUBLEPIPE PIPE
 
-%token <AST::Token<std::string>> SINGLEQUOTED_STRING
+%token <bpp::AST::Token<std::string>> SINGLEQUOTED_STRING
 
 %token QUOTE_BEGIN QUOTE_END
-%token <AST::Token<std::string>> STRING_CONTENT
+%token <bpp::AST::Token<std::string>> STRING_CONTENT
 
 %token AT AT_LVALUE
 %token KEYWORD_THIS KEYWORD_THIS_LVALUE KEYWORD_SUPER KEYWORD_SUPER_LVALUE
 %token LBRACE RBRACE
-%token <AST::Token<std::string>> LANGLE RANGLE LANGLE_AMPERSAND RANGLE_AMPERSAND AMPERSAND_RANGLE
+%token <bpp::AST::Token<std::string>> LANGLE RANGLE LANGLE_AMPERSAND RANGLE_AMPERSAND AMPERSAND_RANGLE
 %token COLON PLUS_EQUALS EQUALS ASTERISK DEREFERENCE_OPERATOR AMPERSAND DOT
 %token EMPTY_ASSIGNMENT
 
 %token KEYWORD_INCLUDE KEYWORD_INCLUDE_ONCE KEYWORD_AS KEYWORD_DYNAMIC_CAST
-%token <AST::Token<std::string>> INCLUDE_TYPE INCLUDE_PATH
+%token <bpp::AST::Token<std::string>> INCLUDE_TYPE INCLUDE_PATH
 
 %token SUPERSHELL_START SUPERSHELL_END SUBSHELL_START SUBSHELL_END SUBSHELL_SUBSTITUTION_START SUBSHELL_SUBSTITUTION_END
 %token ARRAY_ASSIGNMENT_START ARRAY_ASSIGNMENT_END
@@ -101,41 +101,41 @@ void yyerror(const char *s);
 %token KEYWORD_CLASS KEYWORD_VIRTUAL KEYWORD_METHOD KEYWORD_CONSTRUCTOR KEYWORD_DESTRUCTOR
 %token KEYWORD_NEW KEYWORD_DELETE KEYWORD_NULLPTR
 
-%token <AST::Token<std::string>> IDENTIFIER IDENTIFIER_LVALUE
+%token <bpp::AST::Token<std::string>> IDENTIFIER IDENTIFIER_LVALUE
 %token KEYWORD_PUBLIC KEYWORD_PRIVATE KEYWORD_PROTECTED
 %token KEYWORD_TYPEOF
 
 %token ARRAY_INDEX_START ARRAY_INDEX_END LBRACKET RBRACKET
 %token REF_START REF_START_LVALUE REF_END
-%token <AST::Token<std::string>> BASH_VAR
+%token <bpp::AST::Token<std::string>> BASH_VAR
 %token BASH_VAR_START BASH_VAR_END
 %token HASH
 %token HEREDOC_CONTENT_START HERESTRING_START
-%token <AST::Token<std::string>> HEREDOC_START HEREDOC_DELIMITER HEREDOC_END
+%token <bpp::AST::Token<std::string>> HEREDOC_START HEREDOC_DELIMITER HEREDOC_END
 %token BASH_KEYWORD_CASE BASH_KEYWORD_IN BASH_CASE_PATTERN_DELIM BASH_CASE_PATTERN_TERMINATOR BASH_KEYWORD_ESAC
-%token <AST::Token<std::string>> BASH_CASE_BODY_BEGIN
+%token <bpp::AST::Token<std::string>> BASH_CASE_BODY_BEGIN
 %token BASH_KEYWORD_SELECT BASH_KEYWORD_FOR BASH_KEYWORD_DO BASH_KEYWORD_DONE
 %token ARITH_FOR_CONDITION_START ARITH_FOR_CONDITION_END
 %token INCREMENT_OPERATOR DECREMENT_OPERATOR
-%token <AST::Token<std::string>> INTEGER COMPARISON_OPERATOR
+%token <bpp::AST::Token<std::string>> INTEGER COMPARISON_OPERATOR
 %token BASH_KEYWORD_IF BASH_KEYWORD_THEN BASH_KEYWORD_ELIF BASH_KEYWORD_ELSE BASH_KEYWORD_FI
 %token BASH_KEYWORD_WHILE BASH_KEYWORD_UNTIL
 %token BASH_KEYWORD_FUNCTION BASH_FUNCTION_OPEN
-%token <AST::Token<std::string>> BASH_FUNCTION_LABEL
+%token <bpp::AST::Token<std::string>> BASH_FUNCTION_LABEL
 %token BASH_TEST_CONDITION_START BASH_TEST_CONDITION_END
 %token BASH_KEYWORD_LOCAL
 
 %token EXCLAM
-%token <AST::Token<std::string>> EXPANSION_BEGIN PARAMETER_EXPANSION_CONTENT
+%token <bpp::AST::Token<std::string>> EXPANSION_BEGIN PARAMETER_EXPANSION_CONTENT
 
-%token <AST::Token<std::string>> PROCESS_SUBSTITUTION_START
+%token <bpp::AST::Token<std::string>> PROCESS_SUBSTITUTION_START
 %token PROCESS_SUBSTITUTION_END
 %token BASH_ARITHMETIC_START BASH_ARITHMETIC_END
-%token <AST::Token<std::string>> BASH_53_NATIVE_SUPERSHELL_START
+%token <bpp::AST::Token<std::string>> BASH_53_NATIVE_SUPERSHELL_START
 %token BASH_53_NATIVE_SUPERSHELL_END
 
 /* Handling unrecognized tokens */
-%token <AST::Token<std::string>> CATCHALL
+%token <bpp::AST::Token<std::string>> CATCHALL
 
 
 %precedence CONCAT_STOP
@@ -160,15 +160,15 @@ void yyerror(const char *s);
 %type <std::vector<ASTNodePtr>> statements
 %type <ASTNodePtr> statement
 
-%type <AST::Token<AST::IncludeStatement::IncludeKeyword>> include_keyword
+%type <bpp::AST::Token<bpp::AST::IncludeStatement::IncludeKeyword>> include_keyword
 %type <ASTNodePtr> include_statement
 
 %type <ASTNodePtr> class_definition
-%type <AST::Token<AST::AccessModifier>> access_modifier access_modifier_keyword
+%type <bpp::AST::Token<bpp::AST::AccessModifier>> access_modifier access_modifier_keyword
 %type <ASTNodePtr> datamember_declaration
 
-%type <AST::Token<AST::MethodDefinition::Parameter>> parameter
-%type <std::vector<AST::Token<AST::MethodDefinition::Parameter>>> maybe_parameter_list
+%type <bpp::AST::Token<bpp::AST::MethodDefinition::Parameter>> parameter
+%type <std::vector<bpp::AST::Token<bpp::AST::MethodDefinition::Parameter>>> maybe_parameter_list
 %type <ASTNodePtr> method_definition constructor_definition destructor_definition
 
 %type <ASTNodePtr> block supershell subshell_raw subshell_substitution dollar_subshell deprecated_subshell
@@ -198,7 +198,7 @@ void yyerror(const char *s);
 
 %type <ASTNodePtr> operative_command_word
 
-%type <AST::Token<std::string>> raw_text_token
+%type <bpp::AST::Token<std::string>> raw_text_token
 
 %type <std::vector<ASTNodePtr>> command_redirections
 
@@ -217,20 +217,20 @@ void yyerror(const char *s);
 %type <ASTNodePtr> bash_53_native_supershell
 %type <ASTNodePtr> array_assignment
 
-%type <AST::Token<std::string>> maybe_include_type maybe_as_clause maybe_parent_class
-%type <AST::Token<std::string>> assignment_operator
-%type <AST::Token<std::string>> maybe_exclam
-%type <AST::Token<std::string>> maybe_hash
-%type <AST::Token<std::string>> heredoc_header
-%type <AST::Token<std::string>> bash_for_or_select_variable
-%type <AST::Token<std::string>> arith_operator comparison_operator
-%type <AST::Token<std::string>> redirection_operator
-%type <AST::Token<std::string>> logical_connective
+%type <bpp::AST::Token<std::string>> maybe_include_type maybe_as_clause maybe_parent_class
+%type <bpp::AST::Token<std::string>> assignment_operator
+%type <bpp::AST::Token<std::string>> maybe_exclam
+%type <bpp::AST::Token<std::string>> maybe_hash
+%type <bpp::AST::Token<std::string>> heredoc_header
+%type <bpp::AST::Token<std::string>> bash_for_or_select_variable
+%type <bpp::AST::Token<std::string>> arith_operator comparison_operator
+%type <bpp::AST::Token<std::string>> redirection_operator
+%type <bpp::AST::Token<std::string>> logical_connective
 
 %%
 
 program: statements {
-		std::shared_ptr<AST::Program> astRoot = std::make_shared<AST::Program>();
+		std::shared_ptr<bpp::AST::Program> astRoot = std::make_shared<bpp::AST::Program>();
 		astRoot->addChildren($1);
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
@@ -242,7 +242,7 @@ program: statements {
 	;
 
 statements:
-	/* empty */ { $$ = std::vector<std::shared_ptr<AST::ASTNode>>(); }
+	/* empty */ { $$ = std::vector<std::shared_ptr<bpp::AST::ASTNode>>(); }
 	| statements statement { $$ = std::move($1); if ($2) $$.push_back($2); }
 	;
 
@@ -250,7 +250,7 @@ statement:
 	DELIM {
 		set_incoming_token_can_be_lvalue(true, yyscanner);
 		set_received_local_keyword(false, yyscanner);
-		auto node = std::make_shared<AST::RawText>();
+		auto node = std::make_shared<bpp::AST::RawText>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -261,12 +261,11 @@ statement:
 	| shell_command_sequence %prec CONCAT_STOP { $$ = $1; }
 	| include_statement { $$ = $1; }
 	| class_definition { $$ = $1; }
-	| datamember_declaration {  $$ = $1; }
+	| datamember_declaration { $$ = $1; }
 	| method_definition { $$ = $1; }
 	| constructor_definition { $$ = $1; }
 	| destructor_definition { $$ = $1; }
 	| object_instantiation { $$ = $1; }
-	| pointer_declaration { $$ = $1; }
 	| delete_statement { $$ = $1; }
 	| bash_function { $$ = $1; }
 	| error DELIM {
@@ -292,7 +291,7 @@ statement:
 
 shell_command_sequence:
 	pipeline %prec CONCAT_STOP {
-		auto node = std::make_shared<AST::BashCommandSequence>();
+		auto node = std::make_shared<bpp::AST::BashCommandSequence>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -301,12 +300,12 @@ shell_command_sequence:
 		$$ = node;
 	}
 	| shell_command_sequence logical_connective maybe_whitespace pipeline {
-		auto commandSequence = std::dynamic_pointer_cast<AST::BashCommandSequence>($1);
-		auto connective = std::make_shared<AST::Connective>();
+		auto commandSequence = std::dynamic_pointer_cast<bpp::AST::BashCommandSequence>($1);
+		auto connective = std::make_shared<bpp::AST::Connective>();
 		if ($2.getValue() == "&&") {
-			connective->setType(AST::Connective::ConnectiveType::AND);
+			connective->setType(bpp::AST::Connective::ConnectiveType::AND);
 		} else {
-			connective->setType(AST::Connective::ConnectiveType::OR);
+			connective->setType(bpp::AST::Connective::ConnectiveType::OR);
 		}
 		commandSequence->addChild(connective);
 		commandSequence->addChild($4);
@@ -317,7 +316,7 @@ shell_command_sequence:
 
 pipeline:
 	shell_command %prec CONCAT_STOP {
-		auto node = std::make_shared<AST::BashPipeline>();
+		auto node = std::make_shared<bpp::AST::BashPipeline>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -326,7 +325,7 @@ pipeline:
 		$$ = node;
 	}
 	| pipeline PIPE maybe_whitespace shell_command {
-		auto pipeline = std::dynamic_pointer_cast<AST::BashPipeline>($1);
+		auto pipeline = std::dynamic_pointer_cast<bpp::AST::BashPipeline>($1);
 		pipeline->addText(" | "); // Preserve pipe symbol
 		pipeline->addChild($4);
 		pipeline->setEndPosition(@4.end.line, @4.end.column);
@@ -342,7 +341,7 @@ logical_connective:
 shell_command:
 	simple_command %prec CONCAT_STOP { current_command_can_receive_lvalues = true; $$ = $1; }
 	| bash_case_statement command_redirections %prec CONCAT_STOP {
-		auto node = std::make_shared<AST::BashCommand>();
+		auto node = std::make_shared<bpp::AST::BashCommand>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -352,7 +351,7 @@ shell_command:
 		$$ = node;
 	}
 	| bash_select_statement command_redirections %prec CONCAT_STOP {
-		auto node = std::make_shared<AST::BashCommand>();
+		auto node = std::make_shared<bpp::AST::BashCommand>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -362,7 +361,7 @@ shell_command:
 		$$ = node;
 	}
 	| bash_for_statement command_redirections %prec CONCAT_STOP {
-		auto node = std::make_shared<AST::BashCommand>();
+		auto node = std::make_shared<bpp::AST::BashCommand>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -372,7 +371,7 @@ shell_command:
 		$$ = node;
 	}
 	| bash_arithmetic_for_statement command_redirections %prec CONCAT_STOP {
-		auto node = std::make_shared<AST::BashCommand>();
+		auto node = std::make_shared<bpp::AST::BashCommand>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -382,7 +381,7 @@ shell_command:
 		$$ = node;
 	}
 	| bash_if_statement command_redirections %prec CONCAT_STOP {
-		auto node = std::make_shared<AST::BashCommand>();
+		auto node = std::make_shared<bpp::AST::BashCommand>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -392,7 +391,7 @@ shell_command:
 		$$ = node;
 	}
 	| bash_while_statement command_redirections %prec CONCAT_STOP {
-		auto node = std::make_shared<AST::BashCommand>();
+		auto node = std::make_shared<bpp::AST::BashCommand>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -402,7 +401,7 @@ shell_command:
 		$$ = node;
 	}
 	| bash_until_statement command_redirections %prec CONCAT_STOP {
-		auto node = std::make_shared<AST::BashCommand>();
+		auto node = std::make_shared<bpp::AST::BashCommand>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -426,7 +425,7 @@ command_redirections:
 
 simple_command_sequence:
 	simple_pipeline %prec CONCAT_STOP {
-		auto node = std::make_shared<AST::BashCommandSequence>();
+		auto node = std::make_shared<bpp::AST::BashCommandSequence>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -435,12 +434,12 @@ simple_command_sequence:
 		$$ = node;
 	}
 	| simple_command_sequence logical_connective maybe_whitespace simple_pipeline {
-		auto commandSequence = std::dynamic_pointer_cast<AST::BashCommandSequence>($1);
-		auto connective = std::make_shared<AST::Connective>();
+		auto commandSequence = std::dynamic_pointer_cast<bpp::AST::BashCommandSequence>($1);
+		auto connective = std::make_shared<bpp::AST::Connective>();
 		if ($2.getValue() == "&&") {
-			connective->setType(AST::Connective::ConnectiveType::AND);
+			connective->setType(bpp::AST::Connective::ConnectiveType::AND);
 		} else {
-			connective->setType(AST::Connective::ConnectiveType::OR);
+			connective->setType(bpp::AST::Connective::ConnectiveType::OR);
 		}
 		commandSequence->addChild(connective);
 		commandSequence->addChild($4);
@@ -452,7 +451,7 @@ simple_command_sequence:
 simple_pipeline:
 	simple_command %prec CONCAT_STOP {
 		current_command_can_receive_lvalues = true;
-		auto node = std::make_shared<AST::BashPipeline>();
+		auto node = std::make_shared<bpp::AST::BashPipeline>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -463,7 +462,7 @@ simple_pipeline:
 	| simple_pipeline PIPE maybe_whitespace simple_command {
 		current_command_can_receive_lvalues = true;
 
-		auto pipeline = std::dynamic_pointer_cast<AST::BashPipeline>($1);
+		auto pipeline = std::dynamic_pointer_cast<bpp::AST::BashPipeline>($1);
 		pipeline->addText(" | "); // Preserve pipe symbol
 		pipeline->addChild($4);
 		pipeline->setEndPosition(@4.end.line, @4.end.column);
@@ -473,7 +472,7 @@ simple_pipeline:
 
 simple_command:
 	simple_command_element {
-		auto node = std::make_shared<AST::BashCommand>();
+		auto node = std::make_shared<bpp::AST::BashCommand>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -482,7 +481,7 @@ simple_command:
 		$$ = node;
 	}
 	| simple_command WS simple_command_element {
-		auto command = std::dynamic_pointer_cast<AST::BashCommand>($1);
+		auto command = std::dynamic_pointer_cast<bpp::AST::BashCommand>($1);
 		command->addText(" "); // Preserve whitespace
 		command->addChild($3);
 		command->setEndPosition(@3.end.line, @3.end.column);
@@ -495,7 +494,7 @@ simple_command:
 	}
 	| bash_test_condition_command {
 		current_command_can_receive_lvalues = false;
-		auto node = std::make_shared<AST::BashCommand>();
+		auto node = std::make_shared<bpp::AST::BashCommand>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -505,7 +504,7 @@ simple_command:
 	}
 	| simple_command WS bash_test_condition_command {
 		current_command_can_receive_lvalues = false;
-		auto command = std::dynamic_pointer_cast<AST::BashCommand>($1);
+		auto command = std::dynamic_pointer_cast<bpp::AST::BashCommand>($1);
 		command->addText(" "); // Preserve whitespace
 		command->addChild($3);
 		command->setEndPosition(@3.end.line, @3.end.column);
@@ -516,6 +515,7 @@ simple_command:
 simple_command_element:
 	shell_variable_assignment { $$ = $1; }
 	| object_assignment { $$ = $1; }
+	| pointer_declaration { $$ = $1; }
 	| redirection { $$ = $1; }
 	| operative_command_element { current_command_can_receive_lvalues = false; $$ = $1; }
 	| valid_rvalue %prec CONCAT_STOP { current_command_can_receive_lvalues = false; $$ = $1; }
@@ -567,7 +567,7 @@ operative_command_element:
  */
 operative_command_word:
 	IDENTIFIER_LVALUE {
-		auto node = std::make_shared<AST::RawText>();
+		auto node = std::make_shared<bpp::AST::RawText>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -576,7 +576,7 @@ operative_command_word:
 		$$ = node;
 	}
 	| operative_command_word raw_text_token {
-		auto node = std::dynamic_pointer_cast<AST::RawText>($1);
+		auto node = std::dynamic_pointer_cast<bpp::AST::RawText>($1);
 		assert(node != nullptr);
 		node->appendText($2.getValue());
 		node->setEndPosition(@2.end.line, @2.end.column);
@@ -589,7 +589,7 @@ raw_text_token:
 	| INTEGER { $$ = $1; }
 	| SINGLEQUOTED_STRING { $$ = $1; }
 	| CATCHALL { $$ = $1; }
-	| KEYWORD_NULLPTR { $$ = AST::Token<std::string>("0", @1.begin.line, @1.begin.column); }
+	| KEYWORD_NULLPTR { $$ = bpp::AST::Token<std::string>("0", @1.begin.line, @1.begin.column); }
 	;
 
 redirection:
@@ -614,7 +614,7 @@ redirection:
 		if (current_command_can_receive_lvalues)
 			set_incoming_token_can_be_lvalue(true, yyscanner);
 
-		auto node = std::make_shared<AST::BashRedirection>();
+		auto node = std::make_shared<bpp::AST::BashRedirection>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -626,7 +626,7 @@ redirection:
 	| heredoc_header {
 		if (current_command_can_receive_lvalues)
 			set_incoming_token_can_be_lvalue(true, yyscanner);
-		auto node = std::make_shared<AST::RawText>();
+		auto node = std::make_shared<bpp::AST::RawText>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -643,19 +643,19 @@ redirection:
 
 redirection_operator:
 	LANGLE { $$ = $1; }
-	| LANGLE RANGLE { $$ = AST::Token<std::string>($1.getValue() + $2.getValue(), @1.begin.line, @1.begin.column); }
+	| LANGLE RANGLE { $$ = bpp::AST::Token<std::string>($1.getValue() + $2.getValue(), @1.begin.line, @1.begin.column); }
 	| LANGLE_AMPERSAND { $$ = $1; }
 	| RANGLE { $$ = $1; }
-	| RANGLE RANGLE { $$ = AST::Token<std::string>($1.getValue() + $2.getValue(), @1.begin.line, @1.begin.column); }
+	| RANGLE RANGLE { $$ = bpp::AST::Token<std::string>($1.getValue() + $2.getValue(), @1.begin.line, @1.begin.column); }
 	| RANGLE_AMPERSAND { $$ = $1; }
-	| RANGLE PIPE { $$ = AST::Token<std::string>($1.getValue() + "|", @1.begin.line, @1.begin.column); }
+	| RANGLE PIPE { $$ = bpp::AST::Token<std::string>($1.getValue() + "|", @1.begin.line, @1.begin.column); }
 	| AMPERSAND_RANGLE { $$ = $1; }
-	| AMPERSAND_RANGLE RANGLE { $$ = AST::Token<std::string>($1.getValue() + $2.getValue(), @1.begin.line, @1.begin.column); }
+	| AMPERSAND_RANGLE RANGLE { $$ = bpp::AST::Token<std::string>($1.getValue() + $2.getValue(), @1.begin.line, @1.begin.column); }
 	;
 
 block:
 	LBRACE whitespace_or_delimiter statements RBRACE {
-		auto node = std::make_shared<AST::Block>();
+		auto node = std::make_shared<bpp::AST::Block>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -667,7 +667,7 @@ block:
 
 valid_rvalue:
 	EMPTY_ASSIGNMENT {
-		auto node = std::make_shared<AST::Rvalue>();
+		auto node = std::make_shared<bpp::AST::Rvalue>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -676,7 +676,7 @@ valid_rvalue:
 		$$ = node;
 	}
 	| array_assignment {
-		auto node = std::make_shared<AST::Rvalue>();
+		auto node = std::make_shared<bpp::AST::Rvalue>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -685,7 +685,7 @@ valid_rvalue:
 		$$ = node;
 	}
 	| subshell_raw {
-		auto node = std::make_shared<AST::Rvalue>();
+		auto node = std::make_shared<bpp::AST::Rvalue>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -694,7 +694,7 @@ valid_rvalue:
 		$$ = node;
 	}
 	| new_statement {
-		auto node = std::make_shared<AST::Rvalue>();
+		auto node = std::make_shared<bpp::AST::Rvalue>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -703,7 +703,7 @@ valid_rvalue:
 		$$ = node;
 	}
 	| dynamic_cast {
-		auto node = std::make_shared<AST::Rvalue>();
+		auto node = std::make_shared<bpp::AST::Rvalue>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -712,7 +712,7 @@ valid_rvalue:
 		$$ = node;
 	}
 	| typeof_expression {
-		auto node = std::make_shared<AST::Rvalue>();
+		auto node = std::make_shared<bpp::AST::Rvalue>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -725,7 +725,7 @@ valid_rvalue:
 
 array_assignment:
 	ARRAY_ASSIGNMENT_START statements ARRAY_ASSIGNMENT_END {
-		auto node = std::make_shared<AST::ArrayAssignment>();
+		auto node = std::make_shared<bpp::AST::ArrayAssignment>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -737,7 +737,7 @@ array_assignment:
 
 concatenated_rvalue:
 	concatenatable_rvalue %prec CONCAT_STOP {
-		auto rvalue = std::make_shared<AST::Rvalue>();
+		auto rvalue = std::make_shared<bpp::AST::Rvalue>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		rvalue->setPosition(line_number, column_number);
@@ -746,7 +746,7 @@ concatenated_rvalue:
 		$$ = rvalue;
 	}
 	| concatenated_rvalue concatenatable_rvalue {
-		auto rvalue = std::dynamic_pointer_cast<AST::Rvalue>($1);
+		auto rvalue = std::dynamic_pointer_cast<bpp::AST::Rvalue>($1);
 		rvalue->addChild($2);
 		rvalue->setEndPosition(@2.end.line, @2.end.column);
 		$$ = rvalue;
@@ -755,7 +755,7 @@ concatenated_rvalue:
 
 concatenatable_rvalue:
 	IDENTIFIER {
-		auto node = std::make_shared<AST::RawText>();
+		auto node = std::make_shared<bpp::AST::RawText>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -764,7 +764,7 @@ concatenatable_rvalue:
 		$$ = node;
 	}
 	| INTEGER {
-		auto node = std::make_shared<AST::RawText>();
+		auto node = std::make_shared<bpp::AST::RawText>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -773,7 +773,7 @@ concatenatable_rvalue:
 		$$ = node;
 	}
 	| SINGLEQUOTED_STRING {
-		auto node = std::make_shared<AST::RawText>();
+		auto node = std::make_shared<bpp::AST::RawText>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -782,16 +782,16 @@ concatenatable_rvalue:
 		$$ = node;
 	}
 	| KEYWORD_NULLPTR {
-		auto node = std::make_shared<AST::RawText>();
+		auto node = std::make_shared<bpp::AST::RawText>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
-		node->setText(AST::Token<std::string>("0", line_number, column_number)); // Represent nullptr as 0
+		node->setText(bpp::AST::Token<std::string>("0", line_number, column_number)); // Represent nullptr as 0
 		$$ = node;
 	}
 	| CATCHALL { 
-		auto node = std::make_shared<AST::RawText>();
+		auto node = std::make_shared<bpp::AST::RawText>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -824,35 +824,35 @@ whitespace_or_delimiter:
 
 include_statement:
 	include_keyword maybe_include_type INCLUDE_PATH maybe_as_clause DELIM {
-		AST::Token<AST::IncludeStatement::IncludeKeyword> keyword = $1;
-		AST::Token<AST::IncludeStatement::IncludeType> type;
+		bpp::AST::Token<bpp::AST::IncludeStatement::IncludeKeyword> keyword = $1;
+		bpp::AST::Token<bpp::AST::IncludeStatement::IncludeType> type;
 		type.setLine(@2.begin.line);
 		type.setCharPositionInLine(@2.begin.column);
 		if ($2 == "dynamic") {
-			type.setValue(AST::IncludeStatement::IncludeType::DYNAMIC);
+			type.setValue(bpp::AST::IncludeStatement::IncludeType::DYNAMIC);
 		} else {
-			type.setValue(AST::IncludeStatement::IncludeType::STATIC);
+			type.setValue(bpp::AST::IncludeStatement::IncludeType::STATIC);
 		}
 
-		AST::IncludeStatement::PathType pathType;
+		bpp::AST::IncludeStatement::PathType pathType;
 		std::string pathText = $3;
 		if (pathText.front() == '<') {
-			pathType = AST::IncludeStatement::PathType::ANGLEBRACKET;
+			pathType = bpp::AST::IncludeStatement::PathType::ANGLEBRACKET;
 		} else {
-			pathType = AST::IncludeStatement::PathType::QUOTED;
+			pathType = bpp::AST::IncludeStatement::PathType::QUOTED;
 		}
 
 		pathText = pathText.substr(1, pathText.length() - 2); // Remove surrounding quotes or angle brackets
 
-		AST::Token<std::string> path(pathText, @3.begin.line, @3.begin.column);
+		bpp::AST::Token<std::string> path(pathText, @3.begin.line, @3.begin.column);
 
 		std::string asPathText = $4;
 		uint32_t asPathLine = $4.getLine();
 		uint32_t asPathColumn = $4.getCharPositionInLine();
 		if (!asPathText.empty()) asPathText = asPathText.substr(1, asPathText.length() - 2); // Remove surrounding quotes
-		AST::Token<std::string> asPath(asPathText, asPathLine, asPathColumn);
+		bpp::AST::Token<std::string> asPath(asPathText, asPathLine, asPathColumn);
 
-		auto node = std::make_shared<AST::IncludeStatement>();
+		auto node = std::make_shared<bpp::AST::IncludeStatement>();
 
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
@@ -869,8 +869,8 @@ include_statement:
 	;
 
 include_keyword:
-	KEYWORD_INCLUDE { $$ = AST::IncludeStatement::IncludeKeyword::INCLUDE; }
-	| KEYWORD_INCLUDE_ONCE { $$ = AST::IncludeStatement::IncludeKeyword::INCLUDE_ONCE; }
+	KEYWORD_INCLUDE { $$ = bpp::AST::IncludeStatement::IncludeKeyword::INCLUDE; }
+	| KEYWORD_INCLUDE_ONCE { $$ = bpp::AST::IncludeStatement::IncludeKeyword::INCLUDE_ONCE; }
 	;
 
 maybe_include_type:
@@ -887,7 +887,7 @@ object_instantiation:
 	AT_LVALUE IDENTIFIER instantiation_suffix {
 		if ($3 == nullptr) {
 			// Not an object instantiation, but an lvalue object reference
-			auto node = std::make_shared<AST::ObjectReference>();
+			auto node = std::make_shared<bpp::AST::ObjectReference>();
 			uint32_t line_number = @1.begin.line;
 			uint32_t column_number = @1.begin.column;
 			node->setPosition(line_number, column_number);
@@ -901,7 +901,7 @@ object_instantiation:
 			$$ = node;
 		} else {
 			// Use the ObjectInstantiation node returned by instantiation_suffix
-			auto node = std::dynamic_pointer_cast<AST::ObjectInstantiation>($3);
+			auto node = std::dynamic_pointer_cast<bpp::AST::ObjectInstantiation>($3);
 			uint32_t line_number = @1.begin.line;
 			uint32_t column_number = @1.begin.column;
 			node->setPosition(line_number, column_number);
@@ -914,7 +914,7 @@ object_instantiation:
 
 instantiation_suffix:
 	WS IDENTIFIER maybe_default_value {
-		auto node = std::make_shared<AST::ObjectInstantiation>();
+		auto node = std::make_shared<bpp::AST::ObjectInstantiation>();
 		node->setIdentifier($2);
 		node->addChild($3);
 		$$ = node;
@@ -924,7 +924,7 @@ instantiation_suffix:
 
 pointer_declaration:
 	pointer_declaration_preface WS IDENTIFIER_LVALUE maybe_default_value {
-		auto node = std::dynamic_pointer_cast<AST::PointerDeclaration>($1);
+		auto node = std::dynamic_pointer_cast<bpp::AST::PointerDeclaration>($1);
 		node->setIdentifier($3);
 		node->setEndPosition(@4.end.line, @4.end.column);
 		node->addChild($4);
@@ -937,7 +937,7 @@ pointer_declaration_preface:
 	AT_LVALUE IDENTIFIER ASTERISK {
 		set_incoming_token_can_be_lvalue(true, yyscanner); // The following identifier should be an lvalue, let the lexer know
 		
-		auto node = std::make_shared<AST::PointerDeclaration>();
+		auto node = std::make_shared<bpp::AST::PointerDeclaration>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -949,7 +949,7 @@ pointer_declaration_preface:
 
 new_statement:
 	KEYWORD_NEW WS IDENTIFIER {
-		auto node = std::make_shared<AST::NewStatement>();
+		auto node = std::make_shared<bpp::AST::NewStatement>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -962,7 +962,7 @@ new_statement:
 
 delete_statement:
 	KEYWORD_DELETE WS object_reference {
-		auto node = std::make_shared<AST::DeleteStatement>();
+		auto node = std::make_shared<bpp::AST::DeleteStatement>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -973,7 +973,7 @@ delete_statement:
 	}
 	|
 	KEYWORD_DELETE WS self_reference {
-		auto node = std::make_shared<AST::DeleteStatement>();
+		auto node = std::make_shared<bpp::AST::DeleteStatement>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -986,7 +986,7 @@ delete_statement:
 
 class_definition:
 	KEYWORD_CLASS WS IDENTIFIER maybe_parent_class block {
-		auto node = std::make_shared<AST::ClassDefinition>();
+		auto node = std::make_shared<bpp::AST::ClassDefinition>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1004,8 +1004,8 @@ maybe_parent_class:
 	;
 
 datamember_declaration:
-	access_modifier IDENTIFIER_LVALUE maybe_default_value DELIM {
-		auto node = std::make_shared<AST::DatamemberDeclaration>();
+	access_modifier IDENTIFIER_LVALUE maybe_default_value maybe_whitespace DELIM {
+		auto node = std::make_shared<bpp::AST::DatamemberDeclaration>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1016,22 +1016,22 @@ datamember_declaration:
 
 		$$ = node;
 	}
-	| access_modifier object_instantiation {
-		auto node = std::make_shared<AST::DatamemberDeclaration>();
+	| access_modifier object_instantiation maybe_whitespace DELIM {
+		auto node = std::make_shared<bpp::AST::DatamemberDeclaration>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 
-		if (std::dynamic_pointer_cast<AST::ObjectInstantiation>($2) == nullptr) {
+		if (std::dynamic_pointer_cast<bpp::AST::ObjectInstantiation>($2) == nullptr) {
 			// Special-case: `@public @id`
 			// where `@id` has been given to us by ObjectInstantiation
 			// ObjectInstantiation should NOT capture that as one of its alternatives,
 			// but DOES (presently) in order to handle an ambiguity between object instantiations and object references in other contexts
 			// However:
 			// In the event that an ObjectInstantiation DOES capture `@id` alone (instead of `@id id`),
-			// it does not return it as a pointer to AST::ObjectInstantiation, but instead returns it
-			// as a pointer to AST::ObjectReference with the lvalue flag set.
+			// it does not return it as a pointer to bpp::AST::ObjectInstantiation, but instead returns it
+			// as a pointer to bpp::AST::ObjectReference with the lvalue flag set.
 			// At the very least, this allows us to detect this case.
 			// This whole thing reeks of one massive HACK however, from the way we chose to resolve the ambiguity to handling it here.
 			// TODO(@rail5): Clean this up
@@ -1046,8 +1046,8 @@ datamember_declaration:
 
 		$$ = node;
 	}
-	| access_modifier pointer_declaration {
-		auto node = std::make_shared<AST::DatamemberDeclaration>();
+	| access_modifier pointer_declaration maybe_whitespace DELIM {
+		auto node = std::make_shared<bpp::AST::DatamemberDeclaration>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1067,13 +1067,13 @@ access_modifier:
 	;
 
 access_modifier_keyword:
-	KEYWORD_PUBLIC { $$ = AST::AccessModifier::PUBLIC; }
-	| KEYWORD_PRIVATE { $$ = AST::AccessModifier::PRIVATE; }
-	| KEYWORD_PROTECTED { $$ = AST::AccessModifier::PROTECTED; }
+	KEYWORD_PUBLIC { $$ = bpp::AST::AccessModifier::PUBLIC; }
+	| KEYWORD_PRIVATE { $$ = bpp::AST::AccessModifier::PRIVATE; }
+	| KEYWORD_PROTECTED { $$ = bpp::AST::AccessModifier::PROTECTED; }
 	;
 
 maybe_default_value:
-	maybe_whitespace { $$ = nullptr; }
+	/* empty */ { $$ = nullptr; }
 	| value_assignment { $$ = $1; }
 	;
 
@@ -1084,7 +1084,7 @@ maybe_value_assignment:
 
 value_assignment:
 	assignment_operator valid_rvalue {
-		auto node = std::make_shared<AST::ValueAssignment>();
+		auto node = std::make_shared<bpp::AST::ValueAssignment>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1110,7 +1110,7 @@ assignment_operator:
 
 method_definition:
 	access_modifier KEYWORD_METHOD WS IDENTIFIER WS maybe_parameter_list block {
-		auto node = std::make_shared<AST::MethodDefinition>();
+		auto node = std::make_shared<bpp::AST::MethodDefinition>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1126,7 +1126,7 @@ method_definition:
 		$$ = node;
 	}
 	| KEYWORD_VIRTUAL WS access_modifier KEYWORD_METHOD WS IDENTIFIER WS maybe_parameter_list block {
-		auto node = std::make_shared<AST::MethodDefinition>();
+		auto node = std::make_shared<bpp::AST::MethodDefinition>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1144,28 +1144,28 @@ method_definition:
 	;
 
 maybe_parameter_list:
-	/* empty */ { $$ = std::vector<AST::Token<AST::MethodDefinition::Parameter>>(); }
+	/* empty */ { $$ = std::vector<bpp::AST::Token<bpp::AST::MethodDefinition::Parameter>>(); }
 	| maybe_parameter_list parameter { $$ = std::move($1); $$.push_back($2); }
 	;
 
 parameter:
 	IDENTIFIER WS {
-		AST::MethodDefinition::Parameter param;
+		bpp::AST::MethodDefinition::Parameter param;
 		param.type = std::nullopt;
 		param.name = $1;
 		param.pointer = false;
-		AST::Token<AST::MethodDefinition::Parameter> token;
+		bpp::AST::Token<bpp::AST::MethodDefinition::Parameter> token;
 		token.setValue(param);
 		token.setLine(@1.begin.line);
 		token.setCharPositionInLine(@1.begin.column);
 		$$ = token;
 	}
 	| AT IDENTIFIER ASTERISK WS IDENTIFIER WS {
-		AST::MethodDefinition::Parameter param;
+		bpp::AST::MethodDefinition::Parameter param;
 		param.type = $2;
 		param.name = $5;
 		param.pointer = true;
-		AST::Token<AST::MethodDefinition::Parameter> token;
+		bpp::AST::Token<bpp::AST::MethodDefinition::Parameter> token;
 		token.setValue(param);
 		token.setLine(@1.begin.line);
 		token.setCharPositionInLine(@1.begin.column);
@@ -1174,11 +1174,11 @@ parameter:
 	| AT IDENTIFIER WS IDENTIFIER WS {
 		/* Actually invalid, but error handling should come later when traversing the AST */
 		/* Invalid because methods cannot take non-primitive parameters */
-		AST::MethodDefinition::Parameter param;
+		bpp::AST::MethodDefinition::Parameter param;
 		param.type = $2;
 		param.name = $4;
 		param.pointer = false;
-		AST::Token<AST::MethodDefinition::Parameter> token;
+		bpp::AST::Token<bpp::AST::MethodDefinition::Parameter> token;
 		token.setValue(param);
 		token.setLine(@1.begin.line);
 		token.setCharPositionInLine(@1.begin.column);
@@ -1188,7 +1188,7 @@ parameter:
 
 constructor_definition:
 	KEYWORD_CONSTRUCTOR WS block {
-		auto node = std::make_shared<AST::ConstructorDefinition>();
+		auto node = std::make_shared<bpp::AST::ConstructorDefinition>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1200,7 +1200,7 @@ constructor_definition:
 
 destructor_definition:
 	KEYWORD_DESTRUCTOR WS block {
-		auto node = std::make_shared<AST::DestructorDefinition>();
+		auto node = std::make_shared<bpp::AST::DestructorDefinition>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1212,7 +1212,7 @@ destructor_definition:
 
 doublequoted_string:
 	QUOTE_BEGIN quote_contents QUOTE_END {
-		auto node = std::dynamic_pointer_cast<AST::DoublequotedString>($2);
+		auto node = std::dynamic_pointer_cast<bpp::AST::DoublequotedString>($2);
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1223,16 +1223,16 @@ doublequoted_string:
 	;
 
 quote_contents:
-	/* empty */ { $$ = std::make_shared<AST::DoublequotedString>(); }
+	/* empty */ { $$ = std::make_shared<bpp::AST::DoublequotedString>(); }
 	| quote_contents STRING_CONTENT {
 		$$ = $1;
 		$$->setEndPosition(@2.end.line, @2.end.column);
-		std::dynamic_pointer_cast<AST::DoublequotedString>($$)->addText($2);
+		std::dynamic_pointer_cast<bpp::AST::DoublequotedString>($$)->addText($2);
 	}
 	| quote_contents string_interpolation {
 		$$ = $1;
 		$$->setEndPosition(@2.end.line, @2.end.column);
-		std::dynamic_pointer_cast<AST::DoublequotedString>($$)->addChild($2);
+		std::dynamic_pointer_cast<bpp::AST::DoublequotedString>($$)->addChild($2);
 	}
 	;
 
@@ -1250,7 +1250,7 @@ string_interpolation:
 
 object_reference:
 	AT IDENTIFIER maybe_descend_object_hierarchy {
-		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($3);
+		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($3);
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1263,7 +1263,7 @@ object_reference:
 		$$ = node;
 	}
 	| REF_START maybe_hash IDENTIFIER maybe_descend_object_hierarchy maybe_array_index REF_END {
-		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($4);
+		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($4);
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1285,7 +1285,7 @@ object_reference:
 
 object_reference_lvalue:
 	AT_LVALUE IDENTIFIER maybe_descend_object_hierarchy maybe_array_index {
-		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($3);
+		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($3);
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1300,7 +1300,7 @@ object_reference_lvalue:
 		$$ = node;
 	}
 	| REF_START_LVALUE maybe_hash IDENTIFIER maybe_descend_object_hierarchy maybe_array_index REF_END {
-		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($4);
+		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($4);
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1322,26 +1322,26 @@ object_reference_lvalue:
 
 self_reference:
 	KEYWORD_THIS maybe_descend_object_hierarchy {
-		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 
-		node->setIdentifier(AST::Token<std::string>("this", @1.begin.line, @1.begin.column));
+		node->setIdentifier(bpp::AST::Token<std::string>("this", @1.begin.line, @1.begin.column));
 		node->setLvalue(false);
 		node->setSelfReference(true);
 
 		$$ = node;
 	}
 	| REF_START maybe_hash KEYWORD_THIS maybe_descend_object_hierarchy maybe_array_index REF_END {
-		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($4);
+		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($4);
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@6.end.line, @6.end.column);
 
-		node->setIdentifier(AST::Token<std::string>("this", @3.begin.line, @3.begin.column));
+		node->setIdentifier(bpp::AST::Token<std::string>("this", @3.begin.line, @3.begin.column));
 		node->setLvalue(false);
 		node->setSelfReference(true);
 
@@ -1354,26 +1354,26 @@ self_reference:
 		$$ = node;
 	}
 	| KEYWORD_SUPER maybe_descend_object_hierarchy {
-		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 
-		node->setIdentifier(AST::Token<std::string>("super", @1.begin.line, @1.begin.column));
+		node->setIdentifier(bpp::AST::Token<std::string>("super", @1.begin.line, @1.begin.column));
 		node->setLvalue(false);
 		node->setSelfReference(true);
 
 		$$ = node;
 	}
 	| REF_START maybe_hash KEYWORD_SUPER maybe_descend_object_hierarchy maybe_array_index REF_END {
-		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($4);
+		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($4);
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@6.end.line, @6.end.column);
 
-		node->setIdentifier(AST::Token<std::string>("super", @3.begin.line, @3.begin.column));
+		node->setIdentifier(bpp::AST::Token<std::string>("super", @3.begin.line, @3.begin.column));
 		node->setLvalue(false);
 		node->setSelfReference(true);
 
@@ -1389,13 +1389,13 @@ self_reference:
 
 self_reference_lvalue:
 	KEYWORD_THIS_LVALUE maybe_descend_object_hierarchy maybe_array_index {
-		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 
-		node->setIdentifier(AST::Token<std::string>("this", @1.begin.line, @1.begin.column));
+		node->setIdentifier(bpp::AST::Token<std::string>("this", @1.begin.line, @1.begin.column));
 		node->setLvalue(true);
 		node->setSelfReference(true);
 
@@ -1404,13 +1404,13 @@ self_reference_lvalue:
 		$$ = node;
 	}
 	| REF_START_LVALUE maybe_hash KEYWORD_THIS maybe_descend_object_hierarchy maybe_array_index REF_END {
-		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($4);
+		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($4);
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@6.end.line, @6.end.column);
 
-		node->setIdentifier(AST::Token<std::string>("this", @3.begin.line, @3.begin.column));
+		node->setIdentifier(bpp::AST::Token<std::string>("this", @3.begin.line, @3.begin.column));
 		node->setLvalue(true);
 		node->setSelfReference(true);
 
@@ -1423,26 +1423,26 @@ self_reference_lvalue:
 		$$ = node;
 	}
 	| KEYWORD_SUPER_LVALUE maybe_descend_object_hierarchy {
-		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 
-		node->setIdentifier(AST::Token<std::string>("super", @1.begin.line, @1.begin.column));
+		node->setIdentifier(bpp::AST::Token<std::string>("super", @1.begin.line, @1.begin.column));
 		node->setLvalue(true);
 		node->setSelfReference(true);
 
 		$$ = node;
 	}
 	| REF_START_LVALUE maybe_hash KEYWORD_SUPER maybe_descend_object_hierarchy maybe_array_index REF_END {
-		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($4);
+		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($4);
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@6.end.line, @6.end.column);
 
-		node->setIdentifier(AST::Token<std::string>("super", @3.begin.line, @3.begin.column));
+		node->setIdentifier(bpp::AST::Token<std::string>("super", @3.begin.line, @3.begin.column));
 		node->setLvalue(true);
 		node->setSelfReference(true);
 
@@ -1457,9 +1457,9 @@ self_reference_lvalue:
 	;
 
 maybe_descend_object_hierarchy:
-	/* empty */ { $$ = std::make_shared<AST::ObjectReference>(); }
+	/* empty */ { $$ = std::make_shared<bpp::AST::ObjectReference>(); }
 	| maybe_descend_object_hierarchy DOT IDENTIFIER {
-		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($1);
+		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($1);
 		node->addIdentifier($3);
 		$$ = node;
 	}
@@ -1478,7 +1478,7 @@ maybe_array_index:
 
 array_index:
 	valid_rvalue {
-		auto node = std::make_shared<AST::ArrayIndex>();
+		auto node = std::make_shared<bpp::AST::ArrayIndex>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1488,14 +1488,14 @@ array_index:
 	}
 	| AT {
 		// '@' is a valid array index, as in ${array[@]}
-		auto node = std::make_shared<AST::ArrayIndex>();
+		auto node = std::make_shared<bpp::AST::ArrayIndex>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
-		auto atNode = std::make_shared<AST::RawText>();
+		auto atNode = std::make_shared<bpp::AST::RawText>();
 		atNode->setPosition(line_number, column_number);
-		atNode->setText(AST::Token<std::string>("@", line_number, column_number));
+		atNode->setText(bpp::AST::Token<std::string>("@", line_number, column_number));
 		node->addChild(atNode);
 		$$ = node;
 	}
@@ -1513,13 +1513,13 @@ maybe_hash:
 
 bash_variable:
 	BASH_VAR_START maybe_exclam maybe_hash IDENTIFIER maybe_array_index maybe_parameter_expansion BASH_VAR_END {
-		auto node = std::make_shared<AST::BashVariable>();
+		auto node = std::make_shared<bpp::AST::BashVariable>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@7.end.line, @7.end.column);
 
-		AST::Token<std::string> text;
+		bpp::AST::Token<std::string> text;
 		text.setLine(@2.begin.line);
 		text.setCharPositionInLine(@2.begin.column);
 		text.setValue($2.getValue() + $3.getValue() + $4.getValue());
@@ -1529,7 +1529,7 @@ bash_variable:
 		$$ = node;
 	}
 	| BASH_VAR {
-		auto node = std::make_shared<AST::RawText>();
+		auto node = std::make_shared<bpp::AST::RawText>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1542,7 +1542,7 @@ bash_variable:
 maybe_parameter_expansion:
 	/* empty */ { $$ = nullptr; }
 	| EXPANSION_BEGIN valid_rvalue {
-		auto node = std::make_shared<AST::ParameterExpansion>();
+		auto node = std::make_shared<bpp::AST::ParameterExpansion>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1552,13 +1552,13 @@ maybe_parameter_expansion:
 		$$ = node;
 	}
 	| EXPANSION_BEGIN PARAMETER_EXPANSION_CONTENT {
-		auto node = std::make_shared<AST::ParameterExpansion>();
+		auto node = std::make_shared<bpp::AST::ParameterExpansion>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->setExpansionBegin($1);
-		auto contentNode = std::make_shared<AST::RawText>();
+		auto contentNode = std::make_shared<bpp::AST::RawText>();
 		contentNode->setPosition(@2.begin.line, @2.begin.column);
 		contentNode->setText($2);
 		node->addChild(contentNode);
@@ -1568,7 +1568,7 @@ maybe_parameter_expansion:
 
 dynamic_cast:
 	KEYWORD_DYNAMIC_CAST LANGLE cast_target RANGLE WS valid_rvalue {
-		auto node = std::make_shared<AST::DynamicCast>();
+		auto node = std::make_shared<bpp::AST::DynamicCast>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1581,7 +1581,7 @@ dynamic_cast:
 
 cast_target:
 	IDENTIFIER {
-		auto node = std::make_shared<AST::DynamicCastTarget>();
+		auto node = std::make_shared<bpp::AST::DynamicCastTarget>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1590,7 +1590,7 @@ cast_target:
 		$$ = node;
 	}
 	| bash_variable {
-		auto node = std::make_shared<AST::DynamicCastTarget>();
+		auto node = std::make_shared<bpp::AST::DynamicCastTarget>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1599,7 +1599,7 @@ cast_target:
 		$$ = node;
 	}
 	| object_reference {
-		auto node = std::make_shared<AST::DynamicCastTarget>();
+		auto node = std::make_shared<bpp::AST::DynamicCastTarget>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1608,7 +1608,7 @@ cast_target:
 		$$ = node;
 	}
 	| self_reference {
-		auto node = std::make_shared<AST::DynamicCastTarget>();
+		auto node = std::make_shared<bpp::AST::DynamicCastTarget>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1622,7 +1622,7 @@ object_assignment:
 	object_reference_lvalue value_assignment {
 		set_incoming_token_can_be_lvalue(true, yyscanner); // Lvalues can follow assignments
 
-		auto node = std::make_shared<AST::ObjectAssignment>();
+		auto node = std::make_shared<bpp::AST::ObjectAssignment>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1634,7 +1634,7 @@ object_assignment:
 	| self_reference_lvalue value_assignment {
 		set_incoming_token_can_be_lvalue(true, yyscanner); // Lvalues can follow assignments
 
-		auto node = std::make_shared<AST::ObjectAssignment>();
+		auto node = std::make_shared<bpp::AST::ObjectAssignment>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1646,7 +1646,7 @@ object_assignment:
 	| pointer_dereference_lvalue value_assignment {
 		set_incoming_token_can_be_lvalue(true, yyscanner); // Lvalues can follow assignments
 
-		auto node = std::make_shared<AST::ObjectAssignment>();
+		auto node = std::make_shared<bpp::AST::ObjectAssignment>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1661,7 +1661,7 @@ shell_variable_assignment:
 	IDENTIFIER_LVALUE value_assignment {
 		set_incoming_token_can_be_lvalue(true, yyscanner); // Lvalues can follow assignments
 
-		auto node = std::make_shared<AST::PrimitiveAssignment>();
+		auto node = std::make_shared<bpp::AST::PrimitiveAssignment>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1674,7 +1674,7 @@ shell_variable_assignment:
 		set_incoming_token_can_be_lvalue(true, yyscanner); // Lvalues can follow assignments
 		set_received_local_keyword(true, yyscanner); // Mark that we received the 'local' keyword for this line
 
-		auto node = std::make_shared<AST::PrimitiveAssignment>();
+		auto node = std::make_shared<bpp::AST::PrimitiveAssignment>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1688,7 +1688,7 @@ shell_variable_assignment:
 
 object_address:
 	AMPERSAND object_reference {
-		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
 		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '&' token
 		node->setEndPosition(@2.end.line, @2.end.column);
 
@@ -1697,7 +1697,7 @@ object_address:
 		$$ = node;
 	}
 	| AMPERSAND self_reference {
-		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
 		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '&' token
 		node->setEndPosition(@2.end.line, @2.end.column);
 
@@ -1714,14 +1714,14 @@ pointer_dereference:
 
 pointer_dereference_rvalue:
 	DEREFERENCE_OPERATOR object_reference {
-		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
 		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '*' token
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->setPointerDereference(true);
 		$$ = node;
 	}
 	| DEREFERENCE_OPERATOR self_reference {
-		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
 		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '*' token
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->setPointerDereference(true);
@@ -1731,14 +1731,14 @@ pointer_dereference_rvalue:
 
 pointer_dereference_lvalue:
 	DEREFERENCE_OPERATOR object_reference_lvalue {
-		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
 		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '*' token
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->setPointerDereference(true);
 		$$ = node;
 	}
 	| DEREFERENCE_OPERATOR self_reference_lvalue {
-		auto node = std::dynamic_pointer_cast<AST::ObjectReference>($2);
+		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
 		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '*' token
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->setPointerDereference(true);
@@ -1748,7 +1748,7 @@ pointer_dereference_lvalue:
 
 typeof_expression:
 	KEYWORD_TYPEOF WS valid_rvalue {
-		auto node = std::make_shared<AST::TypeofExpression>();
+		auto node = std::make_shared<bpp::AST::TypeofExpression>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1759,7 +1759,7 @@ typeof_expression:
 
 supershell:
 	SUPERSHELL_START statements SUPERSHELL_END {
-		auto node = std::make_shared<AST::Supershell>();
+		auto node = std::make_shared<bpp::AST::Supershell>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1771,7 +1771,7 @@ supershell:
 
 subshell_raw:
 	SUBSHELL_START statements SUBSHELL_END {
-		auto node = std::make_shared<AST::RawSubshell>();
+		auto node = std::make_shared<bpp::AST::RawSubshell>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1788,7 +1788,7 @@ subshell_substitution:
 
 dollar_subshell:
 	SUBSHELL_SUBSTITUTION_START statements SUBSHELL_SUBSTITUTION_END {
-		auto node = std::make_shared<AST::SubshellSubstitution>();
+		auto node = std::make_shared<bpp::AST::SubshellSubstitution>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1810,7 +1810,7 @@ deprecated_subshell:
 		// NOTE: The nesting depth is stored as the semantic value of the DEPRECATED_SUBSHELL_START token
 		assert($1 == $3 && "Mismatched deprecated subshell nesting depths!");
 
-		auto node = std::make_shared<AST::SubshellSubstitution>();
+		auto node = std::make_shared<bpp::AST::SubshellSubstitution>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1822,7 +1822,7 @@ deprecated_subshell:
 
 process_substitution:
 	PROCESS_SUBSTITUTION_START statements PROCESS_SUBSTITUTION_END {
-		auto node = std::make_shared<AST::ProcessSubstitution>();
+		auto node = std::make_shared<bpp::AST::ProcessSubstitution>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1835,7 +1835,7 @@ process_substitution:
 
 heredoc_header:
 	HEREDOC_START HEREDOC_DELIMITER {
-		AST::Token<std::string> header;
+		bpp::AST::Token<std::string> header;
 		header.setLine(@1.begin.line);
 		header.setCharPositionInLine(@1.begin.column);
 		header.setValue($1.getValue() + $2.getValue());
@@ -1845,7 +1845,7 @@ heredoc_header:
 
 heredoc_body:
 	HEREDOC_CONTENT_START heredoc_content HEREDOC_END {
-		auto node = std::dynamic_pointer_cast<AST::HeredocBody>($2);
+		auto node = std::dynamic_pointer_cast<bpp::AST::HeredocBody>($2);
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1856,14 +1856,14 @@ heredoc_body:
 	;
 
 heredoc_content:
-	/* empty */ { $$ = std::make_shared<AST::HeredocBody>(); }
+	/* empty */ { $$ = std::make_shared<bpp::AST::HeredocBody>(); }
 	| heredoc_content STRING_CONTENT {
-		auto node = std::dynamic_pointer_cast<AST::HeredocBody>($1);
+		auto node = std::dynamic_pointer_cast<bpp::AST::HeredocBody>($1);
 		node->addText($2);
 		$$ = node;
 	}
 	| heredoc_content string_interpolation {
-		auto node = std::dynamic_pointer_cast<AST::HeredocBody>($1);
+		auto node = std::dynamic_pointer_cast<bpp::AST::HeredocBody>($1);
 		node->addChild($2);
 		$$ = node;
 		}
@@ -1871,7 +1871,7 @@ heredoc_content:
 
 herestring:
 	HERESTRING_START maybe_whitespace valid_rvalue {
-		auto node = std::make_shared<AST::HereString>();
+		auto node = std::make_shared<bpp::AST::HereString>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1883,7 +1883,7 @@ herestring:
 
 bash_case_statement:
 	BASH_KEYWORD_CASE WS bash_case_header bash_case_body BASH_KEYWORD_ESAC {
-		auto node = std::make_shared<AST::BashCaseStatement>();
+		auto node = std::make_shared<bpp::AST::BashCaseStatement>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1901,7 +1901,7 @@ bash_case_header:
 bash_case_input:
 	valid_rvalue {
 		set_bash_case_input_received(true, yyscanner);
-		auto node = std::make_shared<AST::BashCaseInput>();
+		auto node = std::make_shared<bpp::AST::BashCaseInput>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1918,7 +1918,7 @@ bash_case_body:
 
 bash_case_pattern:
 	bash_case_pattern_header BASH_CASE_PATTERN_DELIM statements BASH_CASE_PATTERN_TERMINATOR {
-		auto node = std::make_shared<AST::BashCasePattern>();
+		auto node = std::make_shared<bpp::AST::BashCasePattern>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1930,16 +1930,16 @@ bash_case_pattern:
 	;
 
 bash_case_pattern_header:
-	/* empty */ { $$ = std::make_shared<AST::BashCasePatternHeader>(); }
+	/* empty */ { $$ = std::make_shared<bpp::AST::BashCasePatternHeader>(); }
 	| bash_case_pattern_header STRING_CONTENT {
-		auto node = std::dynamic_pointer_cast<AST::BashCasePatternHeader>($1);
+		auto node = std::dynamic_pointer_cast<bpp::AST::BashCasePatternHeader>($1);
 		node->setPosition(@1.begin.line, @1.begin.column);
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addText($2);
 		$$ = node;
 	}
 	| bash_case_pattern_header string_interpolation {
-		auto node = std::dynamic_pointer_cast<AST::BashCasePatternHeader>($1);
+		auto node = std::dynamic_pointer_cast<bpp::AST::BashCasePatternHeader>($1);
 		node->setPosition(@1.begin.line, @1.begin.column);
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($2);
@@ -1958,8 +1958,8 @@ bash_case_pattern_header:
  */
 bash_select_statement:
 	BASH_KEYWORD_SELECT WS bash_for_or_select_header DELIM maybe_whitespace BASH_KEYWORD_DO statements BASH_KEYWORD_DONE {
-		auto forStatement = std::dynamic_pointer_cast<AST::BashForStatement>($3);
-		auto selectStatement = std::make_shared<AST::BashSelectStatement>();
+		auto forStatement = std::dynamic_pointer_cast<bpp::AST::BashForStatement>($3);
+		auto selectStatement = std::make_shared<bpp::AST::BashSelectStatement>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		selectStatement->setPosition(line_number, column_number);
@@ -1967,7 +1967,7 @@ bash_select_statement:
 		// Earlier, we assumed it was a 'for' statement by default
 		if (!forStatement) {
 			// This should not happen, but just in case
-			selectStatement = std::dynamic_pointer_cast<AST::BashSelectStatement>($3);
+			selectStatement = std::dynamic_pointer_cast<bpp::AST::BashSelectStatement>($3);
 		} else {
 			selectStatement->setVariable(forStatement->VARIABLE());
 			selectStatement->addChildren(forStatement->getChildren());
@@ -1976,8 +1976,8 @@ bash_select_statement:
 		$$ = selectStatement;
 	}
 	| BASH_KEYWORD_SELECT WS bash_for_or_select_header DELIM maybe_whitespace block {
-		auto forStatement = std::dynamic_pointer_cast<AST::BashForStatement>($3);
-		auto selectStatement = std::make_shared<AST::BashSelectStatement>();
+		auto forStatement = std::dynamic_pointer_cast<bpp::AST::BashForStatement>($3);
+		auto selectStatement = std::make_shared<bpp::AST::BashSelectStatement>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		selectStatement->setPosition(line_number, column_number);
@@ -1985,7 +1985,7 @@ bash_select_statement:
 		// Earlier, we assumed it was a 'for' statement by default
 		if (!forStatement) {
 			// This should not happen, but just in case
-			selectStatement = std::dynamic_pointer_cast<AST::BashSelectStatement>($3);
+			selectStatement = std::dynamic_pointer_cast<bpp::AST::BashSelectStatement>($3);
 		} else {
 			selectStatement->setVariable(forStatement->VARIABLE());
 			selectStatement->addChildren(forStatement->getChildren());
@@ -2001,7 +2001,7 @@ bash_for_or_select_header:
 		// 'for' is much more common than 'select'
 		// If it winds up being 'select' instead, the AST node will be updated later
 		// When we're in the bash_select_statement rule
-		auto forStatement = std::make_shared<AST::BashForStatement>();
+		auto forStatement = std::make_shared<bpp::AST::BashForStatement>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		forStatement->setPosition(line_number, column_number);
@@ -2014,13 +2014,13 @@ bash_for_or_select_header:
 bash_for_or_select_maybe_in_something:
 	maybe_whitespace { $$ = nullptr; }
 	| WS BASH_KEYWORD_IN WS bash_for_or_select_input {
-		auto inCondition = std::dynamic_pointer_cast<AST::BashInCondition>($4);
+		auto inCondition = std::dynamic_pointer_cast<bpp::AST::BashInCondition>($4);
 		inCondition->setPosition(@2.begin.line, @2.begin.column); // Move position to 'in' token
 		inCondition->setEndPosition(@4.end.line, @4.end.column);
 		$$ = inCondition;
 	}
 	| WS BASH_KEYWORD_IN maybe_whitespace {
-		auto node = std::make_shared<AST::BashInCondition>();
+		auto node = std::make_shared<bpp::AST::BashInCondition>();
 		uint32_t line_number = @2.begin.line;
 		uint32_t column_number = @2.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2038,7 +2038,7 @@ bash_for_or_select_variable:
 
 bash_for_or_select_input:
 	valid_rvalue {
-		auto node = std::make_shared<AST::BashInCondition>();
+		auto node = std::make_shared<bpp::AST::BashInCondition>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2047,7 +2047,7 @@ bash_for_or_select_input:
 		$$ = node;
 	}
 	| bash_for_or_select_input WS valid_rvalue {
-		auto inCondition = std::dynamic_pointer_cast<AST::BashInCondition>($1);
+		auto inCondition = std::dynamic_pointer_cast<bpp::AST::BashInCondition>($1);
 		inCondition->addText(" "); // Preserve whitespace between items
 		inCondition->addChild($3);
 		inCondition->setEndPosition(@3.end.line, @3.end.column);
@@ -2067,11 +2067,11 @@ bash_for_or_select_input:
  */
 bash_for_statement:
 	BASH_KEYWORD_FOR WS bash_for_or_select_header DELIM maybe_whitespace BASH_KEYWORD_DO statements BASH_KEYWORD_DONE {
-		auto forStatement = std::dynamic_pointer_cast<AST::BashForStatement>($3);
+		auto forStatement = std::dynamic_pointer_cast<bpp::AST::BashForStatement>($3);
 		if (!forStatement) {
 			// This should not happen, but just in case
-			auto selectStatement = std::dynamic_pointer_cast<AST::BashSelectStatement>($3);
-			forStatement = std::make_shared<AST::BashForStatement>();
+			auto selectStatement = std::dynamic_pointer_cast<bpp::AST::BashSelectStatement>($3);
+			forStatement = std::make_shared<bpp::AST::BashForStatement>();
 			forStatement->setVariable(selectStatement->VARIABLE());
 			forStatement->addChildren(selectStatement->getChildren());
 		}
@@ -2083,11 +2083,11 @@ bash_for_statement:
 		$$ = forStatement;
 	}
 	| BASH_KEYWORD_FOR WS bash_for_or_select_header DELIM maybe_whitespace block {
-		auto forStatement = std::dynamic_pointer_cast<AST::BashForStatement>($3);
+		auto forStatement = std::dynamic_pointer_cast<bpp::AST::BashForStatement>($3);
 		if (!forStatement) {
 			// This should not happen, but just in case
-			auto selectStatement = std::dynamic_pointer_cast<AST::BashSelectStatement>($3);
-			forStatement = std::make_shared<AST::BashForStatement>();
+			auto selectStatement = std::dynamic_pointer_cast<bpp::AST::BashSelectStatement>($3);
+			forStatement = std::make_shared<bpp::AST::BashForStatement>();
 			forStatement->setVariable(selectStatement->VARIABLE());
 			forStatement->addChildren(selectStatement->getChildren());
 		}
@@ -2109,7 +2109,7 @@ bash_for_statement:
  */
 bash_arithmetic_for_statement:
 	BASH_KEYWORD_FOR WS arithmetic_for_condition BASH_KEYWORD_DO statements BASH_KEYWORD_DONE {
-		auto node = std::make_shared<AST::BashArithmeticForStatement>();
+		auto node = std::make_shared<bpp::AST::BashArithmeticForStatement>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2119,7 +2119,7 @@ bash_arithmetic_for_statement:
 		$$ = node;
 	}
 	| BASH_KEYWORD_FOR WS arithmetic_for_condition DELIM maybe_whitespace BASH_KEYWORD_DO statements BASH_KEYWORD_DONE {
-		auto node = std::make_shared<AST::BashArithmeticForStatement>();
+		auto node = std::make_shared<bpp::AST::BashArithmeticForStatement>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2129,7 +2129,7 @@ bash_arithmetic_for_statement:
 		$$ = node;
 	}
 	| BASH_KEYWORD_FOR WS arithmetic_for_condition block {
-		auto node = std::make_shared<AST::BashArithmeticForStatement>();
+		auto node = std::make_shared<bpp::AST::BashArithmeticForStatement>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2139,7 +2139,7 @@ bash_arithmetic_for_statement:
 		$$ = node;
 	}
 	| BASH_KEYWORD_FOR WS arithmetic_for_condition DELIM maybe_whitespace block {
-		auto node = std::make_shared<AST::BashArithmeticForStatement>();
+		auto node = std::make_shared<bpp::AST::BashArithmeticForStatement>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2152,7 +2152,7 @@ bash_arithmetic_for_statement:
 
 arithmetic_for_condition:
 	ARITH_FOR_CONDITION_START arith_statement DELIM arith_statement DELIM arith_statement ARITH_FOR_CONDITION_END maybe_whitespace {
-		auto node = std::make_shared<AST::BashArithmeticForCondition>();
+		auto node = std::make_shared<bpp::AST::BashArithmeticForCondition>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2174,9 +2174,9 @@ arithmetic_for_condition:
  * - Increment/decrement operators applied to object references or shell variables (e.g., i++, ++i, i--, --i)
  */
 arith_statement:
-	/* empty */ { $$ = std::make_shared<AST::BashArithmeticStatement>(); }
+	/* empty */ { $$ = std::make_shared<bpp::AST::BashArithmeticStatement>(); }
 	| valid_rvalue {
-		auto node = std::make_shared<AST::BashArithmeticStatement>();
+		auto node = std::make_shared<bpp::AST::BashArithmeticStatement>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2185,12 +2185,12 @@ arith_statement:
 		$$ = node;
 	}
 	| IDENTIFIER_LVALUE {
-		auto node = std::make_shared<AST::BashArithmeticStatement>();
+		auto node = std::make_shared<bpp::AST::BashArithmeticStatement>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
-		auto rawText = std::make_shared<AST::RawText>();
+		auto rawText = std::make_shared<bpp::AST::RawText>();
 		rawText->setPosition(line_number, column_number);
 		rawText->setEndPosition(@1.end.line, @1.end.column);
 		rawText->setText($1);
@@ -2198,7 +2198,7 @@ arith_statement:
 		$$ = node;
 	}
 	| object_reference_lvalue {
-		auto node = std::make_shared<AST::BashArithmeticStatement>();
+		auto node = std::make_shared<bpp::AST::BashArithmeticStatement>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2207,7 +2207,7 @@ arith_statement:
 		$$ = node;
 	}
 	| self_reference_lvalue {
-		auto node = std::make_shared<AST::BashArithmeticStatement>();
+		auto node = std::make_shared<bpp::AST::BashArithmeticStatement>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2216,7 +2216,7 @@ arith_statement:
 		$$ = node;
 	}
 	| object_assignment {
-		auto node = std::make_shared<AST::BashArithmeticStatement>();
+		auto node = std::make_shared<bpp::AST::BashArithmeticStatement>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2225,7 +2225,7 @@ arith_statement:
 		$$ = node;
 	}
 	| shell_variable_assignment {
-		auto node = std::make_shared<AST::BashArithmeticStatement>();
+		auto node = std::make_shared<bpp::AST::BashArithmeticStatement>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2239,7 +2239,7 @@ arith_statement:
 
 increment_decrement_expression:
 	arith_condition_term arith_operator {
-		auto node = std::make_shared<AST::BashArithmeticStatement>();
+		auto node = std::make_shared<bpp::AST::BashArithmeticStatement>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2249,7 +2249,7 @@ increment_decrement_expression:
 		$$ = node;
 	}
 	| arith_operator arith_condition_term {
-		auto node = std::make_shared<AST::BashArithmeticStatement>();
+		auto node = std::make_shared<bpp::AST::BashArithmeticStatement>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2262,7 +2262,7 @@ increment_decrement_expression:
 
 comparison_expression:
 	arith_condition_term maybe_whitespace comparison_operator maybe_whitespace arith_condition_term {
-		auto node = std::make_shared<AST::BashArithmeticStatement>();
+		auto node = std::make_shared<bpp::AST::BashArithmeticStatement>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2287,7 +2287,7 @@ arith_condition_term:
 	| self_reference_lvalue {$$ = $1; }
 	| bash_variable { $$ = $1; }
 	| IDENTIFIER_LVALUE {
-		auto node = std::make_shared<AST::RawText>();
+		auto node = std::make_shared<bpp::AST::RawText>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2296,7 +2296,7 @@ arith_condition_term:
 		$$ = node;
 	}
 	| IDENTIFIER {
-		auto node = std::make_shared<AST::RawText>();
+		auto node = std::make_shared<bpp::AST::RawText>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2305,7 +2305,7 @@ arith_condition_term:
 		$$ = node;
 	}
 	| INTEGER {
-		auto node = std::make_shared<AST::RawText>();
+		auto node = std::make_shared<bpp::AST::RawText>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2314,12 +2314,12 @@ arith_condition_term:
 		$$ = node;
 	}
 	| KEYWORD_NULLPTR {
-		auto node = std::make_shared<AST::RawText>();
+		auto node = std::make_shared<bpp::AST::RawText>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
-		node->setText(AST::Token<std::string>("0", line_number, column_number));
+		node->setText(bpp::AST::Token<std::string>("0", line_number, column_number));
 		$$ = node;
 	}
 	;
@@ -2331,7 +2331,7 @@ arith_operator:
 
 bash_arithmetic_substitution:
 	BASH_ARITHMETIC_START statements BASH_ARITHMETIC_END {
-		auto node = std::make_shared<AST::BashArithmeticSubstitution>();
+		auto node = std::make_shared<bpp::AST::BashArithmeticSubstitution>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2342,7 +2342,7 @@ bash_arithmetic_substitution:
 
 bash_if_statement:
 	bash_if_root_branch maybe_bash_if_else_branches BASH_KEYWORD_FI {
-		auto node = std::dynamic_pointer_cast<AST::BashIfStatement>($1);
+		auto node = std::dynamic_pointer_cast<bpp::AST::BashIfStatement>($1);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChildren($2); // elif / else branches
 		$$ = node;
@@ -2351,12 +2351,12 @@ bash_if_statement:
 
 bash_if_root_branch:
 	BASH_KEYWORD_IF bash_if_condition DELIM maybe_whitespace BASH_KEYWORD_THEN maybe_whitespace statements {
-		auto node = std::make_shared<AST::BashIfStatement>();
+		auto node = std::make_shared<bpp::AST::BashIfStatement>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 
-		auto rootBranch = std::make_shared<AST::BashIfRootBranch>();
+		auto rootBranch = std::make_shared<bpp::AST::BashIfRootBranch>();
 		rootBranch->setPosition(@1.begin.line, @1.begin.column);
 		rootBranch->setEndPosition(@7.end.line, @7.end.column);
 		rootBranch->addChild($2); // condition
@@ -2370,7 +2370,7 @@ bash_if_root_branch:
 bash_if_condition:
 	simple_command_sequence {
 		set_bash_if_condition_received(true, yyscanner);
-		auto node = std::make_shared<AST::BashIfCondition>();
+		auto node = std::make_shared<bpp::AST::BashIfCondition>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2387,7 +2387,7 @@ maybe_bash_if_else_branches:
 
 bash_if_else_branch:
 	BASH_KEYWORD_ELIF bash_if_condition DELIM maybe_whitespace BASH_KEYWORD_THEN maybe_whitespace statements {
-		auto node = std::make_shared<AST::BashIfElseBranch>();
+		auto node = std::make_shared<bpp::AST::BashIfElseBranch>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2399,7 +2399,7 @@ bash_if_else_branch:
 		$$ = node;
 	}
 	| BASH_KEYWORD_ELSE DELIM maybe_whitespace statements {
-		auto node = std::make_shared<AST::BashIfElseBranch>();
+		auto node = std::make_shared<bpp::AST::BashIfElseBranch>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2414,7 +2414,7 @@ bash_if_else_branch:
 
 bash_while_statement:
 	BASH_KEYWORD_WHILE bash_while_or_until_condition DELIM maybe_whitespace BASH_KEYWORD_DO maybe_whitespace statements BASH_KEYWORD_DONE {
-		auto node = std::make_shared<AST::BashWhileStatement>();
+		auto node = std::make_shared<bpp::AST::BashWhileStatement>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2427,7 +2427,7 @@ bash_while_statement:
 
 bash_until_statement:
 	BASH_KEYWORD_UNTIL bash_while_or_until_condition DELIM maybe_whitespace BASH_KEYWORD_DO maybe_whitespace statements BASH_KEYWORD_DONE {
-		auto node = std::make_shared<AST::BashUntilStatement>();
+		auto node = std::make_shared<bpp::AST::BashUntilStatement>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2441,7 +2441,7 @@ bash_until_statement:
 bash_while_or_until_condition:
 	simple_command_sequence {
 		set_bash_while_or_until_condition_received(true, yyscanner);
-		auto node = std::make_shared<AST::BashWhileOrUntilCondition>();
+		auto node = std::make_shared<bpp::AST::BashWhileOrUntilCondition>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2458,7 +2458,7 @@ bash_while_or_until_condition:
  */
 bash_function:
 	BASH_KEYWORD_FUNCTION BASH_FUNCTION_LABEL block {
-		auto node = std::make_shared<AST::BashFunction>();
+		auto node = std::make_shared<bpp::AST::BashFunction>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2468,7 +2468,7 @@ bash_function:
 		$$ = node;
 	}
 	| BASH_KEYWORD_FUNCTION BASH_FUNCTION_LABEL BASH_FUNCTION_OPEN block {
-		auto node = std::make_shared<AST::BashFunction>();
+		auto node = std::make_shared<bpp::AST::BashFunction>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2478,7 +2478,7 @@ bash_function:
 		$$ = node;
 	}
 	| BASH_FUNCTION_LABEL BASH_FUNCTION_OPEN block {
-		auto node = std::make_shared<AST::BashFunction>();
+		auto node = std::make_shared<bpp::AST::BashFunction>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2490,7 +2490,7 @@ bash_function:
 
 bash_test_condition_command:
 	BASH_TEST_CONDITION_START simple_command_sequence BASH_TEST_CONDITION_END {
-		auto node = std::make_shared<AST::BashTestConditionCommand>();
+		auto node = std::make_shared<bpp::AST::BashTestConditionCommand>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2502,7 +2502,7 @@ bash_test_condition_command:
 
 bash_53_native_supershell:
 	BASH_53_NATIVE_SUPERSHELL_START statements BASH_53_NATIVE_SUPERSHELL_END {
-		auto node = std::make_shared<AST::Bash53NativeSupershell>();
+		auto node = std::make_shared<bpp::AST::Bash53NativeSupershell>();
 		uint32_t line_number = @1.begin.line;
 		uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -2516,10 +2516,10 @@ bash_53_native_supershell:
 
 namespace yy {
 void parser::error(const location_type& loc, const std::string& m) {
-	AST::ParserError error;
+	bpp::AST::ParserError error;
 	error.message = m;
-	error.start = AST::FilePosition{loc.begin.line, loc.begin.column};
-	error.end = AST::FilePosition{loc.end.line, loc.end.column};
+	error.start = bpp::AST::FilePosition{loc.begin.line, loc.begin.column};
+	error.end = bpp::AST::FilePosition{loc.end.line, loc.end.column};
 	errors.push_back(error);
 }
 } // namespace yy

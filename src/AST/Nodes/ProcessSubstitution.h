@@ -8,13 +8,13 @@
 
 #include <AST/ASTNode.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class ProcessSubstitution : public ASTNode {
 	protected:
 		AST::Token<std::string> m_SUBSTITUTIONSTART;
 	public:
-		constexpr ProcessSubstitution() : ASTNode(AST::NodeType::ProcessSubstitution) {}
+		constexpr ProcessSubstitution() : ASTNode(bpp::AST::NodeType::ProcessSubstitution) {}
 
 		const AST::Token<std::string>& SUBSTITUTIONSTART() const {
 			return m_SUBSTITUTIONSTART;
@@ -36,4 +36,4 @@ class ProcessSubstitution : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

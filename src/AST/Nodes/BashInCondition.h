@@ -9,7 +9,7 @@
 #include <AST/ASTNode.h>
 #include <AST/Nodes/StringType.h>
 
-namespace AST {
+namespace bpp::AST {
 
 /**
  * @class BashInCondition
@@ -18,7 +18,7 @@ namespace AST {
  */
 class BashInCondition : public StringType {
 	public:
-		constexpr BashInCondition() : StringType(AST::NodeType::BashInCondition) {}
+		constexpr BashInCondition() : StringType(bpp::AST::NodeType::BashInCondition) {}
 
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
@@ -32,4 +32,4 @@ class BashInCondition : public StringType {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

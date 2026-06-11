@@ -8,7 +8,7 @@
 
 #include <cstdint>
 
-namespace AST {
+namespace bpp::AST {
 
 struct FilePosition {
 	uint32_t line = 0;
@@ -19,4 +19,4 @@ struct FilePosition {
 	}
 };
 
-} // namespace AST
+} // namespace bpp::AST

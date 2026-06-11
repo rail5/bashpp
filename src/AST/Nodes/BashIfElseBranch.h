@@ -8,13 +8,13 @@
 
 #include <AST/ASTNode.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class BashIfElseBranch : public ASTNode {
 	protected:
 		bool m_hasCondition = false;
 	public:
-		constexpr BashIfElseBranch() : ASTNode(AST::NodeType::BashIfElseBranch) {}
+		constexpr BashIfElseBranch() : ASTNode(bpp::AST::NodeType::BashIfElseBranch) {}
 
 		bool hasCondition() const {
 			return m_hasCondition;
@@ -35,4 +35,4 @@ class BashIfElseBranch : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

@@ -8,7 +8,7 @@
 
 #include <AST/ASTNode.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class ObjectReference : public ASTNode {
 	protected:
@@ -20,7 +20,7 @@ class ObjectReference : public ASTNode {
 		bool m_ptr_dereference = false;
 		bool m_address_of = false;
 	public:
-		constexpr ObjectReference() : ASTNode(AST::NodeType::ObjectReference) {}
+		constexpr ObjectReference() : ASTNode(bpp::AST::NodeType::ObjectReference) {}
 
 		void setIdentifier(const AST::Token<std::string>& identifier) {
 			m_IDENTIFIER = identifier;
@@ -100,4 +100,4 @@ class ObjectReference : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

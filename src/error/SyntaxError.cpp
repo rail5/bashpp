@@ -18,7 +18,7 @@
 
 #include <utf8cpp/utf8.h>
 
-#include <entities/bpp_program.h>
+#include <IR/bpp.h>
 
 namespace bpp::ErrorHandling {
 
@@ -27,7 +27,7 @@ void print_syntax_error_or_warning(
 	uint32_t line, uint32_t column, uint32_t text_length,
 	const std::string& msg,
 	const std::vector<std::string>& include_chain,
-	std::shared_ptr<bpp::bpp_program> program,
+	std::shared_ptr<bpp::IR::Program> program,
 	bool lsp_mode,
 	bool is_warning
 ) {
@@ -121,7 +121,7 @@ void print_parser_errors(
 	const std::vector<AST::ParserError>& errors,
 	const std::string& source_file,
 	const std::vector<std::string>& include_chain,
-	std::shared_ptr<bpp::bpp_program> program,
+	std::shared_ptr<bpp::IR::Program> program,
 	bool lsp_mode
 ) {
 	for (const auto& error : errors) {

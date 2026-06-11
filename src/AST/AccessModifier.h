@@ -7,7 +7,7 @@
 #pragma once
 #include <cstdint>
 
-namespace AST {
+namespace bpp::AST {
 
 enum class AccessModifier : uint8_t {
 	PUBLIC,
@@ -15,4 +15,4 @@ enum class AccessModifier : uint8_t {
 	PRIVATE
 };
 
-} // namespace AST
+} // namespace bpp::AST

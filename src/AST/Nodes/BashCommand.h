@@ -9,11 +9,11 @@
 #include <AST/ASTNode.h>
 #include <AST/Nodes/StringType.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class BashCommand : public StringType {
 	public:
-		constexpr BashCommand() : StringType(AST::NodeType::BashCommand) {}
+		constexpr BashCommand() : StringType(bpp::AST::NodeType::BashCommand) {}
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashCommand";
@@ -26,4 +26,4 @@ class BashCommand : public StringType {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

@@ -8,7 +8,7 @@
 
 #include <AST/ASTNode.h>
 
-namespace AST {
+namespace bpp::AST {
 
 /**
  * @class BashArithmeticForStatement
@@ -18,7 +18,7 @@ namespace AST {
  */
 class BashArithmeticForStatement : public ASTNode {
 	public:
-		constexpr BashArithmeticForStatement() : ASTNode(AST::NodeType::BashArithmeticForStatement) {}
+		constexpr BashArithmeticForStatement() : ASTNode(bpp::AST::NodeType::BashArithmeticForStatement) {}
 
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
@@ -32,4 +32,4 @@ class BashArithmeticForStatement : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

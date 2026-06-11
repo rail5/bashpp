@@ -16,7 +16,7 @@
 
 using yyscan_t = void*;
 
-namespace AST {
+namespace bpp::AST {
 
 /**
  * @class BashppParser
@@ -68,4 +68,4 @@ class BashppParser {
 		const std::vector<ParserError>& get_errors() const;
 };
 
-} // namespace AST
+} // namespace bpp::AST

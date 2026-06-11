@@ -8,11 +8,11 @@
 
 #include <AST/ASTNode.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class BashCommandSequence : public ASTNode {
 	public:
-		constexpr BashCommandSequence() : ASTNode(AST::NodeType::BashCommandSequence) {}
+		constexpr BashCommandSequence() : ASTNode(bpp::AST::NodeType::BashCommandSequence) {}
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashCommandSequence";
@@ -25,4 +25,4 @@ class BashCommandSequence : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

@@ -8,11 +8,11 @@
 
 #include <AST/ASTNode.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class ArrayIndex : public ASTNode {
 	public:
-		constexpr ArrayIndex() : ASTNode(AST::NodeType::ArrayIndex) {}
+		constexpr ArrayIndex() : ASTNode(bpp::AST::NodeType::ArrayIndex) {}
 
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
@@ -26,4 +26,4 @@ class ArrayIndex : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

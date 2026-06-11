@@ -9,13 +9,13 @@
 #include <AST/ASTNode.h>
 #include <AST/Nodes/StringType.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class HeredocBody : public StringType {
 	protected:
 		AST::Token<std::string> m_DELIMITER;
 	public:
-		constexpr HeredocBody() : StringType(AST::NodeType::HeredocBody) {}
+		constexpr HeredocBody() : StringType(bpp::AST::NodeType::HeredocBody) {}
 
 		const AST::Token<std::string>& DELIMITER() const {
 			return m_DELIMITER;
@@ -36,4 +36,4 @@ class HeredocBody : public StringType {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

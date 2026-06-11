@@ -10,7 +10,7 @@
 #include <AST/AccessModifier.h>
 #include <optional>
 
-namespace AST {
+namespace bpp::AST {
 
 class DatamemberDeclaration : public ASTNode {
 	protected:
@@ -19,7 +19,7 @@ class DatamemberDeclaration : public ASTNode {
 		std::optional<AST::Token<std::string>> m_IDENTIFIER;
 
 	public:
-		constexpr DatamemberDeclaration() : ASTNode(AST::NodeType::DatamemberDeclaration) {}
+		constexpr DatamemberDeclaration() : ASTNode(bpp::AST::NodeType::DatamemberDeclaration) {}
 
 		const AST::Token<AccessModifier>& ACCESSMODIFIER() const {
 			return m_ACCESSMODIFIER;
@@ -84,4 +84,4 @@ class DatamemberDeclaration : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

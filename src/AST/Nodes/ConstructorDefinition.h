@@ -9,11 +9,11 @@
 #include <AST/ASTNode.h>
 #include <optional>
 
-namespace AST {
+namespace bpp::AST {
 
 class ConstructorDefinition : public ASTNode {
 	public:
-		constexpr ConstructorDefinition() : ASTNode(AST::NodeType::ConstructorDefinition) {}
+		constexpr ConstructorDefinition() : ASTNode(bpp::AST::NodeType::ConstructorDefinition) {}
 
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
@@ -28,4 +28,4 @@ class ConstructorDefinition : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

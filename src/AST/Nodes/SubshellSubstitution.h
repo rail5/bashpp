@@ -8,13 +8,13 @@
 
 #include <AST/ASTNode.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class SubshellSubstitution : public ASTNode {
 	protected:
 		bool is_cat_replacement = false;
 	public:
-		constexpr SubshellSubstitution() : ASTNode(AST::NodeType::SubshellSubstitution) {}
+		constexpr SubshellSubstitution() : ASTNode(bpp::AST::NodeType::SubshellSubstitution) {}
 
 		void setIsCatReplacement(bool value) {
 			is_cat_replacement = value;
@@ -37,4 +37,4 @@ class SubshellSubstitution : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

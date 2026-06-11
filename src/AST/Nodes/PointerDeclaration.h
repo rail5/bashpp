@@ -8,14 +8,14 @@
 
 #include <AST/ASTNode.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class PointerDeclaration : public ASTNode {
 	protected:
 		AST::Token<std::string> m_TYPE;
 		AST::Token<std::string> m_IDENTIFIER;
 	public:
-		constexpr PointerDeclaration() : ASTNode(AST::NodeType::PointerDeclaration) {}
+		constexpr PointerDeclaration() : ASTNode(bpp::AST::NodeType::PointerDeclaration) {}
 
 		void setType(const AST::Token<std::string>& type) {
 			m_TYPE = type;
@@ -46,4 +46,4 @@ class PointerDeclaration : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

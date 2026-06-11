@@ -8,11 +8,11 @@
 
 #include <AST/ASTNode.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class BashWhileOrUntilCondition : public ASTNode {
 	public:
-		constexpr BashWhileOrUntilCondition() : ASTNode(AST::NodeType::BashWhileOrUntilCondition) {}
+		constexpr BashWhileOrUntilCondition() : ASTNode(bpp::AST::NodeType::BashWhileOrUntilCondition) {}
 
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
@@ -26,4 +26,4 @@ class BashWhileOrUntilCondition : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

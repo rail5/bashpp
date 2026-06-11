@@ -9,13 +9,13 @@
 #include <AST/ASTNode.h>
 #include <AST/Nodes/StringType.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class ParameterExpansion : public StringType {
 	protected:
 		AST::Token<std::string> m_EXPANSIONBEGIN;
 	public:
-		constexpr ParameterExpansion() : StringType(AST::NodeType::ParameterExpansion) {}
+		constexpr ParameterExpansion() : StringType(bpp::AST::NodeType::ParameterExpansion) {}
 
 		const AST::Token<std::string>& EXPANSIONBEGIN() const {
 			return m_EXPANSIONBEGIN;
@@ -38,4 +38,4 @@ class ParameterExpansion : public StringType {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

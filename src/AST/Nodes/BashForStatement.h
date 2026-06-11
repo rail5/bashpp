@@ -8,13 +8,13 @@
 
 #include <AST/ASTNode.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class BashForStatement : public ASTNode {
 	protected:
 		AST::Token<std::string> m_VARIABLE;
 	public:
-		constexpr BashForStatement() : ASTNode(AST::NodeType::BashForStatement) {}
+		constexpr BashForStatement() : ASTNode(bpp::AST::NodeType::BashForStatement) {}
 
 		const AST::Token<std::string>& VARIABLE() const {
 			return m_VARIABLE;
@@ -37,4 +37,4 @@ class BashForStatement : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

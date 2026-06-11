@@ -9,7 +9,7 @@
 #include <AST/ASTNode.h>
 #include <AST/Nodes/StringType.h>
 
-namespace AST {
+namespace bpp::AST {
 
 /**
  * @class BashCasePatternHeader
@@ -18,7 +18,7 @@ namespace AST {
  */
 class BashCasePatternHeader : public StringType {
 	public:
-		constexpr BashCasePatternHeader() : StringType(AST::NodeType::BashCasePatternHeader) {}
+		constexpr BashCasePatternHeader() : StringType(bpp::AST::NodeType::BashCasePatternHeader) {}
 
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
@@ -32,4 +32,4 @@ class BashCasePatternHeader : public StringType {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

@@ -8,11 +8,11 @@
 
 #include <AST/ASTNode.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class BashIfRootBranch : public ASTNode {
 	public:
-		constexpr BashIfRootBranch() : ASTNode(AST::NodeType::BashIfRootBranch) {}
+		constexpr BashIfRootBranch() : ASTNode(bpp::AST::NodeType::BashIfRootBranch) {}
 
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
@@ -26,4 +26,4 @@ class BashIfRootBranch : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

@@ -9,7 +9,7 @@
 #include <iostream>
 #include <cstdint>
 
-namespace AST {
+namespace bpp::AST {
 
 /**
  * @class Token
@@ -77,4 +77,4 @@ class Token {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

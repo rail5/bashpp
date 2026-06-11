@@ -25,7 +25,7 @@ extern void set_utf16_mode(bool enable, yyscan_t yyscanner);
 #include <flexbison/generated/parser.tab.hpp>
 #include <flexbison/generated/lex.yy.hpp>
 
-void AST::BashppParser::_initialize_lexer() {
+void bpp::AST::BashppParser::_initialize_lexer() {
 	// If the input_source is empty, throw an exception
 	if (std::holds_alternative<std::monostate>(input_source)) {
 		throw bpp::ErrorHandling::InternalError("Attempted to initialize the lexer: Input source is not set");
@@ -80,13 +80,13 @@ void AST::BashppParser::_initialize_lexer() {
 	set_display_lexer_output(display_lexer_output, lexer);
 }
 
-void AST::BashppParser::_destroy_lexer() {
+void bpp::AST::BashppParser::_destroy_lexer() {
 	destroyLexer(lexer);
 	owned_input_file.reset();
 	input_file = nullptr;
 }
 
-void AST::BashppParser::_parse() {
+void bpp::AST::BashppParser::_parse() {
 	_initialize_lexer();
 
 	try {
@@ -105,42 +105,42 @@ void AST::BashppParser::_parse() {
 	_destroy_lexer();
 }
 
-void AST::BashppParser::setUTF16Mode(bool enabled) {
+void bpp::AST::BashppParser::setUTF16Mode(bool enabled) {
 	utf16_mode = enabled;
 }
 
-void AST::BashppParser::setDisplayLexerOutput(bool enabled) {
+void bpp::AST::BashppParser::setDisplayLexerOutput(bool enabled) {
 	display_lexer_output = enabled;
 }
 
-void AST::BashppParser::setInputFromFilePath(const std::string& file_path) {
+void bpp::AST::BashppParser::setInputFromFilePath(const std::string& file_path) {
 	input_type = InputType::FILEPATH;
 	input_source = file_path;
 	input_file_path = file_path;
 }
 
-void AST::BashppParser::setInputFromFilePtr(FILE* file_ptr, const std::string& file_path) {
+void bpp::AST::BashppParser::setInputFromFilePtr(FILE* file_ptr, const std::string& file_path) {
 	input_type = InputType::FILEPTR;
 	input_source = file_ptr;
 	input_file_path = file_path;
 }
 
-void AST::BashppParser::setInputFromStringContents(const std::string& contents) {
+void bpp::AST::BashppParser::setInputFromStringContents(const std::string& contents) {
 	input_type = InputType::STRING_CONTENTS;
 	input_source = contents;
 }
 
-void AST::BashppParser::setIncludeChain(const std::vector<std::string>& includes) {
+void bpp::AST::BashppParser::setIncludeChain(const std::vector<std::string>& includes) {
 	include_chain = includes;
 }
 
-std::shared_ptr<AST::Program> AST::BashppParser::program() {
+std::shared_ptr<bpp::AST::Program> bpp::AST::BashppParser::program() {
 	if (m_program == nullptr) {
 		_parse();
 	}
 	return m_program;
 }
 
-const std::vector<AST::ParserError>& AST::BashppParser::get_errors() const {
+const std::vector<bpp::AST::ParserError>& bpp::AST::BashppParser::get_errors() const {
 	return errors;
 }

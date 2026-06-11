@@ -8,13 +8,13 @@
 
 #include <AST/ASTNode.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class Bash53NativeSupershell : public ASTNode {
 	protected:
 		AST::Token<std::string> m_STARTTOKEN;
 	public:
-		constexpr Bash53NativeSupershell() : ASTNode(AST::NodeType::Bash53NativeSupershell) {}
+		constexpr Bash53NativeSupershell() : ASTNode(bpp::AST::NodeType::Bash53NativeSupershell) {}
 
 		const AST::Token<std::string>& STARTTOKEN() const {
 			return m_STARTTOKEN;
@@ -35,4 +35,4 @@ class Bash53NativeSupershell : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

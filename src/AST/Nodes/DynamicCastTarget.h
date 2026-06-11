@@ -9,13 +9,13 @@
 #include <AST/ASTNode.h>
 #include <optional>
 
-namespace AST {
+namespace bpp::AST {
 
 class DynamicCastTarget : public ASTNode {
 	protected:
 		std::optional<AST::Token<std::string>> m_TARGETTYPE;
 	public:
-		constexpr DynamicCastTarget() : ASTNode(AST::NodeType::DynamicCastTarget) {}
+		constexpr DynamicCastTarget() : ASTNode(bpp::AST::NodeType::DynamicCastTarget) {}
 
 		void setTargetType(const AST::Token<std::string>& target_type) {
 			m_TARGETTYPE = target_type;
@@ -37,4 +37,4 @@ class DynamicCastTarget : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

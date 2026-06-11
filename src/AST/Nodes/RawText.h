@@ -8,7 +8,7 @@
 
 #include <AST/ASTNode.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class RawText : public ASTNode {
 	protected:
@@ -26,7 +26,7 @@ class RawText : public ASTNode {
 			return escaped;
 		}
 	public:
-		constexpr RawText() : ASTNode(AST::NodeType::RawText) {}
+		constexpr RawText() : ASTNode(bpp::AST::NodeType::RawText) {}
 
 		const AST::Token<std::string>& TEXT() const {
 			return m_TEXT;
@@ -50,4 +50,4 @@ class RawText : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

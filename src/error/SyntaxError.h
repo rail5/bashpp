@@ -10,9 +10,14 @@
 #include <memory>
 #include <cstdint>
 #include <stdexcept>
-#include <entities/bpp.h>
 #include <error/detail.h>
 #include <error/ParserError.h>
+
+#include <IR/bpp.h>
+
+namespace bpp::AST {
+class Listener;
+}
 
 namespace bpp::ErrorHandling {
 
@@ -33,7 +38,7 @@ void print_syntax_error_or_warning(
 	uint32_t text_length,
 	const std::string& msg,
 	const std::vector<std::string>& include_chain,
-	std::shared_ptr<bpp::bpp_program> program,
+	std::shared_ptr<bpp::IR::Program> program,
 	bool lsp_mode,
 	bool is_warning = false);
 
@@ -41,7 +46,7 @@ void print_parser_errors(
 	const std::vector<AST::ParserError>& errors,
 	const std::string& source_file,
 	const std::vector<std::string>& include_chain,
-	std::shared_ptr<bpp::bpp_program> program,
+	std::shared_ptr<bpp::IR::Program> program,
 	bool lsp_mode
 );
 
@@ -52,16 +57,16 @@ class ErrorOrWarning : public std::runtime_error {
 		uint32_t column = 0;
 		uint32_t text_length = 0;
 		std::vector<std::string> include_chain;
-		std::shared_ptr<bpp::bpp_program> program;
+		std::shared_ptr<bpp::IR::Program> program;
 		bool lsp_mode = false;
 		bool is_warning = false;
 
-		template <bpp::detail::ErrorReportableListener Listener, bpp::detail::ASTNodePtrORToken T>
-		void set_from_listener(Listener* listener, const T& error_ctx) {
-			source_file = listener->get_source_file();
-			include_chain = listener->get_include_stack();
-			program = listener->get_program();
-			lsp_mode = listener->get_lsp_mode();
+		template <bpp::detail::ASTNodePtrORToken T>
+		void set_from_listener(bpp::AST::Listener* listener, const T& error_ctx) {
+			//source_file = listener->get_source_file();
+			//include_chain = listener->get_include_stack();
+			//program = listener->get_program();
+			//lsp_mode = listener->get_lsp_mode();
 
 			text_length = 1;
 			if constexpr (bpp::detail::ASTNodePtrType<T>) {
@@ -94,8 +99,8 @@ class ErrorOrWarning : public std::runtime_error {
 		ErrorOrWarning() = delete;
 		explicit ErrorOrWarning(const std::string& msg) = delete;
 
-		template <bpp::detail::ErrorReportableListener Listener, bpp::detail::ASTNodePtrORToken T>
-		ErrorOrWarning(Listener* listener, const T& error_ctx, const std::string& msg) : std::runtime_error(msg) {
+		template <bpp::detail::ASTNodePtrORToken T>
+		ErrorOrWarning(bpp::AST::Listener* listener, const T& error_ctx, const std::string& msg) : std::runtime_error(msg) {
 			set_from_listener(listener, error_ctx);
 		}
 		
@@ -127,8 +132,8 @@ class SyntaxError : public ErrorOrWarning {
 		SyntaxError() = delete;
 		explicit SyntaxError(const std::string& msg) = delete;
 
-		template <bpp::detail::ErrorReportableListener Listener, bpp::detail::ASTNodePtrORToken T>
-		SyntaxError(Listener* listener, const T& error_ctx, const std::string& msg) : ErrorOrWarning(listener, error_ctx, msg) {
+		template <bpp::detail::ASTNodePtrORToken T>
+		SyntaxError(bpp::AST::Listener* listener, const T& error_ctx, const std::string& msg) : ErrorOrWarning(listener, error_ctx, msg) {
 			is_warning = false;
 		}
 };
@@ -147,8 +152,8 @@ class Warning : public ErrorOrWarning {
 		Warning() = delete;
 		explicit Warning(const std::string& msg) = delete;
 
-		template <bpp::detail::ErrorReportableListener Listener, bpp::detail::ASTNodePtrORToken T>
-		Warning(Listener* listener, const T& error_ctx, const std::string& msg) : ErrorOrWarning(listener, error_ctx, msg) {
+		template <bpp::detail::ASTNodePtrORToken T>
+		Warning(bpp::AST::Listener* listener, const T& error_ctx, const std::string& msg) : ErrorOrWarning(listener, error_ctx, msg) {
 			is_warning = true;
 		}
 };

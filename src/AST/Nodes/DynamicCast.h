@@ -8,11 +8,11 @@
 
 #include <AST/ASTNode.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class DynamicCast : public ASTNode {
 	public:
-		constexpr DynamicCast() : ASTNode(AST::NodeType::DynamicCast) {}
+		constexpr DynamicCast() : ASTNode(bpp::AST::NodeType::DynamicCast) {}
 
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
@@ -27,4 +27,4 @@ class DynamicCast : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

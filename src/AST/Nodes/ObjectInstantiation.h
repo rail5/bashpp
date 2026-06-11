@@ -8,14 +8,14 @@
 
 #include <AST/ASTNode.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class ObjectInstantiation : public ASTNode {
 	protected:
 		AST::Token<std::string> m_TYPE;
 		AST::Token<std::string> m_IDENTIFIER;
 	public:
-		constexpr ObjectInstantiation() : ASTNode(AST::NodeType::ObjectInstantiation) {}
+		constexpr ObjectInstantiation() : ASTNode(bpp::AST::NodeType::ObjectInstantiation) {}
 
 		void setType(const AST::Token<std::string>& type) {
 			m_TYPE = type;
@@ -46,4 +46,4 @@ class ObjectInstantiation : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

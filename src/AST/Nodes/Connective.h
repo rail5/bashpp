@@ -8,7 +8,7 @@
 
 #include <AST/ASTNode.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class Connective : public ASTNode {
 	public:
@@ -19,7 +19,7 @@ class Connective : public ASTNode {
 	protected:
 		ConnectiveType m_TYPE;
 	public:
-		constexpr Connective() : ASTNode(AST::NodeType::Connective) {}
+		constexpr Connective() : ASTNode(bpp::AST::NodeType::Connective) {}
 
 		ConnectiveType TYPE() const {
 			return m_TYPE;
@@ -37,4 +37,4 @@ class Connective : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

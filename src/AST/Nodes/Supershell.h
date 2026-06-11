@@ -8,11 +8,11 @@
 
 #include <AST/ASTNode.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class Supershell : public ASTNode {
 	public:
-		constexpr Supershell() : ASTNode(AST::NodeType::Supershell) {}
+		constexpr Supershell() : ASTNode(bpp::AST::NodeType::Supershell) {}
 
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
@@ -26,4 +26,4 @@ class Supershell : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

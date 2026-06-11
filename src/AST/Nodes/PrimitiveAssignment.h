@@ -8,14 +8,14 @@
 
 #include <AST/ASTNode.h>
 
-namespace AST {
+namespace bpp::AST {
 
 class PrimitiveAssignment : public ASTNode {
 	protected:
 		AST::Token<std::string> m_IDENTIFIER;
 		bool m_local = false;
 	public:
-		constexpr PrimitiveAssignment() : ASTNode(AST::NodeType::PrimitiveAssignment) {}
+		constexpr PrimitiveAssignment() : ASTNode(bpp::AST::NodeType::PrimitiveAssignment) {}
 
 		const AST::Token<std::string>& IDENTIFIER() const {
 			return m_IDENTIFIER;
@@ -44,4 +44,4 @@ class PrimitiveAssignment : public ASTNode {
 		}
 };
 
-} // namespace AST
+} // namespace bpp::AST

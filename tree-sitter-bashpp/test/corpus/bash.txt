@@ -1,0 +1,33 @@
+==================
+Shell script
+==================
+
+#!/usr/bin/env bpp
+
+name="Bash++"
+if [[ -n "$name" ]]; then
+  printf '%s\n' "$name"
+fi
+
+---
+
+(program
+  (comment)
+  (variable_assignment
+    name: (variable_name)
+    value: (string
+      (string_content)))
+  (if_statement
+    condition: (test_command
+      (unary_expression
+        operator: (test_operator)
+        (string
+          (simple_expansion
+            (variable_name)))))
+    (command
+      name: (command_name
+        (word))
+      argument: (raw_string)
+      argument: (string
+        (simple_expansion
+          (variable_name))))))

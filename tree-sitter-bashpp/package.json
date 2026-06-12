@@ -1,0 +1,39 @@
+{
+  "name": "tree-sitter-bashpp",
+  "version": "0.1.0",
+  "description": "Bash++ grammar for Tree-sitter",
+  "license": "GPL-3.0-or-later",
+  "author": "Bash++ contributors",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NatnaelTaddese/bashpp.git",
+    "directory": "tree-sitter-bashpp"
+  },
+  "keywords": [
+    "bashpp",
+    "incremental",
+    "parser",
+    "tree-sitter"
+  ],
+  "files": [
+    "grammar.js",
+    "tree-sitter.json",
+    "src/**",
+    "LICENSE",
+    "README.md",
+    "THIRD_PARTY_LICENSES/**"
+  ],
+  "scripts": {
+    "generate": "tree-sitter generate",
+    "lint": "eslint grammar.js",
+    "test": "tree-sitter test"
+  },
+  "dependencies": {
+    "tree-sitter-bash": "0.25.1"
+  },
+  "devDependencies": {
+    "eslint": "9.39.1",
+    "eslint-config-treesitter": "1.0.2",
+    "tree-sitter-cli": "0.25.10"
+  }
+}

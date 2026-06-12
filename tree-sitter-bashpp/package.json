@@ -6,7 +6,7 @@
   "author": "Bash++ contributors",
   "repository": {
     "type": "git",
-    "url": "https://github.com/NatnaelTaddese/bashpp.git",
+    "url": "https://github.com/rail5/bashpp.git",
     "directory": "tree-sitter-bashpp"
   },
   "keywords": [

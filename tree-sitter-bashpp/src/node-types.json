@@ -805,6 +805,10 @@
             "named": true
           },
           {
+            "type": "braced_reference",
+            "named": true
+          },
+          {
             "type": "command_substitution",
             "named": true
           },
@@ -813,7 +817,15 @@
             "named": true
           },
           {
+            "type": "nullptr_literal",
+            "named": true
+          },
+          {
             "type": "number",
+            "named": true
+          },
+          {
+            "type": "object_reference",
             "named": true
           },
           {
@@ -821,7 +833,15 @@
             "named": true
           },
           {
+            "type": "pointer_dereference",
+            "named": true
+          },
+          {
             "type": "postfix_expression",
+            "named": true
+          },
+          {
+            "type": "self_reference",
             "named": true
           },
           {
@@ -830,6 +850,14 @@
           },
           {
             "type": "string",
+            "named": true
+          },
+          {
+            "type": "supershell",
+            "named": true
+          },
+          {
+            "type": "typeof_expression",
             "named": true
           },
           {
@@ -859,6 +887,10 @@
             "named": true
           },
           {
+            "type": "braced_reference",
+            "named": true
+          },
+          {
             "type": "command_substitution",
             "named": true
           },
@@ -867,7 +899,15 @@
             "named": true
           },
           {
+            "type": "nullptr_literal",
+            "named": true
+          },
+          {
             "type": "number",
+            "named": true
+          },
+          {
+            "type": "object_reference",
             "named": true
           },
           {
@@ -875,7 +915,15 @@
             "named": true
           },
           {
+            "type": "pointer_dereference",
+            "named": true
+          },
+          {
             "type": "postfix_expression",
+            "named": true
+          },
+          {
+            "type": "self_reference",
             "named": true
           },
           {
@@ -884,6 +932,14 @@
           },
           {
             "type": "string",
+            "named": true
+          },
+          {
+            "type": "supershell",
+            "named": true
+          },
+          {
+            "type": "typeof_expression",
             "named": true
           },
           {
@@ -913,6 +969,10 @@
             "named": true
           },
           {
+            "type": "braced_reference",
+            "named": true
+          },
+          {
             "type": "command_substitution",
             "named": true
           },
@@ -921,7 +981,15 @@
             "named": true
           },
           {
+            "type": "nullptr_literal",
+            "named": true
+          },
+          {
             "type": "number",
+            "named": true
+          },
+          {
+            "type": "object_reference",
             "named": true
           },
           {
@@ -929,7 +997,15 @@
             "named": true
           },
           {
+            "type": "pointer_dereference",
+            "named": true
+          },
+          {
             "type": "postfix_expression",
+            "named": true
+          },
+          {
+            "type": "self_reference",
             "named": true
           },
           {
@@ -938,6 +1014,14 @@
           },
           {
             "type": "string",
+            "named": true
+          },
+          {
+            "type": "supershell",
+            "named": true
+          },
+          {
+            "type": "typeof_expression",
             "named": true
           },
           {
@@ -1159,11 +1243,15 @@
     "named": true,
     "fields": {},
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": true,
       "types": [
         {
           "type": "_primary_expression",
+          "named": true
+        },
+        {
+          "type": "assignment_operator",
           "named": true
         },
         {

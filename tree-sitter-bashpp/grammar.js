@@ -31,6 +31,8 @@ module.exports = grammar(Bash, {
   name: 'bashpp',
 
   externals: ($, previous) => previous.concat([
+    $._bashpp_object_type,
+    $._bashpp_pointer_type,
     $._bashpp_assignment_reference,
     $._bashpp_assignment_operator,
     $._bashpp_reference_end,
@@ -78,6 +80,32 @@ module.exports = grammar(Bash, {
         $._empty_value,
         alias($._comment_word, $.word),
       )),
+    ),
+
+    subscript: $ => seq(
+      field('name', $.variable_name),
+      '[',
+      field('index', choice(
+        alias('@', $.word),
+        $._literal,
+        $.binary_expression,
+        $.unary_expression,
+        $.compound_statement,
+        $.subshell,
+      )),
+      optional($._concat),
+      ']',
+      optional($._concat),
+    ),
+
+    command: ($, previous) => choice(
+      prec.dynamic(10, seq(
+        field('name', alias(
+          $._bashpp_braced_command_assignment,
+          $.command_name,
+        )),
+      )),
+      previous,
     ),
 
     command_name: ($, previous) => choice(
@@ -277,7 +305,7 @@ module.exports = grammar(Bash, {
     )),
 
     dynamic_cast_target: $ => choice(
-      alias($._bashpp_identifier, $.type_identifier),
+      alias($._bashpp_cast_type, $.type_identifier),
       $.simple_expansion,
       $.expansion,
       $.object_reference,
@@ -302,6 +330,23 @@ module.exports = grammar(Bash, {
       $.nullptr_literal,
       $.typeof_expression,
       $.dynamic_cast_expression,
+      $.supershell,
+    ),
+
+    _bashpp_braced_command_assignment: $ => prec.dynamic(10, seq(
+      $.braced_reference,
+      $.assignment_operator,
+      $._primary_expression,
+    )),
+
+    _c_expression_not_assignment: ($, previous) => choice(
+      previous,
+      $.object_reference,
+      $.self_reference,
+      $.braced_reference,
+      $.pointer_dereference,
+      $.nullptr_literal,
+      $.typeof_expression,
       $.supershell,
     ),
 
@@ -396,15 +441,7 @@ module.exports = grammar(Bash, {
 
     _bashpp_identifier: _ => /[a-zA-Z_][a-zA-Z0-9_]*/,
 
-    _bashpp_object_type: _ => token(prec(
-      4,
-      /@[a-zA-Z_][a-zA-Z0-9_]*[ \t]+/,
-    )),
-
-    _bashpp_pointer_type: _ => token(prec(
-      4,
-      /@[a-zA-Z_][a-zA-Z0-9_]*\*[ \t]+/,
-    )),
+    _bashpp_cast_type: _ => /[a-zA-Z_][a-zA-Z0-9_]*\*?/,
 
     _bashpp_reference_name: _ => token(prec(
       3,

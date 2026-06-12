@@ -70,6 +70,7 @@ Language server-specific prerequisites:
  - `nlohmann-json3-dev`
 
 Optional:
+ - `nodejs` and `npm` for developing the Tree-sitter parser
  - `pandoc` and `perl` for building the documentation
  - `debhelper` for building the Debian package and keeping version numbers up-to-date via `dpkg-parsechangelog`
 
@@ -86,6 +87,8 @@ $ sudo apt install build-essential flex bison libutfcpp-dev pandoc perl debhelpe
 $ make          # Build the Bash++ compiler and language server, bin/bpp and bin/bpp-lsp
 $ make manpages # Build the manpages, which can then be found under debian/
 $ make test     # Run the test suite to verify the compiler works correctly
+$ make tree-sitter      # Generate the optional Tree-sitter parser
+$ make test-tree-sitter # Test the parser against the repository's Bash++ sources
 ```
 
 ## Using the compiler

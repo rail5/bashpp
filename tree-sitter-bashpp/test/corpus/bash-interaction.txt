@@ -1,0 +1,71 @@
+==================
+Bash arrays and arithmetic loops
+==================
+
+items=(one two)
+echo "${items[@]}"
+for ((i=@object.lower;i<@object.upper;i++)); do
+  echo "$i"
+done
+
+---
+
+(program
+  (variable_assignment
+    (variable_name)
+    (array
+      (word)
+      (word)))
+  (command
+    (command_name
+      (word))
+    (string
+      (expansion
+        (subscript
+          (variable_name)
+          (word)))))
+  (c_style_for_statement
+    (variable_assignment
+      (variable_name)
+      (object_reference
+        (reference_name)))
+    (binary_expression
+      (word)
+      (object_reference
+        (reference_name)))
+    (postfix_expression
+      (word))
+    (do_group
+      (command
+        (command_name
+          (word))
+        (string
+          (simple_expansion
+            (variable_name)))))))
+
+==================
+Command-like braced assignment and pointer cast
+==================
+
+@{object.values[0]}="command"
+shell_pointer=@dynamic_cast<Object*> &@object
+
+---
+
+(program
+  (command
+    (command_name
+      (braced_reference
+        (reference_name)
+        (reference_index
+          (number)))
+      (assignment_operator)
+      (string
+        (string_content))))
+  (variable_assignment
+    (variable_name)
+    (dynamic_cast_expression
+      (dynamic_cast_target
+        (type_identifier))
+      (address_expression
+        (reference_name)))))

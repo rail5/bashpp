@@ -26,7 +26,8 @@
   "scripts": {
     "generate": "tree-sitter generate",
     "lint": "eslint grammar.js",
-    "test": "tree-sitter test"
+    "test": "tree-sitter test -r",
+    "test:repository": "bash test/parse-repository-files.sh"
   },
   "dependencies": {
     "tree-sitter-bash": "0.25.1"

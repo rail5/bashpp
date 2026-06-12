@@ -36,6 +36,8 @@ enum TokenType {
     OPENING_PAREN,
     ESAC,
     ERROR_RECOVERY,
+    BASHPP_OBJECT_TYPE,
+    BASHPP_POINTER_TYPE,
     BASHPP_ASSIGNMENT_REFERENCE,
     BASHPP_ASSIGNMENT_OPERATOR,
     BASHPP_REFERENCE_END,
@@ -72,6 +74,22 @@ static inline void advance(TSLexer *lexer) { lexer->advance(lexer, false); }
 static inline void skip(TSLexer *lexer) { lexer->advance(lexer, true); }
 
 static inline bool in_error_recovery(const bool *valid_symbols) { return valid_symbols[ERROR_RECOVERY]; }
+
+static bool is_bashpp_keyword(const char *identifier, size_t length) {
+    static const char *keywords[] = {
+        "class",        "constructor", "delete",    "destructor", "dynamic_cast",
+        "include",      "include_once", "method",    "new",        "nullptr",
+        "private",      "protected",   "public",    "super",      "this",
+        "typeof",       "virtual",
+    };
+
+    for (size_t index = 0; index < sizeof(keywords) / sizeof(keywords[0]); index++) {
+        if (strlen(keywords[index]) == length && strncmp(keywords[index], identifier, length) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
 
 static inline void reset_string(String *string) {
     if (string->size > 0) {
@@ -377,29 +395,42 @@ static bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
         return true;
     }
 
-    if (valid_symbols[BASHPP_ASSIGNMENT_REFERENCE]) {
+    bool can_scan_type = valid_symbols[BASHPP_OBJECT_TYPE] || valid_symbols[BASHPP_POINTER_TYPE];
+    bool can_scan_assignment = valid_symbols[BASHPP_ASSIGNMENT_REFERENCE];
+    if (can_scan_type || can_scan_assignment) {
         while (iswspace(lexer->lookahead) &&
                (lexer->lookahead != '\n' || !valid_symbols[NEWLINE])) {
             skip(lexer);
         }
 
-        if (lexer->lookahead != '@' && lexer->lookahead != '*') {
-            goto bash_scanner;
-        }
-        if (lexer->lookahead == '*') {
+        bool starts_with_dereference = lexer->lookahead == '*';
+        if (starts_with_dereference) {
+            if (!can_scan_assignment) {
+                return false;
+            }
             advance(lexer);
         }
+
         if (lexer->lookahead != '@') {
-            return false;
+            goto bash_scanner;
         }
         advance(lexer);
         if (!iswalpha(lexer->lookahead) && lexer->lookahead != '_') {
             return false;
         }
+
+        char identifier[32];
+        size_t identifier_length = 0;
         while (iswalnum(lexer->lookahead) || lexer->lookahead == '_') {
+            if (identifier_length < sizeof(identifier)) {
+                identifier[identifier_length++] = (char)lexer->lookahead;
+            }
             advance(lexer);
         }
+
+        bool has_member = false;
         while (lexer->lookahead == '.') {
+            has_member = true;
             advance(lexer);
             if (!iswalpha(lexer->lookahead) && lexer->lookahead != '_') {
                 return false;
@@ -410,7 +441,8 @@ static bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
         }
         lexer->mark_end(lexer);
 
-        if (lexer->lookahead == '[') {
+        bool has_index = lexer->lookahead == '[';
+        if (can_scan_assignment && has_index) {
             uint32_t bracket_depth = 0;
             do {
                 if (lexer->lookahead == '[') {
@@ -424,13 +456,48 @@ static bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
             } while (bracket_depth > 0 && !lexer->eof(lexer));
         }
 
-        bool followed_by_assignment = lexer->lookahead == '=';
-        if (lexer->lookahead == '+') {
-            advance(lexer);
-            followed_by_assignment = lexer->lookahead == '=';
-        }
-        if (followed_by_assignment) {
+        if (can_scan_assignment && lexer->lookahead == '=') {
             lexer->result_symbol = BASHPP_ASSIGNMENT_REFERENCE;
+            return true;
+        }
+        if (can_scan_assignment && lexer->lookahead == '+') {
+            advance(lexer);
+            if (lexer->lookahead == '=') {
+                lexer->result_symbol = BASHPP_ASSIGNMENT_REFERENCE;
+                return true;
+            }
+            return false;
+        }
+        if (starts_with_dereference || has_member || has_index ||
+            is_bashpp_keyword(identifier, identifier_length)) {
+            return false;
+        }
+
+        if (lexer->lookahead == '*' && valid_symbols[BASHPP_POINTER_TYPE]) {
+            advance(lexer);
+            lexer->mark_end(lexer);
+            if (lexer->lookahead != ' ' && lexer->lookahead != '\t') {
+                return false;
+            }
+            while (lexer->lookahead == ' ' || lexer->lookahead == '\t') {
+                advance(lexer);
+            }
+            if (iswalpha(lexer->lookahead) || lexer->lookahead == '_') {
+                lexer->result_symbol = BASHPP_POINTER_TYPE;
+                return true;
+            }
+            return false;
+        }
+
+        if (!valid_symbols[BASHPP_OBJECT_TYPE] ||
+            (lexer->lookahead != ' ' && lexer->lookahead != '\t')) {
+            return false;
+        }
+        while (lexer->lookahead == ' ' || lexer->lookahead == '\t') {
+            advance(lexer);
+        }
+        if (iswalpha(lexer->lookahead) || lexer->lookahead == '_') {
+            lexer->result_symbol = BASHPP_OBJECT_TYPE;
             return true;
         }
         return false;

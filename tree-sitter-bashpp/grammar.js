@@ -5,12 +5,40 @@
 
 const Bash = require('tree-sitter-bash/grammar');
 
+const BASH_SPECIAL_CHARACTERS = [
+  '\'',
+  '"',
+  '<',
+  '>',
+  '{',
+  '}',
+  '\\[',
+  '\\]',
+  '(',
+  ')',
+  '`',
+  '$',
+  '=',
+  '|',
+  '&',
+  ';',
+  '\\',
+  '\\s',
+  '@',
+];
+
 module.exports = grammar(Bash, {
   name: 'bashpp',
 
+  externals: ($, previous) => previous.concat([
+    $._bashpp_assignment_reference,
+    $._bashpp_assignment_operator,
+    $._bashpp_reference_end,
+  ]),
+
   rules: {
     _statement_not_subshell: ($, previous) => choice(
-      previous,
+      $.variable_assignment,
       $.class_definition,
       $.data_member_declaration,
       $.method_definition,
@@ -19,10 +47,13 @@ module.exports = grammar(Bash, {
       $.include_statement,
       $.object_declaration,
       $.pointer_declaration,
+      $.object_assignment,
+      $.delete_statement,
+      previous,
     ),
 
     _statement_not_pipeline: ($, previous) => choice(
-      previous,
+      $.variable_assignment,
       $.class_definition,
       $.data_member_declaration,
       $.method_definition,
@@ -31,6 +62,31 @@ module.exports = grammar(Bash, {
       $.include_statement,
       $.object_declaration,
       $.pointer_declaration,
+      $.object_assignment,
+      $.delete_statement,
+      previous,
+    ),
+
+    variable_assignment: $ => seq(
+      field('name', choice(
+        $.variable_name,
+        $.subscript,
+      )),
+      field('operator', choice('=', '+=')),
+      field('value', choice(
+        $._bashpp_value,
+        $._empty_value,
+        alias($._comment_word, $.word),
+      )),
+    ),
+
+    command_name: ($, previous) => choice(
+      $.object_reference,
+      $.self_reference,
+      $.braced_reference,
+      $.pointer_dereference,
+      $.supershell,
+      previous,
     ),
 
     class_definition: $ => prec.right(3, seq(
@@ -69,8 +125,10 @@ module.exports = grammar(Bash, {
     method_parameter: $ => choice(
       field('name', alias($._bashpp_identifier, $.parameter_name)),
       seq(
-        field('type', alias($._bashpp_type, $.type_identifier)),
-        optional(field('pointer', '*')),
+        field('type', choice(
+          alias($._bashpp_object_type, $.type_identifier),
+          alias($._bashpp_pointer_type, $.type_identifier),
+        )),
         field('name', alias($._bashpp_identifier, $.parameter_name)),
       ),
     ),
@@ -106,22 +164,23 @@ module.exports = grammar(Bash, {
     )),
 
     object_declaration: $ => prec.right(3, seq(
-      field('type', alias($._bashpp_type, $.type_identifier)),
+      field('type', alias($._bashpp_object_type, $.type_identifier)),
       field('name', alias($._bashpp_identifier, $.object_name)),
       optional(field('value', $.default_value)),
     )),
 
     pointer_declaration: $ => prec.right(3, seq(
-      field('type', alias($._bashpp_type, $.type_identifier)),
-      field('pointer', '*'),
+      field('type', alias($._bashpp_pointer_type, $.type_identifier)),
       field('name', alias($._bashpp_identifier, $.object_name)),
       optional(field('value', $.default_value)),
     )),
 
     default_value: $ => seq(
-      field('operator', choice('=', '+=')),
+      field('operator', $.assignment_operator),
       field('value', $._bashpp_value),
     ),
+
+    assignment_operator: $ => $._bashpp_assignment_operator,
 
     access_modifier: _ => choice(
       bashppKeyword('@public'),
@@ -131,14 +190,252 @@ module.exports = grammar(Bash, {
 
     virtual_modifier: _ => bashppKeyword('@virtual'),
 
+    object_assignment: $ => prec.right(10, seq(
+      field('left', $.assignment_reference),
+      optional(field('index', $.reference_index)),
+      field('operator', $.assignment_operator),
+      field('right', $._bashpp_value),
+    )),
+
+    assignment_reference: $ => field(
+      'name',
+      alias($._bashpp_assignment_reference, $.reference_name),
+    ),
+
+    object_reference: $ => prec.dynamic(10, seq(
+      field('name', alias($._bashpp_reference_name, $.reference_name)),
+      optional(field('index', $.reference_index)),
+      $._bashpp_reference_end,
+    )),
+
+    self_reference: $ => prec.dynamic(10, seq(
+      field('name', choice(
+        alias($._bashpp_this_reference, $.self),
+        alias($._bashpp_super_reference, $.super),
+      )),
+      optional(field('index', $.reference_index)),
+      $._bashpp_reference_end,
+    )),
+
+    braced_reference: $ => prec.dynamic(10, seq(
+      bashppKeyword('@{'),
+      field('name', alias($._bashpp_braced_name, $.reference_name)),
+      optional(field('index', $.reference_index)),
+      '}',
+    )),
+
+    reference_index: $ => seq(
+      '[',
+      field('value', choice(
+        '@',
+        $._expression,
+      )),
+      ']',
+    ),
+
+    address_expression: $ => prec.dynamic(10, seq(
+      field('name', alias($._bashpp_address_name, $.reference_name)),
+      optional(field('index', $.reference_index)),
+      $._bashpp_reference_end,
+    )),
+
+    pointer_dereference: $ => prec.dynamic(10, seq(
+      field('name', alias(
+        $._bashpp_dereference_name,
+        $.reference_name,
+      )),
+      optional(field('index', $.reference_index)),
+      $._bashpp_reference_end,
+    )),
+
+    new_expression: $ => prec.right(4, seq(
+      bashppKeyword('@new'),
+      field('type', alias($._bashpp_identifier, $.type_identifier)),
+    )),
+
+    delete_statement: $ => prec.right(4, seq(
+      bashppKeyword('@delete'),
+      field('argument', choice(
+        $.object_reference,
+        $.self_reference,
+      )),
+    )),
+
+    nullptr_literal: _ => bashppKeyword('@nullptr'),
+
+    typeof_expression: $ => prec.right(4, seq(
+      bashppKeyword('@typeof'),
+      field('argument', $._bashpp_value),
+    )),
+
+    dynamic_cast_expression: $ => prec.right(4, seq(
+      bashppKeyword('@dynamic_cast'),
+      '<',
+      field('target', $.dynamic_cast_target),
+      '>',
+      field('value', $._bashpp_value),
+    )),
+
+    dynamic_cast_target: $ => choice(
+      alias($._bashpp_identifier, $.type_identifier),
+      $.simple_expansion,
+      $.expansion,
+      $.object_reference,
+      $.self_reference,
+      $.braced_reference,
+    ),
+
+    supershell: $ => prec.right(4, seq(
+      bashppKeyword('@('),
+      optional($._statements),
+      ')',
+    )),
+
+    _primary_expression: ($, previous) => choice(
+      previous,
+      $.object_reference,
+      $.self_reference,
+      $.braced_reference,
+      $.address_expression,
+      $.pointer_dereference,
+      $.new_expression,
+      $.nullptr_literal,
+      $.typeof_expression,
+      $.dynamic_cast_expression,
+      $.supershell,
+    ),
+
+    _arithmetic_literal: ($, previous) => choice(
+      previous,
+      $.object_reference,
+      $.self_reference,
+      $.braced_reference,
+      $.pointer_dereference,
+      $.nullptr_literal,
+      $.typeof_expression,
+      $.supershell,
+    ),
+
+    string: $ => seq(
+      '"',
+      repeat(seq(
+        choice(
+          seq(optional('$'), $.string_content),
+          $.expansion,
+          $.simple_expansion,
+          $.command_substitution,
+          $.arithmetic_expansion,
+          $._bashpp_string_interpolation,
+        ),
+        optional($._concat),
+      )),
+      optional('$'),
+      '"',
+    ),
+
+    string_content: _ => token(prec(-1, /([^"`$@&*\\\r\n]|\\(.|\r?\n))+/)),
+
+    _bashpp_string_interpolation: $ => choice(
+      $.object_reference,
+      $.self_reference,
+      $.braced_reference,
+      $.address_expression,
+      $.pointer_dereference,
+      $.supershell,
+      alias(/[&*]/, $.string_content),
+    ),
+
+    heredoc_body: $ => seq(
+      $._heredoc_body_beginning,
+      repeat(choice(
+        $.expansion,
+        $.simple_expansion,
+        $.command_substitution,
+        $.object_reference,
+        $.self_reference,
+        $.braced_reference,
+        $.address_expression,
+        $.pointer_dereference,
+        $.supershell,
+        $.heredoc_content,
+      )),
+    ),
+
     _bashpp_value: $ => choice(
       $._literal,
       $.array,
+      $.new_expression,
+      $.nullptr_literal,
+      $.typeof_expression,
+      $.dynamic_cast_expression,
     ),
+
+    word: _ => token(prec(-1, seq(
+      choice(
+        noneOf('#', ...BASH_SPECIAL_CHARACTERS),
+        seq('\\', noneOf('\\s')),
+      ),
+      repeat(choice(
+        noneOf(...BASH_SPECIAL_CHARACTERS),
+        seq('\\', noneOf('\\s')),
+        '\\ ',
+      )),
+    ))),
+
+    _comment_word: _ => token(prec(-8, seq(
+      choice(
+        noneOf(...BASH_SPECIAL_CHARACTERS),
+        seq('\\', noneOf('\\s')),
+      ),
+      repeat(choice(
+        noneOf(...BASH_SPECIAL_CHARACTERS),
+        seq('\\', noneOf('\\s')),
+        '\\ ',
+      )),
+    ))),
 
     _bashpp_identifier: _ => /[a-zA-Z_][a-zA-Z0-9_]*/,
 
-    _bashpp_type: _ => token(prec(2, /@[a-zA-Z_][a-zA-Z0-9_]*/)),
+    _bashpp_object_type: _ => token(prec(
+      4,
+      /@[a-zA-Z_][a-zA-Z0-9_]*[ \t]+/,
+    )),
+
+    _bashpp_pointer_type: _ => token(prec(
+      4,
+      /@[a-zA-Z_][a-zA-Z0-9_]*\*[ \t]+/,
+    )),
+
+    _bashpp_reference_name: _ => token(prec(
+      3,
+      /@[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*/,
+    )),
+
+    _bashpp_this_reference: _ => token(prec(
+      5,
+      /@this(\.[a-zA-Z_][a-zA-Z0-9_]*)*/,
+    )),
+
+    _bashpp_super_reference: _ => token(prec(
+      5,
+      /@super(\.[a-zA-Z_][a-zA-Z0-9_]*)*/,
+    )),
+
+    _bashpp_braced_name: _ => token(prec(
+      2,
+      /#?[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*/,
+    )),
+
+    _bashpp_address_name: _ => token(prec(
+      3,
+      /&@[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*/,
+    )),
+
+    _bashpp_dereference_name: _ => token(prec(
+      3,
+      /\*@[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*/,
+    )),
+
   },
 });
 
@@ -149,5 +446,18 @@ module.exports = grammar(Bash, {
  * @returns {TokenRule}
  */
 function bashppKeyword(value) {
-  return token(prec(3, value));
+  return token(prec(5, value));
+}
+
+/**
+ * Returns a regular expression that excludes the provided characters.
+ *
+ * @param {...string} characters
+ * @returns {RegExp}
+ */
+function noneOf(...characters) {
+  const negatedCharacters = characters
+    .map(character => character === '\\' ? '\\\\' : character)
+    .join('');
+  return new RegExp('[^' + negatedCharacters + ']');
 }

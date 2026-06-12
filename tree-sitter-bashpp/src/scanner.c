@@ -36,6 +36,9 @@ enum TokenType {
     OPENING_PAREN,
     ESAC,
     ERROR_RECOVERY,
+    BASHPP_ASSIGNMENT_REFERENCE,
+    BASHPP_ASSIGNMENT_OPERATOR,
+    BASHPP_REFERENCE_END,
 };
 
 typedef Array(char) String;
@@ -290,6 +293,26 @@ static bool scan_heredoc_content(Scanner *scanner, TSLexer *lexer, enum TokenTyp
                 return false;
             }
 
+            case '@': {
+                if (heredoc->is_raw) {
+                    did_advance = true;
+                    advance(lexer);
+                    break;
+                }
+                if (did_advance) {
+                    lexer->mark_end(lexer);
+                    lexer->result_symbol = middle_type;
+                    heredoc->started = true;
+                    return true;
+                }
+                if (middle_type == HEREDOC_BODY_BEGINNING && lexer->get_column(lexer) == 0) {
+                    lexer->result_symbol = middle_type;
+                    heredoc->started = true;
+                    return true;
+                }
+                return false;
+            }
+
             case '\n': {
                 if (!did_advance) {
                     skip(lexer);
@@ -347,6 +370,97 @@ static bool scan_heredoc_content(Scanner *scanner, TSLexer *lexer, enum TokenTyp
 }
 
 static bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
+    if (valid_symbols[NEWLINE] && lexer->lookahead == '\n') {
+        advance(lexer);
+        lexer->mark_end(lexer);
+        lexer->result_symbol = NEWLINE;
+        return true;
+    }
+
+    if (valid_symbols[BASHPP_ASSIGNMENT_REFERENCE]) {
+        while (iswspace(lexer->lookahead) &&
+               (lexer->lookahead != '\n' || !valid_symbols[NEWLINE])) {
+            skip(lexer);
+        }
+
+        if (lexer->lookahead != '@' && lexer->lookahead != '*') {
+            goto bash_scanner;
+        }
+        if (lexer->lookahead == '*') {
+            advance(lexer);
+        }
+        if (lexer->lookahead != '@') {
+            return false;
+        }
+        advance(lexer);
+        if (!iswalpha(lexer->lookahead) && lexer->lookahead != '_') {
+            return false;
+        }
+        while (iswalnum(lexer->lookahead) || lexer->lookahead == '_') {
+            advance(lexer);
+        }
+        while (lexer->lookahead == '.') {
+            advance(lexer);
+            if (!iswalpha(lexer->lookahead) && lexer->lookahead != '_') {
+                return false;
+            }
+            while (iswalnum(lexer->lookahead) || lexer->lookahead == '_') {
+                advance(lexer);
+            }
+        }
+        lexer->mark_end(lexer);
+
+        if (lexer->lookahead == '[') {
+            uint32_t bracket_depth = 0;
+            do {
+                if (lexer->lookahead == '[') {
+                    bracket_depth++;
+                } else if (lexer->lookahead == ']') {
+                    bracket_depth--;
+                } else if (lexer->lookahead == '\\') {
+                    advance(lexer);
+                }
+                advance(lexer);
+            } while (bracket_depth > 0 && !lexer->eof(lexer));
+        }
+
+        bool followed_by_assignment = lexer->lookahead == '=';
+        if (lexer->lookahead == '+') {
+            advance(lexer);
+            followed_by_assignment = lexer->lookahead == '=';
+        }
+        if (followed_by_assignment) {
+            lexer->result_symbol = BASHPP_ASSIGNMENT_REFERENCE;
+            return true;
+        }
+        return false;
+    }
+
+bash_scanner:
+    if (valid_symbols[BASHPP_ASSIGNMENT_OPERATOR]) {
+        if (lexer->lookahead == '=') {
+            advance(lexer);
+            lexer->mark_end(lexer);
+            lexer->result_symbol = BASHPP_ASSIGNMENT_OPERATOR;
+            return true;
+        }
+        if (lexer->lookahead == '+') {
+            advance(lexer);
+            if (lexer->lookahead == '=') {
+                advance(lexer);
+                lexer->mark_end(lexer);
+                lexer->result_symbol = BASHPP_ASSIGNMENT_OPERATOR;
+                return true;
+            }
+            return false;
+        }
+    }
+
+    if (valid_symbols[BASHPP_REFERENCE_END] && lexer->lookahead != '.' && lexer->lookahead != '[') {
+        lexer->result_symbol = BASHPP_REFERENCE_END;
+        return true;
+    }
+
     if (valid_symbols[CONCAT] && !in_error_recovery(valid_symbols)) {
         if (!(lexer->lookahead == 0 || iswspace(lexer->lookahead) || lexer->lookahead == '>' ||
               lexer->lookahead == '<' || lexer->lookahead == ')' || lexer->lookahead == '(' ||

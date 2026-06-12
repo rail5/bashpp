@@ -42,6 +42,10 @@
     "named": true,
     "subtypes": [
       {
+        "type": "address_expression",
+        "named": true
+      },
+      {
         "type": "ansi_c_string",
         "named": true
       },
@@ -54,7 +58,15 @@
         "named": true
       },
       {
+        "type": "braced_reference",
+        "named": true
+      },
+      {
         "type": "command_substitution",
+        "named": true
+      },
+      {
+        "type": "dynamic_cast_expression",
         "named": true
       },
       {
@@ -62,7 +74,23 @@
         "named": true
       },
       {
+        "type": "new_expression",
+        "named": true
+      },
+      {
+        "type": "nullptr_literal",
+        "named": true
+      },
+      {
         "type": "number",
+        "named": true
+      },
+      {
+        "type": "object_reference",
+        "named": true
+      },
+      {
+        "type": "pointer_dereference",
         "named": true
       },
       {
@@ -74,6 +102,10 @@
         "named": true
       },
       {
+        "type": "self_reference",
+        "named": true
+      },
+      {
         "type": "simple_expansion",
         "named": true
       },
@@ -82,7 +114,15 @@
         "named": true
       },
       {
+        "type": "supershell",
+        "named": true
+      },
+      {
         "type": "translated_string",
+        "named": true
+      },
+      {
+        "type": "typeof_expression",
         "named": true
       },
       {
@@ -128,6 +168,10 @@
         "named": true
       },
       {
+        "type": "delete_statement",
+        "named": true
+      },
+      {
         "type": "destructor_definition",
         "named": true
       },
@@ -157,6 +201,10 @@
       },
       {
         "type": "negated_command",
+        "named": true
+      },
+      {
+        "type": "object_assignment",
         "named": true
       },
       {
@@ -207,6 +255,32 @@
     "fields": {}
   },
   {
+    "type": "address_expression",
+    "named": true,
+    "fields": {
+      "index": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "reference_index",
+            "named": true
+          }
+        ]
+      },
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "reference_name",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "arithmetic_expansion",
     "named": true,
     "fields": {},
@@ -219,6 +293,10 @@
           "named": true
         },
         {
+          "type": "braced_reference",
+          "named": true
+        },
+        {
           "type": "command_substitution",
           "named": true
         },
@@ -227,11 +305,23 @@
           "named": true
         },
         {
+          "type": "nullptr_literal",
+          "named": true
+        },
+        {
           "type": "number",
           "named": true
         },
         {
+          "type": "object_reference",
+          "named": true
+        },
+        {
           "type": "parenthesized_expression",
+          "named": true
+        },
+        {
+          "type": "pointer_dereference",
           "named": true
         },
         {
@@ -240,6 +330,10 @@
         },
         {
           "type": "raw_string",
+          "named": true
+        },
+        {
+          "type": "self_reference",
           "named": true
         },
         {
@@ -255,7 +349,15 @@
           "named": true
         },
         {
+          "type": "supershell",
+          "named": true
+        },
+        {
           "type": "ternary_expression",
+          "named": true
+        },
+        {
+          "type": "typeof_expression",
           "named": true
         },
         {
@@ -289,6 +391,27 @@
     }
   },
   {
+    "type": "assignment_operator",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "assignment_reference",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "reference_name",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "binary_expression",
     "named": true,
     "fields": {
@@ -301,6 +424,10 @@
             "named": true
           },
           {
+            "type": "braced_reference",
+            "named": true
+          },
+          {
             "type": "command_substitution",
             "named": true
           },
@@ -309,11 +436,27 @@
             "named": true
           },
           {
+            "type": "nullptr_literal",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
           {
+            "type": "object_reference",
+            "named": true
+          },
+          {
+            "type": "pointer_dereference",
+            "named": true
+          },
+          {
             "type": "raw_string",
+            "named": true
+          },
+          {
+            "type": "self_reference",
             "named": true
           },
           {
@@ -326,6 +469,14 @@
           },
           {
             "type": "subscript",
+            "named": true
+          },
+          {
+            "type": "supershell",
+            "named": true
+          },
+          {
+            "type": "typeof_expression",
             "named": true
           },
           {
@@ -489,6 +640,10 @@
             "named": true
           },
           {
+            "type": "braced_reference",
+            "named": true
+          },
+          {
             "type": "command_substitution",
             "named": true
           },
@@ -501,7 +656,19 @@
             "named": true
           },
           {
+            "type": "nullptr_literal",
+            "named": true
+          },
+          {
             "type": "number",
+            "named": true
+          },
+          {
+            "type": "object_reference",
+            "named": true
+          },
+          {
+            "type": "pointer_dereference",
             "named": true
           },
           {
@@ -510,6 +677,10 @@
           },
           {
             "type": "regex",
+            "named": true
+          },
+          {
+            "type": "self_reference",
             "named": true
           },
           {
@@ -522,6 +693,14 @@
           },
           {
             "type": "subscript",
+            "named": true
+          },
+          {
+            "type": "supershell",
+            "named": true
+          },
+          {
+            "type": "typeof_expression",
             "named": true
           },
           {
@@ -567,6 +746,32 @@
           "named": true
         }
       ]
+    }
+  },
+  {
+    "type": "braced_reference",
+    "named": true,
+    "fields": {
+      "index": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "reference_index",
+            "named": true
+          }
+        ]
+      },
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "reference_name",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
@@ -1011,6 +1216,10 @@
           "named": true
         },
         {
+          "type": "braced_reference",
+          "named": true
+        },
+        {
           "type": "command_substitution",
           "named": true
         },
@@ -1019,11 +1228,23 @@
           "named": true
         },
         {
+          "type": "nullptr_literal",
+          "named": true
+        },
+        {
           "type": "number",
           "named": true
         },
         {
+          "type": "object_reference",
+          "named": true
+        },
+        {
           "type": "parenthesized_expression",
+          "named": true
+        },
+        {
+          "type": "pointer_dereference",
           "named": true
         },
         {
@@ -1032,6 +1253,10 @@
         },
         {
           "type": "raw_string",
+          "named": true
+        },
+        {
+          "type": "self_reference",
           "named": true
         },
         {
@@ -1047,7 +1272,15 @@
           "named": true
         },
         {
+          "type": "supershell",
+          "named": true
+        },
+        {
           "type": "ternary_expression",
+          "named": true
+        },
+        {
+          "type": "typeof_expression",
           "named": true
         },
         {
@@ -1186,12 +1419,8 @@
         "required": true,
         "types": [
           {
-            "type": "+=",
-            "named": false
-          },
-          {
-            "type": "=",
-            "named": false
+            "type": "assignment_operator",
+            "named": true
           }
         ]
       },
@@ -1209,6 +1438,26 @@
           },
           {
             "type": "concatenation",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "delete_statement",
+    "named": true,
+    "fields": {
+      "argument": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "object_reference",
+            "named": true
+          },
+          {
+            "type": "self_reference",
             "named": true
           }
         ]
@@ -1241,6 +1490,75 @@
       "types": [
         {
           "type": "_statement",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "dynamic_cast_expression",
+    "named": true,
+    "fields": {
+      "target": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "dynamic_cast_target",
+            "named": true
+          }
+        ]
+      },
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "_primary_expression",
+            "named": true
+          },
+          {
+            "type": "array",
+            "named": true
+          },
+          {
+            "type": "concatenation",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "dynamic_cast_target",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "braced_reference",
+          "named": true
+        },
+        {
+          "type": "expansion",
+          "named": true
+        },
+        {
+          "type": "object_reference",
+          "named": true
+        },
+        {
+          "type": "self_reference",
+          "named": true
+        },
+        {
+          "type": "simple_expansion",
+          "named": true
+        },
+        {
+          "type": "type_identifier",
           "named": true
         }
       ]
@@ -1597,6 +1915,14 @@
       "required": false,
       "types": [
         {
+          "type": "address_expression",
+          "named": true
+        },
+        {
+          "type": "braced_reference",
+          "named": true
+        },
+        {
           "type": "command_substitution",
           "named": true
         },
@@ -1609,7 +1935,23 @@
           "named": true
         },
         {
+          "type": "object_reference",
+          "named": true
+        },
+        {
+          "type": "pointer_dereference",
+          "named": true
+        },
+        {
+          "type": "self_reference",
+          "named": true
+        },
+        {
           "type": "simple_expansion",
+          "named": true
+        },
+        {
+          "type": "supershell",
           "named": true
         }
       ]
@@ -1931,16 +2273,6 @@
           }
         ]
       },
-      "pointer": {
-        "multiple": false,
-        "required": false,
-        "types": [
-          {
-            "type": "*",
-            "named": false
-          }
-        ]
-      },
       "type": {
         "multiple": false,
         "required": false,
@@ -1981,6 +2313,22 @@
     }
   },
   {
+    "type": "new_expression",
+    "named": true,
+    "fields": {
+      "type": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "type_identifier",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "number",
     "named": true,
     "fields": {},
@@ -1997,6 +2345,60 @@
           "named": true
         }
       ]
+    }
+  },
+  {
+    "type": "object_assignment",
+    "named": true,
+    "fields": {
+      "index": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "reference_index",
+            "named": true
+          }
+        ]
+      },
+      "left": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "assignment_reference",
+            "named": true
+          }
+        ]
+      },
+      "operator": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "assignment_operator",
+            "named": true
+          }
+        ]
+      },
+      "right": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "_primary_expression",
+            "named": true
+          },
+          {
+            "type": "array",
+            "named": true
+          },
+          {
+            "type": "concatenation",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
@@ -2041,6 +2443,32 @@
     "fields": {}
   },
   {
+    "type": "object_reference",
+    "named": true,
+    "fields": {
+      "index": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "reference_index",
+            "named": true
+          }
+        ]
+      },
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "reference_name",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "parameter_name",
     "named": true,
     "fields": {}
@@ -2058,6 +2486,10 @@
           "named": true
         },
         {
+          "type": "braced_reference",
+          "named": true
+        },
+        {
           "type": "command_substitution",
           "named": true
         },
@@ -2066,11 +2498,27 @@
           "named": true
         },
         {
+          "type": "nullptr_literal",
+          "named": true
+        },
+        {
           "type": "number",
           "named": true
         },
         {
+          "type": "object_reference",
+          "named": true
+        },
+        {
+          "type": "pointer_dereference",
+          "named": true
+        },
+        {
           "type": "raw_string",
+          "named": true
+        },
+        {
+          "type": "self_reference",
           "named": true
         },
         {
@@ -2083,6 +2531,14 @@
         },
         {
           "type": "subscript",
+          "named": true
+        },
+        {
+          "type": "supershell",
+          "named": true
+        },
+        {
+          "type": "typeof_expression",
           "named": true
         },
         {
@@ -2125,16 +2581,6 @@
           }
         ]
       },
-      "pointer": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "*",
-            "named": false
-          }
-        ]
-      },
       "type": {
         "multiple": false,
         "required": true,
@@ -2151,6 +2597,32 @@
         "types": [
           {
             "type": "default_value",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "pointer_dereference",
+    "named": true,
+    "fields": {
+      "index": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "reference_index",
+            "named": true
+          }
+        ]
+      },
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "reference_name",
             "named": true
           }
         ]
@@ -2185,6 +2657,10 @@
           "named": true
         },
         {
+          "type": "braced_reference",
+          "named": true
+        },
+        {
           "type": "command_substitution",
           "named": true
         },
@@ -2193,11 +2669,27 @@
           "named": true
         },
         {
+          "type": "nullptr_literal",
+          "named": true
+        },
+        {
           "type": "number",
           "named": true
         },
         {
+          "type": "object_reference",
+          "named": true
+        },
+        {
+          "type": "pointer_dereference",
+          "named": true
+        },
+        {
           "type": "raw_string",
+          "named": true
+        },
+        {
+          "type": "self_reference",
           "named": true
         },
         {
@@ -2210,6 +2702,14 @@
         },
         {
           "type": "subscript",
+          "named": true
+        },
+        {
+          "type": "supershell",
+          "named": true
+        },
+        {
+          "type": "typeof_expression",
           "named": true
         },
         {
@@ -2295,6 +2795,56 @@
     }
   },
   {
+    "type": "reference_index",
+    "named": true,
+    "fields": {
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "@",
+            "named": false
+          },
+          {
+            "type": "_expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "self_reference",
+    "named": true,
+    "fields": {
+      "index": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "reference_index",
+            "named": true
+          }
+        ]
+      },
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "self",
+            "named": true
+          },
+          {
+            "type": "super",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "simple_expansion",
     "named": true,
     "fields": {},
@@ -2322,7 +2872,15 @@
       "required": false,
       "types": [
         {
+          "type": "address_expression",
+          "named": true
+        },
+        {
           "type": "arithmetic_expansion",
+          "named": true
+        },
+        {
+          "type": "braced_reference",
           "named": true
         },
         {
@@ -2334,11 +2892,27 @@
           "named": true
         },
         {
+          "type": "object_reference",
+          "named": true
+        },
+        {
+          "type": "pointer_dereference",
+          "named": true
+        },
+        {
+          "type": "self_reference",
+          "named": true
+        },
+        {
           "type": "simple_expansion",
           "named": true
         },
         {
           "type": "string_content",
+          "named": true
+        },
+        {
+          "type": "supershell",
           "named": true
         }
       ]
@@ -2406,6 +2980,21 @@
     }
   },
   {
+    "type": "supershell",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "_statement",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "ternary_expression",
     "named": true,
     "fields": {
@@ -2418,6 +3007,10 @@
             "named": true
           },
           {
+            "type": "braced_reference",
+            "named": true
+          },
+          {
             "type": "command_substitution",
             "named": true
           },
@@ -2426,11 +3019,27 @@
             "named": true
           },
           {
+            "type": "nullptr_literal",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
           {
+            "type": "object_reference",
+            "named": true
+          },
+          {
+            "type": "pointer_dereference",
+            "named": true
+          },
+          {
             "type": "raw_string",
+            "named": true
+          },
+          {
+            "type": "self_reference",
             "named": true
           },
           {
@@ -2443,6 +3052,14 @@
           },
           {
             "type": "subscript",
+            "named": true
+          },
+          {
+            "type": "supershell",
+            "named": true
+          },
+          {
+            "type": "typeof_expression",
             "named": true
           },
           {
@@ -2460,6 +3077,10 @@
             "named": true
           },
           {
+            "type": "braced_reference",
+            "named": true
+          },
+          {
             "type": "command_substitution",
             "named": true
           },
@@ -2468,11 +3089,27 @@
             "named": true
           },
           {
+            "type": "nullptr_literal",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
           {
+            "type": "object_reference",
+            "named": true
+          },
+          {
+            "type": "pointer_dereference",
+            "named": true
+          },
+          {
             "type": "raw_string",
+            "named": true
+          },
+          {
+            "type": "self_reference",
             "named": true
           },
           {
@@ -2485,6 +3122,14 @@
           },
           {
             "type": "subscript",
+            "named": true
+          },
+          {
+            "type": "supershell",
+            "named": true
+          },
+          {
+            "type": "typeof_expression",
             "named": true
           },
           {
@@ -2502,6 +3147,10 @@
             "named": true
           },
           {
+            "type": "braced_reference",
+            "named": true
+          },
+          {
             "type": "command_substitution",
             "named": true
           },
@@ -2510,11 +3159,27 @@
             "named": true
           },
           {
+            "type": "nullptr_literal",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
           {
+            "type": "object_reference",
+            "named": true
+          },
+          {
+            "type": "pointer_dereference",
+            "named": true
+          },
+          {
             "type": "raw_string",
+            "named": true
+          },
+          {
+            "type": "self_reference",
             "named": true
           },
           {
@@ -2527,6 +3192,14 @@
           },
           {
             "type": "subscript",
+            "named": true
+          },
+          {
+            "type": "supershell",
+            "named": true
+          },
+          {
+            "type": "typeof_expression",
             "named": true
           },
           {
@@ -2577,6 +3250,30 @@
     "fields": {}
   },
   {
+    "type": "typeof_expression",
+    "named": true,
+    "fields": {
+      "argument": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "_primary_expression",
+            "named": true
+          },
+          {
+            "type": "array",
+            "named": true
+          },
+          {
+            "type": "concatenation",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "unary_expression",
     "named": true,
     "fields": {
@@ -2624,6 +3321,10 @@
           "named": true
         },
         {
+          "type": "braced_reference",
+          "named": true
+        },
+        {
           "type": "command_substitution",
           "named": true
         },
@@ -2632,11 +3333,27 @@
           "named": true
         },
         {
+          "type": "nullptr_literal",
+          "named": true
+        },
+        {
           "type": "number",
           "named": true
         },
         {
+          "type": "object_reference",
+          "named": true
+        },
+        {
+          "type": "pointer_dereference",
+          "named": true
+        },
+        {
           "type": "raw_string",
+          "named": true
+        },
+        {
+          "type": "self_reference",
           "named": true
         },
         {
@@ -2649,6 +3366,14 @@
         },
         {
           "type": "subscript",
+          "named": true
+        },
+        {
+          "type": "supershell",
+          "named": true
+        },
+        {
+          "type": "typeof_expression",
           "named": true
         },
         {
@@ -2696,6 +3421,20 @@
           {
             "type": "variable_name",
             "named": true
+          }
+        ]
+      },
+      "operator": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "+=",
+            "named": false
+          },
+          {
+            "type": "=",
+            "named": false
           }
         ]
       },
@@ -3094,6 +3833,10 @@
     "named": false
   },
   {
+    "type": "@(",
+    "named": false
+  },
+  {
     "type": "@class",
     "named": false
   },
@@ -3102,7 +3845,15 @@
     "named": false
   },
   {
+    "type": "@delete",
+    "named": false
+  },
+  {
     "type": "@destructor",
+    "named": false
+  },
+  {
+    "type": "@dynamic_cast",
     "named": false
   },
   {
@@ -3118,6 +3869,10 @@
     "named": false
   },
   {
+    "type": "@new",
+    "named": false
+  },
+  {
     "type": "@private",
     "named": false
   },
@@ -3127,6 +3882,14 @@
   },
   {
     "type": "@public",
+    "named": false
+  },
+  {
+    "type": "@typeof",
+    "named": false
+  },
+  {
+    "type": "@{",
     "named": false
   },
   {
@@ -3299,6 +4062,10 @@
     "named": false
   },
   {
+    "type": "nullptr_literal",
+    "named": true
+  },
+  {
     "type": "raw_string",
     "named": true
   },
@@ -3307,12 +4074,20 @@
     "named": false
   },
   {
+    "type": "reference_name",
+    "named": true
+  },
+  {
     "type": "regex",
     "named": true
   },
   {
     "type": "select",
     "named": false
+  },
+  {
+    "type": "self",
+    "named": true
   },
   {
     "type": "special_variable_name",
@@ -3324,6 +4099,10 @@
   },
   {
     "type": "string_content",
+    "named": true
+  },
+  {
+    "type": "super",
     "named": true
   },
   {

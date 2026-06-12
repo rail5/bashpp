@@ -19,6 +19,7 @@ Class with inheritance and members
         (access_modifier)
         (member_name)
         (default_value
+          (assignment_operator)
           (string
             (string_content))))
       (data_member_declaration
@@ -105,6 +106,7 @@ Object and pointer declarations
     (type_identifier)
     (object_name)
     (default_value
+      (assignment_operator)
       (string
         (string_content))))
   (pointer_declaration
@@ -114,6 +116,7 @@ Object and pointer declarations
     (type_identifier)
     (object_name)
     (default_value
+      (assignment_operator)
       (string
         (string_content)))))
 

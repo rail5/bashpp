@@ -90,6 +90,50 @@
       "type": "CHOICE",
       "members": [
         {
+          "type": "SYMBOL",
+          "name": "variable_assignment"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "class_definition"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "data_member_declaration"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "method_definition"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "constructor_definition"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "destructor_definition"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "include_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "object_declaration"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "pointer_declaration"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "object_assignment"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "delete_statement"
+        },
+        {
           "type": "CHOICE",
           "members": [
             {
@@ -161,6 +205,15 @@
               "name": "function_definition"
             }
           ]
+        }
+      ]
+    },
+    "_statement_not_pipeline": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "variable_assignment"
         },
         {
           "type": "SYMBOL",
@@ -193,12 +246,15 @@
         {
           "type": "SYMBOL",
           "name": "pointer_declaration"
-        }
-      ]
-    },
-    "_statement_not_pipeline": {
-      "type": "CHOICE",
-      "members": [
+        },
+        {
+          "type": "SYMBOL",
+          "name": "object_assignment"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "delete_statement"
+        },
         {
           "type": "PREC",
           "value": 1,
@@ -275,38 +331,6 @@
               }
             ]
           }
-        },
-        {
-          "type": "SYMBOL",
-          "name": "class_definition"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "data_member_declaration"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "method_definition"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "constructor_definition"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "destructor_definition"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "include_statement"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "object_declaration"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "pointer_declaration"
         }
       ]
     },
@@ -2480,8 +2504,33 @@
       }
     },
     "command_name": {
-      "type": "SYMBOL",
-      "name": "_literal"
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "object_reference"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "self_reference"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "braced_reference"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "pointer_dereference"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "supershell"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "_literal"
+        }
+      ]
     },
     "variable_assignment": {
       "type": "SEQ",
@@ -2504,17 +2553,21 @@
           }
         },
         {
-          "type": "CHOICE",
-          "members": [
-            {
-              "type": "STRING",
-              "value": "="
-            },
-            {
-              "type": "STRING",
-              "value": "+="
-            }
-          ]
+          "type": "FIELD",
+          "name": "operator",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "STRING",
+                "value": "="
+              },
+              {
+                "type": "STRING",
+                "value": "+="
+              }
+            ]
+          }
         },
         {
           "type": "FIELD",
@@ -2524,11 +2577,7 @@
             "members": [
               {
                 "type": "SYMBOL",
-                "name": "_literal"
-              },
-              {
-                "type": "SYMBOL",
-                "name": "array"
+                "name": "_bashpp_value"
               },
               {
                 "type": "SYMBOL",
@@ -2967,6 +3016,30 @@
               {
                 "type": "SYMBOL",
                 "name": "command_substitution"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "object_reference"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "self_reference"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "braced_reference"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "address_expression"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "pointer_dereference"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "supershell"
               },
               {
                 "type": "SYMBOL",
@@ -4000,61 +4073,106 @@
       "type": "CHOICE",
       "members": [
         {
-          "type": "SYMBOL",
-          "name": "word"
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "word"
+            },
+            {
+              "type": "ALIAS",
+              "content": {
+                "type": "SYMBOL",
+                "name": "test_operator"
+              },
+              "named": true,
+              "value": "word"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "string"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "raw_string"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "translated_string"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "ansi_c_string"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "number"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "expansion"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "simple_expansion"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "command_substitution"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "process_substitution"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "arithmetic_expansion"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "brace_expression"
+            }
+          ]
         },
         {
-          "type": "ALIAS",
-          "content": {
-            "type": "SYMBOL",
-            "name": "test_operator"
-          },
-          "named": true,
-          "value": "word"
+          "type": "SYMBOL",
+          "name": "object_reference"
         },
         {
           "type": "SYMBOL",
-          "name": "string"
+          "name": "self_reference"
         },
         {
           "type": "SYMBOL",
-          "name": "raw_string"
+          "name": "braced_reference"
         },
         {
           "type": "SYMBOL",
-          "name": "translated_string"
+          "name": "address_expression"
         },
         {
           "type": "SYMBOL",
-          "name": "ansi_c_string"
+          "name": "pointer_dereference"
         },
         {
           "type": "SYMBOL",
-          "name": "number"
+          "name": "new_expression"
         },
         {
           "type": "SYMBOL",
-          "name": "expansion"
+          "name": "nullptr_literal"
         },
         {
           "type": "SYMBOL",
-          "name": "simple_expansion"
+          "name": "typeof_expression"
         },
         {
           "type": "SYMBOL",
-          "name": "command_substitution"
+          "name": "dynamic_cast_expression"
         },
         {
           "type": "SYMBOL",
-          "name": "process_substitution"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "arithmetic_expansion"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "brace_expression"
+          "name": "supershell"
         }
       ]
     },
@@ -4233,45 +4351,78 @@
       }
     },
     "_arithmetic_literal": {
-      "type": "PREC",
-      "value": 1,
-      "content": {
-        "type": "CHOICE",
-        "members": [
-          {
-            "type": "SYMBOL",
-            "name": "number"
-          },
-          {
-            "type": "SYMBOL",
-            "name": "subscript"
-          },
-          {
-            "type": "SYMBOL",
-            "name": "simple_expansion"
-          },
-          {
-            "type": "SYMBOL",
-            "name": "expansion"
-          },
-          {
-            "type": "SYMBOL",
-            "name": "_simple_variable_name"
-          },
-          {
-            "type": "SYMBOL",
-            "name": "variable_name"
-          },
-          {
-            "type": "SYMBOL",
-            "name": "string"
-          },
-          {
-            "type": "SYMBOL",
-            "name": "raw_string"
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "PREC",
+          "value": 1,
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "number"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "subscript"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "simple_expansion"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "expansion"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "_simple_variable_name"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "variable_name"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "string"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "raw_string"
+              }
+            ]
           }
-        ]
-      }
+        },
+        {
+          "type": "SYMBOL",
+          "name": "object_reference"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "self_reference"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "braced_reference"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "pointer_dereference"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "nullptr_literal"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "typeof_expression"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "supershell"
+        }
+      ]
     },
     "_arithmetic_binary_expression": {
       "type": "CHOICE",
@@ -5220,6 +5371,10 @@
                   {
                     "type": "SYMBOL",
                     "name": "arithmetic_expansion"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "_bashpp_string_interpolation"
                   }
                 ]
               },
@@ -5263,7 +5418,7 @@
         "value": -1,
         "content": {
           "type": "PATTERN",
-          "value": "([^\"`$\\\\\\r\\n]|\\\\(.|\\r?\\n))+"
+          "value": "([^\"`$@&*\\\\\\r\\n]|\\\\(.|\\r?\\n))+"
         }
       }
     },
@@ -6821,7 +6976,7 @@
               "members": [
                 {
                   "type": "PATTERN",
-                  "value": "[^'\"<>{}\\[\\]()`$|&;\\\\\\s]"
+                  "value": "[^'\"<>{}\\[\\]()`$=|&;\\\\\\s@]"
                 },
                 {
                   "type": "SEQ",
@@ -6845,7 +7000,7 @@
                 "members": [
                   {
                     "type": "PATTERN",
-                    "value": "[^'\"<>{}\\[\\]()`$|&;\\\\\\s]"
+                    "value": "[^'\"<>{}\\[\\]()`$=|&;\\\\\\s@]"
                   },
                   {
                     "type": "SEQ",
@@ -6941,38 +7096,17 @@
     "word": {
       "type": "TOKEN",
       "content": {
-        "type": "SEQ",
-        "members": [
-          {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "PATTERN",
-                "value": "[^#'\"<>{}\\[\\]()`$|&;\\\\\\s]"
-              },
-              {
-                "type": "SEQ",
-                "members": [
-                  {
-                    "type": "STRING",
-                    "value": "\\"
-                  },
-                  {
-                    "type": "PATTERN",
-                    "value": "[^\\s]"
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "type": "REPEAT",
-            "content": {
+        "type": "PREC",
+        "value": -1,
+        "content": {
+          "type": "SEQ",
+          "members": [
+            {
               "type": "CHOICE",
               "members": [
                 {
                   "type": "PATTERN",
-                  "value": "[^'\"<>{}\\[\\]()`$|&;\\\\\\s]"
+                  "value": "[^#'\"<>{}\\[\\]()`$=|&;\\\\\\s@]"
                 },
                 {
                   "type": "SEQ",
@@ -6986,15 +7120,40 @@
                       "value": "[^\\s]"
                     }
                   ]
-                },
-                {
-                  "type": "STRING",
-                  "value": "\\ "
                 }
               ]
+            },
+            {
+              "type": "REPEAT",
+              "content": {
+                "type": "CHOICE",
+                "members": [
+                  {
+                    "type": "PATTERN",
+                    "value": "[^'\"<>{}\\[\\]()`$=|&;\\\\\\s@]"
+                  },
+                  {
+                    "type": "SEQ",
+                    "members": [
+                      {
+                        "type": "STRING",
+                        "value": "\\"
+                      },
+                      {
+                        "type": "PATTERN",
+                        "value": "[^\\s]"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "\\ "
+                  }
+                ]
+              }
             }
-          }
-        ]
+          ]
+        }
       }
     },
     "_c_terminator": {
@@ -7045,7 +7204,7 @@
             "type": "TOKEN",
             "content": {
               "type": "PREC",
-              "value": 3,
+              "value": 5,
               "content": {
                 "type": "STRING",
                 "value": "@class"
@@ -7213,7 +7372,7 @@
             "type": "TOKEN",
             "content": {
               "type": "PREC",
-              "value": 3,
+              "value": 5,
               "content": {
                 "type": "STRING",
                 "value": "@method"
@@ -7278,30 +7437,28 @@
               "type": "FIELD",
               "name": "type",
               "content": {
-                "type": "ALIAS",
-                "content": {
-                  "type": "SYMBOL",
-                  "name": "_bashpp_type"
-                },
-                "named": true,
-                "value": "type_identifier"
-              }
-            },
-            {
-              "type": "CHOICE",
-              "members": [
-                {
-                  "type": "FIELD",
-                  "name": "pointer",
-                  "content": {
-                    "type": "STRING",
-                    "value": "*"
+                "type": "CHOICE",
+                "members": [
+                  {
+                    "type": "ALIAS",
+                    "content": {
+                      "type": "SYMBOL",
+                      "name": "_bashpp_object_type"
+                    },
+                    "named": true,
+                    "value": "type_identifier"
+                  },
+                  {
+                    "type": "ALIAS",
+                    "content": {
+                      "type": "SYMBOL",
+                      "name": "_bashpp_pointer_type"
+                    },
+                    "named": true,
+                    "value": "type_identifier"
                   }
-                },
-                {
-                  "type": "BLANK"
-                }
-              ]
+                ]
+              }
             },
             {
               "type": "FIELD",
@@ -7330,7 +7487,7 @@
             "type": "TOKEN",
             "content": {
               "type": "PREC",
-              "value": 3,
+              "value": 5,
               "content": {
                 "type": "STRING",
                 "value": "@constructor"
@@ -7358,7 +7515,7 @@
             "type": "TOKEN",
             "content": {
               "type": "PREC",
-              "value": 3,
+              "value": 5,
               "content": {
                 "type": "STRING",
                 "value": "@destructor"
@@ -7392,7 +7549,7 @@
                   "type": "TOKEN",
                   "content": {
                     "type": "PREC",
-                    "value": 3,
+                    "value": 5,
                     "content": {
                       "type": "STRING",
                       "value": "@include"
@@ -7403,7 +7560,7 @@
                   "type": "TOKEN",
                   "content": {
                     "type": "PREC",
-                    "value": 3,
+                    "value": 5,
                     "content": {
                       "type": "STRING",
                       "value": "@include_once"
@@ -7507,7 +7664,7 @@
               "type": "ALIAS",
               "content": {
                 "type": "SYMBOL",
-                "name": "_bashpp_type"
+                "name": "_bashpp_object_type"
               },
               "named": true,
               "value": "type_identifier"
@@ -7558,18 +7715,10 @@
               "type": "ALIAS",
               "content": {
                 "type": "SYMBOL",
-                "name": "_bashpp_type"
+                "name": "_bashpp_pointer_type"
               },
               "named": true,
               "value": "type_identifier"
-            }
-          },
-          {
-            "type": "FIELD",
-            "name": "pointer",
-            "content": {
-              "type": "STRING",
-              "value": "*"
             }
           },
           {
@@ -7611,17 +7760,8 @@
           "type": "FIELD",
           "name": "operator",
           "content": {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "STRING",
-                "value": "="
-              },
-              {
-                "type": "STRING",
-                "value": "+="
-              }
-            ]
+            "type": "SYMBOL",
+            "name": "assignment_operator"
           }
         },
         {
@@ -7634,6 +7774,10 @@
         }
       ]
     },
+    "assignment_operator": {
+      "type": "SYMBOL",
+      "name": "_bashpp_assignment_operator"
+    },
     "access_modifier": {
       "type": "CHOICE",
       "members": [
@@ -7641,7 +7785,7 @@
           "type": "TOKEN",
           "content": {
             "type": "PREC",
-            "value": 3,
+            "value": 5,
             "content": {
               "type": "STRING",
               "value": "@public"
@@ -7652,7 +7796,7 @@
           "type": "TOKEN",
           "content": {
             "type": "PREC",
-            "value": 3,
+            "value": 5,
             "content": {
               "type": "STRING",
               "value": "@private"
@@ -7663,7 +7807,7 @@
           "type": "TOKEN",
           "content": {
             "type": "PREC",
-            "value": 3,
+            "value": 5,
             "content": {
               "type": "STRING",
               "value": "@protected"
@@ -7676,12 +7820,600 @@
       "type": "TOKEN",
       "content": {
         "type": "PREC",
-        "value": 3,
+        "value": 5,
         "content": {
           "type": "STRING",
           "value": "@virtual"
         }
       }
+    },
+    "object_assignment": {
+      "type": "PREC_RIGHT",
+      "value": 10,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "FIELD",
+            "name": "left",
+            "content": {
+              "type": "SYMBOL",
+              "name": "assignment_reference"
+            }
+          },
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "FIELD",
+                "name": "index",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "reference_index"
+                }
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          },
+          {
+            "type": "FIELD",
+            "name": "operator",
+            "content": {
+              "type": "SYMBOL",
+              "name": "assignment_operator"
+            }
+          },
+          {
+            "type": "FIELD",
+            "name": "right",
+            "content": {
+              "type": "SYMBOL",
+              "name": "_bashpp_value"
+            }
+          }
+        ]
+      }
+    },
+    "assignment_reference": {
+      "type": "FIELD",
+      "name": "name",
+      "content": {
+        "type": "ALIAS",
+        "content": {
+          "type": "SYMBOL",
+          "name": "_bashpp_assignment_reference"
+        },
+        "named": true,
+        "value": "reference_name"
+      }
+    },
+    "object_reference": {
+      "type": "PREC_DYNAMIC",
+      "value": 10,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "FIELD",
+            "name": "name",
+            "content": {
+              "type": "ALIAS",
+              "content": {
+                "type": "SYMBOL",
+                "name": "_bashpp_reference_name"
+              },
+              "named": true,
+              "value": "reference_name"
+            }
+          },
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "FIELD",
+                "name": "index",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "reference_index"
+                }
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          },
+          {
+            "type": "SYMBOL",
+            "name": "_bashpp_reference_end"
+          }
+        ]
+      }
+    },
+    "self_reference": {
+      "type": "PREC_DYNAMIC",
+      "value": 10,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "FIELD",
+            "name": "name",
+            "content": {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "ALIAS",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "_bashpp_this_reference"
+                  },
+                  "named": true,
+                  "value": "self"
+                },
+                {
+                  "type": "ALIAS",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "_bashpp_super_reference"
+                  },
+                  "named": true,
+                  "value": "super"
+                }
+              ]
+            }
+          },
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "FIELD",
+                "name": "index",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "reference_index"
+                }
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          },
+          {
+            "type": "SYMBOL",
+            "name": "_bashpp_reference_end"
+          }
+        ]
+      }
+    },
+    "braced_reference": {
+      "type": "PREC_DYNAMIC",
+      "value": 10,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "TOKEN",
+            "content": {
+              "type": "PREC",
+              "value": 5,
+              "content": {
+                "type": "STRING",
+                "value": "@{"
+              }
+            }
+          },
+          {
+            "type": "FIELD",
+            "name": "name",
+            "content": {
+              "type": "ALIAS",
+              "content": {
+                "type": "SYMBOL",
+                "name": "_bashpp_braced_name"
+              },
+              "named": true,
+              "value": "reference_name"
+            }
+          },
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "FIELD",
+                "name": "index",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "reference_index"
+                }
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          },
+          {
+            "type": "STRING",
+            "value": "}"
+          }
+        ]
+      }
+    },
+    "reference_index": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "["
+        },
+        {
+          "type": "FIELD",
+          "name": "value",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "STRING",
+                "value": "@"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "_expression"
+              }
+            ]
+          }
+        },
+        {
+          "type": "STRING",
+          "value": "]"
+        }
+      ]
+    },
+    "address_expression": {
+      "type": "PREC_DYNAMIC",
+      "value": 10,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "FIELD",
+            "name": "name",
+            "content": {
+              "type": "ALIAS",
+              "content": {
+                "type": "SYMBOL",
+                "name": "_bashpp_address_name"
+              },
+              "named": true,
+              "value": "reference_name"
+            }
+          },
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "FIELD",
+                "name": "index",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "reference_index"
+                }
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          },
+          {
+            "type": "SYMBOL",
+            "name": "_bashpp_reference_end"
+          }
+        ]
+      }
+    },
+    "pointer_dereference": {
+      "type": "PREC_DYNAMIC",
+      "value": 10,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "FIELD",
+            "name": "name",
+            "content": {
+              "type": "ALIAS",
+              "content": {
+                "type": "SYMBOL",
+                "name": "_bashpp_dereference_name"
+              },
+              "named": true,
+              "value": "reference_name"
+            }
+          },
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "FIELD",
+                "name": "index",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "reference_index"
+                }
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          },
+          {
+            "type": "SYMBOL",
+            "name": "_bashpp_reference_end"
+          }
+        ]
+      }
+    },
+    "new_expression": {
+      "type": "PREC_RIGHT",
+      "value": 4,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "TOKEN",
+            "content": {
+              "type": "PREC",
+              "value": 5,
+              "content": {
+                "type": "STRING",
+                "value": "@new"
+              }
+            }
+          },
+          {
+            "type": "FIELD",
+            "name": "type",
+            "content": {
+              "type": "ALIAS",
+              "content": {
+                "type": "SYMBOL",
+                "name": "_bashpp_identifier"
+              },
+              "named": true,
+              "value": "type_identifier"
+            }
+          }
+        ]
+      }
+    },
+    "delete_statement": {
+      "type": "PREC_RIGHT",
+      "value": 4,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "TOKEN",
+            "content": {
+              "type": "PREC",
+              "value": 5,
+              "content": {
+                "type": "STRING",
+                "value": "@delete"
+              }
+            }
+          },
+          {
+            "type": "FIELD",
+            "name": "argument",
+            "content": {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "object_reference"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "self_reference"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "nullptr_literal": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 5,
+        "content": {
+          "type": "STRING",
+          "value": "@nullptr"
+        }
+      }
+    },
+    "typeof_expression": {
+      "type": "PREC_RIGHT",
+      "value": 4,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "TOKEN",
+            "content": {
+              "type": "PREC",
+              "value": 5,
+              "content": {
+                "type": "STRING",
+                "value": "@typeof"
+              }
+            }
+          },
+          {
+            "type": "FIELD",
+            "name": "argument",
+            "content": {
+              "type": "SYMBOL",
+              "name": "_bashpp_value"
+            }
+          }
+        ]
+      }
+    },
+    "dynamic_cast_expression": {
+      "type": "PREC_RIGHT",
+      "value": 4,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "TOKEN",
+            "content": {
+              "type": "PREC",
+              "value": 5,
+              "content": {
+                "type": "STRING",
+                "value": "@dynamic_cast"
+              }
+            }
+          },
+          {
+            "type": "STRING",
+            "value": "<"
+          },
+          {
+            "type": "FIELD",
+            "name": "target",
+            "content": {
+              "type": "SYMBOL",
+              "name": "dynamic_cast_target"
+            }
+          },
+          {
+            "type": "STRING",
+            "value": ">"
+          },
+          {
+            "type": "FIELD",
+            "name": "value",
+            "content": {
+              "type": "SYMBOL",
+              "name": "_bashpp_value"
+            }
+          }
+        ]
+      }
+    },
+    "dynamic_cast_target": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_bashpp_identifier"
+          },
+          "named": true,
+          "value": "type_identifier"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "simple_expansion"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "expansion"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "object_reference"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "self_reference"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "braced_reference"
+        }
+      ]
+    },
+    "supershell": {
+      "type": "PREC_RIGHT",
+      "value": 4,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "TOKEN",
+            "content": {
+              "type": "PREC",
+              "value": 5,
+              "content": {
+                "type": "STRING",
+                "value": "@("
+              }
+            }
+          },
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "_statements"
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          },
+          {
+            "type": "STRING",
+            "value": ")"
+          }
+        ]
+      }
+    },
+    "_bashpp_string_interpolation": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "object_reference"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "self_reference"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "braced_reference"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "address_expression"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "pointer_dereference"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "supershell"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "PATTERN",
+            "value": "[&*]"
+          },
+          "named": true,
+          "value": "string_content"
+        }
+      ]
     },
     "_bashpp_value": {
       "type": "CHOICE",
@@ -7693,6 +8425,22 @@
         {
           "type": "SYMBOL",
           "name": "array"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "new_expression"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "nullptr_literal"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "typeof_expression"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "dynamic_cast_expression"
         }
       ]
     },
@@ -7700,14 +8448,91 @@
       "type": "PATTERN",
       "value": "[a-zA-Z_][a-zA-Z0-9_]*"
     },
-    "_bashpp_type": {
+    "_bashpp_object_type": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 4,
+        "content": {
+          "type": "PATTERN",
+          "value": "@[a-zA-Z_][a-zA-Z0-9_]*[ \\t]+"
+        }
+      }
+    },
+    "_bashpp_pointer_type": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 4,
+        "content": {
+          "type": "PATTERN",
+          "value": "@[a-zA-Z_][a-zA-Z0-9_]*\\*[ \\t]+"
+        }
+      }
+    },
+    "_bashpp_reference_name": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 3,
+        "content": {
+          "type": "PATTERN",
+          "value": "@[a-zA-Z_][a-zA-Z0-9_]*(\\.[a-zA-Z_][a-zA-Z0-9_]*)*"
+        }
+      }
+    },
+    "_bashpp_this_reference": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 5,
+        "content": {
+          "type": "PATTERN",
+          "value": "@this(\\.[a-zA-Z_][a-zA-Z0-9_]*)*"
+        }
+      }
+    },
+    "_bashpp_super_reference": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 5,
+        "content": {
+          "type": "PATTERN",
+          "value": "@super(\\.[a-zA-Z_][a-zA-Z0-9_]*)*"
+        }
+      }
+    },
+    "_bashpp_braced_name": {
       "type": "TOKEN",
       "content": {
         "type": "PREC",
         "value": 2,
         "content": {
           "type": "PATTERN",
-          "value": "@[a-zA-Z_][a-zA-Z0-9_]*"
+          "value": "#?[a-zA-Z_][a-zA-Z0-9_]*(\\.[a-zA-Z_][a-zA-Z0-9_]*)*"
+        }
+      }
+    },
+    "_bashpp_address_name": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 3,
+        "content": {
+          "type": "PATTERN",
+          "value": "&@[a-zA-Z_][a-zA-Z0-9_]*(\\.[a-zA-Z_][a-zA-Z0-9_]*)*"
+        }
+      }
+    },
+    "_bashpp_dereference_name": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 3,
+        "content": {
+          "type": "PATTERN",
+          "value": "\\*@[a-zA-Z_][a-zA-Z0-9_]*(\\.[a-zA-Z_][a-zA-Z0-9_]*)*"
         }
       }
     }
@@ -7872,6 +8697,18 @@
     {
       "type": "SYMBOL",
       "name": "__error_recovery"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_bashpp_assignment_reference"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_bashpp_assignment_operator"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_bashpp_reference_end"
     }
   ],
   "inline": [

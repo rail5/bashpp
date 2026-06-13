@@ -22,7 +22,6 @@ tree-sitter:
 
 test-tree-sitter:
 	@$(MAKE) -C tree-sitter-bashpp --no-print-directory test
-	@git diff --exit-code -- tree-sitter-bashpp/src/grammar.json tree-sitter-bashpp/src/node-types.json tree-sitter-bashpp/src/parser.c
 
 clean-vscode:
 	@cd vscode && $(MAKE) --no-print-directory clean

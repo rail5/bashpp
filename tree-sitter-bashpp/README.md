@@ -21,8 +21,9 @@ Run generation, linting, corpus tests, and repository-wide parsing:
 make test-tree-sitter
 ```
 
-Generated parser sources under `src/` are committed so editor integrations can
-build the parser without installing Node.js dependencies.
+Generated parser sources under `src/` are build artifacts and are not committed.
+Run `make tree-sitter` before compiling the parser or packaging an editor
+integration.
 
 The corpus is grouped by Bash compatibility, declarations, expressions,
 Bash interactions, and error recovery. Repository parsing covers every `.bpp`

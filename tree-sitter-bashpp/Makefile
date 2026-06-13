@@ -17,4 +17,4 @@ test: dependencies
 	npm run test:repository
 
 clean:
-	rm -rf node_modules .cache
+	rm -rf node_modules .cache src/grammar.json src/node-types.json src/parser.c src/tree_sitter

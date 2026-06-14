@@ -11,9 +11,3 @@ debian/*.7
 vscode/node_modules
 vscode/*.vsix
 vscode/dist
-tree-sitter-bashpp/node_modules
-tree-sitter-bashpp/.cache
-tree-sitter-bashpp/src/grammar.json
-tree-sitter-bashpp/src/node-types.json
-tree-sitter-bashpp/src/parser.c
-tree-sitter-bashpp/src/tree_sitter

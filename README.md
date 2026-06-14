@@ -71,6 +71,8 @@ Language server-specific prerequisites:
 
 Optional:
  - `python3` for running the language server integration tests
+ - `cargo` and the `wasm32-wasip1` Rust target for validating the Zed extension
+ - the `wasm32-wasip2` Rust target for installing the extension in current Zed releases
  - `pandoc` and `perl` for building the documentation
  - `debhelper` for building the Debian package and keeping version numbers up-to-date via `dpkg-parsechangelog`
 
@@ -88,6 +90,7 @@ $ make          # Build the Bash++ compiler and language server, bin/bpp and bin
 $ make manpages # Build the manpages, which can then be found under debian/
 $ make test     # Run the test suite to verify the compiler works correctly
 $ make test-lsp # Run the language server integration tests
+$ make test-zed # Validate the Zed extension
 ```
 
 ## Using the compiler
@@ -122,3 +125,10 @@ $ shellwatch compiled-program.sh
 ## VSCode extension
 
 The [Bash++ extension for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=rail5.bashpp) provides IDE language support for Bash++, including syntax highlighting and (optionally) language server features such as code completion, go-to definition, etc.
+
+## Zed extension
+
+The development extension under [`zed/`](zed/) recognizes `.bpp` files, reuses
+Zed's built-in Bash grammar for baseline highlighting, and starts an installed
+`bpp-lsp` from `PATH`. Enable Zed's `combined` semantic-token mode to layer
+Bash++ identifier highlighting from the compiler AST over the Bash syntax.

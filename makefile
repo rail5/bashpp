@@ -24,9 +24,18 @@ clean-vscode:
 	@cd vscode && $(MAKE) --no-print-directory clean
 	@echo "Cleaned up VSCode extension files."
 
-clean: clean-flexbison clean-lsp clean-meta clean-objects clean-bin clean-std clean-manpages clean-technical-docs clean-vscode
+zed:
+	cargo build --manifest-path zed/Cargo.toml --target wasm32-wasip1
 
-.PHONY: all test test-lsp vscode clean-vscode
+test-zed:
+	cargo check --manifest-path zed/Cargo.toml --target wasm32-wasip1
+
+clean-zed:
+	rm -rf zed/target zed/extension.wasm
+
+clean: clean-flexbison clean-lsp clean-meta clean-objects clean-bin clean-std clean-manpages clean-technical-docs clean-vscode clean-zed
+
+.PHONY: all test test-lsp vscode clean-vscode zed test-zed clean-zed
 
 ifeq ($(filter clean%,$(MAKECMDGOALS)),)
 -include $(shell find bin -name '*.d' 2>/dev/null)

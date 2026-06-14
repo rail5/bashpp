@@ -1,0 +1,44 @@
+name: Editor Support
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/editor-support.yml"
+      - "makefile"
+      - "src/**"
+      - "test-suite/lsp-semantic-tokens.py"
+      - "zed/**"
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/editor-support.yml"
+      - "makefile"
+      - "src/**"
+      - "test-suite/lsp-semantic-tokens.py"
+      - "zed/**"
+  workflow_dispatch:
+
+jobs:
+  semantic-tokens:
+    runs-on: ubuntu-latest
+    container:
+      image: debian:stable
+      options: --user root
+    steps:
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y build-essential flex bison git libutfcpp-dev nlohmann-json3-dev python3
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - uses: actions/checkout@v4
+      - name: Test language server
+        run: make test-lsp
+
+  zed-extension:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install WebAssembly target
+        run: rustup target add wasm32-wasip1
+      - name: Test Zed extension
+        run: make test-zed

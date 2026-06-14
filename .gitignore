@@ -11,3 +11,5 @@ debian/*.7
 vscode/node_modules
 vscode/*.vsix
 vscode/dist
+zed/target
+zed/extension.wasm

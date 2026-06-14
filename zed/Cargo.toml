@@ -1,0 +1,14 @@
+[package]
+name = "bashpp-zed"
+version = "0.1.0"
+edition = "2021"
+publish = false
+license = "GPL-3.0-or-later"
+description = "Bash++ language support for Zed"
+repository = "https://github.com/rail5/bashpp"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+zed_extension_api = "0.7.0"

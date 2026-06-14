@@ -14,6 +14,9 @@ include mk/docs.mk
 test:
 	bin/bpp -Istdlib/ test-suite/run.bpp
 
+test-lsp: bin/bpp-lsp
+	python3 test-suite/lsp-semantic-tokens.py bin/bpp-lsp
+
 vscode:
 	@cd vscode && $(MAKE) --no-print-directory
 
@@ -23,7 +26,7 @@ clean-vscode:
 
 clean: clean-flexbison clean-lsp clean-meta clean-objects clean-bin clean-std clean-manpages clean-technical-docs clean-vscode
 
-.PHONY: all test vscode clean-vscode
+.PHONY: all test test-lsp vscode clean-vscode
 
 ifeq ($(filter clean%,$(MAKECMDGOALS)),)
 -include $(shell find bin -name '*.d' 2>/dev/null)

@@ -80,6 +80,7 @@ class BashppServer {
 		GenericResponseMessage handleRename(const GenericRequestMessage& request);
 		GenericResponseMessage handleReferences(const GenericRequestMessage& request);
 		GenericResponseMessage handleCompletion(const GenericRequestMessage& request);
+		GenericResponseMessage handleSemanticTokens(const GenericRequestMessage& request);
 
 		CompletionList handleATCompletion(const CompletionParams& params);
 		CompletionList handleDOTCompletion(const CompletionParams& params);
@@ -286,7 +287,7 @@ class BashppServer {
 		 * @brief Maps request types to the functions that handle them.
 		 * 
 		 */
-		static constexpr std::array<RequestHandlerEntry, 8> request_handlers = {{
+		static constexpr std::array<RequestHandlerEntry, 9> request_handlers = {{
 			{"initialize",                  &BashppServer::handleInitialize},
 			{"textDocument/definition",     &BashppServer::handleDefinition},
 			{"textDocument/completion",     &BashppServer::handleCompletion},
@@ -294,6 +295,7 @@ class BashppServer {
 			{"textDocument/documentSymbol", &BashppServer::handleDocumentSymbol},
 			{"textDocument/rename",         &BashppServer::handleRename},
 			{"textDocument/references",     &BashppServer::handleReferences},
+			{"textDocument/semanticTokens/full", &BashppServer::handleSemanticTokens},
 			{"shutdown",                    &BashppServer::shutdown}
 		}};
 

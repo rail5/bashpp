@@ -14,9 +14,13 @@ bpp-lsp [options]
 
 # DESCRIPTION
 
-The Bash++ language server (`bpp-lsp`) provides language server protocol support for Bash++ files. It includes features such as code completion, diagnostics, and more. This package is intended for use with editors that support the language server protocol, such as Visual Studio Code or Eclipse Theia.
+The Bash++ language server (`bpp-lsp`) provides language server protocol support for Bash++ files. It includes features such as code completion, diagnostics, semantic tokens, and more. This package is intended for use with editors that support the language server protocol, such as Visual Studio Code, Zed, or Eclipse Theia.
 
 It is not required for running Bash++ scripts, but enhances the development experience by providing advanced features for Bash++ development.
+
+Semantic tokens are generated from the compiler's Flex/Bison AST. This keeps
+class, method, property, object, pointer, parameter, and reference
+classification synchronized with the language accepted by the compiler.
 
 # OPTIONS
 

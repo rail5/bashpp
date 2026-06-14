@@ -15,9 +15,14 @@ It is designed to provide language server protocol (LSP) features such as code c
 - [&#10003;] Workspace renaming
 - [&#10003;] Find references
 - [&#10003;] Document symbols
+- [&#10003;] Semantic tokens
 - [ &nbsp; ] Workspace symbols
 - [ &nbsp; ] Code formatting
-- [ &nbsp; ] Semantic tokens
+
+Semantic tokens are produced from the same Flex/Bison AST used by the compiler.
+The server reports Bash++ classes, methods, data members, objects, pointers,
+parameters, and references. Editors can combine these tokens with their normal
+Bash syntax highlighting instead of relying on a second Bash++ parser.
 
 ## Copyright and License
 

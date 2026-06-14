@@ -8,6 +8,7 @@
 
 #include <lsp/generated/InitializeRequest.h>
 #include <lsp/generated/InitializeResult.h>
+#include <lsp/generated/SemanticTokensOptions.h>
 
 GenericResponseMessage bpp::BashppServer::handleInitialize(const GenericRequestMessage& request) {
 	InitializeRequest initialize_request = request.toSpecific<InitializeParams>();
@@ -37,6 +38,18 @@ GenericResponseMessage bpp::BashppServer::handleInitialize(const GenericRequestM
 
 	// Advertise that we support DocumentSymbol requests
 	result.capabilities.documentSymbolProvider = true;
+
+	SemanticTokensOptions semantic_tokens_options;
+	semantic_tokens_options.legend.tokenTypes = {
+		"class",
+		"method",
+		"property",
+		"variable",
+		"parameter"
+	};
+	semantic_tokens_options.legend.tokenModifiers = {"declaration"};
+	semantic_tokens_options.full = true;
+	result.capabilities.semanticTokensProvider = semantic_tokens_options;
 
 	// Planned but not yet implemented:
 	//result.capabilities.workspaceSymbolProvider = true;

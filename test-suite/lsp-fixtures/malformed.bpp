@@ -1,0 +1,3 @@
+@class Broken {
+	@public value=
+	@public @method incomplete

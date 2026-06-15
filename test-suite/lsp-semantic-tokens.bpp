@@ -1,0 +1,420 @@
+#!/usr/bin/env bpp
+
+# Copyright (C) 2026 Andrew S. Rightenburg
+# Bash++: Bash with classes
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+@class LanguageServerClient {
+	@private executable
+	@private temporaryDirectory
+	@private requestFifo
+	@private responseFifo
+	@private errorFile
+	@private processId
+	@private nextRequestId=1
+	@private started=0
+	@public response
+
+	@public @method start executable {
+		@this.executable="$executable"
+		@this.temporaryDirectory=@(mktemp -d)
+		@this.requestFifo="@this.temporaryDirectory/request"
+		@this.responseFifo="@this.temporaryDirectory/response"
+		@this.errorFile="@this.temporaryDirectory/stderr"
+
+		mkfifo "@this.requestFifo" "@this.responseFifo"
+		"@this.executable" --stdio -j1 \
+			< "@this.requestFifo" \
+			> "@this.responseFifo" \
+			2> "@this.errorFile" &
+		@this.processId=$!
+
+		exec 3> "@this.requestFifo"
+		exec 4< "@this.responseFifo"
+		@this.started=1
+	}
+
+	@private @method send payload {
+		local contentLength
+		contentLength=@(LC_ALL=C printf "%s" "$payload" | wc -c | tr -d ' ')
+		printf "Content-Length: %s\r\n\r\n%s" "$contentLength" "$payload" >&3
+	}
+
+	@private @method readMessage {
+		local line=""
+		local contentLength=""
+		local message=""
+
+		while IFS= read -r -u 4 line; do
+			line="${line%$'\r'}"
+			if [[ -z "$line" ]]; then
+				break
+			fi
+			case "$line" in
+				Content-Length:\ *)
+					contentLength=@(sed 's/^Content-Length: //' <<< "$line")
+					;;
+			esac
+		done
+
+		if [[ -z "$contentLength" ]]; then
+			echo "Language server response omitted Content-Length." >&2
+			cat "@this.errorFile" >&2
+			exit 1
+		fi
+
+		IFS= LC_ALL=C read -r -N "$contentLength" -u 4 message
+		@this.response="$message"
+	}
+
+	@public @method request method params {
+		local requestId="@this.nextRequestId"
+		local methodJson
+		local payload
+		local responseId
+
+		@this.nextRequestId=$((@this.nextRequestId + 1))
+		methodJson=@(printf "%s" "$method" | jq -Rs .)
+		payload="{\"jsonrpc\":\"2.0\",\"id\":$requestId,\"method\":$methodJson,\"params\":$params}"
+		@this.send "$payload"
+
+		while true; do
+			@this.readMessage
+			responseId=@(jq -r 'if has("id") then .id else empty end' <<< "@this.response")
+			if [[ "$responseId" != "$requestId" ]]; then
+				continue
+			fi
+			if jq -e 'has("error")' <<< "@this.response" >/dev/null; then
+				echo "Language server request failed: $method" >&2
+				jq '.error' <<< "@this.response" >&2
+				exit 1
+			fi
+			return
+		done
+	}
+
+	@public @method notify method params {
+		local methodJson
+		local payload
+
+		methodJson=@(printf "%s" "$method" | jq -Rs .)
+		payload="{\"jsonrpc\":\"2.0\",\"method\":$methodJson,\"params\":$params}"
+		@this.send "$payload"
+	}
+
+	@public @method close {
+		if [[ @this.started -eq 0 ]]; then
+			return
+		fi
+
+		@this.request "shutdown" "null"
+		@this.notify "exit" "null"
+		exec 3>&-
+		exec 4<&-
+		wait "@this.processId"
+		rm -rf "@this.temporaryDirectory"
+		@this.started=0
+	}
+
+	@public @method forceClose {
+		if [[ @this.started -eq 0 ]]; then
+			return
+		fi
+
+		exec 3>&-
+		exec 4<&-
+		if kill -0 "@this.processId" 2>/dev/null; then
+			kill "@this.processId" 2>/dev/null
+		fi
+		wait "@this.processId" 2>/dev/null
+		rm -rf "@this.temporaryDirectory"
+		@this.started=0
+	}
+}
+
+function fail() {
+	echo "$1" >&2
+	exit 1
+}
+
+function assertEquals() {
+	local actual="$1"
+	local expected="$2"
+	local message="$3"
+
+	if [[ "$actual" != "$expected" ]]; then
+		fail "$message: expected '$expected', received '$actual'"
+	fi
+}
+
+function utf16Slice() {
+	local line="$1"
+	local start="$2"
+	local length="$3"
+
+	printf "%s" "$line" \
+		| iconv -f UTF-8 -t UTF-16LE \
+		| dd bs=2 skip="$start" count="$length" 2>/dev/null \
+		| iconv -f UTF-16LE -t UTF-8
+}
+
+function utf16Length() {
+	local value="$1"
+	local byteLength
+
+	byteLength=@(printf "%s" "$value" | iconv -f UTF-8 -t UTF-16LE | wc -c | tr -d ' ')
+	echo $((byteLength / 2))
+}
+
+tokenTexts=()
+tokenTypes=()
+tokenDeclarations=()
+tokenLines=()
+tokenStarts=()
+
+function decodeTokens() {
+	local sourceFile="$1"
+	local response="$2"
+	local encodedTokens=()
+	local sourceLines=()
+	local line=0
+	local start=0
+	local index
+
+	tokenTexts=()
+	tokenTypes=()
+	tokenDeclarations=()
+	tokenLines=()
+	tokenStarts=()
+
+	mapfile -t encodedTokens < <(jq -r '.result.data[]' <<< "$response")
+	mapfile -t sourceLines < "$sourceFile"
+
+	if [[ $((${#encodedTokens[@]} % 5)) -ne 0 ]]; then
+		fail "Semantic token data length is not divisible by five."
+	fi
+
+	for ((index=0; index<${#encodedTokens[@]}; index+=5)); do
+		local deltaLine="${encodedTokens[$index]}"
+		local deltaStart="${encodedTokens[$((index + 1))]}"
+		local length="${encodedTokens[$((index + 2))]}"
+		local type="${encodedTokens[$((index + 3))]}"
+		local modifiers="${encodedTokens[$((index + 4))]}"
+
+		line=$((line + deltaLine))
+		if [[ "$deltaLine" -gt 0 ]]; then
+			start="$deltaStart"
+		else
+			start=$((start + deltaStart))
+		fi
+
+		local tokenText
+		tokenText=@(utf16Slice "${sourceLines[$line]}" "$start" "$length")
+		tokenTexts+=("$tokenText")
+		tokenTypes+=("$type")
+		tokenDeclarations+=("$((modifiers & 1))")
+		tokenLines+=("$line")
+		tokenStarts+=("$start")
+	done
+}
+
+function tokenExists() {
+	local text="$1"
+	local type="$2"
+	local declaration="$3"
+	local index
+
+	for ((index=0; index<${#tokenTexts[@]}; index++)); do
+		if [[ "${tokenTexts[$index]}" == "$text" ]] \
+			&& [[ "${tokenTypes[$index]}" == "$type" ]] \
+			&& [[ "${tokenDeclarations[$index]}" == "$declaration" ]]; then
+			return 0
+		fi
+	done
+	return 1
+}
+
+function assertToken() {
+	local text="$1"
+	local type="$2"
+	local declaration="$3"
+
+	if ! tokenExists "$text" "$type" "$declaration"; then
+		fail "Missing semantic token '$text' (type=$type, declaration=$declaration)."
+	fi
+}
+
+function countTokens() {
+	local text="$1"
+	local type="$2"
+	local declaration="$3"
+	local count=0
+	local index
+
+	for ((index=0; index<${#tokenTexts[@]}; index++)); do
+		if [[ "${tokenTexts[$index]}" == "$text" ]] \
+			&& [[ "${tokenTypes[$index]}" == "$type" ]] \
+			&& [[ "${tokenDeclarations[$index]}" == "$declaration" ]]; then
+			count=$((count + 1))
+		fi
+	done
+	echo "$count"
+}
+
+function tokenStart() {
+	local text="$1"
+	local declaration="$2"
+	local index
+
+	for ((index=0; index<${#tokenTexts[@]}; index++)); do
+		if [[ "${tokenTexts[$index]}" == "$text" ]] \
+			&& [[ "${tokenDeclarations[$index]}" == "$declaration" ]]; then
+			echo "${tokenStarts[$index]}"
+			return
+		fi
+	done
+	fail "Could not find the start position for token '$text'."
+}
+
+if ! command -v jq >/dev/null; then
+	fail "The semantic token integration test requires jq."
+fi
+
+executable="$1"
+if [[ -z "$executable" ]]; then
+	executable="bin/bpp-lsp"
+fi
+fixtureDirectory="test-suite/lsp-fixtures"
+temporaryDirectory=@(mktemp -d)
+validPath="$temporaryDirectory/semantic-tokens.bpp"
+malformedPath="$temporaryDirectory/malformed.bpp"
+cp "$fixtureDirectory/semantic-tokens.bpp" "$validPath"
+cp "$fixtureDirectory/malformed.bpp" "$malformedPath"
+
+validUri="file://@(realpath "$validPath")"
+malformedUri="file://@(realpath "$malformedPath")"
+rootUri="file://@(realpath "$temporaryDirectory")"
+validSource=@(cat "$validPath")
+malformedSource=@(cat "$malformedPath")
+validSourceJson=@(printf "%s" "$validSource" | jq -Rs .)
+malformedSourceJson=@(printf "%s" "$malformedSource" | jq -Rs .)
+
+@LanguageServerClient client
+
+function cleanup() {
+	@client.forceClose
+	rm -rf "$temporaryDirectory"
+}
+
+@client.start "$executable"
+trap cleanup EXIT
+
+initializeParams=@(jq -cn --arg rootUri "$rootUri" '{
+	processId: null,
+	rootUri: $rootUri,
+	capabilities: {
+		general: {positionEncodings: ["utf-16"]},
+		textDocument: {
+			semanticTokens: {
+				requests: {full: true},
+				tokenTypes: [],
+				tokenModifiers: [],
+				formats: ["relative"]
+			}
+		}
+	}
+}')
+@client.request "initialize" "$initializeParams"
+initializeResponse="@client.response"
+
+assertEquals \
+	"@(jq -c '.result.capabilities.semanticTokensProvider.legend.tokenTypes' <<< "$initializeResponse")" \
+	'["class","method","property","variable","parameter"]' \
+	"Unexpected semantic token types"
+assertEquals \
+	"@(jq -c '.result.capabilities.semanticTokensProvider.legend.tokenModifiers' <<< "$initializeResponse")" \
+	'["declaration"]' \
+	"Unexpected semantic token modifiers"
+assertEquals \
+	"@(jq -r '.result.capabilities.semanticTokensProvider.full' <<< "$initializeResponse")" \
+	"true" \
+	"Full semantic tokens were not advertised"
+
+didOpenParams="{\"textDocument\":{\"uri\":\"$validUri\",\"languageId\":\"bashpp\",\"version\":1,\"text\":$validSourceJson}}"
+@client.notify "textDocument/didOpen" "$didOpenParams"
+
+semanticTokensParams="{\"textDocument\":{\"uri\":\"$validUri\"}}"
+@client.request "textDocument/semanticTokens/full" "$semanticTokensParams"
+decodeTokens "$validPath" "@client.response"
+
+# Token type indices follow the legend asserted above.
+assertToken "Parent" 0 1
+assertToken "Parent" 0 0
+assertToken "Thing" 0 1
+assertToken "Child" 0 1
+assertToken "act" 1 1
+assertToken "act" 1 0
+assertToken "run" 1 1
+assertToken "run" 1 0
+assertToken "member" 2 1
+assertToken "member" 2 0
+assertToken "pointerMember" 2 1
+assertToken "value" 2 1
+assertToken "value" 2 0
+assertToken "primitive" 4 1
+assertToken "item" 4 1
+assertToken "object" 3 1
+assertToken "object" 3 0
+assertToken "pointer" 3 1
+assertToken "allocated" 3 1
+assertToken "unicodeObject" 3 1
+assertToken "child" 3 1
+assertToken "child" 3 0
+
+if [[ "@(countTokens "Thing" 0 0)" -lt 7 ]]; then
+	fail "Class references from declarations, allocation, and casts are missing."
+fi
+if [[ "@(countTokens "value" 2 0)" -lt 4 ]]; then
+	fail "Property references inside strings or supershells are missing."
+fi
+
+expectedUtf16Column=@(utf16Length $'\t\techo "😀"; @Thing ')
+assertEquals \
+	"@(tokenStart "unicodeObject" 1)" \
+	"$expectedUtf16Column" \
+	"Unicode token column was not reported in UTF-16 code units"
+
+changedSource="$validSource"$'\n\n@Thing changedObject\n'
+changedSourceJson=@(printf "%s" "$changedSource" | jq -Rs .)
+didChangeParams="{\"textDocument\":{\"uri\":\"$validUri\",\"version\":2},\"contentChanges\":[{\"text\":$changedSourceJson}]}"
+@client.notify "textDocument/didChange" "$didChangeParams"
+
+changedPath="$temporaryDirectory/changed.bpp"
+printf "%s" "$changedSource" > "$changedPath"
+changedTokensFound=0
+for ((attempt=0; attempt<50; attempt++)); do
+	@client.request "textDocument/semanticTokens/full" "$semanticTokensParams"
+	decodeTokens "$changedPath" "@client.response"
+	if tokenExists "changedObject" 3 1; then
+		changedTokensFound=1
+		break
+	fi
+	sleep 0.1;
+done
+if [[ "$changedTokensFound" -ne 1 ]]; then
+	fail "Semantic tokens did not reflect unsaved changes."
+fi
+
+malformedDidOpenParams="{\"textDocument\":{\"uri\":\"$malformedUri\",\"languageId\":\"bashpp\",\"version\":1,\"text\":$malformedSourceJson}}"
+@client.notify "textDocument/didOpen" "$malformedDidOpenParams"
+malformedTokensParams="{\"textDocument\":{\"uri\":\"$malformedUri\"}}"
+@client.request "textDocument/semanticTokens/full" "$malformedTokensParams"
+if ! jq -e '.result.data | type == "array"' <<< "@client.response" >/dev/null; then
+	fail "Malformed source did not produce a semantic token array."
+fi
+
+@client.close
+trap - EXIT
+rm -rf "$temporaryDirectory"
+
+echo "Bash++ semantic token integration tests passed."

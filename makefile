@@ -14,8 +14,8 @@ include mk/docs.mk
 test:
 	bin/bpp -Istdlib/ test-suite/run.bpp
 
-test-lsp: bin/bpp-lsp
-	python3 test-suite/lsp-semantic-tokens.py bin/bpp-lsp
+test-lsp: bin/bpp bin/bpp-lsp
+	bin/bpp -Istdlib/ test-suite/lsp-semantic-tokens.bpp bin/bpp-lsp
 
 vscode:
 	@cd vscode && $(MAKE) --no-print-directory

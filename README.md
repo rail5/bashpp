@@ -70,7 +70,7 @@ Language server-specific prerequisites:
  - `nlohmann-json3-dev`
 
 Optional:
- - `python3` for running the language server integration tests
+ - `jq` for running the language server integration tests
  - `cargo` and the `wasm32-wasip1` Rust target for validating the Zed extension
  - the `wasm32-wasip2` Rust target for installing the extension in current Zed releases
  - `pandoc` and `perl` for building the documentation

@@ -1,0 +1,29 @@
+@class Parent {
+	@public inherited=0
+}
+
+@class Thing {
+	@public value=0
+	@public @method act argument {
+		echo "$argument"
+	}
+}
+
+@class Child : Parent {
+	@public member=1
+	@public @Thing* pointerMember
+	@public @method run primitive @Thing* item {
+		@Thing object
+		@Thing* pointer
+		@Thing* allocated=@new Thing
+		@object.value=primitive
+		@object.act primitive
+		@this.member=@object.value
+		echo "😀"; @Thing unicodeObject
+		echo "@object.value @(echo @object.value)"
+		echo @dynamic_cast<Thing> &@object
+	}
+}
+
+@Child child
+@child.run argument @nullptr

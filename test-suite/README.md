@@ -25,6 +25,10 @@ You can run *specific* test cases by passing an argument to the script. For exam
 
 Calling `run.bpp` with no arguments will run all the test cases.
 
+Language server integration tests are also written in Bash++ and can be run
+with `make test-lsp`. These tests require `jq` to encode and inspect JSON-RPC
+messages.
+
 ## Test Suite Structure
 
 The test suite is itself written in Bash++.

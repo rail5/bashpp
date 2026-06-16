@@ -17,7 +17,7 @@
 
 namespace bpp::AST {
 class Listener;
-}
+} // namespace bpp::AST
 
 namespace bpp::ErrorHandling {
 

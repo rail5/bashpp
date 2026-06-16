@@ -7,6 +7,7 @@
 #pragma once
 
 #include <memory>
+#include <stack>
 
 #include <AST/ASTNode.h>
 #include <AST/NodeTypes.h>
@@ -79,21 +80,44 @@ namespace bpp::AST {
 	X(TypeofExpression) \
 	X(ValueAssignment) \
 
-class Listener {
+class Listener final {
 	private:
 		bool program_has_errors = false;
 		std::vector<bpp::AST::ParserError> parser_errors;
 
+		enum class IncludedType : uint8_t {
+			NOT_INCLUDED, // The file that generated this AST is the original (main) source file of the program
+			DYNAMICALLY_INCLUDED, // This file was reached via `@include dynamic <file>`
+			STATICALLY_INCLUDED // This file was reached via `@include [static] <file>`
+		} included_type = IncludedType::NOT_INCLUDED;
+
+		bool is_included() const { return included_type != IncludedType::NOT_INCLUDED; }
+
+		std::stack<std::shared_ptr<bpp::IR::Entity>> entity_stack;
+
+		/**
+		 * @brief Helper function to check the type of the top of the entity stack
+		 * 
+		 * @tparam T The type to check against
+		 * @return true if the top of the entity stack is of type T (or derived from T)
+		 * @return false if the top of the entity stack is not of type T and not derived from T
+		 */
+		template <class T>
+		bool topmost_entity_is() const {
+			if (entity_stack.empty()) return false;
+			return std::dynamic_pointer_cast<T>(entity_stack.top()) != nullptr;
+		}
+
 	public:
-		void walk(std::shared_ptr<bpp::AST::ASTNode> node);
+		void walk(bpp::AST::ASTNode* node);
 
 		// Default (empty) implementations of enter/exit for each node type.
 		// Specializations are provided for node types that need to be handled.
 		template <typename NodeType>
-		void enter(std::shared_ptr<NodeType> node) {}
+		void enter(NodeType* node) {}
 
 		template <typename NodeType>
-		void exit(std::shared_ptr<NodeType> node) {}
+		void exit(NodeType* node) {}
 
 		void set_has_errors(bool has_errors) {
 			this->program_has_errors = has_errors;
@@ -106,7 +130,19 @@ class Listener {
 };
 
 // Enter/exit handler specializations:
-template <> void Listener::enter(std::shared_ptr<Program> node);
-template <> void Listener::exit(std::shared_ptr<Program> node);
+template <> void Listener::enter(Program* node);
+template <> void Listener::exit(Program* node);
+
+template <> void Listener::enter(BashCommand* node);
+template <> void Listener::exit(BashCommand* node);
+
+template <> void Listener::enter(BashPipeline* node);
+template <> void Listener::exit(BashPipeline* node);
+
+template <> void Listener::enter(BashCommandSequence* node);
+template <> void Listener::exit(BashCommandSequence* node);
+
+template <> void Listener::enter(RawText* node);
+template <> void Listener::exit(RawText* node);
 
 } // namespace bpp::AST

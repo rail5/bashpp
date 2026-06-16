@@ -145,7 +145,7 @@ int main(int argc, char* argv[]) {
 
 	try {
 		// Walk the tree
-		listener->walk(program);
+		listener->walk(program.get());
 
 	} catch (const bpp::ErrorHandling::InternalError& e) {
 		std::cerr << "Internal error: " << e.what() << std::endl;

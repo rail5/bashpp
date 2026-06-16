@@ -6,18 +6,21 @@
 
 #include "Listener.h"
 
+#include <error/InternalError.h>
+
 namespace bpp::AST {
 
-void Listener::walk(std::shared_ptr<bpp::AST::ASTNode> node) {
+void Listener::walk(bpp::AST::ASTNode* node) {
+	bpp_assert(node != nullptr, "Listener::walk was given a null node pointer");
 	try {
 		switch (node->getType()) {
 			#define AST_LISTENER_NODE_CASE(node_type) \
 				case bpp::AST::NodeType::node_type: \
-					enter(std::static_pointer_cast<bpp::AST::node_type>(node)); \
+					enter(static_cast<node_type*>(node)); \
 					for (const auto& child : node->getChildren()) { \
-						walk(child); \
+						walk(child.get()); \
 					} \
-					exit(std::static_pointer_cast<bpp::AST::node_type>(node)); \
+					exit(static_cast<node_type*>(node)); \
 					break;
 			AST_LISTENER_NODE_LIST(AST_LISTENER_NODE_CASE)
 			#undef AST_LISTENER_NODE_CASE
@@ -33,6 +36,5 @@ void Listener::walk(std::shared_ptr<bpp::AST::ASTNode> node) {
 		return;
 	}
 }
-#undef AST_LISTENER_NODE_LIST
 
 } // namespace bpp::AST

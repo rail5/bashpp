@@ -18,7 +18,7 @@ namespace bpp {
 		DIAGNOSTIC_INFO,
 		DIAGNOSTIC_HINT
 	};
-}
+} // namespace bpp
 
 namespace bpp::IR {
 
@@ -110,6 +110,13 @@ class OwnedEntityList {
 		const std::vector<std::shared_ptr<T>>& get_entities() const {
 			return entities;
 		}
+};
+
+enum class VisibilityScope : uint8_t {
+	PUBLIC,
+	PROTECTED,
+	PRIVATE,
+	INACCESSIBLE
 };
 
 // Forward decl. entity types:

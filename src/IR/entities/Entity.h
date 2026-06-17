@@ -55,7 +55,7 @@ class Entity {
 		const std::string& get_name() const { return name; }
 		void set_name(const std::string& name) { this->name = name; }
 
-		std::weak_ptr<Class> get_containing_class() const { return containing_class; }
+		virtual std::weak_ptr<Class> get_containing_class() { return containing_class; }
 		void set_containing_class(std::weak_ptr<Class> containing_class) { this->containing_class = containing_class; }
 
 		std::weak_ptr<Program> get_containing_program() const { return containing_program; }

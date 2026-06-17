@@ -18,6 +18,7 @@ void Listener::enter(Program* node) {
 	auto program = std::make_shared<bpp::IR::Program>();
 	program->set_name("Program"); // Debugging
 	entity_stack.push(program);
+	this->program = program;
 }
 
 template <>

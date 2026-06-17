@@ -82,6 +82,9 @@ namespace bpp::AST {
 
 class Listener final {
 	private:
+		/// The program (root node of the entity tree) being constructed by this listener
+		std::shared_ptr<bpp::IR::Program> program;
+
 		bool program_has_errors = false;
 		std::vector<bpp::AST::ParserError> parser_errors;
 
@@ -132,6 +135,9 @@ class Listener final {
 // Enter/exit handler specializations:
 template <> void Listener::enter(Program* node);
 template <> void Listener::exit(Program* node);
+
+template <> void Listener::enter(ClassDefinition* node);
+template <> void Listener::exit(ClassDefinition* node);
 
 template <> void Listener::enter(BashCommand* node);
 template <> void Listener::exit(BashCommand* node);

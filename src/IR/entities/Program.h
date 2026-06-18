@@ -17,6 +17,12 @@ namespace bpp::IR {
 class Program : public CodeEntity {
 	public:
 		void add_diagnostic(std::string, bpp::diagnostic_type, std::string, uint32_t, uint32_t, uint32_t, uint32_t) {}
+
+		//FIXME(@rail5): Stub
+		std::shared_ptr<Class> get_class(const std::string& name, size_t max_visible_index = SIZE_MAX) override { return nullptr; }
+
+		//FIXME(@rail5): Stub
+		size_t number_of_known_classes() const override { return 0; }
 };
 
 } // namespace bpp::IR

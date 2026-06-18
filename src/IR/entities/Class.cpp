@@ -30,6 +30,74 @@ bool Class::is_derived_from(std::shared_ptr<Class> other) const {
 	return false;
 }
 
+void Class::inherit(std::shared_ptr<Class> parent) {
+	// Inherit methods
+	methods.reserve(methods.size() + parent->methods.size());
+	for (const auto& m : parent->get_methods()) {
+		if (m->get_name() == "toPrimitive") continue; // Don't inherit the toPrimitive method, since it is automatically generated for all classes
+		auto inherited_method = std::make_shared<Method>(*m);
+		if (inherited_method->get_scope() == VisibilityScope::PRIVATE) {
+			inherited_method->set_scope(VisibilityScope::INACCESSIBLE);
+		}
+		inherited_method->set_is_inherited(true);
+		if (inherited_method->is_virtual()) inherited_method->set_is_overridable(true);
+		add_method(inherited_method);
+	}
+
+	// Inherit data members
+	datamembers.reserve(datamembers.size() + parent->datamembers.size());
+	for (const auto& d : parent->get_datamembers()) {
+		auto inherited_datamember = std::make_shared<DataMember>(*d);
+		if (inherited_datamember->get_scope() == VisibilityScope::PRIVATE) {
+			inherited_datamember->set_scope(VisibilityScope::INACCESSIBLE);
+		}
+		add_datamember(inherited_datamember);
+	}
+
+	this->parent_class = parent;
+}
+
+bool Class::add_method(std::shared_ptr<Method> method) {
+	for (auto it = methods.begin(); it != methods.end(); it++) {
+		const auto& existing_method = *it;
+		if (existing_method->get_name() != method->get_name()) continue; // Not the same name, so no conflict
+		if (existing_method->is_overridable()) {
+			methods.erase(it); // Remove the existing method, since it is being overridden
+			method->set_is_overridable(false); // Can't override it twice
+			method->set_is_inherited(false); // This is a new method, not inherited
+			break;
+		} else {
+			return false; // Conflict with an existing method that is not overridable
+		}
+	}
+
+	// If this method shares a name with a data member, that's an error
+	for (const auto& d : datamembers) {
+		if (d->get_name() == method->get_name()) return false;
+	}
+
+	method->set_containing_class(weak_from_this());
+
+	methods.push_back(method);
+	return true;
+}
+
+bool Class::add_datamember(std::shared_ptr<DataMember> datamember) {
+	for (const auto& d : datamembers) {
+		if (d->get_name() == datamember->get_name()) return false; // Conflict with an existing data member
+	}
+
+	// If this data member shares a name with a method, that's an error
+	for (const auto& m : methods) {
+		if (m->get_name() == datamember->get_name()) return false;
+	}
+
+	datamember->set_containing_class(weak_from_this());
+
+	datamembers.push_back(datamember);
+	return true;
+}
+
 template <ClassMember T>
 std::shared_ptr<T> Class::get_member(const std::string& name, std::shared_ptr<Entity> context) {
 	std::vector<std::shared_ptr<T>>* container;

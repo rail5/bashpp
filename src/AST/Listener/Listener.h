@@ -82,6 +82,9 @@ namespace bpp::AST {
 
 class Listener final {
 	private:
+		/// Path to the source file that generated the AST being traversed by this listener
+		std::string source_file;
+
 		/// The program (root node of the entity tree) being constructed by this listener
 		std::shared_ptr<bpp::IR::Program> program;
 
@@ -111,6 +114,9 @@ class Listener final {
 			return std::dynamic_pointer_cast<T>(entity_stack.top()) != nullptr;
 		}
 
+		bool in_class = false;
+		bool in_method = false;
+
 	public:
 		void walk(bpp::AST::ASTNode* node);
 
@@ -130,6 +136,10 @@ class Listener final {
 			this->parser_errors = errors;
 			if (!errors.empty()) this->program_has_errors = true;
 		}
+
+		void set_source_file(const std::string& source_file) {
+			this->source_file = source_file;
+		}
 };
 
 // Enter/exit handler specializations:
@@ -138,6 +148,9 @@ template <> void Listener::exit(Program* node);
 
 template <> void Listener::enter(ClassDefinition* node);
 template <> void Listener::exit(ClassDefinition* node);
+
+template <> void Listener::enter(MethodDefinition* node);
+template <> void Listener::exit(MethodDefinition* node);
 
 template <> void Listener::enter(BashCommand* node);
 template <> void Listener::exit(BashCommand* node);

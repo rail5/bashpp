@@ -13,8 +13,11 @@
 
 namespace bpp::detail {
 template <typename T>
-concept ASTNodePtrType = std::is_same_v<std::shared_ptr<AST::ASTNode>, T> ||
-	std::is_base_of_v<AST::ASTNode, typename T::element_type>;
+concept ASTNodePtrType =
+	std::is_same_v<std::shared_ptr<AST::ASTNode>, T> ||
+	(std::is_pointer_v<T> && std::is_base_of_v<AST::ASTNode, std::remove_pointer_t<T>>) ||
+	(requires { typename T::element_type; } && std::is_base_of_v<AST::ASTNode, typename T::element_type>) ||
+	std::is_base_of_v<AST::ASTNode, T>;
 
 template <typename T>
 concept ASTStringToken = std::is_same_v<AST::Token<std::string>, T>;

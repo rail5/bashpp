@@ -27,7 +27,6 @@ class Method : public BashFunction {
 		bool m_is_overridable = false;
 		bool m_is_inherited = false;
 	public:
-		//FIXME(@rail5): implementation
 		bool add_parameter(std::shared_ptr<Object> parameter);
 		const std::vector<std::shared_ptr<Object>>& get_parameters() const { return parameters; }
 
@@ -40,8 +39,7 @@ class Method : public BashFunction {
 		void set_is_overridable(bool is_overridable) { this->m_is_overridable = is_overridable; }
 		bool is_overridable() const { return m_is_overridable; }
 
-		//FIXME(@rail5): implementation
-		void inherit(std::shared_ptr<Method> parent);
+		void set_is_inherited(bool is_inherited) { this->m_is_inherited = is_inherited; }
 		bool is_inherited() const { return m_is_inherited; }
 
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override;

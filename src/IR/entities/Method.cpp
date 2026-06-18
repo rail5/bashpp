@@ -10,6 +10,15 @@
 
 namespace bpp::IR {
 
+bool Method::add_parameter(std::shared_ptr<Object> parameter) {
+	for (const auto& p : parameters) {
+		if (p->get_name() == parameter->get_name()) return false; // Parameter with this name already exists
+	}
+
+	parameters.push_back(parameter);
+	return true;
+}
+
 std::ostream& Method::prettyPrint(std::ostream& os, size_t indentation_level) const {
 	std::string indent(indentation_level * 4, ' ');
 	os << indent << "(Method: " << name;

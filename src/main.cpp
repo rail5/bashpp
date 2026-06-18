@@ -132,7 +132,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	std::unique_ptr<bpp::AST::Listener> listener = std::make_unique<bpp::AST::Listener>();
-	//listener->set_source_file(full_path_of_input_file);
+	listener->set_source_file(full_path_of_input_file);
 	//listener->set_include_paths(args.include_paths());
 	//listener->set_code_buffer(code_buffer);
 	//listener->set_output_stream(output_stream);

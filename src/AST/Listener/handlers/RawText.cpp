@@ -12,9 +12,12 @@ namespace bpp::AST {
 
 template <>
 void Listener::enter(RawText* node) {
-	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity when entering RawText node");
-	std::shared_ptr<bpp::IR::CodeEntity> current_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
-	current_entity->add(node->TEXT().getValue());
+	std::shared_ptr<bpp::IR::CodeEntity> current_code_entity = std::dynamic_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
+	if (!current_code_entity) {
+		if (node->TEXT().getValue().find_first_not_of(" \t\n\r") == std::string::npos) return; // Harmless whitespace
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Executable code outside of code entity");
+	}
+	current_code_entity->add(node->TEXT().getValue());
 }
 
 template <>

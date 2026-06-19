@@ -16,6 +16,7 @@ concept ClassMember = std::is_same_v<T, Method> || std::is_same_v<T, DataMember>
 
 class Class : public Entity, public std::enable_shared_from_this<Class> {
 	private:
+		std::string name;
 		std::weak_ptr<Class> parent_class;
 
 		std::vector<std::shared_ptr<Method>> methods;
@@ -25,7 +26,10 @@ class Class : public Entity, public std::enable_shared_from_this<Class> {
 		std::shared_ptr<T> get_member(const std::string& name, std::shared_ptr<Entity> context);
 	public:
 		Class() = delete;
-		explicit Class(const std::string& name) { this->name = name; }
+		explicit Class(const std::string& name) : name(name) {}
+
+		const std::string& get_name() const { return name; }
+		void set_name(const std::string& name) { this->name = name; }
 
 		std::weak_ptr<Class> get_containing_class() override { return weak_from_this(); }
 

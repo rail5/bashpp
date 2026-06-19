@@ -22,6 +22,7 @@ namespace bpp::IR {
  */
 class Object : public Entity {
 	protected:
+		std::string name;
 		bool m_is_pointer = false;
 
 		std::weak_ptr<Class> type;
@@ -35,6 +36,9 @@ class Object : public Entity {
 	public:
 		Object() = delete;
 		Object(std::weak_ptr<Class> type, bool is_pointer) : m_is_pointer(is_pointer), type(type) {}
+
+		const std::string& get_name() const { return name; }
+		void set_name(const std::string& name) { this->name = name; }
 
 		bool is_pointer() const { return m_is_pointer; }
 		std::weak_ptr<Class> get_type() const { return type; }

@@ -14,6 +14,12 @@ namespace bpp::IR {
 /**
  * @brief A normal shell function
  */
-class BashFunction : public CodeEntity {};
+class BashFunction : public CodeEntity {
+	protected:
+		std::string name;
+	public:
+		const std::string& get_name() const { return name; }
+		void set_name(const std::string& name) { this->name = name; }
+};
 
 } // namespace bpp::IR

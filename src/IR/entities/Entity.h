@@ -22,8 +22,6 @@ namespace bpp::IR {
  */
 class Entity {
 	protected:
-		std::string name;
-
 		/// Objects owned by this entity (i.e., this entity is responsible for their lifetime)
 		OwnedEntityList<Object> local_objects;
 		size_t parent_visible_object_count_at_creation = 0;
@@ -51,9 +49,6 @@ class Entity {
 		Entity& operator=(const Entity& other) = default;
 		Entity(Entity&& other) = default;
 		Entity& operator=(Entity&& other) = default;
-
-		const std::string& get_name() const { return name; }
-		void set_name(const std::string& name) { this->name = name; }
 
 		virtual std::weak_ptr<Class> get_containing_class() { return containing_class; }
 		void set_containing_class(std::weak_ptr<Class> containing_class) { this->containing_class = containing_class; }

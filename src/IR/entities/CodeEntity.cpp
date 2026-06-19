@@ -23,8 +23,7 @@ void CodeEntity::add(const std::shared_ptr<Entity>& child) {
 
 std::ostream& CodeEntity::prettyPrint(std::ostream& os, size_t indentation_level) const {
 	std::string indent(indentation_level * 4, ' ');
-	os << indent << "(" << (name.empty() ? "" : name)
-		<< "\n";
+	os << indent << "(\n";
 	for (const auto& child : children) {
 		if (std::holds_alternative<RawCode>(child)) {
 			auto str = std::get<RawCode>(child);

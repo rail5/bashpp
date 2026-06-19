@@ -16,7 +16,7 @@ void Entity::inherit(std::shared_ptr<Entity> parent) {
 
 	parent_entity = parent;
 
-	bpp_assert(!containing_program.expired(), std::string("Entity ") + this->get_name() + std::string(" does not have a containing program after inheritance"));
+	bpp_assert(!containing_program.expired(), std::string("Entity does not have a containing program after inheritance"));
 
 	parent_visible_object_count_at_creation = parent->number_of_known_objects();
 	program_visible_class_count_at_creation = containing_program.lock()->number_of_known_classes();
@@ -28,7 +28,7 @@ void Entity::inherit(std::shared_ptr<Program> program) {
 }
 
 std::shared_ptr<Class> Entity::get_class(const std::string& name, size_t /*max_visible_index*/) {
-	bpp_assert(!containing_program.expired(), std::string("Entity ") + this->get_name() + std::string(" does not have a containing program"));
+	bpp_assert(!containing_program.expired(), std::string("Entity does not have a containing program"));
 	return containing_program.lock()->get_class(name, program_visible_class_count_at_creation);
 }
 
@@ -83,7 +83,7 @@ size_t Entity::number_of_known_objects() const {
 }
 
 size_t Entity::number_of_known_classes() const {
-	bpp_assert(!containing_program.expired(), std::string("Entity ") + this->get_name() + std::string(" does not have a containing program"));
+	bpp_assert(!containing_program.expired(), std::string("Entity does not have a containing program"));
 	return containing_program.lock()->number_of_known_classes();
 }
 

@@ -11,6 +11,7 @@
 #include <memory>
 
 #include <IR/bpp.h>
+#include <IR/codegen.h>
 
 namespace bpp::IR {
 
@@ -51,7 +52,7 @@ class Entity {
 		virtual std::weak_ptr<Class> get_containing_class() { return containing_class; }
 		void set_containing_class(std::weak_ptr<Class> containing_class) { this->containing_class = containing_class; }
 
-		std::weak_ptr<Program> get_containing_program() const { return containing_program; }
+		virtual std::weak_ptr<Program> get_containing_program() { return containing_program; }
 		void set_containing_program(std::weak_ptr<Program> containing_program) { this->containing_program = containing_program; }
 
 		SymbolPosition get_definition_position() const { return definition_position; }
@@ -66,7 +67,6 @@ class Entity {
 		virtual void add_reference_position(const SymbolPosition& pos) { this->reference_positions.push_back(pos); }
 
 		void inherit(std::shared_ptr<Entity> parent);
-		void inherit(std::shared_ptr<Program> program);
 
 		virtual std::shared_ptr<Class> get_class(const std::string& name, size_t max_visible_index = SIZE_MAX);
 		virtual std::shared_ptr<Object> get_object(const std::string& name, size_t max_visible_index = SIZE_MAX);
@@ -76,6 +76,15 @@ class Entity {
 
 		virtual size_t number_of_known_objects() const;
 		virtual size_t number_of_known_classes() const;
+
+		/**
+		 * @brief Generate compiled code for this entity.
+		 *
+		 * NOTE: generate_code() is a DESTRUCTIVE operation. It is expected that the entity tree will be destroyed after code generation.
+		 * 
+		 * @return bpp::CodeGen::CodeSegment The generated code for this entity and all of its children
+		 */
+		virtual bpp::CodeGen::CodeSegment generate_code() { return {}; }
 
 		// Helpers to pretty-print the entity tree for debugging
 		virtual std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const = 0;

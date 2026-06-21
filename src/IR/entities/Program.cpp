@@ -26,4 +26,13 @@ bool Program::add_class(std::shared_ptr<Class> class_entity) {
 	return true;
 }
 
+bpp::CodeGen::CodeSegment Program::generate_code() {
+	bpp::CodeGen::CodeSegment code;
+
+	code.add_pre_code("#!/usr/bin/env bash\n");
+	code.egalitarian_merge(CodeEntity::generate_code());
+
+	return code;
+}
+
 } // namespace bpp::IR

@@ -19,6 +19,8 @@ void Listener::enter(MethodDefinition* node) {
 	if (!current_class) throw bpp::ErrorHandling::SyntaxError(this, node, "Method definition outside of class body");
 
 	auto method = std::make_shared<bpp::IR::Method>();
+	method->set_containing_class(current_class);
+	method->inherit(current_class);
 
 	// Validate name
 	if (!bpp::IR::is_valid_identifier(node->NAME())) {
@@ -29,7 +31,6 @@ void Listener::enter(MethodDefinition* node) {
 	}
 
 	method->set_name(node->NAME());
-	method->set_containing_class(current_class);
 	method->set_is_virtual(node->VIRTUAL());
 	switch (node->ACCESSMODIFIER().getValue()) {
 		case AccessModifier::PUBLIC: method->set_scope(bpp::IR::VisibilityScope::PUBLIC); break;

@@ -164,5 +164,8 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 
+	// Debug:
+	std::cout << listener->get_program()->generate_code();
+
 	//return listener->get_exit_code();
 }

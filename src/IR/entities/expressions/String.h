@@ -11,6 +11,9 @@
 
 namespace bpp::IR {
 
-class String : public CodeEntity {};
+class String : public CodeEntity {
+	public:
+		bpp::CodeGen::CodeSegment generate_code() override;
+};
 
 } // namespace bpp::IR

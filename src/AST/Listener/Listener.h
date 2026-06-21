@@ -189,4 +189,7 @@ template <> void Listener::exit(BashCommandSequence* node);
 template <> void Listener::enter(RawText* node);
 template <> void Listener::exit(RawText* node);
 
+template <> void Listener::enter(DoublequotedString* node);
+template <> void Listener::exit(DoublequotedString* node);
+
 } // namespace bpp::AST

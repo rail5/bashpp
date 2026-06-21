@@ -72,6 +72,21 @@ bool CodeEntity::add_object(std::shared_ptr<Object> object) {
 	return true;
 }
 
+bpp::CodeGen::CodeSegment CodeEntity::generate_code() {
+	bpp::CodeGen::CodeSegment code_segment;
+
+	for (auto& child : children) {
+		if (std::holds_alternative<RawCode>(child)) {
+			code_segment.add_main_code(std::move(std::get<RawCode>(child)));
+		} else if (std::holds_alternative<std::shared_ptr<Entity>>(child)) {
+			auto child_entity = std::get<std::shared_ptr<Entity>>(child);
+			code_segment.absorb_all_to_main(child_entity->generate_code());
+		}
+	}
+
+	return code_segment;
+}
+
 std::ostream& CodeEntity::prettyPrint(std::ostream& os, size_t indentation_level) const {
 	std::string indent(indentation_level * 4, ' ');
 	os << indent << "(\n";

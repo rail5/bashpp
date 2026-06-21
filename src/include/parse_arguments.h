@@ -50,6 +50,7 @@ constexpr XGetOpt::OptionParser<
 	XGetOpt::Option<'I', "include", "Add directory to include path", XGetOpt::RequiredArgument, "directory">,
 	XGetOpt::Option<'t', "tokens", "Display tokens from lexer (do not compile program)", XGetOpt::NoArgument>,
 	XGetOpt::Option<'p', "parse-tree", "Display parse tree (do not compile program)", XGetOpt::NoArgument>,
+	XGetOpt::Option<'e', "entity-tree", "Display entity tree (do not compile program)", XGetOpt::NoArgument>,
 	XGetOpt::Option<'v', "version", "Display version information and exit", XGetOpt::NoArgument>,
 	XGetOpt::Option<'h', "help", "Display this help message and exit", XGetOpt::NoArgument>
 > OptionParser;
@@ -73,6 +74,7 @@ class Arguments {
 		bool f_suppress_warnings = false;
 		bool f_display_tokens = false;
 		bool f_display_parse_tree = false;
+		bool f_display_entity_tree = false;
 		bool f_run_on_exit = true;
 		bool f_exit_early = false; // Exit early if the request is just -h/--help or -v/--version
 
@@ -231,6 +233,13 @@ class Arguments {
 			return this->f_display_parse_tree;
 		}
 
+		void set_display_entity_tree(bool display) {
+			this->f_display_entity_tree = display;
+		}
+		bool display_entity_tree() const {
+			return this->f_display_entity_tree;
+		}
+
 		void set_exit_early(bool exit) {
 			this->f_exit_early = exit;
 		}
@@ -279,6 +288,9 @@ inline Arguments parse_arguments(int argc, char* argv[]) {
 				break;
 			case 'b':
 				args.set_target_bash_version(arg.getArgument());
+				break;
+			case 'e':
+				args.set_display_entity_tree(true);
 				break;
 			case 'h':
 				std::cout << program_name << " " << bpp_compiler_version << std::endl

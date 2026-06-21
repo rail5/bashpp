@@ -134,6 +134,8 @@ class Listener final {
 	public:
 		void walk(bpp::AST::ASTNode* node);
 
+		std::shared_ptr<bpp::IR::Program> get_program() const { return program; }
+
 		// Default (empty) implementations of enter/exit for each node type.
 		// Specializations are provided for node types that need to be handled.
 		template <typename NodeType>

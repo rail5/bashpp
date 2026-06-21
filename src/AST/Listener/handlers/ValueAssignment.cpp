@@ -36,7 +36,7 @@ void Listener::enter(ValueAssignment* node) {
 }
 
 template <>
-void Listener::exit(ValueAssignment* node) {
+void Listener::exit(ValueAssignment* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::ValueAssignment>(), "Topmost entity on stack is not a ValueAssignment when exiting ValueAssignment node");
 	auto va = std::static_pointer_cast<bpp::IR::ValueAssignment>(entity_stack.top());
 	entity_stack.pop();

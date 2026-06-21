@@ -30,6 +30,7 @@
 #include <include/parse_arguments.h>
 #include <AST/BashppParser.h>
 #include <AST/Listener/Listener.h>
+#include <IR/entities/Program.h>
 
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>
@@ -98,10 +99,10 @@ int main(int argc, char* argv[]) {
 	if (args.display_parse_tree()) {
 		// '-p' given, exit after displaying the parse tree
 		std::cout << *program << std::endl;
-		return 0;
+		if (!args.display_entity_tree()) return 0; // Exit unless we have to build/display the entity tree
 	} else if (args.display_tokens()) {
 		// '-t' given (lexer tokens displayed), exit now even if we didn't display the parse tree
-		return 0;
+		if (!args.display_entity_tree()) return 0;
 	}
 
 	if (args.run_on_exit()) {
@@ -144,9 +145,7 @@ int main(int argc, char* argv[]) {
 	listener->set_parser_errors(parser_errors);
 
 	try {
-		// Walk the tree
 		listener->walk(program.get());
-
 	} catch (const bpp::ErrorHandling::InternalError& e) {
 		std::cerr << "Internal error: " << e.what() << std::endl;
 		return 1;
@@ -158,6 +157,11 @@ int main(int argc, char* argv[]) {
 	} catch (...) {
 		std::cerr << "Unknown exception occurred" << std::endl;
 		return 1;
+	}
+
+	if (args.display_entity_tree()) {
+		std::cout << *listener->get_program() << std::endl;
+		return 0;
 	}
 
 	//return listener->get_exit_code();

@@ -40,6 +40,7 @@ void Class::inherit(std::shared_ptr<Class> parent) {
 			inherited_method->set_scope(VisibilityScope::INACCESSIBLE);
 		}
 		inherited_method->set_is_inherited(true);
+		inherited_method->set_parent_method(m);
 		if (inherited_method->is_virtual()) inherited_method->set_is_overridable(true);
 		add_method(inherited_method);
 	}
@@ -51,6 +52,7 @@ void Class::inherit(std::shared_ptr<Class> parent) {
 		if (inherited_datamember->get_scope() == VisibilityScope::PRIVATE) {
 			inherited_datamember->set_scope(VisibilityScope::INACCESSIBLE);
 		}
+		inherited_datamember->set_parent_datamember(d);
 		add_datamember(inherited_datamember);
 	}
 
@@ -65,6 +67,7 @@ bool Class::add_method(std::shared_ptr<Method> method) {
 			methods.erase(it); // Remove the existing method, since it is being overridden
 			method->set_is_overridable(false); // Can't override it twice
 			method->set_is_inherited(false); // This is a new method, not inherited
+			method->set_parent_method(existing_method->get_parent_method()); // Keep the chain of inheritance intact
 			break;
 		} else {
 			return false; // Conflict with an existing method that is not overridable

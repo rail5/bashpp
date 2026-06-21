@@ -62,6 +62,7 @@ class Entity {
 		// Note: Methods require a different procedure.
 		// Adding a reference to a derived class's version of an inherited method should also add a reference
 		// to the base class's version of the method, since both are considered "used" in that case.
+		// Likewise for data members.
 		virtual void add_reference_position(const SymbolPosition& pos) { this->reference_positions.push_back(pos); }
 
 		void inherit(std::shared_ptr<Entity> parent);

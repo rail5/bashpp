@@ -34,8 +34,8 @@ void Listener::enter(DatamemberDeclaration* node) {
 	 * 	3. A pointer [pointer_declaration will be set, and we'll handle that in the pointer_declaration rule]
 	 */
 
-	 const auto& id = node->IDENTIFIER();
-	 if (id.has_value()) {
+	const auto& id = node->IDENTIFIER();
+	if (id.has_value()) {
 		// This is a primitive data member
 		dm->set_name(id.value().getValue());
 
@@ -45,9 +45,15 @@ void Listener::enter(DatamemberDeclaration* node) {
 			if (bpp::IR::is_protected_keyword(dm->get_name())) msg += " ('" + dm->get_name() + "' is a keyword)";
 			throw bpp::ErrorHandling::SyntaxError(this, node, msg);
 		}
-	 }
+	}
 
-	 entity_stack.push(dm);
+	dm->set_definition_position({
+		source_file,
+		id.value().getLine(),
+		id.value().getCharPositionInLine()
+	});
+
+	entity_stack.push(dm);
 }
 
 template <>

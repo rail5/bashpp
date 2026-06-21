@@ -42,6 +42,20 @@ void Listener::enter(MethodDefinition* node) {
 		throw bpp::ErrorHandling::SyntaxError(this, node, "Method '" + method->get_name() + "' already defined in class '" + current_class->get_name() + "'");
 	}
 
+	method->set_definition_position({
+		source_file,
+		node->NAME().getLine(),
+		node->NAME().getCharPositionInLine()
+	});
+
+	if (auto parent_method = method->get_parent_method()) {
+		parent_method->add_reference_position({
+			source_file,
+			node->NAME().getLine(),
+			node->NAME().getCharPositionInLine()
+		});
+	}
+
 	// Set up the method's parameters
 	for (const auto& p : node->PARAMETERS()) {
 		const auto& param = p.getValue();
@@ -60,6 +74,12 @@ void Listener::enter(MethodDefinition* node) {
 				if (bpp::IR::is_protected_keyword(param_name)) msg += " ('" + param_name + "' is a keyword)";
 				throw bpp::ErrorHandling::SyntaxError(this, p, msg);
 			}
+
+			param_type->add_reference_position({
+				source_file,
+				param.type.value().getLine(),
+				param.type.value().getCharPositionInLine()
+			});
 		}
 
 		auto parameter_entity = std::make_shared<bpp::IR::Object>();
@@ -67,6 +87,12 @@ void Listener::enter(MethodDefinition* node) {
 		parameter_entity->set_is_pointer(param_type != nullptr);
 		parameter_entity->set_name(param_name);
 		parameter_entity->set_containing_class(current_class);
+
+		parameter_entity->set_definition_position({
+			source_file,
+			param.name.getLine(),
+			param.name.getCharPositionInLine()
+		});
 
 		if (!method->add_parameter(parameter_entity)) {
 			if (parameter_entity->get_type().lock()) {

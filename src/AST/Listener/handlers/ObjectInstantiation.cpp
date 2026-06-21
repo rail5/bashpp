@@ -55,10 +55,23 @@ void Listener::enter(ObjectInstantiation* node) {
 		throw bpp::ErrorHandling::SyntaxError(this, type_name, "Class not found: '" + type_name.getValue() + "'");
 	}
 
+	object_class->add_reference_position({
+		source_file,
+		type_name.getLine(),
+		type_name.getCharPositionInLine()
+	});
+
 	auto object = std::make_shared<bpp::IR::Object>();
 	object->set_containing_class(current_code_entity->get_containing_class());
 	object->set_type(object_class);
 	object->set_name(object_name);
+
+	object->set_definition_position({
+		source_file,
+		object_name.getLine(),
+		object_name.getCharPositionInLine()
+	});
+
 	entity_stack.push(object);
 }
 
@@ -74,7 +87,7 @@ void Listener::exit(ObjectInstantiation* /*node*/) {
 		datamember_declaration->set_type(object->get_type());
 		datamember_declaration->set_name(object->get_name());
 		if (object->has_initial_value()) datamember_declaration->set_initial_value(object->get_initial_value().value());
-		// FIXME: Initial definition tracking
+		datamember_declaration->set_definition_position(object->get_definition_position());
 		return;
 	}
 

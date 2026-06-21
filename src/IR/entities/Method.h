@@ -26,6 +26,9 @@ class Method : public BashFunction {
 		bool m_is_virtual = false;
 		bool m_is_overridable = false;
 		bool m_is_inherited = false;
+
+		/// If this method is inherited from a parent class (or even overridden), this points to the parent class's version of this method.
+		std::weak_ptr<Method> parent_method;
 	public:
 		bool add_parameter(std::shared_ptr<Object> parameter);
 		const std::vector<std::shared_ptr<Object>>& get_parameters() const { return parameters; }
@@ -41,6 +44,11 @@ class Method : public BashFunction {
 
 		void set_is_inherited(bool is_inherited) { this->m_is_inherited = is_inherited; }
 		bool is_inherited() const { return m_is_inherited; }
+
+		void set_parent_method(std::shared_ptr<Method> parent_method) { this->parent_method = parent_method; }
+		std::shared_ptr<Method> get_parent_method() const { return parent_method.lock(); }
+
+		void add_reference_position(const SymbolPosition& pos) override;
 
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override;
 };

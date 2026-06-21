@@ -46,7 +46,19 @@ void Listener::enter(ClassDefinition* node) {
 			throw bpp::ErrorHandling::SyntaxError(this, node, "Parent class '" + parent_class_name + "' not found");
 		}
 		class_entity->inherit(parent_class);
+
+		parent_class->add_reference_position({
+			source_file,
+			node->PARENTCLASSNAME().value().getLine(),
+			node->PARENTCLASSNAME().value().getCharPositionInLine()
+		});
 	}
+
+	class_entity->set_definition_position({
+		source_file,
+		node->CLASSNAME().getLine(),
+		node->CLASSNAME().getCharPositionInLine()
+	});
 
 	entity_stack.push(class_entity);
 	program->add_class(class_entity);

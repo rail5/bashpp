@@ -19,6 +19,13 @@ bool Method::add_parameter(std::shared_ptr<Object> parameter) {
 	return true;
 }
 
+void Method::add_reference_position(const SymbolPosition& pos) {
+	Entity::add_reference_position(pos);
+	if (auto parent = parent_method.lock()) {
+		parent->add_reference_position(pos);
+	}
+}
+
 std::ostream& Method::prettyPrint(std::ostream& os, size_t indentation_level) const {
 	std::string indent(indentation_level * 4, ' ');
 	os << indent << "(Method: " << name << " [";

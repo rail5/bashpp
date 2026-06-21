@@ -22,8 +22,6 @@ namespace bpp::IR {
  */
 class Entity {
 	protected:
-		/// Objects owned by this entity (i.e., this entity is responsible for their lifetime)
-		OwnedEntityList<Object> local_objects;
 		size_t parent_visible_object_count_at_creation = 0;
 		size_t program_visible_class_count_at_creation = 0;
 
@@ -70,13 +68,12 @@ class Entity {
 		void inherit(std::shared_ptr<Program> program);
 
 		virtual std::shared_ptr<Class> get_class(const std::string& name, size_t max_visible_index = SIZE_MAX);
-		std::shared_ptr<Object> get_object(const std::string& name, size_t max_visible_index = SIZE_MAX);
+		virtual std::shared_ptr<Object> get_object(const std::string& name, size_t max_visible_index = SIZE_MAX);
 
 		virtual std::vector<std::shared_ptr<Class>> get_all_known_classes() const;
 		virtual std::vector<std::shared_ptr<Object>> get_all_known_objects() const;
-		const OwnedEntityList<Object>& get_local_objects() const { return local_objects; }
 
-		size_t number_of_known_objects() const;
+		virtual size_t number_of_known_objects() const;
 		virtual size_t number_of_known_classes() const;
 
 		// Helpers to pretty-print the entity tree for debugging

@@ -6,6 +6,7 @@
 
 #include "Entity.h"
 #include "Program.h"
+#include "Object.h"
 
 #include <error/InternalError.h>
 
@@ -32,10 +33,7 @@ std::shared_ptr<Class> Entity::get_class(const std::string& name, size_t /*max_v
 	return containing_program.lock()->get_class(name, program_visible_class_count_at_creation);
 }
 
-std::shared_ptr<Object> Entity::get_object(const std::string& name, size_t max_visible_index) {
-	auto obj = local_objects.find(name, max_visible_index);
-	if (obj) return obj;
-
+std::shared_ptr<Object> Entity::get_object(const std::string& name, size_t /*max_visible_index*/) {
 	if (auto parent = parent_entity.lock()) {
 		return parent->get_object(name, parent_visible_object_count_at_creation);
 	}
@@ -62,18 +60,14 @@ std::vector<std::shared_ptr<Object>> Entity::get_all_known_objects() const {
 	// Get all from the parent entity
 	if (auto parent = parent_entity.lock()) {
 		auto parent_objects = parent->get_all_known_objects();
-		result.assign(parent_objects.begin(), parent_objects.end());
+		result.insert(result.end(), parent_objects.begin(), parent_objects.end());
 	}
-
-	// Concatenate with this entity's owned objects
-	const auto& local_objs = local_objects.get_entities();
-	result.insert(result.end(), local_objs.begin(), local_objs.end());
 
 	return result;
 }
 
 size_t Entity::number_of_known_objects() const {
-	size_t count = local_objects.size();
+	size_t count = 0;
 
 	if (auto parent = parent_entity.lock()) {
 		count += parent->number_of_known_objects();

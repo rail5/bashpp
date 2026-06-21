@@ -8,6 +8,8 @@
 
 #include <error/InternalError.h>
 
+#include <IR/entities/CodeEntity.h>
+
 namespace bpp::AST {
 
 void Listener::walk(bpp::AST::ASTNode* node) {
@@ -35,6 +37,16 @@ void Listener::walk(bpp::AST::ASTNode* node) {
 		e.print();
 		return;
 	}
+}
+
+std::shared_ptr<bpp::IR::CodeEntity> Listener::latest_code_entity() const {
+	std::stack<std::shared_ptr<bpp::IR::Entity>> temp_stack = entity_stack;
+	while (!temp_stack.empty()) {
+		auto top = std::dynamic_pointer_cast<bpp::IR::CodeEntity>(temp_stack.top());
+		if (top) return top;
+		temp_stack.pop();
+	}
+	return nullptr;
 }
 
 } // namespace bpp::AST

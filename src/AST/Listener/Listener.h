@@ -16,6 +16,8 @@
 #include <error/SyntaxError.h>
 #include <error/ParserError.h>
 
+#include "ContextExpectations.h"
+
 #include <IR/bpp.h>
 
 namespace bpp::AST {
@@ -103,7 +105,7 @@ class Listener final {
 
 		/**
 		 * @brief Helper function to check the type of the top of the entity stack
-		 * 
+		 *
 		 * @tparam T The type to check against
 		 * @return true if the top of the entity stack is of type T (or derived from T)
 		 * @return false if the top of the entity stack is not of type T and not derived from T
@@ -114,8 +116,20 @@ class Listener final {
 			return std::dynamic_pointer_cast<T>(entity_stack.top()) != nullptr;
 		}
 
+		/**
+		 * @brief Get the latest code entity on the entity stack, or nullptr if there is none
+		 *
+		 * This traverses the stack from top to bottom, returning the first entity that is a CodeEntity (or derived from CodeEntity).
+		 * The entity returned may not be the topmost entity on the stack.
+		 * 
+		 * @return std::shared_ptr<bpp::IR::Entity> The latest code entity on the stack, or nullptr if there is none
+		 */
+		std::shared_ptr<bpp::IR::CodeEntity> latest_code_entity() const;
+
 		bool in_class = false;
 		bool in_method = false;
+
+		ExpectationsStack context_expectations_stack;
 
 	public:
 		void walk(bpp::AST::ASTNode* node);
@@ -149,8 +163,17 @@ template <> void Listener::exit(Program* node);
 template <> void Listener::enter(ClassDefinition* node);
 template <> void Listener::exit(ClassDefinition* node);
 
+template <> void Listener::enter(DatamemberDeclaration* node);
+template <> void Listener::exit(DatamemberDeclaration* node);
+
+template <> void Listener::enter(ValueAssignment* node);
+template <> void Listener::exit(ValueAssignment* node);
+
 template <> void Listener::enter(MethodDefinition* node);
 template <> void Listener::exit(MethodDefinition* node);
+
+template <> void Listener::enter(ObjectInstantiation* node);
+template <> void Listener::exit(ObjectInstantiation* node);
 
 template <> void Listener::enter(BashCommand* node);
 template <> void Listener::exit(BashCommand* node);

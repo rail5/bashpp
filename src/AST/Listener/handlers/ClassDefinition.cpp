@@ -48,8 +48,8 @@ void Listener::enter(ClassDefinition* node) {
 		class_entity->inherit(parent_class);
 	}
 
-
 	entity_stack.push(class_entity);
+	program->add_class(class_entity);
 	in_class = true;
 }
 
@@ -58,7 +58,6 @@ void Listener::exit(ClassDefinition* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::Class>(), "Topmost entity on stack is not a Class when exiting ClassDefinition node");
 	auto class_entity = std::static_pointer_cast<bpp::IR::Class>(entity_stack.top());
 	entity_stack.pop();
-	program->add(class_entity);
 	in_class = false;
 }
 

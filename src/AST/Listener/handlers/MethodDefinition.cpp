@@ -62,7 +62,9 @@ void Listener::enter(MethodDefinition* node) {
 			}
 		}
 
-		auto parameter_entity = std::make_shared<bpp::IR::Object>(param_type, true);
+		auto parameter_entity = std::make_shared<bpp::IR::Object>();
+		parameter_entity->set_type(param_type);
+		parameter_entity->set_is_pointer(param_type != nullptr);
 		parameter_entity->set_name(param_name);
 		parameter_entity->set_containing_class(current_class);
 

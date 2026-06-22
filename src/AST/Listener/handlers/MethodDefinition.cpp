@@ -10,6 +10,7 @@
 #include <IR/entities/Class.h>
 #include <IR/entities/Object.h>
 #include <IR/entities/Program.h>
+#include <IR/entities/expressions/DynamicCast.h>
 
 namespace bpp::AST {
 
@@ -83,7 +84,8 @@ void Listener::enter(MethodDefinition* node) {
 			});
 		}
 
-		auto parameter_entity = std::make_shared<bpp::IR::Object>();
+		auto parameter_entity = std::make_shared<bpp::IR::MethodParameter>();
+		parameter_entity->inherit(method);
 		parameter_entity->set_type(param_type);
 		parameter_entity->set_is_pointer(param_type != nullptr);
 		parameter_entity->set_name(param_name);

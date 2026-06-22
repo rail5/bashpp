@@ -8,6 +8,7 @@
 
 #include <IR/bpp.h>
 #include <IR/entities/BashFunction.h>
+#include <IR/entities/Object.h>
 
 #include <vector>
 #include <memory>
@@ -15,12 +16,32 @@
 namespace bpp::IR {
 
 /**
+ * @brief A parameter to a method in a class
+ *
+ * Note that some parameters may be removed from the method's parameter list by optimizations, if they are unused.
+ *
+ * For this reason it's important to retain the index of the parameter in the original parameter list,
+ * so that it can be matched up with the corresponding argument in the method call (e.g. `local arg3="$3"`),
+ * rather than just relying on the parameter's position in the parameter list.
+ */
+class MethodParameter : public Object {
+	private:
+		/// The index of this parameter in the method's parameter list (1-based)
+		uint32_t index = 1;
+	public:
+		uint32_t get_index() const { return index; }
+		void set_index(uint32_t index) { this->index = index; }
+
+		bpp::CodeGen::CodeSegment generate_code() override;
+};
+
+/**
  * @brief A method in a class
  */
 class Method : public BashFunction {
 	private:
 		/// List of parameters expected to be given as arguments to the method
-		std::vector<std::shared_ptr<Object>> parameters;
+		std::vector<std::shared_ptr<MethodParameter>> parameters;
 		VisibilityScope scope = VisibilityScope::PUBLIC;
 
 		bool m_is_virtual = false;
@@ -30,8 +51,8 @@ class Method : public BashFunction {
 		/// If this method is inherited from a parent class (or even overridden), this points to the parent class's version of this method.
 		std::weak_ptr<Method> parent_method;
 	public:
-		bool add_parameter(std::shared_ptr<Object> parameter);
-		const std::vector<std::shared_ptr<Object>>& get_parameters() const { return parameters; }
+		bool add_parameter(std::shared_ptr<MethodParameter> parameter);
+		const std::vector<std::shared_ptr<MethodParameter>>& get_parameters() const { return parameters; }
 
 		void set_scope(VisibilityScope scope) { this->scope = scope; }
 		VisibilityScope get_scope() const { return scope; }
@@ -49,6 +70,9 @@ class Method : public BashFunction {
 		std::shared_ptr<Method> get_parent_method() const { return parent_method.lock(); }
 
 		void add_reference_position(const SymbolPosition& pos) override;
+
+		std::string get_mangled_name() const;
+		bpp::CodeGen::CodeSegment generate_code() override;
 
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override;
 };

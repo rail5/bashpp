@@ -88,7 +88,7 @@ bpp::CodeGen::CodeSegment CodeEntity::generate_code() {
 }
 
 std::ostream& CodeEntity::prettyPrint(std::ostream& os, size_t indentation_level) const {
-	std::string indent(indentation_level * 4, ' ');
+	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 	os << indent << "(\n";
 	for (const auto& child : children) {
 		if (std::holds_alternative<RawCode>(child)) {

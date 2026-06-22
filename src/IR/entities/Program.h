@@ -8,6 +8,7 @@
 
 #include <string>
 #include <cstdint>
+#include <stack>
 
 #include <IR/bpp.h>
 #include <IR/entities/CodeEntity.h>
@@ -28,6 +29,22 @@ class Program : public CodeEntity, public std::enable_shared_from_this<Program> 
 		std::weak_ptr<Program> get_containing_program() override { return weak_from_this(); }
 
 		bpp::CodeGen::CodeSegment generate_code() override;
+
+		struct CodeGenState {
+			bool in_method = false;
+			bool in_class = false;
+			std::stack<std::monostate> bash_function_stack;
+			std::stack<std::monostate> supershell_stack;
+			uint32_t dynamic_cast_counter = 0;
+
+			bool should_declare_local() const {
+				return in_class || in_method || !bash_function_stack.empty();
+			}
+
+			bool should_localize_object_instantiation() const {
+				return should_declare_local() && supershell_stack.empty();
+			}
+		} codegen_state;
 };
 
 } // namespace bpp::IR

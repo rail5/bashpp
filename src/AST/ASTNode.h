@@ -15,7 +15,9 @@
 #include <AST/Position.h>
 #include <AST/Token.h>
 
+#ifndef PRETTYPRINT_INDENTATION_AMOUNT
 #define PRETTYPRINT_INDENTATION_AMOUNT 4
+#endif
 
 namespace bpp::AST {
 

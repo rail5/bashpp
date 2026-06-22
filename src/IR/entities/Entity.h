@@ -13,6 +13,10 @@
 #include <IR/bpp.h>
 #include <IR/codegen.h>
 
+#ifndef PRETTYPRINT_INDENTATION_AMOUNT
+#define PRETTYPRINT_INDENTATION_AMOUNT 4
+#endif
+
 namespace bpp::IR {
 
 /**

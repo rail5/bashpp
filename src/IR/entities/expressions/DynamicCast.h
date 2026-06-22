@@ -7,19 +7,17 @@
 #pragma once
 
 #include <IR/bpp.h>
-#include <IR/entities/CodeEntity.h>
+#include "String.h"
 
 namespace bpp::IR {
 
-/**
- * @brief A normal shell function
- */
-class BashFunction : public CodeEntity {
-	protected:
-		std::string name;
+class DynamicCast : public String {
+	private:
+		std::shared_ptr<Class> target_type;
 	public:
-		const std::string& get_name() const { return name; }
-		void set_name(const std::string& name) { this->name = name; }
+		DynamicCast() = delete;
+		explicit DynamicCast(std::shared_ptr<Class> target_type) : target_type(target_type) {}
+		std::shared_ptr<Class> get_target_type() const { return target_type; }
 
 		bpp::CodeGen::CodeSegment generate_code() override;
 

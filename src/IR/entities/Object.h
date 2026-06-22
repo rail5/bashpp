@@ -50,6 +50,8 @@ class Object : public Entity {
 
 		void set_copy_from(std::shared_ptr<Object> other) { copy_from = other; }
 		std::shared_ptr<Object> get_copy_from() const { return copy_from; }
+
+		bpp::CodeGen::CodeSegment generate_code() override;
 		
 		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
 			std::string indent(indentation_level * 4, ' ');

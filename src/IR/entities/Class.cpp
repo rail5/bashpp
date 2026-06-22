@@ -211,8 +211,18 @@ std::shared_ptr<DataMember> Class::get_datamember_UNSAFE(const std::string& name
 	return nullptr;
 }
 
+bpp::CodeGen::CodeSegment Class::generate_code() {
+	bpp::CodeGen::CodeSegment code;
+
+	for (const auto& method : methods) {
+		code.egalitarian_merge(method->generate_code());
+	}
+
+	return code;
+}
+
 std::ostream& Class::prettyPrint(std::ostream& os, size_t indentation_level) const {
-	std::string indent(indentation_level * 4, ' ');
+	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 	os << indent << "(Class " << name << "\n";
 
 	for (const auto& datamember : datamembers) {

@@ -7,6 +7,30 @@
   (ansi_c_string)
 ] @string
 
+; TODO: HACK. Remove this override if the shared Bash grammar can recover
+; cleanly from supershells containing positional expansions. It currently
+; treats the rest of the command as raw strings, coloring unrelated Bash++
+; code as string contents.
+((command
+  (variable_assignment
+    value: (concatenation
+      (word) @supershell
+      (_)*
+      (raw_string) @variable)))
+  (#eq? @supershell "@")
+  (#match? @variable "\n"))
+
+((command
+  (variable_assignment
+    value: (concatenation
+      (word) @supershell))
+  name: (command_name
+    (concatenation
+      (_)*
+      (raw_string) @variable)))
+  (#eq? @supershell "@")
+  (#match? @variable "\n"))
+
 (variable_name) @variable
 
 [

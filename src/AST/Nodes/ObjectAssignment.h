@@ -14,7 +14,7 @@ class ObjectAssignment : public ASTNode {
 	public:
 		constexpr ObjectAssignment() : ASTNode(bpp::AST::NodeType::ObjectAssignment) {}
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
+		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(ObjectAssignment";
 			for (const auto& child : children) {
@@ -23,7 +23,7 @@ class ObjectAssignment : public ASTNode {
 			}
 			os << ")" << std::flush;
 			return os;
-		}
+		})
 };
 
 } // namespace bpp::AST

@@ -24,7 +24,7 @@ class BashRedirection : public StringType {
 			m_OPERATOR = op;
 		}
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
+		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashRedirection " << m_OPERATOR;
 			for (const auto& child : children) {
@@ -33,7 +33,7 @@ class BashRedirection : public StringType {
 			}
 			os << ")" << std::flush;
 			return os;
-		}
+		})
 };
 
 } // namespace bpp::AST

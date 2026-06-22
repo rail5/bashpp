@@ -14,7 +14,7 @@ class Supershell : public ASTNode {
 	public:
 		constexpr Supershell() : ASTNode(bpp::AST::NodeType::Supershell) {}
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
+		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(Supershell @(";
 			for (const auto& child : children) {
@@ -23,7 +23,7 @@ class Supershell : public ASTNode {
 			}
 			os << "))" << std::flush;
 			return os;
-		}
+		})
 };
 
 } // namespace bpp::AST

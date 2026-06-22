@@ -53,7 +53,7 @@ class Object : public Entity {
 
 		bpp::CodeGen::CodeSegment generate_code() override;
 		
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
+		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
 			std::string indent(indentation_level * 4, ' ');
 			os << indent << "(";
 			if (type.expired()) {
@@ -72,7 +72,7 @@ class Object : public Entity {
 			}
 			os <<")\n";
 			return os;
-		}
+		})
 };
 
 } // namespace bpp::IR

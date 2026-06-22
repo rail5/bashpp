@@ -38,7 +38,7 @@ class RawText : public ASTNode {
 			m_TEXT += text;
 		}
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
+		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(RawText " << getEscapedText();
 			for (const auto& child : children) {
@@ -47,7 +47,7 @@ class RawText : public ASTNode {
 			}
 			os << ")" << std::flush;
 			return os;
-		}
+		})
 };
 
 } // namespace bpp::AST

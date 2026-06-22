@@ -14,7 +14,7 @@ class BashArithmeticSubstitution : public ASTNode {
 	public:
 		constexpr BashArithmeticSubstitution() : ASTNode(bpp::AST::NodeType::BashArithmeticSubstitution) {}
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
+		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashArithmeticSubstitution $((";
 			for (const auto& child : children) {
@@ -23,7 +23,7 @@ class BashArithmeticSubstitution : public ASTNode {
 			}
 			os << ")) )" << std::flush;
 			return os;
-		}
+		})
 };
 
 } // namespace bpp::AST

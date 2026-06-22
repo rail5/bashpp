@@ -38,7 +38,7 @@ class ClassDefinition : public ASTNode {
 			m_PARENTCLASSNAME = std::nullopt;
 		}
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
+		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(ClassDefinition\n"
 				<< indent << "  @class " << m_CLASSNAME;
@@ -51,7 +51,7 @@ class ClassDefinition : public ASTNode {
 			}
 			os << ")" << std::flush;
 			return os;
-		}
+		})
 };
 
 } // namespace bpp::AST

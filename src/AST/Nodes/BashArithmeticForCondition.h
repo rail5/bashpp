@@ -22,7 +22,7 @@ class BashArithmeticForCondition : public StringType {
 	public:
 		constexpr BashArithmeticForCondition() : StringType(bpp::AST::NodeType::BashArithmeticForCondition) {}
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
+		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashArithmeticForCondition ((";
 			for (const auto& child : children) {
@@ -31,7 +31,7 @@ class BashArithmeticForCondition : public StringType {
 			}
 			os << ")) )" << std::flush;
 			return os;
-		}
+		})
 };
 
 } // namespace bpp::AST

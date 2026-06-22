@@ -14,7 +14,7 @@ class ArrayIndex : public ASTNode {
 	public:
 		constexpr ArrayIndex() : ASTNode(bpp::AST::NodeType::ArrayIndex) {}
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
+		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(ArrayIndex [";
 			for (const auto& child : children) {
@@ -23,7 +23,7 @@ class ArrayIndex : public ASTNode {
 			}
 			os << "])" << std::flush;
 			return os;
-		}
+		})
 };
 
 } // namespace bpp::AST

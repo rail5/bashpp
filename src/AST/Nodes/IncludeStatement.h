@@ -80,7 +80,7 @@ class IncludeStatement : public ASTNode {
 			m_ASPATH = std::nullopt;
 		}
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
+		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(IncludeStatement\n"
 				<< indent << "  @" << ((m_KEYWORD.getValue() == IncludeKeyword::INCLUDE) ? "include" : "include_once") << " "
@@ -92,7 +92,7 @@ class IncludeStatement : public ASTNode {
 			}
 			os << ")" << std::flush;
 			return os;
-		}
+		})
 };
 
 } // namespace bpp::AST

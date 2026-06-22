@@ -14,7 +14,7 @@ class BashCaseInput : public ASTNode {
 	public:
 		constexpr BashCaseInput() : ASTNode(bpp::AST::NodeType::BashCaseInput) {}
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
+		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashCaseInput";
 			for (const auto& child : children) {
@@ -23,7 +23,7 @@ class BashCaseInput : public ASTNode {
 			}
 			os << "in)" << std::flush;
 			return os;
-		}
+		})
 };
 
 } // namespace bpp::AST

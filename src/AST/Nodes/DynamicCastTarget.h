@@ -24,7 +24,7 @@ class DynamicCastTarget : public ASTNode {
 			return m_TARGETTYPE;
 		}
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
+		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(DynamicCastTarget"
 				<< (m_TARGETTYPE.has_value() ? " " + m_TARGETTYPE->getValue() : "");
@@ -34,7 +34,7 @@ class DynamicCastTarget : public ASTNode {
 			}
 			os << ")" << std::flush;
 			return os;
-		}
+		})
 };
 
 } // namespace bpp::AST

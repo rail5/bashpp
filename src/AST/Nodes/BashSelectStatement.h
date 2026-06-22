@@ -24,7 +24,7 @@ class BashSelectStatement : public ASTNode {
 			m_VARIABLE = variable;
 		}
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
+		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashSelectStatement\n"
 				<< indent << "  select " << m_VARIABLE;
@@ -34,7 +34,7 @@ class BashSelectStatement : public ASTNode {
 			}
 			os << ")" << std::flush;
 			return os;
-		}
+		})
 };
 
 } // namespace bpp::AST

@@ -44,12 +44,12 @@ bpp::CodeGen::CodeSegment DynamicCast::generate_code() {
 	return result;
 }
 
-std::ostream& DynamicCast::prettyPrint(std::ostream& os, size_t indentation_level) const {
+PRETTYPRINT_IMPLEMENTATION(DynamicCast, {
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 	os << indent << "(DynamicCast to " << target_type->get_name() << "\n";
 	String::prettyPrint(os, indentation_level + 1);
 	os << indent << ")\n";
 	return os;
-}
+})
 
 } // namespace bpp::IR

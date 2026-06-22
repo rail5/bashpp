@@ -14,7 +14,7 @@ class ArrayAssignment : public ASTNode {
 	public:
 		constexpr ArrayAssignment() : ASTNode(bpp::AST::NodeType::ArrayAssignment) {}
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
+		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(ArrayAssignment (";
 			for (const auto& child : children) {
@@ -23,7 +23,7 @@ class ArrayAssignment : public ASTNode {
 			}
 			os << "))" << std::flush;
 			return os;
-		}
+		})
 };
 
 } // namespace bpp::AST

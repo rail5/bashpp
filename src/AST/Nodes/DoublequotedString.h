@@ -15,7 +15,7 @@ class DoublequotedString : public StringType {
 	public:
 		constexpr DoublequotedString() : StringType(bpp::AST::NodeType::DoublequotedString) {}
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
+		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(DoublequotedString \"";
 			for (const auto& child : children) {
@@ -24,7 +24,7 @@ class DoublequotedString : public StringType {
 			}
 			os << "\")" << std::flush;
 			return os;
-		}
+		})
 };
 
 } // namespace bpp::AST

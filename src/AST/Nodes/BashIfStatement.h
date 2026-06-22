@@ -14,7 +14,7 @@ class BashIfStatement : public ASTNode {
 	public:
 		constexpr BashIfStatement() : ASTNode(bpp::AST::NodeType::BashIfStatement) {}
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
+		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashIfStatement if";
 			for (const auto& child : children) {
@@ -23,7 +23,7 @@ class BashIfStatement : public ASTNode {
 			}
 			os << "fi)" << std::flush;
 			return os;
-		}
+		})
 };
 
 } // namespace bpp::AST

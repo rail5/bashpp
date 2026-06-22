@@ -23,7 +23,7 @@ class SubshellSubstitution : public ASTNode {
 			return is_cat_replacement;
 		}
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
+		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(SubshellSubstitution ";
 			if (is_cat_replacement) os << "[cat replacement] ";
@@ -34,7 +34,7 @@ class SubshellSubstitution : public ASTNode {
 			}
 			os << "))" << std::flush;
 			return os;
-		}
+		})
 };
 
 } // namespace bpp::AST

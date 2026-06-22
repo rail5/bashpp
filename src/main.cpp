@@ -81,7 +81,9 @@ int main(int argc, char* argv[]) {
 	} else {
 		parser.setInputFromFilePath(full_path_of_input_file);
 	}
+#ifndef NDEBUG
 	parser.setDisplayLexerOutput(args.display_tokens());
+#endif
 	
 	auto program = parser.program();
 	const auto& parser_errors = parser.get_errors();
@@ -96,6 +98,7 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
+#ifndef NDEBUG
 	if (args.display_parse_tree()) {
 		// '-p' given, exit after displaying the parse tree
 		std::cout << *program << std::endl;
@@ -104,6 +107,7 @@ int main(int argc, char* argv[]) {
 		// '-t' given (lexer tokens displayed), exit now even if we didn't display the parse tree
 		if (!args.display_entity_tree()) return 0;
 	}
+#endif
 
 	if (args.run_on_exit()) {
 		// Create a temporary file to store the program
@@ -159,10 +163,12 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
+#ifndef NDEBUG
 	if (args.display_entity_tree()) {
 		std::cout << *listener->get_program() << std::endl;
 		return 0;
 	}
+#endif
 
 	// Debug:
 	std::cout << listener->get_program()->generate_code();

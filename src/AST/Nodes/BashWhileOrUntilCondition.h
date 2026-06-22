@@ -14,7 +14,7 @@ class BashWhileOrUntilCondition : public ASTNode {
 	public:
 		constexpr BashWhileOrUntilCondition() : ASTNode(bpp::AST::NodeType::BashWhileOrUntilCondition) {}
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
+		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashWhileOrUntilCondition";
 			for (const auto& child : children) {
@@ -23,7 +23,7 @@ class BashWhileOrUntilCondition : public ASTNode {
 			}
 			os << ")" << std::flush;
 			return os;
-		}
+		})
 };
 
 } // namespace bpp::AST

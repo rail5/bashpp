@@ -14,7 +14,7 @@ class DynamicCast : public ASTNode {
 	public:
 		constexpr DynamicCast() : ASTNode(bpp::AST::NodeType::DynamicCast) {}
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
+		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(DynamicCast\n"
 				<< indent << "  @dynamic_cast";
@@ -24,7 +24,7 @@ class DynamicCast : public ASTNode {
 			}
 			os << ")" << std::flush;
 			return os;
-		}
+		})
 };
 
 } // namespace bpp::AST

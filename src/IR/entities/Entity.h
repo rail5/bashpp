@@ -13,9 +13,7 @@
 #include <IR/bpp.h>
 #include <IR/codegen.h>
 
-#ifndef PRETTYPRINT_INDENTATION_AMOUNT
-#define PRETTYPRINT_INDENTATION_AMOUNT 4
-#endif
+#include <debug_helpers.h>
 
 namespace bpp::IR {
 
@@ -90,11 +88,7 @@ class Entity {
 		 */
 		virtual bpp::CodeGen::CodeSegment generate_code() { return {}; }
 
-		// Helpers to pretty-print the entity tree for debugging
-		virtual std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const = 0;
-		friend std::ostream& operator<<(std::ostream& os, const Entity& node) {
-			return node.prettyPrint(os, 0);
-		}
+		PRETTYPRINT_HELPERS(Entity)
 };
 
 } // namespace bpp::IR

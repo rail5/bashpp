@@ -14,7 +14,7 @@ class BashCaseStatement : public ASTNode {
 	public:
 		constexpr BashCaseStatement() : ASTNode(bpp::AST::NodeType::BashCaseStatement) {}
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
+		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashCaseStatement case";
 			for (const auto& child : children) {
@@ -23,7 +23,7 @@ class BashCaseStatement : public ASTNode {
 			}
 			os << "esac)" << std::flush;
 			return os;
-		}
+		})
 };
 
 } // namespace bpp::AST

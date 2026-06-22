@@ -45,7 +45,7 @@ class CodeEntity : public Entity {
 
 		bpp::CodeGen::CodeSegment generate_code() override;
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override;
+		PRETTYPRINT_OVERRIDE;
 };
 
 } // namespace bpp::IR

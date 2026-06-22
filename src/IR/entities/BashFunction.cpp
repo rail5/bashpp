@@ -18,12 +18,12 @@ bpp::CodeGen::CodeSegment BashFunction::generate_code() {
 	return code;
 }
 
-std::ostream& BashFunction::prettyPrint(std::ostream& os, size_t indentation_level) const {
+PRETTYPRINT_IMPLEMENTATION(BashFunction, {
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 	os << indent << "(BashFunction: " << name << "\n";
 	CodeEntity::prettyPrint(os, indentation_level + 1);
 	os << indent << ")\n";
 	return os;
-}
+})
 
 } // namespace bpp::IR

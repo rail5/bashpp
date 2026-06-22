@@ -53,7 +53,7 @@ class Class : public Entity, public std::enable_shared_from_this<Class> {
 
 		bpp::CodeGen::CodeSegment generate_code() override;
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override;
+		PRETTYPRINT_OVERRIDE;
 };
 
 } // namespace bpp::IR

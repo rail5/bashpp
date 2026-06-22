@@ -221,7 +221,7 @@ bpp::CodeGen::CodeSegment Class::generate_code() {
 	return code;
 }
 
-std::ostream& Class::prettyPrint(std::ostream& os, size_t indentation_level) const {
+PRETTYPRINT_IMPLEMENTATION(Class, {
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 	os << indent << "(Class " << name << "\n";
 
@@ -235,7 +235,7 @@ std::ostream& Class::prettyPrint(std::ostream& os, size_t indentation_level) con
 
 	os << indent << ")\n";
 	return os;
-}
+})
 
 
 } // namespace bpp::IR

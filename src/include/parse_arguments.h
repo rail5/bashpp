@@ -48,9 +48,11 @@ constexpr XGetOpt::OptionParser<
 	XGetOpt::Option<'b', "target-bash", "Compile to Bash version (default: 5.2)", XGetOpt::RequiredArgument, "version">,
 	XGetOpt::Option<'s', "no-warnings", "Suppress warnings", XGetOpt::NoArgument>,
 	XGetOpt::Option<'I', "include", "Add directory to include path", XGetOpt::RequiredArgument, "directory">,
+#ifndef NDEBUG
 	XGetOpt::Option<'t', "tokens", "Display tokens from lexer (do not compile program)", XGetOpt::NoArgument>,
 	XGetOpt::Option<'p', "parse-tree", "Display parse tree (do not compile program)", XGetOpt::NoArgument>,
 	XGetOpt::Option<'e', "entity-tree", "Display entity tree (do not compile program)", XGetOpt::NoArgument>,
+#endif
 	XGetOpt::Option<'v', "version", "Display version information and exit", XGetOpt::NoArgument>,
 	XGetOpt::Option<'h', "help", "Display this help message and exit", XGetOpt::NoArgument>
 > OptionParser;
@@ -72,9 +74,11 @@ class Arguments {
 		BashVersion                               m_target_bash_version = {5, 2}; // Default to Bash 5.2
 		std::shared_ptr<std::vector<std::string>> m_include_paths = std::make_shared<std::vector<std::string>>();
 		bool f_suppress_warnings = false;
+	#ifndef NDEBUG
 		bool f_display_tokens = false;
 		bool f_display_parse_tree = false;
 		bool f_display_entity_tree = false;
+	#endif
 		bool f_run_on_exit = true;
 		bool f_exit_early = false; // Exit early if the request is just -h/--help or -v/--version
 
@@ -219,6 +223,7 @@ class Arguments {
 			return this->f_suppress_warnings;
 		}
 
+	#ifndef NDEBUG
 		void set_display_tokens(bool display) {
 			this->f_display_tokens = display;
 		}
@@ -239,6 +244,7 @@ class Arguments {
 		bool display_entity_tree() const {
 			return this->f_display_entity_tree;
 		}
+	#endif
 
 		void set_exit_early(bool exit) {
 			this->f_exit_early = exit;
@@ -289,9 +295,6 @@ inline Arguments parse_arguments(int argc, char* argv[]) {
 			case 'b':
 				args.set_target_bash_version(arg.getArgument());
 				break;
-			case 'e':
-				args.set_display_entity_tree(true);
-				break;
 			case 'h':
 				std::cout << program_name << " " << bpp_compiler_version << std::endl
 					<< help_intro << OptionParser.getHelpString();
@@ -305,20 +308,25 @@ inline Arguments parse_arguments(int argc, char* argv[]) {
 				args.set_run_on_exit(false);
 				args.set_output_file(arg.getArgument());
 				break;
-			case 'p':
-				args.set_display_parse_tree(true);
-				break;
 			case 's':
 				args.set_suppress_warnings(true);
-				break;
-			case 't':
-				args.set_display_tokens(true);
 				break;
 			case 'v':
 				std::cout << program_name << " " << bpp_compiler_version << std::endl << copyright;
 				args.set_exit_early(true);
 				return args;
 				break;
+		#ifndef NDEBUG
+			case 't':
+				args.set_display_tokens(true);
+				break;
+			case 'p':
+				args.set_display_parse_tree(true);
+				break;
+			case 'e':
+				args.set_display_entity_tree(true);
+				break;
+		#endif
 		}
 	}
 

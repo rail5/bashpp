@@ -14,7 +14,7 @@ class BashUntilStatement : public ASTNode {
 	public:
 		constexpr BashUntilStatement() : ASTNode(bpp::AST::NodeType::BashUntilStatement) {}
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
+		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashUntilStatement until";
 			for (const auto& child : children) {
@@ -23,7 +23,7 @@ class BashUntilStatement : public ASTNode {
 			}
 			os << ")" << std::flush;
 			return os;
-		}
+		})
 };
 
 } // namespace bpp::AST

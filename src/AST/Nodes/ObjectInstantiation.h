@@ -33,7 +33,7 @@ class ObjectInstantiation : public ASTNode {
 			return m_IDENTIFIER;
 		}
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
+		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(ObjectInstantiation\n"
 				<< indent << "  @" << m_TYPE << " " << m_IDENTIFIER;
@@ -43,7 +43,7 @@ class ObjectInstantiation : public ASTNode {
 			}
 			os << ")" << std::flush;
 			return os;
-		}
+		})
 };
 
 } // namespace bpp::AST

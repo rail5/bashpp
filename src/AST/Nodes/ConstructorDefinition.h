@@ -15,7 +15,7 @@ class ConstructorDefinition : public ASTNode {
 	public:
 		constexpr ConstructorDefinition() : ASTNode(bpp::AST::NodeType::ConstructorDefinition) {}
 
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override {
+		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(ConstructorDefinition\n"
 				<< indent << "  @constructor";
@@ -25,7 +25,7 @@ class ConstructorDefinition : public ASTNode {
 			}
 			os << ")" << std::flush;
 			return os;
-		}
+		})
 };
 
 } // namespace bpp::AST

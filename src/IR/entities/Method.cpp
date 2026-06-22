@@ -81,7 +81,7 @@ bpp::CodeGen::CodeSegment Method::generate_code() {
 	return code;
 }
 
-std::ostream& Method::prettyPrint(std::ostream& os, size_t indentation_level) const {
+PRETTYPRINT_IMPLEMENTATION(Method, {
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 	os << indent << "(Method: " << name << " [";
 	switch (scope) {
@@ -99,6 +99,6 @@ std::ostream& Method::prettyPrint(std::ostream& os, size_t indentation_level) co
 	CodeEntity::prettyPrint(os, indentation_level + 1);
 	os << indent << ")\n";
 	return os;
-}
+})
 
 } // namespace bpp::IR

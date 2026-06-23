@@ -40,7 +40,12 @@ GenericResponseMessage bpp::BashppServer::handleSemanticTokens(
 		return response;
 	}
 
-	SemanticTokenCollector collector(uri, program);
+	SemanticTokenCollector collector(
+		uri,
+		program,
+		program_pool.get_lexer_tokens(uri),
+		program_pool.get_utf16_mode()
+	);
 	collector.walk(ast);
 
 	SemanticTokens result;

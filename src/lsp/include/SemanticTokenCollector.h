@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include <AST/LexerToken.h>
 #include <AST/Listener/BaseListener.h>
 #include <bpp_include/bpp_program.h>
 
@@ -21,7 +22,13 @@ enum class SemanticTokenType : uint32_t {
 	Method,
 	Property,
 	Variable,
-	Parameter
+	Parameter,
+	Keyword,
+	Comment,
+	String,
+	Operator,
+	Number,
+	Function
 };
 
 struct BashppSemanticToken {
@@ -30,6 +37,7 @@ struct BashppSemanticToken {
 	uint32_t length = 0;
 	SemanticTokenType type = SemanticTokenType::Variable;
 	uint32_t modifiers = 0;
+	bool syntax = false;
 };
 
 class SemanticTokenCollector : public AST::BaseListener<SemanticTokenCollector> {
@@ -40,7 +48,9 @@ class SemanticTokenCollector : public AST::BaseListener<SemanticTokenCollector> 
 		std::shared_ptr<bpp_program> program;
 		std::vector<BashppSemanticToken> tokens;
 		size_t datamember_declaration_depth = 0;
+		bool utf16_mode = false;
 
+		void add_token(BashppSemanticToken token);
 		void add_token(
 			const AST::Token<std::string>& token,
 			SemanticTokenType type,
@@ -50,11 +60,15 @@ class SemanticTokenCollector : public AST::BaseListener<SemanticTokenCollector> 
 			const AST::Token<std::string>& token,
 			SemanticTokenType fallback
 		) const;
+		void add_lexer_token(const AST::LexerToken& token);
+		uint32_t encoded_character_count(const std::string& text) const;
 
 	public:
 		SemanticTokenCollector(
 			std::string source_file,
-			std::shared_ptr<bpp_program> program
+			std::shared_ptr<bpp_program> program,
+			const std::vector<AST::LexerToken>& lexer_tokens,
+			bool utf16_mode
 		);
 
 		void enterClassDefinition(const std::shared_ptr<AST::ClassDefinition>& node);
@@ -66,6 +80,8 @@ class SemanticTokenCollector : public AST::BaseListener<SemanticTokenCollector> 
 		void enterObjectReference(const std::shared_ptr<AST::ObjectReference>& node);
 		void enterNewStatement(const std::shared_ptr<AST::NewStatement>& node);
 		void enterDynamicCastTarget(const std::shared_ptr<AST::DynamicCastTarget>& node);
+		void enterPrimitiveAssignment(const std::shared_ptr<AST::PrimitiveAssignment>& node);
+		void enterBashFunction(const std::shared_ptr<AST::BashFunction>& node);
 
 		std::vector<uint32_t> encode() const;
 };

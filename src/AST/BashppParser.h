@@ -11,6 +11,7 @@
 #include <variant>
 #include <vector>
 #include <AST/ASTNode.h>
+#include <AST/LexerToken.h>
 #include <AST/Nodes/Nodes.h>
 #include <error/ParserError.h>
 
@@ -32,8 +33,10 @@ class BashppParser {
 
 		bool utf16_mode = false; // Whether to use UTF-16 mode for character counting
 		bool display_lexer_output = false;
+		bool collect_lexer_tokens = false;
 
 		std::vector<ParserError> errors;
+		std::vector<LexerToken> lexer_tokens;
 
 		std::string input_file_path = "<stdin>";
 		std::vector<std::string> include_chain;
@@ -56,6 +59,7 @@ class BashppParser {
 	public:
 		void setUTF16Mode(bool enabled);
 		void setDisplayLexerOutput(bool enabled);
+		void setCollectLexerTokens(bool enabled);
 
 		void setInputFromFilePath(const std::string& file_path);
 		void setInputFromFilePtr(FILE* file_ptr, const std::string& file_path);
@@ -66,6 +70,7 @@ class BashppParser {
 		std::shared_ptr<AST::Program> program();
 
 		const std::vector<ParserError>& get_errors() const;
+		const std::vector<LexerToken>& get_lexer_tokens() const;
 };
 
 } // namespace AST

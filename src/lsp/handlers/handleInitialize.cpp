@@ -45,7 +45,13 @@ GenericResponseMessage bpp::BashppServer::handleInitialize(const GenericRequestM
 		"method",
 		"property",
 		"variable",
-		"parameter"
+		"parameter",
+		"keyword",
+		"comment",
+		"string",
+		"operator",
+		"number",
+		"function"
 	};
 	semantic_tokens_options.legend.tokenModifiers = {"declaration"};
 	semantic_tokens_options.full = true;

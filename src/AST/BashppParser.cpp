@@ -18,8 +18,10 @@ extern void yyset_in(FILE* in_str, yyscan_t scanner);
 
 extern void initLexer(yyscan_t yyscanner);
 extern void destroyLexer(yyscan_t yyscanner);
+extern std::vector<AST::LexerToken> get_lexer_tokens(yyscan_t yyscanner);
 
 extern bool set_display_lexer_output(bool enable, yyscan_t yyscanner);
+extern void set_collect_lexer_tokens(bool enable, yyscan_t yyscanner);
 extern void set_utf16_mode(bool enable, yyscan_t yyscanner);
 
 #include <flexbison/generated/parser.tab.hpp>
@@ -78,6 +80,7 @@ void AST::BashppParser::_initialize_lexer() {
 	initLexer(lexer);
 	set_utf16_mode(utf16_mode, lexer);
 	set_display_lexer_output(display_lexer_output, lexer);
+	set_collect_lexer_tokens(collect_lexer_tokens, lexer);
 }
 
 void AST::BashppParser::_destroy_lexer() {
@@ -97,6 +100,7 @@ void AST::BashppParser::_parse() {
 			errors,
 			lexer);
 		parser.parse(); // Returns an int, not needed by us
+		lexer_tokens = ::get_lexer_tokens(lexer);
 	} catch (...) {
 		_destroy_lexer();
 		throw;
@@ -111,6 +115,10 @@ void AST::BashppParser::setUTF16Mode(bool enabled) {
 
 void AST::BashppParser::setDisplayLexerOutput(bool enabled) {
 	display_lexer_output = enabled;
+}
+
+void AST::BashppParser::setCollectLexerTokens(bool enabled) {
+	collect_lexer_tokens = enabled;
 }
 
 void AST::BashppParser::setInputFromFilePath(const std::string& file_path) {
@@ -143,4 +151,8 @@ std::shared_ptr<AST::Program> AST::BashppParser::program() {
 
 const std::vector<AST::ParserError>& AST::BashppParser::get_errors() const {
 	return errors;
+}
+
+const std::vector<AST::LexerToken>& AST::BashppParser::get_lexer_tokens() const {
+	return lexer_tokens;
 }

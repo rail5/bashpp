@@ -7,11 +7,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 #include "parser.tab.hpp" // Bison header for token types
+#include <AST/LexerToken.h>
 #include <AST/Token.h> // For AST::Token<T>
 #include <flexbison/ModeStack.h>
 #include <cstdint>
 #include <stack>
 #include <deque>
+#include <vector>
 
 /**
 GNU Bison Docs, 10.1.7.2: Complete Symbols
@@ -103,7 +105,9 @@ struct LexerState {
 struct LexerExtra {
 	LexerState lexerState;
 	ModeStack modeStack;
+	std::vector<AST::LexerToken> lexerTokens;
 	bool display_lexer_output = false;
+	bool collect_lexer_tokens = false;
 };
 
 extern LexerExtra* yyget_extra(yyscan_t yyscanner);
@@ -135,6 +139,10 @@ yy::parser::symbol_type yylex(yyscan_t yyscanner) {
 
 void set_display_lexer_output(bool enable, yyscan_t yyscanner) {
 	get_lexer_extra(yyscanner)->display_lexer_output = enable;
+}
+
+void set_collect_lexer_tokens(bool enable, yyscan_t yyscanner) {
+	get_lexer_extra(yyscanner)->collect_lexer_tokens = enable;
 }
 
 size_t utf8_char_count(const std::string& s) {
@@ -290,6 +298,47 @@ void set_received_local_keyword(bool received, yyscan_t yyscanner) {
  * @return Either the original token unmodified, or an lvalue variant of the token if applicable.
 */
 yy::parser::symbol_type maybe_get_lvalue_token(yy::parser::symbol_type token, yyscan_t yyscanner);
+
+void recordLexerToken(
+	const yy::parser::symbol_type& token,
+	const std::string& text,
+	yyscan_t yyscanner
+) {
+	auto* extra = get_lexer_extra(yyscanner);
+	if (!extra->collect_lexer_tokens) return;
+
+	ParserLocation location = token.location;
+	std::string recorded_text = text;
+	if (token.kind() == yy::parser::symbol_kind::S_SINGLEQUOTED_STRING) {
+		// The lexer combines several matches while assembling this token, so the
+		// semantic value retains a more accurate range than the final match.
+		const auto& value = token.value.as<AST::Token<std::string>>();
+		location.begin.line = value.getLine();
+		location.begin.column = value.getCharPositionInLine();
+		recorded_text = value.getValue();
+	}
+
+	extra->lexerTokens.push_back(AST::LexerToken{
+		.kind = std::string(yy::parser::symbol_name(token.kind())),
+		.text = std::move(recorded_text),
+		.location = location
+	});
+}
+
+void recordComment(
+	const std::string& text,
+	const ParserLocation& location,
+	yyscan_t yyscanner
+) {
+	auto* extra = get_lexer_extra(yyscanner);
+	if (!extra->collect_lexer_tokens) return;
+
+	extra->lexerTokens.push_back(AST::LexerToken{
+		.kind = "COMMENT",
+		.text = text,
+		.location = location
+	});
+}
 
 void updateLexerState(yyscan_t yyscanner) {
 	thisLexerState.expecting_assignment_operator = false;
@@ -448,10 +497,14 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 	*  return yy::parser::make_AT();
 	*/
 	#define emit(tokenType, ...) \
+	do { \
 		updateLexerState(yyscanner); \
-		return maybe_get_lvalue_token(yy::parser::make_##tokenType( \
+		auto token = maybe_get_lvalue_token(yy::parser::make_##tokenType( \
 			__VA_ARGS__ __VA_OPT__(,) current_match_location(yyscanner) \
-		), yyscanner);
+		), yyscanner); \
+		recordLexerToken(token, std::string(yytext, yyleng), yyscanner); \
+		return token; \
+	} while (false)
 	
 	/**
 	* Helper to get the text of the current token as a std::string.
@@ -465,7 +518,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 <SKIP_AFTER_DELIM_MODE>{
 	[ \t\n]+    { /* Ignore whitespace and newlines after a DELIM */ }
-	[\#][^\n]*  { /* Ignore comments */ }
+	[\#][^\n]*  { recordComment(std::string(yytext, yyleng), current_match_location(yyscanner), yyscanner); }
 	.           {
 		// Any other character means we're done skipping
 		thisModeStack.pop(); // Exit SKIP_AFTER_DELIM_MODE
@@ -989,7 +1042,7 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 
 {INTEGER} { emit(INTEGER, tokenText); }
 
-[ \t]*[\#][^\n]*  { /* Ignore comments */ }
+[ \t]*[\#][^\n]*  { recordComment(std::string(yytext, yyleng), current_match_location(yyscanner), yyscanner); }
 
 <BASH_IF_MODE>{
 	"then"/[ \t\n] {
@@ -1560,6 +1613,11 @@ extern void initLexer(yyscan_t yyscanner) {
 	thisModeStack.bind(yyscanner);
 	thisModeStack.push(SKIP_AFTER_DELIM_MODE); // Initial mode
 	thisLexerState.reset();
+	get_lexer_extra(yyscanner)->lexerTokens.clear();
+}
+
+extern std::vector<AST::LexerToken> get_lexer_tokens(yyscan_t yyscanner) {
+	return get_lexer_extra(yyscanner)->lexerTokens;
 }
 
 extern void destroyLexer(yyscan_t yyscanner) {

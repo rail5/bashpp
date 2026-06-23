@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include <AST/LexerToken.h>
 #include <bpp_include/bpp.h>
 #include <include/BashVersion.h>
 
@@ -40,6 +41,7 @@ class ProgramPool {
 		std::unordered_map<std::string, std::vector<size_t>> program_indices; // Maps file paths to program indices in the pool
 		std::unordered_map<std::string, bool> open_files; // Maps file paths to whether they are currently open
 		std::unordered_map<std::string, std::string> unsaved_changes; // Maps file paths to their unsaved contents
+		std::unordered_map<std::string, std::vector<AST::LexerToken>> lexer_tokens;
 		BashVersion target_bash_version = {5, 2};
 		std::recursive_mutex pool_mutex; // Mutex to protect access to the pool
 
@@ -102,6 +104,14 @@ class ProgramPool {
 		 * @return std::string The contents of the file.
 		 */
 		std::string get_file_contents(const std::string& file_path);
+
+		/**
+		 * @brief Get compiler lexer tokens for a parsed file.
+		 *
+		 * @param file_path The path of the parsed file.
+		 * @return std::vector<AST::LexerToken> A copy of the file's lexer tokens.
+		 */
+		std::vector<AST::LexerToken> get_lexer_tokens(const std::string& file_path);
 		
 		/**
 		 * @brief Get or create a program for the given file path

@@ -27,3 +27,16 @@
 
 @Child child
 @child.run argument @nullptr
+
+majorVersion=@(awk -F. '{print $1}' <<< "$BASH_VERSION")
+minorVersion=@(awk -F. '{print $2}' <<< "$BASH_VERSION")
+
+# Bash syntax must remain highlighted after supershell recovery.
+in_tty=false
+if [[ -t 1 ]]; then
+	in_tty=true
+fi
+
+if ! grep -P -x "abc" <<< "abc"; then
+	echo "Bash syntax remains highlighted."
+fi

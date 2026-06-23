@@ -179,6 +179,8 @@ function decodeTokens() {
 	local sourceLines=()
 	local line=0
 	local start=0
+	local previousTokenLine=-1
+	local previousTokenEnd=0
 	local index
 
 	tokenTexts=()
@@ -207,6 +209,12 @@ function decodeTokens() {
 		else
 			start=$((start + deltaStart))
 		fi
+		if [[ "$line" -eq "$previousTokenLine" ]] \
+		&& [[ "$start" -lt "$previousTokenEnd" ]]; then
+			fail "Semantic token ranges overlap on line $line."
+		fi
+		previousTokenLine="$line"
+		previousTokenEnd=$((start + length))
 
 		local tokenText
 		tokenText=@(utf16Slice "${sourceLines[$line]}" "$start" "$length")
@@ -329,7 +337,7 @@ initializeResponse="@client.response"
 
 assertEquals \
 	"@(jq -c '.result.capabilities.semanticTokensProvider.legend.tokenTypes' <<< "$initializeResponse")" \
-	'["class","method","property","variable","parameter"]' \
+	'["class","method","property","variable","parameter","keyword","comment","string","operator","number","function"]' \
 	"Unexpected semantic token types"
 assertEquals \
 	"@(jq -c '.result.capabilities.semanticTokensProvider.legend.tokenModifiers' <<< "$initializeResponse")" \
@@ -370,6 +378,15 @@ assertToken "allocated" 3 1
 assertToken "unicodeObject" 3 1
 assertToken "child" 3 1
 assertToken "child" 3 0
+assertToken "# Bash syntax must remain highlighted after supershell recovery." 6 0
+assertToken "if" 5 0
+assertToken "then" 5 0
+assertToken "fi" 5 0
+assertToken "grep" 10 0
+assertToken "echo" 10 0
+assertToken "Bash syntax remains highlighted." 7 0
+assertToken "1" 9 0
+assertToken "in_tty" 3 0
 
 if [[ "@(countTokens "Thing" 0 0)" -lt 7 ]]; then
 	fail "Class references from declarations, allocation, and casts are missing."

@@ -79,6 +79,13 @@ std::string ProgramPool::get_file_contents(const std::string& file_path) {
 	return contents;
 }
 
+std::vector<AST::LexerToken> ProgramPool::get_lexer_tokens(const std::string& file_path) {
+	std::lock_guard<std::recursive_mutex> lock(pool_mutex);
+	auto tokens = lexer_tokens.find(file_path);
+	if (tokens == lexer_tokens.end()) return {};
+	return tokens->second;
+}
+
 void ProgramPool::_remove_oldest_program() {
 	_remove_program(0);
 }
@@ -153,6 +160,7 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::_parse_program(const std::string&
 
 		AST::BashppParser parser;
 		parser.setUTF16Mode(utf16_mode);
+		parser.setCollectLexerTokens(true);
 
 		if (unsaved_changes.contains(file_path)) {
 			parser.setInputFromStringContents(unsaved_changes[file_path]);
@@ -161,6 +169,7 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::_parse_program(const std::string&
 		}
 
 		auto program = parser.program();
+		lexer_tokens[file_path] = parser.get_lexer_tokens();
 		listener.set_parser_errors(parser.get_errors());
 		if (program == nullptr) {
 			program = std::make_shared<AST::Program>(); // Parsing failed
@@ -382,6 +391,7 @@ void ProgramPool::clean() {
 		programs.clear();
 		program_indices.clear();
 		open_files.clear();
+		lexer_tokens.clear();
 	}
 	update_snapshot(); // Update the snapshot after cleaning
 }

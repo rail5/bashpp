@@ -10,7 +10,8 @@
 ; TODO: HACK. Remove this override if the shared Bash grammar can recover
 ; cleanly from supershells containing positional expansions. It currently
 ; treats the rest of the command as raw strings, coloring unrelated Bash++
-; code as string contents.
+; code as string contents. The LSP recolors the neutralized range using the
+; compiler lexer's semantic tokens.
 ((command
   (variable_assignment
     value: (concatenation

@@ -32,7 +32,8 @@ maintain a second Bash++ parser.
 
 Zed will use Tree-sitter Bash highlighting immediately. Once `bpp-lsp` starts,
 semantic tokens add Bash++ class, method, property, variable, and parameter
-highlighting.
+highlighting. They also provide compiler-lexer fallback highlighting for Bash
+syntax that Zed's Bash grammar cannot recover after Bash++ constructs.
 
 ## Marketplace publication
 

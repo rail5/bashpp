@@ -4,11 +4,15 @@ Thank you for your interest in contributing to Bash++!
 
 ## Reporting Issues
 
-If you encounter any bugs or issues while using Bash++, please report them by opening an issue on our [GitHub Issues page](https://github.com/rail5/bashpp/issues). Please provide as much detail as possible, including steps to reproduce the issue, expected behavior, and any relevant error messages.
+If you encounter any bugs or issues while using Bash++, please report them by opening an issue on our [GitHub Issues page](https://github.com/rail5/bashpp/issues) or by sending an email to dev@bpp.sh. Please provide as much detail as possible, including steps to reproduce the issue, expected behavior, and any relevant error messages.
 
 ## Contributing Code
 
-If you would like to contribute bug fixes, new features, improvements, etc to Bash++, please do so by opening a pull request on our [GitHub repository](https://github.com/rail5/bashpp). Here are some guidelines to follow:
+If you would like to contribute bug fixes, new features, improvements, etc to Bash++, please do so by opening a pull request on our [GitHub repository](https://github.com/rail5/bashpp).
+
+If you prefer not to use GitHub for any reason, please use [git send-email](https://git-send-email.io/) to send your patches to dev@bpp.sh.
+
+Here are some guidelines to follow:
 
 1. Please try to follow the coding style and conventions used in the project.
 

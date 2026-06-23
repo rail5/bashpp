@@ -8,7 +8,7 @@ Bash++ is still in beta. Before 1.0, the only supported version is the latest ve
 
 Please **do not** open public issues for security-sensitive reports.
 
-Instead, please send an [encrypted](https://rail5.org/pgpkey.txt) email to dev@bpp.sh with the following information:
+Instead, please send an [encrypted](https://rail5.org/pgpkey.txt) email to dev@bpp.sh with the following:
 
  - A description of the impact (what an attacker can do)
  - A description of the vulnerability (what the issue is)

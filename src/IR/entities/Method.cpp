@@ -9,6 +9,8 @@
 #include <IR/entities/Object.h>
 #include <IR/entities/expressions/DynamicCast.h>
 
+#include <IR/entities/Program.h>
+
 #include <error/InternalError.h>
 
 namespace bpp::IR {
@@ -29,6 +31,42 @@ bpp::CodeGen::CodeSegment MethodParameter::generate_code() {
 		// assuming that the field `initial_value` has been properly set to point to the dynamic cast code entity.
 		code.egalitarian_merge(Object::generate_code());
 	}
+	return code;
+}
+
+ThisPtr::ThisPtr(std::shared_ptr<Method> containing_method) : MethodParameter(containing_method) {
+	set_name("this");
+	address = "__this";
+	set_type(containing_method->get_containing_class());
+	set_is_pointer(true);
+}
+
+bpp::CodeGen::CodeSegment ThisPtr::generate_code() {
+	bpp::CodeGen::CodeSegment code;
+
+	code.add_pre_code("local __this\n");
+
+	// FIXME(@rail5): This will be cleaner as `if ! @dynamic_cast<Class> "$1"`
+	// Also, system functions like dynamic_cast and typeof should be represented as special instances of BashFunction
+	// and calls to them should be represented using some kind of FunctionCall entity
+
+	auto dynamic_cast_entity = std::dynamic_pointer_cast<DynamicCast>(initial_value.value());
+	if (!dynamic_cast_entity) {
+		throw bpp::ErrorHandling::InternalError("The initial value of the implicit `this` parameter is not a DynamicCast entity");
+	}
+	dynamic_cast_entity->set_target_variable("__this");
+
+	// A dynamic cast of $1 to the expected type, with the result assigned to `this`.
+	code.add_pre_code("if ! ");
+	code.add_pre_code(dynamic_cast_entity->generate_code().get_pre_code());
+	code.add_pre_code("then\n"
+	"	>&2 echo \"Bash++: Error: Attempted to call @"
+	+ type.lock()->get_name() + "." + containing_method.lock()->get_name()
+		+ " on null object\"\n"
+		"	return 1\n"
+		"fi\n"
+	);
+
 	return code;
 }
 
@@ -66,6 +104,9 @@ std::string Method::get_mangled_name() const {
 }
 
 bpp::CodeGen::CodeSegment Method::generate_code() {
+	auto program = containing_program.lock();
+	bpp_assert(program != nullptr, "Method does not have a containing program");
+	program->codegen_state.in_method = true;
 	bpp::CodeGen::CodeSegment code;
 
 	code.add_pre_code(get_mangled_name() + "() {\n");
@@ -78,6 +119,7 @@ bpp::CodeGen::CodeSegment Method::generate_code() {
 
 	code.add_post_code("}\n");
 
+	program->codegen_state.in_method = false;
 	return code;
 }
 

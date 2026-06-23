@@ -34,6 +34,9 @@ class Object : public Entity {
 
 		/// If not a pointer, the object from which this is copied (if any)
 		std::shared_ptr<Object> copy_from = nullptr;
+
+		// For codegen:
+		std::string address;
 	public:
 		const std::string& get_name() const { return name; }
 		void set_name(const std::string& name) { this->name = name; }

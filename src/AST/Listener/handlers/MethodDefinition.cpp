@@ -59,6 +59,13 @@ void Listener::enter(MethodDefinition* node) {
 	}
 
 	// Set up the method's parameters
+
+	// 1. The implicit `this` parameter, which is always the first parameter of a method
+	auto this_ptr = std::make_shared<bpp::IR::ThisPtr>(method);
+	this_ptr->inherit(method);
+	method->add_parameter(this_ptr);
+
+	// 2. The user-defined parameters
 	for (const auto& p : node->PARAMETERS()) {
 		const auto& param = p.getValue();
 		auto param_name = param.name.getValue();
@@ -84,7 +91,7 @@ void Listener::enter(MethodDefinition* node) {
 			});
 		}
 
-		auto parameter_entity = std::make_shared<bpp::IR::MethodParameter>();
+		auto parameter_entity = std::make_shared<bpp::IR::MethodParameter>(method);
 		parameter_entity->inherit(method);
 		parameter_entity->set_type(param_type);
 		parameter_entity->set_is_pointer(param_type != nullptr);

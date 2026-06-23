@@ -25,12 +25,26 @@ namespace bpp::IR {
  * rather than just relying on the parameter's position in the parameter list.
  */
 class MethodParameter : public Object {
-	private:
+	protected:
 		/// The index of this parameter in the method's parameter list (1-based)
 		uint32_t index = 1;
+		std::weak_ptr<Method> containing_method;
 	public:
+		MethodParameter() = delete;
+		explicit MethodParameter(std::shared_ptr<Method> method) : containing_method(method) {}
 		uint32_t get_index() const { return index; }
 		void set_index(uint32_t index) { this->index = index; }
+
+		bpp::CodeGen::CodeSegment generate_code() override;
+};
+
+/**
+ * @brief The implicit `this` parameter of a method, which refers to the object on which the method was called.
+ */
+class ThisPtr : public MethodParameter {
+	public:
+		ThisPtr() = delete;
+		explicit ThisPtr(std::shared_ptr<Method> containing_method);
 
 		bpp::CodeGen::CodeSegment generate_code() override;
 };

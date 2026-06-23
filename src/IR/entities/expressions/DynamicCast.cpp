@@ -13,6 +13,14 @@
 
 namespace bpp::IR {
 
+std::string DynamicCast::get_target_variable() const {
+	if (target_variable.has_value()) return target_variable.value();
+
+	auto program = containing_program.lock();
+	bpp_assert(program != nullptr, "DynamicCast does not have a containing program");
+	return "__dynamicCast" + std::to_string(program->codegen_state.dynamic_cast_counter++);
+}
+
 bpp::CodeGen::CodeSegment DynamicCast::generate_code() {
 	bpp::CodeGen::CodeSegment result;
 
@@ -28,18 +36,18 @@ bpp::CodeGen::CodeSegment DynamicCast::generate_code() {
 	}();
 
 	// The 'main code' of the inner expression is the reference value, i.e., the address of the object to be casted.
-	auto program = containing_program.lock();
-	bpp_assert(program != nullptr, "DynamicCast does not have a containing program");
 
-	const std::string resulting_temporary_variable = "__dynamicCast" + std::to_string(program->codegen_state.dynamic_cast_counter++);
+	const std::string result_variable = get_target_variable();
 
-	result.add_pre_code("bpp__dynamic_cast \"" + target_type->get_name() + "\""
-		+ " \"" + resulting_temporary_variable + "\""
+	result.add_pre_code("bpp____dynamic_cast \"" + target_type->get_name() + "\""
+		+ " \"" + result_variable + "\""
 		+ " " + reference_value + "\n");
 	
-	result.add_post_code("unset " + resulting_temporary_variable + "\n");
+	// If no target variable was explicitly set, this dynamic cast is being used as a temporary value
+	// so we should unset the result variable after using it to avoid cluttering the generated code with unnecessary variables.
+	if (!target_variable.has_value()) result.add_post_code("unset " + result_variable + "\n");
 
-	result.add_main_code("${" + resulting_temporary_variable + "}");
+	result.add_main_code("${" + result_variable + "}");
 
 	return result;
 }

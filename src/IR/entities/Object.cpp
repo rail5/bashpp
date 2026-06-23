@@ -20,10 +20,16 @@ bpp::CodeGen::CodeSegment Object::generate_code() {
 
 	if (m_is_pointer) {
 		bpp_assert(!type.expired(), "Pointer does not have a type");
+
+		if (address.empty()) {
+			address = "bpp____ptr__" + std::to_string(program->codegen_state.object_counter++)
+				+ "__" + type.lock()->get_name() + "__" + name;
+		}
+
 		if (program->codegen_state.should_declare_local()) {
 			result.add_main_code("local ");
 		}
-		result.add_main_code(name + "=");
+		result.add_main_code(address + "=");
 		if (has_initial_value()) {
 			result.egalitarian_merge(initial_value.value()->generate_code());
 		}

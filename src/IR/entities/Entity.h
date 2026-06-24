@@ -81,12 +81,10 @@ class Entity {
 
 		/**
 		 * @brief Generate compiled code for this entity.
-		 *
-		 * NOTE: generate_code() is a DESTRUCTIVE operation. It is expected that the entity tree will be destroyed after code generation.
 		 * 
 		 * @return bpp::CodeGen::CodeSegment The generated code for this entity and all of its children
 		 */
-		virtual bpp::CodeGen::CodeSegment generate_code() { return {}; }
+		virtual bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const { return {}; }
 
 		PRETTYPRINT_HELPERS(Entity)
 };

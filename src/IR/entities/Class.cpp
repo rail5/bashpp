@@ -9,6 +9,7 @@
 #include "DataMember.h"
 
 #include <error/VisibilityError.h>
+#include <error/InternalError.h>
 
 namespace bpp::IR {
 
@@ -211,11 +212,12 @@ std::shared_ptr<DataMember> Class::get_datamember_UNSAFE(const std::string& name
 	return nullptr;
 }
 
-bpp::CodeGen::CodeSegment Class::generate_code() {
+bpp::CodeGen::CodeSegment Class::generate_code(bpp::CodeGen::CodeGenState* state) const {
+	bpp_assert(state != nullptr, "Class::generate_code() should be called with a non-null state pointer");
 	bpp::CodeGen::CodeSegment code;
 
 	for (const auto& method : methods) {
-		code.egalitarian_merge(method->generate_code());
+		code.egalitarian_merge(method->generate_code(state));
 	}
 
 	return code;

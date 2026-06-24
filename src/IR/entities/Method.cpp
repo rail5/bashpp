@@ -15,7 +15,8 @@
 
 namespace bpp::IR {
 
-bpp::CodeGen::CodeSegment MethodParameter::generate_code() {
+bpp::CodeGen::CodeSegment MethodParameter::generate_code(bpp::CodeGen::CodeGenState* state) const {
+	bpp_assert(state != nullptr, "MethodParameter::generate_code() should be called with a non-null state pointer");
 	bpp::CodeGen::CodeSegment code;
 
 	bpp_assert(type.expired() || m_is_pointer, "MethodParameter is neither a pointer nor a primitive type");
@@ -29,26 +30,24 @@ bpp::CodeGen::CodeSegment MethodParameter::generate_code() {
 		//
 		// In this case, this is handled by the base Object's generate_code() method,
 		// assuming that the field `initial_value` has been properly set to point to the dynamic cast code entity.
-		code.egalitarian_merge(Object::generate_code());
+		code.egalitarian_merge(Object::generate_code(state));
 	}
 	return code;
 }
 
 ThisPtr::ThisPtr(std::shared_ptr<Method> containing_method) : MethodParameter(containing_method) {
 	set_name("this");
-	address = "__this";
 	set_type(containing_method->get_containing_class());
 	set_is_pointer(true);
 }
 
-bpp::CodeGen::CodeSegment ThisPtr::generate_code() {
+bpp::CodeGen::CodeSegment ThisPtr::generate_code(bpp::CodeGen::CodeGenState* state) const {
+	bpp_assert(state != nullptr, "ThisPtr::generate_code() should be called with a non-null state pointer");
 	bpp::CodeGen::CodeSegment code;
 
-	code.add_pre_code("local __this\n");
+	state->object_addresses[shared_from_this()] = "__this";
 
-	// FIXME(@rail5): This will be cleaner as `if ! @dynamic_cast<Class> "$1"`
-	// Also, system functions like dynamic_cast and typeof should be represented as special instances of BashFunction
-	// and calls to them should be represented using some kind of FunctionCall entity
+	code.add_pre_code("local __this\n");
 
 	auto dynamic_cast_entity = std::dynamic_pointer_cast<DynamicCast>(initial_value.value());
 	if (!dynamic_cast_entity) {
@@ -58,7 +57,7 @@ bpp::CodeGen::CodeSegment ThisPtr::generate_code() {
 
 	// A dynamic cast of $1 to the expected type, with the result assigned to `this`.
 	code.add_pre_code("if ! ");
-	code.add_pre_code(dynamic_cast_entity->generate_code().get_pre_code());
+	code.add_pre_code(dynamic_cast_entity->generate_code(state).get_pre_code());
 	code.add_pre_code("then\n"
 	"	>&2 echo \"Bash++: Error: Attempted to call @"
 	+ type.lock()->get_name() + "." + containing_method.lock()->get_name()
@@ -103,23 +102,22 @@ std::string Method::get_mangled_name() const {
 	return "bpp__" + containing_class.lock()->get_name() + "__" + name;
 }
 
-bpp::CodeGen::CodeSegment Method::generate_code() {
-	auto program = containing_program.lock();
-	bpp_assert(program != nullptr, "Method does not have a containing program");
-	program->codegen_state.in_method = true;
+bpp::CodeGen::CodeSegment Method::generate_code(bpp::CodeGen::CodeGenState* state) const {
+	bpp_assert(state != nullptr, "Method::generate_code() should be called with a non-null state pointer");
+	state->in_method = true;
 	bpp::CodeGen::CodeSegment code;
 
 	code.add_pre_code(get_mangled_name() + "() {\n");
 
 	for (const auto& param : parameters) {
-		code.absorb_all_to_main(param->generate_code());
+		code.absorb_all_to_main(param->generate_code(state));
 	}
 
-	code.absorb_all_to_main(CodeEntity::generate_code());
+	code.absorb_all_to_main(CodeEntity::generate_code(state));
 
 	code.add_post_code("}\n");
 
-	program->codegen_state.in_method = false;
+	state->in_method = false;
 	return code;
 }
 

@@ -25,10 +25,7 @@ class DynamicCast : public String {
 
 		void set_target_variable(const std::string& var_name) { target_variable = var_name; }
 
-		/// Get the name of the variable to which the result of this dynamic cast should be assigned in the generated code. This will be either the explicitly set target variable, or a generated temporary variable if no target variable was explicitly set.
-		std::string get_target_variable() const;
-
-		bpp::CodeGen::CodeSegment generate_code() override;
+		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
 
 		PRETTYPRINT_OVERRIDE();
 };

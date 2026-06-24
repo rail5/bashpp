@@ -21,7 +21,7 @@ class BashFunction : public CodeEntity {
 		const std::string& get_name() const { return name; }
 		void set_name(const std::string& name) { this->name = name; }
 
-		bpp::CodeGen::CodeSegment generate_code() override;
+		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
 
 		PRETTYPRINT_OVERRIDE();
 };

@@ -13,7 +13,7 @@ namespace bpp::IR {
 
 class String : public CodeEntity {
 	public:
-		bpp::CodeGen::CodeSegment generate_code() override;
+		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
 };
 
 } // namespace bpp::IR

@@ -6,13 +6,16 @@
 
 #include "BashFunction.h"
 
+#include <error/InternalError.h>
+
 namespace bpp::IR {
 
-bpp::CodeGen::CodeSegment BashFunction::generate_code() {
+bpp::CodeGen::CodeSegment BashFunction::generate_code(bpp::CodeGen::CodeGenState* state) const {
+	bpp_assert(state != nullptr, "BashFunction::generate_code() should be called with a non-null state pointer");
 	bpp::CodeGen::CodeSegment code;
 
 	code.add_pre_code(name + "() {\n");
-	code.egalitarian_merge(CodeEntity::generate_code());
+	code.egalitarian_merge(CodeEntity::generate_code(state));
 	code.add_post_code("}\n");
 
 	return code;

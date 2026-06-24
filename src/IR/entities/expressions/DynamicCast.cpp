@@ -13,18 +13,11 @@
 
 namespace bpp::IR {
 
-std::string DynamicCast::get_target_variable() const {
-	if (target_variable.has_value()) return target_variable.value();
-
-	auto program = containing_program.lock();
-	bpp_assert(program != nullptr, "DynamicCast does not have a containing program");
-	return "__dynamicCast" + std::to_string(program->codegen_state.dynamic_cast_counter++);
-}
-
-bpp::CodeGen::CodeSegment DynamicCast::generate_code() {
+bpp::CodeGen::CodeSegment DynamicCast::generate_code(bpp::CodeGen::CodeGenState* state) const {
+	bpp_assert(state != nullptr, "DynamicCast::generate_code() should be called with a non-null state pointer");
 	bpp::CodeGen::CodeSegment result;
 
-	const auto& inner_code = String::generate_code();
+	const auto& inner_code = String::generate_code(state);
 
 	result.add_pre_code(inner_code.get_pre_code());
 	result.add_post_code(inner_code.get_post_code());
@@ -37,7 +30,10 @@ bpp::CodeGen::CodeSegment DynamicCast::generate_code() {
 
 	// The 'main code' of the inner expression is the reference value, i.e., the address of the object to be casted.
 
-	const std::string result_variable = get_target_variable();
+	const std::string result_variable = [state, this]() {
+		if (this->target_variable.has_value()) return this->target_variable.value();
+		return "__dynamicCast" + std::to_string(state->dynamic_cast_counter++);
+	}();
 
 	result.add_pre_code("bpp____dynamic_cast \"" + target_type->get_name() + "\""
 		+ " \"" + result_variable + "\""

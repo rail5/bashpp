@@ -171,7 +171,8 @@ int main(int argc, char* argv[]) {
 #endif
 
 	// Debug:
-	std::cout << listener->get_program()->generate_code();
+	bpp::CodeGen::CodeGenState codegen_state;
+	std::cout << listener->get_program()->generate_code(&codegen_state);
 
 	//return listener->get_exit_code();
 }

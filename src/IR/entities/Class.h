@@ -51,7 +51,7 @@ class Class : public Entity, public std::enable_shared_from_this<Class> {
 
 		bool is_derived_from(std::shared_ptr<Class> other) const;
 
-		bpp::CodeGen::CodeSegment generate_code() override;
+		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
 
 		PRETTYPRINT_OVERRIDE();
 };

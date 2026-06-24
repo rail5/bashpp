@@ -6,32 +6,29 @@
 
 #include "Object.h"
 
-#include <IR/entities/Program.h>
-
 #include <error/InternalError.h>
 
 namespace bpp::IR {
 
-bpp::CodeGen::CodeSegment Object::generate_code() {
+bpp::CodeGen::CodeSegment Object::generate_code(bpp::CodeGen::CodeGenState* state) const {
 	bpp::CodeGen::CodeSegment result;
-
-	auto program = containing_program.lock();
-	bpp_assert(program != nullptr, "Object does not have a containing program");
 
 	if (m_is_pointer) {
 		bpp_assert(!type.expired(), "Pointer does not have a type");
 
-		if (address.empty()) {
-			address = "bpp____ptr__" + std::to_string(program->codegen_state.object_counter++)
-				+ "__" + type.lock()->get_name() + "__" + name;
+		if (!state->object_addresses.contains(shared_from_this())) {
+			state->object_addresses[shared_from_this()] =
+				"bpp____ptr__" + std::to_string(state->object_counter++)
+				+ "__" + type.lock()->get_name()
+				+ "__" + name;
 		}
 
-		if (program->codegen_state.should_declare_local()) {
+		if (state->should_declare_local()) {
 			result.add_main_code("local ");
 		}
-		result.add_main_code(address + "=");
+		result.add_main_code(state->object_addresses[shared_from_this()] + "=");
 		if (has_initial_value()) {
-			result.egalitarian_merge(initial_value.value()->generate_code());
+			result.egalitarian_merge(initial_value.value()->generate_code(state));
 		}
 		result.add_main_code("\n");
 	} else {

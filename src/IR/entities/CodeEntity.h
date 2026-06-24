@@ -43,7 +43,7 @@ class CodeEntity : public Entity {
 		std::vector<std::shared_ptr<Object>> get_all_known_objects() const override;
 		size_t number_of_known_objects() const override;
 
-		bpp::CodeGen::CodeSegment generate_code() override;
+		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
 
 		PRETTYPRINT_OVERRIDE();
 };

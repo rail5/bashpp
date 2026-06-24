@@ -7,6 +7,8 @@
 #include "CodeEntity.h"
 #include "Object.h"
 
+#include <error/InternalError.h>
+
 namespace bpp::IR {
 
 void CodeEntity::add(const RawCode& child) {
@@ -72,15 +74,16 @@ bool CodeEntity::add_object(std::shared_ptr<Object> object) {
 	return true;
 }
 
-bpp::CodeGen::CodeSegment CodeEntity::generate_code() {
+bpp::CodeGen::CodeSegment CodeEntity::generate_code(bpp::CodeGen::CodeGenState* state) const {
+	bpp_assert(state != nullptr, "CodeEntity::generate_code() should be called with a non-null state pointer");
 	bpp::CodeGen::CodeSegment code_segment;
 
-	for (auto& child : children) {
+	for (const auto& child : children) {
 		if (std::holds_alternative<RawCode>(child)) {
-			code_segment.add_main_code(std::move(std::get<RawCode>(child)));
+			code_segment.add_main_code(std::get<RawCode>(child));
 		} else if (std::holds_alternative<std::shared_ptr<Entity>>(child)) {
 			auto child_entity = std::get<std::shared_ptr<Entity>>(child);
-			code_segment.absorb_all_to_main(child_entity->generate_code());
+			code_segment.absorb_all_to_main(child_entity->generate_code(state));
 		}
 	}
 

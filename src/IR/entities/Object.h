@@ -21,7 +21,7 @@ namespace bpp::IR {
  * This includes both non-primitives and pointers.
  * Whether the object is a pointer, as well as its type, must be given in the constructor.
  */
-class Object : public Entity {
+class Object : public Entity, public std::enable_shared_from_this<Object> {
 	protected:
 		std::string name;
 		bool m_is_pointer = false;
@@ -34,9 +34,6 @@ class Object : public Entity {
 
 		/// If not a pointer, the object from which this is copied (if any)
 		std::shared_ptr<Object> copy_from = nullptr;
-
-		// For codegen:
-		std::string address;
 	public:
 		const std::string& get_name() const { return name; }
 		void set_name(const std::string& name) { this->name = name; }
@@ -54,7 +51,7 @@ class Object : public Entity {
 		void set_copy_from(std::shared_ptr<Object> other) { copy_from = other; }
 		std::shared_ptr<Object> get_copy_from() const { return copy_from; }
 
-		bpp::CodeGen::CodeSegment generate_code() override;
+		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
 		
 		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');

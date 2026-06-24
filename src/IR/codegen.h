@@ -8,8 +8,12 @@
 
 #include <string>
 #include <vector>
+#include <stack>
+#include <unordered_map>
 #include <iterator>
 #include <iostream>
+
+#include <IR/bpp.h>
 
 namespace bpp::CodeGen {
 
@@ -26,6 +30,8 @@ class CodeSegment {
 		/// The code that should be executed after the main code of this segment (e.g., deallocation of temporary variables)
 		std::vector<std::string> post_code;
 	public:
+		// Moves: preferred
+		// When code segments merge from other code segments, these overloads are selected
 		void add_pre_code(std::string&& code) { pre_code.push_back(std::move(code)); }
 		void add_main_code(std::string&& code) { main_code.push_back(std::move(code)); }
 		void add_post_code(std::string&& code) { post_code.push_back(std::move(code)); }
@@ -33,6 +39,16 @@ class CodeSegment {
 		void add_pre_code(std::vector<std::string>&& code)  { pre_code.insert(pre_code.end(),   std::make_move_iterator(code.begin()), std::make_move_iterator(code.end())); }
 		void add_main_code(std::vector<std::string>&& code) { main_code.insert(main_code.end(), std::make_move_iterator(code.begin()), std::make_move_iterator(code.end())); }
 		void add_post_code(std::vector<std::string>&& code) { post_code.insert(post_code.end(), std::make_move_iterator(code.begin()), std::make_move_iterator(code.end())); }
+
+		// Copies
+		// When code segments pull code from entities, these overloads are selected
+		void add_pre_code(const std::string& code) { pre_code.push_back(code); }
+		void add_main_code(const std::string& code) { main_code.push_back(code); }
+		void add_post_code(const std::string& code) { post_code.push_back(code); }
+
+		void add_pre_code(const std::vector<std::string>& code)  { pre_code.insert(pre_code.end(),   code.begin(), code.end()); }
+		void add_main_code(const std::vector<std::string>& code) { main_code.insert(main_code.end(), code.begin(), code.end()); }
+		void add_post_code(const std::vector<std::string>& code) { post_code.insert(post_code.end(), code.begin(), code.end()); }
 
 		/**
 		 * @brief Absorb all code from another CodeSegment into the main code of this segment
@@ -55,14 +71,6 @@ class CodeSegment {
 			add_pre_code(std::move(other.pre_code));
 			add_main_code(std::move(other.main_code));
 			add_post_code(std::move(other.post_code));
-		}
-
-		std::string full_code() const {
-			std::string result;
-			for (const auto& part : pre_code) result += part;
-			for (const auto& part : main_code) result += part;
-			for (const auto& part : post_code) result += part;
-			return result;
 		}
 
 		std::vector<std::string> get_pre_code() const { return pre_code; }
@@ -91,6 +99,25 @@ class CodeSegment {
 		friend std::ostream& operator<<(std::ostream& os, const CodeSegment& code_segment) {
 			return code_segment.write_full_code(os);
 		}
+};
+
+struct CodeGenState {
+	bool in_method = false;
+	bool in_class = false;
+	std::stack<std::monostate> bash_function_stack;
+	std::stack<std::monostate> supershell_stack;
+	uint64_t dynamic_cast_counter = 0;
+	uint64_t object_counter = 0;
+
+	std::unordered_map<std::shared_ptr<const bpp::IR::Object>, std::string> object_addresses;
+
+	bool should_declare_local() const {
+		return in_class || in_method || !bash_function_stack.empty();
+	}
+
+	bool should_localize_object_instantiation() const {
+		return should_declare_local() && supershell_stack.empty();
+	}
 };
 
 } // namespace bpp::CodeGen

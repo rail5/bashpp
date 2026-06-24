@@ -18,12 +18,14 @@ description: "Safely cast an object to a different type at runtime"
 
 # DESCRIPTION
 
-The `@dynamic_cast` operator is used to safely cast an object to a different type at runtime. The directive is expanded to the *result* described below:
+The `@dynamic_cast` operator is used to safely cast an object to a different type at runtime. The directive is expanded to the *result* described below.
 
 The **result** of the `@dynamic_cast` directive will be either:
 
- - **An exact copy of INPUT** if the input is a valid pointer to an object which can be safely cast to the specified type.
+ - The address of the object identified by `INPUT` if `INPUT` ultimately resolves to an object which can be safely cast to the specified type, or
  - `@nullptr` otherwise.
+
+To determine whether a cast is valid, `@dynamic_cast` automatically follows any level of pointer indirection. If `INPUT` is a pointer to a pointer (or a deeper chain of pointers), the chain is repeatedly dereferenced until the actual object is reached. The output then will not be the address of the original pointer, or of any intermediate pointer, but the address of the actual object, if it can be safely cast to the specified type.
 
 # TARGETS
 
@@ -66,6 +68,10 @@ The `@dynamic_cast` directive expands to the result described above. This result
 ## INPUT
 
 The *input* to the `@dynamic_cast` directive is that which is being casted. It is typically a pointer to an object, but it may be any rvalue at all, including a call to a method, a simple string, a supershell/subshell, etc. Of course, in most cases, the input should be a pointer to an object.
+
+## CAST VALIDITY
+
+The validity of a `@dynamic_cast` is determined at runtime. The directive will only succeed if the object being cast is actually an instance of the target class itself, or of a class derived from the target class. "Downcasts" are not valid (i.e., casts from a base type object to a derived type), nor are casts between unrelated types. If the cast is invalid, the result will be `@nullptr`.
 
 ## USAGE
 

@@ -9,6 +9,9 @@
 #include <IR/entities/Object.h>
 #include <IR/entities/DataMember.h>
 
+#include <error/InternalError.h>
+#include <error/SyntaxError.h>
+
 namespace bpp::AST {
 
 template <>

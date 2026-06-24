@@ -12,8 +12,6 @@
 #include <AST/ASTNode.h>
 #include <AST/NodeTypes.h>
 #include <AST/Nodes/Nodes.h>
-#include <error/InternalError.h>
-#include <error/SyntaxError.h>
 #include <error/ParserError.h>
 
 #include "ContextExpectations.h"
@@ -147,6 +145,9 @@ class Listener final {
 		void set_has_errors(bool has_errors) {
 			this->program_has_errors = has_errors;
 		}
+		bool has_errors() const {
+			return program_has_errors;
+		}
 
 		void set_parser_errors(const std::vector<bpp::AST::ParserError>& errors) {
 			this->parser_errors = errors;
@@ -155,6 +156,9 @@ class Listener final {
 
 		void set_source_file(const std::string& source_file) {
 			this->source_file = source_file;
+		}
+		const std::string& get_source_file() const {
+			return source_file;
 		}
 };
 

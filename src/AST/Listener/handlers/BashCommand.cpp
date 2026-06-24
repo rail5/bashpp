@@ -8,6 +8,8 @@
 
 #include <IR/entities/CodeEntity.h>
 
+#include <error/InternalError.h>
+
 namespace bpp::AST {
 
 template <>

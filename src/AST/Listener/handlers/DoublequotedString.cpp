@@ -8,6 +8,8 @@
 
 #include <IR/entities/expressions/String.h>
 
+#include <error/InternalError.h>
+
 namespace bpp::AST {
 
 template <>

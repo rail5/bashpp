@@ -13,6 +13,8 @@
 #include <error/detail.h>
 #include <error/ParserError.h>
 
+#include <AST/Listener/Listener.h>
+
 #include <IR/bpp.h>
 
 namespace bpp::AST {
@@ -63,7 +65,7 @@ class ErrorOrWarning : public std::runtime_error {
 
 		template <bpp::detail::ASTNodePtrORToken T>
 		void set_from_listener(bpp::AST::Listener* listener, const T& error_ctx) {
-			//source_file = listener->get_source_file();
+			source_file = listener->get_source_file();
 			//include_chain = listener->get_include_stack();
 			//program = listener->get_program();
 			//lsp_mode = listener->get_lsp_mode();

@@ -11,6 +11,8 @@
 #include <IR/entities/DataMember.h>
 #include <IR/entities/Object.h>
 
+#include <error/InternalError.h>
+
 namespace bpp::AST {
 
 template <>

@@ -9,6 +9,9 @@
 #include <IR/entities/Class.h>
 #include <IR/entities/Program.h>
 
+#include <error/InternalError.h>
+#include <error/SyntaxError.h>
+
 namespace bpp::AST {
 
 template <>

@@ -12,6 +12,9 @@
 #include <IR/entities/Program.h>
 #include <IR/entities/expressions/DynamicCast.h>
 
+#include <error/InternalError.h>
+#include <error/SyntaxError.h>
+
 namespace bpp::AST {
 
 template <>

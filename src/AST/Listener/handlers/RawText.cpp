@@ -7,6 +7,7 @@
 #include <AST/Listener/Listener.h>
 
 #include <IR/entities/CodeEntity.h>
+#include <error/SyntaxError.h>
 
 namespace bpp::AST {
 

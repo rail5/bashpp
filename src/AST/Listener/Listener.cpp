@@ -7,6 +7,7 @@
 #include "Listener.h"
 
 #include <error/InternalError.h>
+#include <error/SyntaxError.h>
 
 #include <IR/entities/CodeEntity.h>
 

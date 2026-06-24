@@ -73,6 +73,7 @@ void Listener::enter(MethodDefinition* node) {
 		const auto& param = p.getValue();
 		auto param_name = param.name.getValue();
 		std::shared_ptr<bpp::IR::Class> param_type = nullptr; // Primitive by default
+
 		if (param.type.has_value()) {
 			auto type_name = param.type.value().getValue();
 			param_type = program->get_class(type_name);
@@ -92,6 +93,12 @@ void Listener::enter(MethodDefinition* node) {
 				param.type.value().getLine(),
 				param.type.value().getCharPositionInLine()
 			});
+		} else {
+			// We don't care whether this identifier shares its name with a keyword,
+			// but we do care if it contains double underscores, which are reserved for Bash++'s internal use.
+			if (param_name.contains("__")) {
+				throw bpp::ErrorHandling::SyntaxError(this, p, "Parameter name cannot contain double underscores: '" + param_name + "'");
+			}
 		}
 
 		auto parameter_entity = std::make_shared<bpp::IR::MethodParameter>(method);

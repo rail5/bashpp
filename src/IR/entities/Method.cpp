@@ -45,8 +45,6 @@ bpp::CodeGen::CodeSegment ThisPtr::generate_code(bpp::CodeGen::CodeGenState* sta
 	bpp_assert(state != nullptr, "ThisPtr::generate_code() should be called with a non-null state pointer");
 	bpp::CodeGen::CodeSegment code;
 
-	state->object_addresses[shared_from_this()] = "__this";
-
 	code.add_pre_code("local __this\n");
 
 	auto dynamic_cast_entity = std::dynamic_pointer_cast<DynamicCast>(initial_value.value());

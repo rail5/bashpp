@@ -1,0 +1,20 @@
+# The following tests references to objects which were instantiated in dynamically-included files.
+
+# Before we begin: compile "test-suite/tests/extra/dynamic-includes-helper2.bpp" just for this test
+$BPP -o test-suite/tests/extra/dynamic-includes-helper2.sh test-suite/tests/extra/dynamic-includes-helper2.bpp
+
+@include_once "../extra/dynamic-includes-helper1.bpp" # static include
+@Object obj1
+@include_once dynamic "../extra/dynamic-includes-helper2.bpp" # defines 'obj2'
+
+echo @obj1.member # "default value"
+echo @obj2.member # "default value"
+
+@obj1.member="new value 1"
+@obj2.member="new value 2"
+
+echo @obj1.member # "new value 1"
+echo @obj2.member # "new value 2"
+
+# Clean up the compiled helper script after the test
+rm -f test-suite/tests/extra/dynamic-includes-helper2.sh

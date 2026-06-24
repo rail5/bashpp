@@ -10,23 +10,29 @@
 
 namespace bpp::IR {
 
+std::string Object::get_address() const {
+	bpp_assert(!type.expired(), "Object does not have a type");
+	bpp_assert(!name.empty(), "Object does not have a name");
+
+	std::string address = "bpp__";
+
+	if (m_is_pointer) address += "__ptr__";
+
+	address += type.lock()->get_name() + "__" + name;
+
+	return address;
+}
+
 bpp::CodeGen::CodeSegment Object::generate_code(bpp::CodeGen::CodeGenState* state) const {
 	bpp::CodeGen::CodeSegment result;
 
 	if (m_is_pointer) {
 		bpp_assert(!type.expired(), "Pointer does not have a type");
 
-		if (!state->object_addresses.contains(shared_from_this())) {
-			state->object_addresses[shared_from_this()] =
-				"bpp____ptr__" + std::to_string(state->object_counter++)
-				+ "__" + type.lock()->get_name()
-				+ "__" + name;
-		}
-
 		if (state->should_declare_local()) {
 			result.add_main_code("local ");
 		}
-		result.add_main_code(state->object_addresses[shared_from_this()] + "=");
+		result.add_main_code(get_address() + "=");
 		if (has_initial_value()) {
 			result.egalitarian_merge(initial_value.value()->generate_code(state));
 		}

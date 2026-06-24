@@ -109,8 +109,6 @@ struct CodeGenState {
 	uint64_t dynamic_cast_counter = 0;
 	uint64_t object_counter = 0;
 
-	std::unordered_map<std::shared_ptr<const bpp::IR::Object>, std::string> object_addresses;
-
 	bool should_declare_local() const {
 		return in_class || in_method || !bash_function_stack.empty();
 	}

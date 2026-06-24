@@ -46,6 +46,8 @@ class ThisPtr : public MethodParameter {
 		ThisPtr() = delete;
 		explicit ThisPtr(std::shared_ptr<Method> containing_method);
 
+		std::string get_address() const override { return "__this"; }
+
 		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
 };
 

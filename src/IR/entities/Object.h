@@ -21,7 +21,7 @@ namespace bpp::IR {
  * This includes both non-primitives and pointers.
  * Whether the object is a pointer, as well as its type, must be given in the constructor.
  */
-class Object : public Entity, public std::enable_shared_from_this<Object> {
+class Object : public Entity {
 	protected:
 		std::string name;
 		bool m_is_pointer = false;
@@ -37,6 +37,8 @@ class Object : public Entity, public std::enable_shared_from_this<Object> {
 	public:
 		const std::string& get_name() const { return name; }
 		void set_name(const std::string& name) { this->name = name; }
+
+		virtual std::string get_address() const;
 
 		bool is_pointer() const { return m_is_pointer; }
 		void set_is_pointer(bool is_pointer) { m_is_pointer = is_pointer; }

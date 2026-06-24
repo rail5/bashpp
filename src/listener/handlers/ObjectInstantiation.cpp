@@ -65,8 +65,7 @@ void BashppListener::enterObjectInstantiation(std::shared_ptr<AST::ObjectInstant
 	// Note:
 	// Here, we're incrementing an internal object counter and determining the location of the object in memory AT COMPILE-TIME
 	// Should this be determined at run-time instead?
-	new_object->set_address("bpp__" + std::to_string(program->get_object_counter()) + "__" + object_class->get_name() + "__" + new_object->get_name());
-	program->increment_object_counter();
+	new_object->set_address("bpp__" + object_class->get_name() + "__" + new_object->get_name());
 
 	// Verify the object's name is valid
 	if (!bpp::is_valid_identifier(new_object->get_name())) {

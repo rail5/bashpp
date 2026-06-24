@@ -190,14 +190,6 @@ uint64_t bpp_program::get_typeof_counter() const {
 	return typeof_counter;
 }
 
-void bpp_program::increment_object_counter() {
-	object_counter++;
-}
-
-uint64_t bpp_program::get_object_counter() const {
-	return object_counter;
-}
-
 void bpp_program::set_target_bash_version(BashVersion target_bash_version) {
 	this->target_bash_version = target_bash_version;
 }

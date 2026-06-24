@@ -62,8 +62,7 @@ void BashppListener::enterPointerDeclaration(std::shared_ptr<AST::PointerDeclara
 		object_type.getCharPositionInLine()
 	);
 
-	new_object->set_address("bpp____ptr__" + std::to_string(program->get_object_counter()) + "__" + new_object->get_class()->get_name() + "__" + new_object->get_name());
-	program->increment_object_counter();
+	new_object->set_address("bpp____ptr__" + new_object->get_class()->get_name() + "__" + new_object->get_name());
 
 	// Verify the object's name is valid
 	if (!bpp::is_valid_identifier(new_object->get_name())) {

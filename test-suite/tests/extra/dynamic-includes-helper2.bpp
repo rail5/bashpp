@@ -1,0 +1,3 @@
+@include_once "dynamic-includes-helper1.bpp"
+
+@Object obj2

@@ -14,7 +14,7 @@ class Block : public ASTNode {
 	public:
 		constexpr Block() : ASTNode(bpp::AST::NodeType::Block) {}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(Block {";
 			for (const auto& child : children) {

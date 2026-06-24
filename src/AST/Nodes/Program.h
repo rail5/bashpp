@@ -14,7 +14,7 @@ class Program : public ASTNode {
 	public:
 		constexpr Program() : ASTNode(bpp::AST::NodeType::Program) {}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(Program";
 			for (const auto& child : children) {

@@ -38,7 +38,7 @@ class ClassDefinition : public ASTNode {
 			m_PARENTCLASSNAME = std::nullopt;
 		}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(ClassDefinition\n"
 				<< indent << "  @class " << m_CLASSNAME;

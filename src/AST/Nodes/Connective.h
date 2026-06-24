@@ -28,7 +28,7 @@ class Connective : public ASTNode {
 			m_TYPE = type;
 		}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(Connective "
 				<< (m_TYPE == ConnectiveType::AND ? "&&" : "||")

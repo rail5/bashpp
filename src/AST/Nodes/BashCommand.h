@@ -14,7 +14,7 @@ namespace bpp::AST {
 class BashCommand : public StringType {
 	public:
 		constexpr BashCommand() : StringType(bpp::AST::NodeType::BashCommand) {}
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashCommand";
 			for (const auto& child : children) {

@@ -80,7 +80,7 @@ class IncludeStatement : public ASTNode {
 			m_ASPATH = std::nullopt;
 		}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(IncludeStatement\n"
 				<< indent << "  @" << ((m_KEYWORD.getValue() == IncludeKeyword::INCLUDE) ? "include" : "include_once") << " "

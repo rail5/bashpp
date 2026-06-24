@@ -14,7 +14,7 @@ class ObjectAssignment : public ASTNode {
 	public:
 		constexpr ObjectAssignment() : ASTNode(bpp::AST::NodeType::ObjectAssignment) {}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(ObjectAssignment";
 			for (const auto& child : children) {

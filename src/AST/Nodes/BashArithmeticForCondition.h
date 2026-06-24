@@ -22,7 +22,7 @@ class BashArithmeticForCondition : public StringType {
 	public:
 		constexpr BashArithmeticForCondition() : StringType(bpp::AST::NodeType::BashArithmeticForCondition) {}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashArithmeticForCondition ((";
 			for (const auto& child : children) {

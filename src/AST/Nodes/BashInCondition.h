@@ -20,7 +20,7 @@ class BashInCondition : public StringType {
 	public:
 		constexpr BashInCondition() : StringType(bpp::AST::NodeType::BashInCondition) {}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashInCondition in";
 			for (const auto& child : children) {

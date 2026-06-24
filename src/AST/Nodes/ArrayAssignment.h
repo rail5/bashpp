@@ -14,7 +14,7 @@ class ArrayAssignment : public ASTNode {
 	public:
 		constexpr ArrayAssignment() : ASTNode(bpp::AST::NodeType::ArrayAssignment) {}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(ArrayAssignment (";
 			for (const auto& child : children) {

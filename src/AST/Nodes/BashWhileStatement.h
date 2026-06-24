@@ -14,7 +14,7 @@ class BashWhileStatement : public ASTNode {
 	public:
 		constexpr BashWhileStatement() : ASTNode(bpp::AST::NodeType::BashWhileStatement) {}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashWhileStatement while";
 			for (const auto& child : children) {

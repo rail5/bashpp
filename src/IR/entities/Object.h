@@ -56,7 +56,7 @@ class Object : public Entity {
 
 		bpp::CodeGen::CodeSegment generate_code() override;
 		
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * 4, ' ');
 			os << indent << "(";
 			if (type.expired()) {

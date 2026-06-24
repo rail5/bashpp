@@ -24,7 +24,7 @@ class BashSelectStatement : public ASTNode {
 			m_VARIABLE = variable;
 		}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashSelectStatement\n"
 				<< indent << "  select " << m_VARIABLE;

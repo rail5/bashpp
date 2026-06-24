@@ -59,7 +59,7 @@ class MethodDefinition : public ASTNode {
 			m_PARAMETERS.insert(m_PARAMETERS.end(), parameters.begin(), parameters.end());
 		}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(MethodDefinition\n"
 				<< indent << "  " << (m_VIRTUAL ? "@virtual " : "");

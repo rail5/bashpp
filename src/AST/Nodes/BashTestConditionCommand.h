@@ -15,7 +15,7 @@ class BashTestConditionCommand : public StringType {
 	public:
 		constexpr BashTestConditionCommand() : StringType(bpp::AST::NodeType::BashTestConditionCommand) {}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashTestConditionCommand [[";
 			for (const auto& child : children) {

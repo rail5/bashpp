@@ -31,7 +31,7 @@ class PrimitiveAssignment : public ASTNode {
 			m_local = local;
 		}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(PrimitiveAssignment\n"
 				<< indent << "  " << (m_local ? "local " : "") << m_IDENTIFIER << "=";

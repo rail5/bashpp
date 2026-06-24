@@ -13,7 +13,7 @@ namespace bpp::AST {
 class BashCommandSequence : public ASTNode {
 	public:
 		constexpr BashCommandSequence() : ASTNode(bpp::AST::NodeType::BashCommandSequence) {}
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashCommandSequence";
 			for (const auto& child : children) {

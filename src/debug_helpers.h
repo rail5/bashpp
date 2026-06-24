@@ -18,19 +18,15 @@
 		}
 	
 	// Declare an override of prettyPrint in a derived class
-	#define PRETTYPRINT_OVERRIDE \
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override
+	#define PRETTYPRINT_OVERRIDE(...) \
+		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override \
+			__VA_ARGS__
 	
 	#define PRETTYPRINT_IMPLEMENTATION(classname, ...) \
 		std::ostream& classname::prettyPrint(std::ostream& os, size_t indentation_level) const \
 			__VA_ARGS__
-	
-	#define PRETTYPRINT_IMPLEMENTATION_IN_HEADER(...) \
-		std::ostream& prettyPrint(std::ostream& os, size_t indentation_level = 0) const override \
-			__VA_ARGS__
 #else
 	#define PRETTYPRINT_HELPERS(baseclassname)
-	#define PRETTYPRINT_OVERRIDE
+	#define PRETTYPRINT_OVERRIDE(...)
 	#define PRETTYPRINT_IMPLEMENTATION(classname, ...)
-	#define PRETTYPRINT_IMPLEMENTATION_IN_HEADER(...)
 #endif // NDEBUG

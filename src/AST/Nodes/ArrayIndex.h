@@ -14,7 +14,7 @@ class ArrayIndex : public ASTNode {
 	public:
 		constexpr ArrayIndex() : ASTNode(bpp::AST::NodeType::ArrayIndex) {}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(ArrayIndex [";
 			for (const auto& child : children) {

@@ -20,7 +20,7 @@ class BashCasePatternHeader : public StringType {
 	public:
 		constexpr BashCasePatternHeader() : StringType(bpp::AST::NodeType::BashCasePatternHeader) {}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashCasePatternHeader";
 			for (const auto& child : children) {

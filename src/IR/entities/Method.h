@@ -88,7 +88,7 @@ class Method : public BashFunction {
 		std::string get_mangled_name() const;
 		bpp::CodeGen::CodeSegment generate_code() override;
 
-		PRETTYPRINT_OVERRIDE;
+		PRETTYPRINT_OVERRIDE();
 };
 
 } // namespace bpp::IR

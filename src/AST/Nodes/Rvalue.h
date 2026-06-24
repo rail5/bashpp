@@ -15,7 +15,7 @@ class Rvalue : public StringType {
 	public:
 		constexpr Rvalue() : StringType(bpp::AST::NodeType::Rvalue) {}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(Rvalue";
 			for (const auto& child : children) {

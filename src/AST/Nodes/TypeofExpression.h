@@ -14,7 +14,7 @@ class TypeofExpression : public ASTNode {
 	public:
 		constexpr TypeofExpression() : ASTNode(bpp::AST::NodeType::TypeofExpression) {}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(TypeofExpression\n"
 				<< indent << "  @typeof";

@@ -14,7 +14,7 @@ class BashCaseInput : public ASTNode {
 	public:
 		constexpr BashCaseInput() : ASTNode(bpp::AST::NodeType::BashCaseInput) {}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashCaseInput";
 			for (const auto& child : children) {

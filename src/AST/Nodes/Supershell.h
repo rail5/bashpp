@@ -14,7 +14,7 @@ class Supershell : public ASTNode {
 	public:
 		constexpr Supershell() : ASTNode(bpp::AST::NodeType::Supershell) {}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(Supershell @(";
 			for (const auto& child : children) {

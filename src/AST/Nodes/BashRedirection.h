@@ -24,7 +24,7 @@ class BashRedirection : public StringType {
 			m_OPERATOR = op;
 		}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashRedirection " << m_OPERATOR;
 			for (const auto& child : children) {

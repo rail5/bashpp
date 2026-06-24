@@ -14,7 +14,7 @@ namespace bpp::AST {
 class BashPipeline : public StringType {
 	public:
 		constexpr BashPipeline() : StringType(bpp::AST::NodeType::BashPipeline) {}
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashPipeline";
 			for (const auto& child : children) {

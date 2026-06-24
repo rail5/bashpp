@@ -23,7 +23,7 @@ class ProcessSubstitution : public ASTNode {
 			m_SUBSTITUTIONSTART = substitutionStart;
 		}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(ProcessSubstitution\n"
 				<< indent << "  " << m_SUBSTITUTIONSTART;

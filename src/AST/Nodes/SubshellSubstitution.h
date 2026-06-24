@@ -23,7 +23,7 @@ class SubshellSubstitution : public ASTNode {
 			return is_cat_replacement;
 		}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(SubshellSubstitution ";
 			if (is_cat_replacement) os << "[cat replacement] ";

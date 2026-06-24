@@ -14,7 +14,7 @@ class BashWhileOrUntilCondition : public ASTNode {
 	public:
 		constexpr BashWhileOrUntilCondition() : ASTNode(bpp::AST::NodeType::BashWhileOrUntilCondition) {}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashWhileOrUntilCondition";
 			for (const auto& child : children) {

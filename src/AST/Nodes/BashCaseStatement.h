@@ -14,7 +14,7 @@ class BashCaseStatement : public ASTNode {
 	public:
 		constexpr BashCaseStatement() : ASTNode(bpp::AST::NodeType::BashCaseStatement) {}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashCaseStatement case";
 			for (const auto& child : children) {

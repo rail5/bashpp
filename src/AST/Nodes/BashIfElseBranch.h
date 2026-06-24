@@ -23,7 +23,7 @@ class BashIfElseBranch : public ASTNode {
 			m_hasCondition = hasCondition;
 		}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashIfElseBranch";
 			for (const auto& child : children) {

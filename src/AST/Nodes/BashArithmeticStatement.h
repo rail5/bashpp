@@ -21,7 +21,7 @@ class BashArithmeticStatement : public StringType {
 	public:
 		constexpr BashArithmeticStatement() : StringType(bpp::AST::NodeType::BashArithmeticStatement) {}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashArithmeticStatement";
 			for (const auto& child : children) {

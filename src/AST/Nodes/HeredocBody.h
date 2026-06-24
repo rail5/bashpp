@@ -24,7 +24,7 @@ class HeredocBody : public StringType {
 			m_DELIMITER = delimiter;
 		}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(HeredocBody <<[-]" << m_DELIMITER;
 			for (const auto& child : children) {

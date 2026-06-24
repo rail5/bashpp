@@ -24,7 +24,7 @@ class BashVariable : public ASTNode {
 			m_TEXT = text;
 		}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashVariable\n"
 				<< indent << "  ${" << m_TEXT;

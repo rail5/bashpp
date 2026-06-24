@@ -33,7 +33,7 @@ class ObjectInstantiation : public ASTNode {
 			return m_IDENTIFIER;
 		}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(ObjectInstantiation\n"
 				<< indent << "  @" << m_TYPE << " " << m_IDENTIFIER;

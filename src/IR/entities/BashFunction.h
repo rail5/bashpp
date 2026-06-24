@@ -23,7 +23,7 @@ class BashFunction : public CodeEntity {
 
 		bpp::CodeGen::CodeSegment generate_code() override;
 
-		PRETTYPRINT_OVERRIDE;
+		PRETTYPRINT_OVERRIDE();
 };
 
 } // namespace bpp::IR

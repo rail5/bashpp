@@ -25,7 +25,7 @@ class ParameterExpansion : public StringType {
 			m_EXPANSIONBEGIN = expansionBegin;
 		}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(ParameterExpansion\n"
 				<< indent << "  " << m_EXPANSIONBEGIN;

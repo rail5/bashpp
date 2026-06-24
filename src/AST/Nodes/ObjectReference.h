@@ -71,7 +71,7 @@ class ObjectReference : public ASTNode {
 			return m_address_of;
 		}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(ObjectReference ["
 				<< (m_lvalue ? "lvalue" : "rvalue")

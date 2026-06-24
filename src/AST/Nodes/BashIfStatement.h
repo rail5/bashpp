@@ -14,7 +14,7 @@ class BashIfStatement : public ASTNode {
 	public:
 		constexpr BashIfStatement() : ASTNode(bpp::AST::NodeType::BashIfStatement) {}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashIfStatement if";
 			for (const auto& child : children) {

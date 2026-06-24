@@ -23,7 +23,7 @@ class BashFunction : public ASTNode {
 			m_NAME = name;
 		}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashFunction function " << m_NAME.getValue() << "()";
 			for (const auto& child : children) {

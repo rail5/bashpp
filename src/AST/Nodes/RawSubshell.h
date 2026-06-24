@@ -14,7 +14,7 @@ class RawSubshell : public ASTNode {
 	public:
 		constexpr RawSubshell() : ASTNode(bpp::AST::NodeType::RawSubshell) {}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(RawSubshell (";
 			for (const auto& child : children) {

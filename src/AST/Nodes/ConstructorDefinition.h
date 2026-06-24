@@ -15,7 +15,7 @@ class ConstructorDefinition : public ASTNode {
 	public:
 		constexpr ConstructorDefinition() : ASTNode(bpp::AST::NodeType::ConstructorDefinition) {}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(ConstructorDefinition\n"
 				<< indent << "  @constructor";

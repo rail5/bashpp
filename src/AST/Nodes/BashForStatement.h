@@ -24,7 +24,7 @@ class BashForStatement : public ASTNode {
 			m_VARIABLE = variable;
 		}
 
-		PRETTYPRINT_IMPLEMENTATION_IN_HEADER({
+		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashForStatement\n"
 				<< indent << "  for " << m_VARIABLE;

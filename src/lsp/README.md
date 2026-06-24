@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a work-in-progress implementation of a Bash++ language server.
+This is a language server for Bash++.
 
 It is designed to provide language server protocol (LSP) features such as code completion, go-to definition, and hover information for Bash++ scripts.
 
@@ -23,9 +23,9 @@ It is designed to provide language server protocol (LSP) features such as code c
 
 Note that, as is also the case for the rest of the Bash++ project, the LSP implementation is licensed under the [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
-The files `metaModel.json` and `metaModel.schema.json` which define the LSP model are pulled from Microsoft's [Language server protocol implementation for VSCode](https://github.com/microsoft/vscode-languageserver-node) and are licensed under the MIT License.
+The file `metaModel.json` (which defines the LSP model) is pulled from Microsoft's [Language server protocol implementation for VSCode](https://github.com/microsoft/vscode-languageserver-node) and is licensed under the MIT License.
 
-Full contents of the original license in compliance with its terms of reuse:
+Full text of the original license in compliance with its terms of reuse:
 
 ```
 Copyright (c) Microsoft Corporation

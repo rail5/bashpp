@@ -163,6 +163,8 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
+	if (listener->has_errors()) return 1;
+
 #ifndef NDEBUG
 	if (args.display_entity_tree()) {
 		std::cout << *listener->get_program() << std::endl;

@@ -29,7 +29,7 @@ class Object : public Entity {
 		std::weak_ptr<Class> type;
 
 		// Initialization information:
-		/// If a pointer, the initial value of the pointer (if any)
+		/// If a pointer or primitive, the initial value (if any)
 		std::optional<std::shared_ptr<CodeEntity>> initial_value = std::nullopt;
 
 		/// If not a pointer, the object from which this is copied (if any)

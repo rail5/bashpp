@@ -24,7 +24,7 @@ void CodeEntity::add(const std::shared_ptr<Entity>& child) {
 	children.emplace_back(child);
 }
 
-std::shared_ptr<Object> CodeEntity::get_object(const std::string& name, size_t max_visible_index) {
+std::shared_ptr<Object> CodeEntity::get_object(const std::string& name, size_t max_visible_index) const {
 	auto obj = local_objects.find(name, max_visible_index);
 	if (obj) return obj;
 

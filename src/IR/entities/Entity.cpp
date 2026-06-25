@@ -23,12 +23,12 @@ void Entity::inherit(std::shared_ptr<Entity> parent) {
 	program_visible_class_count_at_creation = containing_program.lock()->number_of_known_classes();
 }
 
-std::shared_ptr<Class> Entity::get_class(const std::string& name, size_t /*max_visible_index*/) {
+std::shared_ptr<Class> Entity::get_class(const std::string& name, size_t /*max_visible_index*/) const {
 	bpp_assert(!containing_program.expired(), std::string("Entity does not have a containing program"));
 	return containing_program.lock()->get_class(name, program_visible_class_count_at_creation);
 }
 
-std::shared_ptr<Object> Entity::get_object(const std::string& name, size_t /*max_visible_index*/) {
+std::shared_ptr<Object> Entity::get_object(const std::string& name, size_t /*max_visible_index*/) const {
 	if (auto parent = parent_entity.lock()) {
 		return parent->get_object(name, parent_visible_object_count_at_creation);
 	}

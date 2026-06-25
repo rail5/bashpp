@@ -52,9 +52,11 @@ class Entity {
 		Entity& operator=(Entity&& other) = default;
 
 		virtual std::weak_ptr<Class> get_containing_class() { return containing_class; }
+		virtual std::weak_ptr<const Class> get_containing_class_const() const { return containing_class; }
 		void set_containing_class(std::weak_ptr<Class> containing_class) { this->containing_class = containing_class; }
 
 		virtual std::weak_ptr<Program> get_containing_program() { return containing_program; }
+		virtual std::weak_ptr<const Program> get_containing_program_const() const { return containing_program; }
 		void set_containing_program(std::weak_ptr<Program> containing_program) { this->containing_program = containing_program; }
 
 		SymbolPosition get_definition_position() const { return definition_position; }
@@ -70,8 +72,8 @@ class Entity {
 
 		void inherit(std::shared_ptr<Entity> parent);
 
-		virtual std::shared_ptr<Class> get_class(const std::string& name, size_t max_visible_index = SIZE_MAX);
-		virtual std::shared_ptr<Object> get_object(const std::string& name, size_t max_visible_index = SIZE_MAX);
+		virtual std::shared_ptr<Class> get_class(const std::string& name, size_t max_visible_index = SIZE_MAX) const;
+		virtual std::shared_ptr<Object> get_object(const std::string& name, size_t max_visible_index = SIZE_MAX) const;
 
 		virtual std::vector<std::shared_ptr<Class>> get_all_known_classes() const;
 		virtual std::vector<std::shared_ptr<Object>> get_all_known_objects() const;

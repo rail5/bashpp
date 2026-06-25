@@ -99,7 +99,7 @@ class OwnedEntityList {
 			return true;
 		}
 
-		std::shared_ptr<T> find(const std::string& name, size_t max_visible_index = SIZE_MAX) {
+		std::shared_ptr<T> find(const std::string& name, size_t max_visible_index = SIZE_MAX) const {
 			auto it = name_to_index.find(name);
 			if (it == name_to_index.end()) return nullptr; // No entity with this name
 			size_t index = it->second;

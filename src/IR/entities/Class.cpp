@@ -20,7 +20,7 @@ namespace bpp::IR {
  * @return true If `other` is an ancestor (or immediate parent) of this class
  * @return false Otherwise
  */
-bool Class::is_derived_from(std::shared_ptr<Class> other) const {
+bool Class::is_derived_from(std::shared_ptr<const Class> other) const {
 	auto parent = this->parent_class.lock();
 
 	while (parent != nullptr) {
@@ -103,8 +103,8 @@ bool Class::add_datamember(std::shared_ptr<DataMember> datamember) {
 }
 
 template <ClassMember T>
-std::shared_ptr<T> Class::get_member(const std::string& name, std::shared_ptr<Entity> context) {
-	std::vector<std::shared_ptr<T>>* container;
+std::shared_ptr<T> Class::get_member(const std::string& name, std::shared_ptr<Entity> context) const {
+	const std::vector<std::shared_ptr<T>>* container;
 	// The following static_assert is probably redundant since the concept ClassMember is restricted to one of those two types
 	static_assert(std::is_same_v<T, Method> || std::is_same_v<T, DataMember>, "T must be either Method or DataMember");
 	if constexpr (std::is_same_v<T, Method>) {
@@ -156,7 +156,7 @@ std::shared_ptr<T> Class::get_member(const std::string& name, std::shared_ptr<En
  * @return std::shared_ptr<Method> The method, or nullptr if it doesn't exist
  * @throws bpp::ErrorHandling::VisibilityError if the context does not permit access
  */
-std::shared_ptr<Method> Class::get_method(const std::string& name, std::shared_ptr<Entity> context) {
+std::shared_ptr<Method> Class::get_method(const std::string& name, std::shared_ptr<Entity> context) const {
 	return get_member<Method>(name, context);
 }
 
@@ -168,8 +168,8 @@ std::shared_ptr<Method> Class::get_method(const std::string& name, std::shared_p
  * @param name The name of the method to get
  * @return std::shared_ptr<Method> The method, or nullptr if not found
  */
-std::shared_ptr<Method> Class::get_method_UNSAFE(const std::string& name) {
-	for (auto& method : methods) {
+std::shared_ptr<Method> Class::get_method_UNSAFE(const std::string& name) const {
+	for (const auto& method : methods) {
 		if (method->get_name() == name) return method;
 	}
 
@@ -192,7 +192,7 @@ std::shared_ptr<Method> Class::get_method_UNSAFE(const std::string& name) {
  * @return std::shared_ptr<DataMember> The data member, or nullptr if it doesn't exist
  * @throws bpp::ErrorHandling::VisibilityError if the context does not permit access
  */
-std::shared_ptr<DataMember> Class::get_datamember(const std::string& name, std::shared_ptr<Entity> context) {
+std::shared_ptr<DataMember> Class::get_datamember(const std::string& name, std::shared_ptr<Entity> context) const {
 	return get_member<DataMember>(name, context);
 }
 
@@ -204,8 +204,8 @@ std::shared_ptr<DataMember> Class::get_datamember(const std::string& name, std::
  * @param name The name of the data member to get
  * @return std::shared_ptr<DataMember> The data member, or nullptr if not found
  */
-std::shared_ptr<DataMember> Class::get_datamember_UNSAFE(const std::string& name) {
-	for (auto& datamember : datamembers) {
+std::shared_ptr<DataMember> Class::get_datamember_UNSAFE(const std::string& name) const {
+	for (const auto& datamember : datamembers) {
 		if (datamember->get_name() == name) return datamember;
 	}
 

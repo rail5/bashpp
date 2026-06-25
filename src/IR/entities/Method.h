@@ -88,6 +88,7 @@ class Method : public BashFunction {
 		void add_reference_position(const SymbolPosition& pos) override;
 
 		std::string get_mangled_name() const;
+
 		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
 
 		PRETTYPRINT_OVERRIDE();

@@ -181,9 +181,6 @@ template <> void Listener::exit(MethodDefinition* node);
 template <> void Listener::enter(ObjectInstantiation* node);
 template <> void Listener::exit(ObjectInstantiation* node);
 
-template <> void Listener::enter(BashCommand* node);
-template <> void Listener::exit(BashCommand* node);
-
 template <> void Listener::enter(BashPipeline* node);
 template <> void Listener::exit(BashPipeline* node);
 
@@ -195,5 +192,8 @@ template <> void Listener::exit(RawText* node);
 
 template <> void Listener::enter(DoublequotedString* node);
 template <> void Listener::exit(DoublequotedString* node);
+
+template <> void Listener::enter(Supershell* node);
+template <> void Listener::exit(Supershell* node);
 
 } // namespace bpp::AST

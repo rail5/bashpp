@@ -74,6 +74,25 @@ bool CodeEntity::add_object(std::shared_ptr<Object> object) {
 	return true;
 }
 
+/**
+ * @brief Adopt all local objects from another CodeEntity into this one.
+ *
+ * This code entity becomes responsible for the lifetimes (& ownership) of the adopted objects.
+ * 
+ * @param other The other CodeEntity from which to adopt local objects
+ */
+void CodeEntity::adopt_objects_of(std::shared_ptr<CodeEntity> other) {
+	const auto& objects = other->get_local_objects().get_entities();
+	for (const auto& obj : objects) {
+		bpp_assert(obj != nullptr, "Null object in other CodeEntity's local objects");
+		bpp_assert(
+			this->get_object(obj->get_name()) == nullptr,
+			"Name conflict when adopting local objects from another CodeEntity: " + obj->get_name()
+		);
+		local_objects.add(obj);
+	}
+}
+
 bpp::CodeGen::CodeSegment CodeEntity::generate_code(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "CodeEntity::generate_code() should be called with a non-null state pointer");
 	bpp::CodeGen::CodeSegment code_segment;

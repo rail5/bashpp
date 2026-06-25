@@ -11,7 +11,7 @@
 
 namespace bpp::IR {
 
-class DynamicCast : public String {
+class DynamicCast : public StringType {
 	private:
 		std::shared_ptr<Class> target_type;
 

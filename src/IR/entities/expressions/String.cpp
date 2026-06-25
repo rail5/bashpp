@@ -12,21 +12,31 @@
 
 namespace bpp::IR {
 
-bpp::CodeGen::CodeSegment String::generate_code(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "String::generate_code() should be called with a non-null state pointer");
-	bpp::CodeGen::CodeSegment code_segment;
-	code_segment.add_main_code("\"");
+bpp::CodeGen::CodeSegment StringType::generate_code(bpp::CodeGen::CodeGenState* state) const {
+	bpp_assert(state != nullptr, "StringType::generate_code() should be called with a non-null state pointer");
+	bpp::CodeGen::CodeSegment result;
+
 	for (const auto& child : children) {
 		if (std::holds_alternative<RawCode>(child)) {
-			code_segment.add_main_code(std::get<RawCode>(child));
+			result.add_main_code(std::get<RawCode>(child));
 		} else if (std::holds_alternative<std::shared_ptr<Entity>>(child)) {
-			auto child_entity = std::get<std::shared_ptr<Entity>>(child);
-			code_segment.egalitarian_merge(child_entity->generate_code(state));
+			const auto child_entity = std::get<std::shared_ptr<Entity>>(child);
+			result.egalitarian_merge(child_entity->generate_code(state));
 		}
 	}
-	code_segment.add_main_code("\"");
 
-	return code_segment;
+	return result;
+}
+
+bpp::CodeGen::CodeSegment String::generate_code(bpp::CodeGen::CodeGenState* state) const {
+	bpp_assert(state != nullptr, "String::generate_code() should be called with a non-null state pointer");
+	bpp::CodeGen::CodeSegment result;
+	// Surround the result of StringType::generate_code() with double quotes
+	result.add_main_code("\"");
+	result.egalitarian_merge(StringType::generate_code(state));
+	result.add_main_code("\"");
+
+	return result;
 }
 
 } // namespace bpp::IR

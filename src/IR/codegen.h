@@ -9,11 +9,12 @@
 #include <string>
 #include <vector>
 #include <stack>
-#include <unordered_map>
 #include <iterator>
 #include <iostream>
 
 #include <IR/bpp.h>
+
+#include <include/BashVersion.h>
 
 namespace bpp::CodeGen {
 
@@ -62,6 +63,28 @@ class CodeSegment {
 		}
 
 		/**
+		 * @brief Absorb all code from another CodeSegment into the pre-code of this segment
+		 * 
+		 * @param other The other CodeSegment to absorb
+		 */
+		void absorb_all_to_pre(CodeSegment&& other) {
+			add_pre_code(std::move(other.pre_code));
+			add_pre_code(std::move(other.main_code));
+			add_pre_code(std::move(other.post_code));
+		}
+
+		/**
+		 * @brief Absorb all code from another CodeSegment into the post-code of this segment
+		 * 
+		 * @param other The other CodeSegment to absorb
+		 */
+		void absorb_all_to_post(CodeSegment&& other) {
+			add_post_code(std::move(other.pre_code));
+			add_post_code(std::move(other.main_code));
+			add_post_code(std::move(other.post_code));
+		}
+
+		/**
 		 * @brief Absorb all code from another CodeSegment into this segment,
 		 * such that the pre-code, main code, and post-code of the other segment are merged with the corresponding parts of this segment.
 		 * 
@@ -102,12 +125,13 @@ class CodeSegment {
 };
 
 struct CodeGenState {
+	BashVersion target_bash_version{5, 2};
 	bool in_method = false;
 	bool in_class = false;
 	std::stack<std::monostate> bash_function_stack;
 	std::stack<std::monostate> supershell_stack;
 	uint64_t dynamic_cast_counter = 0;
-	uint64_t object_counter = 0;
+	uint64_t supershell_counter = 0;
 
 	bool should_declare_local() const {
 		return in_class || in_method || !bash_function_stack.empty();

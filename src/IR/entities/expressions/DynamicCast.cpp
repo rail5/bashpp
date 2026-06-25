@@ -17,7 +17,7 @@ bpp::CodeGen::CodeSegment DynamicCast::generate_code(bpp::CodeGen::CodeGenState*
 	bpp_assert(state != nullptr, "DynamicCast::generate_code() should be called with a non-null state pointer");
 	bpp::CodeGen::CodeSegment result;
 
-	const auto& inner_code = String::generate_code(state);
+	const auto& inner_code = StringType::generate_code(state);
 
 	result.add_pre_code(inner_code.get_pre_code());
 	result.add_post_code(inner_code.get_post_code());
@@ -51,7 +51,7 @@ bpp::CodeGen::CodeSegment DynamicCast::generate_code(bpp::CodeGen::CodeGenState*
 PRETTYPRINT_IMPLEMENTATION(DynamicCast, {
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 	os << indent << "(DynamicCast to " << target_type->get_name() << "\n";
-	String::prettyPrint(os, indentation_level + 1);
+	StringType::prettyPrint(os, indentation_level + 1);
 	os << indent << ")\n";
 	return os;
 })

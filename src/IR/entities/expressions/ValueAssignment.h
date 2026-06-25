@@ -11,7 +11,7 @@
 
 namespace bpp::IR {
 
-class ValueAssignment : public String {
+class ValueAssignment : public StringType {
 	private:
 		bool lvalue_nonprimitive = false;
 		bool rvalue_nonprimitive = false;

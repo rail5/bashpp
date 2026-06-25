@@ -174,6 +174,7 @@ int main(int argc, char* argv[]) {
 
 	// Debug:
 	bpp::CodeGen::CodeGenState codegen_state;
+	codegen_state.target_bash_version = args.target_bash_version();
 	std::cout << listener->get_program()->generate_code(&codegen_state);
 
 	//return listener->get_exit_code();

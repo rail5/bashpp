@@ -196,7 +196,7 @@ std::vector<std::string> TypeRegistry::get_base_classes(const nlohmann::json& de
 void TypeRegistry::generate_inheritance(std::ofstream& file, const std::vector<std::string>& base_classes) {
 	if (!base_classes.empty()) {
 		file << " : ";
-		for (size_t i = 0; i < base_classes.size(); ++i) {
+		for (std::size_t i = 0; i < base_classes.size(); ++i) {
 			if (i > 0) file << ", ";
 			file << "public " << base_classes[i];
 		}
@@ -209,8 +209,8 @@ std::string TypeRegistry::get_variant_deserialization_code(
 	bool is_optional
 ) {
 	// Extract types between < and >
-	size_t start = variant_type.find('<');
-	size_t end = variant_type.rfind('>');
+	std::size_t start = variant_type.find('<');
+	std::size_t end = variant_type.rfind('>');
 	if (start == std::string::npos || end == std::string::npos) {
 		return "// Error: malformed variant type\n";
 	}
@@ -484,7 +484,7 @@ std::string TypeRegistry::get_sanitized_description(const std::string& descripti
 	// Remove any '@' symbols from the description
 	sanitized.erase(std::remove(sanitized.begin(), sanitized.end(), '@'), sanitized.end());
 	// Remove any occurrences of "/*" which will be mistaken for comments inside comments
-	size_t pos = 0;
+	std::size_t pos = 0;
 	while ((pos = sanitized.find("/*", pos)) != std::string::npos) {
 		sanitized.erase(pos, 2); // Remove "/*"
 	}

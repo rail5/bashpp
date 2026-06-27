@@ -25,7 +25,7 @@ void bpp::BashppServer::setTargetBashVersion(const BashVersion& version) {
 	program_pool.set_target_bash_version(version);
 }
 
-void bpp::BashppServer::setThreadCount(size_t num_threads) {
+void bpp::BashppServer::setThreadCount(std::size_t num_threads) {
 	if (thread_pool->isActive()) throw std::runtime_error("Cannot change thread count while the thread pool is active.");
 	thread_pool = std::make_unique<ThreadPool>(num_threads);
 	log("Set number of threads to: ", num_threads);
@@ -78,7 +78,7 @@ void bpp::BashppServer::mainLoop() {
 
 		log("Received header: ", header);
 
-		size_t content_length = 0;
+		std::size_t content_length = 0;
 		if (header.starts_with("Content-Length: ")) {
 			content_length = std::stoul(header.substr(16));
 		}

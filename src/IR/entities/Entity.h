@@ -25,8 +25,8 @@ namespace bpp::IR {
  */
 class Entity {
 	protected:
-		size_t parent_visible_object_count_at_creation = 0;
-		size_t program_visible_class_count_at_creation = 0;
+		std::size_t parent_visible_object_count_at_creation = 0;
+		std::size_t program_visible_class_count_at_creation = 0;
 
 		/// The entity from which this entity inherits (applies to all entities except Program)
 		std::weak_ptr<Entity> parent_entity;
@@ -72,14 +72,14 @@ class Entity {
 
 		void inherit(std::shared_ptr<Entity> parent);
 
-		virtual std::shared_ptr<Class> get_class(const std::string& name, size_t max_visible_index = SIZE_MAX) const;
-		virtual std::shared_ptr<Object> get_object(const std::string& name, size_t max_visible_index = SIZE_MAX) const;
+		virtual std::shared_ptr<Class> get_class(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const;
+		virtual std::shared_ptr<Object> get_object(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const;
 
 		virtual std::vector<std::shared_ptr<Class>> get_all_known_classes() const;
 		virtual std::vector<std::shared_ptr<Object>> get_all_known_objects() const;
 
-		virtual size_t number_of_known_objects() const;
-		virtual size_t number_of_known_classes() const;
+		virtual std::size_t number_of_known_objects() const;
+		virtual std::size_t number_of_known_classes() const;
 
 		/**
 		 * @brief Generate compiled code for this entity.

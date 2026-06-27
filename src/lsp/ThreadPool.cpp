@@ -6,8 +6,8 @@
 
 #include "ThreadPool.h"
 
-ThreadPool::ThreadPool(size_t threads)  {
-	for (size_t i = 0; i < threads; i++) {
+ThreadPool::ThreadPool(std::size_t threads)  {
+	for (std::size_t i = 0; i < threads; i++) {
 		workers.emplace_back([this] {
 			while (true) {
 				std::function<void()> task;

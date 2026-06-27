@@ -32,5 +32,5 @@ class ModeStack {
 		void clear();
 		int top() const;
 		bool empty() const;
-		size_t size() const;
+		std::size_t size() const;
 };

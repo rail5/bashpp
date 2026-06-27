@@ -85,7 +85,7 @@ void print_syntax_error_or_warning(
 	// Once again, lines and columns are 0-indexed internally, so we add 1 to the line number for display
 	std::string line1_prefix = std::to_string(line + 1) + " | ";
 	std::string line2_prefix;
-	for (size_t i = 0; i < std::to_string(line + 1).size(); i++) {
+	for (std::size_t i = 0; i < std::to_string(line + 1).size(); i++) {
 		line2_prefix += " ";
 	}
 	line2_prefix += " | ";

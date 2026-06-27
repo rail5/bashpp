@@ -138,7 +138,7 @@ void set_display_lexer_output(bool enable, yyscan_t yyscanner) {
 }
 
 size_t utf8_char_count(const std::string& s) {
-	size_t count = 0;
+	std::size_t count = 0;
 	for (unsigned char c : s) {
 		if ((c & 0xC0) != 0x80) {
 			count++; // Skip UTF-8 continuation bytes
@@ -149,12 +149,12 @@ size_t utf8_char_count(const std::string& s) {
 
 // This function exists **solely** to accommodate the LSP.
 size_t utf16_char_count(const std::string& s) {
-	size_t count = 0;
+	std::size_t count = 0;
 
-	for (size_t i = 0; i < s.size();) {
+	for (std::size_t i = 0; i < s.size();) {
 		unsigned char c = s[i];
 		std::uint32_t codepoint;
-		size_t len;
+		std::size_t len;
 
 		if ((c & 0x80) == 0) {
 			// 1-byte character (ASCII)

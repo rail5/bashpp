@@ -96,7 +96,7 @@ int main(int argc, char* argv[]) {
 				break;
 			case 'j':
 				try {
-					size_t num_threads = std::stoul(std::string(arg.getArgument()));
+					std::size_t num_threads = std::stoul(std::string(arg.getArgument()));
 					if (num_threads == 0) {
 						std::cerr << "Number of threads must be greater than 0." << std::endl;
 						return 1;

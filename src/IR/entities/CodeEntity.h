@@ -39,9 +39,9 @@ class CodeEntity : public Entity {
 		bool add_object(std::shared_ptr<Object> object);
 		const OwnedEntityList<Object>& get_local_objects() const { return local_objects; }
 
-		std::shared_ptr<Object> get_object(const std::string& name, size_t max_visible_index = SIZE_MAX) const override;
+		std::shared_ptr<Object> get_object(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const override;
 		std::vector<std::shared_ptr<Object>> get_all_known_objects() const override;
-		size_t number_of_known_objects() const override;
+		std::size_t number_of_known_objects() const override;
 
 		void adopt_objects_of(std::shared_ptr<CodeEntity> other);
 

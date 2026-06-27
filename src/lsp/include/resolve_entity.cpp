@@ -413,7 +413,7 @@ std::string find_comments_for_entity(std::shared_ptr<bpp::bpp_entity> entity, Pr
 		}
 		current_line++;
 
-		size_t comment_start = line.find('#');
+		std::size_t comment_start = line.find('#');
 		if (comment_start != std::string::npos) {
 			// Extract the comment part
 			std::string comment = line.substr(comment_start);

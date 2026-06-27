@@ -15,7 +15,7 @@
 
 #include <entities/bpp_program.h>
 
-ProgramPool::ProgramPool(size_t max_programs) : max_programs(max_programs) {
+ProgramPool::ProgramPool(std::size_t max_programs) : max_programs(max_programs) {
 	// Initialize the program pool with a maximum number of programs
 	programs.reserve(max_programs);
 }
@@ -104,7 +104,7 @@ ProgramPool::Snapshot ProgramPool::load_snapshot() const {
 	return *snapshot;
 }
 
-void ProgramPool::_remove_program(size_t index) {
+void ProgramPool::_remove_program(std::size_t index) {
 	std::lock_guard<std::recursive_mutex> lock(pool_mutex);
 	if (index >= programs.size()) return; // Invalid index
 
@@ -123,7 +123,7 @@ void ProgramPool::_remove_program(size_t index) {
 	for (auto& [filePath, indices] : program_indices) {
 		std::erase(indices, index); // Remove the index of the removed program
 
-		std::transform(indices.begin(), indices.end(), indices.begin(), [index](size_t i) {
+		std::transform(indices.begin(), indices.end(), indices.begin(), [index](std::size_t i) {
 			return (i > index) ? (i - 1) : i; // Decrement indices of all programs after the removed one
 		});
 	}
@@ -190,7 +190,7 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::get_program(const std::string& fi
 		// Many different programs may be associated with this file path
 		// We just return the first one, which should be as good as any other
 		// TODO(@rail5): Review this decision in the future
-		const std::vector<size_t>& indices = snapshot_copy.program_indices_snapshot[file_path];
+		const std::vector<std::size_t>& indices = snapshot_copy.program_indices_snapshot[file_path];
 		if (indices.empty()) return nullptr; // No programs associated with this file path, shouldn't happen since we checked contains() but just in case
 		return snapshot_copy.programs_snapshot[indices[0]];
 	}
@@ -201,7 +201,7 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::get_program(const std::string& fi
 
 		// Check if the program is already in the pool
 		if (program_indices.contains(file_path)) {
-			const std::vector<size_t>& indices = program_indices[file_path];
+			const std::vector<std::size_t>& indices = program_indices[file_path];
 			if (!indices.empty()) return programs[indices[0]]; // Return the first program associated with this file path
 		}
 
@@ -213,7 +213,7 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::get_program(const std::string& fi
 		if (new_program == nullptr) return nullptr; // Return nullptr if parsing fails
 
 		programs.push_back(new_program);
-		size_t index = programs.size() - 1;
+		std::size_t index = programs.size() - 1;
 		for (const auto& path : new_program->get_source_files()) {
 			auto& indices_for_path = program_indices[path];
 			if (!std::ranges::contains(indices_for_path, index)) {
@@ -227,7 +227,7 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::get_program(const std::string& fi
 		// we can remove those earlier programs from the pool, effectively subsuming them
 		// into this new program, since this new program's AST contains *all* of the
 		// information in the earlier programs and more.
-		for (size_t i = 0; i < programs.size() - 1; i++) {
+		for (std::size_t i = 0; i < programs.size() - 1; i++) {
 			std::shared_ptr<bpp::bpp_program> program = programs[i];
 			if (program == nullptr) continue;
 			auto main_source_file = program->get_main_source_file();
@@ -253,9 +253,9 @@ std::vector<std::shared_ptr<bpp::bpp_program>> ProgramPool::get_programs_for_fil
 		if (!snapshot_copy.program_indices_snapshot.contains(file_path)) return {}; // No programs associated with this file path
 
 		std::vector<std::shared_ptr<bpp::bpp_program>> programs_for_file;
-		const std::vector<size_t>& indices = snapshot_copy.program_indices_snapshot[file_path];
+		const std::vector<std::size_t>& indices = snapshot_copy.program_indices_snapshot[file_path];
 		programs_for_file.reserve(indices.size());
-		for (size_t index : indices) {
+		for (std::size_t index : indices) {
 			programs_for_file.push_back(snapshot_copy.programs_snapshot[index]);
 		}
 		return programs_for_file;
@@ -266,9 +266,9 @@ std::vector<std::shared_ptr<bpp::bpp_program>> ProgramPool::get_programs_for_fil
 		std::lock_guard<std::recursive_mutex> lock(pool_mutex);
 
 		if (program_indices.contains(file_path)) {
-			const std::vector<size_t>& indices = program_indices[file_path];
+			const std::vector<std::size_t>& indices = program_indices[file_path];
 			programs_for_file.reserve(indices.size());
-			for (size_t index : indices) {
+			for (std::size_t index : indices) {
 				programs_for_file.push_back(programs[index]);
 			}
 			return programs_for_file; // Return all programs associated with this file path
@@ -297,8 +297,8 @@ std::vector<std::shared_ptr<bpp::bpp_program>> ProgramPool::re_parse_programs(co
 	{
 		std::lock_guard<std::recursive_mutex> lock(pool_mutex);
 		// There are programs associated with this file, so we need to re-parse all of them
-		std::vector<size_t> indices = program_indices[file_path];
-		for (size_t index : indices) {
+		std::vector<std::size_t> indices = program_indices[file_path];
+		for (std::size_t index : indices) {
 			std::string main_source_file = programs[index]->get_main_source_file();
 
 			auto new_program = _parse_program(main_source_file);
@@ -354,10 +354,10 @@ void ProgramPool::close_file(const std::string& file_path) {
 		// Now, find all of the programs associated with this file
 		if (!program_indices.contains(file_path)) return;
 
-		std::vector<size_t> indices = program_indices[file_path];
+		std::vector<std::size_t> indices = program_indices[file_path];
 		std::sort(indices.rbegin(), indices.rend()); // Sort in reverse order so we can remove programs without invalidating indices of programs we haven't removed yet
 
-		for (size_t index : indices) {
+		for (std::size_t index : indices) {
 			// For each program:
 			// Check if it's associated with any other files that are still open
 			bool program_still_has_some_files_open = false;

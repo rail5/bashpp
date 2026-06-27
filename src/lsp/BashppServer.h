@@ -64,7 +64,7 @@ class BashppServer {
 
 		void setLogFile(const std::string& path);
 		void setTargetBashVersion(const BashVersion& version);
-		void setThreadCount(size_t num_threads);
+		void setThreadCount(std::size_t num_threads);
 
 		GenericResponseMessage shutdown(const GenericRequestMessage& request);
 		void exit(const GenericNotificationMessage& notification);

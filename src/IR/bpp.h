@@ -89,7 +89,7 @@ template <class T>
 class OwnedEntityList {
 	private:
 		std::vector<std::shared_ptr<T>> entities;
-		std::unordered_map<std::string, size_t> name_to_index;
+		std::unordered_map<std::string, std::size_t> name_to_index;
 	public:
 		bool add(std::shared_ptr<T> entity) {
 			const std::string& name = entity->get_name();
@@ -99,15 +99,15 @@ class OwnedEntityList {
 			return true;
 		}
 
-		std::shared_ptr<T> find(const std::string& name, size_t max_visible_index = SIZE_MAX) const {
+		std::shared_ptr<T> find(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const {
 			auto it = name_to_index.find(name);
 			if (it == name_to_index.end()) return nullptr; // No entity with this name
-			size_t index = it->second;
+			std::size_t index = it->second;
 			if (index > max_visible_index) return nullptr; // Entity exists but is out of bounds
 			return entities[index];
 		}
 
-		size_t size() const {
+		std::size_t size() const {
 			return entities.size();
 		}
 

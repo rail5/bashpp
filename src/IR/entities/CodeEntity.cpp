@@ -24,7 +24,7 @@ void CodeEntity::add(const std::shared_ptr<Entity>& child) {
 	children.emplace_back(child);
 }
 
-std::shared_ptr<Object> CodeEntity::get_object(const std::string& name, size_t max_visible_index) const {
+std::shared_ptr<Object> CodeEntity::get_object(const std::string& name, std::size_t max_visible_index) const {
 	auto obj = local_objects.find(name, max_visible_index);
 	if (obj) return obj;
 
@@ -49,7 +49,7 @@ std::vector<std::shared_ptr<Object>> CodeEntity::get_all_known_objects() const {
 }
 
 size_t CodeEntity::number_of_known_objects() const {
-	size_t count = local_objects.size();
+	std::size_t count = local_objects.size();
 
 	if (auto parent = parent_entity.lock()) {
 		count += parent->number_of_known_objects();

@@ -35,9 +35,9 @@
  */
 class ProgramPool {
 	private:
-		size_t max_programs = 10; // Maximum number of programs to keep in the pool
+		std::size_t max_programs = 10; // Maximum number of programs to keep in the pool
 		std::vector<std::shared_ptr<bpp::bpp_program>> programs;
-		std::unordered_map<std::string, std::vector<size_t>> program_indices; // Maps file paths to program indices in the pool
+		std::unordered_map<std::string, std::vector<std::size_t>> program_indices; // Maps file paths to program indices in the pool
 		std::unordered_map<std::string, bool> open_files; // Maps file paths to whether they are currently open
 		std::unordered_map<std::string, std::string> unsaved_changes; // Maps file paths to their unsaved contents
 		BashVersion target_bash_version = {5, 2};
@@ -46,7 +46,7 @@ class ProgramPool {
 		// Pool snapshots:
 		struct Snapshot {
 			std::vector<std::shared_ptr<bpp::bpp_program>> programs_snapshot; // Snapshot of the current programs in the pool
-			std::unordered_map<std::string, std::vector<size_t>> program_indices_snapshot; // Snapshot of the current program indices
+			std::unordered_map<std::string, std::vector<std::size_t>> program_indices_snapshot; // Snapshot of the current program indices
 			std::unordered_map<std::string, bool> open_files_snapshot; // Snapshot of the current open files
 			std::unordered_map<std::string, std::string> unsaved_changes_snapshot; // Snapshot of the current unsaved changes
 		};
@@ -56,7 +56,7 @@ class ProgramPool {
 		bool utf16_mode = false; // Whether to use UTF-16 mode for character counting
 
 		void _remove_oldest_program();
-		void _remove_program(size_t index);
+		void _remove_program(std::size_t index);
 		std::shared_ptr<bpp::bpp_program> _parse_program(const std::string& file_path);
 
 		// Configurable settings
@@ -66,7 +66,7 @@ class ProgramPool {
 		void update_snapshot();
 		Snapshot load_snapshot() const;
 	public:
-		explicit ProgramPool(size_t max_programs = 10);
+		explicit ProgramPool(std::size_t max_programs = 10);
 
 		/**
 		 * @brief Add an include path for use by all future programs to be added to the pool.

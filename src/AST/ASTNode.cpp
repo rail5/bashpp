@@ -111,7 +111,7 @@ std::uint32_t ASTNode::getCharPositionInLine() const {
 	return position.column;
 }
 
-std::shared_ptr<ASTNode> ASTNode::getChildAt(size_t index) const {
+std::shared_ptr<ASTNode> ASTNode::getChildAt(std::size_t index) const {
 	if (index < children.size()) {
 		return children[index];
 	}

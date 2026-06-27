@@ -97,7 +97,7 @@ class Arguments {
 		 * @param argv The array of program argument strings (borrowed from main's argv)
 		 */
 		void set_program_arguments(int argc, char** argv) {
-			auto arguments_span = std::span<char*>{argv, static_cast<size_t>(argc)};
+			auto arguments_span = std::span<char*>{argv, static_cast<std::size_t>(argc)};
 			this->m_program_arguments = std::vector<char*>(arguments_span.begin(), arguments_span.end());
 		}
 		const std::vector<char*>& program_arguments() const {

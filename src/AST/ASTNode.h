@@ -58,10 +58,10 @@ class ASTNode {
 		std::uint32_t getLine() const;
 		std::uint32_t getCharPositionInLine() const;
 		
-		std::shared_ptr<ASTNode> getChildAt(size_t index) const;
+		std::shared_ptr<ASTNode> getChildAt(std::size_t index) const;
 		std::shared_ptr<ASTNode> getFirstChild() const;
 		std::shared_ptr<ASTNode> getLastChild() const;
-		size_t getChildrenCount() const;
+		std::size_t getChildrenCount() const;
 
 		void clear();
 		void clearChildren();

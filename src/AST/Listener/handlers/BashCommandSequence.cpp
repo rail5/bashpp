@@ -10,6 +10,7 @@
 #include <IR/entities/BashPipeline.h>
 
 #include <error/InternalError.h>
+#include <error/SyntaxError.h>
 
 namespace bpp::AST {
 
@@ -36,12 +37,13 @@ void Listener::exit(BashPipeline* node) {
 
 template <>
 void Listener::enter(BashCommandSequence* node) {
-	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity when entering BashCommandSequence node");
-	std::shared_ptr<bpp::IR::CodeEntity> current_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
+	auto current_code_entity = std::dynamic_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
+	if (!current_code_entity) throw bpp::ErrorHandling::SyntaxError(this, node, "Command sequence outside of a code entity");
+
 	auto command_sequence_entity = std::make_shared<bpp::IR::CodeEntity>();
-	command_sequence_entity->set_containing_class(current_entity->get_containing_class().lock());
-	command_sequence_entity->inherit(current_entity);
-	current_entity->add(command_sequence_entity);
+	command_sequence_entity->set_containing_class(current_code_entity->get_containing_class().lock());
+	command_sequence_entity->inherit(current_code_entity);
+	current_code_entity->add(command_sequence_entity);
 	entity_stack.push(command_sequence_entity);
 }
 
@@ -50,8 +52,8 @@ void Listener::exit(BashCommandSequence* node) {
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity when exiting BashCommandSequence node");
 	auto command_sequence_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity when exiting BashCommandSequence node");
-	auto current_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
-	current_entity->adopt_objects_of(command_sequence_entity);
+	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
+	current_code_entity->adopt_objects_of(command_sequence_entity);
 	entity_stack.pop();
 }
 

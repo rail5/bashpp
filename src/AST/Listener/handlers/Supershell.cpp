@@ -14,8 +14,8 @@ namespace bpp::AST {
 
 template <>
 void Listener::enter(Supershell* node) {
-	auto current_code_entity = std::dynamic_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
-	if (!current_code_entity) throw bpp::ErrorHandling::InternalError("Supershell outside of a code entity");
+	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity when entering Supershell node");
+	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
 
 	auto supershell_entity = std::make_shared<bpp::IR::Supershell>();
 	supershell_entity->set_containing_class(current_code_entity->get_containing_class().lock());

@@ -128,8 +128,7 @@ class ErrorOrWarning {
 /**
  * @class SyntaxError
  * @brief An exception thrown when a syntax error is encountered
- * This exception can be constructed from any listener that satisfies the ErrorReportableListener concept,
- * along with an AST node or token that satisfies the ASTNodePtrORToken concept.
+ * This exception can be constructed from any AST node or token that satisfies the ASTNodePtrORToken concept.
  * When thrown, the exception can be caught and printed to display a formatted syntax error message.
  * 
  */
@@ -148,8 +147,7 @@ class SyntaxError : public ErrorOrWarning, public std::runtime_error {
  * @brief A compiler warning that is not fatal to compilation
  * This type should never be thrown. Instead, it should be constructed and displayed via the print() method.
  * Throwing it would halt compilation, which is not desired for warnings.
- * This class likewise can be constructed from any listener that satisfies the ErrorReportableListener concept,
- * along with an AST node or token that satisfies the ASTNodePtrORToken concept.
+ * This likewise can be constructed from any AST node or token that satisfies the ASTNodePtrORToken concept.
  * 
  */
 class Warning : public ErrorOrWarning {

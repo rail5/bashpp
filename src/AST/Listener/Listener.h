@@ -199,4 +199,7 @@ template <> void Listener::exit(Supershell* node);
 template <> void Listener::enter(SubshellSubstitution* node);
 template <> void Listener::exit(SubshellSubstitution* node);
 
+template <> void Listener::enter(RawSubshell* node);
+template <> void Listener::exit(RawSubshell* node);
+
 } // namespace bpp::AST

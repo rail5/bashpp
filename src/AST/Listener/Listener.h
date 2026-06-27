@@ -196,4 +196,7 @@ template <> void Listener::exit(DoublequotedString* node);
 template <> void Listener::enter(Supershell* node);
 template <> void Listener::exit(Supershell* node);
 
+template <> void Listener::enter(SubshellSubstitution* node);
+template <> void Listener::exit(SubshellSubstitution* node);
+
 } // namespace bpp::AST

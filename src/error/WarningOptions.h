@@ -30,40 +30,57 @@
 	name,
 
 #define BPP_WARNING_MAP_CLI_STRING_TO_ENUM(name, cli_string, enabled_by_default) \
-	{cli_string, WarningOptions::Warning::name},
+	{cli_string, WarningType::name},
+
+#define BPP_WARNING_MAP_ENUM_TO_CLI_STRING(name, cli_string, enabled_by_default) \
+	{WarningType::name, cli_string},
 
 #define BPP_WARNING_SET_DEFAULT(name, cli_string, enabled_by_default) \
-	flags.set(static_cast<std::size_t>(WarningOptions::Warning::name), enabled_by_default);
+	flags.set(static_cast<std::size_t>(WarningType::name), enabled_by_default);
 
 namespace bpp::ErrorHandling {
 
+enum class WarningType : std::uint8_t {
+	// List all warnings defined in BPP_WARNING_LIST as enum values
+	BPP_WARNING_LIST(BPP_WARNING_GET_NAME)
+	EnumCount // Sentinel value to indicate the number of warnings defined
+};
+
+
+constexpr std::array<std::pair<std::string_view, WarningType>, 6> warning_name_map = {{
+	// Map CLI string names to enum values for all warnings defined in BPP_WARNING_LIST
+	BPP_WARNING_LIST(BPP_WARNING_MAP_CLI_STRING_TO_ENUM)
+}};
+
+constexpr std::array<std::pair<WarningType, std::string_view>, 6> warning_enum_map = {{
+	// Map enum values to CLI string names for all warnings defined in BPP_WARNING_LIST
+	BPP_WARNING_LIST(BPP_WARNING_MAP_ENUM_TO_CLI_STRING)
+}};
+
+static_assert(static_cast<std::size_t>(WarningType::EnumCount) <= 32, "Too many warnings defined; maximum is 32");
+
+inline std::optional<WarningType> get_warning_by_name(std::string_view warning_name) {
+	for (const auto& [name, warning] : warning_name_map) {
+		if (warning_name == name) return warning;
+	}
+	return std::nullopt;
+}
+inline std::optional<std::string_view> get_cli_string_by_warning(WarningType warning) {
+	for (const auto& [w, name] : warning_enum_map) {
+		if (warning == w) return name;
+	}
+	return std::nullopt;
+}
+
 class WarningOptions {
-	public:
-		enum class Warning : std::uint8_t {
-			// List all warnings defined in BPP_WARNING_LIST as enum values
-			BPP_WARNING_LIST(BPP_WARNING_GET_NAME)
-			EnumCount // Sentinel value to indicate the number of warnings defined
-		};
 	private:
-		std::bitset<static_cast<std::size_t>(Warning::EnumCount)> flags;
-
-		static constexpr std::array<std::pair<std::string_view, Warning>, 6> warning_name_map = {{
-			// Map CLI string names to enum values for all warnings defined in BPP_WARNING_LIST
-			BPP_WARNING_LIST(BPP_WARNING_MAP_CLI_STRING_TO_ENUM)
-		}};
-
-		static_assert(static_cast<std::size_t>(Warning::EnumCount) <= 32, "Too many warnings defined; maximum is 32");
+		std::bitset<static_cast<std::size_t>(WarningType::EnumCount)> flags;
 	public:
 		WarningOptions() {
 			// Set default values for all warnings
 			BPP_WARNING_LIST(BPP_WARNING_SET_DEFAULT)
 		}
-		static std::optional<Warning> get_warning_by_name(std::string_view warning_name) {
-			for (const auto& [name, warning] : warning_name_map) {
-				if (warning_name == name) return warning;
-			}
-			return std::nullopt;
-		}
+
 		/**
 		 * @brief Parse a warning option string and enable/disable the corresponding warning
 		 * 
@@ -100,13 +117,13 @@ class WarningOptions {
 			}
 		}
 
-		void enable_warning(Warning warning) {
+		void enable_warning(WarningType warning) {
 			flags.set(static_cast<std::size_t>(warning), true);
 		}
-		void disable_warning(Warning warning) {
+		void disable_warning(WarningType warning) {
 			flags.set(static_cast<std::size_t>(warning), false);
 		}
-		bool is_warning_enabled(Warning warning) const {
+		bool is_warning_enabled(WarningType warning) const {
 			return flags.test(static_cast<std::size_t>(warning));
 		}
 		void enable_all_warnings() {
@@ -121,6 +138,7 @@ class WarningOptions {
 
 #undef BPP_WARNING_GET_NAME
 #undef BPP_WARNING_MAP_CLI_STRING_TO_ENUM
+#undef BPP_WARNING_MAP_ENUM_TO_CLI_STRING
 #undef BPP_WARNING_SET_DEFAULT
 
 #undef BPP_WARNING_LIST

@@ -22,6 +22,8 @@
 
 namespace bpp::ErrorHandling {
 
+// TODO(@rail5): Clean this mess up.
+
 void print_syntax_error_or_warning(
 	const std::string& source_file,
 	std::uint32_t line, std::uint32_t column, std::uint32_t text_length,
@@ -29,13 +31,14 @@ void print_syntax_error_or_warning(
 	const std::vector<std::string>& include_chain,
 	std::shared_ptr<bpp::IR::Program> program,
 	bool lsp_mode,
-	bool is_warning
+	std::optional<WarningType> warning_type
 ) {
 	// Add to the program's diagnostics
+	// FIXME(@rail5): Include warning type in program diagnostics, so the language server can report -Wflag information to the user
 	if (program != nullptr) {
 		program->add_diagnostic(
 			source_file,
-			is_warning ? bpp::diagnostic_type::DIAGNOSTIC_WARNING : bpp::diagnostic_type::DIAGNOSTIC_ERROR,
+			warning_type.has_value() ? bpp::diagnostic_type::DIAGNOSTIC_WARNING : bpp::diagnostic_type::DIAGNOSTIC_ERROR,
 			msg,
 			line,
 			column,
@@ -67,8 +70,13 @@ void print_syntax_error_or_warning(
 	}
 
 	// Print the warning / error message
-	if (is_warning) {
-		std::cerr << color_orange << "warning: " << color_reset << msg << std::endl;
+	if (warning_type.has_value()) {
+		std::cerr << color_orange << "warning: " << color_reset << msg;
+		auto warning_cli_string = bpp::ErrorHandling::get_cli_string_by_warning(*warning_type);
+		if (warning_cli_string) {
+			std::cerr << " [" << color_orange << "-W" << *warning_cli_string << color_reset << "]";
+		}
+		std::cerr << std::endl;
 	} else {
 		std::cerr << color_red << "error: " << color_reset << msg << std::endl;
 	}
@@ -105,14 +113,14 @@ void print_syntax_error_or_warning(
 	
 	std::cerr << line1_prefix
 		<< line_before_error
-		<< (is_warning ? color_orange : color_red) << error_portion << color_reset
+		<< (warning_type.has_value() ? color_orange : color_red) << error_portion << color_reset
 		<< line_after_error << std::endl;
 
 	// Print the caret line
 	line2_prefix += equal_width_padding(line_before_error);
 
 	std::cerr << line2_prefix
-		<< (is_warning ? color_orange : color_red) << "^"
+		<< (warning_type.has_value() ? color_orange : color_red) << "^"
 		<< equal_width_padding(utf8_substr(error_portion, 0, utf8_length(error_portion) - 1), '~')
 		<< color_reset << std::endl;
 }
@@ -139,7 +147,7 @@ void print_parser_errors(
 			include_chain,
 			program,
 			lsp_mode,
-			false
+			std::nullopt
 		);
 	}
 }

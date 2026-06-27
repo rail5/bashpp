@@ -9,9 +9,9 @@
 #include <string>
 #include <memory>
 #include <cstdint>
-#include <stdexcept>
 #include <error/detail.h>
 #include <error/ParserError.h>
+#include <error/WarningOptions.h>
 
 #include <AST/Listener/Listener.h>
 
@@ -31,7 +31,8 @@ namespace bpp::ErrorHandling {
  * @param text_length The length of the token which caused the error
  * @param msg The error message to display
  * @param include_chain A stack of include files which led to the error
- * @param is_warning Whether the message is a warning or an error
+ * @param warning_type The type of warning, if this is a warning; std::nullopt if this is an error
+ * @param program The program being compiled, to which the error/warning should be added as a diagnostic
  */
 void print_syntax_error_or_warning(
 	const std::string& source_file,
@@ -42,7 +43,8 @@ void print_syntax_error_or_warning(
 	const std::vector<std::string>& include_chain,
 	std::shared_ptr<bpp::IR::Program> program,
 	bool lsp_mode,
-	bool is_warning = false);
+	std::optional<WarningType> warning_type
+);
 
 void print_parser_errors(
 	const std::vector<AST::ParserError>& errors,
@@ -52,7 +54,7 @@ void print_parser_errors(
 	bool lsp_mode
 );
 
-class ErrorOrWarning : public std::runtime_error {
+class ErrorOrWarning {
 	protected:
 		std::string source_file;
 		std::uint32_t line = 0;
@@ -60,8 +62,9 @@ class ErrorOrWarning : public std::runtime_error {
 		std::uint32_t text_length = 0;
 		std::vector<std::string> include_chain;
 		std::shared_ptr<bpp::IR::Program> program;
+		std::string message;
 		bool lsp_mode = false;
-		bool is_warning = false;
+		std::optional<WarningType> warning_type = std::nullopt; // std::nullopt if this is an error, otherwise the type of warning
 
 		template <bpp::detail::ASTNodePtrORToken T>
 		void set_from_listener(bpp::AST::Listener* listener, const T& error_ctx) {
@@ -102,7 +105,7 @@ class ErrorOrWarning : public std::runtime_error {
 		explicit ErrorOrWarning(const std::string& msg) = delete;
 
 		template <bpp::detail::ASTNodePtrORToken T>
-		ErrorOrWarning(bpp::AST::Listener* listener, const T& error_ctx, const std::string& msg) : std::runtime_error(msg) {
+		ErrorOrWarning(bpp::AST::Listener* listener, const T& error_ctx, const std::string& msg) : message(msg) {
 			set_from_listener(listener, error_ctx);
 		}
 		
@@ -112,11 +115,11 @@ class ErrorOrWarning : public std::runtime_error {
 				line,
 				column,
 				text_length,
-				this->what(),
+				message,
 				include_chain,
 				program,
 				lsp_mode,
-				is_warning
+				warning_type
 			);
 		}
 };
@@ -135,9 +138,8 @@ class SyntaxError : public ErrorOrWarning {
 		explicit SyntaxError(const std::string& msg) = delete;
 
 		template <bpp::detail::ASTNodePtrORToken T>
-		SyntaxError(bpp::AST::Listener* listener, const T& error_ctx, const std::string& msg) : ErrorOrWarning(listener, error_ctx, msg) {
-			is_warning = false;
-		}
+		SyntaxError(bpp::AST::Listener* listener, const T& error_ctx, const std::string& msg)
+			: ErrorOrWarning(listener, error_ctx, msg) {}
 };
 
 /**
@@ -155,8 +157,10 @@ class Warning : public ErrorOrWarning {
 		explicit Warning(const std::string& msg) = delete;
 
 		template <bpp::detail::ASTNodePtrORToken T>
-		Warning(bpp::AST::Listener* listener, const T& error_ctx, const std::string& msg) : ErrorOrWarning(listener, error_ctx, msg) {
-			is_warning = true;
+		Warning(bpp::AST::Listener* listener, const T& error_ctx, const std::string& msg, WarningType warning_type)
+			: ErrorOrWarning(listener, error_ctx, msg)
+		{
+			this->warning_type = warning_type;
 		}
 };
 

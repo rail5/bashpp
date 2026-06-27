@@ -25,35 +25,39 @@
 	X(CastToImplicitToPrimitive,   "cast-to-implicit-toprimitive",   true) \
 	X(TypeofImplicitToPrimitive,   "typeof-implicit-toprimitive",    true)
 
+
+#define BPP_WARNING_GET_NAME(name, cli_string, enabled_by_default) \
+	name,
+
+#define BPP_WARNING_MAP_CLI_STRING_TO_ENUM(name, cli_string, enabled_by_default) \
+	{cli_string, WarningOptions::Warning::name},
+
+#define BPP_WARNING_SET_DEFAULT(name, cli_string, enabled_by_default) \
+	flags.set(static_cast<std::size_t>(WarningOptions::Warning::name), enabled_by_default);
+
 namespace bpp::ErrorHandling {
 
 class WarningOptions {
 	public:
 		enum class Warning : std::uint8_t {
-			#define BPP_WARNING_ENUM(name, cli_string, enabled_by_default) name,
-			BPP_WARNING_LIST(BPP_WARNING_ENUM)
-			#undef BPP_WARNING_ENUM
-			EnumCount
+			// List all warnings defined in BPP_WARNING_LIST as enum values
+			BPP_WARNING_LIST(BPP_WARNING_GET_NAME)
+			EnumCount // Sentinel value to indicate the number of warnings defined
 		};
 	private:
-		// Default: all warnings enabled except for ImplicitToPrimitive, which is disabled by default
-		std::bitset<static_cast<std::size_t>(Warning::EnumCount)> warning_flags = []() {
-			std::bitset<static_cast<std::size_t>(Warning::EnumCount)> flags;
-			#define BPP_WARNING_DEFAULT(name, cli_string, enabled_by_default) \
-				flags.set(static_cast<std::size_t>(Warning::name), enabled_by_default);
-			BPP_WARNING_LIST(BPP_WARNING_DEFAULT)
-			#undef BPP_WARNING_DEFAULT
-			return flags;
-		}();
+		std::bitset<static_cast<std::size_t>(Warning::EnumCount)> flags;
 
 		static constexpr std::array<std::pair<std::string_view, Warning>, 6> warning_name_map = {{
-			#define BPP_WARNING_NAME_MAP(name, cli_string, enabled_by_default) {cli_string, Warning::name},
-			BPP_WARNING_LIST(BPP_WARNING_NAME_MAP)
-			#undef BPP_WARNING_NAME_MAP
+			// Map CLI string names to enum values for all warnings defined in BPP_WARNING_LIST
+			BPP_WARNING_LIST(BPP_WARNING_MAP_CLI_STRING_TO_ENUM)
 		}};
 
 		static_assert(static_cast<std::size_t>(Warning::EnumCount) <= 32, "Too many warnings defined; maximum is 32");
 	public:
+		WarningOptions() {
+			// Set default values for all warnings
+			BPP_WARNING_LIST(BPP_WARNING_SET_DEFAULT)
+		}
 		static std::optional<Warning> get_warning_by_name(std::string_view warning_name) {
 			for (const auto& [name, warning] : warning_name_map) {
 				if (warning_name == name) return warning;
@@ -89,26 +93,34 @@ class WarningOptions {
 
 			if (!warning_opt) throw std::runtime_error("Unknown warning option: '" + std::string(warning_option) + "'");
 
-			enable ? enable_warning(*warning_opt) : disable_warning(*warning_opt);
+			if (enable) {
+				enable_warning(*warning_opt);
+			} else {
+				disable_warning(*warning_opt);
+			}
 		}
 
 		void enable_warning(Warning warning) {
-			warning_flags.set(static_cast<std::size_t>(warning), true);
+			flags.set(static_cast<std::size_t>(warning), true);
 		}
 		void disable_warning(Warning warning) {
-			warning_flags.set(static_cast<std::size_t>(warning), false);
+			flags.set(static_cast<std::size_t>(warning), false);
 		}
 		bool is_warning_enabled(Warning warning) const {
-			return warning_flags.test(static_cast<std::size_t>(warning));
+			return flags.test(static_cast<std::size_t>(warning));
 		}
 		void enable_all_warnings() {
-			warning_flags.set();
+			flags.set();
 		}
 		void disable_all_warnings() {
-			warning_flags.reset();
+			flags.reset();
 		}
 };
 
 } // namespace bpp::ErrorHandling
+
+#undef BPP_WARNING_GET_NAME
+#undef BPP_WARNING_MAP_CLI_STRING_TO_ENUM
+#undef BPP_WARNING_SET_DEFAULT
 
 #undef BPP_WARNING_LIST

@@ -9,6 +9,7 @@
 #include <string>
 #include <memory>
 #include <cstdint>
+#include <stdexcept>
 #include <error/detail.h>
 #include <error/ParserError.h>
 #include <error/WarningOptions.h>
@@ -132,14 +133,14 @@ class ErrorOrWarning {
  * When thrown, the exception can be caught and printed to display a formatted syntax error message.
  * 
  */
-class SyntaxError : public ErrorOrWarning {
+class SyntaxError : public ErrorOrWarning, public std::runtime_error {
 	public:
 		SyntaxError() = delete;
 		explicit SyntaxError(const std::string& msg) = delete;
 
 		template <bpp::detail::ASTNodePtrORToken T>
 		SyntaxError(bpp::AST::Listener* listener, const T& error_ctx, const std::string& msg)
-			: ErrorOrWarning(listener, error_ctx, msg) {}
+			: ErrorOrWarning(listener, error_ctx, msg), std::runtime_error(msg) {}
 };
 
 /**

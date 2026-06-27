@@ -101,7 +101,7 @@ GenericResponseMessage bpp::BashppServer::handleRename(const GenericRequestMessa
 			single_rename.range.start.line = ref.line;
 			single_rename.range.start.character = ref.column;
 			single_rename.range.end.line = ref.line;
-			single_rename.range.end.character = ref.column + static_cast<uint32_t>(entity->get_name().size());
+			single_rename.range.end.character = ref.column + static_cast<std::uint32_t>(entity->get_name().size());
 			single_rename.newText = new_name;
 
 			// Make sure we don't add duplicate edits for the same file

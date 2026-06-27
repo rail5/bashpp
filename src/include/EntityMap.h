@@ -24,18 +24,18 @@ class bpp_entity;
  * 
  */
 struct FilePosition {
-	uint32_t line;
-	uint32_t column;
+	std::uint32_t line;
+	std::uint32_t column;
 
-	operator uint64_t() const {
-		// Encode line and column into a single uint64_t
+	operator std::uint64_t() const {
+		// Encode line and column into a single std::uint64_t
 		// The first 32 bits represent the line number,
 		// and the last 32 bits represent the column number.
 		// This permits perfect sorting of file positions
-		return (static_cast<uint64_t>(line) << 32) | column;
+		return (static_cast<std::uint64_t>(line) << 32) | column;
 	}
 
-	FilePosition(uint32_t line, uint32_t column)
+	FilePosition(std::uint32_t line, std::uint32_t column)
 		: line(line), column(column) {}
 };
 
@@ -70,7 +70,7 @@ class EntityMap {
 		/**
 		 * @brief Find the active code entity at a specific line and column
 		 */
-		std::shared_ptr<bpp::bpp_entity> find(uint32_t line, uint32_t column) {
+		std::shared_ptr<bpp::bpp_entity> find(std::uint32_t line, std::uint32_t column) {
 			return find(FilePosition(line, column));
 		}
 };

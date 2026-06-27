@@ -232,8 +232,8 @@ void yyerror(const char *s);
 program: statements {
 		std::shared_ptr<bpp::AST::Program> astRoot = std::make_shared<bpp::AST::Program>();
 		astRoot->addChildren($1);
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		astRoot->setPosition(line_number, column_number);
 		astRoot->setEndPosition(@1.end.line, @1.end.column);
 		$$ = astRoot;
@@ -251,8 +251,8 @@ statement:
 		set_incoming_token_can_be_lvalue(true, yyscanner);
 		set_received_local_keyword(false, yyscanner);
 		auto node = std::make_shared<bpp::AST::RawText>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText($1);
@@ -292,8 +292,8 @@ statement:
 shell_command_sequence:
 	pipeline %prec CONCAT_STOP {
 		auto node = std::make_shared<bpp::AST::BashCommandSequence>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -317,8 +317,8 @@ shell_command_sequence:
 pipeline:
 	shell_command %prec CONCAT_STOP {
 		auto node = std::make_shared<bpp::AST::BashPipeline>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -342,8 +342,8 @@ shell_command:
 	simple_command %prec CONCAT_STOP { current_command_can_receive_lvalues = true; $$ = $1; }
 	| bash_case_statement command_redirections %prec CONCAT_STOP {
 		auto node = std::make_shared<bpp::AST::BashCommand>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($1);
@@ -352,8 +352,8 @@ shell_command:
 	}
 	| bash_select_statement command_redirections %prec CONCAT_STOP {
 		auto node = std::make_shared<bpp::AST::BashCommand>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($1);
@@ -362,8 +362,8 @@ shell_command:
 	}
 	| bash_for_statement command_redirections %prec CONCAT_STOP {
 		auto node = std::make_shared<bpp::AST::BashCommand>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($1);
@@ -372,8 +372,8 @@ shell_command:
 	}
 	| bash_arithmetic_for_statement command_redirections %prec CONCAT_STOP {
 		auto node = std::make_shared<bpp::AST::BashCommand>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($1);
@@ -382,8 +382,8 @@ shell_command:
 	}
 	| bash_if_statement command_redirections %prec CONCAT_STOP {
 		auto node = std::make_shared<bpp::AST::BashCommand>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($1);
@@ -392,8 +392,8 @@ shell_command:
 	}
 	| bash_while_statement command_redirections %prec CONCAT_STOP {
 		auto node = std::make_shared<bpp::AST::BashCommand>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($1);
@@ -402,8 +402,8 @@ shell_command:
 	}
 	| bash_until_statement command_redirections %prec CONCAT_STOP {
 		auto node = std::make_shared<bpp::AST::BashCommand>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($1);
@@ -426,8 +426,8 @@ command_redirections:
 simple_command_sequence:
 	simple_pipeline %prec CONCAT_STOP {
 		auto node = std::make_shared<bpp::AST::BashCommandSequence>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -452,8 +452,8 @@ simple_pipeline:
 	simple_command %prec CONCAT_STOP {
 		current_command_can_receive_lvalues = true;
 		auto node = std::make_shared<bpp::AST::BashPipeline>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -473,8 +473,8 @@ simple_pipeline:
 simple_command:
 	simple_command_element {
 		auto node = std::make_shared<bpp::AST::BashCommand>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -495,8 +495,8 @@ simple_command:
 	| bash_test_condition_command {
 		current_command_can_receive_lvalues = false;
 		auto node = std::make_shared<bpp::AST::BashCommand>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -568,8 +568,8 @@ operative_command_element:
 operative_command_word:
 	IDENTIFIER_LVALUE {
 		auto node = std::make_shared<bpp::AST::RawText>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText($1);
@@ -615,8 +615,8 @@ redirection:
 			set_incoming_token_can_be_lvalue(true, yyscanner);
 
 		auto node = std::make_shared<bpp::AST::BashRedirection>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->setOperator($1);
@@ -627,8 +627,8 @@ redirection:
 		if (current_command_can_receive_lvalues)
 			set_incoming_token_can_be_lvalue(true, yyscanner);
 		auto node = std::make_shared<bpp::AST::RawText>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText($1);
@@ -656,8 +656,8 @@ redirection_operator:
 block:
 	LBRACE whitespace_or_delimiter statements RBRACE {
 		auto node = std::make_shared<bpp::AST::Block>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@4.end.line, @4.end.column);
 		node->addChildren($3);
@@ -668,8 +668,8 @@ block:
 valid_rvalue:
 	EMPTY_ASSIGNMENT {
 		auto node = std::make_shared<bpp::AST::Rvalue>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(line_number, column_number); // EMPTY_ASSIGNMENT is a zero-length token
 		node->addText("");
@@ -677,8 +677,8 @@ valid_rvalue:
 	}
 	| array_assignment {
 		auto node = std::make_shared<bpp::AST::Rvalue>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -686,8 +686,8 @@ valid_rvalue:
 	}
 	| subshell_raw {
 		auto node = std::make_shared<bpp::AST::Rvalue>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -695,8 +695,8 @@ valid_rvalue:
 	}
 	| new_statement {
 		auto node = std::make_shared<bpp::AST::Rvalue>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -704,8 +704,8 @@ valid_rvalue:
 	}
 	| dynamic_cast {
 		auto node = std::make_shared<bpp::AST::Rvalue>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -713,8 +713,8 @@ valid_rvalue:
 	}
 	| typeof_expression {
 		auto node = std::make_shared<bpp::AST::Rvalue>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -726,8 +726,8 @@ valid_rvalue:
 array_assignment:
 	ARRAY_ASSIGNMENT_START statements ARRAY_ASSIGNMENT_END {
 		auto node = std::make_shared<bpp::AST::ArrayAssignment>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChildren($2);
@@ -738,8 +738,8 @@ array_assignment:
 concatenated_rvalue:
 	concatenatable_rvalue %prec CONCAT_STOP {
 		auto rvalue = std::make_shared<bpp::AST::Rvalue>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		rvalue->setPosition(line_number, column_number);
 		rvalue->setEndPosition(@1.end.line, @1.end.column);
 		rvalue->addChild($1);
@@ -756,8 +756,8 @@ concatenated_rvalue:
 concatenatable_rvalue:
 	IDENTIFIER {
 		auto node = std::make_shared<bpp::AST::RawText>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText($1);
@@ -765,8 +765,8 @@ concatenatable_rvalue:
 	}
 	| INTEGER {
 		auto node = std::make_shared<bpp::AST::RawText>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText($1);
@@ -774,8 +774,8 @@ concatenatable_rvalue:
 	}
 	| SINGLEQUOTED_STRING {
 		auto node = std::make_shared<bpp::AST::RawText>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText($1);
@@ -783,8 +783,8 @@ concatenatable_rvalue:
 	}
 	| KEYWORD_NULLPTR {
 		auto node = std::make_shared<bpp::AST::RawText>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText(bpp::AST::Token<std::string>("0", line_number, column_number)); // Represent nullptr as 0
@@ -792,8 +792,8 @@ concatenatable_rvalue:
 	}
 	| CATCHALL { 
 		auto node = std::make_shared<bpp::AST::RawText>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText($1);
@@ -847,15 +847,15 @@ include_statement:
 		bpp::AST::Token<std::string> path(pathText, @3.begin.line, @3.begin.column);
 
 		std::string asPathText = $4;
-		uint32_t asPathLine = $4.getLine();
-		uint32_t asPathColumn = $4.getCharPositionInLine();
+		std::uint32_t asPathLine = $4.getLine();
+		std::uint32_t asPathColumn = $4.getCharPositionInLine();
 		if (!asPathText.empty()) asPathText = asPathText.substr(1, asPathText.length() - 2); // Remove surrounding quotes
 		bpp::AST::Token<std::string> asPath(asPathText, asPathLine, asPathColumn);
 
 		auto node = std::make_shared<bpp::AST::IncludeStatement>();
 
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@5.end.line, @5.end.column);
 		node->setKeyword(keyword);
@@ -888,8 +888,8 @@ object_instantiation:
 		if ($3 == nullptr) {
 			// Not an object instantiation, but an lvalue object reference
 			auto node = std::make_shared<bpp::AST::ObjectReference>();
-			uint32_t line_number = @1.begin.line;
-			uint32_t column_number = @1.begin.column;
+			std::uint32_t line_number = @1.begin.line;
+			std::uint32_t column_number = @1.begin.column;
 			node->setPosition(line_number, column_number);
 			node->setEndPosition(@2.end.line, @2.end.column);
 			node->setIdentifier($2);
@@ -902,8 +902,8 @@ object_instantiation:
 		} else {
 			// Use the ObjectInstantiation node returned by instantiation_suffix
 			auto node = std::dynamic_pointer_cast<bpp::AST::ObjectInstantiation>($3);
-			uint32_t line_number = @1.begin.line;
-			uint32_t column_number = @1.begin.column;
+			std::uint32_t line_number = @1.begin.line;
+			std::uint32_t column_number = @1.begin.column;
 			node->setPosition(line_number, column_number);
 			node->setEndPosition(@3.end.line, @3.end.column);
 			node->setType($2);
@@ -938,8 +938,8 @@ pointer_declaration_preface:
 		set_incoming_token_can_be_lvalue(true, yyscanner); // The following identifier should be an lvalue, let the lexer know
 		
 		auto node = std::make_shared<bpp::AST::PointerDeclaration>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 
 		node->setType($2);
@@ -950,8 +950,8 @@ pointer_declaration_preface:
 new_statement:
 	KEYWORD_NEW WS IDENTIFIER {
 		auto node = std::make_shared<bpp::AST::NewStatement>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->setType($3);
@@ -963,8 +963,8 @@ new_statement:
 delete_statement:
 	KEYWORD_DELETE WS object_reference {
 		auto node = std::make_shared<bpp::AST::DeleteStatement>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChild($3);
@@ -974,8 +974,8 @@ delete_statement:
 	|
 	KEYWORD_DELETE WS self_reference {
 		auto node = std::make_shared<bpp::AST::DeleteStatement>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChild($3);
@@ -987,8 +987,8 @@ delete_statement:
 class_definition:
 	KEYWORD_CLASS WS IDENTIFIER maybe_parent_class block {
 		auto node = std::make_shared<bpp::AST::ClassDefinition>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@5.end.line, @5.end.column);
 		node->setClassName($3);
@@ -1006,8 +1006,8 @@ maybe_parent_class:
 datamember_declaration:
 	access_modifier IDENTIFIER_LVALUE maybe_default_value maybe_whitespace DELIM {
 		auto node = std::make_shared<bpp::AST::DatamemberDeclaration>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->setAccessModifier($1);
@@ -1018,8 +1018,8 @@ datamember_declaration:
 	}
 	| access_modifier object_instantiation maybe_whitespace DELIM {
 		auto node = std::make_shared<bpp::AST::DatamemberDeclaration>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 
@@ -1048,8 +1048,8 @@ datamember_declaration:
 	}
 	| access_modifier pointer_declaration maybe_whitespace DELIM {
 		auto node = std::make_shared<bpp::AST::DatamemberDeclaration>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 
@@ -1085,8 +1085,8 @@ maybe_value_assignment:
 value_assignment:
 	assignment_operator valid_rvalue {
 		auto node = std::make_shared<bpp::AST::ValueAssignment>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 
@@ -1111,8 +1111,8 @@ assignment_operator:
 method_definition:
 	access_modifier KEYWORD_METHOD WS IDENTIFIER WS maybe_parameter_list block {
 		auto node = std::make_shared<bpp::AST::MethodDefinition>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@7.end.line, @7.end.column);
 
@@ -1127,8 +1127,8 @@ method_definition:
 	}
 	| KEYWORD_VIRTUAL WS access_modifier KEYWORD_METHOD WS IDENTIFIER WS maybe_parameter_list block {
 		auto node = std::make_shared<bpp::AST::MethodDefinition>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@9.end.line, @9.end.column);
 
@@ -1189,8 +1189,8 @@ parameter:
 constructor_definition:
 	KEYWORD_CONSTRUCTOR WS block {
 		auto node = std::make_shared<bpp::AST::ConstructorDefinition>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChild($3);
@@ -1201,8 +1201,8 @@ constructor_definition:
 destructor_definition:
 	KEYWORD_DESTRUCTOR WS block {
 		auto node = std::make_shared<bpp::AST::DestructorDefinition>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChild($3);
@@ -1213,8 +1213,8 @@ destructor_definition:
 doublequoted_string:
 	QUOTE_BEGIN quote_contents QUOTE_END {
 		auto node = std::dynamic_pointer_cast<bpp::AST::DoublequotedString>($2);
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 
@@ -1251,8 +1251,8 @@ string_interpolation:
 object_reference:
 	AT IDENTIFIER maybe_descend_object_hierarchy {
 		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($3);
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 
@@ -1264,8 +1264,8 @@ object_reference:
 	}
 	| REF_START maybe_hash IDENTIFIER maybe_descend_object_hierarchy maybe_array_index REF_END {
 		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($4);
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@6.end.line, @6.end.column);
 
@@ -1286,8 +1286,8 @@ object_reference:
 object_reference_lvalue:
 	AT_LVALUE IDENTIFIER maybe_descend_object_hierarchy maybe_array_index {
 		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($3);
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 
@@ -1301,8 +1301,8 @@ object_reference_lvalue:
 	}
 	| REF_START_LVALUE maybe_hash IDENTIFIER maybe_descend_object_hierarchy maybe_array_index REF_END {
 		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($4);
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@6.end.line, @6.end.column);
 
@@ -1323,8 +1323,8 @@ object_reference_lvalue:
 self_reference:
 	KEYWORD_THIS maybe_descend_object_hierarchy {
 		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 
@@ -1336,8 +1336,8 @@ self_reference:
 	}
 	| REF_START maybe_hash KEYWORD_THIS maybe_descend_object_hierarchy maybe_array_index REF_END {
 		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($4);
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@6.end.line, @6.end.column);
 
@@ -1355,8 +1355,8 @@ self_reference:
 	}
 	| KEYWORD_SUPER maybe_descend_object_hierarchy {
 		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 
@@ -1368,8 +1368,8 @@ self_reference:
 	}
 	| REF_START maybe_hash KEYWORD_SUPER maybe_descend_object_hierarchy maybe_array_index REF_END {
 		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($4);
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@6.end.line, @6.end.column);
 
@@ -1390,8 +1390,8 @@ self_reference:
 self_reference_lvalue:
 	KEYWORD_THIS_LVALUE maybe_descend_object_hierarchy maybe_array_index {
 		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 
@@ -1405,8 +1405,8 @@ self_reference_lvalue:
 	}
 	| REF_START_LVALUE maybe_hash KEYWORD_THIS maybe_descend_object_hierarchy maybe_array_index REF_END {
 		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($4);
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@6.end.line, @6.end.column);
 
@@ -1424,8 +1424,8 @@ self_reference_lvalue:
 	}
 	| KEYWORD_SUPER_LVALUE maybe_descend_object_hierarchy {
 		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 
@@ -1437,8 +1437,8 @@ self_reference_lvalue:
 	}
 	| REF_START_LVALUE maybe_hash KEYWORD_SUPER maybe_descend_object_hierarchy maybe_array_index REF_END {
 		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($4);
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@6.end.line, @6.end.column);
 
@@ -1468,8 +1468,8 @@ maybe_descend_object_hierarchy:
 maybe_array_index:
 	/* empty */ { $$ = nullptr; }
 	| ARRAY_INDEX_START array_index ARRAY_INDEX_END {
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		$2->setPosition(line_number, column_number);
 		$2->setEndPosition(@3.end.line, @3.end.column);
 		$$ = $2;
@@ -1479,8 +1479,8 @@ maybe_array_index:
 array_index:
 	valid_rvalue {
 		auto node = std::make_shared<bpp::AST::ArrayIndex>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -1489,8 +1489,8 @@ array_index:
 	| AT {
 		// '@' is a valid array index, as in ${array[@]}
 		auto node = std::make_shared<bpp::AST::ArrayIndex>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		auto atNode = std::make_shared<bpp::AST::RawText>();
@@ -1514,8 +1514,8 @@ maybe_hash:
 bash_variable:
 	BASH_VAR_START maybe_exclam maybe_hash IDENTIFIER maybe_array_index maybe_parameter_expansion BASH_VAR_END {
 		auto node = std::make_shared<bpp::AST::BashVariable>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@7.end.line, @7.end.column);
 
@@ -1530,8 +1530,8 @@ bash_variable:
 	}
 	| BASH_VAR {
 		auto node = std::make_shared<bpp::AST::RawText>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText($1);
@@ -1543,8 +1543,8 @@ maybe_parameter_expansion:
 	/* empty */ { $$ = nullptr; }
 	| EXPANSION_BEGIN valid_rvalue {
 		auto node = std::make_shared<bpp::AST::ParameterExpansion>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->setExpansionBegin($1);
@@ -1553,8 +1553,8 @@ maybe_parameter_expansion:
 	}
 	| EXPANSION_BEGIN PARAMETER_EXPANSION_CONTENT {
 		auto node = std::make_shared<bpp::AST::ParameterExpansion>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->setExpansionBegin($1);
@@ -1569,8 +1569,8 @@ maybe_parameter_expansion:
 dynamic_cast:
 	KEYWORD_DYNAMIC_CAST LANGLE cast_target RANGLE WS valid_rvalue {
 		auto node = std::make_shared<bpp::AST::DynamicCast>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@6.end.line, @6.end.column);
 		node->addChild($3); // cast_target
@@ -1582,8 +1582,8 @@ dynamic_cast:
 cast_target:
 	IDENTIFIER {
 		auto node = std::make_shared<bpp::AST::DynamicCastTarget>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setTargetType($1);
@@ -1591,8 +1591,8 @@ cast_target:
 	}
 	| bash_variable {
 		auto node = std::make_shared<bpp::AST::DynamicCastTarget>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -1600,8 +1600,8 @@ cast_target:
 	}
 	| object_reference {
 		auto node = std::make_shared<bpp::AST::DynamicCastTarget>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -1609,8 +1609,8 @@ cast_target:
 	}
 	| self_reference {
 		auto node = std::make_shared<bpp::AST::DynamicCastTarget>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -1623,8 +1623,8 @@ object_assignment:
 		set_incoming_token_can_be_lvalue(true, yyscanner); // Lvalues can follow assignments
 
 		auto node = std::make_shared<bpp::AST::ObjectAssignment>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($1);
@@ -1635,8 +1635,8 @@ object_assignment:
 		set_incoming_token_can_be_lvalue(true, yyscanner); // Lvalues can follow assignments
 
 		auto node = std::make_shared<bpp::AST::ObjectAssignment>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($1);
@@ -1647,8 +1647,8 @@ object_assignment:
 		set_incoming_token_can_be_lvalue(true, yyscanner); // Lvalues can follow assignments
 
 		auto node = std::make_shared<bpp::AST::ObjectAssignment>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($1);
@@ -1662,8 +1662,8 @@ shell_variable_assignment:
 		set_incoming_token_can_be_lvalue(true, yyscanner); // Lvalues can follow assignments
 
 		auto node = std::make_shared<bpp::AST::PrimitiveAssignment>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->setIdentifier($1);
@@ -1675,8 +1675,8 @@ shell_variable_assignment:
 		set_received_local_keyword(true, yyscanner); // Mark that we received the 'local' keyword for this line
 
 		auto node = std::make_shared<bpp::AST::PrimitiveAssignment>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@4.end.line, @4.end.column);
 		node->setLocal(true);
@@ -1749,8 +1749,8 @@ pointer_dereference_lvalue:
 typeof_expression:
 	KEYWORD_TYPEOF WS valid_rvalue {
 		auto node = std::make_shared<bpp::AST::TypeofExpression>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChild($3);
@@ -1760,8 +1760,8 @@ typeof_expression:
 supershell:
 	SUPERSHELL_START statements SUPERSHELL_END {
 		auto node = std::make_shared<bpp::AST::Supershell>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChildren($2);
@@ -1772,8 +1772,8 @@ supershell:
 subshell_raw:
 	SUBSHELL_START statements SUBSHELL_END {
 		auto node = std::make_shared<bpp::AST::RawSubshell>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChildren($2);
@@ -1789,8 +1789,8 @@ subshell_substitution:
 dollar_subshell:
 	SUBSHELL_SUBSTITUTION_START statements SUBSHELL_SUBSTITUTION_END {
 		auto node = std::make_shared<bpp::AST::SubshellSubstitution>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChildren($2);
@@ -1811,8 +1811,8 @@ deprecated_subshell:
 		assert($1 == $3 && "Mismatched deprecated subshell nesting depths!");
 
 		auto node = std::make_shared<bpp::AST::SubshellSubstitution>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChildren($2);
@@ -1823,8 +1823,8 @@ deprecated_subshell:
 process_substitution:
 	PROCESS_SUBSTITUTION_START statements PROCESS_SUBSTITUTION_END {
 		auto node = std::make_shared<bpp::AST::ProcessSubstitution>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->setSubstitutionStart($1);
@@ -1846,8 +1846,8 @@ heredoc_header:
 heredoc_body:
 	HEREDOC_CONTENT_START heredoc_content HEREDOC_END {
 		auto node = std::dynamic_pointer_cast<bpp::AST::HeredocBody>($2);
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->setDelimiter($3);
@@ -1872,8 +1872,8 @@ heredoc_content:
 herestring:
 	HERESTRING_START maybe_whitespace valid_rvalue {
 		auto node = std::make_shared<bpp::AST::HereString>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChild($3);
@@ -1884,8 +1884,8 @@ herestring:
 bash_case_statement:
 	BASH_KEYWORD_CASE WS bash_case_header bash_case_body BASH_KEYWORD_ESAC {
 		auto node = std::make_shared<bpp::AST::BashCaseStatement>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@5.end.line, @5.end.column);
 		node->addChild($3); // bash_case_input
@@ -1902,8 +1902,8 @@ bash_case_input:
 	valid_rvalue {
 		set_bash_case_input_received(true, yyscanner);
 		auto node = std::make_shared<bpp::AST::BashCaseInput>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -1919,8 +1919,8 @@ bash_case_body:
 bash_case_pattern:
 	bash_case_pattern_header BASH_CASE_PATTERN_DELIM statements BASH_CASE_PATTERN_TERMINATOR {
 		auto node = std::make_shared<bpp::AST::BashCasePattern>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@4.end.line, @4.end.column);
 		node->addChild($1); // pattern header
@@ -1960,8 +1960,8 @@ bash_select_statement:
 	BASH_KEYWORD_SELECT WS bash_for_or_select_header DELIM maybe_whitespace BASH_KEYWORD_DO statements BASH_KEYWORD_DONE {
 		auto forStatement = std::dynamic_pointer_cast<bpp::AST::BashForStatement>($3);
 		auto selectStatement = std::make_shared<bpp::AST::BashSelectStatement>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		selectStatement->setPosition(line_number, column_number);
 		selectStatement->setEndPosition(@8.end.line, @8.end.column);
 		// Earlier, we assumed it was a 'for' statement by default
@@ -1978,8 +1978,8 @@ bash_select_statement:
 	| BASH_KEYWORD_SELECT WS bash_for_or_select_header DELIM maybe_whitespace block {
 		auto forStatement = std::dynamic_pointer_cast<bpp::AST::BashForStatement>($3);
 		auto selectStatement = std::make_shared<bpp::AST::BashSelectStatement>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		selectStatement->setPosition(line_number, column_number);
 		selectStatement->setEndPosition(@6.end.line, @6.end.column);
 		// Earlier, we assumed it was a 'for' statement by default
@@ -2002,8 +2002,8 @@ bash_for_or_select_header:
 		// If it winds up being 'select' instead, the AST node will be updated later
 		// When we're in the bash_select_statement rule
 		auto forStatement = std::make_shared<bpp::AST::BashForStatement>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		forStatement->setPosition(line_number, column_number);
 		forStatement->setVariable($1);
 		forStatement->addChild($2);
@@ -2021,8 +2021,8 @@ bash_for_or_select_maybe_in_something:
 	}
 	| WS BASH_KEYWORD_IN maybe_whitespace {
 		auto node = std::make_shared<bpp::AST::BashInCondition>();
-		uint32_t line_number = @2.begin.line;
-		uint32_t column_number = @2.begin.column;
+		std::uint32_t line_number = @2.begin.line;
+		std::uint32_t column_number = @2.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 		$$ = node; // 'in' with no input, valid in Bash
@@ -2039,8 +2039,8 @@ bash_for_or_select_variable:
 bash_for_or_select_input:
 	valid_rvalue {
 		auto node = std::make_shared<bpp::AST::BashInCondition>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -2075,8 +2075,8 @@ bash_for_statement:
 			forStatement->setVariable(selectStatement->VARIABLE());
 			forStatement->addChildren(selectStatement->getChildren());
 		}
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		forStatement->setPosition(line_number, column_number);
 		forStatement->setEndPosition(@8.end.line, @8.end.column);
 		forStatement->addChildren($7);
@@ -2091,8 +2091,8 @@ bash_for_statement:
 			forStatement->setVariable(selectStatement->VARIABLE());
 			forStatement->addChildren(selectStatement->getChildren());
 		}
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		forStatement->setPosition(line_number, column_number);
 		forStatement->setEndPosition(@6.end.line, @6.end.column);
 		forStatement->addChild($6);
@@ -2110,8 +2110,8 @@ bash_for_statement:
 bash_arithmetic_for_statement:
 	BASH_KEYWORD_FOR WS arithmetic_for_condition BASH_KEYWORD_DO statements BASH_KEYWORD_DONE {
 		auto node = std::make_shared<bpp::AST::BashArithmeticForStatement>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@6.end.line, @6.end.column);
 		node->addChild($3); // for condition
@@ -2120,8 +2120,8 @@ bash_arithmetic_for_statement:
 	}
 	| BASH_KEYWORD_FOR WS arithmetic_for_condition DELIM maybe_whitespace BASH_KEYWORD_DO statements BASH_KEYWORD_DONE {
 		auto node = std::make_shared<bpp::AST::BashArithmeticForStatement>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@8.end.line, @8.end.column);
 		node->addChild($3); // for condition
@@ -2130,8 +2130,8 @@ bash_arithmetic_for_statement:
 	}
 	| BASH_KEYWORD_FOR WS arithmetic_for_condition block {
 		auto node = std::make_shared<bpp::AST::BashArithmeticForStatement>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@4.end.line, @4.end.column);
 		node->addChild($3); // for condition
@@ -2140,8 +2140,8 @@ bash_arithmetic_for_statement:
 	}
 	| BASH_KEYWORD_FOR WS arithmetic_for_condition DELIM maybe_whitespace block {
 		auto node = std::make_shared<bpp::AST::BashArithmeticForStatement>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@6.end.line, @6.end.column);
 		node->addChild($3); // for condition
@@ -2153,8 +2153,8 @@ bash_arithmetic_for_statement:
 arithmetic_for_condition:
 	ARITH_FOR_CONDITION_START arith_statement DELIM arith_statement DELIM arith_statement ARITH_FOR_CONDITION_END maybe_whitespace {
 		auto node = std::make_shared<bpp::AST::BashArithmeticForCondition>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@7.end.line, @7.end.column);
 		node->addChild($2); // first expression
@@ -2177,8 +2177,8 @@ arith_statement:
 	/* empty */ { $$ = std::make_shared<bpp::AST::BashArithmeticStatement>(); }
 	| valid_rvalue {
 		auto node = std::make_shared<bpp::AST::BashArithmeticStatement>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -2186,8 +2186,8 @@ arith_statement:
 	}
 	| IDENTIFIER_LVALUE {
 		auto node = std::make_shared<bpp::AST::BashArithmeticStatement>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		auto rawText = std::make_shared<bpp::AST::RawText>();
@@ -2199,8 +2199,8 @@ arith_statement:
 	}
 	| object_reference_lvalue {
 		auto node = std::make_shared<bpp::AST::BashArithmeticStatement>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -2208,8 +2208,8 @@ arith_statement:
 	}
 	| self_reference_lvalue {
 		auto node = std::make_shared<bpp::AST::BashArithmeticStatement>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -2217,8 +2217,8 @@ arith_statement:
 	}
 	| object_assignment {
 		auto node = std::make_shared<bpp::AST::BashArithmeticStatement>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -2226,8 +2226,8 @@ arith_statement:
 	}
 	| shell_variable_assignment {
 		auto node = std::make_shared<bpp::AST::BashArithmeticStatement>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -2240,8 +2240,8 @@ arith_statement:
 increment_decrement_expression:
 	arith_condition_term arith_operator {
 		auto node = std::make_shared<bpp::AST::BashArithmeticStatement>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($1);
@@ -2250,8 +2250,8 @@ increment_decrement_expression:
 	}
 	| arith_operator arith_condition_term {
 		auto node = std::make_shared<bpp::AST::BashArithmeticStatement>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addText($1);
@@ -2263,8 +2263,8 @@ increment_decrement_expression:
 comparison_expression:
 	arith_condition_term maybe_whitespace comparison_operator maybe_whitespace arith_condition_term {
 		auto node = std::make_shared<bpp::AST::BashArithmeticStatement>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@5.end.line, @5.end.column);
 		node->addChild($1);
@@ -2288,8 +2288,8 @@ arith_condition_term:
 	| bash_variable { $$ = $1; }
 	| IDENTIFIER_LVALUE {
 		auto node = std::make_shared<bpp::AST::RawText>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText($1);
@@ -2297,8 +2297,8 @@ arith_condition_term:
 	}
 	| IDENTIFIER {
 		auto node = std::make_shared<bpp::AST::RawText>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText($1);
@@ -2306,8 +2306,8 @@ arith_condition_term:
 	}
 	| INTEGER {
 		auto node = std::make_shared<bpp::AST::RawText>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText($1);
@@ -2315,8 +2315,8 @@ arith_condition_term:
 	}
 	| KEYWORD_NULLPTR {
 		auto node = std::make_shared<bpp::AST::RawText>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText(bpp::AST::Token<std::string>("0", line_number, column_number));
@@ -2332,8 +2332,8 @@ arith_operator:
 bash_arithmetic_substitution:
 	BASH_ARITHMETIC_START statements BASH_ARITHMETIC_END {
 		auto node = std::make_shared<bpp::AST::BashArithmeticSubstitution>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChildren($2);
@@ -2352,8 +2352,8 @@ bash_if_statement:
 bash_if_root_branch:
 	BASH_KEYWORD_IF bash_if_condition DELIM maybe_whitespace BASH_KEYWORD_THEN maybe_whitespace statements {
 		auto node = std::make_shared<bpp::AST::BashIfStatement>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 
 		auto rootBranch = std::make_shared<bpp::AST::BashIfRootBranch>();
@@ -2371,8 +2371,8 @@ bash_if_condition:
 	simple_command_sequence {
 		set_bash_if_condition_received(true, yyscanner);
 		auto node = std::make_shared<bpp::AST::BashIfCondition>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -2388,8 +2388,8 @@ maybe_bash_if_else_branches:
 bash_if_else_branch:
 	BASH_KEYWORD_ELIF bash_if_condition DELIM maybe_whitespace BASH_KEYWORD_THEN maybe_whitespace statements {
 		auto node = std::make_shared<bpp::AST::BashIfElseBranch>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@7.end.line, @7.end.column);
 		node->setHasCondition(true);
@@ -2400,8 +2400,8 @@ bash_if_else_branch:
 	}
 	| BASH_KEYWORD_ELSE DELIM maybe_whitespace statements {
 		auto node = std::make_shared<bpp::AST::BashIfElseBranch>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@4.end.line, @4.end.column);
 		// 'else' branch has no condition
@@ -2415,8 +2415,8 @@ bash_if_else_branch:
 bash_while_statement:
 	BASH_KEYWORD_WHILE bash_while_or_until_condition DELIM maybe_whitespace BASH_KEYWORD_DO maybe_whitespace statements BASH_KEYWORD_DONE {
 		auto node = std::make_shared<bpp::AST::BashWhileStatement>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@8.end.line, @8.end.column);
 		node->addChild($2); // condition
@@ -2428,8 +2428,8 @@ bash_while_statement:
 bash_until_statement:
 	BASH_KEYWORD_UNTIL bash_while_or_until_condition DELIM maybe_whitespace BASH_KEYWORD_DO maybe_whitespace statements BASH_KEYWORD_DONE {
 		auto node = std::make_shared<bpp::AST::BashUntilStatement>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@8.end.line, @8.end.column);
 		node->addChild($2); // condition
@@ -2442,8 +2442,8 @@ bash_while_or_until_condition:
 	simple_command_sequence {
 		set_bash_while_or_until_condition_received(true, yyscanner);
 		auto node = std::make_shared<bpp::AST::BashWhileOrUntilCondition>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild($1);
@@ -2459,8 +2459,8 @@ bash_while_or_until_condition:
 bash_function:
 	BASH_KEYWORD_FUNCTION BASH_FUNCTION_LABEL block {
 		auto node = std::make_shared<bpp::AST::BashFunction>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->setName($2);
@@ -2469,8 +2469,8 @@ bash_function:
 	}
 	| BASH_KEYWORD_FUNCTION BASH_FUNCTION_LABEL BASH_FUNCTION_OPEN block {
 		auto node = std::make_shared<bpp::AST::BashFunction>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@4.end.line, @4.end.column);
 		node->setName($2);
@@ -2479,8 +2479,8 @@ bash_function:
 	}
 	| BASH_FUNCTION_LABEL BASH_FUNCTION_OPEN block {
 		auto node = std::make_shared<bpp::AST::BashFunction>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->setName($1);
@@ -2491,8 +2491,8 @@ bash_function:
 bash_test_condition_command:
 	BASH_TEST_CONDITION_START simple_command_sequence BASH_TEST_CONDITION_END {
 		auto node = std::make_shared<bpp::AST::BashTestConditionCommand>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChild($2);
@@ -2503,8 +2503,8 @@ bash_test_condition_command:
 bash_53_native_supershell:
 	BASH_53_NATIVE_SUPERSHELL_START statements BASH_53_NATIVE_SUPERSHELL_END {
 		auto node = std::make_shared<bpp::AST::Bash53NativeSupershell>();
-		uint32_t line_number = @1.begin.line;
-		uint32_t column_number = @1.begin.column;
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->setStartToken($1);

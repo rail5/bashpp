@@ -29,7 +29,7 @@ void Listener::walk(bpp::AST::ASTNode* node) {
 			#undef AST_LISTENER_NODE_CASE
 			default:
 				throw bpp::ErrorHandling::InternalError("Listener does not know how to handle node type "
-					+ std::to_string(static_cast<uint8_t>(node->getType()))
+					+ std::to_string(static_cast<std::uint8_t>(node->getType()))
 				);
 		}
 	} catch (const bpp::ErrorHandling::SyntaxError& e) {

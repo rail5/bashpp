@@ -130,8 +130,8 @@ struct CodeGenState {
 	bool in_class = false;
 	std::stack<std::monostate> bash_function_stack;
 	std::stack<std::monostate> supershell_stack;
-	uint64_t dynamic_cast_counter = 0;
-	uint64_t supershell_counter = 0;
+	std::uint64_t dynamic_cast_counter = 0;
+	std::uint64_t supershell_counter = 0;
 
 	bool should_declare_local() const {
 		return in_class || in_method || !bash_function_stack.empty();

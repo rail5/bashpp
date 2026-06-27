@@ -18,7 +18,7 @@ class Program : public CodeEntity, public std::enable_shared_from_this<Program> 
 	private:
 		OwnedEntityList<Class> classes;
 	public:
-		void add_diagnostic(std::string, bpp::diagnostic_type, std::string, uint32_t, uint32_t, uint32_t, uint32_t) {}
+		void add_diagnostic(std::string, bpp::diagnostic_type, std::string, std::uint32_t, std::uint32_t, std::uint32_t, std::uint32_t) {}
 
 		bool add_class(std::shared_ptr<Class> class_entity);
 		std::shared_ptr<Class> get_class(const std::string& name, size_t max_visible_index = SIZE_MAX) const override { return classes.find(name, max_visible_index); }

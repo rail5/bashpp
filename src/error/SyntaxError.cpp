@@ -24,7 +24,7 @@ namespace bpp::ErrorHandling {
 
 void print_syntax_error_or_warning(
 	const std::string& source_file,
-	uint32_t line, uint32_t column, uint32_t text_length,
+	std::uint32_t line, std::uint32_t column, std::uint32_t text_length,
 	const std::string& msg,
 	const std::vector<std::string>& include_chain,
 	std::shared_ptr<bpp::IR::Program> program,
@@ -92,7 +92,7 @@ void print_syntax_error_or_warning(
 
 	// Read the line with the error
 	std::string line_content;
-	for (uint32_t i = 0; i <= line; i++) {
+	for (std::uint32_t i = 0; i <= line; i++) {
 		std::getline(file, line_content);
 	}
 	file.close();
@@ -100,7 +100,7 @@ void print_syntax_error_or_warning(
 	// Print the line with the error
 	std::string line_before_error = utf8_substr(line_content, 0, column);
 	std::string error_portion = utf8_substr(line_content, column, text_length);
-	uint32_t line_after_error_length = utf8_length(line_content) - (utf8_length(line_before_error) + utf8_length(error_portion));
+	std::uint32_t line_after_error_length = utf8_length(line_content) - (utf8_length(line_before_error) + utf8_length(error_portion));
 	std::string line_after_error = utf8_substr(line_content, column + text_length, line_after_error_length);
 	
 	std::cerr << line1_prefix
@@ -125,7 +125,7 @@ void print_parser_errors(
 	bool lsp_mode
 ) {
 	for (const auto& error : errors) {
-		uint32_t text_length
+		std::uint32_t text_length
 			= (error.end.line == error.start.line)
 			? (error.end.column - error.start.column)
 			: UINT32_MAX;
@@ -144,11 +144,11 @@ void print_parser_errors(
 	}
 }
 
-std::string utf8_substr(const std::string& str, uint32_t start, uint32_t length) {
+std::string utf8_substr(const std::string& str, std::uint32_t start, std::uint32_t length) {
 	std::string::const_iterator it = str.begin();
 	
 	// Fast-forward the iterator to the start position
-	for (uint32_t i = 0; i < start && it != str.end(); ++i) {
+	for (std::uint32_t i = 0; i < start && it != str.end(); ++i) {
 		try {
 			utf8::next(it, str.end());
 		} catch (const utf8::invalid_utf8&) {
@@ -159,7 +159,7 @@ std::string utf8_substr(const std::string& str, uint32_t start, uint32_t length)
 	std::string result;
 
 	while (it != str.end() && length > 0) {
-		uint32_t cp;
+		std::uint32_t cp;
 		try {
 			cp = utf8::next(it, str.end());
 		} catch (const utf8::invalid_utf8&) {
@@ -173,8 +173,8 @@ std::string utf8_substr(const std::string& str, uint32_t start, uint32_t length)
 	return result;
 }
 
-uint32_t utf8_length(const std::string& str) {
-	uint32_t length = 0;
+std::uint32_t utf8_length(const std::string& str) {
+	std::uint32_t length = 0;
 	std::string::const_iterator it = str.begin();
 	while (it != str.end()) {
 		try {
@@ -192,7 +192,7 @@ std::string equal_width_padding(const std::string& str, char padding_char) {
 
 	std::string::const_iterator it = str.begin();
 	while (it != str.end()) {
-		uint32_t cp;
+		std::uint32_t cp;
 		try {
 			cp = utf8::next(it, str.end());
 		} catch (const utf8::invalid_utf8&) {

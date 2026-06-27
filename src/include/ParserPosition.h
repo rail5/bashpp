@@ -21,13 +21,13 @@
  */
 struct ParserPosition {
 	const std::string* filename;
-	uint32_t line = 0;
-	uint32_t column = 0;
+	std::uint32_t line = 0;
+	std::uint32_t column = 0;
 
-	explicit ParserPosition(const std::string* f = nullptr, uint32_t l = 0, uint32_t c = 0)
+	explicit ParserPosition(const std::string* f = nullptr, std::uint32_t l = 0, std::uint32_t c = 0)
 		: filename(f), line(l), column(c) {}
 
-	void initialize(const std::string* fn = nullptr, uint32_t l = 0, uint32_t c = 0) {
+	void initialize(const std::string* fn = nullptr, std::uint32_t l = 0, std::uint32_t c = 0) {
 		filename = fn;
 		line = l;
 		column = c;
@@ -38,7 +38,7 @@ struct ParserPosition {
 	 * 
 	 * @param count The number of lines to advance
 	 */
-	void lines(uint32_t count = 1) {
+	void lines(std::uint32_t count = 1) {
 		if (count) {
 			column = 0;
 			line += count;
@@ -50,17 +50,17 @@ struct ParserPosition {
 	 * 
 	 * @param count The number of columns to advance
 	 */
-	void columns(uint32_t count = 1) {
+	void columns(std::uint32_t count = 1) {
 		column += count;
 	}
 };
 
-inline ParserPosition& operator+=(ParserPosition& lhs, uint32_t rhs) {
+inline ParserPosition& operator+=(ParserPosition& lhs, std::uint32_t rhs) {
 	lhs.columns(rhs);
 	return lhs;
 }
 
-inline ParserPosition operator+(ParserPosition lhs, uint32_t rhs) {
+inline ParserPosition operator+(ParserPosition lhs, std::uint32_t rhs) {
 	return lhs += rhs;
 }
 
@@ -105,10 +105,10 @@ struct ParserLocation {
 	 * @param c column number
 	 * 
 	 */
-	explicit ParserLocation(const std::string* f, uint32_t l = 0, uint32_t c = 0)
+	explicit ParserLocation(const std::string* f, std::uint32_t l = 0, std::uint32_t c = 0)
 		: begin(f, l, c), end(f, l, c) {}
 	
-	void initialize(const std::string* f = nullptr, uint32_t l = 0, uint32_t c = 0) {
+	void initialize(const std::string* f = nullptr, std::uint32_t l = 0, std::uint32_t c = 0) {
 		begin.initialize(f, l, c);
 		end = begin;
 	}
@@ -121,26 +121,26 @@ struct ParserLocation {
 		begin = end;
 	}
 
-	void columns(uint32_t count = 1) {
+	void columns(std::uint32_t count = 1) {
 		end.columns(count);
 	}
 
-	void lines(uint32_t count = 1) {
+	void lines(std::uint32_t count = 1) {
 		end.lines(count);
 	}
 };
 
-inline ParserLocation& operator+=(ParserLocation& lhs, uint32_t rhs) {
+inline ParserLocation& operator+=(ParserLocation& lhs, std::uint32_t rhs) {
 	lhs.columns(rhs);
 	return lhs;
 }
 
-inline ParserLocation operator+(ParserLocation lhs, uint32_t rhs) {
+inline ParserLocation operator+(ParserLocation lhs, std::uint32_t rhs) {
 	return lhs += rhs;
 }
 
 inline std::ostream& operator<<(std::ostream& os, const ParserLocation& loc) {
-	uint32_t end_col = 0 < loc.end.column ? loc.end.column - 1 : 0;
+	std::uint32_t end_col = 0 < loc.end.column ? loc.end.column - 1 : 0;
 	os << loc.begin;
 	if (loc.end.filename && (!loc.begin.filename || *loc.begin.filename != *loc.end.filename)) {
 		os << '-' << *(loc.end.filename) << ':' << loc.end.line << '.' << end_col;

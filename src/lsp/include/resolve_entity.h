@@ -13,7 +13,7 @@
 #include <AST/ASTNode.h>
 #include <entities/bpp_codegen.h>
 
-std::shared_ptr<AST::ASTNode> find_node_at_position(std::shared_ptr<AST::ASTNode> node, uint32_t line, uint32_t column);
+std::shared_ptr<AST::ASTNode> find_node_at_position(std::shared_ptr<AST::ASTNode> node, std::uint32_t line, std::uint32_t column);
 
 /**
  * @brief Resolves the entity referenced at the given line and column in the specified file.
@@ -36,8 +36,8 @@ std::shared_ptr<AST::ASTNode> find_node_at_position(std::shared_ptr<AST::ASTNode
  */
 std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 	const std::string& file,
-	uint32_t line,
-	uint32_t column,
+	std::uint32_t line,
+	std::uint32_t column,
 	std::shared_ptr<bpp::bpp_program> program
 );
 
@@ -52,8 +52,8 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
  */
 std::vector<std::shared_ptr<bpp::bpp_entity>> find_all_entities_for(
 	const std::string& file,
-	uint32_t line,
-	uint32_t column,
+	std::uint32_t line,
+	std::uint32_t column,
 	const std::vector<std::shared_ptr<bpp::bpp_program>>& programs
 );
 

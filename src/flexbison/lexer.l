@@ -44,12 +44,12 @@ YY_DECL;
  */
 struct LexerState {
 	std::string singlequote_contents;
-	uint32_t token_count_inside_bracereference = 0;
-	uint32_t deprecated_subshell_nesting_depth = 0;
-	uint32_t if_depth = 0;
-	uint32_t singlequote_start_line = 0;
-	uint32_t singlequote_start_column = 0;
-	std::stack<uint32_t> deprecated_subshell_nesting_depths;
+	std::uint32_t token_count_inside_bracereference = 0;
+	std::uint32_t deprecated_subshell_nesting_depth = 0;
+	std::uint32_t if_depth = 0;
+	std::uint32_t singlequote_start_line = 0;
+	std::uint32_t singlequote_start_column = 0;
+	std::stack<std::uint32_t> deprecated_subshell_nesting_depths;
 	std::deque<std::string> heredoc_delimiters;
 	bool bash_case_input_received = false;
 	bool bash_case_keyword_in_received = false;
@@ -153,7 +153,7 @@ size_t utf16_char_count(const std::string& s) {
 
 	for (size_t i = 0; i < s.size();) {
 		unsigned char c = s[i];
-		uint32_t codepoint;
+		std::uint32_t codepoint;
 		size_t len;
 
 		if ((c & 0x80) == 0) {
@@ -484,7 +484,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		) {
 			// Finishing a nested subshell
 			thisModeStack.pop();
-			uint32_t depth = thisLexerState.deprecated_subshell_nesting_depth;
+			std::uint32_t depth = thisLexerState.deprecated_subshell_nesting_depth;
 			thisLexerState.deprecated_subshell_nesting_depths.pop();
 			thisLexerState.deprecated_subshell_nesting_depth = 0;
 			emit(DEPRECATED_SUBSHELL_END, depth);
@@ -1019,8 +1019,8 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 		/* Closing singlequote found */
 		thisModeStack.pop(); // Exit SINGLEQUOTE_MODE
 		thisLexerState.singlequote_contents += '\'';
-		uint32_t start_line = thisLexerState.singlequote_start_line;
-		uint32_t start_column = thisLexerState.singlequote_start_column;
+		std::uint32_t start_line = thisLexerState.singlequote_start_line;
+		std::uint32_t start_column = thisLexerState.singlequote_start_column;
 		thisLexerState.singlequote_start_line = 0;
 		thisLexerState.singlequote_start_column = 0;
 		emit(SINGLEQUOTED_STRING, bpp::AST::Token<std::string>(thisLexerState.singlequote_contents, start_line, start_column));

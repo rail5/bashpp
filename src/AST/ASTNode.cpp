@@ -77,7 +77,7 @@ void ASTNode::setPosition(const bpp::AST::FilePosition& pos) {
 	position = pos;
 }
 
-void ASTNode::setPosition(uint32_t line, uint32_t column) {
+void ASTNode::setPosition(std::uint32_t line, std::uint32_t column) {
 	position.line = line;
 	position.column = column;
 }
@@ -90,7 +90,7 @@ void ASTNode::setEndPosition(const bpp::AST::FilePosition& pos) {
 	end_position = pos;
 }
 
-void ASTNode::setEndPosition(uint32_t line, uint32_t column) {
+void ASTNode::setEndPosition(std::uint32_t line, std::uint32_t column) {
 	end_position.line = line;
 	end_position.column = column;
 }
@@ -103,11 +103,11 @@ const bpp::AST::FilePosition& ASTNode::getEndPosition() const {
 	return end_position;
 }
 
-uint32_t ASTNode::getLine() const {
+std::uint32_t ASTNode::getLine() const {
 	return position.line;
 }
 
-uint32_t ASTNode::getCharPositionInLine() const {
+std::uint32_t ASTNode::getCharPositionInLine() const {
 	return position.column;
 }
 

@@ -91,7 +91,7 @@ class Listener final {
 		bool program_has_errors = false;
 		std::vector<bpp::AST::ParserError> parser_errors;
 
-		enum class IncludedType : uint8_t {
+		enum class IncludedType : std::uint8_t {
 			NOT_INCLUDED, // The file that generated this AST is the original (main) source file of the program
 			DYNAMICALLY_INCLUDED, // This file was reached via `@include dynamic <file>`
 			STATICALLY_INCLUDED // This file was reached via `@include [static] <file>`

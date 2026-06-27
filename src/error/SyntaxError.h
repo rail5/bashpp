@@ -35,9 +35,9 @@ namespace bpp::ErrorHandling {
  */
 void print_syntax_error_or_warning(
 	const std::string& source_file,
-	uint32_t line,
-	uint32_t column,
-	uint32_t text_length,
+	std::uint32_t line,
+	std::uint32_t column,
+	std::uint32_t text_length,
 	const std::string& msg,
 	const std::vector<std::string>& include_chain,
 	std::shared_ptr<bpp::IR::Program> program,
@@ -55,9 +55,9 @@ void print_parser_errors(
 class ErrorOrWarning : public std::runtime_error {
 	protected:
 		std::string source_file;
-		uint32_t line = 0;
-		uint32_t column = 0;
-		uint32_t text_length = 0;
+		std::uint32_t line = 0;
+		std::uint32_t column = 0;
+		std::uint32_t text_length = 0;
 		std::vector<std::string> include_chain;
 		std::shared_ptr<bpp::IR::Program> program;
 		bool lsp_mode = false;
@@ -80,7 +80,7 @@ class ErrorOrWarning : public std::runtime_error {
 			} else if constexpr(bpp::detail::ASTStringToken<T>) {
 				line = error_ctx.getLine();
 				column = error_ctx.getCharPositionInLine();
-				text_length = static_cast<uint32_t>(error_ctx.getValue().length());
+				text_length = static_cast<std::uint32_t>(error_ctx.getValue().length());
 			} else if constexpr(bpp::detail::ASTParameterToken<T>) {
 				// Special case: Error reporting on a declared method parameter
 				// TODO(@rail5): Kind of hacky to handle special cases. Would prefer a general solution.
@@ -89,11 +89,11 @@ class ErrorOrWarning : public std::runtime_error {
 				auto param = error_ctx.getValue();
 				text_length = 0;
 				if (param.type.has_value()) {
-					text_length += 1 + static_cast<uint32_t>(param.type.value().getValue().length()); // '@Type'
+					text_length += 1 + static_cast<std::uint32_t>(param.type.value().getValue().length()); // '@Type'
 					if (param.pointer) text_length += 1; // '*'
-					text_length += 1 + static_cast<uint32_t>(param.name.getValue().length()); // ' Name'
+					text_length += 1 + static_cast<std::uint32_t>(param.name.getValue().length()); // ' Name'
 				} else {
-					text_length = static_cast<uint32_t>(param.name.getValue().length()); // 'Name'
+					text_length = static_cast<std::uint32_t>(param.name.getValue().length()); // 'Name'
 				}
 			}
 		}
@@ -162,8 +162,8 @@ class Warning : public ErrorOrWarning {
 
 // Helper functions
 // Should probably be moved to a separate file or somehow better organized
-std::string utf8_substr(const std::string& str, uint32_t start, uint32_t length);
-uint32_t utf8_length(const std::string& str);
+std::string utf8_substr(const std::string& str, std::uint32_t start, std::uint32_t length);
+std::uint32_t utf8_length(const std::string& str);
 std::string equal_width_padding(const std::string& str, char padding_char = ' ');
 
 } // namespace bpp::ErrorHandling

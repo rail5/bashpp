@@ -96,7 +96,7 @@ std::string TypeRegistry::resolve_base_type(const std::string& name) const {
 		{"URI", "std::string"},
 		{"DocumentUri", "std::string"},
 		{"integer", "int"},
-		{"uinteger", "uint32_t"},
+		{"uinteger", "std::uint32_t"},
 		{"decimal", "double"},
 		{"RegExp", "std::string"},
 		{"string", "std::string"},
@@ -254,7 +254,7 @@ std::string TypeRegistry::get_variant_deserialization_code(
 			condition = "is_string()";
 		} else if (clean_type == "int") {
 			condition = "is_number_integer()";
-		} else if (clean_type == "uint32_t") {
+		} else if (clean_type == "std::uint32_t") {
 			condition = "is_number_unsigned()";
 		} else if (clean_type == "double") {
 			condition = "is_number_float()";

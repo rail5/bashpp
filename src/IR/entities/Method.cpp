@@ -72,7 +72,7 @@ bool Method::add_parameter(std::shared_ptr<MethodParameter> parameter) {
 		if (p->get_name() == parameter->get_name()) return false; // Parameter with this name already exists
 	}
 
-	parameter->set_index(static_cast<uint32_t>(parameters.size() + 1));
+	parameter->set_index(static_cast<std::uint32_t>(parameters.size() + 1));
 
 	// Per the spec: if a method is declared to take a pointer as a parameter,
 	// then the argument passed to that parameter is implicitly dynamically cast to the expected type at the start of the method.

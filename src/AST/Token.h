@@ -22,11 +22,11 @@ template <class T>
 class Token {
 	private:
 		T value;
-		uint32_t line = 0;
-		uint32_t column = 0;
+		std::uint32_t line = 0;
+		std::uint32_t column = 0;
 	public:
 		Token() = default;
-		Token(const T& value, uint32_t line, uint32_t column) : value(value), line(line), column(column) {}
+		Token(const T& value, std::uint32_t line, std::uint32_t column) : value(value), line(line), column(column) {}
 		~Token() = default;
 
 		Token(const Token& other) = default;
@@ -37,20 +37,20 @@ class Token {
 		const T& getValue() const {
 			return value;
 		}
-		uint32_t getLine() const {
+		std::uint32_t getLine() const {
 			return line;
 		}
-		uint32_t getCharPositionInLine() const {
+		std::uint32_t getCharPositionInLine() const {
 			return column;
 		}
 
 		void setValue(const T& new_value) {
 			value = new_value;
 		}
-		void setLine(uint32_t new_line) {
+		void setLine(std::uint32_t new_line) {
 			line = new_line;
 		}
-		void setCharPositionInLine(uint32_t new_column) {
+		void setCharPositionInLine(std::uint32_t new_column) {
 			column = new_column;
 		}
 

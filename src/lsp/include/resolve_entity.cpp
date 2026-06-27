@@ -16,20 +16,20 @@
 #include <entities/bpp_method.h>
 #include <entities/bpp_datamember.h>
 
-std::shared_ptr<AST::ASTNode> find_node_at_position(std::shared_ptr<AST::ASTNode> node, uint32_t line, uint32_t column) {
+std::shared_ptr<AST::ASTNode> find_node_at_position(std::shared_ptr<AST::ASTNode> node, std::uint32_t line, std::uint32_t column) {
 	if (node == nullptr) return nullptr;
 
-	uint32_t start_line = node->getLine();
-	uint32_t start_column = node->getCharPositionInLine();
-	uint32_t stop_line = node->getEndPosition().line;
-	uint32_t stop_column = node->getEndPosition().column;
+	std::uint32_t start_line = node->getLine();
+	std::uint32_t start_column = node->getCharPositionInLine();
+	std::uint32_t stop_line = node->getEndPosition().line;
+	std::uint32_t stop_column = node->getEndPosition().column;
 
 	// Combine line and column into a single 64-bit value for easier comparison
 	// The upper 32 bits are the line, the lower 32 bits are the column
-	uint64_t start_pos = (static_cast<uint64_t>(start_line) << 32) | start_column;
-	uint64_t stop_pos = (static_cast<uint64_t>(stop_line) << 32) | stop_column;
+	std::uint64_t start_pos = (static_cast<std::uint64_t>(start_line) << 32) | start_column;
+	std::uint64_t stop_pos = (static_cast<std::uint64_t>(stop_line) << 32) | stop_column;
 
-	uint64_t target_pos = (static_cast<uint64_t>(line) << 32) | column;
+	std::uint64_t target_pos = (static_cast<std::uint64_t>(line) << 32) | column;
 
 	if (target_pos < start_pos || target_pos > stop_pos) {
 		return nullptr; // Position is outside the range of this node
@@ -46,8 +46,8 @@ std::shared_ptr<AST::ASTNode> find_node_at_position(std::shared_ptr<AST::ASTNode
 
 std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 	const std::string& file,
-	uint32_t line,
-	uint32_t column,
+	std::uint32_t line,
+	std::uint32_t column,
 	std::shared_ptr<bpp::bpp_program> program
 ) {
 	if (program == nullptr || file.empty()) return nullptr; // Invalid program or file
@@ -74,7 +74,7 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 		}
 	}
 
-	uint64_t target_position = (static_cast<uint64_t>(line) << 32) | column;
+	std::uint64_t target_position = (static_cast<std::uint64_t>(line) << 32) | column;
 
 	switch (node->getType()) {
 		case AST::NodeType::ObjectReference:
@@ -161,16 +161,16 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 				auto object_name_token = instantiation_ctx->IDENTIFIER();
 				
 				// Are we being asked to resolve the class?
-				uint64_t class_name_start = class_name_token.getCharPositionInLine();
-				uint64_t class_name_end = class_name_start + class_name_token.getValue().length();
+				std::uint64_t class_name_start = class_name_token.getCharPositionInLine();
+				std::uint64_t class_name_end = class_name_start + class_name_token.getValue().length();
 				if (column >= class_name_start && column <= class_name_end) {
 					auto class_pointer = context->get_class(class_name_token.getValue());
 					return class_pointer;
 				}
 
 				// Are we being asked to resolve the object?
-				uint64_t object_name_start = object_name_token.getCharPositionInLine();
-				uint64_t object_name_end = object_name_start + object_name_token.getValue().length();
+				std::uint64_t object_name_start = object_name_token.getCharPositionInLine();
+				std::uint64_t object_name_end = object_name_start + object_name_token.getValue().length();
 				if (column >= object_name_start && column <= object_name_end) {
 					// Resolve the object being instantiated
 					std::shared_ptr<bpp::bpp_entity> object_pointer;
@@ -200,16 +200,16 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 				auto name_token = pointer_ctx->IDENTIFIER();
 				
 				// Are we being asked to resolve the class type?
-				uint64_t type_start = type_token.getCharPositionInLine();
-				uint64_t type_end = type_start + type_token.getValue().length();
+				std::uint64_t type_start = type_token.getCharPositionInLine();
+				std::uint64_t type_end = type_start + type_token.getValue().length();
 				if (column >= type_start && column <= type_end) {
 					auto class_pointer = context->get_class(type_token.getValue());
 					return class_pointer;
 				}
 
 				// Are we being asked to resolve the pointer variable?
-				uint64_t name_start = name_token.getCharPositionInLine();
-				uint64_t name_end = name_start + name_token.getValue().length();
+				std::uint64_t name_start = name_token.getCharPositionInLine();
+				std::uint64_t name_end = name_start + name_token.getValue().length();
 				if (column >= name_start && column <= name_end) {
 					// Resolve the pointer variable
 					std::shared_ptr<bpp::bpp_entity> pointer_variable;
@@ -244,8 +244,8 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 				auto new_ctx = std::static_pointer_cast<AST::NewStatement>(node);
 
 				// Verify that the given position is within the class name token
-				uint64_t class_name_start = new_ctx->TYPE().getCharPositionInLine();
-				uint64_t class_name_end = class_name_start + new_ctx->TYPE().getValue().length();
+				std::uint64_t class_name_start = new_ctx->TYPE().getCharPositionInLine();
+				std::uint64_t class_name_end = class_name_start + new_ctx->TYPE().getValue().length();
 				if (column < class_name_start || column > class_name_end) {
 					return nullptr; // Column is outside the class name token
 				}
@@ -274,14 +274,14 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 				auto class_name_token = class_def_ctx->CLASSNAME();
 				auto parent_class_token = class_def_ctx->PARENTCLASSNAME();
 
-				uint64_t class_name_start = (static_cast<uint64_t>(class_name_token.getLine()) << 32) | class_name_token.getCharPositionInLine();
-				uint64_t class_name_end = class_name_start + class_name_token.getValue().length();
+				std::uint64_t class_name_start = (static_cast<std::uint64_t>(class_name_token.getLine()) << 32) | class_name_token.getCharPositionInLine();
+				std::uint64_t class_name_end = class_name_start + class_name_token.getValue().length();
 
-				uint64_t parent_class_start = 0;
-				uint64_t parent_class_end = 0;
+				std::uint64_t parent_class_start = 0;
+				std::uint64_t parent_class_end = 0;
 
 				if (parent_class_token.has_value()) {
-					parent_class_start = (static_cast<uint64_t>(parent_class_token.value().getLine()) << 32) | parent_class_token.value().getCharPositionInLine();
+					parent_class_start = (static_cast<std::uint64_t>(parent_class_token.value().getLine()) << 32) | parent_class_token.value().getCharPositionInLine();
 					parent_class_end = parent_class_start + parent_class_token.value().getValue().length();
 				}
 
@@ -312,8 +312,8 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 				auto method_name_token = method_def_ctx->NAME();
 				auto parameters = method_def_ctx->PARAMETERS();
 
-				uint64_t method_name_start = (static_cast<uint64_t>(method_name_token.getLine()) << 32) | method_name_token.getCharPositionInLine();
-				uint64_t method_name_end = method_name_start + method_name_token.getValue().length();
+				std::uint64_t method_name_start = (static_cast<std::uint64_t>(method_name_token.getLine()) << 32) | method_name_token.getCharPositionInLine();
+				std::uint64_t method_name_end = method_name_start + method_name_token.getValue().length();
 
 				if (target_position >= method_name_start && target_position <= method_name_end) {
 					// Resolve the method being defined
@@ -322,7 +322,7 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 				}
 
 				for (const auto& param : parameters) {
-					uint64_t param_start = (static_cast<uint64_t>(param.getLine()) << 32) | param.getCharPositionInLine();
+					std::uint64_t param_start = (static_cast<std::uint64_t>(param.getLine()) << 32) | param.getCharPositionInLine();
 
 					std::string param_string;
 					if (param.getValue().type.has_value()) {
@@ -334,7 +334,7 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 					}
 					param_string += param.getValue().name.getValue();
 
-					uint64_t param_end = param_start + param_string.length();
+					std::uint64_t param_end = param_start + param_string.length();
 					if (target_position < param_start || target_position > param_end) {
 						continue;
 					}
@@ -342,8 +342,8 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 					auto param_name_token = param.getValue().name;
 					auto param_type_token_opt = param.getValue().type;
 
-					uint64_t param_name_start = (static_cast<uint64_t>(param_name_token.getLine()) << 32) | param_name_token.getCharPositionInLine();
-					uint64_t param_name_end = param_name_start + param_name_token.getValue().length();
+					std::uint64_t param_name_start = (static_cast<std::uint64_t>(param_name_token.getLine()) << 32) | param_name_token.getCharPositionInLine();
+					std::uint64_t param_name_end = param_name_start + param_name_token.getValue().length();
 
 					if (target_position >= param_name_start && target_position <= param_name_end) {
 						// Resolve the parameter variable
@@ -355,8 +355,8 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 
 					if (!param_type_token_opt.has_value()) continue;
 					const auto& param_type_token = param_type_token_opt.value();
-					uint64_t param_type_start = (static_cast<uint64_t>(param_type_token.getLine()) << 32) | param_type_token.getCharPositionInLine();
-					uint64_t param_type_end = param_type_start + param_type_token.getValue().length();
+					std::uint64_t param_type_start = (static_cast<std::uint64_t>(param_type_token.getLine()) << 32) | param_type_token.getCharPositionInLine();
+					std::uint64_t param_type_end = param_type_start + param_type_token.getValue().length();
 					if (target_position >= param_type_start && target_position <= param_type_end) {
 						// Resolve the parameter type
 						auto method = current_class->get_method_UNSAFE(method_name_token.getValue());
@@ -378,8 +378,8 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 
 std::vector<std::shared_ptr<bpp::bpp_entity>> find_all_entities_for(
 	const std::string& file,
-	uint32_t line,
-	uint32_t column,
+	std::uint32_t line,
+	std::uint32_t column,
 	const std::vector<std::shared_ptr<bpp::bpp_program>>& programs
 ) {
 	std::vector<std::shared_ptr<bpp::bpp_entity>> entities;
@@ -406,7 +406,7 @@ std::string find_comments_for_entity(std::shared_ptr<bpp::bpp_entity> entity, Pr
 
 	std::string comments;
 	std::string line;
-	uint32_t current_line = 0;
+	std::uint32_t current_line = 0;
 	while (std::getline(source_file_contents, line)) {
 		if (current_line >= definition_position.line) {
 			break; // Stop reading after reaching the definition line

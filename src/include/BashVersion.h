@@ -21,35 +21,35 @@
  * 
  */
 struct BashVersion {
-	uint16_t major = 5;
-	uint16_t minor = 2;
+	std::uint16_t major = 5;
+	std::uint16_t minor = 2;
 
-	constexpr operator uint32_t() const {
-		return (static_cast<uint32_t>(major) << 16) | static_cast<uint32_t>(minor);
+	constexpr operator std::uint32_t() const {
+		return (static_cast<std::uint32_t>(major) << 16) | static_cast<std::uint32_t>(minor);
 	}
 
 	constexpr bool operator>=(const BashVersion& other) const {
-		return static_cast<uint32_t>(*this) >= static_cast<uint32_t>(other);
+		return static_cast<std::uint32_t>(*this) >= static_cast<std::uint32_t>(other);
 	}
 
 	constexpr bool operator<=(const BashVersion& other) const {
-		return static_cast<uint32_t>(*this) <= static_cast<uint32_t>(other);
+		return static_cast<std::uint32_t>(*this) <= static_cast<std::uint32_t>(other);
 	}
 
 	constexpr bool operator>(const BashVersion& other) const {
-		return static_cast<uint32_t>(*this) > static_cast<uint32_t>(other);
+		return static_cast<std::uint32_t>(*this) > static_cast<std::uint32_t>(other);
 	}
 
 	constexpr bool operator<(const BashVersion& other) const {
-		return static_cast<uint32_t>(*this) < static_cast<uint32_t>(other);
+		return static_cast<std::uint32_t>(*this) < static_cast<std::uint32_t>(other);
 	}
 
 	constexpr bool operator==(const BashVersion& other) const {
-		return static_cast<uint32_t>(*this) == static_cast<uint32_t>(other);
+		return static_cast<std::uint32_t>(*this) == static_cast<std::uint32_t>(other);
 	}
 
 	constexpr bool operator!=(const BashVersion& other) const {
-		return static_cast<uint32_t>(*this) != static_cast<uint32_t>(other);
+		return static_cast<std::uint32_t>(*this) != static_cast<std::uint32_t>(other);
 	}
 
 	constexpr std::string to_string() const {
@@ -67,7 +67,7 @@ struct BashVersion {
 	constexpr BashVersion(BashVersion&&) = default;
 	constexpr BashVersion& operator=(BashVersion&&) = default;
 
-	constexpr BashVersion(uint16_t major, uint16_t minor) : major(major), minor(minor) {}
+	constexpr BashVersion(std::uint16_t major, std::uint16_t minor) : major(major), minor(minor) {}
 
 	/**
 	 * @brief Constructs a BashVersion from a string in the format "major.minor" (e.g., "5.2")
@@ -78,14 +78,14 @@ struct BashVersion {
 	 * @throws std::invalid_argument if the version string is not in a valid format
 	 */
 	explicit constexpr BashVersion(std::string_view version_string) {
-		uint16_t* current = &major;
-		uint16_t value = 0;
+		std::uint16_t* current = &major;
+		std::uint16_t value = 0;
 
 		for (const auto& c : version_string) {
 			switch (c) {
 				case '0' ... '9':
 					// Verify we don't overflow the major or minor version
-					if (value > (std::numeric_limits<uint16_t>::max() - (c - '0')) / 10)
+					if (value > (std::numeric_limits<std::uint16_t>::max() - (c - '0')) / 10)
 						throw std::invalid_argument("Invalid Bash version: " + std::string(version_string));
 					value = (value * 10) + (c - '0');
 					break;

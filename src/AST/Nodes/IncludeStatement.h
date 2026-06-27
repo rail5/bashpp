@@ -13,17 +13,17 @@ namespace bpp::AST {
 
 class IncludeStatement : public ASTNode {
 	public:
-		enum class IncludeKeyword : uint8_t {
+		enum class IncludeKeyword : std::uint8_t {
 			INCLUDE,
 			INCLUDE_ONCE
 		};
 
-		enum class IncludeType : uint8_t {
+		enum class IncludeType : std::uint8_t {
 			STATIC,
 			DYNAMIC
 		};
 
-		enum class PathType : uint8_t {
+		enum class PathType : std::uint8_t {
 			ANGLEBRACKET,
 			QUOTED
 		};

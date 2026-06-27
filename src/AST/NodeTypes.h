@@ -9,7 +9,7 @@
 #include <cstdint>
 
 namespace bpp::AST {
-enum class NodeType : uint8_t {
+enum class NodeType : std::uint8_t {
 	Program = 0,
 	ArrayAssignment,
 	ArrayIndex,

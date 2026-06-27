@@ -98,7 +98,7 @@ struct LSPAny {
 		RecursiveWrapper<LSPArray>,
 		std::string,
 		int,
-		uint32_t,
+		std::uint32_t,
 		double,
 		bool,
 		std::nullptr_t
@@ -156,7 +156,7 @@ struct adl_serializer<LSPAny> {
 		} else if (j.is_number_integer()) {
 			any.value = j.get<int>();
 		} else if (j.is_number_unsigned()) {
-			any.value = j.get<uint32_t>();
+			any.value = j.get<std::uint32_t>();
 		} else if (j.is_number_float()) {
 			any.value = j.get<double>();
 		} else if (j.is_boolean()) {

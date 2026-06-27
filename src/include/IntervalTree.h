@@ -38,10 +38,10 @@ template <class T>
 class FlatIntervalTree {
 private:
 	struct Interval {
-		uint64_t low, high;
+		std::uint64_t low, high;
 		T payload;
 		
-		bool contains(uint64_t point) const { return low <= point && point <= high; }
+		bool contains(std::uint64_t point) const { return low <= point && point <= high; }
 		bool contains(const Interval& other) const { return low <= other.low && high >= other.high; }
 	};
 	
@@ -60,7 +60,7 @@ private:
 	}
 	
 public:
-	void insert(uint64_t low, uint64_t high, T payload) {
+	void insert(std::uint64_t low, std::uint64_t high, T payload) {
 		// TODO(@rail5): Assertions to ensure that our invariants are maintained
 		intervals.push_back({low, high, payload});
 		sorted = false;
@@ -75,12 +75,12 @@ public:
 	 * @param point The point to query.
 	 * @return T The payload of the innermost overlapping interval, or default-constructed T if none found.
 	 */
-	T find_innermost_overlap(uint64_t point) {
+	T find_innermost_overlap(std::uint64_t point) {
 		ensure_sorted();
 		
 		// Binary search for first interval with low <= point
 		auto it = std::upper_bound(intervals.begin(), intervals.end(), point,
-			[](uint64_t point, const Interval& interval) {
+			[](std::uint64_t point, const Interval& interval) {
 				return point < interval.low;
 			});
 		

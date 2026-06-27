@@ -49,14 +49,14 @@ class ASTNode {
 		void addChildren(const std::vector<std::shared_ptr<ASTNode>>& childs);
 		const std::vector<std::shared_ptr<ASTNode>>& getChildren() const;
 		void setPosition(const bpp::AST::FilePosition& pos);
-		void setPosition(uint32_t line, uint32_t column);
+		void setPosition(std::uint32_t line, std::uint32_t column);
 		const bpp::AST::FilePosition& getPosition() const;
 		void setEndPosition(const bpp::AST::FilePosition& pos);
-		void setEndPosition(uint32_t line, uint32_t column);
+		void setEndPosition(std::uint32_t line, std::uint32_t column);
 		const bpp::AST::FilePosition& getEndPosition() const;
 
-		uint32_t getLine() const;
-		uint32_t getCharPositionInLine() const;
+		std::uint32_t getLine() const;
+		std::uint32_t getCharPositionInLine() const;
 		
 		std::shared_ptr<ASTNode> getChildAt(size_t index) const;
 		std::shared_ptr<ASTNode> getFirstChild() const;

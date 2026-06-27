@@ -16,7 +16,7 @@
 #include <memory>
 
 namespace bpp {
-	enum class diagnostic_type : uint8_t {
+	enum class diagnostic_type : std::uint8_t {
 		DIAGNOSTIC_ERROR,
 		DIAGNOSTIC_WARNING,
 		DIAGNOSTIC_INFO,
@@ -77,11 +77,11 @@ inline bool is_valid_identifier(const std::string& identifier) {
 
 struct SymbolPosition {
 	std::string file;
-	uint64_t line = 0;
-	uint64_t column = 0;
+	std::uint64_t line = 0;
+	std::uint64_t column = 0;
 
 	SymbolPosition() = default;
-	SymbolPosition(const std::string& file, uint64_t line, uint64_t column)
+	SymbolPosition(const std::string& file, std::uint64_t line, std::uint64_t column)
 		: file(file), line(line), column(column) {}
 };
 
@@ -116,7 +116,7 @@ class OwnedEntityList {
 		}
 };
 
-enum class VisibilityScope : uint8_t {
+enum class VisibilityScope : std::uint8_t {
 	PUBLIC,
 	PROTECTED,
 	PRIVATE,

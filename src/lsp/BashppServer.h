@@ -128,9 +128,9 @@ class BashppServer {
 
 		// Debouncing didChange notifications
 		struct DebounceState {
-			std::atomic<uint64_t> change_generation{0};
-			std::atomic<uint64_t> average_reparse_time_in_microseconds{50'000}; // 50ms initial guess
-			std::atomic<uint32_t> debounce_time_in_milliseconds{100}; // Start with 100ms
+			std::atomic<std::uint64_t> change_generation{0};
+			std::atomic<std::uint64_t> average_reparse_time_in_microseconds{50'000}; // 50ms initial guess
+			std::atomic<std::uint32_t> debounce_time_in_milliseconds{100}; // Start with 100ms
 		};
 
 		// Map: program main URI -> DebounceState

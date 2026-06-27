@@ -27,13 +27,13 @@ namespace bpp::IR {
 class MethodParameter : public Object {
 	protected:
 		/// The index of this parameter in the method's parameter list (1-based)
-		uint32_t index = 1;
+		std::uint32_t index = 1;
 		std::weak_ptr<Method> containing_method;
 	public:
 		MethodParameter() = delete;
 		explicit MethodParameter(std::shared_ptr<Method> method) : containing_method(method) {}
-		uint32_t get_index() const { return index; }
-		void set_index(uint32_t index) { this->index = index; }
+		std::uint32_t get_index() const { return index; }
+		void set_index(std::uint32_t index) { this->index = index; }
 
 		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
 };

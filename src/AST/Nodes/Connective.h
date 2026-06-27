@@ -12,7 +12,7 @@ namespace bpp::AST {
 
 class Connective : public ASTNode {
 	public:
-		enum class ConnectiveType : uint8_t {
+		enum class ConnectiveType : std::uint8_t {
 			AND,
 			OR
 		};

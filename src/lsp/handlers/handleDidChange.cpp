@@ -39,8 +39,8 @@ void bpp::BashppServer::handleDidChange(const GenericNotificationMessage& reques
 
 	const std::string new_content = std::get<TextDocumentContentChangeWholeDocument>(did_change_notification.params.contentChanges.at(0)).text;
 	std::shared_ptr<DebounceState> debounce_state;
-	uint64_t change_generation_for_this_thread = 0;
-	uint32_t debounce_time_in_milliseconds = 100;
+	std::uint64_t change_generation_for_this_thread = 0;
+	std::uint32_t debounce_time_in_milliseconds = 100;
 
 	debounce_state = debounce_states.get(uri);
 	change_generation_for_this_thread =
@@ -94,19 +94,19 @@ void bpp::BashppServer::handleDidChange(const GenericNotificationMessage& reques
 				}
 			}
 
-			const uint64_t reparse_duration_in_microseconds =
-				static_cast<uint64_t>(
+			const std::uint64_t reparse_duration_in_microseconds =
+				static_cast<std::uint64_t>(
 					std::chrono::duration_cast<std::chrono::microseconds>(reparse_end_time - reparse_start_time).count()
 				);
 
 			// Integer EWMA update: weight = 1/4 (no floats)
-			constexpr uint64_t weight_numerator = 1;
-			constexpr uint64_t weight_denominator = 4;
+			constexpr std::uint64_t weight_numerator = 1;
+			constexpr std::uint64_t weight_denominator = 4;
 
-			const uint64_t previous_average_reparse_time_in_microseconds =
+			const std::uint64_t previous_average_reparse_time_in_microseconds =
 				debounce_state->average_reparse_time_in_microseconds.load(std::memory_order_acquire);		
 		
-			const uint64_t new_average_reparse_time_in_microseconds =
+			const std::uint64_t new_average_reparse_time_in_microseconds =
 				(previous_average_reparse_time_in_microseconds == 0)
 					? reparse_duration_in_microseconds
 					: (
@@ -121,22 +121,22 @@ void bpp::BashppServer::handleDidChange(const GenericNotificationMessage& reques
 			);
 
 			// Derive debounce from average
-			constexpr uint32_t minimum_debounce_time_in_milliseconds = 25;
-			constexpr uint32_t maximum_debounce_time_in_milliseconds = 1000;
-			constexpr uint32_t baseline_debounce_time_in_milliseconds = 100;
+			constexpr std::uint32_t minimum_debounce_time_in_milliseconds = 25;
+			constexpr std::uint32_t maximum_debounce_time_in_milliseconds = 1000;
+			constexpr std::uint32_t baseline_debounce_time_in_milliseconds = 100;
 
 			// Scale: 3/4
-			constexpr uint32_t scale_numerator = 3;
-			constexpr uint32_t scale_denominator = 4;
+			constexpr std::uint32_t scale_numerator = 3;
+			constexpr std::uint32_t scale_denominator = 4;
 
-			const uint64_t new_average_reparse_time_in_milliseconds =
+			const std::uint64_t new_average_reparse_time_in_milliseconds =
 				new_average_reparse_time_in_microseconds / 1000;
 			
-			const uint64_t scaled_component_in_milliseconds =
+			const std::uint64_t scaled_component_in_milliseconds =
 				(scale_numerator * new_average_reparse_time_in_milliseconds) / scale_denominator;
 			
 			auto new_debounce_time_in_milliseconds =
-				static_cast<uint32_t>(
+				static_cast<std::uint32_t>(
 					baseline_debounce_time_in_milliseconds + scaled_component_in_milliseconds
 				);
 			

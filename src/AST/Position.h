@@ -11,11 +11,11 @@
 namespace bpp::AST {
 
 struct FilePosition {
-	uint32_t line = 0;
-	uint32_t column = 0;
+	std::uint32_t line = 0;
+	std::uint32_t column = 0;
 
-	operator uint64_t() const {
-		return (static_cast<uint64_t>(line) << 32) | column;
+	operator std::uint64_t() const {
+		return (static_cast<std::uint64_t>(line) << 32) | column;
 	}
 };
 

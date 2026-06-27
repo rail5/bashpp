@@ -138,12 +138,12 @@ int main(int argc, char* argv[]) {
 
 	std::unique_ptr<bpp::AST::Listener> listener = std::make_unique<bpp::AST::Listener>();
 	listener->set_source_file(full_path_of_input_file);
+	listener->set_warning_options(args.warning_options());
 	//listener->set_include_paths(args.include_paths());
 	//listener->set_code_buffer(code_buffer);
 	//listener->set_output_stream(output_stream);
 	//listener->set_output_file(args.output_file().value_or(""));
 	//listener->set_run_on_exit(args.run_on_exit());
-	//listener->set_suppress_warnings(args.suppress_warnings());
 	//listener->set_target_bash_version(args.target_bash_version());
 	//listener->set_arguments(args.program_arguments());
 	listener->set_parser_errors(parser_errors);

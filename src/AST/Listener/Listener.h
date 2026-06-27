@@ -13,6 +13,8 @@
 #include <AST/NodeTypes.h>
 #include <AST/Nodes/Nodes.h>
 #include <error/ParserError.h>
+#include <error/WarningOptions.h>
+#include <error/detail.h>
 
 #include "ContextExpectations.h"
 
@@ -91,6 +93,14 @@ class Listener final {
 		bool program_has_errors = false;
 		std::vector<bpp::AST::ParserError> parser_errors;
 
+		/// The set of enabled/disabled warnings
+		std::shared_ptr<bpp::ErrorHandling::WarningOptions> warning_options;
+		#define show_warning(node, warning_type, msg) \
+			if (warning_options->is_warning_enabled(warning_type)) { \
+				bpp::ErrorHandling::Warning warning(this, node, msg); \
+				warning.print(); \
+			}
+
 		enum class IncludedType : std::uint8_t {
 			NOT_INCLUDED, // The file that generated this AST is the original (main) source file of the program
 			DYNAMICALLY_INCLUDED, // This file was reached via `@include dynamic <file>`
@@ -159,6 +169,13 @@ class Listener final {
 		}
 		const std::string& get_source_file() const {
 			return source_file;
+		}
+
+		void set_warning_options(const std::shared_ptr<bpp::ErrorHandling::WarningOptions>& options) {
+			this->warning_options = options;
+		}
+		const std::shared_ptr<bpp::ErrorHandling::WarningOptions>& get_warning_options() const {
+			return warning_options;
 		}
 };
 

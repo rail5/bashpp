@@ -43,9 +43,14 @@ Include paths are searched in the order they are given.
 
 The *last* include path is always `/usr/lib/bpp/stdlib`.
 
-###### `-s`, `--no-warnings`
+###### `-W <warning>`, `--warn <warning>`
 
-Suppress all warnings during compilation.
+Enable or disable the given warning. If the warning is prefixed with `no-`, it will be disabled. Otherwise, it will be enabled.
+
+ - `-Wall`: Enable all warnings.
+ - `-Wnone`: Disable all warnings.
+
+See below for a list of available warnings.
 
 ###### `-t`, `--tokens`
 
@@ -69,3 +74,32 @@ Display the version of the Bash++ compiler.
 # Include Paths
 
 When an include directive is given with angle-brackets (as in `@include <file>`), the compiler will search for the file in the include paths. The last include path is always `/usr/lib/bpp/stdlib`, which contains the Bash++ standard library. The include paths are searched in the order they are given.
+
+# Warnings
+
+Here is a list of specific warning flags that can be enabled with `-W` or disabled with `-Wno-`:
+
+ - *bash53-native-supershell*
+   - Description: Use of Bash 5.3's native supershell implementation `${ command; }` instead of Bash++'s form `@(command)`
+   - Rationale: Bash 5.3's native supershell implementation is not backwards-compatible with Bash 5.2 and earlier
+   - Enabled by default: Yes
+ - *cast-to-unknown-class*
+   - Description: The target class of a dynamic cast is not known at compile-time
+   - Rationale: This is probably a typo in the target class name
+   - Enabled by default: Yes
+ - *implicit-toprimitive*
+   - Description: Implicit `.toPrimitive` call by referencing a non-primitive object in a primitive context
+   - Rationale: This is part of the design of Bash++, but some users may want to enable this warning to catch potential mistakes in their code
+   - Enabled by default: No
+ - *cast-from-implicit-toprimitive*
+   - Description: Attempting to `@dynamic_cast<T> @obj` instead of `@dynamic_cast<T> &@obj`
+   - Rationale: This is equivalent to `@dynamic_cast<T> @obj.toPrimitive`. It is more likely that the user intended to take the address of `@obj` than the output of its `toPrimitive` method.
+   - Enabled by default: Yes
+ - *cast-to-implicit-toprimitive*
+   - Description: Attempting to `@dynamic_cast<@obj> "input"` instead of `@dynamic_cast<T> "input"`
+   - Rationale: This is equivalent to `@dynamic_cast<@obj.toPrimitive> "input"`. The user may be under the mistaken impression that this would cast `"input"` to the type of `@obj`. In fact, it will attempt to interpret the output of `@obj.toPrimitive` as a class name.
+   - Enabled by default: Yes
+ - *typeof-implicit-toprimitive*
+   - Description: Attempting to take `@typeof @obj` instead of `@typeof &@obj`
+   - Rationale: This is equivalent to `@typeof @obj.toPrimitive`. It is more likely that the user intended to take the address of `@obj` than the output of its `toPrimitive` method.
+   - Enabled by default: Yes

@@ -15,6 +15,7 @@
 #include <memory>
 #include <unistd.h>
 
+#include <error/WarningOptions.h>
 #include <include/BashVersion.h>
 #include <include/xgetopt.h>
 
@@ -46,8 +47,8 @@ constexpr const char* help_intro =
 constexpr XGetOpt::OptionParser<
 	XGetOpt::Option<'o', "output", "Specify output file (default: run on exit)", XGetOpt::RequiredArgument, "file">,
 	XGetOpt::Option<'b', "target-bash", "Compile to Bash version (default: 5.2)", XGetOpt::RequiredArgument, "version">,
-	XGetOpt::Option<'s', "no-warnings", "Suppress warnings", XGetOpt::NoArgument>,
 	XGetOpt::Option<'I', "include", "Add directory to include path", XGetOpt::RequiredArgument, "directory">,
+	XGetOpt::Option<'W', "warn", "Enable/disable specific warnings\nSee the manual for a list of available warnings", XGetOpt::RequiredArgument, "warning">,
 #ifndef NDEBUG
 	XGetOpt::Option<'t', "tokens", "Display tokens from lexer (do not compile program)", XGetOpt::NoArgument>,
 	XGetOpt::Option<'p', "parse-tree", "Display parse tree (do not compile program)", XGetOpt::NoArgument>,
@@ -68,12 +69,12 @@ constexpr XGetOpt::OptionParser<
  */
 class Arguments {
 	private:
-		std::vector<char*>                        m_program_arguments;
-		std::optional<std::string>                m_input_file;
-		std::optional<std::string>                m_output_file;
-		BashVersion                               m_target_bash_version = {5, 2}; // Default to Bash 5.2
-		std::shared_ptr<std::vector<std::string>> m_include_paths = std::make_shared<std::vector<std::string>>();
-		bool f_suppress_warnings = false;
+		std::vector<char*>                                  m_program_arguments;
+		std::optional<std::string>                          m_input_file;
+		std::optional<std::string>                          m_output_file;
+		BashVersion                                         m_target_bash_version = {5, 2}; // Default to Bash 5.2
+		std::shared_ptr<std::vector<std::string>>           m_include_paths = std::make_shared<std::vector<std::string>>();
+		std::shared_ptr<bpp::ErrorHandling::WarningOptions> m_warning_options = std::make_shared<bpp::ErrorHandling::WarningOptions>();
 	#ifndef NDEBUG
 		bool f_display_tokens = false;
 		bool f_display_parse_tree = false;
@@ -216,11 +217,11 @@ class Arguments {
 			return this->m_include_paths;
 		}
 		
-		void set_suppress_warnings(bool suppress) {
-			this->f_suppress_warnings = suppress;
+		void add_warning_option(std::string_view warning_option) {
+			m_warning_options->parse(warning_option);
 		}
-		bool suppress_warnings() const {
-			return this->f_suppress_warnings;
+		const std::shared_ptr<bpp::ErrorHandling::WarningOptions>& warning_options() const {
+			return this->m_warning_options;
 		}
 
 	#ifndef NDEBUG
@@ -308,13 +309,13 @@ inline Arguments parse_arguments(int argc, char* argv[]) {
 				args.set_run_on_exit(false);
 				args.set_output_file(arg.getArgument());
 				break;
-			case 's':
-				args.set_suppress_warnings(true);
-				break;
 			case 'v':
 				std::cout << program_name << " " << bpp_compiler_version << std::endl << copyright;
 				args.set_exit_early(true);
 				return args;
+				break;
+			case 'W':
+				args.add_warning_option(arg.getArgument());
 				break;
 		#ifndef NDEBUG
 			case 't':

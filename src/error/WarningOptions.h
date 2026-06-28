@@ -17,22 +17,22 @@
 
 // Single source of truth for all warning options in Bash++
 #define BPP_WARNING_LIST(X) \
-	/* WarningName,                CLI string,                       enabled by default) */ \
-	X(Bash53NativeSupershell,      "bash53-native-supershell",       true) \
-	X(CastToUnknownClass,          "cast-to-unknown-class",          true) \
-	X(ImplicitToPrimitive,         "implicit-toprimitive",          false) \
-	X(CastFromImplicitToPrimitive, "cast-from-implicit-toprimitive", true) \
-	X(CastToImplicitToPrimitive,   "cast-to-implicit-toprimitive",   true) \
-	X(TypeofImplicitToPrimitive,   "typeof-implicit-toprimitive",    true)
+	/* WarningName,                CLI string,         enabled by default, description) */ \
+	X(Bash53NativeSupershell,      "bash53-native-supershell",       true, "Warn when using Bash 5.3's native supershell syntax ${ command; } instead of Bash++'s @(command)") \
+	X(CastToUnknownClass,          "cast-to-unknown-class",          true, "Warn when the target class of a @dynamic_cast is not known at compile time") \
+	X(ImplicitToPrimitive,         "implicit-toprimitive",          false, "Warn when .toPrimitive is called implicitly by referencing a non-primitive object in a primitive context") \
+	X(CastFromImplicitToPrimitive, "cast-from-implicit-toprimitive", true, "Warn when the input to a @dynamic_cast is an implicit call to .toPrimitive") \
+	X(CastToImplicitToPrimitive,   "cast-to-implicit-toprimitive",   true, "Warn when the target class of a @dynamic_cast is an implicit call to .toPrimitive") \
+	X(TypeofImplicitToPrimitive,   "typeof-implicit-toprimitive",    true, "Warn when the input to a @typeof is an implicit call to .toPrimitive")
 
 
-#define BPP_WARNING_GET_NAME(name, cli_string, enabled_by_default) \
+#define BPP_WARNING_GET_NAME(name, cli_string, enabled_by_default, description) \
 	name,
 
-#define BPP_WARNING_MAP_CLI_STRING_TO_ENUM(name, cli_string, enabled_by_default) \
+#define BPP_WARNING_MAP_CLI_STRING_TO_ENUM(name, cli_string, enabled_by_default, description) \
 	{cli_string, WarningType::name},
 
-#define BPP_WARNING_SET_DEFAULT(name, cli_string, enabled_by_default) \
+#define BPP_WARNING_SET_DEFAULT(name, cli_string, enabled_by_default, description) \
 	flags.set(static_cast<std::size_t>(WarningType::name), enabled_by_default);
 
 namespace bpp::ErrorHandling {
@@ -48,8 +48,6 @@ constexpr std::array<std::pair<std::string_view, WarningType>, 6> warning_clistr
 	// Map CLI string names to enum values for all warnings defined in BPP_WARNING_LIST
 	BPP_WARNING_LIST(BPP_WARNING_MAP_CLI_STRING_TO_ENUM)
 }};
-
-static_assert(static_cast<std::size_t>(WarningType::EnumCount) <= 32, "Too many warnings defined; maximum is 32");
 
 inline std::optional<WarningType> get_warning_by_cli_string(std::string_view cli_string) {
 	for (const auto& [str, warning] : warning_clistring_map) {

@@ -32,9 +32,6 @@
 #define BPP_WARNING_MAP_CLI_STRING_TO_ENUM(name, cli_string, enabled_by_default) \
 	{cli_string, WarningType::name},
 
-#define BPP_WARNING_MAP_ENUM_TO_CLI_STRING(name, cli_string, enabled_by_default) \
-	{WarningType::name, cli_string},
-
 #define BPP_WARNING_SET_DEFAULT(name, cli_string, enabled_by_default) \
 	flags.set(static_cast<std::size_t>(WarningType::name), enabled_by_default);
 
@@ -47,27 +44,22 @@ enum class WarningType : std::uint8_t {
 };
 
 
-constexpr std::array<std::pair<std::string_view, WarningType>, 6> warning_name_map = {{
+constexpr std::array<std::pair<std::string_view, WarningType>, 6> warning_clistring_map = {{
 	// Map CLI string names to enum values for all warnings defined in BPP_WARNING_LIST
 	BPP_WARNING_LIST(BPP_WARNING_MAP_CLI_STRING_TO_ENUM)
 }};
 
-constexpr std::array<std::pair<WarningType, std::string_view>, 6> warning_enum_map = {{
-	// Map enum values to CLI string names for all warnings defined in BPP_WARNING_LIST
-	BPP_WARNING_LIST(BPP_WARNING_MAP_ENUM_TO_CLI_STRING)
-}};
-
 static_assert(static_cast<std::size_t>(WarningType::EnumCount) <= 32, "Too many warnings defined; maximum is 32");
 
-inline std::optional<WarningType> get_warning_by_name(std::string_view warning_name) {
-	for (const auto& [name, warning] : warning_name_map) {
-		if (warning_name == name) return warning;
+inline std::optional<WarningType> get_warning_by_cli_string(std::string_view cli_string) {
+	for (const auto& [str, warning] : warning_clistring_map) {
+		if (cli_string == str) return warning;
 	}
 	return std::nullopt;
 }
 inline std::optional<std::string_view> get_cli_string_by_warning(WarningType warning) {
-	for (const auto& [w, name] : warning_enum_map) {
-		if (warning == w) return name;
+	for (const auto& [str, warning_enum] : warning_clistring_map) {
+		if (warning == warning_enum) return str;
 	}
 	return std::nullopt;
 }
@@ -88,25 +80,25 @@ class WarningOptions {
 		 * @throws std::runtime_error if the warning option is unknown
 		 */
 		void parse(std::string_view warning_option) {
-			std::string warning_name(warning_option);
+			std::string warning_cli_string(warning_option);
 			// Transform to lowercase for case-insensitive comparison
-			std::transform(warning_name.begin(), warning_name.end(),
-				warning_name.begin(),
+			std::transform(warning_cli_string.begin(), warning_cli_string.end(),
+				warning_cli_string.begin(),
 				[](unsigned char c) { return std::tolower(c); });
 
 			// Special-case: 'all' and 'none' are not valid warning names,
 			// but they are valid options to enable/disable all warnings
-			if (warning_name == "all") { enable_all_warnings(); return; }
-			if (warning_name == "none") { disable_all_warnings(); return; }
+			if (warning_cli_string == "all") { enable_all_warnings(); return; }
+			if (warning_cli_string == "none") { disable_all_warnings(); return; }
 
 			bool enable = true;
 
-			if (warning_name.starts_with("no-")) {
-				warning_name = warning_name.substr(3);
+			if (warning_cli_string.starts_with("no-")) {
+				warning_cli_string = warning_cli_string.substr(3);
 				enable = false;
 			}
 
-			auto warning_opt = get_warning_by_name(warning_name);
+			auto warning_opt = get_warning_by_cli_string(warning_cli_string);
 
 			if (!warning_opt) throw std::runtime_error("Unknown warning option: '" + std::string(warning_option) + "'");
 
@@ -138,7 +130,6 @@ class WarningOptions {
 
 #undef BPP_WARNING_GET_NAME
 #undef BPP_WARNING_MAP_CLI_STRING_TO_ENUM
-#undef BPP_WARNING_MAP_ENUM_TO_CLI_STRING
 #undef BPP_WARNING_SET_DEFAULT
 
 #undef BPP_WARNING_LIST

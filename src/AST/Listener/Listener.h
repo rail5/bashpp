@@ -210,5 +210,7 @@ template<> void Listener::enter  (Bash53NativeSupershell* node);
 template<> void Listener::exit   (Bash53NativeSupershell* node);
 template<> void Listener::enter  (BashRedirection*        node);
 template<> void Listener::exit   (BashRedirection*        node);
+template<> void Listener::enter  (BashVariable*           node);
+template<> void Listener::exit   (BashVariable*           node);
 
 } // namespace bpp::AST

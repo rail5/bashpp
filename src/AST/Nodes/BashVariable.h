@@ -10,6 +10,14 @@
 
 namespace bpp::AST {
 
+/**
+ * @brief Specifically, this represents braced variable references such as `${var}` or `${var:-default}`.
+ * Simple variable references such as `$var` are lexed as single tokens and are not represented as AST nodes.
+ *
+ * TEXT() contains the text of the variable reference, as well as any *preceding* modifiers (such as indirection)
+ *
+ * E.g., in `${!var:-default}`, TEXT() would contain `!var`, and the `:-default` part would be represented as a child node of this BashVariable node.
+ */
 class BashVariable : public ASTNode {
 	protected:
 		AST::Token<std::string> m_TEXT;

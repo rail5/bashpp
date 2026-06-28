@@ -7,6 +7,7 @@
 #include "Entity.h"
 #include "Program.h"
 #include "Object.h"
+#include "NamedEntity.h"
 
 #include <error/InternalError.h>
 
@@ -17,7 +18,12 @@ void Entity::inherit(std::shared_ptr<Entity> parent) {
 
 	parent_entity = parent;
 
-	bpp_assert(!containing_program.expired(), std::string("Entity does not have a containing program after inheritance"));
+	bpp_assert(!containing_program.expired(),
+		std::string("Entity")
+			+ (dynamic_cast<const NamedEntity*>(this)
+				? std::string(" '" + dynamic_cast<const NamedEntity*>(this)->get_name() + "'")
+				: std::string(""))
+			+ std::string(" does not have a containing program after inheritance"));
 
 	parent_visible_object_count_at_creation = parent->number_of_known_objects();
 	program_visible_class_count_at_creation = containing_program.lock()->number_of_known_classes();

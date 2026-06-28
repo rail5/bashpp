@@ -8,15 +8,15 @@
 
 #include <IR/bpp.h>
 #include <IR/entities/Entity.h>
+#include <IR/entities/NamedEntity.h>
 
 namespace bpp::IR {
 
 template <typename T>
 concept ClassMember = std::is_same_v<T, Method> || std::is_same_v<T, DataMember>;
 
-class Class : public Entity, public std::enable_shared_from_this<Class> {
+class Class : public Entity, public NamedEntity, public std::enable_shared_from_this<Class> {
 	private:
-		std::string name;
 		std::weak_ptr<Class> parent_class;
 
 		std::vector<std::shared_ptr<Method>> methods;
@@ -26,10 +26,7 @@ class Class : public Entity, public std::enable_shared_from_this<Class> {
 		std::shared_ptr<T> get_member(const std::string& name, std::shared_ptr<Entity> context) const;
 	public:
 		Class() = delete;
-		explicit Class(const std::string& name) : name(name) {}
-
-		const std::string& get_name() const { return name; }
-		void set_name(const std::string& name) { this->name = name; }
+		explicit Class(const std::string& name) { set_name(name); }
 
 		std::weak_ptr<Class> get_containing_class() override { return weak_from_this(); }
 		std::weak_ptr<const Class> get_containing_class_const() const override { return weak_from_this(); }

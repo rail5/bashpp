@@ -37,7 +37,7 @@ bpp::CodeGen::CodeSegment DynamicCast::generate_code(bpp::CodeGen::CodeGenState*
 
 	result.add_pre_code("bpp____dynamic_cast \"" + target_type->get_name() + "\""
 		+ " \"" + result_variable + "\""
-		+ " " + reference_value + "\n");
+		+ " \"" + reference_value + "\"\n");
 	
 	// If no target variable was explicitly set, this dynamic cast is being used as a temporary value
 	// so we should unset the result variable after using it to avoid cluttering the generated code with unnecessary variables.

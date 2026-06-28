@@ -49,10 +49,10 @@ constexpr bool is_ws_but_not_newline(char c) {
  * 
  * @tparam N The maximum size of the string (including NUL terminator)
  */
-template<size_t N>
+template<std::size_t N>
 struct FixedString {
 		std::array<char, N> data{};
-		size_t size = 0;
+		std::size_t size = 0;
 		constexpr FixedString() = default;
 		constexpr FixedString(const char (&str)[N]) {
 			while (size + 1 < N && str[size] != '\0') {
@@ -73,7 +73,7 @@ struct FixedString {
 		}
 
 		constexpr void append(const char* str) {
-			size_t index = 0;
+			std::size_t index = 0;
 			while (str[index] != '\0' && size < N) {
 				data[size++] = str[index++];
 			}
@@ -83,13 +83,13 @@ struct FixedString {
 				data[size++] = c;
 			}
 		}
-		constexpr void append(char c, size_t count) {
-			for (size_t i = 0; i < count && size < N; i++) {
+		constexpr void append(char c, std::size_t count) {
+			for (std::size_t i = 0; i < count && size < N; i++) {
 				data[size++] = c;
 			}
 		}
 		constexpr void append(std::string_view sv) {
-			for (size_t i = 0; i < sv.size() && size < N; i++) {
+			for (std::size_t i = 0; i < sv.size() && size < N; i++) {
 				data[size++] = sv[i];
 			}
 		}
@@ -102,12 +102,12 @@ struct FixedString {
 			return view();
 		}
 
-		constexpr size_t length() const {
+		constexpr std::size_t length() const {
 			return size;
 		}
 
-		constexpr std::optional<size_t> find(char c, size_t start = 0) const {
-			for (size_t i = start; i < size; i++) {
+		constexpr std::optional<std::size_t> find(char c, std::size_t start = 0) const {
+			for (std::size_t i = start; i < size; i++) {
 				if (data[i] == c) {
 					return i;
 				}
@@ -115,9 +115,9 @@ struct FixedString {
 			return std::nullopt;
 		}
 
-		constexpr std::optional<size_t> find_first_of(const char* chars, size_t start = 0) const {
-			for (size_t i = start; i < size; i++) {
-				for (size_t j = 0; chars[j] != '\0'; j++) {
+		constexpr std::optional<std::size_t> find_first_of(const char* chars, std::size_t start = 0) const {
+			for (std::size_t i = start; i < size; i++) {
+				for (std::size_t j = 0; chars[j] != '\0'; j++) {
 					if (data[i] == chars[j]) {
 						return i;
 					}
@@ -134,14 +134,14 @@ struct FixedString {
 		 * @param pos The starting position to search from
 		 * @return constexpr std::string_view The next word found, or an empty string_view if none found
 		 */
-		constexpr std::string_view get_next_word(size_t pos) const {
-			size_t next_whitespace_position = find_first_of(" \t\n", pos).value_or(size);
+		constexpr std::string_view get_next_word(std::size_t pos) const {
+			std::size_t next_whitespace_position = find_first_of(" \t\n", pos).value_or(size);
 			return view().substr(pos, next_whitespace_position - pos);
 		}
 };
 
 // Deduction guide for FixedString
-template<size_t N>
+template<std::size_t N>
 FixedString(const char (&)[N]) -> FixedString<N>;
 
 /**
@@ -151,9 +151,9 @@ FixedString(const char (&)[N]) -> FixedString<N>;
  */
 struct TextView {
 	const char* data = nullptr;
-	size_t len = 0;
+	std::size_t len = 0;
 
-	constexpr size_t length() const { return len; }
+	constexpr std::size_t length() const { return len; }
 
 	constexpr const char* c_str() const { return data; } // ptr must be NUL-terminated if used as C-string
 
@@ -163,10 +163,10 @@ struct TextView {
 
 	constexpr operator std::string_view() const { return view(); }
 
-	constexpr std::string_view get_next_word(size_t pos) const {
+	constexpr std::string_view get_next_word(std::size_t pos) const {
 		auto sv = view();
 		if (pos >= sv.size()) return {};
-		size_t end = pos;
+		std::size_t end = pos;
 		while (end < sv.size()) {
 			char ch = sv[end];
 			if (ch == ' ' || ch == '\t' || ch == '\n') break;
@@ -183,7 +183,7 @@ struct TextView {
  * @brief Specifies whether an option requires an argument, has an optional argument, or has no argument
  * 
  */
-enum ArgumentRequirement : uint8_t {
+enum ArgumentRequirement : std::uint8_t {
 	NoArgument = 0,
 	RequiredArgument = 1,
 	OptionalArgument = 2
@@ -227,10 +227,10 @@ template<typename T>
 concept option_like = requires(T t) {
 	{ t.shortopt } -> std::convertible_to<int>;
 	{ t.argRequirement } -> std::convertible_to<ArgumentRequirement>;
-	{ t.longopt.length() } -> std::convertible_to<size_t>;
-	{ t.description.length() } -> std::convertible_to<size_t>;
-	{ t.argumentPlaceholder.length() } -> std::convertible_to<size_t>;
-	{ t.description.get_next_word(size_t{}) } -> std::same_as<std::string_view>;
+	{ t.longopt.length() } -> std::convertible_to<std::size_t>;
+	{ t.description.length() } -> std::convertible_to<std::size_t>;
+	{ t.argumentPlaceholder.length() } -> std::convertible_to<std::size_t>;
+	{ t.description.get_next_word(std::size_t{}) } -> std::same_as<std::string_view>;
 };
 
 /**
@@ -238,10 +238,10 @@ concept option_like = requires(T t) {
  * 
  * @tparam T The option-like type
  * @param option The option to calculate the label length for
- * @return constexpr size_t The length of the option label
+ * @return constexpr std::size_t The length of the option label
  */
 template<option_like T>
-constexpr size_t option_label_length(const T& option) {
+constexpr std::size_t option_label_length(const T& option) {
 	/**
 	 * The option label format:
 	 *  1. -x, --longopt <arg>
@@ -259,7 +259,7 @@ constexpr size_t option_label_length(const T& option) {
 	 * '--longopt' is the option's actual longopt string,
 	 * and 'arg' is the option's argument placeholder string if provided, or 'arg' if not provided.
 	 */
-	size_t length = 2; // "-x" or equivalent whitespace if no shortopt
+	std::size_t length = 2; // "-x" or equivalent whitespace if no shortopt
 
 	if (option.longopt.length() > 0) {
 		length += 2; // ", " or equivalent whitespace if no shortopt
@@ -293,13 +293,13 @@ constexpr size_t option_label_length(const T& option) {
  * @tparam N The number of options
  * @tparam T The option-like type
  * @param options The array of options to calculate the maximum label length for
- * @return constexpr size_t The maximum option label length
+ * @return constexpr std::size_t The maximum option label length
  */
-template<size_t N, option_like T>
-constexpr size_t max_option_label_length(const std::array<T, N>& options) {
-	size_t max_length = 0;
-	for (size_t i = 0; i < N; i++) {
-		size_t length = option_label_length(options[i]);
+template<std::size_t N, option_like T>
+constexpr std::size_t max_option_label_length(const std::array<T, N>& options) {
+	std::size_t max_length = 0;
+	for (std::size_t i = 0; i < N; i++) {
+		std::size_t length = option_label_length(options[i]);
 		if (length > max_length) {
 			max_length = length;
 		}
@@ -313,27 +313,27 @@ constexpr size_t max_option_label_length(const std::array<T, N>& options) {
  * @tparam N The number of options
  * @tparam T The option-like type
  * @param options The array of options to calculate the help string length for
- * @return constexpr size_t The length of the help string
+ * @return constexpr std::size_t The length of the help string
  */
-template<size_t N, option_like T>
-constexpr size_t calculate_help_string_length(const std::array<T, N>& options) {
-	size_t total_length = 0;
-	const size_t max_label_length = max_option_label_length(options);
+template<std::size_t N, option_like T>
+constexpr std::size_t calculate_help_string_length(const std::array<T, N>& options) {
+	std::size_t total_length = 0;
+	const std::size_t max_label_length = max_option_label_length(options);
 
-	for (size_t i = 0; i < N; i++) {
-		size_t line_length = 2;
+	for (std::size_t i = 0; i < N; i++) {
+		std::size_t line_length = 2;
 		total_length += 2; // indentation
-		const size_t label_length = option_label_length(options[i]);
-		const size_t padding_amount = max_label_length - label_length;
+		const std::size_t label_length = option_label_length(options[i]);
+		const std::size_t padding_amount = max_label_length - label_length;
 
 		total_length += label_length + padding_amount + 1;
 		line_length += label_length + padding_amount + 1;
 
-		const size_t line_limit = 80;
-		size_t pos = line_length;
+		const std::size_t line_limit = 80;
+		std::size_t pos = line_length;
 
 		auto desc = options[i].description.view();
-		size_t idx = 0;
+		std::size_t idx = 0;
 
 		while (idx < desc.size()) {
 			// Skip whitespace
@@ -351,13 +351,13 @@ constexpr size_t calculate_help_string_length(const std::array<T, N>& options) {
 			}
 
 			// Find word end
-			size_t end = idx;
+			std::size_t end = idx;
 			while (end < desc.size() && !is_ws(desc[end])) ++end;
 
-			const size_t word_len = end - idx;
+			const std::size_t word_len = end - idx;
 
 			// Wrap if the word doesn't fit on this line (and we're not at the start of the desc column)
-			const size_t desc_col = max_label_length + 3;
+			const std::size_t desc_col = max_label_length + 3;
 			if (pos + word_len > line_limit && pos > desc_col) {
 				total_length += 1;              // '\n'
 				total_length += desc_col;       // indentation to description column
@@ -368,7 +368,7 @@ constexpr size_t calculate_help_string_length(const std::array<T, N>& options) {
 			pos += word_len;
 
 			// Look ahead: is there another word?
-			size_t next = end;
+			std::size_t next = end;
 			while (next < desc.size() && is_ws(desc[next])) ++next;
 			if (next < desc.size()) {
 				// Add a single separating space if it fits, else wrap
@@ -466,16 +466,16 @@ class OptionSequence {
 		auto end() const {
 			return options.end();
 		}
-		size_t size() const {
+		std::size_t size() const {
 			return options.size();
 		}
 		bool empty() const {
 			return options.empty();
 		}
-		const ParsedOption& operator[](size_t index) const {
+		const ParsedOption& operator[](std::size_t index) const {
 			return options[index];
 		}
-		const ParsedOption& at(size_t index) const {
+		const ParsedOption& at(std::size_t index) const {
 			return options.at(index);
 		}
 
@@ -491,6 +491,17 @@ class OptionSequence {
 				[shortopt](const ParsedOption& opt) {
 					return opt.getShortOpt() == shortopt;
 				});
+		}
+
+		std::optional<std::string_view> getArgumentFor(int shortopt) const {
+			auto it = std::find_if(options.begin(), options.end(),
+				[shortopt](const ParsedOption& opt) {
+					return opt.getShortOpt() == shortopt;
+				});
+			if (it != options.end()) {
+				return it->getArgument();
+			}
+			return std::nullopt;
 		}
 
 		/**
@@ -526,7 +537,7 @@ class OptionSequence {
  *     and it as well as any subsequent arguments are left unparsed
  * 
  */
-enum StopCondition : uint8_t {
+enum StopCondition : std::uint8_t {
 	AllOptions,
 	BeforeFirstNonOptionArgument,
 	AfterFirstNonOptionArgument,
@@ -547,7 +558,7 @@ struct OptionRemainder {
 template<Helpers::option_like... Options>
 class OptionParser {
 	private:
-		static constexpr size_t N = sizeof...(Options);
+		static constexpr std::size_t N = sizeof...(Options);
 		using OptionArray = std::array<Helpers::OptionView, N>;
 
 		static constexpr OptionArray options = OptionArray{{
@@ -562,8 +573,8 @@ class OptionParser {
 
 		// Compile-time guarantee: no two options have the same shortopt value
 		static_assert([]{
-			for (size_t i = 0; i < N; i++) {
-				for (size_t j = i + 1; j < N; j++) {
+			for (std::size_t i = 0; i < N; i++) {
+				for (std::size_t j = i + 1; j < N; j++) {
 					if (options[i].shortopt == options[j].shortopt) {
 						return false;
 					}
@@ -574,9 +585,9 @@ class OptionParser {
 
 		// Likewise: no two options have the same (non-empty) longopt value
 		static_assert([]{
-			for (size_t i = 0; i < N; i++) {
+			for (std::size_t i = 0; i < N; i++) {
 				if (options[i].longopt.length() == 0) continue;
-				for (size_t j = i + 1; j < N; j++) {
+				for (std::size_t j = i + 1; j < N; j++) {
 					if (options[j].longopt.length() == 0) continue;
 					if (options[i].longopt.view() == options[j].longopt.view()) {
 						return false;
@@ -586,10 +597,10 @@ class OptionParser {
 			return true;
 		}(), "OptionParser error: Duplicate longopt values detected in option definitions.");
 
-		static constexpr size_t help_string_length = Helpers::calculate_help_string_length<N>(options);
+		static constexpr std::size_t help_string_length = Helpers::calculate_help_string_length<N>(options);
 		
 		static constexpr std::array<char, (3*N) + 2> build_short_options_(const OptionArray& opts) {
-			size_t short_opt_index = 0;
+			std::size_t short_opt_index = 0;
 			std::array<char, (3*N) + 2> short_opts{};
 
 			// Flag: REQUIRE_ORDER
@@ -599,7 +610,7 @@ class OptionParser {
 			// Including GNU libc, every BSD variant, and musl, among others.
 			short_opts[short_opt_index++] = '+';
 
-			for (size_t i = 0; i < N; i++) {
+			for (std::size_t i = 0; i < N; i++) {
 				if (opts[i].shortopt >= 33 && opts[i].shortopt <= 126) {
 					short_opts[short_opt_index++] = static_cast<char>(opts[i].shortopt);
 					switch (opts[i].argRequirement) {
@@ -626,9 +637,9 @@ class OptionParser {
 		static constexpr std::array<struct option, N + 1> build_long_options_(const OptionArray& opts) {
 			std::array<struct option, N + 1> long_opts{};
 
-			size_t idx = 0;
+			std::size_t idx = 0;
 
-			for (size_t i = 0; i < N; i++) {
+			for (std::size_t i = 0; i < N; i++) {
 				if (opts[i].longopt.length() == 0) continue;
 				long_opts[idx].name = opts[i].longopt.c_str();
 				long_opts[idx].has_arg = static_cast<int>(opts[i].argRequirement);
@@ -647,9 +658,9 @@ class OptionParser {
 
 		static constexpr Helpers::FixedString<help_string_length> generateHelpString(const OptionArray& options) {
 			Helpers::FixedString<help_string_length> help_string;
-			const size_t max_label_length = Helpers::max_option_label_length<N>(options);
+			const std::size_t max_label_length = Helpers::max_option_label_length<N>(options);
 
-			for (size_t i = 0; i < N; i++) {
+			for (std::size_t i = 0; i < N; i++) {
 				help_string.append("  ");
 
 				// First: write the '-x, --longopt <arg>' part
@@ -692,16 +703,16 @@ class OptionParser {
 
 				// Second: write the option description
 
-				const size_t label_length = option_label_length(options[i]);
-				const size_t padding_amount = max_label_length - label_length;
+				const std::size_t label_length = option_label_length(options[i]);
+				const std::size_t padding_amount = max_label_length - label_length;
 				help_string.append(' ', padding_amount + 1);
 
-				const size_t line_limit = 80;
-				const size_t desc_col = max_label_length + 3;
-				size_t pos = 2 + max_label_length + 1;
+				const std::size_t line_limit = 80;
+				const std::size_t desc_col = max_label_length + 3;
+				std::size_t pos = 2 + max_label_length + 1;
 
 				auto desc = options[i].description.view();
-				size_t idx = 0;
+				std::size_t idx = 0;
 
 				while (idx < desc.size()) {
 					while (idx < desc.size() && Helpers::is_ws_but_not_newline(desc[idx])) ++idx;
@@ -717,7 +728,7 @@ class OptionParser {
 						continue;
 					}
 
-					size_t end = idx;
+					std::size_t end = idx;
 					while (end < desc.size() && !Helpers::is_ws(desc[end])) ++end;
 
 					std::string_view word = desc.substr(idx, end - idx);
@@ -731,7 +742,7 @@ class OptionParser {
 					help_string.append(word);
 					pos += word.size();
 
-					size_t next = end;
+					std::size_t next = end;
 					while (next < desc.size() && Helpers::is_ws(desc[next])) ++next;
 					if (next < desc.size()) {
 						if (pos + 1 > line_limit) {
@@ -785,14 +796,14 @@ class OptionParser {
 			int remainder_start = -1;
 
 			auto find_by_short = [&](int s) -> const auto* {
-				for (size_t i = 0; i < N; i++) {
+				for (std::size_t i = 0; i < N; i++) {
 					if (options[i].shortopt == s) return &options[i];
 				}
 				return static_cast<const Helpers::OptionView*>(nullptr);
 			};
 
 			auto find_by_long = [&](std::string_view name) -> const auto* {
-				for (size_t i = 0; i < N; i++) {
+				for (std::size_t i = 0; i < N; i++) {
 					if (options[i].longopt.length() > 0
 						&& name == std::string_view(options[i].longopt.data, options[i].longopt.length())) {
 						return &options[i];

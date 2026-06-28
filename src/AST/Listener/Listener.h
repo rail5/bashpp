@@ -180,43 +180,33 @@ class Listener final {
 };
 
 // Enter/exit handler specializations:
-template <> void Listener::enter(Program* node);
-template <> void Listener::exit(Program* node);
-
-template <> void Listener::enter(ClassDefinition* node);
-template <> void Listener::exit(ClassDefinition* node);
-
-template <> void Listener::enter(DatamemberDeclaration* node);
-template <> void Listener::exit(DatamemberDeclaration* node);
-
-template <> void Listener::enter(ValueAssignment* node);
-template <> void Listener::exit(ValueAssignment* node);
-
-template <> void Listener::enter(MethodDefinition* node);
-template <> void Listener::exit(MethodDefinition* node);
-
-template <> void Listener::enter(ObjectInstantiation* node);
-template <> void Listener::exit(ObjectInstantiation* node);
-
-template <> void Listener::enter(BashPipeline* node);
-template <> void Listener::exit(BashPipeline* node);
-
-template <> void Listener::enter(BashCommandSequence* node);
-template <> void Listener::exit(BashCommandSequence* node);
-
-template <> void Listener::enter(RawText* node);
-template <> void Listener::exit(RawText* node);
-
-template <> void Listener::enter(DoublequotedString* node);
-template <> void Listener::exit(DoublequotedString* node);
-
-template <> void Listener::enter(Supershell* node);
-template <> void Listener::exit(Supershell* node);
-
-template <> void Listener::enter(SubshellSubstitution* node);
-template <> void Listener::exit(SubshellSubstitution* node);
-
-template <> void Listener::enter(RawSubshell* node);
-template <> void Listener::exit(RawSubshell* node);
+template<> void Listener::enter  (Program*                node);
+template<> void Listener::exit   (Program*                node);
+template<> void Listener::enter  (ClassDefinition*        node);
+template<> void Listener::exit   (ClassDefinition*        node);
+template<> void Listener::enter  (DatamemberDeclaration*  node);
+template<> void Listener::exit   (DatamemberDeclaration*  node);
+template<> void Listener::enter  (ValueAssignment*        node);
+template<> void Listener::exit   (ValueAssignment*        node);
+template<> void Listener::enter  (MethodDefinition*       node);
+template<> void Listener::exit   (MethodDefinition*       node);
+template<> void Listener::enter  (ObjectInstantiation*    node);
+template<> void Listener::exit   (ObjectInstantiation*    node);
+template<> void Listener::enter  (BashPipeline*           node);
+template<> void Listener::exit   (BashPipeline*           node);
+template<> void Listener::enter  (BashCommandSequence*    node);
+template<> void Listener::exit   (BashCommandSequence*    node);
+template<> void Listener::enter  (RawText*                node);
+template<> void Listener::exit   (RawText*                node);
+template<> void Listener::enter  (DoublequotedString*     node);
+template<> void Listener::exit   (DoublequotedString*     node);
+template<> void Listener::enter  (Supershell*             node);
+template<> void Listener::exit   (Supershell*             node);
+template<> void Listener::enter  (SubshellSubstitution*   node);
+template<> void Listener::exit   (SubshellSubstitution*   node);
+template<> void Listener::enter  (RawSubshell*            node);
+template<> void Listener::exit   (RawSubshell*            node);
+template<> void Listener::enter  (Bash53NativeSupershell* node);
+template<> void Listener::exit   (Bash53NativeSupershell* node);
 
 } // namespace bpp::AST

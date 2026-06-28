@@ -36,6 +36,7 @@ void Class::inherit(std::shared_ptr<Class> parent) {
 	methods.reserve(methods.size() + parent->methods.size());
 	for (const auto& m : parent->get_methods()) {
 		if (m->get_name() == "toPrimitive") continue; // Don't inherit the toPrimitive method, since it is automatically generated for all classes
+		if (m->get_name().starts_with("__")) continue; // Don't inherit system methods, since they are automatically generated for all classes
 		auto inherited_method = std::make_shared<Method>(*m);
 		if (inherited_method->get_scope() == VisibilityScope::PRIVATE) {
 			inherited_method->set_scope(VisibilityScope::INACCESSIBLE);
@@ -217,7 +218,7 @@ bpp::CodeGen::CodeSegment Class::generate_code(bpp::CodeGen::CodeGenState* state
 	bpp::CodeGen::CodeSegment code;
 
 	for (const auto& method : methods) {
-		code.egalitarian_merge(method->generate_code(state));
+		code.absorb_all_to_main(method->generate_code(state));
 	}
 
 	return code;

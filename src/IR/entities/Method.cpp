@@ -39,6 +39,7 @@ ThisPtr::ThisPtr(std::shared_ptr<Method> containing_method) : MethodParameter(co
 	set_name("this");
 	set_type(containing_method->get_containing_class());
 	set_is_pointer(true);
+	inherit(containing_method);
 }
 
 bpp::CodeGen::CodeSegment ThisPtr::generate_code(bpp::CodeGen::CodeGenState* state) const {

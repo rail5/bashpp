@@ -16,6 +16,7 @@
 #include <unistd.h>
 
 #include <error/WarningOptions.h>
+#include <IR/OptimizationOptions.h>
 #include <include/BashVersion.h>
 #include <include/xgetopt.h>
 
@@ -49,6 +50,8 @@ constexpr XGetOpt::OptionParser<
 	XGetOpt::Option<'b', "target-bash", "Compile to Bash version (default: 5.2)", XGetOpt::RequiredArgument, "version">,
 	XGetOpt::Option<'I', "include", "Add directory to include path", XGetOpt::RequiredArgument, "directory">,
 	XGetOpt::Option<'W', "warn", "Enable/disable specific warnings\nSee the manual for a list of available warnings", XGetOpt::RequiredArgument, "warning">,
+	XGetOpt::Option<'O', "optimize", "Set optimization level (0-2, default: 1)", XGetOpt::RequiredArgument, "level">,
+	XGetOpt::Option<'f', "flag", "Enable/disable specific optimization flags\nSee the manual for a list of available flags", XGetOpt::RequiredArgument, "flag">,
 #ifndef NDEBUG
 	XGetOpt::Option<'t', "tokens", "Display tokens from lexer (do not compile program)", XGetOpt::NoArgument>,
 	XGetOpt::Option<'p', "parse-tree", "Display parse tree (do not compile program)", XGetOpt::NoArgument>,
@@ -75,6 +78,7 @@ class Arguments {
 		BashVersion                                         m_target_bash_version = {5, 2}; // Default to Bash 5.2
 		std::shared_ptr<std::vector<std::string>>           m_include_paths = std::make_shared<std::vector<std::string>>();
 		std::shared_ptr<bpp::ErrorHandling::WarningOptions> m_warning_options = std::make_shared<bpp::ErrorHandling::WarningOptions>();
+		std::shared_ptr<bpp::IR::OptimizationOptions>       m_optimization_options = std::make_shared<bpp::IR::OptimizationOptions>();
 	#ifndef NDEBUG
 		bool f_display_tokens = false;
 		bool f_display_parse_tree = false;
@@ -224,6 +228,23 @@ class Arguments {
 			return this->m_warning_options;
 		}
 
+		void add_optimization_flag(std::string_view optimization_flag) {
+			m_optimization_options->parse(optimization_flag);
+		}
+		void set_optimization_level(std::string_view optimization_level) {
+			std::uint32_t level = 1;
+			try {
+				level = std::stoi(std::string(optimization_level));
+			} catch (const std::exception& e) {
+				throw std::runtime_error("Invalid optimization level: '" + std::string(optimization_level) + "'");
+			}
+			// Optimization level should fit within 8 bits
+			if (level > 255) {
+				throw std::runtime_error("Invalid optimization level: '" + std::string(optimization_level) + "' (must be between 0 and 255)");
+			}
+			m_optimization_options->set_optimization_level(static_cast<std::uint8_t>(level));
+		}
+
 	#ifndef NDEBUG
 		void set_display_tokens(bool display) {
 			this->f_display_tokens = display;
@@ -296,6 +317,9 @@ inline Arguments parse_arguments(int argc, char* argv[]) {
 			case 'b':
 				args.set_target_bash_version(arg.getArgument());
 				break;
+			case 'f':
+				args.add_optimization_flag(arg.getArgument());
+				break;
 			case 'h':
 				std::cout << program_name << " " << bpp_compiler_version << std::endl
 					<< help_intro << OptionParser.getHelpString();
@@ -308,6 +332,9 @@ inline Arguments parse_arguments(int argc, char* argv[]) {
 			case 'o':
 				args.set_run_on_exit(false);
 				args.set_output_file(arg.getArgument());
+				break;
+			case 'O':
+				args.set_optimization_level(arg.getArgument());
 				break;
 			case 'v':
 				std::cout << program_name << " " << bpp_compiler_version << std::endl << copyright;

@@ -86,7 +86,7 @@ class Entity {
 		 * 
 		 * @return bpp::CodeGen::CodeSegment The generated code for this entity and all of its children
 		 */
-		virtual bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const { return {}; }
+		virtual bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* /*state*/) const { return {}; }
 
 		PRETTYPRINT_HELPERS(Entity)
 };

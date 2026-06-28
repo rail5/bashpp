@@ -44,7 +44,8 @@ void print_syntax_error_or_warning(
 	const std::vector<std::string>& include_chain,
 	std::shared_ptr<bpp::IR::Program> program,
 	bool lsp_mode,
-	std::optional<WarningType> warning_type
+	std::optional<WarningType> warning_type,
+	const std::optional<std::string>& warning_cli_string
 );
 
 void print_parser_errors(
@@ -66,6 +67,7 @@ class ErrorOrWarning {
 		std::string message;
 		bool lsp_mode = false;
 		std::optional<WarningType> warning_type = std::nullopt; // std::nullopt if this is an error, otherwise the type of warning
+		std::optional<std::string> warning_cli_string = std::nullopt; // The CLI string for the warning, if this is a warning
 
 		template <bpp::detail::ASTNodePtrORToken T>
 		void set_from_listener(bpp::AST::Listener* listener, const T& error_ctx) {
@@ -120,7 +122,8 @@ class ErrorOrWarning {
 				include_chain,
 				program,
 				lsp_mode,
-				warning_type
+				warning_type,
+				warning_cli_string
 			);
 		}
 };
@@ -160,6 +163,7 @@ class Warning : public ErrorOrWarning {
 			: ErrorOrWarning(listener, error_ctx, msg)
 		{
 			this->warning_type = warning_type;
+			this->warning_cli_string = listener->get_warning_options()->get_cli_string_by_option(warning_type);
 		}
 };
 

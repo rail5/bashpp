@@ -96,7 +96,7 @@ class Listener final {
 		/// The set of enabled/disabled warnings
 		std::shared_ptr<bpp::ErrorHandling::WarningOptions> warning_options;
 		#define show_warning(node, warning_type, msg) \
-			if (warning_options->is_warning_enabled(warning_type)) { \
+			if (warning_options->is_enabled(warning_type)) { \
 				bpp::ErrorHandling::Warning warning(this, node, msg, warning_type); \
 				warning.print(); \
 			}

@@ -31,7 +31,8 @@ void print_syntax_error_or_warning(
 	const std::vector<std::string>& include_chain,
 	std::shared_ptr<bpp::IR::Program> program,
 	bool lsp_mode,
-	std::optional<WarningType> warning_type
+	std::optional<WarningType> warning_type,
+	const std::optional<std::string>& warning_cli_string
 ) {
 	// Add to the program's diagnostics
 	// FIXME(@rail5): Include warning type in program diagnostics, so the language server can report -Wflag information to the user
@@ -72,7 +73,6 @@ void print_syntax_error_or_warning(
 	// Print the warning / error message
 	if (warning_type.has_value()) {
 		std::cerr << color_orange << "warning: " << color_reset << msg;
-		auto warning_cli_string = bpp::ErrorHandling::get_cli_string_by_warning(*warning_type);
 		if (warning_cli_string) {
 			std::cerr << " [" << color_orange << "-W" << *warning_cli_string << color_reset << "]";
 		}
@@ -147,6 +147,7 @@ void print_parser_errors(
 			include_chain,
 			program,
 			lsp_mode,
+			std::nullopt,
 			std::nullopt
 		);
 	}

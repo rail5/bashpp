@@ -7,13 +7,9 @@
 #pragma once
 
 #include <cstdint>
-#include <bitset>
-#include <string>
-#include <string_view>
 #include <array>
-#include <stdexcept>
-#include <algorithm>
-#include <optional>
+#include <string_view>
+#include <include/OptionsBase.h>
 
 // Single source of truth for all warning options in Bash++
 #define BPP_WARNING_LIST(X) \
@@ -49,79 +45,18 @@ constexpr std::array<std::pair<std::string_view, WarningType>, 6> warning_clistr
 	BPP_WARNING_LIST(BPP_WARNING_MAP_CLI_STRING_TO_ENUM)
 }};
 
-inline std::optional<WarningType> get_warning_by_cli_string(std::string_view cli_string) {
-	for (const auto& [str, warning] : warning_clistring_map) {
-		if (cli_string == str) return warning;
-	}
-	return std::nullopt;
-}
-inline std::optional<std::string_view> get_cli_string_by_warning(WarningType warning) {
-	for (const auto& [str, warning_enum] : warning_clistring_map) {
-		if (warning == warning_enum) return str;
-	}
-	return std::nullopt;
-}
-
-class WarningOptions {
-	private:
-		std::bitset<static_cast<std::size_t>(WarningType::EnumCount)> flags;
+class WarningOptions : public OptionsBase<WarningOptions, WarningType, warning_clistring_map> {
 	public:
 		WarningOptions() {
-			// Set default values for all warnings
 			BPP_WARNING_LIST(BPP_WARNING_SET_DEFAULT)
 		}
 
-		/**
-		 * @brief Parse a warning option string and enable/disable the corresponding warning
-		 * 
-		 * @param warning_option The warning option string to parse (e.g., "bash53-native-supershell", "no-cast-to-unknown-class")
-		 * @throws std::runtime_error if the warning option is unknown
-		 */
-		void parse(std::string_view warning_option) {
-			std::string warning_cli_string(warning_option);
-			// Transform to lowercase for case-insensitive comparison
-			std::transform(warning_cli_string.begin(), warning_cli_string.end(),
-				warning_cli_string.begin(),
-				[](unsigned char c) { return std::tolower(c); });
-
-			// Special-case: 'all' and 'none' are not valid warning names,
-			// but they are valid options to enable/disable all warnings
-			if (warning_cli_string == "all") { enable_all_warnings(); return; }
-			if (warning_cli_string == "none") { disable_all_warnings(); return; }
-
-			bool enable = true;
-
-			if (warning_cli_string.starts_with("no-")) {
-				warning_cli_string = warning_cli_string.substr(3);
-				enable = false;
-			}
-
-			auto warning_opt = get_warning_by_cli_string(warning_cli_string);
-
-			if (!warning_opt) throw std::runtime_error("Unknown warning option: '" + std::string(warning_option) + "'");
-
-			if (enable) {
-				enable_warning(*warning_opt);
-			} else {
-				disable_warning(*warning_opt);
-			}
+		std::string get_error_message(const std::string& invalid_option) {
+			return "Unknown warning flag: '" + invalid_option + "'";
 		}
 
-		void enable_warning(WarningType warning) {
-			flags.set(static_cast<std::size_t>(warning), true);
-		}
-		void disable_warning(WarningType warning) {
-			flags.set(static_cast<std::size_t>(warning), false);
-		}
-		bool is_warning_enabled(WarningType warning) const {
-			return flags.test(static_cast<std::size_t>(warning));
-		}
-		void enable_all_warnings() {
-			flags.set();
-		}
-		void disable_all_warnings() {
-			flags.reset();
-		}
+		void enable_all() { flags.set(); }
+		void disable_all() { flags.reset(); }
 };
 
 } // namespace bpp::ErrorHandling

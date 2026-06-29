@@ -87,13 +87,14 @@ int main(int argc, char* argv[]) {
 	
 	auto program = parser.program();
 	const auto& parser_errors = parser.get_errors();
+	bpp::ErrorHandling::print_parser_errors(
+		parser_errors,
+		full_path_of_input_file,
+		{},
+		nullptr,
+		false);
+
 	if (program == nullptr) {
-		bpp::ErrorHandling::print_parser_errors(
-			parser_errors,
-			full_path_of_input_file,
-			{},
-			nullptr,
-			false);
 		std::cerr << program_name << ": Error: Failed to parse program." << std::endl;
 		return 1;
 	}

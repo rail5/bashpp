@@ -48,14 +48,14 @@ void Listener::enter(MethodDefinition* node) {
 	}
 
 	method->set_definition_position({
-		source_file,
+		get_current_source_file(),
 		node->NAME().getLine(),
 		node->NAME().getCharPositionInLine()
 	});
 
 	if (auto parent_method = method->get_parent_method()) {
 		parent_method->add_reference_position({
-			source_file,
+			get_current_source_file(),
 			node->NAME().getLine(),
 			node->NAME().getCharPositionInLine()
 		});
@@ -76,7 +76,7 @@ void Listener::enter(MethodDefinition* node) {
 
 		if (param.type.has_value()) {
 			auto type_name = param.type.value().getValue();
-			param_type = program->get_class(type_name);
+			param_type = method->get_class(type_name);
 			if (!param_type) throw bpp::ErrorHandling::SyntaxError(this, p, "Unknown class: " + type_name);
 
 			if (!param.pointer) throw bpp::ErrorHandling::SyntaxError(this, p, "Methods can only accept pointers as parameters, not objects");
@@ -89,7 +89,7 @@ void Listener::enter(MethodDefinition* node) {
 			}
 
 			param_type->add_reference_position({
-				source_file,
+				get_current_source_file(),
 				param.type.value().getLine(),
 				param.type.value().getCharPositionInLine()
 			});
@@ -109,7 +109,7 @@ void Listener::enter(MethodDefinition* node) {
 		parameter_entity->set_containing_class(current_class);
 
 		parameter_entity->set_definition_position({
-			source_file,
+			get_current_source_file(),
 			param.name.getLine(),
 			param.name.getCharPositionInLine()
 		});

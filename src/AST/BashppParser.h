@@ -10,6 +10,7 @@
 #include <memory>
 #include <variant>
 #include <vector>
+#include <filesystem>
 #include <AST/ASTNode.h>
 #include <AST/Nodes/Nodes.h>
 #include <error/ParserError.h>
@@ -36,7 +37,7 @@ class BashppParser {
 		std::vector<ParserError> errors;
 
 		std::string input_file_path = "<stdin>";
-		std::vector<std::string> include_chain;
+		std::vector<std::filesystem::path> include_chain;
 		
 		enum class InputType : std::uint8_t {
 			FILEPATH,
@@ -61,7 +62,7 @@ class BashppParser {
 		void setInputFromFilePtr(FILE* file_ptr, const std::string& file_path);
 		void setInputFromStringContents(const std::string& contents);
 
-		void setIncludeChain(const std::vector<std::string>& includes);
+		void setIncludeChain(const std::vector<std::filesystem::path>& includes);
 
 		std::shared_ptr<AST::Program> program();
 

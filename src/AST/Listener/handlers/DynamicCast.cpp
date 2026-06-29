@@ -76,7 +76,7 @@ void Listener::exit(DynamicCastTarget* node) {
 			);
 		} else {
 			target_class->add_reference_position({
-				source_file,
+				get_current_source_file(),
 				node->TARGETTYPE().value().getLine(),
 				node->TARGETTYPE().value().getCharPositionInLine()
 			});

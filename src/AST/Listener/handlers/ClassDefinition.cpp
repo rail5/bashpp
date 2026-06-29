@@ -21,6 +21,7 @@ void Listener::enter(ClassDefinition* node) {
 	if (!topmost_entity_is<bpp::IR::Program>()) {
 		throw bpp::ErrorHandling::SyntaxError(this, node, "Class definition must be at the top level of the program");
 	}
+	auto current_program = std::static_pointer_cast<bpp::IR::Program>(entity_stack.top());
 
 	// 2. Verify that the class name is valid
 	std::string class_name = node->CLASSNAME();
@@ -32,34 +33,34 @@ void Listener::enter(ClassDefinition* node) {
 	}
 
 	// 3. Verify that the class name is not already used in the program
-	if (program->get_class(class_name)) {
+	if (current_program->get_class(class_name)) {
 		throw bpp::ErrorHandling::SyntaxError(this, node, "Class '" + class_name + "' already defined in program");
 	}
-	if (program->get_object(class_name)) {
+	if (current_program->get_object(class_name)) {
 		throw bpp::ErrorHandling::SyntaxError(this, node, "Class name '" + class_name + "' conflicts with an object in the program");
 	}
 
 	auto class_entity = std::make_shared<bpp::IR::Class>(class_name);
-	class_entity->inherit(program);
+	class_entity->inherit(current_program);
 
 	// Inherit from a parent class if specified
 	if (node->PARENTCLASSNAME().has_value()) {
 		auto parent_class_name = node->PARENTCLASSNAME().value().getValue();
-		auto parent_class = program->get_class(parent_class_name);
+		auto parent_class = current_program->get_class(parent_class_name);
 		if (!parent_class) {
 			throw bpp::ErrorHandling::SyntaxError(this, node, "Parent class '" + parent_class_name + "' not found");
 		}
 		class_entity->inherit(parent_class);
 
 		parent_class->add_reference_position({
-			source_file,
+			get_current_source_file(),
 			node->PARENTCLASSNAME().value().getLine(),
 			node->PARENTCLASSNAME().value().getCharPositionInLine()
 		});
 	}
 
 	class_entity->set_definition_position({
-		source_file,
+		get_current_source_file(),
 		node->CLASSNAME().getLine(),
 		node->CLASSNAME().getCharPositionInLine()
 	});
@@ -122,7 +123,8 @@ void Listener::enter(ClassDefinition* node) {
 	class_entity->add_method(toPrimitive_method);
 
 	entity_stack.push(class_entity);
-	program->add_class(class_entity);
+	current_program->add_class(class_entity); // Add the class to the program's list of known classes, so that it can be found by name later
+	current_program->add(class_entity); // Add the class to the entity tree, so that it can be traversed later (e.g. for codegen)
 	in_class = true;
 }
 

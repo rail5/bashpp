@@ -59,7 +59,7 @@ void Listener::enter(ObjectInstantiation* node) {
 	}
 
 	object_class->add_reference_position({
-		source_file,
+		get_current_source_file(),
 		type_name.getLine(),
 		type_name.getCharPositionInLine()
 	});
@@ -71,7 +71,7 @@ void Listener::enter(ObjectInstantiation* node) {
 	object->set_name(object_name);
 
 	object->set_definition_position({
-		source_file,
+		get_current_source_file(),
 		object_name.getLine(),
 		object_name.getCharPositionInLine()
 	});

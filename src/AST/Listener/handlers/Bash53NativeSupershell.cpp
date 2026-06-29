@@ -32,7 +32,7 @@ void Listener::enter(Bash53NativeSupershell* node) {
 
 	entity_stack.push(b53_supershell_entity);
 	b53_supershell_entity->set_definition_position({
-		source_file,
+		get_current_source_file(),
 		node->getLine(),
 		node->getCharPositionInLine()
 	});

@@ -130,7 +130,7 @@ void bpp::AST::BashppParser::setInputFromStringContents(const std::string& conte
 	input_source = contents;
 }
 
-void bpp::AST::BashppParser::setIncludeChain(const std::vector<std::string>& includes) {
+void bpp::AST::BashppParser::setIncludeChain(const std::vector<std::filesystem::path>& includes) {
 	include_chain = includes;
 }
 

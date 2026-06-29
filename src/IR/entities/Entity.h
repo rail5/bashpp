@@ -81,11 +81,6 @@ class Entity {
 		virtual std::size_t number_of_known_objects() const;
 		virtual std::size_t number_of_known_classes() const;
 
-		/**
-		 * @brief Generate compiled code for this entity.
-		 * 
-		 * @return bpp::CodeGen::CodeSegment The generated code for this entity and all of its children
-		 */
 		virtual bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* /*state*/) const { return {}; }
 
 		PRETTYPRINT_HELPERS(Entity)

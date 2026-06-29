@@ -10,6 +10,7 @@
 #include <memory>
 #include <cstdint>
 #include <stdexcept>
+#include <filesystem>
 #include <error/detail.h>
 #include <error/ParserError.h>
 #include <error/WarningOptions.h>
@@ -26,7 +27,6 @@ namespace bpp::ErrorHandling {
 
 /**
  * @brief Print a syntax error or warning message to stderr
- * @param source_file The source file which contains the error
  * @param line The line number where the error occurred
  * @param column The column number where the error occurred
  * @param text_length The length of the token which caused the error
@@ -36,12 +36,11 @@ namespace bpp::ErrorHandling {
  * @param program The program being compiled, to which the error/warning should be added as a diagnostic
  */
 void print_syntax_error_or_warning(
-	const std::string& source_file,
 	std::uint32_t line,
 	std::uint32_t column,
 	std::uint32_t text_length,
 	const std::string& msg,
-	const std::vector<std::string>& include_chain,
+	std::vector<std::filesystem::path> include_chain,
 	std::shared_ptr<bpp::IR::Program> program,
 	bool lsp_mode,
 	std::optional<WarningType> warning_type,
@@ -50,19 +49,17 @@ void print_syntax_error_or_warning(
 
 void print_parser_errors(
 	const std::vector<AST::ParserError>& errors,
-	const std::string& source_file,
-	const std::vector<std::string>& include_chain,
+	const std::vector<std::filesystem::path>& include_chain,
 	std::shared_ptr<bpp::IR::Program> program,
 	bool lsp_mode
 );
 
 class ErrorOrWarning {
 	protected:
-		std::string source_file;
 		std::uint32_t line = 0;
 		std::uint32_t column = 0;
 		std::uint32_t text_length = 0;
-		std::vector<std::string> include_chain;
+		std::vector<std::filesystem::path> include_chain;
 		std::shared_ptr<bpp::IR::Program> program;
 		std::string message;
 		bool lsp_mode = false;
@@ -71,9 +68,8 @@ class ErrorOrWarning {
 
 		template <bpp::detail::ASTNodePtrORToken T>
 		void set_from_listener(bpp::AST::Listener* listener, const T& error_ctx) {
-			source_file = listener->get_source_file();
-			//include_chain = listener->get_include_stack();
-			//program = listener->get_program();
+			include_chain = listener->get_include_chain();
+			program = listener->get_program();
 			//lsp_mode = listener->get_lsp_mode();
 
 			text_length = 1;
@@ -114,7 +110,6 @@ class ErrorOrWarning {
 		
 		void print() const {
 			print_syntax_error_or_warning(
-				source_file,
 				line,
 				column,
 				text_length,
@@ -163,7 +158,7 @@ class Warning : public ErrorOrWarning {
 			: ErrorOrWarning(listener, error_ctx, msg)
 		{
 			this->warning_type = warning_type;
-			this->warning_cli_string = listener->get_warning_options()->get_cli_string_by_option(warning_type);
+			this->warning_cli_string = listener->get_warning_options().get_cli_string_by_option(warning_type);
 		}
 };
 

@@ -25,10 +25,9 @@ namespace bpp::ErrorHandling {
 // TODO(@rail5): Clean this mess up.
 
 void print_syntax_error_or_warning(
-	const std::string& source_file,
 	std::uint32_t line, std::uint32_t column, std::uint32_t text_length,
 	const std::string& msg,
-	const std::vector<std::string>& include_chain,
+	std::vector<std::filesystem::path> include_chain,
 	std::shared_ptr<bpp::IR::Program> program,
 	bool lsp_mode,
 	std::optional<WarningType> warning_type,
@@ -36,6 +35,8 @@ void print_syntax_error_or_warning(
 ) {
 	// Add to the program's diagnostics
 	// FIXME(@rail5): Include warning type in program diagnostics, so the language server can report -Wflag information to the user
+	auto source_file = include_chain.back().string();
+	include_chain.pop_back();
 	if (program != nullptr) {
 		program->add_diagnostic(
 			source_file,
@@ -67,7 +68,7 @@ void print_syntax_error_or_warning(
 	
 	// Print the include chain that led to the problematic file
 	for (const auto& filename : std::ranges::reverse_view(include_chain)) {
-		std::cerr << "In file included from " << color_purple << filename << color_reset << std::endl;
+		std::cerr << "In file included from " << color_purple << filename.string() << color_reset << std::endl;
 	}
 
 	// Print the warning / error message
@@ -127,8 +128,7 @@ void print_syntax_error_or_warning(
 
 void print_parser_errors(
 	const std::vector<AST::ParserError>& errors,
-	const std::string& source_file,
-	const std::vector<std::string>& include_chain,
+	const std::vector<std::filesystem::path>& include_chain,
 	std::shared_ptr<bpp::IR::Program> program,
 	bool lsp_mode
 ) {
@@ -139,7 +139,6 @@ void print_parser_errors(
 			: UINT32_MAX;
 
 		print_syntax_error_or_warning(
-			source_file,
 			error.start.line,
 			error.start.column,
 			text_length,

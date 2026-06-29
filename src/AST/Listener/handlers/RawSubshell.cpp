@@ -23,7 +23,7 @@ void Listener::enter(RawSubshell* node) {
 	entity_stack.push(raw_subshell_entity);
 
 	raw_subshell_entity->set_definition_position({
-		source_file,
+		get_current_source_file(),
 		node->getLine(),
 		node->getCharPositionInLine()
 	});

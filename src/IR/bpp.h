@@ -14,6 +14,7 @@
 #include <vector>
 #include <unordered_map>
 #include <memory>
+#include <filesystem>
 
 namespace bpp {
 	enum class diagnostic_type : std::uint8_t {
@@ -76,12 +77,12 @@ inline bool is_valid_identifier(const std::string& identifier) {
 }
 
 struct SymbolPosition {
-	std::string file;
+	std::filesystem::path file;
 	std::uint64_t line = 0;
 	std::uint64_t column = 0;
 
 	SymbolPosition() = default;
-	SymbolPosition(const std::string& file, std::uint64_t line, std::uint64_t column)
+	SymbolPosition(const std::filesystem::path& file, std::uint64_t line, std::uint64_t column)
 		: file(file), line(line), column(column) {}
 };
 
@@ -127,6 +128,7 @@ enum class VisibilityScope : std::uint8_t {
 class Entity;
 class CodeEntity;
 class Program;
+class IncludedProgram;
 class Class;
 class Method;
 class Object;

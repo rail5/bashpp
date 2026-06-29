@@ -20,7 +20,6 @@ namespace bpp::IR {
 class RawSubshell : public CodeEntity {
 	public:
 		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
-
 		PRETTYPRINT_OVERRIDE();
 };
 

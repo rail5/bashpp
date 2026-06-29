@@ -10,6 +10,7 @@
  */
 #include <memory>
 #include <cassert>
+#include <filesystem>
 #include <AST/Nodes/Nodes.h>
 #include <include/ParserPosition.h>
 #include <error/ParserError.h>
@@ -24,7 +25,7 @@ void yyerror(const char *s);
 %}
 
 %lex-param { yyscan_t yyscanner }
-%parse-param { std::shared_ptr<bpp::AST::Program>& program } { bool& current_command_can_receive_lvalues } { const std::string& source_file } { const std::vector<std::string>& include_chain } { std::vector<bpp::AST::ParserError>& errors } { yyscan_t yyscanner }
+%parse-param { std::shared_ptr<bpp::AST::Program>& program } { bool& current_command_can_receive_lvalues } { const std::string& source_file } { const std::vector<std::filesystem::path>& include_chain } { std::vector<bpp::AST::ParserError>& errors } { yyscan_t yyscanner }
 
 %define parse.error verbose
 
@@ -842,14 +843,11 @@ include_statement:
 			pathType = bpp::AST::IncludeStatement::PathType::QUOTED;
 		}
 
-		pathText = pathText.substr(1, pathText.length() - 2); // Remove surrounding quotes or angle brackets
-
 		bpp::AST::Token<std::string> path(pathText, @3.begin.line, @3.begin.column);
 
 		std::string asPathText = $4;
 		std::uint32_t asPathLine = $4.getLine();
 		std::uint32_t asPathColumn = $4.getCharPositionInLine();
-		if (!asPathText.empty()) asPathText = asPathText.substr(1, asPathText.length() - 2); // Remove surrounding quotes
 		bpp::AST::Token<std::string> asPath(asPathText, asPathLine, asPathColumn);
 
 		auto node = std::make_shared<bpp::AST::IncludeStatement>();

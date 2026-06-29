@@ -8,6 +8,8 @@
 
 #include <memory>
 #include <stack>
+#include <set>
+#include <filesystem>
 
 #include <AST/ASTNode.h>
 #include <AST/NodeTypes.h>
@@ -84,9 +86,6 @@ namespace bpp::AST {
 
 class Listener final {
 	private:
-		/// Path to the source file that generated the AST being traversed by this listener
-		std::string source_file;
-
 		/// The program (root node of the entity tree) being constructed by this listener
 		std::shared_ptr<bpp::IR::Program> program;
 
@@ -94,9 +93,9 @@ class Listener final {
 		std::vector<bpp::AST::ParserError> parser_errors;
 
 		/// The set of enabled/disabled warnings
-		std::shared_ptr<bpp::ErrorHandling::WarningOptions> warning_options;
+		bpp::ErrorHandling::WarningOptions warning_options;
 		#define show_warning(node, warning_type, msg) \
-			if (warning_options->is_enabled(warning_type)) { \
+			if (warning_options.is_enabled(warning_type)) { \
 				bpp::ErrorHandling::Warning warning(this, node, msg, warning_type); \
 				warning.print(); \
 			}
@@ -105,9 +104,18 @@ class Listener final {
 			NOT_INCLUDED, // The file that generated this AST is the original (main) source file of the program
 			DYNAMICALLY_INCLUDED, // This file was reached via `@include dynamic <file>`
 			STATICALLY_INCLUDED // This file was reached via `@include [static] <file>`
-		} included_type = IncludedType::NOT_INCLUDED;
+		};
 
-		bool is_included() const { return included_type != IncludedType::NOT_INCLUDED; }
+		std::stack<IncludedType> included_type_stack = std::stack<IncludedType>({IncludedType::NOT_INCLUDED});
+
+		/// A set of (unique) included files (used for `@include_once` to avoid including the same file multiple times)
+		std::set<std::filesystem::path> included_files;
+
+		/// A list of paths to search for angle-bracket included files (e.g., `@include <file>`). The last path is always the standard library path.
+		std::vector<std::filesystem::path> include_paths;
+
+		/// A chain of included files, from the original main file to the current file being processed
+		std::vector<std::filesystem::path> include_chain;
 
 		std::stack<std::shared_ptr<bpp::IR::Entity>> entity_stack;
 
@@ -165,24 +173,36 @@ class Listener final {
 			if (!errors.empty()) this->program_has_errors = true;
 		}
 
-		void set_source_file(const std::string& source_file) {
-			this->source_file = source_file;
+		void set_source_file(const std::filesystem::path& source_file) {
+			if (!include_chain.empty()) throw std::runtime_error("Source file already set; cannot set source file when include chain is not empty");
+			include_chain.emplace_back(source_file);
 		}
-		const std::string& get_source_file() const {
-			return source_file;
+		const std::filesystem::path& get_main_source_file() const {
+			return include_chain.front();
+		}
+		const std::filesystem::path& get_current_source_file() const {
+			return include_chain.back();
+		}
+		const std::vector<std::filesystem::path>& get_include_chain() const {
+			return include_chain;
 		}
 
-		void set_warning_options(const std::shared_ptr<bpp::ErrorHandling::WarningOptions>& options) {
+		void set_warning_options(const bpp::ErrorHandling::WarningOptions& options) {
 			this->warning_options = options;
 		}
-		const std::shared_ptr<bpp::ErrorHandling::WarningOptions>& get_warning_options() const {
+		const bpp::ErrorHandling::WarningOptions& get_warning_options() const {
 			return warning_options;
+		}
+		void set_include_paths(const std::vector<std::filesystem::path>& paths) {
+			this->include_paths = paths;
 		}
 };
 
 // Enter/exit handler specializations:
 template<> void Listener::enter  (Program*                node);
 template<> void Listener::exit   (Program*                node);
+template<> void Listener::enter  (IncludeStatement*       node);
+template<> void Listener::exit   (IncludeStatement*       node);
 template<> void Listener::enter  (ClassDefinition*        node);
 template<> void Listener::exit   (ClassDefinition*        node);
 template<> void Listener::enter  (DatamemberDeclaration*  node);

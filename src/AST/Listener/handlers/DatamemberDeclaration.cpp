@@ -51,7 +51,7 @@ void Listener::enter(DatamemberDeclaration* node) {
 	}
 
 	dm->set_definition_position({
-		source_file,
+		get_current_source_file(),
 		id.value().getLine(),
 		id.value().getCharPositionInLine()
 	});

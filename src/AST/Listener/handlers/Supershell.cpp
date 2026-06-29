@@ -23,7 +23,7 @@ void Listener::enter(Supershell* node) {
 	entity_stack.push(supershell_entity);
 
 	supershell_entity->set_definition_position({
-		source_file,
+		get_current_source_file(),
 		node->getLine(),
 		node->getCharPositionInLine()
 	});

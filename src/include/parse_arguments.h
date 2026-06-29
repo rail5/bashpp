@@ -12,7 +12,6 @@
 #include <vector>
 #include <optional>
 #include <filesystem>
-#include <memory>
 #include <unistd.h>
 
 #include <error/WarningOptions.h>
@@ -72,13 +71,13 @@ constexpr XGetOpt::OptionParser<
  */
 class Arguments {
 	private:
-		std::vector<char*>                                  m_program_arguments;
-		std::optional<std::string>                          m_input_file;
-		std::optional<std::string>                          m_output_file;
-		BashVersion                                         m_target_bash_version = {5, 2}; // Default to Bash 5.2
-		std::shared_ptr<std::vector<std::string>>           m_include_paths = std::make_shared<std::vector<std::string>>();
-		std::shared_ptr<bpp::ErrorHandling::WarningOptions> m_warning_options = std::make_shared<bpp::ErrorHandling::WarningOptions>();
-		std::shared_ptr<bpp::IR::OptimizationOptions>       m_optimization_options = std::make_shared<bpp::IR::OptimizationOptions>();
+		std::vector<char*>                   m_program_arguments;
+		std::optional<std::filesystem::path> m_input_file;
+		std::optional<std::filesystem::path> m_output_file;
+		BashVersion                          m_target_bash_version = {5, 2}; // Default to Bash 5.2
+		std::vector<std::filesystem::path>   m_include_paths;
+		bpp::ErrorHandling::WarningOptions   m_warning_options;
+		bpp::IR::OptimizationOptions         m_optimization_options;
 	#ifndef NDEBUG
 		bool f_display_tokens = false;
 		bool f_display_parse_tree = false;
@@ -125,9 +124,9 @@ class Arguments {
 			if (!std::filesystem::is_regular_file(input_file)) {
 				throw std::runtime_error("Source file '" + std::string(input_file) + "' is not a regular file");
 			}
-			this->m_input_file = input_file;
+			this->m_input_file = std::filesystem::canonical(input_file);
 		}
-		const std::optional<std::string>& input_file() const {
+		const std::optional<std::filesystem::path>& input_file() const {
 			return this->m_input_file;
 		}
 
@@ -142,45 +141,33 @@ class Arguments {
 		* @throws std::runtime_error if the output file argument is invalid or not writable
 		*/
 		void set_output_file(std::string_view output_file_arg) {
-			if (output_file_arg == "-") {
-				this->m_output_file = output_file_arg;
-				return;
-			}
+			if (output_file_arg == "-") return; // If '-' is given, compiled code will be written to stdout
 
-			std::string parsed_output_file;
-
-			{
-				std::filesystem::path output_path(output_file_arg);
-				if (output_path.is_absolute()) {
-					parsed_output_file = output_path.string();
-				} else {
-					parsed_output_file = std::filesystem::current_path() / output_path;
-				}
-			}
+			std::filesystem::path parsed_output_file = std::filesystem::canonical(output_file_arg);
 
 			// Check if we have permission to write to the specified output file
 			// If the file exists, verify write access; if it doesn't, verify write access on its parent directory
 			try {
 				if (std::filesystem::exists(parsed_output_file)) {
 					if (access(parsed_output_file.c_str(), W_OK) != 0) {
-						throw std::runtime_error("No write permission for output file '" + parsed_output_file + "'");
+						throw std::runtime_error("No write permission for output file '" + parsed_output_file.string() + "'");
 					}
 				} else {
 					std::filesystem::path parent_path = std::filesystem::path(parsed_output_file).parent_path();
 					if (!std::filesystem::exists(parent_path) || !std::filesystem::is_directory(parent_path)) {
-						throw std::runtime_error("Parent directory of output file '" + parsed_output_file + "' does not exist or is not a directory");
+						throw std::runtime_error("Parent directory of output file '" + parsed_output_file.string() + "' does not exist or is not a directory");
 					}
 					if (access(parent_path.c_str(), W_OK) != 0) {
-						throw std::runtime_error("No write permission for parent directory of output file '" + parsed_output_file + "'");
+						throw std::runtime_error("No write permission for parent directory of output file '" + parsed_output_file.string() + "'");
 					}
 				}
 			} catch (const std::exception& e) {
-				throw std::runtime_error(std::string("Could not verify write permission for output file '") + parsed_output_file + "': " + e.what());
+				throw std::runtime_error(std::string("Could not verify write permission for output file '") + parsed_output_file.string() + "': " + e.what());
 			}
 
 			this->m_output_file = parsed_output_file;
 		}
-		const std::optional<std::string>& output_file() const {
+		const std::optional<std::filesystem::path>& output_file() const {
 			return this->m_output_file;
 		}
 
@@ -215,21 +202,21 @@ class Arguments {
 			if (!std::filesystem::is_directory(path)) {
 				throw std::runtime_error("Include path '" + std::string(path) + "' is not a directory");
 			}
-			this->m_include_paths->emplace_back(path);
+			this->m_include_paths.emplace_back(path);
 		}
-		const std::shared_ptr<std::vector<std::string>>& include_paths() const {
+		const std::vector<std::filesystem::path>& include_paths() const {
 			return this->m_include_paths;
 		}
 		
 		void add_warning_option(std::string_view warning_option) {
-			m_warning_options->parse(warning_option);
+			m_warning_options.parse(warning_option);
 		}
-		const std::shared_ptr<bpp::ErrorHandling::WarningOptions>& warning_options() const {
+		const bpp::ErrorHandling::WarningOptions& warning_options() const {
 			return this->m_warning_options;
 		}
 
 		void add_optimization_flag(std::string_view optimization_flag) {
-			m_optimization_options->parse(optimization_flag);
+			m_optimization_options.parse(optimization_flag);
 		}
 		void set_optimization_level(std::string_view optimization_level) {
 			std::uint32_t level = 1;
@@ -242,7 +229,7 @@ class Arguments {
 			if (level > 255) {
 				throw std::runtime_error("Invalid optimization level: '" + std::string(optimization_level) + "' (must be between 0 and 255)");
 			}
-			m_optimization_options->set_optimization_level(static_cast<std::uint8_t>(level));
+			m_optimization_options.set_optimization_level(static_cast<std::uint8_t>(level));
 		}
 
 	#ifndef NDEBUG
@@ -283,11 +270,11 @@ class Arguments {
 		}
 
 		bool output_to_stdout() const {
-			return this->m_output_file == "-";
+			return !this->m_output_file.has_value() && !this->f_run_on_exit;
 		}
 
 		bool output_to_file() const {
-			return this->m_output_file.has_value() && this->m_output_file.value() != "-";
+			return this->m_output_file.has_value();
 		}
 
 		bool input_from_stdin() const {

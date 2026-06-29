@@ -89,8 +89,7 @@ int main(int argc, char* argv[]) {
 	const auto& parser_errors = parser.get_errors();
 	bpp::ErrorHandling::print_parser_errors(
 		parser_errors,
-		full_path_of_input_file,
-		{},
+		{full_path_of_input_file},
 		nullptr,
 		false);
 
@@ -140,7 +139,7 @@ int main(int argc, char* argv[]) {
 	std::unique_ptr<bpp::AST::Listener> listener = std::make_unique<bpp::AST::Listener>();
 	listener->set_source_file(full_path_of_input_file);
 	listener->set_warning_options(args.warning_options());
-	//listener->set_include_paths(args.include_paths());
+	listener->set_include_paths(args.include_paths());
 	//listener->set_code_buffer(code_buffer);
 	//listener->set_output_stream(output_stream);
 	//listener->set_output_file(args.output_file().value_or(""));

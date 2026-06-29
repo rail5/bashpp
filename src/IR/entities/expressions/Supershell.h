@@ -18,7 +18,6 @@ namespace bpp::IR {
 class Supershell : public StringType {
 	public:
 		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
-
 		PRETTYPRINT_OVERRIDE();
 };
 

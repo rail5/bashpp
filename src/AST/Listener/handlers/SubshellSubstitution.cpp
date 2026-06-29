@@ -24,7 +24,7 @@ void Listener::enter(SubshellSubstitution* node) {
 	entity_stack.push(subshell_substitution_entity);
 
 	subshell_substitution_entity->set_definition_position({
-		source_file,
+		get_current_source_file(),
 		node->getLine(),
 		node->getCharPositionInLine()
 	});

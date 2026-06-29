@@ -139,6 +139,7 @@ class Listener final {
 
 		ExpectationsStack context_expectations_stack;
 
+		std::stack<std::monostate> dynamic_cast_stack;
 	public:
 		void walk(bpp::AST::ASTNode* node);
 
@@ -192,6 +193,10 @@ template<> void Listener::enter  (MethodDefinition*       node);
 template<> void Listener::exit   (MethodDefinition*       node);
 template<> void Listener::enter  (ObjectInstantiation*    node);
 template<> void Listener::exit   (ObjectInstantiation*    node);
+template<> void Listener::enter  (DynamicCast*            node);
+template<> void Listener::exit   (DynamicCast*            node);
+template<> void Listener::enter  (DynamicCastTarget*      node);
+template<> void Listener::exit   (DynamicCastTarget*      node);
 template<> void Listener::enter  (BashPipeline*           node);
 template<> void Listener::exit   (BashPipeline*           node);
 template<> void Listener::enter  (BashCommandSequence*    node);

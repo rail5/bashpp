@@ -34,14 +34,30 @@ bpp::CodeGen::CodeSegment DynamicCast::generate_code(bpp::CodeGen::CodeGenState*
 		if (this->target_variable.has_value()) return this->target_variable.value();
 		return "__dynamicCast" + std::to_string(state->dynamic_cast_counter++);
 	}();
-
-	result.add_pre_code("bpp____dynamic_cast \"" + target_type->get_name() + "\""
-		+ " \"" + result_variable + "\""
-		+ " \"" + reference_value + "\"\n");
 	
 	// If no target variable was explicitly set, this dynamic cast is being used as a temporary value
 	// so we should unset the result variable after using it to avoid cluttering the generated code with unnecessary variables.
-	if (!target_variable.has_value()) result.add_post_code("unset " + result_variable + "\n");
+	if (!target_variable.has_value()) result.add_post_code("\nunset " + result_variable + "\n");
+
+	bpp::CodeGen::CodeSegment cast_to;
+	if (std::holds_alternative<RawCode>(target_type)) {
+		cast_to.add_main_code(std::get<RawCode>(target_type));
+	} else if (std::holds_alternative<std::shared_ptr<Entity>>(target_type)) {
+		auto entity = std::get<std::shared_ptr<Entity>>(target_type);
+		cast_to.egalitarian_merge(entity->generate_code(state));
+	}
+
+	result.add_pre_code(cast_to.get_pre_code());
+	result.add_post_code(cast_to.get_post_code());
+	const std::string cast_to_value = [&cast_to]() {
+		std::string result;
+		for (const auto& part : cast_to.get_main_code()) result += part;
+		return result;
+	}();
+	
+	result.add_pre_code("bpp____dynamic_cast \"" + cast_to_value + "\""
+		+ " \"" + result_variable + "\""
+		+ " \"" + reference_value + "\"\n");
 
 	result.add_main_code("${" + result_variable + "}");
 
@@ -50,7 +66,17 @@ bpp::CodeGen::CodeSegment DynamicCast::generate_code(bpp::CodeGen::CodeGenState*
 
 PRETTYPRINT_IMPLEMENTATION(DynamicCast, {
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
-	os << indent << "(DynamicCast to " << target_type->get_name() << "\n";
+	os << indent << "(DynamicCast\n"
+		<< indent << "TargetType:\n";
+	if (std::holds_alternative<RawCode>(target_type)) {
+		os << indent << std::get<RawCode>(target_type) << "\n";
+	} else if (std::holds_alternative<std::shared_ptr<Entity>>(target_type)) {
+		auto entity = std::get<std::shared_ptr<Entity>>(target_type);
+		entity->prettyPrint(os, indentation_level + 1);
+	} else {
+		os << indent << "<Invalid target type>\n";
+	}
+	os << indent << "Input:\n";
 	StringType::prettyPrint(os, indentation_level + 1);
 	os << indent << ")\n";
 	return os;

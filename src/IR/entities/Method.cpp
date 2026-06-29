@@ -78,8 +78,9 @@ bool Method::add_parameter(std::shared_ptr<MethodParameter> parameter) {
 	// Per the spec: if a method is declared to take a pointer as a parameter,
 	// then the argument passed to that parameter is implicitly dynamically cast to the expected type at the start of the method.
 	if (auto param_type = parameter->get_type().lock()) {
-		auto dynamic_cast_entity = std::make_shared<DynamicCast>(param_type);
+		auto dynamic_cast_entity = std::make_shared<DynamicCast>();
 		dynamic_cast_entity->inherit(parameter);
+		dynamic_cast_entity->set_target_type(param_type->get_name());
 		// Tell the dynamic cast entity which positional parameter to use as its input (i.e., the argument passed to this parameter)
 		dynamic_cast_entity->add("$" + std::to_string(parameter->get_index()));
 		// Set the initial value of this parameter to be the result of the dynamic cast

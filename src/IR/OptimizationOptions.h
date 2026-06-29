@@ -20,10 +20,8 @@
 	X(RemoveUnusedClasses,               "rm-unused-classes",                      1, "Remove unused classes") \
 	X(RemoveRedundantDynamicCasts,       "rm-redundant-dynamic-casts",             1, "Replace redundant dynamic casts with their compile-time known results") \
 	X(SkipTrivialDeletionsInLocalScopes, "skip-trivial-deletions-in-local-scopes", 1, "Skip deleting objects with trivial destructors when they are in local scopes") \
-	X(InlineSmallMethods,                "inline-small-methods",                   1, "Inline small methods") \
 	\
 	X(SkipThisPtrValidation,             "skip-thisptr-validation",                2, "Skip validation of @this pointer in methods when it is not needed") \
-	X(InlineAllMethods,                  "inline-all-methods",                     2, "Inline all methods")
 
 #define BPP_OPTIMIZATION_GET_NAME(name, cli_string, level, description) \
 	name,
@@ -59,7 +57,7 @@ class OptimizationOptions : public OptionsBase<OptimizationOptions, Optimization
 			set_optimization_level(1);
 		}
 
-		std::string get_error_message(const std::string& invalid_option) {
+		static std::string get_error_message(const std::string& invalid_option) {
 			return "Unknown optimization flag: '" + invalid_option + "'";
 		}
 

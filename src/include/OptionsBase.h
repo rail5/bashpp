@@ -38,8 +38,8 @@ class OptionsBase {
 		Derived& self() { return static_cast<Derived&>(*this); }
 
 		std::string error_message(const std::string& invalid_option) {
-			if constexpr (requires { self().get_error_message(invalid_option); }) {
-				return self().get_error_message(invalid_option);
+			if constexpr (requires { Derived::get_error_message(invalid_option); }) {
+				return Derived::get_error_message(invalid_option);
 			} else {
 				return "Unknown option: '" + invalid_option + "'";
 			}

@@ -19,7 +19,6 @@ void Listener::enter(BashPipeline* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity when entering BashPipeline node");
 	auto current_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
 	auto pipeline_entity = std::make_shared<bpp::IR::BashPipeline>();
-	pipeline_entity->set_containing_class(current_entity->get_containing_class().lock());
 	pipeline_entity->inherit(current_entity);
 	current_entity->add(pipeline_entity);
 	entity_stack.push(pipeline_entity);
@@ -41,7 +40,6 @@ void Listener::enter(BashCommandSequence* node) {
 	if (!current_code_entity) throw bpp::ErrorHandling::SyntaxError(this, node, "Command sequence outside of a code entity");
 
 	auto command_sequence_entity = std::make_shared<bpp::IR::CodeEntity>();
-	command_sequence_entity->set_containing_class(current_code_entity->get_containing_class().lock());
 	command_sequence_entity->inherit(current_code_entity);
 	current_code_entity->add(command_sequence_entity);
 	entity_stack.push(command_sequence_entity);

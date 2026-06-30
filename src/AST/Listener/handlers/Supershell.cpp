@@ -18,7 +18,6 @@ void Listener::enter(Supershell* node) {
 	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
 
 	auto supershell_entity = std::make_shared<bpp::IR::Supershell>();
-	supershell_entity->set_containing_class(current_code_entity->get_containing_class().lock());
 	supershell_entity->inherit(current_code_entity);
 	entity_stack.push(supershell_entity);
 

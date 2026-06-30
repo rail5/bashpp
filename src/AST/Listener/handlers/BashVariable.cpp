@@ -18,7 +18,6 @@ void Listener::enter(BashVariable* node) {
 	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
 
 	auto bash_variable_entity = std::make_shared<bpp::IR::StringType>();
-	bash_variable_entity->set_containing_class(current_code_entity->get_containing_class().lock());
 	bash_variable_entity->inherit(current_code_entity);
 	bash_variable_entity->add("${" + node->TEXT().getValue());
 	entity_stack.push(bash_variable_entity);

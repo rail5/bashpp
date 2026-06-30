@@ -71,7 +71,6 @@ void Listener::enter(ClassDefinition* node) {
 	// The contents of these methods will be filled in later
 	auto new_method = std::make_shared<bpp::IR::Method>();
 	new_method->set_name("__new");
-	new_method->set_containing_class(class_entity);
 	new_method->inherit(class_entity);
 	auto requested_address_param = std::make_shared<bpp::IR::MethodParameter>(new_method);
 	requested_address_param->set_name("__this");
@@ -80,21 +79,18 @@ void Listener::enter(ClassDefinition* node) {
 	auto delete_method = std::make_shared<bpp::IR::Method>();
 	delete_method->set_name("__delete");
 	delete_method->set_is_virtual(true);
-	delete_method->set_containing_class(class_entity);
 	delete_method->inherit(class_entity);
 	delete_method->add_parameter(std::make_shared<bpp::IR::ThisPtr>(delete_method));
 
 	auto copy_method = std::make_shared<bpp::IR::Method>();
 	copy_method->set_name("__copy");
 	copy_method->set_is_virtual(true);
-	copy_method->set_containing_class(class_entity);
 	copy_method->inherit(class_entity);
 	copy_method->add_parameter(std::make_shared<bpp::IR::ThisPtr>(copy_method));
 
 	auto constructor_method = std::make_shared<bpp::IR::Method>();
 	constructor_method->set_name("__constructor");
 	constructor_method->set_is_overridable(true);
-	constructor_method->set_containing_class(class_entity);
 	constructor_method->inherit(class_entity);
 	constructor_method->add_parameter(std::make_shared<bpp::IR::ThisPtr>(constructor_method));
 
@@ -102,13 +98,11 @@ void Listener::enter(ClassDefinition* node) {
 	destructor_method->set_name("__destructor");
 	destructor_method->set_is_virtual(true);
 	destructor_method->set_is_overridable(true);
-	destructor_method->set_containing_class(class_entity);
 	destructor_method->inherit(class_entity);
 	destructor_method->add_parameter(std::make_shared<bpp::IR::ThisPtr>(destructor_method));
 
 	auto toPrimitive_method = std::make_shared<bpp::IR::Method>();
 	toPrimitive_method->set_name("toPrimitive");
-	toPrimitive_method->set_containing_class(class_entity);
 	toPrimitive_method->set_is_virtual(true);
 	toPrimitive_method->set_is_overridable(true);
 	toPrimitive_method->inherit(class_entity);

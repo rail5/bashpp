@@ -65,7 +65,6 @@ void Listener::enter(ObjectInstantiation* node) {
 	});
 
 	auto object = std::make_shared<bpp::IR::Object>();
-	object->set_containing_class(current_code_entity->get_containing_class());
 	object->inherit(current_code_entity);
 	object->set_type(object_class);
 	object->set_name(object_name);

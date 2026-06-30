@@ -20,7 +20,6 @@ void Listener::enter(DynamicCast* /*node*/) {
 	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
 
 	auto dynamic_cast_entity = std::make_shared<bpp::IR::DynamicCast>();
-	dynamic_cast_entity->set_containing_class(current_code_entity->get_containing_class().lock());
 	dynamic_cast_entity->inherit(current_code_entity);
 
 	entity_stack.push(dynamic_cast_entity);
@@ -46,7 +45,6 @@ void Listener::enter(DynamicCastTarget* /*node*/) {
 	auto dynamic_cast_entity = std::static_pointer_cast<bpp::IR::DynamicCast>(entity_stack.top());
 
 	auto target_type_entity = std::make_shared<bpp::IR::StringType>();
-	target_type_entity->set_containing_class(dynamic_cast_entity->get_containing_class().lock());
 	target_type_entity->inherit(dynamic_cast_entity);
 	entity_stack.push(target_type_entity);
 }

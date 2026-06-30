@@ -18,7 +18,6 @@ void Listener::enter(RawSubshell* node) {
 	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
 
 	auto raw_subshell_entity = std::make_shared<bpp::IR::RawSubshell>();
-	raw_subshell_entity->set_containing_class(current_code_entity->get_containing_class().lock());
 	raw_subshell_entity->inherit(current_code_entity);
 	entity_stack.push(raw_subshell_entity);
 

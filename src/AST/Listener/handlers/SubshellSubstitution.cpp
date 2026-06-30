@@ -18,7 +18,6 @@ void Listener::enter(SubshellSubstitution* node) {
 	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
 
 	auto subshell_substitution_entity = std::make_shared<bpp::IR::SubshellSubstitution>();
-	subshell_substitution_entity->set_containing_class(current_code_entity->get_containing_class().lock());
 	subshell_substitution_entity->inherit(current_code_entity);
 	subshell_substitution_entity->setIsCatReplacement(node->isCatReplacement());
 	entity_stack.push(subshell_substitution_entity);

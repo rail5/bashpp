@@ -20,7 +20,6 @@ void Listener::enter(DatamemberDeclaration* node) {
 	if (!current_class) throw bpp::ErrorHandling::SyntaxError(this, node, "Data member declaration outside of class body");
 
 	auto dm = std::make_shared<bpp::IR::DataMember>();
-	dm->set_containing_class(current_class);
 	dm->inherit(current_class);
 
 	switch (node->ACCESSMODIFIER().getValue()) {

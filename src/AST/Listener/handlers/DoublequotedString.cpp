@@ -18,7 +18,6 @@ void Listener::enter(DoublequotedString* /*node*/) {
 	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
 
 	auto string_entity = std::make_shared<bpp::IR::String>();
-	string_entity->set_containing_class(current_code_entity->get_containing_class().lock());
 	string_entity->inherit(current_code_entity);
 	entity_stack.push(string_entity);
 }

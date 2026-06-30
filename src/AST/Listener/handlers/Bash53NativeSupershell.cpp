@@ -25,7 +25,6 @@ void Listener::enter(Bash53NativeSupershell* node) {
 	);
 
 	auto b53_supershell_entity = std::make_shared<bpp::IR::StringType>();
-	b53_supershell_entity->set_containing_class(current_code_entity->get_containing_class().lock());
 	b53_supershell_entity->inherit(current_code_entity);
 
 	b53_supershell_entity->add(node->STARTTOKEN()); // Copy the `${` or `${|` start token as RawCode into the entity

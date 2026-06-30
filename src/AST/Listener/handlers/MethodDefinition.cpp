@@ -23,7 +23,6 @@ void Listener::enter(MethodDefinition* node) {
 	if (!current_class) throw bpp::ErrorHandling::SyntaxError(this, node, "Method definition outside of class body");
 
 	auto method = std::make_shared<bpp::IR::Method>();
-	method->set_containing_class(current_class);
 	method->inherit(current_class);
 
 	// Validate name
@@ -106,7 +105,6 @@ void Listener::enter(MethodDefinition* node) {
 		parameter_entity->set_type(param_type);
 		parameter_entity->set_is_pointer(param_type != nullptr);
 		parameter_entity->set_name(param_name);
-		parameter_entity->set_containing_class(current_class);
 
 		parameter_entity->set_definition_position({
 			get_current_source_file(),

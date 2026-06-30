@@ -15,6 +15,7 @@ namespace bpp::IR {
 
 void Entity::inherit(std::shared_ptr<Entity> parent) {
 	if (containing_program.expired()) containing_program = parent->get_containing_program();
+	if (containing_class.expired()) containing_class = parent->get_containing_class();
 
 	parent_entity = parent;
 

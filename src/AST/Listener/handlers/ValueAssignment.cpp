@@ -18,7 +18,6 @@ namespace bpp::AST {
 template <>
 void Listener::enter(ValueAssignment* node) {
 	auto va = std::make_shared<bpp::IR::ValueAssignment>();
-	va->set_containing_class(entity_stack.top()->get_containing_class());
 	va->inherit(entity_stack.top());
 
 	// FIXME(@rail5): Check object assignment context

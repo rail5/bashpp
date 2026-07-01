@@ -12,6 +12,8 @@
 #include <IR/bpp.h>
 #include <IR/entities/CodeEntity.h>
 
+#include <error/SyntaxError.h>
+
 namespace bpp::IR {
 
 /**
@@ -21,7 +23,7 @@ class Program : public CodeEntity, public std::enable_shared_from_this<Program> 
 	private:
 		OwnedEntityList<Class> classes;
 	public:
-		void add_diagnostic(std::string, bpp::diagnostic_type, std::string, std::uint32_t, std::uint32_t, std::uint32_t, std::uint32_t) {}
+		void add_diagnostic(bpp::ErrorHandling::Diagnostic diagnostic) {}
 
 		/**
 		 * @brief Add a class to the program's list of known classes

@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-#include "BashppParser.h"
+#include "Parser.h"
 
 #include <error/InternalError.h>
-#include <error/ParserError.h>
+#include <error/SyntaxError.h>
 #include <stdexcept>
 
 struct LexerExtra;
@@ -25,7 +25,7 @@ extern void set_utf16_mode(bool enable, yyscan_t yyscanner);
 #include <flexbison/generated/parser.tab.hpp>
 #include <flexbison/generated/lex.yy.hpp>
 
-void bpp::AST::BashppParser::_initialize_lexer() {
+void bpp::AST::Parser::_initialize_lexer() {
 	// If the input_source is empty, throw an exception
 	if (std::holds_alternative<std::monostate>(input_source)) {
 		throw bpp::ErrorHandling::InternalError("Attempted to initialize the lexer: Input source is not set");
@@ -80,21 +80,21 @@ void bpp::AST::BashppParser::_initialize_lexer() {
 	set_display_lexer_output(display_lexer_output, lexer);
 }
 
-void bpp::AST::BashppParser::_destroy_lexer() {
+void bpp::AST::Parser::_destroy_lexer() {
 	destroyLexer(lexer);
 	owned_input_file.reset();
 	input_file = nullptr;
 }
 
-void bpp::AST::BashppParser::_parse() {
+void bpp::AST::Parser::_parse() {
 	_initialize_lexer();
 
 	try {
 		yy::parser parser(m_program,
 			current_command_can_receive_lvalues,
-			input_file_path,
 			include_chain,
 			errors,
+			lsp_mode,
 			lexer);
 		parser.parse(); // Returns an int, not needed by us
 	} catch (...) {
@@ -105,42 +105,49 @@ void bpp::AST::BashppParser::_parse() {
 	_destroy_lexer();
 }
 
-void bpp::AST::BashppParser::setUTF16Mode(bool enabled) {
+void bpp::AST::Parser::setUTF16Mode(bool enabled) {
 	utf16_mode = enabled;
 }
 
-void bpp::AST::BashppParser::setDisplayLexerOutput(bool enabled) {
+void bpp::AST::Parser::setLSPMode(bool enabled) {
+	lsp_mode = enabled;
+}
+
+void bpp::AST::Parser::setDisplayLexerOutput(bool enabled) {
 	display_lexer_output = enabled;
 }
 
-void bpp::AST::BashppParser::setInputFromFilePath(const std::string& file_path) {
+void bpp::AST::Parser::setInputFromFilePath(const std::string& file_path) {
 	input_type = InputType::FILEPATH;
 	input_source = file_path;
 	input_file_path = file_path;
+	include_chain.emplace_back(file_path);
 }
 
-void bpp::AST::BashppParser::setInputFromFilePtr(FILE* file_ptr, const std::string& file_path) {
+void bpp::AST::Parser::setInputFromFilePtr(FILE* file_ptr, const std::string& file_path) {
 	input_type = InputType::FILEPTR;
 	input_source = file_ptr;
 	input_file_path = file_path;
+	include_chain.emplace_back(file_path);
 }
 
-void bpp::AST::BashppParser::setInputFromStringContents(const std::string& contents) {
+void bpp::AST::Parser::setInputFromStringContents(const std::string& contents, const std::string& pseudo_file_path) {
 	input_type = InputType::STRING_CONTENTS;
 	input_source = contents;
+	include_chain.emplace_back(pseudo_file_path);
 }
 
-void bpp::AST::BashppParser::setIncludeChain(const std::vector<std::filesystem::path>& includes) {
+void bpp::AST::Parser::setIncludeChain(const std::vector<std::filesystem::path>& includes) {
 	include_chain = includes;
 }
 
-std::shared_ptr<bpp::AST::Program> bpp::AST::BashppParser::program() {
+std::shared_ptr<bpp::AST::Program> bpp::AST::Parser::program() {
 	if (m_program == nullptr) {
 		_parse();
 	}
 	return m_program;
 }
 
-const std::vector<bpp::AST::ParserError>& bpp::AST::BashppParser::get_errors() const {
+const std::vector<bpp::ErrorHandling::ParserError>& bpp::AST::Parser::get_errors() const {
 	return errors;
 }

@@ -85,8 +85,7 @@ class IncludeStatement : public ASTNode {
 			os << indent << "(IncludeStatement\n"
 				<< indent << "  @" << ((m_KEYWORD.getValue() == IncludeKeyword::INCLUDE) ? "include" : "include_once") << " "
 				<< ((m_TYPE.getValue() == IncludeType::STATIC) ? "static" : "dynamic") << " "
-				<< ((m_PATHTYPE == PathType::ANGLEBRACKET) ? "<" : "\"") << m_PATH
-				<< ((m_PATHTYPE == PathType::ANGLEBRACKET) ? ">" : "\"");
+				<< m_PATH;
 			if (m_ASPATH.has_value()) {
 				os << " as \"" << m_ASPATH.value() << "\"";
 			}

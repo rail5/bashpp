@@ -5,7 +5,6 @@
  */
 
 #include <iostream>
-#include <ranges>
 #include <string>
 #include <fstream>
 #include <vector>
@@ -24,38 +23,20 @@ namespace bpp::ErrorHandling {
 
 // TODO(@rail5): Clean this mess up.
 
-void print_syntax_error_or_warning(
-	std::uint32_t line, std::uint32_t column, std::uint32_t text_length,
-	const std::string& msg,
-	std::vector<std::filesystem::path> include_chain,
-	std::shared_ptr<bpp::IR::Program> program,
-	bool lsp_mode,
-	std::optional<WarningType> warning_type,
-	const std::optional<std::string>& warning_cli_string
-) {
+void Diagnostic::print() const {
 	// Add to the program's diagnostics
-	// FIXME(@rail5): Include warning type in program diagnostics, so the language server can report -Wflag information to the user
 	auto source_file = include_chain.back().string();
-	include_chain.pop_back();
-	if (program != nullptr) {
-		program->add_diagnostic(
-			source_file,
-			warning_type.has_value() ? bpp::diagnostic_type::DIAGNOSTIC_WARNING : bpp::diagnostic_type::DIAGNOSTIC_ERROR,
-			msg,
-			line,
-			column,
-			line,
-			column + text_length
-		);
-	}
+	if (program != nullptr) program->add_diagnostic(*this);
 	if (lsp_mode) return; // The language server doesn't need to print errors to stderr, just add them to the diagnostics list
 
 	// Colorize output if the output is a TTY
 	bool is_tty = isatty(fileno(stderr));
-	std::string color_red = is_tty ? "\033[0;31m" : "";
-	std::string color_purple = is_tty ? "\033[1;35m" : "";
-	std::string color_orange = is_tty ? "\033[0;33m" : "";
-	std::string color_reset = is_tty ? "\033[0m" : "";
+	const std::string_view color_red = is_tty ? "\033[0;31m" : "";
+	const std::string_view color_purple = is_tty ? "\033[1;35m" : "";
+	const std::string_view color_orange = is_tty ? "\033[0;33m" : "";
+	const std::string_view color_reset = is_tty ? "\033[0m" : "";
+
+	const std::string_view& color = (type == DiagnosticType::DIAGNOSTIC_WARNING) ? color_orange : color_red;
 
 	(void)std::setlocale(LC_ALL, "");
 
@@ -67,26 +48,24 @@ void print_syntax_error_or_warning(
 		<< std::endl;
 	
 	// Print the include chain that led to the problematic file
-	for (const auto& filename : std::ranges::reverse_view(include_chain)) {
-		std::cerr << "In file included from " << color_purple << filename.string() << color_reset << std::endl;
+	for (auto it = ++include_chain.rbegin(); it != include_chain.rend(); ++it) {
+		std::cerr << "In file included from " << color_purple << it->string() << color_reset << std::endl;
 	}
 
 	// Print the warning / error message
-	if (warning_type.has_value()) {
-		std::cerr << color_orange << "warning: " << color_reset << msg;
+	if (type == DiagnosticType::DIAGNOSTIC_WARNING) {
+		std::cerr << color_orange << "warning: " << color_reset << message;
 		if (warning_cli_string) {
 			std::cerr << " [" << color_orange << "-W" << *warning_cli_string << color_reset << "]";
 		}
 		std::cerr << std::endl;
 	} else {
-		std::cerr << color_red << "error: " << color_reset << msg << std::endl;
+		std::cerr << color_red << "error: " << color_reset << message << std::endl;
 	}
 	
 	// Open the source file for reading
 	std::ifstream file(source_file);
-	if (!file.is_open()) {
-		return;
-	}
+	if (!file.is_open()) return;
 
 	// Calculate the prefixes:
 	// 1. ' (line number) | '
@@ -114,42 +93,16 @@ void print_syntax_error_or_warning(
 	
 	std::cerr << line1_prefix
 		<< line_before_error
-		<< (warning_type.has_value() ? color_orange : color_red) << error_portion << color_reset
+		<< color << error_portion << color_reset
 		<< line_after_error << std::endl;
 
 	// Print the caret line
 	line2_prefix += equal_width_padding(line_before_error);
 
 	std::cerr << line2_prefix
-		<< (warning_type.has_value() ? color_orange : color_red) << "^"
+		<< color << "^"
 		<< equal_width_padding(utf8_substr(error_portion, 0, utf8_length(error_portion) - 1), '~')
 		<< color_reset << std::endl;
-}
-
-void print_parser_errors(
-	const std::vector<AST::ParserError>& errors,
-	const std::vector<std::filesystem::path>& include_chain,
-	std::shared_ptr<bpp::IR::Program> program,
-	bool lsp_mode
-) {
-	for (const auto& error : errors) {
-		std::uint32_t text_length
-			= (error.end.line == error.start.line)
-			? (error.end.column - error.start.column)
-			: UINT32_MAX;
-
-		print_syntax_error_or_warning(
-			error.start.line,
-			error.start.column,
-			text_length,
-			error.message,
-			include_chain,
-			program,
-			lsp_mode,
-			std::nullopt,
-			std::nullopt
-		);
-	}
 }
 
 std::string utf8_substr(const std::string& str, std::uint32_t start, std::uint32_t length) {

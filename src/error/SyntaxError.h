@@ -12,7 +12,6 @@
 #include <stdexcept>
 #include <filesystem>
 #include <error/detail.h>
-#include <error/ParserError.h>
 #include <error/WarningOptions.h>
 
 #include <AST/Listener/Listener.h>
@@ -25,46 +24,42 @@ class Listener;
 
 namespace bpp::ErrorHandling {
 
-/**
- * @brief Print a syntax error or warning message to stderr
- * @param line The line number where the error occurred
- * @param column The column number where the error occurred
- * @param text_length The length of the token which caused the error
- * @param msg The error message to display
- * @param include_chain A stack of include files which led to the error
- * @param warning_type The type of warning, if this is a warning; std::nullopt if this is an error
- * @param program The program being compiled, to which the error/warning should be added as a diagnostic
- */
-void print_syntax_error_or_warning(
-	std::uint32_t line,
-	std::uint32_t column,
-	std::uint32_t text_length,
-	const std::string& msg,
-	std::vector<std::filesystem::path> include_chain,
-	std::shared_ptr<bpp::IR::Program> program,
-	bool lsp_mode,
-	std::optional<WarningType> warning_type,
-	const std::optional<std::string>& warning_cli_string
-);
+enum class DiagnosticType : std::uint8_t {
+	DIAGNOSTIC_ERROR,
+	DIAGNOSTIC_WARNING,
+	DIAGNOSTIC_INFO,
+	DIAGNOSTIC_HINT
+};
 
-void print_parser_errors(
-	const std::vector<AST::ParserError>& errors,
-	const std::vector<std::filesystem::path>& include_chain,
-	std::shared_ptr<bpp::IR::Program> program,
-	bool lsp_mode
-);
-
-class ErrorOrWarning {
+class Diagnostic {
 	protected:
+		/**
+		 * @brief The chain of includes leading to the file which produced this diagnostic.
+		 * The last element of the chain is the file which produced the diagnostic, and the first element is the original source file.
+		 */
+		std::vector<std::filesystem::path> include_chain;
 		std::uint32_t line = 0;
 		std::uint32_t column = 0;
+
+		DiagnosticType type = DiagnosticType::DIAGNOSTIC_ERROR;
+
+		/// If this is a warning, which -W flag enables it?
+		std::optional<std::string> warning_cli_string = std::nullopt;
+
+		/// The length of the text that should be highlighted in the source code when displaying this diagnostic
 		std::uint32_t text_length = 0;
-		std::vector<std::filesystem::path> include_chain;
+		
+		/**
+		 * @brief The Program that produced this diagnostic.
+		 * This is used to add the diagnostic to the program's diagnostics list for language server support.
+		 */
 		std::shared_ptr<bpp::IR::Program> program;
+
+		/// Any accompanying message (error or warning) to display to the user
 		std::string message;
+
+		/// Whether this diagnostic is being generated in language server mode (i.e., the output should be sent to the language server rather than printed to stderr)
 		bool lsp_mode = false;
-		std::optional<WarningType> warning_type = std::nullopt; // std::nullopt if this is an error, otherwise the type of warning
-		std::optional<std::string> warning_cli_string = std::nullopt; // The CLI string for the warning, if this is a warning
 
 		template <bpp::detail::ASTNodePtrORToken T>
 		void set_from_listener(bpp::AST::Listener* listener, const T& error_ctx) {
@@ -78,6 +73,8 @@ class ErrorOrWarning {
 				column = error_ctx->getPosition().column;
 				if (error_ctx->getEndPosition().line == error_ctx->getPosition().line) {
 					text_length = error_ctx->getEndPosition().column - error_ctx->getPosition().column;
+				} else {
+					text_length = UINT32_MAX; // Highlight the entire line if the error spans multiple lines
 				}
 			} else if constexpr(bpp::detail::ASTStringToken<T>) {
 				line = error_ctx.getLine();
@@ -93,34 +90,48 @@ class ErrorOrWarning {
 				if (param.type.has_value()) {
 					text_length += 1 + static_cast<std::uint32_t>(param.type.value().getValue().length()); // '@Type'
 					if (param.pointer) text_length += 1; // '*'
-					text_length += 1 + static_cast<std::uint32_t>(param.name.getValue().length()); // ' Name'
-				} else {
-					text_length = static_cast<std::uint32_t>(param.name.getValue().length()); // 'Name'
+					text_length += 1; // ' '
 				}
+
+				text_length = static_cast<std::uint32_t>(param.name.getValue().length()); // 'Name'
 			}
 		}
+
+		void set_explicitly(
+			std::vector<std::filesystem::path> include_chain,
+			std::uint32_t line,
+			std::uint32_t column,
+			std::uint32_t text_length,
+			std::string message,
+			bool lsp_mode
+		) {
+			this->include_chain = std::move(include_chain);
+			this->line = line;
+			this->column = column;
+			this->text_length = text_length;
+			this->message = std::move(message);
+			this->lsp_mode = lsp_mode;
+		}
 	public:
-		ErrorOrWarning() = delete;
-		explicit ErrorOrWarning(const std::string& msg) = delete;
+		Diagnostic() = delete;
 
 		template <bpp::detail::ASTNodePtrORToken T>
-		ErrorOrWarning(bpp::AST::Listener* listener, const T& error_ctx, const std::string& msg) : message(msg) {
+		Diagnostic(bpp::AST::Listener* listener, const T& error_ctx, const std::string& msg) : message(msg) {
 			set_from_listener(listener, error_ctx);
 		}
-		
-		void print() const {
-			print_syntax_error_or_warning(
-				line,
-				column,
-				text_length,
-				message,
-				include_chain,
-				program,
-				lsp_mode,
-				warning_type,
-				warning_cli_string
-			);
+
+		Diagnostic(
+			std::vector<std::filesystem::path> include_chain,
+			std::uint32_t line,
+			std::uint32_t column,
+			std::uint32_t text_length,
+			const std::string& message,
+			bool lsp_mode = false
+		) {
+			set_explicitly(std::move(include_chain), line, column, text_length, message, lsp_mode);
 		}
+		
+		void print() const;
 };
 
 /**
@@ -130,14 +141,28 @@ class ErrorOrWarning {
  * When thrown, the exception can be caught and printed to display a formatted syntax error message.
  * 
  */
-class SyntaxError : public ErrorOrWarning, public std::runtime_error {
+class SyntaxError : public Diagnostic, public std::runtime_error {
 	public:
 		SyntaxError() = delete;
 		explicit SyntaxError(const std::string& msg) = delete;
 
 		template <bpp::detail::ASTNodePtrORToken T>
 		SyntaxError(bpp::AST::Listener* listener, const T& error_ctx, const std::string& msg)
-			: ErrorOrWarning(listener, error_ctx, msg), std::runtime_error(msg) {}
+			: Diagnostic(listener, error_ctx, msg), std::runtime_error(msg) {}
+};
+
+class ParserError : public Diagnostic {
+	public:
+		ParserError() = delete;
+
+		ParserError(
+			std::vector<std::filesystem::path> include_chain,
+			std::uint32_t line,
+			std::uint32_t column,
+			std::uint32_t text_length,
+			const std::string& message,
+			bool lsp_mode = false
+		) : Diagnostic(std::move(include_chain), line, column, text_length, message, lsp_mode) {}
 };
 
 /**
@@ -148,16 +173,16 @@ class SyntaxError : public ErrorOrWarning, public std::runtime_error {
  * This likewise can be constructed from any AST node or token that satisfies the ASTNodePtrORToken concept.
  * 
  */
-class Warning : public ErrorOrWarning {
+class Warning : public Diagnostic {
 	public:
 		Warning() = delete;
 		explicit Warning(const std::string& msg) = delete;
 
 		template <bpp::detail::ASTNodePtrORToken T>
 		Warning(bpp::AST::Listener* listener, const T& error_ctx, const std::string& msg, WarningType warning_type)
-			: ErrorOrWarning(listener, error_ctx, msg)
+			: Diagnostic(listener, error_ctx, msg)
 		{
-			this->warning_type = warning_type;
+			this->type = DiagnosticType::DIAGNOSTIC_WARNING;
 			this->warning_cli_string = listener->get_warning_options().get_cli_string_by_option(warning_type);
 		}
 };

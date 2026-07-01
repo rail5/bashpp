@@ -13,7 +13,7 @@
 #include <filesystem>
 #include <AST/Nodes/Nodes.h>
 #include <include/ParserPosition.h>
-#include <error/ParserError.h>
+#include <error/SyntaxError.h>
 typedef std::shared_ptr<bpp::AST::ASTNode> ASTNodePtr;
 typedef void* yyscan_t;
 }
@@ -25,7 +25,7 @@ void yyerror(const char *s);
 %}
 
 %lex-param { yyscan_t yyscanner }
-%parse-param { std::shared_ptr<bpp::AST::Program>& program } { bool& current_command_can_receive_lvalues } { const std::string& source_file } { const std::vector<std::filesystem::path>& include_chain } { std::vector<bpp::AST::ParserError>& errors } { yyscan_t yyscanner }
+%parse-param { std::shared_ptr<bpp::AST::Program>& program } { bool& current_command_can_receive_lvalues } { const std::vector<std::filesystem::path>& include_chain } { std::vector<bpp::ErrorHandling::ParserError>& errors } { bool& lsp_mode } { yyscan_t yyscanner }
 
 %define parse.error verbose
 
@@ -2514,10 +2514,20 @@ bash_53_native_supershell:
 
 namespace yy {
 void parser::error(const location_type& loc, const std::string& m) {
-	bpp::AST::ParserError error;
-	error.message = m;
-	error.start = bpp::AST::FilePosition{loc.begin.line, loc.begin.column};
-	error.end = bpp::AST::FilePosition{loc.end.line, loc.end.column};
+	const std::uint32_t line = loc.begin.line;
+	const std::uint32_t column = loc.begin.column;
+	const std::uint32_t length =
+		loc.begin.line == loc.end.line
+			? loc.end.column - loc.begin.column
+			: UINT32_MAX;
+	bpp::ErrorHandling::ParserError error(
+		include_chain,
+		line,
+		column,
+		length,
+		m,
+		lsp_mode
+	);
 	errors.push_back(error);
 }
 } // namespace yy

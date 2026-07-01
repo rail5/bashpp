@@ -27,7 +27,7 @@
 
 #include <include/parse_arguments.h>
 #include <include/run_bash.h>
-#include <AST/BashppParser.h>
+#include <AST/Parser.h>
 #include <AST/Listener/Listener.h>
 #include <IR/entities/Program.h>
 
@@ -56,7 +56,9 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	bpp::AST::BashppParser parser;
+	std::unique_ptr<bpp::AST::Listener> listener = std::make_unique<bpp::AST::Listener>();
+
+	bpp::AST::Parser parser;
 	if (args.input_from_stdin()) {
 		parser.setInputFromFilePtr(stdin, "<stdin>");
 	} else {
@@ -67,12 +69,10 @@ int main(int argc, char* argv[]) {
 #endif
 	
 	auto program = parser.program();
-	const auto& parser_errors = parser.get_errors();
-	bpp::ErrorHandling::print_parser_errors(
-		parser_errors,
-		{args.input_file().value()},
-		nullptr,
-		false);
+	for (const auto& e : parser.get_errors()) {
+		e.print();
+		listener->set_has_errors(true);
+	}
 
 	if (program == nullptr) {
 		std::cerr << program_name << ": Error: Failed to parse program." << std::endl;
@@ -90,52 +90,49 @@ int main(int argc, char* argv[]) {
 	}
 #endif
 
-	std::unique_ptr<bpp::AST::Listener> listener = std::make_unique<bpp::AST::Listener>();
-	listener->set_source_file(args.input_file().value());
+	listener->set_source_file(args.input_file().value_or("<stdin>"));
 	listener->set_warning_options(args.warning_options());
 	listener->set_include_paths(args.include_paths());
-	listener->set_parser_errors(parser_errors);
 
 	try {
 		listener->walk(program.get());
+
+		if (listener->has_errors()) return 1;
+	#ifndef NDEBUG
+		if (args.display_entity_tree()) {
+			std::cout << *listener->get_program() << std::endl;
+			return 0;
+		}
+	#endif
+		bpp::CodeGen::CodeGenState codegen_state;
+		codegen_state.target_bash_version = args.target_bash_version();
+		*output_stream << listener->get_program()->generate_code(&codegen_state);
+
+		int exit_code = 0;
+
+		if (args.run_on_exit()) {
+			exit_code = run_bash(args.output_file().value(), args.program_arguments());
+		} else if (args.output_to_file()) {
+			// Mark the file executable
+			try {
+				std::filesystem::permissions(
+					args.output_file().value(),
+					std::filesystem::perms::owner_exec | std::filesystem::perms::group_exec | std::filesystem::perms::others_exec,
+					std::filesystem::perm_options::add
+				);
+			} catch (...) { /* ignore */ }
+		}
+
+		return exit_code;
 	} catch (const bpp::ErrorHandling::InternalError& e) {
 		std::cerr << "Internal error: " << e.what() << std::endl;
 		return 1;
 	} catch (const std::exception& e) {
 		std::cerr << "Standard exception: " << e.what() << std::endl;
-		// Output the type of the exception
 		std::cerr << "Exception type: " << typeid(e).name() << std::endl;
 		return 1;
 	} catch (...) {
 		std::cerr << "Unknown exception occurred" << std::endl;
 		return 1;
 	}
-
-	if (listener->has_errors()) return 1;
-
-#ifndef NDEBUG
-	if (args.display_entity_tree()) {
-		std::cout << *listener->get_program() << std::endl;
-		return 0;
-	}
-#endif
-
-	bpp::CodeGen::CodeGenState codegen_state;
-	codegen_state.target_bash_version = args.target_bash_version();
-	*output_stream << listener->get_program()->generate_code(&codegen_state);
-
-	int exit_code = 0;
-
-	if (args.run_on_exit()) {
-		exit_code = run_bash(args.output_file().value(), args.program_arguments());
-	} else if (args.output_to_file()) {
-		// Mark the file executable
-		std::filesystem::permissions(
-			args.output_file().value(),
-			std::filesystem::perms::owner_exec | std::filesystem::perms::group_exec | std::filesystem::perms::others_exec,
-			std::filesystem::perm_options::add
-		);
-	}
-
-	return exit_code;
 }

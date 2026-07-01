@@ -47,13 +47,13 @@ void Listener::enter(DatamemberDeclaration* node) {
 			if (bpp::IR::is_protected_keyword(dm->get_name())) msg += " ('" + dm->get_name() + "' is a keyword)";
 			throw bpp::ErrorHandling::SyntaxError(this, node, msg);
 		}
-	}
 
-	dm->set_definition_position({
-		get_current_source_file(),
-		id.value().getLine(),
-		id.value().getCharPositionInLine()
-	});
+		dm->set_definition_position({
+			get_current_source_file(),
+			id.value().getLine(),
+			id.value().getCharPositionInLine()
+		});
+	}
 
 	entity_stack.push(dm);
 }

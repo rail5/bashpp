@@ -14,7 +14,6 @@
 #include <AST/ASTNode.h>
 #include <AST/NodeTypes.h>
 #include <AST/Nodes/Nodes.h>
-#include <error/ParserError.h>
 #include <error/WarningOptions.h>
 #include <error/detail.h>
 
@@ -90,7 +89,6 @@ class Listener final {
 		std::shared_ptr<bpp::IR::Program> program;
 
 		bool program_has_errors = false;
-		std::vector<bpp::AST::ParserError> parser_errors;
 
 		/// The set of enabled/disabled warnings
 		bpp::ErrorHandling::WarningOptions warning_options;
@@ -168,11 +166,6 @@ class Listener final {
 			return program_has_errors;
 		}
 
-		void set_parser_errors(const std::vector<bpp::AST::ParserError>& errors) {
-			this->parser_errors = errors;
-			if (!errors.empty()) this->program_has_errors = true;
-		}
-
 		void set_source_file(const std::filesystem::path& source_file) {
 			if (!include_chain.empty()) throw std::runtime_error("Source file already set; cannot set source file when include chain is not empty");
 			include_chain.emplace_back(source_file);
@@ -195,6 +188,7 @@ class Listener final {
 		}
 		void set_include_paths(const std::vector<std::filesystem::path>& paths) {
 			this->include_paths = paths;
+			this->include_paths.emplace_back(bpp::get_standard_library_path());
 		}
 };
 

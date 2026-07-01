@@ -44,6 +44,7 @@ ThisPtr::ThisPtr(std::shared_ptr<Method> containing_method) : MethodParameter(co
 
 bpp::CodeGen::CodeSegment ThisPtr::generate_code(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "ThisPtr::generate_code() should be called with a non-null state pointer");
+	bpp_assert(has_initial_value(), "ThisPtr has no initial value set");
 	bpp::CodeGen::CodeSegment code;
 
 	code.add_pre_code("local __this\n");

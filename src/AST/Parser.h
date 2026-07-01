@@ -13,28 +13,29 @@
 #include <filesystem>
 #include <AST/ASTNode.h>
 #include <AST/Nodes/Nodes.h>
-#include <error/ParserError.h>
+#include <error/SyntaxError.h>
 
 using yyscan_t = void*;
 
 namespace bpp::AST {
 
 /**
- * @class BashppParser
+ * @class Parser
  * @brief A driver class to wrap around the Bison-generated parser for Bash++.
  * This class manages both the lexer and parser state, and provides methods to set the input source
  * 
  */
-class BashppParser {
+class Parser {
 	private:
 		yyscan_t lexer = nullptr;
 		std::shared_ptr<AST::Program> m_program = nullptr;
 		bool current_command_can_receive_lvalues = true; // State variable needed by the parser
 
 		bool utf16_mode = false; // Whether to use UTF-16 mode for character counting
+		bool lsp_mode = false; // Whether to operate in language server mode (i.e., don't print errors to stderr, just add them to the diagnostics list)
 		bool display_lexer_output = false;
 
-		std::vector<ParserError> errors;
+		std::vector<bpp::ErrorHandling::ParserError> errors;
 
 		std::string input_file_path = "<stdin>";
 		std::vector<std::filesystem::path> include_chain;
@@ -56,17 +57,18 @@ class BashppParser {
 		void _parse();
 	public:
 		void setUTF16Mode(bool enabled);
+		void setLSPMode(bool enabled);
 		void setDisplayLexerOutput(bool enabled);
 
 		void setInputFromFilePath(const std::string& file_path);
 		void setInputFromFilePtr(FILE* file_ptr, const std::string& file_path);
-		void setInputFromStringContents(const std::string& contents);
+		void setInputFromStringContents(const std::string& contents, const std::string& pseudo_file_path);
 
 		void setIncludeChain(const std::vector<std::filesystem::path>& includes);
 
 		std::shared_ptr<AST::Program> program();
 
-		const std::vector<ParserError>& get_errors() const;
+		const std::vector<bpp::ErrorHandling::ParserError>& get_errors() const;
 };
 
 } // namespace bpp::AST

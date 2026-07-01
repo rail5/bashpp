@@ -8,7 +8,7 @@
 
 #include "ProgramPool.h"
 
-#include <AST/BashppParser.h>
+#include <AST/Parser.h>
 #include <AST/Listener/BashppListener.h>
 
 #include <include/NullStream.h>
@@ -151,7 +151,7 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::_parse_program(const std::string&
 			listener.set_replacement_file_contents(pair.first, pair.second);
 		}
 
-		AST::BashppParser parser;
+		AST::Parser parser;
 		parser.setUTF16Mode(utf16_mode);
 
 		if (unsaved_changes.contains(file_path)) {

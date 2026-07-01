@@ -5,7 +5,7 @@
  */
 
 #include <AST/Listener/Listener.h>
-#include <AST/BashppParser.h>
+#include <AST/Parser.h>
 #include <IR/entities/Program.h>
 
 #include <error/InternalError.h>
@@ -71,7 +71,7 @@ void Listener::enter(IncludeStatement* node) {
 	std::shared_ptr<bpp::AST::Program> included_program_ast_root;
 
 	{
-		AST::BashppParser parser;
+		AST::Parser parser;
 		// FIXME(@rail5): utf16 mode for bpp-lsp
 		//parser.setUTF16Mode(utf16_mode);
 		parser.setIncludeChain(include_chain);
@@ -80,12 +80,10 @@ void Listener::enter(IncludeStatement* node) {
 		parser.setInputFromFilePath(include_path);
 
 		included_program_ast_root = parser.program();
-		const auto& parser_errors = parser.get_errors();
-		bpp::ErrorHandling::print_parser_errors(
-			parser_errors,
-			include_chain,
-			nullptr,
-			false);
+		for (const auto& e : parser.get_errors()) {
+			e.print();
+			this->program_has_errors = true;
+		}
 	}
 
 	if (included_program_ast_root == nullptr) {

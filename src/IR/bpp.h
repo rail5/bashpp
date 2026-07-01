@@ -17,12 +17,10 @@
 #include <filesystem>
 
 namespace bpp {
-	enum class diagnostic_type : std::uint8_t {
-		DIAGNOSTIC_ERROR,
-		DIAGNOSTIC_WARNING,
-		DIAGNOSTIC_INFO,
-		DIAGNOSTIC_HINT
-	};
+
+constexpr std::filesystem::path get_standard_library_path() {
+	return {"/usr/lib/bpp/stdlib/"};
+}
 } // namespace bpp
 
 namespace bpp::IR {

@@ -12,11 +12,14 @@
 #include <vector>
 #include <optional>
 #include <filesystem>
+#include <memory>
+#include <fstream>
 #include <unistd.h>
 
 #include <error/WarningOptions.h>
 #include <IR/OptimizationOptions.h>
 #include <include/BashVersion.h>
+#include <include/TemporaryFile.h>
 #include <include/xgetopt.h>
 
 #include <version.h>
@@ -143,29 +146,34 @@ class Arguments {
 		void set_output_file(std::string_view output_file_arg) {
 			if (output_file_arg == "-") return; // If '-' is given, compiled code will be written to stdout
 
-			std::filesystem::path parsed_output_file = std::filesystem::canonical(output_file_arg);
+			std::filesystem::path output_file;
+			if (std::filesystem::path(output_file_arg).is_relative()) {
+				output_file = std::filesystem::current_path() / output_file_arg;
+			} else {
+				output_file = output_file_arg;
+			}
 
 			// Check if we have permission to write to the specified output file
 			// If the file exists, verify write access; if it doesn't, verify write access on its parent directory
 			try {
-				if (std::filesystem::exists(parsed_output_file)) {
-					if (access(parsed_output_file.c_str(), W_OK) != 0) {
-						throw std::runtime_error("No write permission for output file '" + parsed_output_file.string() + "'");
+				if (std::filesystem::exists(output_file)) {
+					if (access(output_file.c_str(), W_OK) != 0) {
+						throw std::runtime_error("No write permission for output file '" + output_file.string() + "'");
 					}
 				} else {
-					std::filesystem::path parent_path = std::filesystem::path(parsed_output_file).parent_path();
+					std::filesystem::path parent_path = std::filesystem::path(output_file).parent_path();
 					if (!std::filesystem::exists(parent_path) || !std::filesystem::is_directory(parent_path)) {
-						throw std::runtime_error("Parent directory of output file '" + parsed_output_file.string() + "' does not exist or is not a directory");
+						throw std::runtime_error("Parent directory of output file '" + output_file.string() + "' does not exist or is not a directory");
 					}
 					if (access(parent_path.c_str(), W_OK) != 0) {
-						throw std::runtime_error("No write permission for parent directory of output file '" + parsed_output_file.string() + "'");
+						throw std::runtime_error("No write permission for parent directory of output file '" + output_file.string() + "'");
 					}
 				}
 			} catch (const std::exception& e) {
-				throw std::runtime_error(std::string("Could not verify write permission for output file '") + parsed_output_file.string() + "': " + e.what());
+				throw std::runtime_error(std::string("Could not verify write permission for output file '") + output_file.string() + "': " + e.what());
 			}
 
-			this->m_output_file = parsed_output_file;
+			this->m_output_file = output_file;
 		}
 		const std::optional<std::filesystem::path>& output_file() const {
 			return this->m_output_file;
@@ -346,4 +354,28 @@ inline Arguments parse_arguments(int argc, char* argv[]) {
 	}
 
 	return args;
+}
+
+inline std::shared_ptr<std::ostream> determine_output_stream(Arguments* args) {
+	std::shared_ptr<std::ostream> output_stream(&std::cout, [](std::ostream*){}); // Default to stdout, but don't delete it when the shared_ptr goes out of scope
+
+	// Case 1: User wants to write compiled code to stdout
+	if (args->output_to_stdout()) return output_stream;
+
+	// Case 2: User wants to save compiled code to a file
+	if (args->output_to_file()) {
+		output_stream = std::make_shared<std::ofstream>(args->output_file().value());
+		if (!std::static_pointer_cast<std::ofstream>(output_stream)->is_open()) {
+			throw std::runtime_error("Could not open output file '" + args->output_file().value().string() + "'");
+		}
+	}
+
+	// Case 3: User wants to run the compiled code on exit
+	// Write to a temporary file, which will be deleted after the program exits
+	if (args->run_on_exit()) {
+		output_stream = std::make_shared<TemporaryFile>();
+		args->set_output_file(std::static_pointer_cast<TemporaryFile>(output_stream)->path().string());
+	}
+
+	return output_stream;
 }

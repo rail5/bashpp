@@ -17,8 +17,6 @@
 */
 
 #include <iostream>
-#include <fstream>
-#include <filesystem>
 #include <cstring>
 #include <memory>
 #include <unistd.h>
@@ -28,6 +26,7 @@
 #include <updated_year.h>
 
 #include <include/parse_arguments.h>
+#include <include/run_bash.h>
 #include <AST/BashppParser.h>
 #include <AST/Listener/Listener.h>
 #include <IR/entities/Program.h>
@@ -36,26 +35,18 @@
 #include <error/SyntaxError.h>
 
 int main(int argc, char* argv[]) {
-	std::shared_ptr<std::ostream> output_stream(&std::cout, [](std::ostream*){});
-	std::shared_ptr<std::ostringstream> code_buffer = std::make_shared<std::ostringstream>();
-
 	Arguments args;
+	std::shared_ptr<std::ostream> output_stream;
 	try {
 		args = parse_arguments(argc, argv);
+
+		if (args.exit_early()) return 0;
+
+		output_stream = determine_output_stream(&args);
 	} catch (const std::exception& e) {
 		std::cerr << program_name << ": Error: " << e.what() << std::endl
 			<< "Use -h for help" << std::endl;
 		return 1;
-	}
-
-	if (args.exit_early()) return 0;
-
-	if (args.output_to_file()) {
-		output_stream = std::make_shared<std::ofstream>(args.output_file().value());
-		if (!std::static_pointer_cast<std::ofstream>(output_stream)->is_open()) {
-			std::cerr << program_name << ": Error: Could not open output file '" << args.output_file().value() << "'" << std::endl;
-			return 1;
-		}
 	}
 
 	// If the user didn't provide input, let them know, rather than just hang waiting for stdin
@@ -65,21 +56,11 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	std::string full_path_of_input_file = "<stdin>";
-	if (!args.input_from_stdin()) {
-		try {
-			full_path_of_input_file = std::filesystem::canonical(args.input_file().value()).string();
-		} catch (const std::filesystem::filesystem_error& e) {
-			std::cerr << "Error: Could not get full path of source file '" << args.input_file().value() << "': " << e.what() << std::endl;
-			return 1;
-		}
-	}
-
 	bpp::AST::BashppParser parser;
 	if (args.input_from_stdin()) {
 		parser.setInputFromFilePtr(stdin, "<stdin>");
 	} else {
-		parser.setInputFromFilePath(full_path_of_input_file);
+		parser.setInputFromFilePath(args.input_file().value());
 	}
 #ifndef NDEBUG
 	parser.setDisplayLexerOutput(args.display_tokens());
@@ -89,7 +70,7 @@ int main(int argc, char* argv[]) {
 	const auto& parser_errors = parser.get_errors();
 	bpp::ErrorHandling::print_parser_errors(
 		parser_errors,
-		{full_path_of_input_file},
+		{args.input_file().value()},
 		nullptr,
 		false);
 
@@ -109,43 +90,10 @@ int main(int argc, char* argv[]) {
 	}
 #endif
 
-	if (args.run_on_exit()) {
-		// Create a temporary file to store the program
-		std::filesystem::path temp_path = std::filesystem::temp_directory_path() / "bashpp_temp_XXXXXX";
-		std::string temp_file = temp_path.string();
-
-		// mkstemp requires a mutable char array
-		
-		std::vector<char> temp_file_vec(temp_file.begin(), temp_file.end());
-		temp_file_vec.push_back('\0'); // Null-terminate the string for mkstemp
-
-		int fd = mkstemp(temp_file_vec.data());
-		if (fd == -1) {
-			std::cerr << program_name << ": Error: Could not create temporary file for output" << std::endl;
-			return 1;
-		}
-		close(fd);
-
-		std::shared_ptr<std::ofstream> ostream = std::make_shared<std::ofstream>(temp_file_vec.data());
-		if (!ostream->is_open()) {
-			std::cerr << program_name << ": Error: Could not open temporary file for output" << std::endl;
-			return 1;
-		}
-
-		output_stream = std::static_pointer_cast<std::ostream>(ostream);
-		args.set_output_file(std::string(temp_file_vec.data()));
-	}
-
 	std::unique_ptr<bpp::AST::Listener> listener = std::make_unique<bpp::AST::Listener>();
-	listener->set_source_file(full_path_of_input_file);
+	listener->set_source_file(args.input_file().value());
 	listener->set_warning_options(args.warning_options());
 	listener->set_include_paths(args.include_paths());
-	//listener->set_code_buffer(code_buffer);
-	//listener->set_output_stream(output_stream);
-	//listener->set_output_file(args.output_file().value_or(""));
-	//listener->set_run_on_exit(args.run_on_exit());
-	//listener->set_target_bash_version(args.target_bash_version());
-	//listener->set_arguments(args.program_arguments());
 	listener->set_parser_errors(parser_errors);
 
 	try {
@@ -172,10 +120,22 @@ int main(int argc, char* argv[]) {
 	}
 #endif
 
-	// Debug:
 	bpp::CodeGen::CodeGenState codegen_state;
 	codegen_state.target_bash_version = args.target_bash_version();
-	std::cout << listener->get_program()->generate_code(&codegen_state);
+	*output_stream << listener->get_program()->generate_code(&codegen_state);
 
-	//return listener->get_exit_code();
+	int exit_code = 0;
+
+	if (args.run_on_exit()) {
+		exit_code = run_bash(args.output_file().value(), args.program_arguments());
+	} else if (args.output_to_file()) {
+		// Mark the file executable
+		std::filesystem::permissions(
+			args.output_file().value(),
+			std::filesystem::perms::owner_exec | std::filesystem::perms::group_exec | std::filesystem::perms::others_exec,
+			std::filesystem::perm_options::add
+		);
+	}
+
+	return exit_code;
 }

@@ -1,3 +1,65 @@
+bpp (0.8.12) unstable; urgency=medium
+
+  * Correct and clarify spec page on dynamic casts
+    Previously, the spec page was incorrect: it claimed that the result
+    of the cast (i.e., the value to which the directive expands) would be
+    'an exact copy of INPUT' if valid. This is not and never was accurate,
+    although it happened to be correct for the majority of actual cases.
+    The truth of it is this: pointers in Bash++ are implicitly
+    dereferenced as needed, and the dynamic cast would chase any
+    arbitrarily long chain of pointers until it arrived finally at the
+    actual object itself. Then, if the cast was valid, the result would be
+    the actual address of that object.  Obviously, for the vast majority
+    of real-world cases, the INPUT to a dynamic cast will be, directly,
+    the address of the object to be cast, so this small difference might
+    never have been noticed.
+  * bpp-lsp: Update LSP to 3.18 standard
+    Now that the LSP spec v3.18 has been finalized, upgrade our local
+    metaModel (used to generate the LSP implementation) to the 3.18
+    version from 3.17
+    This does not result in any functional changes.
+  * Minor optimization: no need to allocate when retrieving source file
+    lists
+    Previously, bpp_program::get_source_files() concatenated all keys
+    from the std::unordered_map to return a new vector
+    We can skip all that using C++23's fancy "range views", which means
+    no copies and no allocations
+  * Bug fix: calling 'delete' on pointers
+    Previously, the generated reference code for the pointer was
+    duplicated
+    Fix this by guarding the first portion of codegen under the
+    condition that the second portion will not run (which in this case
+    is a check for whether the object is explicitly a nonprimitive vs
+    if it's a pointer)
+    Relevant test case ('delete') was amended to check this
+  * Codegen: remove global object counter
+    The object counter was a relic from earlier versions of the compiler.
+    In the current implementation (that is, the latest-released version),
+    the counter is completely unnecessary.
+    This change makes an object's (or pointer's) address completely
+    determined by properties of the Object entity, without reference to
+    any mutable state at the time of code generation (e.g., the number
+    of objects we've already instantiated, etc)
+    This, incidentally, is also a bug fix.
+    - File A instantiates object 1
+    - File A dynamically includes file B
+    - File B instantiates object 2
+    Since file B is dynamically included, the two units are compiled
+    separately. When File B is compiled, its object counter never goes
+    higher than 1 -- it only ever instantiates a single object. When
+    File A is compiled, by the time we reach object 2, our object
+    counter has already been incremented once by an earlier object
+    instantiation. Therefore the two counters disagree with each other,
+    and when File A later references object 2, it guesses the *wrong
+    address*. Removing any dependency on mutable codegen state for
+    address determination means that the two units, despite being
+    independently compiled, will always agree on an object's address.
+  * bpp-lsp: Remove dependency on libfrozen
+    We can use a simple std::array and linear searches, libfrozen was
+    overkill for this
+
+ -- rail5 <andrew@rail5.org>  Sun, 05 Jul 2026 09:04:45 +0800
+
 bpp (0.8.11) unstable; urgency=medium
 
   * Performance:

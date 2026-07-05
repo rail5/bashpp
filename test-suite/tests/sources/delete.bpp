@@ -46,3 +46,23 @@
 
 @FurthestDerived furthestDerivedObj
 @delete @furthestDerivedObj # "FurthestDerived destructor called" followed by "FurtherDerived destructor called" followed by "Derived destructor called"
+
+# And test with pointers:
+
+@Base* basePtr=@new Base
+@delete @basePtr # Nothing should be echoed
+
+@Derived* derivedPtr=@new Derived
+@delete @derivedPtr # "Derived destructor called"
+
+@FurtherDerived* furtherDerivedPtr=@new FurtherDerived
+@delete @furtherDerivedPtr # "FurtherDerived destructor called" followed by "Derived destructor called"
+
+@AnotherDerived* anotherDerivedPtr=@new AnotherDerived
+@delete @anotherDerivedPtr # "AnotherDerived destructor called" followed by "Derived destructor called"
+
+@EvenFurtherDerived* evenFurtherDerivedPtr=@new EvenFurtherDerived
+@delete @evenFurtherDerivedPtr # "FurtherDerived destructor called" followed by "Derived destructor called"
+
+@FurthestDerived* furthestDerivedPtr=@new FurthestDerived
+@delete @furthestDerivedPtr # "FurthestDerived destructor called" followed by "FurtherDerived destructor called" followed by "Derived destructor called"

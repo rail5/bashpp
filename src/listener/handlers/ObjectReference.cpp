@@ -274,7 +274,9 @@ void BashppListener::exitObjectReference(std::shared_ptr<AST::ObjectReference> n
 		auto delete_entity = std::dynamic_pointer_cast<bpp::bpp_delete_statement>(entity_stack.top());
 		if (delete_entity != nullptr) {
 			delete_entity->set_object_to_delete(object);
-			object_reference_entity->add_code(ref.reference_code.code);
+			if (!object->is_pointer()) object_reference_entity->add_code(ref.reference_code.code);
+			// If the object is a pointer, the object reference code will be added by the section
+			// below, labeled "3. Is it a primitive? (Or a pointer)".
 		}
 
 		// Is this the lvalue of an object assignment?

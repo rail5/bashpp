@@ -9,7 +9,10 @@
 #include <cstddef>
 #include <memory>
 #include <vector>
+
+#ifndef NDEBUG
 #include <iostream>
+#endif
 
 #include <AST/NodeTypes.h>
 #include <AST/Position.h>

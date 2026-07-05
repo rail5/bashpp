@@ -55,7 +55,7 @@ inline int run_bash(const std::string& filename, const std::vector<char*>& argum
 	}
 
 	int status = 0;
-	pid_t waited;
+	pid_t waited = 0;
 	do {
 		waited = waitpid(child, &status, 0);
 	} while (waited < 0 && errno == EINTR);

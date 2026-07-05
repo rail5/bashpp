@@ -34,7 +34,9 @@
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>
 
-int main(int argc, char* argv[]) {
+int main(int argc, char** argv) {
+	(void)std::setlocale(LC_ALL, ""); // NOLINT (concurrency-mt-unsafe)
+
 	Arguments args;
 	std::shared_ptr<std::ostream> output_stream;
 	try {

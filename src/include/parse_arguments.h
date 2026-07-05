@@ -290,7 +290,7 @@ class Arguments {
 		}
 };
 
-inline Arguments parse_arguments(int argc, char* argv[]) {
+inline Arguments parse_arguments(int argc, char** argv) {
 	Arguments args;
 
 	// Will throw if invalid arguments are provided

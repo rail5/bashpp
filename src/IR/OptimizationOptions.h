@@ -13,7 +13,7 @@
 
 // Single source of truth for all optimization options in Bash++
 #define BPP_OPTIMIZATION_LIST(X) \
-	/* OptimizationName,                 CLI string,              optimization level, description) */ \
+	/* optimization name,                CLI string,              optimization level, description */ \
 	X(RemoveUnusedMethods,               "rm-unused-methods",                      1, "Do not write definitions for unused methods") \
 	X(RemoveUnusedParameters,            "rm-unused-parameters",                   1, "Remove unused parameters from methods") \
 	X(RemoveUnusedDataMembers,           "rm-unused-datamembers",                  1, "Remove unused data members from classes") \

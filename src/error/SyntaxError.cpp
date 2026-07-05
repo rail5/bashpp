@@ -38,8 +38,6 @@ void Diagnostic::print() const {
 
 	const std::string_view& color = (type == DiagnosticType::DIAGNOSTIC_WARNING) ? color_orange : color_red;
 
-	(void)std::setlocale(LC_ALL, "");
-
 	// Print the source file and line/column number
 	// Internally, we 0-index lines and columns, but for user display we'll 1-index them
 	std::cerr << color_purple << source_file << color_reset << ":"
@@ -120,7 +118,7 @@ std::string utf8_substr(const std::string& str, std::uint32_t start, std::uint32
 	std::string result;
 
 	while (it != str.end() && length > 0) {
-		std::uint32_t cp;
+		std::uint32_t cp = 0;
 		try {
 			cp = utf8::next(it, str.end());
 		} catch (const utf8::invalid_utf8&) {
@@ -153,7 +151,7 @@ std::string equal_width_padding(const std::string& str, char padding_char) {
 
 	std::string::const_iterator it = str.begin();
 	while (it != str.end()) {
-		std::uint32_t cp;
+		std::uint32_t cp = 0;
 		try {
 			cp = utf8::next(it, str.end());
 		} catch (const utf8::invalid_utf8&) {

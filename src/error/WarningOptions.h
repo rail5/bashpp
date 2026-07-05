@@ -13,7 +13,7 @@
 
 // Single source of truth for all warning options in Bash++
 #define BPP_WARNING_LIST(X) \
-	/* WarningName,                CLI string,         enabled by default, description) */ \
+	/* warning name,               CLI string,         enabled by default, description */ \
 	X(Bash53NativeSupershell,      "bash53-native-supershell",       true, "Warn when using Bash 5.3's native supershell syntax ${ command; } instead of Bash++'s @(command)") \
 	X(CastToUnknownClass,          "cast-to-unknown-class",          true, "Warn when the target class of a @dynamic_cast is not known at compile time") \
 	X(ImplicitToPrimitive,         "implicit-toprimitive",          false, "Warn when .toPrimitive is called implicitly by referencing a non-primitive object in a primitive context") \

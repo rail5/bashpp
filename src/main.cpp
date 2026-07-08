@@ -25,6 +25,7 @@
 #include <version.h>
 #include <updated_year.h>
 
+#include <include/OutputStream.h>
 #include <include/parse_arguments.h>
 #include <include/run_bash.h>
 #include <AST/Parser.h>
@@ -38,7 +39,7 @@ int main(int argc, char** argv) {
 	(void)std::setlocale(LC_ALL, ""); // NOLINT (concurrency-mt-unsafe)
 
 	Arguments args;
-	std::shared_ptr<std::ostream> output_stream;
+	std::unique_ptr<bpp::CodeGen::OutputStream> output_stream;
 	try {
 		args = parse_arguments(argc, argv);
 
@@ -114,15 +115,6 @@ int main(int argc, char** argv) {
 
 		if (args.run_on_exit()) {
 			exit_code = run_bash(args.output_file().value(), args.program_arguments());
-		} else if (args.output_to_file()) {
-			// Mark the file executable
-			try {
-				std::filesystem::permissions(
-					args.output_file().value(),
-					std::filesystem::perms::owner_exec | std::filesystem::perms::group_exec | std::filesystem::perms::others_exec,
-					std::filesystem::perm_options::add
-				);
-			} catch (...) { /* ignore */ }
 		}
 
 		return exit_code;

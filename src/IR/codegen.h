@@ -10,11 +10,11 @@
 #include <vector>
 #include <stack>
 #include <iterator>
-#include <iostream>
 
 #include <IR/bpp.h>
 
 #include <include/BashVersion.h>
+#include <include/OutputStream.h>
 
 namespace bpp::CodeGen {
 
@@ -100,27 +100,31 @@ class CodeSegment {
 		std::vector<std::string> get_main_code() const { return main_code; }
 		std::vector<std::string> get_post_code() const { return post_code; }
 
-		std::ostream& write_pre_code(std::ostream& os, bool flush) const {
-			for (const auto& part : pre_code) os << part;
-			return flush ? os << std::flush : os;
+		void move_pre_code(bpp::CodeGen::OutputStream& os, bool flush) {
+			for (auto& part : pre_code) os << std::move(part);
+			pre_code.clear();
+			if (flush) os.flush();
 		}
-		std::ostream& write_main_code(std::ostream& os, bool flush) const {
-			for (const auto& part : main_code) os << part;
-			return flush ? os << std::flush : os;
+		void move_main_code(bpp::CodeGen::OutputStream& os, bool flush) {
+			for (auto& part : main_code) os << std::move(part);
+			main_code.clear();
+			if (flush) os.flush();
 		}
-		std::ostream& write_post_code(std::ostream& os, bool flush) const {
-			for (const auto& part : post_code) os << part;
-			return flush ? os << std::flush : os;
+		void move_post_code(bpp::CodeGen::OutputStream& os, bool flush) {
+			for (auto& part : post_code) os << std::move(part);
+			post_code.clear();
+			if (flush) os.flush();
 		}
-		std::ostream& write_full_code(std::ostream& os) const {
-			write_pre_code(os, false);
-			write_main_code(os, false);
-			write_post_code(os, false);
-			return os << std::flush;
+		void move_full_code(bpp::CodeGen::OutputStream& os) {
+			move_pre_code(os, false);
+			move_main_code(os, false);
+			move_post_code(os, false);
+			os.flush();
 		}
 
-		friend std::ostream& operator<<(std::ostream& os, const CodeSegment& code_segment) {
-			return code_segment.write_full_code(os);
+		friend bpp::CodeGen::OutputStream& operator<<(bpp::CodeGen::OutputStream& os, CodeSegment&& code_segment) {
+			std::move(code_segment).move_full_code(os);
+			return os;
 		}
 };
 

@@ -25,7 +25,7 @@ namespace bpp::AST {
  * This class manages both the lexer and parser state, and provides methods to set the input source
  * 
  */
-class Parser {
+class Parser final {
 	private:
 		yyscan_t lexer = nullptr;
 		std::shared_ptr<AST::Program> m_program = nullptr;

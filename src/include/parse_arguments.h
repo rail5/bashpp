@@ -13,13 +13,12 @@
 #include <optional>
 #include <filesystem>
 #include <memory>
-#include <fstream>
 #include <unistd.h>
 
 #include <error/WarningOptions.h>
 #include <IR/OptimizationOptions.h>
 #include <include/BashVersion.h>
-#include <include/TemporaryFile.h>
+#include <include/OutputStream.h>
 #include <include/xgetopt.h>
 
 #include <version.h>
@@ -356,25 +355,22 @@ inline Arguments parse_arguments(int argc, char** argv) {
 	return args;
 }
 
-inline std::shared_ptr<std::ostream> determine_output_stream(Arguments* args) {
-	std::shared_ptr<std::ostream> output_stream(&std::cout, [](std::ostream*){}); // Default to stdout, but don't delete it when the shared_ptr goes out of scope
+inline std::unique_ptr<bpp::CodeGen::OutputStream> determine_output_stream(Arguments* args) {
+	auto output_stream = std::make_unique<bpp::CodeGen::OutputStream>(); // Defaults to stdout
 
 	// Case 1: User wants to write compiled code to stdout
 	if (args->output_to_stdout()) return output_stream;
 
 	// Case 2: User wants to save compiled code to a file
 	if (args->output_to_file()) {
-		output_stream = std::make_shared<std::ofstream>(args->output_file().value());
-		if (!std::static_pointer_cast<std::ofstream>(output_stream)->is_open()) {
-			throw std::runtime_error("Could not open output file '" + args->output_file().value().string() + "'");
-		}
+		output_stream = std::make_unique<bpp::CodeGen::OutputFile>(args->output_file().value());
 	}
 
 	// Case 3: User wants to run the compiled code on exit
 	// Write to a temporary file, which will be deleted after the program exits
 	if (args->run_on_exit()) {
-		output_stream = std::make_shared<TemporaryFile>();
-		args->set_output_file(std::static_pointer_cast<TemporaryFile>(output_stream)->path().string());
+		output_stream = std::make_unique<bpp::CodeGen::TemporaryFile>();
+		args->set_output_file(static_cast<bpp::CodeGen::TemporaryFile*>(output_stream.get())->path().string());
 	}
 
 	return output_stream;

@@ -301,7 +301,7 @@ shell_command_sequence:
 		$$ = node;
 	}
 	| shell_command_sequence logical_connective maybe_whitespace pipeline {
-		auto commandSequence = std::dynamic_pointer_cast<bpp::AST::BashCommandSequence>($1);
+		auto commandSequence = std::static_pointer_cast<bpp::AST::BashCommandSequence>($1);
 		auto connective = std::make_shared<bpp::AST::Connective>();
 		if ($2.getValue() == "&&") {
 			connective->setType(bpp::AST::Connective::ConnectiveType::AND);
@@ -326,7 +326,7 @@ pipeline:
 		$$ = node;
 	}
 	| pipeline PIPE maybe_whitespace shell_command {
-		auto pipeline = std::dynamic_pointer_cast<bpp::AST::BashPipeline>($1);
+		auto pipeline = std::static_pointer_cast<bpp::AST::BashPipeline>($1);
 		pipeline->addText(" | "); // Preserve pipe symbol
 		pipeline->addChild($4);
 		pipeline->setEndPosition(@4.end.line, @4.end.column);
@@ -435,7 +435,7 @@ simple_command_sequence:
 		$$ = node;
 	}
 	| simple_command_sequence logical_connective maybe_whitespace simple_pipeline {
-		auto commandSequence = std::dynamic_pointer_cast<bpp::AST::BashCommandSequence>($1);
+		auto commandSequence = std::static_pointer_cast<bpp::AST::BashCommandSequence>($1);
 		auto connective = std::make_shared<bpp::AST::Connective>();
 		if ($2.getValue() == "&&") {
 			connective->setType(bpp::AST::Connective::ConnectiveType::AND);
@@ -463,7 +463,7 @@ simple_pipeline:
 	| simple_pipeline PIPE maybe_whitespace simple_command {
 		current_command_can_receive_lvalues = true;
 
-		auto pipeline = std::dynamic_pointer_cast<bpp::AST::BashPipeline>($1);
+		auto pipeline = std::static_pointer_cast<bpp::AST::BashPipeline>($1);
 		pipeline->addText(" | "); // Preserve pipe symbol
 		pipeline->addChild($4);
 		pipeline->setEndPosition(@4.end.line, @4.end.column);
@@ -482,7 +482,7 @@ simple_command:
 		$$ = node;
 	}
 	| simple_command WS simple_command_element {
-		auto command = std::dynamic_pointer_cast<bpp::AST::BashCommand>($1);
+		auto command = std::static_pointer_cast<bpp::AST::BashCommand>($1);
 		command->addText(" "); // Preserve whitespace
 		command->addChild($3);
 		command->setEndPosition(@3.end.line, @3.end.column);
@@ -505,7 +505,7 @@ simple_command:
 	}
 	| simple_command WS bash_test_condition_command {
 		current_command_can_receive_lvalues = false;
-		auto command = std::dynamic_pointer_cast<bpp::AST::BashCommand>($1);
+		auto command = std::static_pointer_cast<bpp::AST::BashCommand>($1);
 		command->addText(" "); // Preserve whitespace
 		command->addChild($3);
 		command->setEndPosition(@3.end.line, @3.end.column);
@@ -577,8 +577,7 @@ operative_command_word:
 		$$ = node;
 	}
 	| operative_command_word raw_text_token {
-		auto node = std::dynamic_pointer_cast<bpp::AST::RawText>($1);
-		assert(node != nullptr);
+		auto node = std::static_pointer_cast<bpp::AST::RawText>($1);
 		node->appendText($2.getValue());
 		node->setEndPosition(@2.end.line, @2.end.column);
 		$$ = node;
@@ -747,7 +746,7 @@ concatenated_rvalue:
 		$$ = rvalue;
 	}
 	| concatenated_rvalue concatenatable_rvalue {
-		auto rvalue = std::dynamic_pointer_cast<bpp::AST::Rvalue>($1);
+		auto rvalue = std::static_pointer_cast<bpp::AST::Rvalue>($1);
 		rvalue->addChild($2);
 		rvalue->setEndPosition(@2.end.line, @2.end.column);
 		$$ = rvalue;
@@ -899,7 +898,7 @@ object_instantiation:
 			$$ = node;
 		} else {
 			// Use the ObjectInstantiation node returned by instantiation_suffix
-			auto node = std::dynamic_pointer_cast<bpp::AST::ObjectInstantiation>($3);
+			auto node = std::static_pointer_cast<bpp::AST::ObjectInstantiation>($3);
 			std::uint32_t line_number = @1.begin.line;
 			std::uint32_t column_number = @1.begin.column;
 			node->setPosition(line_number, column_number);
@@ -1211,7 +1210,7 @@ destructor_definition:
 
 doublequoted_string:
 	QUOTE_BEGIN quote_contents QUOTE_END {
-		auto node = std::dynamic_pointer_cast<bpp::AST::DoublequotedString>($2);
+		auto node = std::static_pointer_cast<bpp::AST::DoublequotedString>($2);
 		std::uint32_t line_number = @1.begin.line;
 		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1226,12 +1225,12 @@ quote_contents:
 	| quote_contents STRING_CONTENT {
 		$$ = $1;
 		$$->setEndPosition(@2.end.line, @2.end.column);
-		std::dynamic_pointer_cast<bpp::AST::DoublequotedString>($$)->addText($2);
+		std::static_pointer_cast<bpp::AST::DoublequotedString>($$)->addText($2);
 	}
 	| quote_contents string_interpolation {
 		$$ = $1;
 		$$->setEndPosition(@2.end.line, @2.end.column);
-		std::dynamic_pointer_cast<bpp::AST::DoublequotedString>($$)->addChild($2);
+		std::static_pointer_cast<bpp::AST::DoublequotedString>($$)->addChild($2);
 	}
 	;
 
@@ -1249,7 +1248,7 @@ string_interpolation:
 
 object_reference:
 	AT IDENTIFIER maybe_descend_object_hierarchy {
-		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($3);
+		auto node = std::static_pointer_cast<bpp::AST::ObjectReference>($3);
 		std::uint32_t line_number = @1.begin.line;
 		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1262,7 +1261,7 @@ object_reference:
 		$$ = node;
 	}
 	| REF_START maybe_hash IDENTIFIER maybe_descend_object_hierarchy maybe_array_index REF_END {
-		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($4);
+		auto node = std::static_pointer_cast<bpp::AST::ObjectReference>($4);
 		std::uint32_t line_number = @1.begin.line;
 		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1284,7 +1283,7 @@ object_reference:
 
 object_reference_lvalue:
 	AT_LVALUE IDENTIFIER maybe_descend_object_hierarchy maybe_array_index {
-		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($3);
+		auto node = std::static_pointer_cast<bpp::AST::ObjectReference>($3);
 		std::uint32_t line_number = @1.begin.line;
 		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1299,7 +1298,7 @@ object_reference_lvalue:
 		$$ = node;
 	}
 	| REF_START_LVALUE maybe_hash IDENTIFIER maybe_descend_object_hierarchy maybe_array_index REF_END {
-		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($4);
+		auto node = std::static_pointer_cast<bpp::AST::ObjectReference>($4);
 		std::uint32_t line_number = @1.begin.line;
 		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1321,7 +1320,7 @@ object_reference_lvalue:
 
 self_reference:
 	KEYWORD_THIS maybe_descend_object_hierarchy {
-		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
+		auto node = std::static_pointer_cast<bpp::AST::ObjectReference>($2);
 		std::uint32_t line_number = @1.begin.line;
 		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1334,7 +1333,7 @@ self_reference:
 		$$ = node;
 	}
 	| REF_START maybe_hash KEYWORD_THIS maybe_descend_object_hierarchy maybe_array_index REF_END {
-		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($4);
+		auto node = std::static_pointer_cast<bpp::AST::ObjectReference>($4);
 		std::uint32_t line_number = @1.begin.line;
 		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1353,7 +1352,7 @@ self_reference:
 		$$ = node;
 	}
 	| KEYWORD_SUPER maybe_descend_object_hierarchy {
-		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
+		auto node = std::static_pointer_cast<bpp::AST::ObjectReference>($2);
 		std::uint32_t line_number = @1.begin.line;
 		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1366,7 +1365,7 @@ self_reference:
 		$$ = node;
 	}
 	| REF_START maybe_hash KEYWORD_SUPER maybe_descend_object_hierarchy maybe_array_index REF_END {
-		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($4);
+		auto node = std::static_pointer_cast<bpp::AST::ObjectReference>($4);
 		std::uint32_t line_number = @1.begin.line;
 		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1388,7 +1387,7 @@ self_reference:
 
 self_reference_lvalue:
 	KEYWORD_THIS_LVALUE maybe_descend_object_hierarchy maybe_array_index {
-		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
+		auto node = std::static_pointer_cast<bpp::AST::ObjectReference>($2);
 		std::uint32_t line_number = @1.begin.line;
 		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1403,7 +1402,7 @@ self_reference_lvalue:
 		$$ = node;
 	}
 	| REF_START_LVALUE maybe_hash KEYWORD_THIS maybe_descend_object_hierarchy maybe_array_index REF_END {
-		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($4);
+		auto node = std::static_pointer_cast<bpp::AST::ObjectReference>($4);
 		std::uint32_t line_number = @1.begin.line;
 		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1422,7 +1421,7 @@ self_reference_lvalue:
 		$$ = node;
 	}
 	| KEYWORD_SUPER_LVALUE maybe_descend_object_hierarchy {
-		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
+		auto node = std::static_pointer_cast<bpp::AST::ObjectReference>($2);
 		std::uint32_t line_number = @1.begin.line;
 		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1435,7 +1434,7 @@ self_reference_lvalue:
 		$$ = node;
 	}
 	| REF_START_LVALUE maybe_hash KEYWORD_SUPER maybe_descend_object_hierarchy maybe_array_index REF_END {
-		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($4);
+		auto node = std::static_pointer_cast<bpp::AST::ObjectReference>($4);
 		std::uint32_t line_number = @1.begin.line;
 		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1458,7 +1457,7 @@ self_reference_lvalue:
 maybe_descend_object_hierarchy:
 	/* empty */ { $$ = std::make_shared<bpp::AST::ObjectReference>(); }
 	| maybe_descend_object_hierarchy DOT IDENTIFIER {
-		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($1);
+		auto node = std::static_pointer_cast<bpp::AST::ObjectReference>($1);
 		node->addIdentifier($3);
 		$$ = node;
 	}
@@ -1687,7 +1686,7 @@ shell_variable_assignment:
 
 object_address:
 	AMPERSAND object_reference {
-		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
+		auto node = std::static_pointer_cast<bpp::AST::ObjectReference>($2);
 		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '&' token
 		node->setEndPosition(@2.end.line, @2.end.column);
 
@@ -1696,7 +1695,7 @@ object_address:
 		$$ = node;
 	}
 	| AMPERSAND self_reference {
-		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
+		auto node = std::static_pointer_cast<bpp::AST::ObjectReference>($2);
 		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '&' token
 		node->setEndPosition(@2.end.line, @2.end.column);
 
@@ -1713,14 +1712,14 @@ pointer_dereference:
 
 pointer_dereference_rvalue:
 	DEREFERENCE_OPERATOR object_reference {
-		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
+		auto node = std::static_pointer_cast<bpp::AST::ObjectReference>($2);
 		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '*' token
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->setPointerDereference(true);
 		$$ = node;
 	}
 	| DEREFERENCE_OPERATOR self_reference {
-		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
+		auto node = std::static_pointer_cast<bpp::AST::ObjectReference>($2);
 		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '*' token
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->setPointerDereference(true);
@@ -1730,14 +1729,14 @@ pointer_dereference_rvalue:
 
 pointer_dereference_lvalue:
 	DEREFERENCE_OPERATOR object_reference_lvalue {
-		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
+		auto node = std::static_pointer_cast<bpp::AST::ObjectReference>($2);
 		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '*' token
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->setPointerDereference(true);
 		$$ = node;
 	}
 	| DEREFERENCE_OPERATOR self_reference_lvalue {
-		auto node = std::dynamic_pointer_cast<bpp::AST::ObjectReference>($2);
+		auto node = std::static_pointer_cast<bpp::AST::ObjectReference>($2);
 		node->setPosition(@1.begin.line, @1.begin.column); // Move start position to '*' token
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->setPointerDereference(true);
@@ -1844,7 +1843,7 @@ heredoc_header:
 
 heredoc_body:
 	HEREDOC_CONTENT_START heredoc_content HEREDOC_END {
-		auto node = std::dynamic_pointer_cast<bpp::AST::HeredocBody>($2);
+		auto node = std::static_pointer_cast<bpp::AST::HeredocBody>($2);
 		std::uint32_t line_number = @1.begin.line;
 		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
@@ -1857,12 +1856,12 @@ heredoc_body:
 heredoc_content:
 	/* empty */ { $$ = std::make_shared<bpp::AST::HeredocBody>(); }
 	| heredoc_content STRING_CONTENT {
-		auto node = std::dynamic_pointer_cast<bpp::AST::HeredocBody>($1);
+		auto node = std::static_pointer_cast<bpp::AST::HeredocBody>($1);
 		node->addText($2);
 		$$ = node;
 	}
 	| heredoc_content string_interpolation {
-		auto node = std::dynamic_pointer_cast<bpp::AST::HeredocBody>($1);
+		auto node = std::static_pointer_cast<bpp::AST::HeredocBody>($1);
 		node->addChild($2);
 		$$ = node;
 		}
@@ -1931,14 +1930,14 @@ bash_case_pattern:
 bash_case_pattern_header:
 	/* empty */ { $$ = std::make_shared<bpp::AST::BashCasePatternHeader>(); }
 	| bash_case_pattern_header STRING_CONTENT {
-		auto node = std::dynamic_pointer_cast<bpp::AST::BashCasePatternHeader>($1);
+		auto node = std::static_pointer_cast<bpp::AST::BashCasePatternHeader>($1);
 		node->setPosition(@1.begin.line, @1.begin.column);
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addText($2);
 		$$ = node;
 	}
 	| bash_case_pattern_header string_interpolation {
-		auto node = std::dynamic_pointer_cast<bpp::AST::BashCasePatternHeader>($1);
+		auto node = std::static_pointer_cast<bpp::AST::BashCasePatternHeader>($1);
 		node->setPosition(@1.begin.line, @1.begin.column);
 		node->setEndPosition(@2.end.line, @2.end.column);
 		node->addChild($2);
@@ -1966,7 +1965,7 @@ bash_select_statement:
 		// Earlier, we assumed it was a 'for' statement by default
 		if (!forStatement) {
 			// This should not happen, but just in case
-			selectStatement = std::dynamic_pointer_cast<bpp::AST::BashSelectStatement>($3);
+			selectStatement = std::static_pointer_cast<bpp::AST::BashSelectStatement>($3);
 		} else {
 			selectStatement->setVariable(forStatement->VARIABLE());
 			selectStatement->addChildren(forStatement->getChildren());
@@ -1984,7 +1983,7 @@ bash_select_statement:
 		// Earlier, we assumed it was a 'for' statement by default
 		if (!forStatement) {
 			// This should not happen, but just in case
-			selectStatement = std::dynamic_pointer_cast<bpp::AST::BashSelectStatement>($3);
+			selectStatement = std::static_pointer_cast<bpp::AST::BashSelectStatement>($3);
 		} else {
 			selectStatement->setVariable(forStatement->VARIABLE());
 			selectStatement->addChildren(forStatement->getChildren());
@@ -2013,7 +2012,7 @@ bash_for_or_select_header:
 bash_for_or_select_maybe_in_something:
 	maybe_whitespace { $$ = nullptr; }
 	| WS BASH_KEYWORD_IN WS bash_for_or_select_input {
-		auto inCondition = std::dynamic_pointer_cast<bpp::AST::BashInCondition>($4);
+		auto inCondition = std::static_pointer_cast<bpp::AST::BashInCondition>($4);
 		inCondition->setPosition(@2.begin.line, @2.begin.column); // Move position to 'in' token
 		inCondition->setEndPosition(@4.end.line, @4.end.column);
 		$$ = inCondition;
@@ -2046,7 +2045,7 @@ bash_for_or_select_input:
 		$$ = node;
 	}
 	| bash_for_or_select_input WS valid_rvalue {
-		auto inCondition = std::dynamic_pointer_cast<bpp::AST::BashInCondition>($1);
+		auto inCondition = std::static_pointer_cast<bpp::AST::BashInCondition>($1);
 		inCondition->addText(" "); // Preserve whitespace between items
 		inCondition->addChild($3);
 		inCondition->setEndPosition(@3.end.line, @3.end.column);
@@ -2069,7 +2068,7 @@ bash_for_statement:
 		auto forStatement = std::dynamic_pointer_cast<bpp::AST::BashForStatement>($3);
 		if (!forStatement) {
 			// This should not happen, but just in case
-			auto selectStatement = std::dynamic_pointer_cast<bpp::AST::BashSelectStatement>($3);
+			auto selectStatement = std::static_pointer_cast<bpp::AST::BashSelectStatement>($3);
 			forStatement = std::make_shared<bpp::AST::BashForStatement>();
 			forStatement->setVariable(selectStatement->VARIABLE());
 			forStatement->addChildren(selectStatement->getChildren());
@@ -2085,7 +2084,7 @@ bash_for_statement:
 		auto forStatement = std::dynamic_pointer_cast<bpp::AST::BashForStatement>($3);
 		if (!forStatement) {
 			// This should not happen, but just in case
-			auto selectStatement = std::dynamic_pointer_cast<bpp::AST::BashSelectStatement>($3);
+			auto selectStatement = std::static_pointer_cast<bpp::AST::BashSelectStatement>($3);
 			forStatement = std::make_shared<bpp::AST::BashForStatement>();
 			forStatement->setVariable(selectStatement->VARIABLE());
 			forStatement->addChildren(selectStatement->getChildren());
@@ -2341,7 +2340,7 @@ bash_arithmetic_substitution:
 
 bash_if_statement:
 	bash_if_root_branch maybe_bash_if_else_branches BASH_KEYWORD_FI {
-		auto node = std::dynamic_pointer_cast<bpp::AST::BashIfStatement>($1);
+		auto node = std::static_pointer_cast<bpp::AST::BashIfStatement>($1);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->addChildren($2); // elif / else branches
 		$$ = node;

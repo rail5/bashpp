@@ -74,13 +74,11 @@ class ExpectationsStack {
 		}
 
 		bool canTakePrimitive() const {
-			if (stack.empty()) return default_expectations.can_take_primitive;
-			return stack.top().can_take_primitive;
+			return this->top().can_take_primitive;
 		}
 
 		bool canTakeObject() const {
-			if (stack.empty()) return default_expectations.can_take_object;
-			return stack.top().can_take_object;
+			return this->top().can_take_object;
 		}
 };
 

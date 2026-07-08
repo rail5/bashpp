@@ -922,7 +922,7 @@ instantiation_suffix:
 
 pointer_declaration:
 	pointer_declaration_preface WS IDENTIFIER_LVALUE maybe_default_value {
-		auto node = std::dynamic_pointer_cast<bpp::AST::PointerDeclaration>($1);
+		auto node = std::static_pointer_cast<bpp::AST::ObjectInstantiation>($1);
 		node->setIdentifier($3);
 		node->setEndPosition(@4.end.line, @4.end.column);
 		node->addChild($4);
@@ -935,12 +935,13 @@ pointer_declaration_preface:
 	AT_LVALUE IDENTIFIER ASTERISK {
 		set_incoming_token_can_be_lvalue(true, yyscanner); // The following identifier should be an lvalue, let the lexer know
 		
-		auto node = std::make_shared<bpp::AST::PointerDeclaration>();
+		auto node = std::make_shared<bpp::AST::ObjectInstantiation>();
 		std::uint32_t line_number = @1.begin.line;
 		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 
 		node->setType($2);
+		node->setIsPointer(true);
 
 		$$ = node;
 	}

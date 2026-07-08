@@ -43,6 +43,8 @@ class Object : public Entity, public NamedEntity {
 		std::weak_ptr<Class> get_type() const { return type; }
 		void set_type(std::weak_ptr<Class> type) { this->type = type; }
 
+		bool is_primitive() const { return type.expired(); }
+
 		void set_initial_value(const std::shared_ptr<CodeEntity>& value) { initial_value = value; }
 		const std::optional<std::shared_ptr<CodeEntity>>& get_initial_value() const { return initial_value; }
 		bool has_initial_value() const { return initial_value.has_value(); }

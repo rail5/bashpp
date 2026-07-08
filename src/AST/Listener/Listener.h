@@ -71,7 +71,6 @@ namespace bpp::AST {
 	X(ObjectInstantiation) \
 	X(ObjectReference) \
 	X(ParameterExpansion) \
-	X(PointerDeclaration) \
 	X(PrimitiveAssignment) \
 	X(ProcessSubstitution) \
 	X(Program) \

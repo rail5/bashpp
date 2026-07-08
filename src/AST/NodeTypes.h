@@ -58,7 +58,6 @@ enum class NodeType : std::uint8_t {
 	ObjectInstantiation,
 	ObjectReference,
 	ParameterExpansion,
-	PointerDeclaration,
 	PrimitiveAssignment,
 	ProcessSubstitution,
 	RawSubshell,

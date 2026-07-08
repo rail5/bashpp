@@ -67,6 +67,7 @@ void Listener::enter(ObjectInstantiation* node) {
 	auto object = std::make_shared<bpp::IR::Object>();
 	object->inherit(current_code_entity);
 	object->set_type(object_class);
+	object->set_is_pointer(node->isPointer());
 	object->set_name(object_name);
 
 	object->set_definition_position({
@@ -88,6 +89,7 @@ void Listener::exit(ObjectInstantiation* /*node*/) {
 		// This object instantiation is part of a class's data member declaration
 		// The data for this object should be moved to the data member, and the object should be discarded
 		datamember_declaration->set_type(object->get_type());
+		datamember_declaration->set_is_pointer(object->is_pointer());
 		datamember_declaration->set_name(object->get_name());
 		if (object->has_initial_value()) datamember_declaration->set_initial_value(object->get_initial_value().value());
 		datamember_declaration->set_definition_position(object->get_definition_position());

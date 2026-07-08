@@ -53,7 +53,6 @@
 #include <AST/Nodes/ObjectInstantiation.h>
 #include <AST/Nodes/ObjectReference.h>
 #include <AST/Nodes/ParameterExpansion.h>
-#include <AST/Nodes/PointerDeclaration.h>
 #include <AST/Nodes/PrimitiveAssignment.h>
 #include <AST/Nodes/ProcessSubstitution.h>
 #include <AST/Nodes/Program.h>

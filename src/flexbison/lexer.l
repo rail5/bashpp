@@ -404,8 +404,6 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 
 %s BLOCK_MODE
 
-%s PARAMETER_EXPANSION_MODE
-
 %s HEREDOC_MODE
 
 %s BASH_CASE_MODE
@@ -1407,52 +1405,52 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 	}
 
 	":" {
-		thisModeStack.push(PARAMETER_EXPANSION_MODE);
+		thisModeStack.push(UNLEXED_PARAMETER_EXPANSION_MODE);
 		emit(EXPANSION_BEGIN, tokenText);
 	}
 
 	"@" {
-		thisModeStack.push(PARAMETER_EXPANSION_MODE);
+		thisModeStack.push(UNLEXED_PARAMETER_EXPANSION_MODE);
 		emit(EXPANSION_BEGIN, tokenText);
 	}
 
 	"%" {
-		thisModeStack.push(PARAMETER_EXPANSION_MODE);
+		thisModeStack.push(UNLEXED_PARAMETER_EXPANSION_MODE);
 		emit(EXPANSION_BEGIN, tokenText);
 	}
 
 	"-" {
-		thisModeStack.push(PARAMETER_EXPANSION_MODE);
+		thisModeStack.push(UNLEXED_PARAMETER_EXPANSION_MODE);
 		emit(EXPANSION_BEGIN, tokenText);
 	}
 
 	"+" {
-		thisModeStack.push(PARAMETER_EXPANSION_MODE);
+		thisModeStack.push(UNLEXED_PARAMETER_EXPANSION_MODE);
 		emit(EXPANSION_BEGIN, tokenText);
 	}
 
 	"=" {
-		thisModeStack.push(PARAMETER_EXPANSION_MODE);
+		thisModeStack.push(UNLEXED_PARAMETER_EXPANSION_MODE);
 		emit(EXPANSION_BEGIN, tokenText);
 	}
 
 	"?" {
-		thisModeStack.push(PARAMETER_EXPANSION_MODE);
+		thisModeStack.push(UNLEXED_PARAMETER_EXPANSION_MODE);
 		emit(EXPANSION_BEGIN, tokenText);
 	}
 
 	"\*" {
-		thisModeStack.push(PARAMETER_EXPANSION_MODE);
+		thisModeStack.push(UNLEXED_PARAMETER_EXPANSION_MODE);
 		emit(EXPANSION_BEGIN, tokenText);
 	}
 
 	"##" {
-		thisModeStack.push(PARAMETER_EXPANSION_MODE);
+		thisModeStack.push(UNLEXED_PARAMETER_EXPANSION_MODE);
 		emit(EXPANSION_BEGIN, tokenText);
 	}
 
 	"#" {
-		thisModeStack.push(PARAMETER_EXPANSION_MODE);
+		thisModeStack.push(UNLEXED_PARAMETER_EXPANSION_MODE);
 		emit(EXPANSION_BEGIN, tokenText);
 	}
 
@@ -1474,13 +1472,6 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 	"}" {
 		thisModeStack.pop(); // Exit BASH_VAR_MODE
 		emit(BASH_VAR_END);
-	}
-}
-
-<PARAMETER_EXPANSION_MODE>{
-	"}" {
-		thisModeStack.pop();
-		reconsume_token();
 	}
 }
 

@@ -22,7 +22,7 @@ void bpp::AST::Listener::enter(BashFunction* node) {
 		show_warning(
 			function_name,
 			bpp::ErrorHandling::WarningType::DubiousFunctionName,
-			"Function name '" + function_name.getValue() + "' may conflict with Bash++ built-in functions"
+			"Function name '" + function_name.getValue() + "' contains double underscores, which are reserved for internal use. Rename to avoid collisions with built-ins or generated symbols."
 		);
 	}
 

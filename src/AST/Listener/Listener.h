@@ -218,6 +218,8 @@ template<> void Listener::enter  (BashPipeline*           node);
 template<> void Listener::exit   (BashPipeline*           node);
 template<> void Listener::enter  (BashCommandSequence*    node);
 template<> void Listener::exit   (BashCommandSequence*    node);
+template<> void Listener::enter  (BashFunction*           node);
+template<> void Listener::exit   (BashFunction*           node);
 template<> void Listener::enter  (RawText*                node);
 template<> void Listener::exit   (RawText*                node);
 template<> void Listener::enter  (DoublequotedString*     node);

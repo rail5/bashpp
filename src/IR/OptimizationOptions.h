@@ -46,7 +46,9 @@ enum class OptimizationType : std::uint8_t {
 	EnumCount // Sentinel value to indicate the number of optimizations defined
 };
 
-constexpr std::array<std::pair<std::string_view, OptimizationType>, 9> optimization_clistring_map = {{
+constexpr std::size_t optimization_count = static_cast<std::size_t>(OptimizationType::EnumCount);
+
+constexpr std::array<std::pair<std::string_view, OptimizationType>, optimization_count> optimization_clistring_map = {{
 	// Map CLI string names to enum values for all optimizations defined in BPP_OPTIMIZATION_LIST
 	BPP_OPTIMIZATION_LIST(BPP_OPTIMIZATION_MAP_CLI_STRING_TO_ENUM)
 }};

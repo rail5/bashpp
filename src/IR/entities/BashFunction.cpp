@@ -14,9 +14,13 @@ bpp::CodeGen::CodeSegment BashFunction::generate_code(bpp::CodeGen::CodeGenState
 	bpp_assert(state != nullptr, "BashFunction::generate_code() should be called with a non-null state pointer");
 	bpp::CodeGen::CodeSegment code;
 
+	state->bash_function_stack.push({});
+
 	code.add_pre_code(name + "() {\n");
 	code.egalitarian_merge(CodeEntity::generate_code(state));
 	code.add_post_code("}\n");
+
+	state->bash_function_stack.pop();
 
 	return code;
 }

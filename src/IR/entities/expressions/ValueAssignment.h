@@ -34,6 +34,9 @@ class ValueAssignment : public StringType {
 		std::shared_ptr<Object> get_rvalue_object() const { return rvalue_object; }
 		bool is_array_assignment() const { return array_assignment; }
 		bool is_adding() const { return adding; }
+
+		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
+		PRETTYPRINT_OVERRIDE();
 };
 
 } // namespace bpp::IR

@@ -238,5 +238,7 @@ template<> void Listener::enter  (ProcessSubstitution*    node);
 template<> void Listener::exit   (ProcessSubstitution*    node);
 template<> void Listener::enter  (BashVariable*           node);
 template<> void Listener::exit   (BashVariable*           node);
+template<> void Listener::enter  (PrimitiveAssignment*    node);
+template<> void Listener::exit   (PrimitiveAssignment*    node);
 
 } // namespace bpp::AST

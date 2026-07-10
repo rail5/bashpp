@@ -11,8 +11,10 @@
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>
 
+namespace bpp::AST {
+
 template <>
-void bpp::AST::Listener::enter(BashFunction* node) {
+void Listener::enter(BashFunction* node) {
 	auto current_code_entity = std::dynamic_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
 	if (!current_code_entity) throw bpp::ErrorHandling::SyntaxError(this, node, "Function definition outside of a code entity");
 
@@ -39,7 +41,7 @@ void bpp::AST::Listener::enter(BashFunction* node) {
 }
 
 template <>
-void bpp::AST::Listener::exit(BashFunction* /*node*/) {
+void Listener::exit(BashFunction* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::BashFunction>(), "Topmost entity on stack is not a BashFunction when exiting BashFunction node");
 	auto function_entity = std::static_pointer_cast<bpp::IR::BashFunction>(entity_stack.top());
 	entity_stack.pop();
@@ -48,3 +50,5 @@ void bpp::AST::Listener::exit(BashFunction* /*node*/) {
 	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
 	current_code_entity->add(function_entity);
 }
+
+} // namespace bpp::AST

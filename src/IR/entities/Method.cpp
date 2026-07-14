@@ -59,10 +59,10 @@ bpp::CodeGen::CodeSegment ThisPtr::generate_code(bpp::CodeGen::CodeGenState* sta
 	code.add_pre_code("if ! ");
 	code.add_pre_code(dynamic_cast_entity->generate_code(state).get_pre_code());
 	code.add_pre_code("then\n"
-	"	>&2 echo \"Bash++: Error: Attempted to call @"
+	"\t>&2 echo \"Bash++: Error: Attempted to call @"
 	+ type.lock()->get_name() + "." + containing_method.lock()->get_name()
 		+ " on null object\"\n"
-		"	return 1\n"
+		"\treturn 1\n"
 		"fi\n"
 	);
 

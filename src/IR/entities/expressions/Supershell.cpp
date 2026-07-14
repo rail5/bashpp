@@ -43,10 +43,10 @@ bpp::CodeGen::CodeSegment Supershell::generate_code(bpp::CodeGen::CodeGenState* 
 
 PRETTYPRINT_IMPLEMENTATION(Supershell, {
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
- 	os << indent << "(Supershell\n";
- 	StringType::prettyPrint(os, indentation_level + 1);
- 	os << indent << ")\n";
- 	return os;
+	os << indent << "(Supershell\n";
+	StringType::prettyPrint(os, indentation_level + 1);
+	os << indent << ")\n";
+	return os;
 })
 
 } // namespace bpp::IR

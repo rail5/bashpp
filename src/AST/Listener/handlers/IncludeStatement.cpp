@@ -117,8 +117,8 @@ void Listener::enter(IncludeStatement* node) {
 		runtime_source_command->add("if ! source \""
 			+ runtime_path.string()
 			+ "\"; then\n"
-			"	>&2 echo \"Bash++: Error: Failed to include file '" + runtime_path.string() + "'\"\n"
-			"	exit 1\n"
+			"\t>&2 echo \"Bash++: Error: Failed to include file '" + runtime_path.string() + "'\"\n"
+			"\texit 1\n"
 			"fi\n"
 		);
 		current_program->add(runtime_source_command);

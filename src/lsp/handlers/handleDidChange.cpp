@@ -104,7 +104,7 @@ void bpp::BashppServer::handleDidChange(const GenericNotificationMessage& reques
 			constexpr std::uint64_t weight_denominator = 4;
 
 			const std::uint64_t previous_average_reparse_time_in_microseconds =
-				debounce_state->average_reparse_time_in_microseconds.load(std::memory_order_acquire);		
+				debounce_state->average_reparse_time_in_microseconds.load(std::memory_order_acquire);
 		
 			const std::uint64_t new_average_reparse_time_in_microseconds =
 				(previous_average_reparse_time_in_microseconds == 0)
@@ -113,7 +113,7 @@ void bpp::BashppServer::handleDidChange(const GenericNotificationMessage& reques
 						(previous_average_reparse_time_in_microseconds * (weight_denominator - weight_numerator)
 						+ reparse_duration_in_microseconds * weight_numerator)
 						/ weight_denominator
-					  );
+					);
 		
 			debounce_state->average_reparse_time_in_microseconds.store(
 				new_average_reparse_time_in_microseconds,

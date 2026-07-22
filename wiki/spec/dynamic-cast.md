@@ -71,7 +71,7 @@ The *input* to the `@dynamic_cast` directive is that which is being casted. It i
 
 ## CAST VALIDITY
 
-The validity of a `@dynamic_cast` is determined at runtime. The directive will only succeed if the object being cast is actually an instance of the target class itself, or of a class derived from the target class. "Downcasts" are not valid (i.e., casts from a base type object to a derived type), nor are casts between unrelated types. If the cast is invalid, the result will be `@nullptr`.
+The validity of a `@dynamic_cast` is determined at runtime. The directive will only succeed if the object being cast is actually an instance of the target class itself, or of a class derived from the target class. If the cast is invalid, the result will be `@nullptr`.
 
 ## USAGE
 

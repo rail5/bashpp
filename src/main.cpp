@@ -36,7 +36,7 @@
 #include <error/SyntaxError.h>
 
 int main(int argc, char** argv) {
-	(void)std::setlocale(LC_ALL, ""); // NOLINT (concurrency-mt-unsafe)
+	(void)std::setlocale(LC_ALL, ""); // NOLINT(concurrency-mt-unsafe)
 
 	Arguments args;
 	std::unique_ptr<bpp::CodeGen::OutputStream> output_stream;

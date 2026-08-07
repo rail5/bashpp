@@ -8,6 +8,7 @@
 
 #include <IR/entities/Object.h>
 #include <IR/entities/DataMember.h>
+#include <IR/entities/Method.h>
 
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>
@@ -75,6 +76,11 @@ void Listener::enter(ObjectInstantiation* node) {
 		object_name.getLine(),
 		object_name.getCharPositionInLine()
 	});
+
+	// Mark the class's "__new" method as used
+	auto new_method = object_class->get_method_UNSAFE("__new");
+	bpp_assert(new_method != nullptr, "Class '" + object_class->get_name() + "' does not have a '__new' method");
+	new_method->mark_referenced_by(object);
 
 	entity_stack.push(object);
 }

@@ -43,6 +43,20 @@ void Listener::enter(DestructorDefinition* node) {
 template <>
 void Listener::exit(DestructorDefinition* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::Method>(), "Topmost entity on stack is not a Method when exiting DestructorDefinition node");
+	auto destructor = std::static_pointer_cast<bpp::IR::Method>(entity_stack.top());
+
+	auto current_class = destructor->get_containing_class().lock();
+	bpp_assert(current_class != nullptr, "Destructor's containing class is null when exiting DestructorDefinition node");
+	auto parent_class = current_class->get_parent_class();
+	if (parent_class) {
+		auto parent_destructor = parent_class->get_method_UNSAFE("__destructor");
+		if (parent_destructor) {
+			// FIXME(@rail5): Call parent destructor at the end of the child destructor.
+
+			parent_destructor->mark_referenced_by(destructor);
+		}
+	}
+
 	entity_stack.pop();
 }
 

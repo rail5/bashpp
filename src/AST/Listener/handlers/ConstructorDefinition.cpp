@@ -36,6 +36,15 @@ void Listener::enter(ConstructorDefinition* node) {
 	this_ptr->inherit(constructor);
 	constructor->add_parameter(this_ptr);
 
+	if (auto parent_class = current_class->get_parent_class()) {
+		auto parent_constructor = parent_class->get_method_UNSAFE("__constructor");
+		if (parent_constructor) {
+			// FIXME(@rail5): Call parent constructor at the beginning of the child constructor.
+
+			parent_constructor->mark_referenced_by(constructor);
+		}
+	}
+
 	entity_stack.push(constructor);
 }
 

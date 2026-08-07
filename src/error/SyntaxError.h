@@ -185,6 +185,8 @@ class Warning : public Diagnostic {
 			this->type = DiagnosticType::DIAGNOSTIC_WARNING;
 			this->warning_cli_string = listener->get_warning_options().get_cli_string_by_option(warning_type);
 		}
+
+		void treat_as_error() { this->type = DiagnosticType::DIAGNOSTIC_ERROR; }
 };
 
 // Helper functions

@@ -94,7 +94,12 @@ class Listener final {
 		#define show_warning(node, warning_type, msg) \
 			if (warning_options.is_enabled(warning_type)) { \
 				bpp::ErrorHandling::Warning warning(this, node, msg, warning_type); \
-				warning.print(); \
+				if (warning_options.is_enabled(bpp::ErrorHandling::WarningType::WarningsAsErrors)) { \
+					warning.treat_as_error(); \
+					throw warning; \
+				} else { \
+					warning.print(); \
+				} \
 			}
 
 		enum class IncludedType : std::uint8_t {

@@ -53,13 +53,14 @@ void Diagnostic::print() const {
 	// Print the warning / error message
 	if (type == DiagnosticType::DIAGNOSTIC_WARNING) {
 		std::cerr << color_orange << "warning: " << color_reset << message;
-		if (warning_cli_string) {
-			std::cerr << " [" << color_orange << "-W" << *warning_cli_string << color_reset << "]";
-		}
-		std::cerr << std::endl;
 	} else {
-		std::cerr << color_red << "error: " << color_reset << message << std::endl;
+		std::cerr << color_red << "error: " << color_reset << message;
 	}
+
+	if (warning_cli_string) {
+		std::cerr << " [" << color_orange << "-W" << *warning_cli_string << color_reset << "]";
+	}
+	std::cerr << std::endl;
 	
 	// Open the source file for reading
 	std::ifstream file(source_file);

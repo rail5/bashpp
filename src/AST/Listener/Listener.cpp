@@ -32,7 +32,7 @@ void Listener::walk(bpp::AST::ASTNode* node) {
 					+ std::to_string(static_cast<std::uint8_t>(node->getType()))
 				);
 		}
-	} catch (const bpp::ErrorHandling::SyntaxError& e) {
+	} catch (const bpp::ErrorHandling::Diagnostic& e) {
 		// Cancel traversal of this node and its children, but continue to traverse the rest of the tree
 		this->program_has_errors = true;
 		e.print();

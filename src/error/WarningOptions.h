@@ -21,7 +21,8 @@
 	X(CastToImplicitToPrimitive,   "cast-to-implicit-toprimitive",   true, "Warn when the target class of a @dynamic_cast is an implicit call to .toPrimitive") \
 	X(TypeofImplicitToPrimitive,   "typeof-implicit-toprimitive",    true, "Warn when the input to a @typeof is an implicit call to .toPrimitive") \
 	X(DubiousFunctionName,         "dubious-function-name",          true, "Warn when a function (not method) name may conflict with Bash++ built-in functions or generated symbols") \
-	X(DubiousVariableName,         "dubious-variable-name",          true, "Warn when a variable (not object/data member) name may conflict with Bash++ built-in variables or generated symbols")
+	X(DubiousVariableName,         "dubious-variable-name",          true, "Warn when a variable (not object/data member) name may conflict with Bash++ built-in variables or generated symbols") \
+	X(WarningsAsErrors,            "error",                          false, "Treat all warnings as errors")
 
 
 #define BPP_WARNING_GET_NAME(name, cli_string, enabled_by_default, description) \

@@ -93,11 +93,10 @@ class Listener final {
 		bpp::ErrorHandling::WarningOptions warning_options;
 		#define show_warning(node, warning_type, msg) \
 			if (warning_options.is_enabled(warning_type)) { \
-				bpp::ErrorHandling::Warning warning(this, node, msg, warning_type); \
 				if (warning_options.is_enabled(bpp::ErrorHandling::WarningType::WarningsAsErrors)) { \
-					warning.treat_as_error(); \
-					throw warning; \
+					throw bpp::ErrorHandling::Warning(this, node, msg, warning_type, true); \
 				} else { \
+					bpp::ErrorHandling::Warning warning(this, node, msg, warning_type); \
 					warning.print(); \
 				} \
 			}

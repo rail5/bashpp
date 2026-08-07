@@ -179,11 +179,12 @@ class Warning : public Diagnostic {
 		explicit Warning(const std::string& msg) = delete;
 
 		template <bpp::detail::ASTNodePtrORToken T>
-		Warning(bpp::AST::Listener* listener, const T& error_ctx, const std::string& msg, WarningType warning_type)
+		Warning(bpp::AST::Listener* listener, const T& error_ctx, const std::string& msg, WarningType warning_type, bool as_error = false)
 			: Diagnostic(listener, error_ctx, msg)
 		{
 			this->type = DiagnosticType::DIAGNOSTIC_WARNING;
 			this->warning_cli_string = listener->get_warning_options().get_cli_string_by_option(warning_type);
+			if (as_error) this->type = DiagnosticType::DIAGNOSTIC_ERROR;
 		}
 
 		void treat_as_error() { this->type = DiagnosticType::DIAGNOSTIC_ERROR; }

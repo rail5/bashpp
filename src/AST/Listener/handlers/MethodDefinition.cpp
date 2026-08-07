@@ -123,14 +123,12 @@ void Listener::enter(MethodDefinition* node) {
 	}
 
 	entity_stack.push(method);
-	in_method = true;
 }
 
 template <>
 void Listener::exit(MethodDefinition* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::Method>(), "Topmost entity on stack is not a Method when exiting MethodDefinition node");
 	entity_stack.pop();
-	in_method = false;
 }
 
 } // namespace bpp::AST

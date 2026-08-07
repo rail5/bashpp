@@ -119,7 +119,6 @@ void Listener::enter(ClassDefinition* node) {
 	entity_stack.push(class_entity);
 	current_program->add_class(class_entity); // Add the class to the program's list of known classes, so that it can be found by name later
 	current_program->add(class_entity); // Add the class to the entity tree, so that it can be traversed later (e.g. for codegen)
-	in_class = true;
 }
 
 template <>
@@ -127,7 +126,6 @@ void Listener::exit(ClassDefinition* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::Class>(), "Topmost entity on stack is not a Class when exiting ClassDefinition node");
 	auto class_entity = std::static_pointer_cast<bpp::IR::Class>(entity_stack.top());
 	entity_stack.pop();
-	in_class = false;
 }
 
 } // namespace bpp::AST

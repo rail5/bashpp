@@ -38,14 +38,12 @@ void Listener::enter(DestructorDefinition* node) {
 	destructor->add_parameter(this_ptr);
 
 	entity_stack.push(destructor);
-	in_method = true;
 }
 
 template <>
 void Listener::exit(DestructorDefinition* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::Method>(), "Topmost entity on stack is not a Method when exiting DestructorDefinition node");
 	entity_stack.pop();
-	in_method = false;
 }
 
 } // namespace bpp::AST

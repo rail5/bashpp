@@ -143,9 +143,6 @@ class Listener final {
 		 */
 		std::shared_ptr<bpp::IR::CodeEntity> latest_code_entity() const;
 
-		bool in_class = false;
-		bool in_method = false;
-
 		ExpectationsStack context_expectations_stack;
 
 		std::stack<std::monostate> dynamic_cast_stack;

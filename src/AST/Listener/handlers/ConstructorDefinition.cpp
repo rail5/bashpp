@@ -37,14 +37,12 @@ void Listener::enter(ConstructorDefinition* node) {
 	constructor->add_parameter(this_ptr);
 
 	entity_stack.push(constructor);
-	in_method = true;
 }
 
 template <>
 void Listener::exit(ConstructorDefinition* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::Method>(), "Topmost entity on stack is not a Method when exiting ConstructorDefinition node");
 	entity_stack.pop();
-	in_method = false;
 }
 
 } // namespace bpp::AST

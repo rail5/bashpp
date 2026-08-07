@@ -31,6 +31,13 @@ bpp::CodeGen::CodeSegment Program::generate_code(bpp::CodeGen::CodeGenState* sta
 	bpp::CodeGen::CodeSegment code;
 
 	code.add_pre_code("#!/usr/bin/env bash\n");
+
+	code.absorb_all_to_pre(this->supershell_function->generate_code(state));
+	code.absorb_all_to_pre(this->repeat_function->generate_code(state));
+	code.absorb_all_to_pre(this->vtable_lookup_function->generate_code(state));
+	code.absorb_all_to_pre(this->dynamic_cast_function->generate_code(state));
+	code.absorb_all_to_pre(this->typeof_function->generate_code(state));
+
 	code.egalitarian_merge(CodeEntity::generate_code(state));
 
 	return code;
@@ -43,6 +50,12 @@ IncludedProgram::IncludedProgram(std::shared_ptr<Program> containing_program) {
 	this->inherit(containing_program);
 	this->containing_program = containing_program;
 	this->parent_entity = containing_program;
+
+	this->set_supershell_function(containing_program->get_supershell_function());
+	this->set_repeat_function(containing_program->get_repeat_function());
+	this->set_vtable_lookup_function(containing_program->get_vtable_lookup_function());
+	this->set_dynamic_cast_function(containing_program->get_dynamic_cast_function());
+	this->set_typeof_function(containing_program->get_typeof_function());
 }
 
 std::shared_ptr<Class> IncludedProgram::get_class(const std::string& name, std::size_t max_visible_index) const {

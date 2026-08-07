@@ -8,6 +8,7 @@
 
 #include <IR/entities/expressions/DynamicCast.h>
 #include <IR/entities/Class.h>
+#include <IR/entities/Program.h>
 
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>
@@ -24,6 +25,12 @@ void Listener::enter(DynamicCast* /*node*/) {
 
 	entity_stack.push(dynamic_cast_entity);
 	dynamic_cast_stack.push({});
+
+	auto containing_program = current_code_entity->get_containing_program();
+	bpp_assert(!containing_program.expired(), "Containing program is null when entering DynamicCast node");
+	auto dynamic_cast_builtin = containing_program.lock()->get_dynamic_cast_function();
+	bpp_assert(dynamic_cast_builtin != nullptr, "DynamicCast builtin function is null when entering DynamicCast node");
+	dynamic_cast_builtin->mark_referenced_by(dynamic_cast_entity);
 }
 
 template <>

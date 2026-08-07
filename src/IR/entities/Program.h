@@ -11,6 +11,7 @@
 
 #include <IR/bpp.h>
 #include <IR/entities/CodeEntity.h>
+#include <IR/entities/SystemFunction.h>
 
 #include <error/SyntaxError.h>
 
@@ -22,6 +23,13 @@ namespace bpp::IR {
 class Program : public CodeEntity, public std::enable_shared_from_this<Program> {
 	private:
 		OwnedEntityList<Class> classes;
+
+		// System functions:
+		std::shared_ptr<Builtins::SystemFunction> supershell_function = nullptr;
+		std::shared_ptr<Builtins::SystemFunction> repeat_function = nullptr;
+		std::shared_ptr<Builtins::SystemFunction> vtable_lookup_function = nullptr;
+		std::shared_ptr<Builtins::SystemFunction> dynamic_cast_function = nullptr;
+		std::shared_ptr<Builtins::SystemFunction> typeof_function = nullptr;
 	public:
 		void add_diagnostic(bpp::ErrorHandling::Diagnostic diagnostic) {}
 
@@ -46,6 +54,18 @@ class Program : public CodeEntity, public std::enable_shared_from_this<Program> 
 		std::weak_ptr<const Program> get_containing_program_const() const override { return weak_from_this(); }
 
 		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
+
+		std::shared_ptr<Builtins::SystemFunction> get_supershell_function() { return supershell_function; }
+		std::shared_ptr<Builtins::SystemFunction> get_repeat_function() { return repeat_function; }
+		std::shared_ptr<Builtins::SystemFunction> get_vtable_lookup_function() { return vtable_lookup_function; }
+		std::shared_ptr<Builtins::SystemFunction> get_dynamic_cast_function() { return dynamic_cast_function; }
+		std::shared_ptr<Builtins::SystemFunction> get_typeof_function() { return typeof_function; }
+
+		void set_supershell_function(std::shared_ptr<Builtins::SystemFunction> func) { supershell_function = func; }
+		void set_repeat_function(std::shared_ptr<Builtins::SystemFunction> func) { repeat_function = func; }
+		void set_vtable_lookup_function(std::shared_ptr<Builtins::SystemFunction> func) { vtable_lookup_function = func; }
+		void set_dynamic_cast_function(std::shared_ptr<Builtins::SystemFunction> func) { dynamic_cast_function = func; }
+		void set_typeof_function(std::shared_ptr<Builtins::SystemFunction> func) { typeof_function = func; }
 };
 
 /**

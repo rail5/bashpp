@@ -7,6 +7,7 @@
 #include <AST/Listener/Listener.h>
 
 #include <IR/entities/expressions/Supershell.h>
+#include <IR/entities/Program.h>
 
 #include <error/InternalError.h>
 
@@ -26,6 +27,12 @@ void Listener::enter(Supershell* node) {
 		node->getLine(),
 		node->getCharPositionInLine()
 	});
+
+	auto containing_program = current_code_entity->get_containing_program();
+	bpp_assert(!containing_program.expired(), "Containing program is null when entering Supershell node");
+	auto supershell_builtin = containing_program.lock()->get_supershell_function();
+	bpp_assert(supershell_builtin != nullptr, "Supershell builtin function is null when entering Supershell node");
+	supershell_builtin->mark_referenced_by(supershell_entity);
 }
 
 template <>

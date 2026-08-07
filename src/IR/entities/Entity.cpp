@@ -83,4 +83,12 @@ size_t Entity::number_of_known_classes() const {
 	return containing_program.lock()->number_of_known_classes();
 }
 
+bool Entity::is_referenced() const {
+	// If there's a single surviving entity which still references this entity, then this entity is considered "referenced"
+	for (const auto& weak_ref : referencing_entities) {
+		if (!weak_ref.expired()) return true;
+	}
+	return false;
+}
+
 } // namespace bpp::IR

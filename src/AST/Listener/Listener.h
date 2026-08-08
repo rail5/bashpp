@@ -104,7 +104,7 @@ class Listener final {
 		enum class IncludedType : std::uint8_t {
 			NOT_INCLUDED, // The file that generated this AST is the original (main) source file of the program
 			DYNAMICALLY_INCLUDED, // This file was reached via `@include dynamic <file>`
-			STATICALLY_INCLUDED // This file was reached via `@include [static] <file>`
+			STATICALLY_INCLUDED, // This file was reached via `@include [static] <file>`
 		};
 
 		std::stack<IncludedType> included_type_stack = std::stack<IncludedType>({IncludedType::NOT_INCLUDED});

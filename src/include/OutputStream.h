@@ -83,6 +83,7 @@ class OutputFile : public OutputStream {
 		}
 
 		~OutputFile() override {
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast): We know that the stream is an ofstream, so this is safe
 			auto* fstream = static_cast<std::ofstream*>(stream.get());
 			if (fstream && fstream->is_open()) {
 				fstream->close();
@@ -151,6 +152,7 @@ class TemporaryFile : public OutputFile {
 		TemporaryFile() : OutputFile(generate_path()) {}
 
 		~TemporaryFile() override {
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast): We know that the stream is an ofstream, so this is safe
 			auto* fstream = static_cast<std::ofstream*>(stream.get());
 			if (fstream && fstream->is_open()) {
 				fstream->close();

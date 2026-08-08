@@ -28,7 +28,7 @@ enum class DiagnosticType : std::uint8_t {
 	DIAGNOSTIC_ERROR,
 	DIAGNOSTIC_WARNING,
 	DIAGNOSTIC_INFO,
-	DIAGNOSTIC_HINT
+	DIAGNOSTIC_HINT,
 };
 
 class Diagnostic : virtual public std::runtime_error {

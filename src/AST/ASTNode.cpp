@@ -21,7 +21,7 @@ namespace bpp::AST {
 void ASTNode::addChild(const std::shared_ptr<ASTNode>& child) {
 	if (child == nullptr) return;
 	if (child->getType() == bpp::AST::NodeType::RawText
-		&& children.size() > 0
+		&& !children.empty()
 		&& children.back()->getType() == bpp::AST::NodeType::RawText
 	) {
 		// Merge with last RawText child

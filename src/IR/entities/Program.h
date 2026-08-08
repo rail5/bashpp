@@ -61,11 +61,11 @@ class Program : public CodeEntity, public std::enable_shared_from_this<Program> 
 		std::shared_ptr<Builtins::SystemFunction> get_dynamic_cast_function() { return dynamic_cast_function; }
 		std::shared_ptr<Builtins::SystemFunction> get_typeof_function() { return typeof_function; }
 
-		void set_supershell_function(std::shared_ptr<Builtins::SystemFunction> func) { supershell_function = func; }
-		void set_repeat_function(std::shared_ptr<Builtins::SystemFunction> func) { repeat_function = func; }
-		void set_vtable_lookup_function(std::shared_ptr<Builtins::SystemFunction> func) { vtable_lookup_function = func; }
-		void set_dynamic_cast_function(std::shared_ptr<Builtins::SystemFunction> func) { dynamic_cast_function = func; }
-		void set_typeof_function(std::shared_ptr<Builtins::SystemFunction> func) { typeof_function = func; }
+		void set_supershell_function(std::shared_ptr<Builtins::SystemFunction> func) { supershell_function = std::move(func); }
+		void set_repeat_function(std::shared_ptr<Builtins::SystemFunction> func) { repeat_function = std::move(func); }
+		void set_vtable_lookup_function(std::shared_ptr<Builtins::SystemFunction> func) { vtable_lookup_function = std::move(func); }
+		void set_dynamic_cast_function(std::shared_ptr<Builtins::SystemFunction> func) { dynamic_cast_function = std::move(func); }
+		void set_typeof_function(std::shared_ptr<Builtins::SystemFunction> func) { typeof_function = std::move(func); }
 };
 
 /**

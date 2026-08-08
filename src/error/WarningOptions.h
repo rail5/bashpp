@@ -39,7 +39,7 @@ namespace bpp::ErrorHandling {
 enum class WarningType : std::uint8_t {
 	// List all warnings defined in BPP_WARNING_LIST as enum values
 	BPP_WARNING_LIST(BPP_WARNING_GET_NAME)
-	EnumCount // Sentinel value to indicate the number of warnings defined
+	EnumCount, // Sentinel value to indicate the number of warnings defined
 };
 
 constexpr std::size_t warning_count = static_cast<std::size_t>(WarningType::EnumCount);
@@ -47,7 +47,7 @@ constexpr std::size_t warning_count = static_cast<std::size_t>(WarningType::Enum
 constexpr std::array<std::pair<std::string_view, WarningType>, warning_count> warning_clistring_map = {{
 	// Map CLI string names to enum values for all warnings defined in BPP_WARNING_LIST
 	BPP_WARNING_LIST(BPP_WARNING_MAP_CLI_STRING_TO_ENUM)
-}};
+}, };
 
 class WarningOptions : public OptionsBase<WarningOptions, WarningType, warning_clistring_map> {
 	public:

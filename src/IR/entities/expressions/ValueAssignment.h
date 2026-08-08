@@ -23,8 +23,8 @@ class ValueAssignment : public StringType {
 	public:
 		void set_rvalue_nonprimitive(bool is_nonprimitive) { rvalue_nonprimitive = is_nonprimitive; }
 		void set_lvalue_nonprimitive(bool is_nonprimitive) { lvalue_nonprimitive = is_nonprimitive; }
-		void set_lvalue_object(std::shared_ptr<Object> obj) { lvalue_object = obj; }
-		void set_rvalue_object(std::shared_ptr<Object> obj) { rvalue_object = obj; }
+		void set_lvalue_object(std::shared_ptr<Object> obj) { lvalue_object = std::move(obj); }
+		void set_rvalue_object(std::shared_ptr<Object> obj) { rvalue_object = std::move(obj); }
 		void set_array_assignment(bool is_array_assignment) { array_assignment = is_array_assignment; }
 		void set_adding(bool is_adding) { adding = is_adding; }
 

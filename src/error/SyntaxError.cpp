@@ -73,7 +73,7 @@ void Diagnostic::print() const {
 	std::string line1_prefix = std::to_string(line + 1) + " | ";
 	std::string line2_prefix;
 	for (std::size_t i = 0; i < std::to_string(line + 1).size(); i++) {
-		line2_prefix += " ";
+		line2_prefix += ' ';
 	}
 	line2_prefix += " | ";
 
@@ -161,7 +161,7 @@ std::string equal_width_padding(const std::string& str, char padding_char) {
 		}
 		
 		if (cp == '\t') {
-			result += "\t"; // TODO(@rail5): Handling tabs this way is much more robust than trying to calculate the width of a tab character
+			result += '\t'; // TODO(@rail5): Handling tabs this way is much more robust than trying to calculate the width of a tab character
 				// But, it also interrupts padding_char unless padding_char is whitespace.
 			continue;
 		}

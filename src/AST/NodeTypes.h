@@ -67,6 +67,6 @@ enum class NodeType : std::uint8_t {
 	Supershell,
 	TypeofExpression,
 	ValueAssignment,
-	ERROR_TYPE
+	ERROR_TYPE,
 };
 } // namespace bpp::AST

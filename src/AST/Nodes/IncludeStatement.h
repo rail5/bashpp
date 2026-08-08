@@ -15,22 +15,22 @@ class IncludeStatement : public ASTNode {
 	public:
 		enum class IncludeKeyword : std::uint8_t {
 			INCLUDE,
-			INCLUDE_ONCE
+			INCLUDE_ONCE,
 		};
 
 		enum class IncludeType : std::uint8_t {
 			STATIC,
-			DYNAMIC
+			DYNAMIC,
 		};
 
 		enum class PathType : std::uint8_t {
 			ANGLEBRACKET,
-			QUOTED
+			QUOTED,
 		};
 	protected:
 		AST::Token<IncludeKeyword> m_KEYWORD;
 		AST::Token<IncludeType> m_TYPE;
-		PathType m_PATHTYPE;
+		PathType m_PATHTYPE = PathType::QUOTED;
 		AST::Token<std::string> m_PATH;
 		std::optional<AST::Token<std::string>> m_ASPATH;
 	public:

@@ -32,7 +32,8 @@ void Entity::inherit(std::shared_ptr<Entity> parent) {
 
 std::shared_ptr<Class> Entity::get_class(const std::string& name, std::size_t /*max_visible_index*/) const {
 	bpp_assert(!containing_program.expired(), std::string("Entity does not have a containing program"));
-	return containing_program.lock()->get_class(name, program_visible_class_count_at_creation);
+	const std::shared_ptr<Program> containing_program_ptr = containing_program.lock();
+	return containing_program_ptr->get_class(name, program_visible_class_count_at_creation);
 }
 
 std::shared_ptr<Object> Entity::get_object(const std::string& name, std::size_t /*max_visible_index*/) const {

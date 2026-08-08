@@ -298,7 +298,7 @@ inline Arguments parse_arguments(int argc, char** argv) {
 
 	args.set_program_arguments(program_arguments.argc, program_arguments.argv);
 
-	if (compiler_arguments.getNonOptionArguments().size() > 0) {
+	if (!compiler_arguments.getNonOptionArguments().empty()) {
 		args.set_input_file(compiler_arguments.getNonOptionArguments()[0]);
 	}
 
@@ -370,6 +370,7 @@ inline std::unique_ptr<bpp::CodeGen::OutputStream> determine_output_stream(Argum
 	// Write to a temporary file, which will be deleted after the program exits
 	if (args->run_on_exit()) {
 		output_stream = std::make_unique<bpp::CodeGen::TemporaryFile>();
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
 		args->set_output_file(static_cast<bpp::CodeGen::TemporaryFile*>(output_stream.get())->path().string());
 	}
 

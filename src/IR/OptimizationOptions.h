@@ -33,17 +33,17 @@
 	flags.set(static_cast<std::size_t>(OptimizationType::name), false);
 
 #define BPP_OPTIMIZATION_SET_LEVEL1(name, cli_string, level, description) \
-	if constexpr (level == 1) flags.set(static_cast<std::size_t>(OptimizationType::name), true);
+	if constexpr ((level) == 1) flags.set(static_cast<std::size_t>(OptimizationType::name), true);
 
 #define BPP_OPTIMIZATION_SET_LEVEL2(name, cli_string, level, description) \
-	if constexpr (level == 2) flags.set(static_cast<std::size_t>(OptimizationType::name), true);
+	if constexpr ((level) == 2) flags.set(static_cast<std::size_t>(OptimizationType::name), true);
 
 namespace bpp::IR {
 
 enum class OptimizationType : std::uint8_t {
 	// List all optimizations defined in BPP_OPTIMIZATION_LIST as enum values
 	BPP_OPTIMIZATION_LIST(BPP_OPTIMIZATION_GET_NAME)
-	EnumCount // Sentinel value to indicate the number of optimizations defined
+	EnumCount, // Sentinel value to indicate the number of optimizations defined
 };
 
 constexpr std::size_t optimization_count = static_cast<std::size_t>(OptimizationType::EnumCount);
@@ -51,7 +51,7 @@ constexpr std::size_t optimization_count = static_cast<std::size_t>(Optimization
 constexpr std::array<std::pair<std::string_view, OptimizationType>, optimization_count> optimization_clistring_map = {{
 	// Map CLI string names to enum values for all optimizations defined in BPP_OPTIMIZATION_LIST
 	BPP_OPTIMIZATION_LIST(BPP_OPTIMIZATION_MAP_CLI_STRING_TO_ENUM)
-}};
+}, };
 
 class OptimizationOptions : public OptionsBase<OptimizationOptions, OptimizationType, optimization_clistring_map> {
 	public:

@@ -56,11 +56,11 @@ class Entity {
 
 		virtual std::weak_ptr<Class> get_containing_class() { return containing_class; }
 		virtual std::weak_ptr<const Class> get_containing_class_const() const { return containing_class; }
-		void set_containing_class(std::weak_ptr<Class> containing_class) { this->containing_class = containing_class; }
+		void set_containing_class(std::weak_ptr<Class> containing_class) { this->containing_class = std::move(containing_class); }
 
 		virtual std::weak_ptr<Program> get_containing_program() { return containing_program; }
 		virtual std::weak_ptr<const Program> get_containing_program_const() const { return containing_program; }
-		void set_containing_program(std::weak_ptr<Program> containing_program) { this->containing_program = containing_program; }
+		void set_containing_program(std::weak_ptr<Program> containing_program) { this->containing_program = std::move(containing_program); }
 
 		SymbolPosition get_definition_position() const { return definition_position; }
 		void set_definition_position(const SymbolPosition& pos) { this->definition_position = pos; }

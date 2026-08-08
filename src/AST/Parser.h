@@ -43,7 +43,7 @@ class Parser final {
 		enum class InputType : std::uint8_t {
 			FILEPATH,
 			FILEPTR,
-			STRING_CONTENTS
+			STRING_CONTENTS,
 		} input_type = InputType::FILEPATH;
 
 		std::variant<std::string, FILE*, std::monostate> input_source = std::monostate{}; // Can be a file path, FILE*, or string contents

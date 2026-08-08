@@ -66,7 +66,7 @@ inline ParserPosition operator+(ParserPosition lhs, std::uint32_t rhs) {
 
 inline std::ostream& operator<<(std::ostream& os, const ParserPosition& pos) {
 	if (pos.filename) {
-		os << *(pos.filename) << ':';
+		os << *pos.filename << ':';
 	}
 	return os << pos.line << '.' << pos.column;
 }
@@ -143,7 +143,7 @@ inline std::ostream& operator<<(std::ostream& os, const ParserLocation& loc) {
 	std::uint32_t end_col = 0 < loc.end.column ? loc.end.column - 1 : 0;
 	os << loc.begin;
 	if (loc.end.filename && (!loc.begin.filename || *loc.begin.filename != *loc.end.filename)) {
-		os << '-' << *(loc.end.filename) << ':' << loc.end.line << '.' << end_col;
+		os << '-' << *loc.end.filename << ':' << loc.end.line << '.' << end_col;
 	} else if (loc.begin.line < loc.end.line) {
 		os << '-' << loc.end.line << '.' << end_col;
 	} else if (loc.begin.column < end_col) {

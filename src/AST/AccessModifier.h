@@ -12,7 +12,7 @@ namespace bpp::AST {
 enum class AccessModifier : std::uint8_t {
 	PUBLIC,
 	PROTECTED,
-	PRIVATE
+	PRIVATE,
 };
 
 } // namespace bpp::AST

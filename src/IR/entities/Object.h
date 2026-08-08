@@ -41,7 +41,7 @@ class Object : public Entity, public NamedEntity {
 		void set_is_pointer(bool is_pointer) { m_is_pointer = is_pointer; }
 
 		std::weak_ptr<Class> get_type() const { return type; }
-		void set_type(std::weak_ptr<Class> type) { this->type = type; }
+		void set_type(std::weak_ptr<Class> type) { this->type = std::move(type); }
 
 		bool is_primitive() const { return type.expired(); }
 
@@ -49,7 +49,7 @@ class Object : public Entity, public NamedEntity {
 		const std::optional<std::shared_ptr<CodeEntity>>& get_initial_value() const { return initial_value; }
 		bool has_initial_value() const { return initial_value.has_value(); }
 
-		void set_copy_from(std::shared_ptr<Object> other) { copy_from = other; }
+		void set_copy_from(std::shared_ptr<Object> other) { copy_from = std::move(other); }
 		std::shared_ptr<Object> get_copy_from() const { return copy_from; }
 
 		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;

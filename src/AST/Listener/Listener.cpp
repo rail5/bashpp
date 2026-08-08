@@ -25,7 +25,7 @@ void Listener::walk(bpp::AST::ASTNode* node) {
 					} \
 					exit(static_cast<node_type*>(node)); \
 					break;
-			AST_LISTENER_NODE_LIST(AST_LISTENER_NODE_CASE)
+			AST_LISTENER_NODE_LIST(AST_LISTENER_NODE_CASE) // NOLINT(cppcoreguidelines-pro-type-static-cast-downcast) The type is known, static_cast is safe.
 			#undef AST_LISTENER_NODE_CASE
 			default:
 				throw bpp::ErrorHandling::InternalError("Listener does not know how to handle node type "

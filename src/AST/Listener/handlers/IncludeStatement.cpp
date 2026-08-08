@@ -105,7 +105,7 @@ void Listener::enter(IncludeStatement* node) {
 		if (as_path_node.has_value()) { // The user provided an 'as' path (e.g., @include dynamic <Stack> as "/path/to/stack.sh"), just use that
 			runtime_path = as_path;
 		} else {
-			runtime_path = include_path; // Original path, but replace the extension with .sh
+			runtime_path = std::move(include_path); // Original path, but replace the extension with .sh
 			if (runtime_path.has_extension()) {
 				runtime_path.replace_extension(".sh");
 			} else {

@@ -14,10 +14,10 @@ class Connective : public ASTNode {
 	public:
 		enum class ConnectiveType : std::uint8_t {
 			AND,
-			OR
+			OR,
 		};
 	protected:
-		ConnectiveType m_TYPE;
+		ConnectiveType m_TYPE = ConnectiveType::AND;
 	public:
 		constexpr Connective() : ASTNode(bpp::AST::NodeType::Connective) {}
 

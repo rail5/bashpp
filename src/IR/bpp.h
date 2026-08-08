@@ -17,7 +17,6 @@
 #include <filesystem>
 
 namespace bpp {
-
 constexpr std::filesystem::path get_standard_library_path() {
 	return {"/usr/lib/bpp/stdlib/"};
 }
@@ -34,7 +33,7 @@ inline constexpr std::array<std::string_view, 18> protected_keywords = {
 	"dynamic_cast", "include", "include_once", "local",
 	"method", "new", "nullptr","private",
 	"protected", "public", "super", "this",
-	"typeof", "virtual"
+	"typeof", "virtual",
 };
 
 /**
@@ -119,7 +118,7 @@ enum class VisibilityScope : std::uint8_t {
 	PUBLIC,
 	PROTECTED,
 	PRIVATE,
-	INACCESSIBLE
+	INACCESSIBLE,
 };
 
 // Forward decl. entity types:

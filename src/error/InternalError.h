@@ -28,7 +28,7 @@ struct InternalError : public std::runtime_error {
 
 } // namespace bpp::ErrorHandling
 
-#if !defined (NDEBUG)
+#ifndef NDEBUG
 	#define bpp_assert(expr, msg) \
 		do { \
 			if (!(expr)) { \

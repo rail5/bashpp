@@ -7,7 +7,6 @@
 #pragma once
 
 #include <AST/ASTNode.h>
-#include <optional>
 
 namespace bpp::AST {
 

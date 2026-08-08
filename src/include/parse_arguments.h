@@ -24,8 +24,6 @@
 #include <version.h>
 #include <updated_year.h>
 
-constexpr const char* program_name = "Bash++";
-
 constexpr const char* copyright = "Copyright (C) 2024-"
 	bpp_compiler_updated_year
 	" Andrew S. Rightenburg\n\n"
@@ -306,7 +304,7 @@ inline Arguments parse_arguments(int argc, char** argv) {
 		switch (arg.getShortOpt()) {
 			default:
 				// This should never happen since XGetOpt should throw on unrecognized options
-				std::cerr << program_name << ": Warning: Unhandled option '" << static_cast<char>(arg.getShortOpt()) << "'" << std::endl;
+				std::cerr << "Bash++: Warning: Unhandled option '" << static_cast<char>(arg.getShortOpt()) << "'" << std::endl;
 				break;
 			case 'b':
 				args.set_target_bash_version(arg.getArgument());
@@ -315,7 +313,7 @@ inline Arguments parse_arguments(int argc, char** argv) {
 				args.add_optimization_flag(arg.getArgument());
 				break;
 			case 'h':
-				std::cout << program_name << " " << bpp_compiler_version << std::endl
+				std::cout << "Bash++ " << bpp_compiler_version << std::endl
 					<< help_intro << OptionParser.getHelpString();
 				args.set_exit_early(true);
 				return args;
@@ -331,7 +329,7 @@ inline Arguments parse_arguments(int argc, char** argv) {
 				args.set_optimization_level(arg.getArgument());
 				break;
 			case 'v':
-				std::cout << program_name << " " << bpp_compiler_version << std::endl << copyright;
+				std::cout << "Bash++ " << bpp_compiler_version << std::endl << copyright;
 				args.set_exit_early(true);
 				return args;
 				break;

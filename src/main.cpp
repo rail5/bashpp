@@ -47,14 +47,14 @@ int main(int argc, char** argv) {
 
 		output_stream = determine_output_stream(&args);
 	} catch (const std::exception& e) {
-		std::cerr << program_name << ": Error: " << e.what() << std::endl
+		std::cerr << "Bash++: Error: " << e.what() << std::endl
 			<< "Use -h for help" << std::endl;
 		return 1;
 	}
 
 	// If the user didn't provide input, let them know, rather than just hang waiting for stdin
 	if (args.input_from_stdin() && isatty(STDIN_FILENO)) {
-		std::cerr << program_name << " " << bpp_compiler_version << std::endl
+		std::cerr << "Bash++ " << bpp_compiler_version << std::endl
 			<< help_intro << OptionParser.getHelpString();
 		return 1;
 	}
@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
 	}
 
 	if (program == nullptr) {
-		std::cerr << program_name << ": Error: Failed to parse program." << std::endl;
+		std::cerr << "Bash++: Error: Failed to parse program." << std::endl;
 		return 1;
 	}
 

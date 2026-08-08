@@ -114,6 +114,9 @@ bpp::CodeGen::CodeSegment Method::generate_code(bpp::CodeGen::CodeGenState* stat
 		code.absorb_all_to_main(param->generate_code(state));
 	}
 
+	// We deliberately call CodeEntity::generate_code() here, rather than BashFunction::generate_code(),
+	// because BashFunction::generate_code() would add a function header and footer (and that without its proper mangled name)
+	// NOLINTNEXTLINE(bugprone-parent-virtual-call)
 	code.absorb_all_to_main(CodeEntity::generate_code(state));
 
 	code.add_post_code("}\n");
@@ -137,6 +140,9 @@ PRETTYPRINT_IMPLEMENTATION(Method, {
 	for (const auto& param : parameters) {
 		param->prettyPrint(os, indentation_level + 1);
 	}
+
+	// Similar to above, we call CodeEntity::prettyPrint() here, rather than BashFunction::prettyPrint(), on purpose
+	// NOLINTNEXTLINE(bugprone-parent-virtual-call)
 	CodeEntity::prettyPrint(os, indentation_level + 1);
 	os << indent << ")\n";
 	return os;

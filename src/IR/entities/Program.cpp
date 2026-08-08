@@ -90,6 +90,9 @@ bpp::CodeGen::CodeSegment IncludedProgram::generate_code(bpp::CodeGen::CodeGenSt
 	if (is_dynamic_include) return code;
 
 	// Otherwise, generate code for this included program as normal
+	// Note that we deliberately call CodeEntity::generate_code() here, rather than Program::generate_code(),
+	// because Program::generate_code() would duplicate the shebang and the system functions
+	// NOLINTNEXTLINE(bugprone-parent-virtual-call)
 	code.egalitarian_merge(CodeEntity::generate_code(state));
 
 	return code;

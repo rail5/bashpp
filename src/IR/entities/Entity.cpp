@@ -47,9 +47,10 @@ std::vector<std::shared_ptr<Class>> Entity::get_all_known_classes() const {
 	auto all_classes = containing_program.lock()->get_all_known_classes();
 
 	if (program_visible_class_count_at_creation < all_classes.size()) {
+		const auto visible_count = static_cast<std::vector<std::shared_ptr<Class>>::difference_type>(program_visible_class_count_at_creation);
 		return {
 			all_classes.begin(),
-			all_classes.begin() + program_visible_class_count_at_creation
+			all_classes.begin() + visible_count
 		};
 	}
 

@@ -105,7 +105,7 @@ bool Class::add_datamember(std::shared_ptr<DataMember> datamember) {
 
 template <ClassMember T>
 std::shared_ptr<T> Class::get_member(const std::string& name, std::shared_ptr<Entity> context) const {
-	const std::vector<std::shared_ptr<T>>* container;
+	const std::vector<std::shared_ptr<T>>* container = nullptr;
 	// The following static_assert is probably redundant since the concept ClassMember is restricted to one of those two types
 	static_assert(std::is_same_v<T, Method> || std::is_same_v<T, DataMember>, "T must be either Method or DataMember");
 	if constexpr (std::is_same_v<T, Method>) {

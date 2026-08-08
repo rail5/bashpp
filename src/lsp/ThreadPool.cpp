@@ -45,7 +45,7 @@ ThreadPool::~ThreadPool() {
 }
 
 void ThreadPool::enqueue(std::function<void()> task)  {
-	this->active = true; // Now that we've accepted a task
+	this->active.store(true, std::memory_order_release); // Now that we've accepted a task
 	{
 		std::unique_lock<std::mutex> lock(queue_mutex);
 		tasks.push(std::move(task)); // Add the task to the queue
@@ -59,6 +59,7 @@ void ThreadPool::cleanup() {
 		tasks.pop(); // Clear the task queue
 	}
 	stop = true; // Set stop to true to signal all threads to exit
+	active.store(false, std::memory_order_release);
 	lock.unlock();
 	condition.notify_all(); // Notify all threads to wake up and check the stop condition
 }
@@ -68,5 +69,5 @@ size_t ThreadPool::getThreadCount() const {
 }
 
 bool ThreadPool::isActive() const {
-	return active;
+	return active.load(std::memory_order_acquire);
 }

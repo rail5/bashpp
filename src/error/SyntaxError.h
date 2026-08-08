@@ -31,7 +31,7 @@ enum class DiagnosticType : std::uint8_t {
 	DIAGNOSTIC_HINT
 };
 
-class Diagnostic {
+class Diagnostic : virtual public std::runtime_error {
 	protected:
 		/**
 		 * @brief The chain of includes leading to the file which produced this diagnostic.
@@ -116,7 +116,9 @@ class Diagnostic {
 		Diagnostic() = delete;
 
 		template <bpp::detail::ASTNodePtrORToken T>
-		Diagnostic(bpp::AST::Listener* listener, const T& error_ctx, const std::string& msg) : message(msg) {
+		Diagnostic(bpp::AST::Listener* listener, const T& error_ctx, const std::string& msg)
+			: std::runtime_error(msg), message(msg)
+		{
 			set_from_listener(listener, error_ctx);
 		}
 
@@ -127,7 +129,8 @@ class Diagnostic {
 			std::uint32_t text_length,
 			const std::string& message,
 			bool lsp_mode = false
-		) {
+		) : std::runtime_error(message)
+		{
 			set_explicitly(std::move(include_chain), line, column, text_length, message, lsp_mode);
 		}
 		
@@ -141,14 +144,14 @@ class Diagnostic {
  * When thrown, the exception can be caught and printed to display a formatted syntax error message.
  * 
  */
-class SyntaxError : public Diagnostic, public std::runtime_error {
+class SyntaxError : public Diagnostic {
 	public:
 		SyntaxError() = delete;
 		explicit SyntaxError(const std::string& msg) = delete;
 
 		template <bpp::detail::ASTNodePtrORToken T>
 		SyntaxError(bpp::AST::Listener* listener, const T& error_ctx, const std::string& msg)
-			: Diagnostic(listener, error_ctx, msg), std::runtime_error(msg) {}
+			: std::runtime_error(msg), Diagnostic(listener, error_ctx, msg) {}
 };
 
 class ParserError : public Diagnostic {
@@ -162,7 +165,7 @@ class ParserError : public Diagnostic {
 			std::uint32_t text_length,
 			const std::string& message,
 			bool lsp_mode = false
-		) : Diagnostic(std::move(include_chain), line, column, text_length, message, lsp_mode) {}
+		) : std::runtime_error(message), Diagnostic(std::move(include_chain), line, column, text_length, message, lsp_mode) {}
 };
 
 /**
@@ -180,7 +183,7 @@ class Warning : public Diagnostic {
 
 		template <bpp::detail::ASTNodePtrORToken T>
 		Warning(bpp::AST::Listener* listener, const T& error_ctx, const std::string& msg, WarningType warning_type, bool as_error = false)
-			: Diagnostic(listener, error_ctx, msg)
+			: std::runtime_error(msg), Diagnostic(listener, error_ctx, msg)
 		{
 			this->type = DiagnosticType::DIAGNOSTIC_WARNING;
 			this->warning_cli_string = listener->get_warning_options().get_cli_string_by_option(warning_type);

@@ -29,7 +29,7 @@ void Listener::enter(DatamemberDeclaration* node) {
 		default: throw bpp::ErrorHandling::InternalError("Unknown access modifier in data member declaration");
 	}
 
-	/**
+	/*
 	 * This will either be:
 	 * 	1. A primitive [IDENTIFIER will be set]
 	 * 	2. An object [object_instantiation will be set, and we'll handle that in the object_instantiation rule]

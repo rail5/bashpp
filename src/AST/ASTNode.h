@@ -48,7 +48,24 @@ class ASTNode {
 		
 		constexpr bpp::AST::NodeType getType() const { return _type; }
 
+		/**
+		 * @brief Add a child node to this AST node.
+		 * This function also:
+		 *  1. Filters out null child nodes
+		 *  2. Merges consecutive RawText nodes into a single RawText node to optimize the AST structure.
+		 * 
+		 * @param child The child AST node to add.
+		 */
 		void addChild(const std::shared_ptr<ASTNode>& child);
+
+		/**
+		 * @brief Add a vector of child nodes to this AST node.
+		 * This function also:
+		 *  1. Filters out null child nodes
+		 *  2. Merges consecutive RawText nodes into a single RawText node to optimize the AST structure.
+		 * 
+		 * @param childs The vector of child AST nodes to add.
+		 */
 		void addChildren(const std::vector<std::shared_ptr<ASTNode>>& childs);
 		const std::vector<std::shared_ptr<ASTNode>>& getChildren() const;
 		void setPosition(const bpp::AST::FilePosition& pos);

@@ -10,14 +10,6 @@
 
 namespace bpp::AST {
 
-/**
- * @brief Add a child node to this AST node.
- * This function also:
- *  1. Filters out null child nodes
- *  2. Merges consecutive RawText nodes into a single RawText node to optimize the AST structure.
- * 
- * @param child The child AST node to add.
- */
 void ASTNode::addChild(const std::shared_ptr<ASTNode>& child) {
 	if (child == nullptr) return;
 	if (child->getType() == bpp::AST::NodeType::RawText
@@ -33,14 +25,6 @@ void ASTNode::addChild(const std::shared_ptr<ASTNode>& child) {
 	children.push_back(child);
 }
 
-/**
- * @brief Add a vector of child nodes to this AST node.
- * This function also:
- *  1. Filters out null child nodes
- *  2. Merges consecutive RawText nodes into a single RawText node to optimize the AST structure.
- * 
- * @param childs The vector of child AST nodes to add.
- */
 void ASTNode::addChildren(const std::vector<std::shared_ptr<ASTNode>>& childs) {
 	if (childs.empty()) return;
 

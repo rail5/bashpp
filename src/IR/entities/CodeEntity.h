@@ -33,16 +33,62 @@ class CodeEntity : public Entity {
 		std::vector<RawCodeOrEntity> children;
 	public:
 		const std::vector<RawCodeOrEntity>& get_children() const { return children; }
+
+		/**
+		 * @brief Add raw code to the entity tree as a child of this code entity
+		 * 
+		 * @param child The raw code to add
+		 */
 		void add(const RawCode& child);
+
+		/**
+		 * @brief Add another entity to the entity tree as a child of this code entity
+		 * 
+		 * @param child The entity to add
+		 */
 		void add(const std::shared_ptr<Entity>& child);
 
+		/**
+		 * @brief Instantiate an object in this code entity
+		 *
+		 * This function adds the object to the local objects of this code entity, and also adds it to the entity tree as a child of this code entity.
+		 *
+		 * The object being in the "local objects" map of this code entity means that this code entity is responsible for the object's lifetime.
+		 *
+		 * The object being in the entity tree as a child of this code entity means that the object is instantiated at this point in the code.
+		 *
+		 *
+		 * If the object name conflicts with an existing object or class known to this code entity, this function will return false and not add the object.
+		 * 
+		 * @param object The object to instantiate
+		 */
 		bool add_object(std::shared_ptr<Object> object);
 		const OwnedEntityList<Object>& get_local_objects() const { return local_objects; }
 
+		/**
+		 * @brief Get an object by name, searching local objects first, then parent entities
+		 * 
+		 * @param name The name of the object to get
+		 * @param max_visible_index The maximum visible index of the object to get (for scoping purposes)
+		 * @return std::shared_ptr<Object> The object, or nullptr if not found
+		 */
 		std::shared_ptr<Object> get_object(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const override;
+
+		/**
+		 * @brief Get a list of all objects known to this code entity, whether owned by this code entity or merely visible to it
+		 * 
+		 * @return std::vector<std::shared_ptr<Object>> A vector of all objects known to this code entity
+		 */
 		std::vector<std::shared_ptr<Object>> get_all_known_objects() const override;
 		std::size_t number_of_known_objects() const override;
 
+		/**
+		 * @brief Adopt all local objects from another CodeEntity into this one.
+		 *
+		 * This code entity becomes responsible for the lifetimes (& ownership) of the adopted objects.
+		 * 
+		 * @param other The other CodeEntity from which to adopt local objects
+		 */
 		void adopt_objects_of(std::shared_ptr<CodeEntity> other);
 
 		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;

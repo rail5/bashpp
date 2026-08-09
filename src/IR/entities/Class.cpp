@@ -13,13 +13,6 @@
 
 namespace bpp::IR {
 
-/**
- * @brief Check if this class is derived from some other particular class
- * 
- * @param other The possible ancestor of this class
- * @return true If `other` is an ancestor (or immediate parent) of this class
- * @return false Otherwise
- */
 bool Class::is_derived_from(std::shared_ptr<const Class> other) const {
 	auto parent = this->parent_class.lock();
 
@@ -141,34 +134,10 @@ std::shared_ptr<T> Class::get_member(const std::string& name, std::shared_ptr<En
 	return nullptr;
 }
 
-/**
- * @brief Get a method by name
- *
- * This returns a method by name, taking into account the visibility restrictions of the method
- *
- * If the method is public, it is always returned
- *
- * If the method is private, it can only be returned if the context is the same as the owning class
- *
- * If the method is proteted, it can only be returned if the context is the same as the owning class, or is a class derived from the owning class
- * 
- * @param name The name of the method to get
- * @param context The context from which the method is being requested
- * @return std::shared_ptr<Method> The method, or nullptr if it doesn't exist
- * @throws bpp::ErrorHandling::VisibilityError if the context does not permit access
- */
 std::shared_ptr<Method> Class::get_method(const std::string& name, std::shared_ptr<Entity> context) const {
 	return get_member<Method>(name, context);
 }
 
-/**
- * @brief Get a method by name without checking the context against visibility rules
- *
- * This function is UNSAFE and should only be used when the context is known to be correct or the consequneces of an incorrect context are acceptable.
- * 
- * @param name The name of the method to get
- * @return std::shared_ptr<Method> The method, or nullptr if not found
- */
 std::shared_ptr<Method> Class::get_method_UNSAFE(const std::string& name) const {
 	for (const auto& method : methods) {
 		if (method->get_name() == name) return method;
@@ -177,34 +146,10 @@ std::shared_ptr<Method> Class::get_method_UNSAFE(const std::string& name) const 
 	return nullptr;
 }
 
-/**
- * @brief Get a data member by name
- *
- * This returns a data member by name, taking into account the visibility restrictions of the data member
- *
- * If the data member is public, it is always returned
- *
- * If the data member is private, it can only be returned if the context is the same as the owning class
- *
- * If the data member is proteted, it can only be returned if the context is the same as the owning class, or is a class derived from the owning class
- * 
- * @param name The name of the data member to get
- * @param context The context from which the data member is being requested
- * @return std::shared_ptr<DataMember> The data member, or nullptr if it doesn't exist
- * @throws bpp::ErrorHandling::VisibilityError if the context does not permit access
- */
 std::shared_ptr<DataMember> Class::get_datamember(const std::string& name, std::shared_ptr<Entity> context) const {
 	return get_member<DataMember>(name, context);
 }
 
-/**
- * @brief Get a data member by name without checking the context against visibility rules
- *
- * This function is UNSAFE and should only be used when the context is known to be correct or the consequneces of an incorrect context are acceptable.
- * 
- * @param name The name of the data member to get
- * @return std::shared_ptr<DataMember> The data member, or nullptr if not found
- */
 std::shared_ptr<DataMember> Class::get_datamember_UNSAFE(const std::string& name) const {
 	for (const auto& datamember : datamembers) {
 		if (datamember->get_name() == name) return datamember;

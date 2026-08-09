@@ -73,9 +73,49 @@ class Entity {
 		// Likewise for data members.
 		virtual void add_reference_position(const SymbolPosition& pos) { this->reference_positions.push_back(pos); }
 
+		/**
+		 * @brief Inherit from another entity
+		 *
+		 * Inheritance means:
+		 *
+		 * - The parent entity is marked as a "parent" of this entity
+		 *
+		 * - This entity inherits the parent's "containing program" and "containing class" if it doesn't already have them
+		 *
+		 * - This entity inherits the parent's map of known objects and classes, but only up to the point where the parent entity was created.
+		 *   This means that if the parent entity creates new objects or classes after this entity is created,
+		 *   those new objects and classes will not be visible to this entity.
+		 * 
+		 * @param parent The entity to inherit from
+		 */
 		void inherit(std::shared_ptr<Entity> parent);
 
+		/**
+		 * @brief Get a class by name
+		 *
+		 * All classes are owned by the program (root node of the entity tree), not by inner entities.
+		 *
+		 * This entity will only be able to see classes that existed at the time of its creation, and not any classes that were created later.
+		 * 
+		 * @param name The name of the class to get
+		 * @param max_visible_index The maximum visible index of the class to get (for scoping purposes)
+		 * @return std::shared_ptr<Class> The class, or nullptr if not found
+		 */
 		virtual std::shared_ptr<Class> get_class(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const;
+
+		/**
+		 * @brief Get an object by name
+		 *
+		 * This entity will only be able to see:
+		 *
+		 * - Objects that existed at the time of its creation
+		 *
+		 * - Objects that are owned by this entity directly (i.e., this entity is responsible for their lifetime)
+		 * 
+		 * @param name The name of the object to get
+		 * @param max_visible_index The maximum visible index of the object to get (for scoping purposes)
+		 * @return std::shared_ptr<Object> The object, or nullptr if not found
+		 */
 		virtual std::shared_ptr<Object> get_object(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const;
 
 		virtual std::vector<std::shared_ptr<Class>> get_all_known_classes() const;

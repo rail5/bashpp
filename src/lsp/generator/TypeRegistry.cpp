@@ -65,7 +65,7 @@ std::string TypeRegistry::resolve_type(const nlohmann::json& type_def, std::set<
 	if (kind == "base") {
 		return resolve_base_type(get_sanitized_name(type_def["name"].get<std::string>()));
 	} else if (kind == "reference") {
-		const std::string name = get_sanitized_name(type_def["name"].get<std::string>());
+		std::string name = get_sanitized_name(type_def["name"].get<std::string>());
 		if (visited.contains(name)) {
 			return name; // Return name for forward declaration
 		}
@@ -84,14 +84,14 @@ std::string TypeRegistry::resolve_type(const nlohmann::json& type_def, std::set<
 	} else if (kind == "integerLiteral") {
 		return "int"; // Special handling for integer literals
 	} else if (kind == "literal") {
-		return resolve_literal_type(type_def, visited);
+		return std::string(resolve_literal_type(type_def));
 	} else if (kind == "tuple") {
 		return resolve_tuple_type(type_def, visited);
 	}
 	return "UnknownType_" + kind;
 }
 
-std::string TypeRegistry::resolve_base_type(const std::string& name) const {
+std::string TypeRegistry::resolve_base_type(const std::string& name) {
 	static const std::unordered_map<std::string, std::string> base_types = {
 		{"URI", "std::string"},
 		{"DocumentUri", "std::string"},
@@ -102,7 +102,7 @@ std::string TypeRegistry::resolve_base_type(const std::string& name) const {
 		{"string", "std::string"},
 		{"create", "std::string"},
 		{"boolean", "bool"},
-		{"null", "std::nullptr_t"}
+		{"null", "std::nullptr_t"},
 	};
 
 	auto it = base_types.find(name);
@@ -133,7 +133,7 @@ std::string TypeRegistry::resolve_or_type(const nlohmann::json& type_def, std::s
 		result += resolve_type(item, visited);
 		first = false;
 	}
-	result += ">";
+	result += '>';
 	return result;
 }
 
@@ -143,7 +143,7 @@ std::string TypeRegistry::resolve_map_type(const nlohmann::json& type_def, std::
 	return "std::unordered_map<" + key_type + ", " + value_type + ">";
 }
 
-std::string TypeRegistry::resolve_literal_type(const nlohmann::json& type_def, std::set<std::string> visited) const {
+std::string_view TypeRegistry::resolve_literal_type(const nlohmann::json& type_def) {
 	// Literal types represent inline objects
 	if (type_def.contains("value") && type_def["value"].contains("properties")) {
 		const auto& props = type_def["value"]["properties"];
@@ -169,7 +169,7 @@ std::string TypeRegistry::resolve_tuple_type(const nlohmann::json& type_def, std
 		first = false;
 	}
 
-	tuple_type += ">";
+	tuple_type += '>';
 	return tuple_type;
 }
 
@@ -295,7 +295,7 @@ std::string TypeRegistry::get_variant_deserialization_code(
 	if (!code.empty()) {
 		code += "} else {\n";
 		code += "    throw std::runtime_error(\"Unexpected type for property " + prop_name + "\");\n";
-		code += "}";
+		code += '}';
 		
 		if (is_optional) {
 			return "if (j.contains(\"" + prop_name + "\")) {\n" + code + "\n}\n";
@@ -471,7 +471,7 @@ std::string TypeRegistry::get_sanitized_name(const std::string& name) {
 		"override", "const", "constexpr", "inline", "namespace", "using",
 		"template", "typename", "this", "new", "delete", "try", "catch",
 		"throw", "switch", "case", "default", "break", "continue",
-		"operator"
+		"operator",
 	};
 	if (reserved_keywords.contains(name)) {
 		return name + "_"; // Append underscore to avoid conflicts with keywords
@@ -589,7 +589,7 @@ void TypeRegistry::generate_type_alias(const std::string& name, const nlohmann::
 	for (const auto& ref : refs) {
 		// Skip base types
 		static const std::set<std::string> base_types = {
-			"string", "integer", "uinteger", "decimal", "boolean", "null"
+			"string", "integer", "uinteger", "decimal", "boolean", "null",
 		};
 
 		if (!base_types.contains(ref)) {
@@ -642,7 +642,7 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 		for (const auto& ref : refs) {
 			// Skip base types
 			static const std::set<std::string> base_types = {
-				"string", "integer", "uinteger", "decimal", "boolean", "null"
+				"string", "integer", "uinteger", "decimal", "boolean", "null",
 			};
 			
 			if (!base_types.contains(ref)) {
@@ -744,7 +744,7 @@ void TypeRegistry::generate_request(const std::string& name, const nlohmann::jso
 	for (const auto& inc : includes) {
 		// Skip base types
 		static const std::set<std::string> base_types = {
-			"string", "integer", "uinteger", "decimal", "boolean", "null"
+			"string", "integer", "uinteger", "decimal", "boolean", "null",
 		};
 
 		if (!base_types.contains(inc)) {
@@ -821,7 +821,7 @@ void TypeRegistry::generate_notification(const std::string& name, const nlohmann
 	for (const auto& inc : includes) {
 		// Skip base types
 		static const std::set<std::string> base_types = {
-			"string", "integer", "uinteger", "decimal", "boolean", "null"
+			"string", "integer", "uinteger", "decimal", "boolean", "null",
 		};
 
 		if (!base_types.contains(inc)) {

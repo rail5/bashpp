@@ -18,7 +18,7 @@
 #include <nlohmann/json.hpp>
 #include "TypeRegistry.h"
 
-using json = nlohmann::json;
+using nlohmann::json;
 
 int main(int argc, char* argv[]) {
 	if (argc < 3) {

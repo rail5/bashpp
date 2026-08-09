@@ -5,6 +5,7 @@
  */
 #pragma once
 #include <string>
+#include <string_view>
 #include <vector>
 #include <set>
 #include <unordered_map>
@@ -23,12 +24,12 @@ class TypeRegistry {
 		static std::string get_sanitized_name(const std::string& name);
 		static std::string get_sanitized_description(const std::string& description);
 
-		std::string resolve_base_type(const std::string& name) const;
+		static std::string resolve_base_type(const std::string& name);
 		std::string resolve_reference_type(const std::string& name, std::set<std::string> visited) const;
 		std::string resolve_array_type(const nlohmann::json& type_def, std::set<std::string> visited) const;
 		std::string resolve_or_type(const nlohmann::json& type_def, std::set<std::string> visited) const;
 		std::string resolve_map_type(const nlohmann::json& type_def, std::set<std::string> visited) const;
-		std::string resolve_literal_type(const nlohmann::json& type_def, std::set<std::string> visited) const;
+		static std::string_view resolve_literal_type(const nlohmann::json& type_def);
 		std::string resolve_tuple_type(const nlohmann::json& type_def, std::set<std::string> visited) const;
 
 		std::vector<std::string> get_base_classes(const nlohmann::json& def) const;

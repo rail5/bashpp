@@ -8,7 +8,6 @@
 
 #include <string>
 #include <vector>
-#include <stack>
 #include <iterator>
 
 #include <IR/bpp.h>
@@ -132,17 +131,17 @@ struct CodeGenState {
 	BashVersion target_bash_version{5, 2};
 	bool in_method = false;
 	bool in_class = false;
-	std::stack<std::monostate> bash_function_stack;
-	std::stack<std::monostate> supershell_stack;
+	std::uint64_t nested_bash_function_depth = 0;
+	std::uint64_t nested_supershell_depth = 0;
 	std::uint64_t dynamic_cast_counter = 0;
 	std::uint64_t supershell_counter = 0;
 
 	bool should_declare_local() const {
-		return in_class || in_method || !bash_function_stack.empty();
+		return in_class || in_method || nested_bash_function_depth > 0;
 	}
 
 	bool should_localize_object_instantiation() const {
-		return should_declare_local() && supershell_stack.empty();
+		return should_declare_local() && nested_supershell_depth == 0;
 	}
 };
 

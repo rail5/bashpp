@@ -145,7 +145,7 @@ class Listener final {
 
 		ExpectationsStack context_expectations_stack;
 
-		std::stack<std::monostate> dynamic_cast_stack;
+		std::uint64_t nested_dynamic_cast_depth = 0;
 	public:
 		void walk(bpp::AST::ASTNode* node);
 

@@ -24,7 +24,7 @@ void Listener::enter(DynamicCast* /*node*/) {
 	dynamic_cast_entity->inherit(current_code_entity);
 
 	entity_stack.push(dynamic_cast_entity);
-	dynamic_cast_stack.push({});
+	nested_dynamic_cast_depth++;
 
 	auto containing_program = current_code_entity->get_containing_program();
 	bpp_assert(!containing_program.expired(), "Containing program is null when entering DynamicCast node");
@@ -38,7 +38,7 @@ void Listener::exit(DynamicCast* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::DynamicCast>(), "Topmost entity is not a DynamicCast when exiting DynamicCast node");
 	auto dynamic_cast_entity = std::static_pointer_cast<bpp::IR::DynamicCast>(entity_stack.top());
 	entity_stack.pop();
-	dynamic_cast_stack.pop();
+	nested_dynamic_cast_depth--;
 
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity when exiting DynamicCast node");
 	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());

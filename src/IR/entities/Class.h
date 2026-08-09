@@ -112,6 +112,16 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		const std::vector<std::shared_ptr<DataMember>>& get_datamembers() const { return datamembers; }
 
 		using Entity::inherit;
+
+		/**
+		 * @brief Inherit methods and data members from a parent class.
+		 *
+		 * This function copies all methods and data members from the parent class into this class, except for toPrimitive and system methods.
+		 *
+		 * If a method or data member is private, it will be marked as inaccessible in the child class.
+		 * 
+		 * @param parent The parent class from which to inherit methods and data members.
+		 */
 		void inherit(std::shared_ptr<Class> parent);
 		
 		std::shared_ptr<Class> get_parent_class() const { return parent_class.lock(); }

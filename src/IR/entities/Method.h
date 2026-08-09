@@ -67,6 +67,17 @@ class Method : public BashFunction {
 		/// If this method is inherited from a parent class (or even overridden), this points to the parent class's version of this method.
 		std::weak_ptr<Method> parent_method;
 	public:
+		/**
+		 * @brief Add a parameter to this method
+		 *
+		 * If this parameter's name conflicts with an existing parameter, this method will return false and not add the parameter.
+		 *
+		 * If the parameter is a pointer to a nonprimitive type, this method will also set up an implicit dynamic cast for the parameter,
+		 * and verify that its name does not conflict with any known classes or objects in the containing method's context.
+		 * 
+		 * @param parameter The parameter to add
+		 * @return true if the parameter was added successfully, false otherwise
+		 */
 		bool add_parameter(std::shared_ptr<MethodParameter> parameter);
 		const std::vector<std::shared_ptr<MethodParameter>>& get_parameters() const { return parameters; }
 

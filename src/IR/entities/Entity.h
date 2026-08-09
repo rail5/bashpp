@@ -126,6 +126,13 @@ class Entity {
 
 		virtual bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* /*state*/) const { return {}; }
 
+		/**
+		 * @brief Whether this entity is referenced by any other entities in the program
+		 *
+		 * This is used for optimization and dead-code elimination.
+		 *
+		 * For example, if a class's method is never called, we don't need to generate code for it.
+		 */
 		bool is_referenced() const;
 		void mark_referenced_by(std::shared_ptr<Entity> referencing_entity) { referencing_entities.push_back(referencing_entity); }
 		const std::list<std::weak_ptr<Entity>>& get_referencing_entities() const { return referencing_entities; }

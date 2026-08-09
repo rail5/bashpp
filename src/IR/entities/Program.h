@@ -48,6 +48,13 @@ class Program : public CodeEntity, public std::enable_shared_from_this<Program> 
 		std::vector<std::shared_ptr<Class>> get_all_known_classes() const override { return classes.get_entities(); }
 		std::size_t number_of_known_classes() const override { return classes.size(); }
 
+		/**
+		 * @brief Take ownership of the classes of another program.
+		 *
+		 * This is used when including (@include) another program
+		 * 
+		 * @param other_program The program whose classes we are adopting
+		 */
 		void adopt_classes_of(std::shared_ptr<IncludedProgram> other_program);
 
 		std::weak_ptr<Program> get_containing_program() override { return weak_from_this(); }

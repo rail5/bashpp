@@ -19,13 +19,30 @@ namespace bpp::CodeGen {
 
 /**
  * @brief Container for compiled (generated) code
+ *
+ * A CodeSegment contains three inner containers: pre-code, main code, and post-code.
+ *
+ * The `main code` is the code that the caller is interested in executing.
+ * The `pre-code` container should hold code that is necessary in order "set up" for the main code to execute correctly, but which is not of interest to the caller.
+ * The `post-code` container should hold code that is necessary to "clean up" after the main code has executed.
+ *
+ *
+ * E.g.: Assume a CodeSegment holding the generated code for a Supershell command substitution (before Bash 5.3's native supershell implementation):
+ * - The pre-code contains the definition of the supershell function, AND the call to this function which instructs it to store its output in a temporary variable.
+ * - The post-code contains the cleanup of both the temporary variable and that supershell function.
+ * - The main code contains the reference to the temporary variable which holds the output of the supershell command substitution.
+ *
+ * The caller is *only* interested in the result of the supershell.
+ * The caller may, for example, be handling a ValueAssignment: `@object.dataMember=@(supershell)`
+ * In this case, the pre-code floats above the assignment, the post-code is pushed down below it,
+ * and the assignment is transformed to `@object.dataMember=${temporary_variable_holding_supershell_output}`.
  * 
  */
 class CodeSegment {
 	private:
 		/// The code that should be executed before the main code of this segment (e.g., allocation of temporary variables)
 		std::vector<std::string> pre_code;
-		/// The main code of this segment
+		/// The main code of this segment: i.e., the code that the caller is interested in executing
 		std::vector<std::string> main_code;
 		/// The code that should be executed after the main code of this segment (e.g., deallocation of temporary variables)
 		std::vector<std::string> post_code;

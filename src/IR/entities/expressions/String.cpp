@@ -18,7 +18,7 @@ bpp::CodeGen::CodeSegment StringType::generate_code(bpp::CodeGen::CodeGenState* 
 
 	for (const auto& child : children) {
 		if (std::holds_alternative<RawCode>(child)) {
-			result.add_main_code(std::get<RawCode>(child));
+			result.copy_to_main_code(std::get<RawCode>(child));
 		} else if (std::holds_alternative<std::shared_ptr<Entity>>(child)) {
 			const auto child_entity = std::get<std::shared_ptr<Entity>>(child);
 			result.egalitarian_merge(child_entity->generate_code(state));

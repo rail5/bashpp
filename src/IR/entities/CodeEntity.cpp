@@ -92,7 +92,7 @@ bpp::CodeGen::CodeSegment CodeEntity::generate_code(bpp::CodeGen::CodeGenState* 
 
 	for (const auto& child : children) {
 		if (std::holds_alternative<RawCode>(child)) {
-			code_segment.add_main_code(std::get<RawCode>(child));
+			code_segment.copy_to_main_code(std::get<RawCode>(child));
 		} else if (std::holds_alternative<std::shared_ptr<Entity>>(child)) {
 			auto child_entity = std::get<std::shared_ptr<Entity>>(child);
 			code_segment.absorb_all_to_main(child_entity->generate_code(state));

@@ -41,7 +41,7 @@ bpp::CodeGen::CodeSegment DynamicCast::generate_code(bpp::CodeGen::CodeGenState*
 
 	bpp::CodeGen::CodeSegment cast_to;
 	if (std::holds_alternative<RawCode>(target_type)) {
-		cast_to.add_main_code(std::get<RawCode>(target_type));
+		cast_to.copy_to_main_code(std::get<RawCode>(target_type));
 	} else if (std::holds_alternative<std::shared_ptr<Entity>>(target_type)) {
 		auto entity = std::get<std::shared_ptr<Entity>>(target_type);
 		cast_to.egalitarian_merge(entity->generate_code(state));

@@ -48,7 +48,7 @@ class CodeSegment {
 		std::vector<std::string> post_code;
 	public:
 		// Moves: preferred
-		// When code segments merge from other code segments, these overloads are selected
+		// Use wherever possible, to avoid unnecessary copies of code segments
 		void add_pre_code(std::string&& code) { pre_code.push_back(std::move(code)); }
 		void add_main_code(std::string&& code) { main_code.push_back(std::move(code)); }
 		void add_post_code(std::string&& code) { post_code.push_back(std::move(code)); }
@@ -58,14 +58,14 @@ class CodeSegment {
 		void add_post_code(std::vector<std::string>&& code) { post_code.insert(post_code.end(), std::make_move_iterator(code.begin()), std::make_move_iterator(code.end())); }
 
 		// Copies
-		// When code segments pull code from entities, these overloads are selected
-		void add_pre_code(const std::string& code) { pre_code.push_back(code); }
-		void add_main_code(const std::string& code) { main_code.push_back(code); }
-		void add_post_code(const std::string& code) { post_code.push_back(code); }
+		// Use only when necessary (e.g., copying code from const entities)
+		void copy_to_pre_code(const std::string& code) { pre_code.push_back(code); }
+		void copy_to_main_code(const std::string& code) { main_code.push_back(code); }
+		void copy_to_post_code(const std::string& code) { post_code.push_back(code); }
 
-		void add_pre_code(const std::vector<std::string>& code)  { pre_code.insert(pre_code.end(),   code.begin(), code.end()); }
-		void add_main_code(const std::vector<std::string>& code) { main_code.insert(main_code.end(), code.begin(), code.end()); }
-		void add_post_code(const std::vector<std::string>& code) { post_code.insert(post_code.end(), code.begin(), code.end()); }
+		void copy_to_pre_code(const std::vector<std::string>& code)  { pre_code.insert(pre_code.end(),   code.begin(), code.end()); }
+		void copy_to_main_code(const std::vector<std::string>& code) { main_code.insert(main_code.end(), code.begin(), code.end()); }
+		void copy_to_post_code(const std::vector<std::string>& code) { post_code.insert(post_code.end(), code.begin(), code.end()); }
 
 		/**
 		 * @brief Absorb all code from another CodeSegment into the main code of this segment

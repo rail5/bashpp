@@ -26,6 +26,9 @@ class DataMember : public Object {
 		/// If this data member is inherited from a parent class, this points to the parent class's version of this data member.
 		std::weak_ptr<DataMember> parent_datamember;
 	public:
+		/// Addresses of data members can only be returned as suffixes to be appended to the address of the containing object.
+		std::string get_address() const override { return "__" + get_name(); }
+
 		void set_scope(VisibilityScope scope) { this->scope = scope; }
 		VisibilityScope get_scope() const { return scope; }
 

@@ -9,6 +9,7 @@
 #include <IR/bpp.h>
 #include <IR/entities/BashFunction.h>
 #include <IR/entities/Object.h>
+#include <IR/entities/AddressableEntity.h>
 
 #include <vector>
 #include <memory>
@@ -54,7 +55,7 @@ class ThisPtr : public MethodParameter {
 /**
  * @brief A method in a class
  */
-class Method : public BashFunction {
+class Method : public BashFunction, public AddressableEntity {
 	private:
 		/// List of parameters expected to be given as arguments to the method
 		std::vector<std::shared_ptr<MethodParameter>> parameters;
@@ -81,6 +82,8 @@ class Method : public BashFunction {
 		bool add_parameter(std::shared_ptr<MethodParameter> parameter);
 		const std::vector<std::shared_ptr<MethodParameter>>& get_parameters() const { return parameters; }
 
+		std::string get_address() const override;
+
 		void set_scope(VisibilityScope scope) { this->scope = scope; }
 		VisibilityScope get_scope() const { return scope; }
 
@@ -97,8 +100,6 @@ class Method : public BashFunction {
 		std::shared_ptr<Method> get_parent_method() const { return parent_method.lock(); }
 
 		void add_reference_position(const SymbolPosition& pos) override;
-
-		std::string get_mangled_name() const;
 
 		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
 

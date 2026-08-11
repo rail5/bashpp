@@ -102,7 +102,8 @@ void Method::add_reference_position(const SymbolPosition& pos) {
 	}
 }
 
-std::string Method::get_mangled_name() const {
+std::string Method::get_address() const {
+	bpp_assert(!containing_class.expired(), "Method does not have a containing class");
 	return "bpp__" + containing_class.lock()->get_name() + "__" + name;
 }
 
@@ -111,14 +112,14 @@ bpp::CodeGen::CodeSegment Method::generate_code(bpp::CodeGen::CodeGenState* stat
 	state->in_method = true;
 	bpp::CodeGen::CodeSegment code;
 
-	code.add_pre_code(get_mangled_name() + "() {\n");
+	code.add_pre_code(get_address() + "() {\n");
 
 	for (const auto& param : parameters) {
 		code.absorb_all_to_main(param->generate_code(state));
 	}
 
 	// We deliberately call CodeEntity::generate_code() here, rather than BashFunction::generate_code(),
-	// because BashFunction::generate_code() would add a function header and footer (and that without its proper mangled name)
+	// because BashFunction::generate_code() would add a function header and footer (and that without its proper mangled name from get_address())
 	// NOLINTNEXTLINE(bugprone-parent-virtual-call)
 	code.absorb_all_to_main(CodeEntity::generate_code(state));
 

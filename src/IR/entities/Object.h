@@ -9,6 +9,7 @@
 #include <IR/bpp.h>
 #include <IR/entities/Entity.h>
 #include <IR/entities/NamedEntity.h>
+#include <IR/entities/AddressableEntity.h>
 #include <IR/entities/Class.h>
 #include <IR/entities/CodeEntity.h>
 
@@ -22,7 +23,7 @@ namespace bpp::IR {
  * This includes both non-primitives and pointers.
  * Whether the object is a pointer, as well as its type, must be given in the constructor.
  */
-class Object : public Entity, public NamedEntity {
+class Object : public Entity, public NamedEntity, public AddressableEntity {
 	protected:
 		bool m_is_pointer = false;
 
@@ -35,7 +36,7 @@ class Object : public Entity, public NamedEntity {
 		/// If not a pointer, the object from which this is copied (if any)
 		std::shared_ptr<Object> copy_from = nullptr;
 	public:
-		virtual std::string get_address() const;
+		std::string get_address() const override;
 
 		bool is_pointer() const { return m_is_pointer; }
 		void set_is_pointer(bool is_pointer) { m_is_pointer = is_pointer; }

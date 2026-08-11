@@ -6,9 +6,7 @@
 
 #pragma once
 
-#include <IR/bpp.h>
-
-#include <IR/entities/Entity.h>
+#include <string>
 
 namespace bpp::IR {
 

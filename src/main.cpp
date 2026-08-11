@@ -84,11 +84,12 @@ int main(int argc, char** argv) {
 
 #ifndef NDEBUG
 	if (args.display_parse_tree()) {
-		// '-p' given, exit after displaying the parse tree
+		// '-p' given
 		std::cout << *program << std::endl;
 		if (!args.display_entity_tree()) return 0; // Exit unless we have to build/display the entity tree
 	} else if (args.display_tokens()) {
-		// '-t' given (lexer tokens displayed), exit now even if we didn't display the parse tree
+		// '-t' given (lexer tokens displayed earlier)
+		// Exit unless we have to build/display the entity tree
 		if (!args.display_entity_tree()) return 0;
 	}
 #endif
@@ -101,12 +102,12 @@ int main(int argc, char** argv) {
 		listener->walk(program.get());
 
 		if (listener->has_errors()) return 1;
-	#ifndef NDEBUG
+#ifndef NDEBUG
 		if (args.display_entity_tree()) {
 			std::cout << *listener->get_program() << std::endl;
 			return 0;
 		}
-	#endif
+#endif
 		bpp::CodeGen::CodeGenState codegen_state;
 		codegen_state.target_bash_version = args.target_bash_version();
 		*output_stream << listener->get_program()->generate_code(&codegen_state);

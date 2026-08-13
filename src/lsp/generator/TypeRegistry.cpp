@@ -224,7 +224,7 @@ std::string TypeRegistry::get_variant_deserialization_code(
 	for (char c : inner) {
 		if (c == '<') depth++;
 		if (c == '>') depth--;
-		
+
 		if (c == ',' && depth == 0) {
 			if (!current.empty()) {
 				types.push_back(current);
@@ -243,12 +243,12 @@ std::string TypeRegistry::get_variant_deserialization_code(
 	for (const auto& type : types) {
 		std::string condition;
 		std::string getter;
-		
+
 		// Trim whitespace
 		std::string clean_type = type;
 		clean_type.erase(0, clean_type.find_first_not_of(" \t"));
 		clean_type.erase(clean_type.find_last_not_of(" \t") + 1);
-		
+
 		// Map types to JSON conditions
 		if (clean_type == "std::string") {
 			condition = "is_string()";
@@ -272,17 +272,17 @@ std::string TypeRegistry::get_variant_deserialization_code(
 			// Assume other types are objects
 			condition = "is_object()";
 		}
-		
+
 		// Only add condition if not already used
 		if (!conditions_used.contains(condition)) {
 			conditions_used.insert(condition);
-			
+
 			if (clean_type == "std::nullptr_t") {
 				getter = "obj." + prop_name + " = nullptr;";
 			} else {
 				getter = "obj." + prop_name + " = j[\"" + prop_name + "\"].get<" + clean_type + ">();";
 			}
-			
+
 			if (code.empty()) {
 				code = "if (j[\"" + prop_name + "\"]." + condition + ") {\n";
 			} else {
@@ -296,7 +296,7 @@ std::string TypeRegistry::get_variant_deserialization_code(
 		code += "} else {\n";
 		code += "    throw std::runtime_error(\"Unexpected type for property " + prop_name + "\");\n";
 		code += '}';
-		
+
 		if (is_optional) {
 			return "if (j.contains(\"" + prop_name + "\")) {\n" + code + "\n}\n";
 		}
@@ -415,24 +415,24 @@ void TypeRegistry::generate_serialization(std::ofstream& file,
 
 void TypeRegistry::generate_all_types() const {
 	fs::create_directory(output_directory);
-	
+
 	// Generate special types first
 	generate_LSP_types();
-	
+
 	// Generate enums
 	for (const auto& [name, def] : enums) {
 		if(name != "LSPAny" && name != "LSPArray") {
 			generate_enum(name, def);
 		}
 	}
-	
+
 	// Generate structs
 	for (const auto& [name, def] : structs) {
 		if(name != "LSPAny" && name != "LSPArray") {
 			generate_struct(name, def);
 		}
 	}
-	
+
 	// Generate type aliases
 	for (const auto& [name, def] : type_aliases) {
 		if(name != "LSPAny" && name != "LSPArray") {
@@ -583,7 +583,7 @@ void TypeRegistry::generate_type_alias(const std::string& name, const nlohmann::
 	file << "#include <optional>\n";
 	file << "#include <memory>\n";
 	file << "#include \"../static/LSPTypes.h\"\n"; // Include LSPTypes for compatibility
-	
+
 	std::set<std::string> includes;
 	auto refs = get_referenced_types(def["type"]);
 	for (const auto& ref : refs) {
@@ -644,7 +644,7 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 			static const std::set<std::string> base_types = {
 				"string", "integer", "uinteger", "decimal", "boolean", "null",
 			};
-			
+
 			if (!base_types.contains(ref)) {
 				includes.insert("#include \"" + ref + ".h\"");
 			}
@@ -697,7 +697,7 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 		file << "	 **/\n";
 
 		file << "	" << type_str << " " << prop_name;
-		
+
 		// Add default values for literal types
 		if (kind == "stringLiteral") {
 			file << " = \"" << type_def["value"].get<std::string>() << "\"";
@@ -706,7 +706,7 @@ void TypeRegistry::generate_struct(const std::string& name, const nlohmann::json
 		} else if (kind == "integerLiteral") {
 			file << " = " << type_def["value"].get<int>();
 		}
-		
+
 		file << ";\n";
 	}
 
@@ -773,7 +773,7 @@ void TypeRegistry::generate_request(const std::string& name, const nlohmann::jso
 	brief = get_sanitized_description(brief);
 	file << " * @brief " << brief << "\n";
 	file << " **/\n";
-	
+
 	if (def.contains("params")) {
 		std::string params_type = resolve_type(def["params"]);
 		file << "using " << name << " = RequestMessage<" << params_type << ">;\n";

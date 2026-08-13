@@ -44,7 +44,7 @@ void Diagnostic::print() const {
 		<< std::to_string(line + 1) << ":"
 		<< std::to_string(column + 1) << ": "
 		<< std::endl;
-	
+
 	// Print the include chain that led to the problematic file
 	for (auto it = ++include_chain.rbegin(); it != include_chain.rend(); ++it) {
 		std::cerr << "In file included from " << color_purple << it->string() << color_reset << std::endl;
@@ -61,7 +61,7 @@ void Diagnostic::print() const {
 		std::cerr << " [" << color_orange << "-W" << *warning_cli_string << color_reset << "]";
 	}
 	std::cerr << std::endl;
-	
+
 	// Open the source file for reading
 	std::ifstream file(source_file);
 	if (!file.is_open()) return;
@@ -89,7 +89,7 @@ void Diagnostic::print() const {
 	std::string error_portion = utf8_substr(line_content, column, text_length);
 	std::uint32_t line_after_error_length = utf8_length(line_content) - (utf8_length(line_before_error) + utf8_length(error_portion));
 	std::string line_after_error = utf8_substr(line_content, column + text_length, line_after_error_length);
-	
+
 	std::cerr << line1_prefix
 		<< line_before_error
 		<< color << error_portion << color_reset
@@ -106,7 +106,7 @@ void Diagnostic::print() const {
 
 std::string utf8_substr(const std::string& str, std::uint32_t start, std::uint32_t length) {
 	std::string::const_iterator it = str.begin();
-	
+
 	// Fast-forward the iterator to the start position
 	for (std::uint32_t i = 0; i < start && it != str.end(); ++i) {
 		try {
@@ -159,7 +159,7 @@ std::string equal_width_padding(const std::string& str, char padding_char) {
 			++it;
 			continue;
 		}
-		
+
 		if (cp == '\t') {
 			result += '\t'; // TODO(@rail5): Handling tabs this way is much more robust than trying to calculate the width of a tab character
 				// But, it also interrupts padding_char unless padding_char is whitespace.

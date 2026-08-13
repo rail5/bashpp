@@ -40,14 +40,14 @@ private:
 	struct Interval {
 		std::uint64_t low, high;
 		T payload;
-		
+
 		bool contains(std::uint64_t point) const { return low <= point && point <= high; }
 		bool contains(const Interval& other) const { return low <= other.low && high >= other.high; }
 	};
-	
+
 	std::vector<Interval> intervals;
 	bool sorted = false;
-	
+
 	void ensure_sorted() {
 		if (!sorted) {
 			// Sort by low, then by high (descending) so wider intervals come first
@@ -58,14 +58,14 @@ private:
 			sorted = true;
 		}
 	}
-	
+
 public:
 	void insert(std::uint64_t low, std::uint64_t high, T payload) {
 		// TODO(@rail5): Assertions to ensure that our invariants are maintained
 		intervals.push_back({low, high, payload});
 		sorted = false;
 	}
-	
+
 	/**
 	 * @brief Find the innermost interval that overlaps a given point.
 	 *
@@ -77,15 +77,15 @@ public:
 	 */
 	T find_innermost_overlap(std::uint64_t point) {
 		ensure_sorted();
-		
+
 		// Binary search for first interval with low <= point
 		auto it = std::upper_bound(intervals.begin(), intervals.end(), point,
 			[](std::uint64_t point, const Interval& interval) {
 				return point < interval.low;
 			});
-		
+
 		if (it == intervals.begin()) return T();
-		
+
 		// Scan backwards to find innermost (since sorted by low then wide-first)
 		--it;
 		const Interval* best = nullptr;

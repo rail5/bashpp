@@ -73,7 +73,7 @@ void bpp::BashppServer::mainLoop() {
 			log("End of input stream or error encountered.");
 			break;
 		}
-		
+
 		if (header.empty()) continue;
 
 		log("Received header: ", header);
@@ -261,7 +261,7 @@ void bpp::BashppServer::publishDiagnostics(std::shared_ptr<bpp::bpp_program> pro
 			lsp_diag.range.start.character = diag.start_column;
 			lsp_diag.range.end.line = diag.end_line;
 			lsp_diag.range.end.character = diag.end_column;
-			
+
 			switch (diag.type) {
 				case bpp::diagnostic_type::DIAGNOSTIC_ERROR:
 					lsp_diag.severity = DiagnosticSeverity::Error;

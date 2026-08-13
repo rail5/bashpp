@@ -45,7 +45,7 @@ void bpp::BashppServer::handleDidChange(const GenericNotificationMessage& reques
 	debounce_state = debounce_states.get(uri);
 	change_generation_for_this_thread =
 		debounce_state->change_generation.fetch_add(1, std::memory_order_acq_rel) + 1;
-	
+
 	debounce_time_in_milliseconds =
 		debounce_state->debounce_time_in_milliseconds.load(std::memory_order_acquire);
 
@@ -60,7 +60,7 @@ void bpp::BashppServer::handleDidChange(const GenericNotificationMessage& reques
 			if (debounce_state->change_generation.load(std::memory_order_acquire) != change_generation_for_this_thread) {
 				return; // A newer change has been recorded, slet the newer thread handle it
 			}
-		
+
 			program_pool.set_unsaved_file_contents(uri, new_content);
 
 			log("Re-parsing all programs associated with URI: ", uri);
@@ -105,7 +105,7 @@ void bpp::BashppServer::handleDidChange(const GenericNotificationMessage& reques
 
 			const std::uint64_t previous_average_reparse_time_in_microseconds =
 				debounce_state->average_reparse_time_in_microseconds.load(std::memory_order_acquire);
-		
+
 			const std::uint64_t new_average_reparse_time_in_microseconds =
 				(previous_average_reparse_time_in_microseconds == 0)
 					? reparse_duration_in_microseconds
@@ -114,7 +114,7 @@ void bpp::BashppServer::handleDidChange(const GenericNotificationMessage& reques
 						+ reparse_duration_in_microseconds * weight_numerator)
 						/ weight_denominator
 					);
-		
+
 			debounce_state->average_reparse_time_in_microseconds.store(
 				new_average_reparse_time_in_microseconds,
 				std::memory_order_release
@@ -131,15 +131,15 @@ void bpp::BashppServer::handleDidChange(const GenericNotificationMessage& reques
 
 			const std::uint64_t new_average_reparse_time_in_milliseconds =
 				new_average_reparse_time_in_microseconds / 1000;
-			
+
 			const std::uint64_t scaled_component_in_milliseconds =
 				(scale_numerator * new_average_reparse_time_in_milliseconds) / scale_denominator;
-			
+
 			auto new_debounce_time_in_milliseconds =
 				static_cast<std::uint32_t>(
 					baseline_debounce_time_in_milliseconds + scaled_component_in_milliseconds
 				);
-			
+
 			// Clamp
 			new_debounce_time_in_milliseconds = std::clamp(
 				new_debounce_time_in_milliseconds,

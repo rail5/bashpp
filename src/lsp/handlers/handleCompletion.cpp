@@ -40,7 +40,7 @@ GenericResponseMessage bpp::BashppServer::handleCompletion(const GenericRequestM
 	do {
 		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	} while (processing_didChange.load(std::memory_order_acquire));
-	
+
 	// Which character triggered the request?
 	char trigger_character = '.';
 	if (completion_request.params.context.has_value() && completion_request.params.context->triggerCharacter.has_value()) {
@@ -48,7 +48,7 @@ GenericResponseMessage bpp::BashppServer::handleCompletion(const GenericRequestM
 	}
 
 	CompletionList completion_list;
-	
+
 	// If it was '@', suggest class names, object names, and standard operators like include or dynamic_cast
 	// If it was '.', suggest method names and data members of the current object
 	// Also, '.' requires for us to wait until previous unsaved changes have been stored (done by default)
@@ -93,7 +93,7 @@ CompletionList bpp::BashppServer::handleATCompletion(const CompletionParams& par
 	}
 
 	Position position = params.position;
-	
+
 	// Which entity is active at the given position?
 	std::shared_ptr<bpp::bpp_entity> active_entity = program->get_active_entity(uri, position.line, position.character);
 	if (active_entity == nullptr) {
@@ -183,7 +183,7 @@ CompletionList bpp::BashppServer::handleDOTCompletion(const CompletionParams& pa
 		if (method->is_virtual()) {
 			detail += "@virtual ";
 		}
-		
+
 		switch (method->get_scope()) {
 			case bpp::bpp_scope::SCOPE_PUBLIC:
 				detail += "@public ";

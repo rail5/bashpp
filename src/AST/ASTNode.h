@@ -45,7 +45,7 @@ class ASTNode {
 		ASTNode& operator=(const ASTNode& other) = default;
 		ASTNode(ASTNode&& other) noexcept = default;
 		ASTNode& operator=(ASTNode&& other) noexcept = default;
-		
+
 		constexpr bpp::AST::NodeType getType() const { return _type; }
 
 		/**
@@ -77,7 +77,7 @@ class ASTNode {
 
 		std::uint32_t getLine() const;
 		std::uint32_t getCharPositionInLine() const;
-		
+
 		std::shared_ptr<ASTNode> getChildAt(std::size_t index) const;
 		std::shared_ptr<ASTNode> getFirstChild() const;
 		std::shared_ptr<ASTNode> getLastChild() const;

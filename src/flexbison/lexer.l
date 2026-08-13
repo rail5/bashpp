@@ -122,7 +122,7 @@ yy::parser::symbol_type yylex(yyscan_t yyscanner) {
 	auto* extra = get_lexer_extra(yyscanner);
 	if (extra && extra->display_lexer_output) {
 		std::cout << "Token: " << yy::parser::symbol_name(sym.kind());
-		
+
 		std::string semantic_value = sym.value.as<std::string>();
 		if (!semantic_value.empty()) {
 			std::cout << ", Text: " << semantic_value;
@@ -450,7 +450,7 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		return maybe_get_lvalue_token(yy::parser::make_##tokenType( \
 			__VA_ARGS__ __VA_OPT__(,) current_match_location(yyscanner) \
 		), yyscanner);
-	
+
 	/**
 	* Helper to get the text of the current token as a std::string.
 	*/
@@ -1394,7 +1394,7 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 	"#" {
 		emit(HASH);
 	}
-	
+
 	"[" {
 		thisModeStack.push(ARRAY_INDEX_MODE);
 		emit(ARRAY_INDEX_START);

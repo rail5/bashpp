@@ -157,9 +157,9 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 				auto instantiation_ctx = std::static_pointer_cast<AST::ObjectInstantiation>(node);
 
 				auto class_name_token = instantiation_ctx->TYPE();
-				
+
 				auto object_name_token = instantiation_ctx->IDENTIFIER();
-				
+
 				// Are we being asked to resolve the class?
 				std::uint64_t class_name_start = class_name_token.getCharPositionInLine();
 				std::uint64_t class_name_end = class_name_start + class_name_token.getValue().length();
@@ -196,9 +196,9 @@ std::shared_ptr<bpp::bpp_entity> resolve_entity_at(
 				auto pointer_ctx = std::static_pointer_cast<AST::PointerDeclaration>(node);
 
 				auto type_token = pointer_ctx->TYPE();
-				
+
 				auto name_token = pointer_ctx->IDENTIFIER();
-				
+
 				// Are we being asked to resolve the class type?
 				std::uint64_t type_start = type_token.getCharPositionInLine();
 				std::uint64_t type_end = type_start + type_token.getValue().length();

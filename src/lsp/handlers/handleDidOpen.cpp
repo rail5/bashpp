@@ -10,7 +10,7 @@
 
 void bpp::BashppServer::handleDidOpen(const GenericNotificationMessage& request) {
 	DidOpenTextDocumentNotification did_open_notification = request.toSpecific<DidOpenTextDocumentParams>();
-	
+
 	log("Received DidOpen notification for URI: ", did_open_notification.params.textDocument.uri);
 
 	// Ensure the URI starts with "file://"

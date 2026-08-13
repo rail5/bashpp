@@ -54,7 +54,7 @@ class Object : public Entity, public NamedEntity, public AddressableEntity {
 		std::shared_ptr<Object> get_copy_from() const { return copy_from; }
 
 		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
-		
+
 		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(";

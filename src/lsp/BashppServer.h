@@ -172,7 +172,7 @@ class BashppServer {
 
 		static std::mutex output_mutex; // Mutex for thread-safe output
 		static std::mutex log_mutex; // Mutex for thread-safe logging
-		
+
 		static GenericResponseMessage invalidRequestHandler(const GenericRequestMessage& request);
 		static void invalidNotificationHandler(const GenericNotificationMessage& request);
 

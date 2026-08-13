@@ -128,7 +128,7 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		 * @param parent The parent class from which to inherit methods and data members.
 		 */
 		void inherit(std::shared_ptr<Class> parent);
-		
+
 		std::shared_ptr<Class> get_parent_class() const { return parent_class.lock(); }
 
 		/**

@@ -48,7 +48,7 @@ class Diagnostic : virtual public std::runtime_error {
 
 		/// The length of the text that should be highlighted in the source code when displaying this diagnostic
 		std::uint32_t text_length = 0;
-		
+
 		/**
 		 * @brief The Program that produced this diagnostic.
 		 * This is used to add the diagnostic to the program's diagnostics list for language server support.
@@ -133,7 +133,7 @@ class Diagnostic : virtual public std::runtime_error {
 		{
 			set_explicitly(std::move(include_chain), line, column, text_length, message, lsp_mode);
 		}
-		
+
 		void print() const;
 };
 

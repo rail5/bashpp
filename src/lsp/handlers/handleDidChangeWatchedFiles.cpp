@@ -16,7 +16,7 @@ void bpp::BashppServer::handleDidChangeWatchedFiles(const GenericNotificationMes
 		return;
 	}
 	log("Received DidChangeWatchedFiles notification for ", changes.size(), " files.");
-	
+
 	for (const auto& change : changes) {
 		log("File change detected: ", change.uri);
 

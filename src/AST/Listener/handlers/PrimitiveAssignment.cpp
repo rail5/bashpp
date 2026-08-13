@@ -17,7 +17,7 @@ template <>
 void Listener::enter(PrimitiveAssignment* node) {
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity when entering PrimitiveAssignment node");
 	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
-	
+
 	// TODO(@rail5): Can we provide more a more useful error message
 	// in the case that this is a direct primitive assignment inside of a class body?
 	// (i.e., the user probably meant to declare a data member, and forgot the visibility modifier)

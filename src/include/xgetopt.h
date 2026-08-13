@@ -67,7 +67,7 @@ struct FixedString {
 		constexpr FixedString(FixedString&& other) noexcept = default;
 		constexpr FixedString& operator=(const FixedString& other) = default;
 		constexpr FixedString& operator=(FixedString&& other) = default;
-		
+
 		constexpr const char* c_str() const {
 			return data.data();
 		}
@@ -93,7 +93,7 @@ struct FixedString {
 				data[size++] = sv[i];
 			}
 		}
-		
+
 		constexpr std::string_view view() const {
 			return std::string_view(data.data(), size);
 		}
@@ -406,7 +406,7 @@ class ParsedOption {
 	public:
 		ParsedOption(int s, std::optional<std::string_view> arg)
 			: shortopt(s), argument(arg) {}
-		
+
 		int getShortOpt() const {
 			return shortopt;
 		}
@@ -598,7 +598,7 @@ class OptionParser {
 		}(), "OptionParser error: Duplicate longopt values detected in option definitions.");
 
 		static constexpr std::size_t help_string_length = Helpers::calculate_help_string_length<N>(options);
-		
+
 		static constexpr std::array<char, (3*N) + 2> build_short_options_(const OptionArray& opts) {
 			std::size_t short_opt_index = 0;
 			std::array<char, (3*N) + 2> short_opts{};
@@ -775,7 +775,7 @@ class OptionParser {
 			// Reset in case parse() is called more than once in a process.
 			opterr = 0; // Don't let getopt print messages.
 			optind = 1;
-			
+
 			// Platform-specific:
 			// GNU or Haiku: Set optind = 0 to reset getopt state fully
 			// Any of the BSDs or musl: Set optreset = 1 to reset getopt state fully

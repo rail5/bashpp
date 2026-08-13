@@ -39,7 +39,7 @@ class Parser final {
 
 		std::string input_file_path = "<stdin>";
 		std::vector<std::filesystem::path> include_chain;
-		
+
 		enum class InputType : std::uint8_t {
 			FILEPATH,
 			FILEPTR,

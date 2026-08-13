@@ -26,20 +26,20 @@
 template <typename T>
 struct RecursiveWrapper {
 	T value;
-	
+
 	// Default constructor
 	RecursiveWrapper() = default;
-	
+
 	// Value constructors
 	RecursiveWrapper(const T& v) : value(v) {}
 	RecursiveWrapper(T&& v) : value(std::move(v)) {}
-	
+
 	// Copy constructor
 	RecursiveWrapper(const RecursiveWrapper& other) : value(other.value) {}
-	
+
 	// Move constructor
 	RecursiveWrapper(RecursiveWrapper&& other) noexcept : value(std::move(other.value)) {}
-	
+
 	// Copy assignment operator
 	RecursiveWrapper& operator=(const RecursiveWrapper& other) {
 		if (this != &other) {
@@ -47,7 +47,7 @@ struct RecursiveWrapper {
 		}
 		return *this;
 	}
-	
+
 	// Move assignment operator
 	RecursiveWrapper& operator=(RecursiveWrapper&& other) noexcept {
 		if (this != &other) {
@@ -55,29 +55,29 @@ struct RecursiveWrapper {
 		}
 		return *this;
 	}
-	
+
 	// Value assignment operators
 	RecursiveWrapper& operator=(const T& v) {
 		value = v;
 		return *this;
 	}
-	
+
 	RecursiveWrapper& operator=(T&& v) {
 		value = std::move(v);
 		return *this;
 	}
-	
+
 	// Destructor (explicit to ensure proper cleanup)
 	~RecursiveWrapper() = default;
-	
+
 	// Conversion operators to maintain value semantics
 	operator T&() { return value; }
 	operator const T&() const { return value; }
-	
+
 	// Access operators
 	T& operator*() { return value; }
 	const T& operator*() const { return value; }
-	
+
 	T* operator->() { return &value; }
 	const T* operator->() const { return &value; }
 };
@@ -103,14 +103,14 @@ struct LSPAny {
 		bool,
 		std::nullptr_t
 	>;
-	
+
 	ValueType value;
 
 	// Constructors
 	LSPAny() : value(nullptr) {}
 	template <typename T>
 	LSPAny(T&& val) requires (!std::is_same_v<std::decay_t<T>, LSPAny>) : value(std::forward<T>(val)) {}
-	
+
 	// Accessor
 	template <typename T>
 	const T* get_if() const {
@@ -131,7 +131,7 @@ struct adl_serializer<RecursiveWrapper<T>> {
 	static void to_json(json& j, const RecursiveWrapper<T>& wrapper) {
 		j = wrapper.value;
 	}
-	
+
 	static void from_json(const json& j, RecursiveWrapper<T>& wrapper) {
 		T temp = j.get<T>();
 		wrapper.value = std::move(temp);
@@ -145,7 +145,7 @@ struct adl_serializer<LSPAny> {
 			j = arg;
 		}, any.value);
 	}
-	
+
 	static void from_json(const json& j, LSPAny& any) {
 		if (j.is_object()) {
 			any.value = j.get<std::unordered_map<std::string, LSPAny>>();
@@ -191,7 +191,7 @@ struct adl_serializer<std::variant<Args...>> {
 				// Ignore exceptions and continue checking other types
 			}
 		})(), ... );
-		
+
 		// If no valid type was found, throw an error indicating deserialization failure
 		if (!found) {
 			throw std::runtime_error("Could not deserialize variant");

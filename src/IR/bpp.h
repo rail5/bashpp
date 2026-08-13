@@ -68,7 +68,7 @@ inline bool is_valid_identifier(const std::string& identifier) {
 			return false;
 		}
 	}
-	
+
 	// If all checks passed, it's a valid identifier
 	return true;
 }

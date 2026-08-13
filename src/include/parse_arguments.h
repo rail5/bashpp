@@ -212,7 +212,7 @@ class Arguments {
 		const std::vector<std::filesystem::path>& include_paths() const {
 			return this->m_include_paths;
 		}
-		
+
 		void add_warning_option(std::string_view warning_option) {
 			m_warning_options.parse(warning_option);
 		}

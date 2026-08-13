@@ -88,7 +88,7 @@ struct ParserLocation {
 	 */
 	explicit ParserLocation(const ParserPosition& b, const ParserPosition& e)
 		: begin(b), end(e) {}
-	
+
 	/**
 	 * @brief Construct a 0-width location at position 'p'
 	 * 
@@ -96,7 +96,7 @@ struct ParserLocation {
 	 */
 	explicit ParserLocation(const ParserPosition& p = ParserPosition())
 		: begin(p), end(p) {}
-	
+
 	/**
 	 * @brief Construct a 0-width location at file 'f', line 'l', column 'c'
 	 *
@@ -107,7 +107,7 @@ struct ParserLocation {
 	 */
 	explicit ParserLocation(const std::string* f, std::uint32_t l = 0, std::uint32_t c = 0)
 		: begin(f, l, c), end(f, l, c) {}
-	
+
 	void initialize(const std::string* f = nullptr, std::uint32_t l = 0, std::uint32_t c = 0) {
 		begin.initialize(f, l, c);
 		end = begin;

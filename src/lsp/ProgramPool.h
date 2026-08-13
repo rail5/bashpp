@@ -102,7 +102,7 @@ class ProgramPool {
 		 * @return std::string The contents of the file.
 		 */
 		std::string get_file_contents(const std::string& file_path);
-		
+
 		/**
 		 * @brief Get or create a program for the given file path
 		 * 
@@ -152,7 +152,7 @@ class ProgramPool {
 		 * @return std::vector<std::shared_ptr<bpp::bpp_program>> A vector of all programs that were re-parsed. If a program failed to re-parse, it will not be included in the returned vector.
 		 */
 		std::vector<std::shared_ptr<bpp::bpp_program>> re_parse_programs(const std::string& file_path);
-		
+
 		/**
 		 * @brief Mark a file as open in the program pool.
 		 * 

@@ -43,7 +43,7 @@ GenericResponseMessage bpp::BashppServer::handleDefinition(const GenericRequestM
 	}
 
 	std::shared_ptr<bpp::bpp_entity> referenced_entity = nullptr;
-	
+
 	try {
 		referenced_entity = resolve_entity_at(
 			uri,
@@ -62,7 +62,7 @@ GenericResponseMessage bpp::BashppServer::handleDefinition(const GenericRequestM
 	}
 
 	bpp::SymbolPosition definition_location = referenced_entity->get_initial_definition();
-	
+
 	// Verify that a definition location was found
 	if (definition_location.file.empty()) {
 		log("No definition found for entity: ", referenced_entity->get_name(), " at position: (", position.line, ", ", position.character, ") in URI: ", uri);

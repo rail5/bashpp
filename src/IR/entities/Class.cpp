@@ -175,7 +175,7 @@ PRETTYPRINT_IMPLEMENTATION(Class, {
 	for (const auto& datamember : datamembers) {
 		datamember->prettyPrint(os, indentation_level + 1);
 	}
-	
+
 	for (const auto& method : methods) {
 		method->prettyPrint(os, indentation_level + 1);
 	}

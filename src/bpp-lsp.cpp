@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
 		XGetOpt::Option<'h', "help", "Show this help message", XGetOpt::NoArgument>,
 		XGetOpt::Option<'v', "version", "Show version information", XGetOpt::NoArgument>
 	> OptionParser;
-	
+
 	constexpr const char* help_intro = "Bash++ Language Server " bpp_compiler_version "\n"
 		"Usage: bpp-lsp [options]\n"
 		"This program should be used via an editor plugin rather than invoked directly.\n"

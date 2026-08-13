@@ -40,7 +40,7 @@ GenericResponseMessage bpp::BashppServer::handleHover(const GenericRequestMessag
 	}
 
 	std::shared_ptr<bpp::bpp_entity> entity = nullptr;
-	
+
 	try {
 		entity = resolve_entity_at(
 			uri,

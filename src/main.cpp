@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
 #ifndef NDEBUG
 	parser.setDisplayLexerOutput(args.display_tokens());
 #endif
-	
+
 	auto program = parser.program();
 	for (const auto& e : parser.get_errors()) {
 		e.print();

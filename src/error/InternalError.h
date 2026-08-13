@@ -21,7 +21,7 @@ namespace bpp::ErrorHandling {
 struct InternalError : public std::runtime_error {
 	explicit InternalError(const std::string& msg)
 		: std::runtime_error(msg + "\nYou've found a bug! Please report it.") {}
-	
+
 	InternalError(const std::string& msg, const std::string& file, int line)
 		: std::runtime_error(msg + "\nYou've found a bug! Please report it.\nAt " + file + ":" + std::to_string(line)) {}
 };

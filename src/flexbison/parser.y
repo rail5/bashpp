@@ -933,7 +933,7 @@ pointer_declaration:
 pointer_declaration_preface:
 	AT_LVALUE IDENTIFIER ASTERISK {
 		set_incoming_token_can_be_lvalue(true, yyscanner); // The following identifier should be an lvalue, let the lexer know
-		
+
 		auto node = std::make_shared<bpp::AST::ObjectInstantiation>();
 		std::uint32_t line_number = @1.begin.line;
 		std::uint32_t column_number = @1.begin.column;
@@ -1274,7 +1274,7 @@ object_reference:
 		if (!$2.getValue().empty()) {
 			node->setHasHashkey(true);
 		}
-		
+
 		node->addChild($5);
 
 		$$ = node;
@@ -2359,7 +2359,7 @@ bash_if_root_branch:
 		rootBranch->setEndPosition(@7.end.line, @7.end.column);
 		rootBranch->addChild($2); // condition
 		rootBranch->addChildren($7); // statements
-		
+
 		node->addChild(rootBranch);
 		$$ = node;
 	}

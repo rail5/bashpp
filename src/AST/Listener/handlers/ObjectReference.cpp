@@ -15,7 +15,7 @@
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>
 
-#include <deque>
+#include <span>
 
 namespace bpp::AST {
 
@@ -38,14 +38,10 @@ void Listener::exit(ObjectReference* node) {
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "ObjectReference node must be inside a code entity");
 	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
 
-	std::deque<AST::Token<std::string>> identifiers;
-	identifiers.push_back(node->IDENTIFIER());
-	std::copy(node->IDENTIFIERS().begin(), node->IDENTIFIERS().end(), std::back_inserter(identifiers));
-
 	auto resolution = bpp::IR::resolve_entity(
 		get_current_source_file(),
 		current_code_entity,
-		identifiers
+		std::span{node->IDENTIFIERS()}
 	);
 
 	if (resolution) {

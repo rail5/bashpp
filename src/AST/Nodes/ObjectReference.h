@@ -12,8 +12,7 @@ namespace bpp::AST {
 
 class ObjectReference : public ASTNode {
 	protected:
-		AST::Token<std::string> m_IDENTIFIER;
-		std::vector<AST::Token<std::string>> m_IDENTIFIERS;
+		std::vector<AST::Token<std::string>> m_IDENTIFIERS = {AST::Token<std::string>()};
 		bool m_has_hashkey = false;
 		bool m_lvalue = false;
 		bool m_self_reference = false;
@@ -22,11 +21,12 @@ class ObjectReference : public ASTNode {
 	public:
 		constexpr ObjectReference() : ASTNode(bpp::AST::NodeType::ObjectReference) {}
 
-		void setIdentifier(const AST::Token<std::string>& identifier) {
-			m_IDENTIFIER = identifier;
-		}
-		const AST::Token<std::string>& IDENTIFIER() const {
-			return m_IDENTIFIER;
+		void setRootIdentifier(const AST::Token<std::string>& identifier) {
+			if (m_IDENTIFIERS.empty()) {
+				m_IDENTIFIERS.push_back(identifier);
+			} else {
+				m_IDENTIFIERS[0] = identifier;
+			}
 		}
 
 		void addIdentifier(const AST::Token<std::string>& identifier) {
@@ -86,9 +86,9 @@ class ObjectReference : public ASTNode {
 				os << "#";
 			}
 
-			os << m_IDENTIFIER;
-			for (const auto& id : m_IDENTIFIERS) {
-				os << "." << id;
+			for (auto it = m_IDENTIFIERS.begin(); it != m_IDENTIFIERS.end(); ++it) {
+				os << it->getValue();
+				if (std::next(it) != m_IDENTIFIERS.end()) os << ".";
 			}
 
 			for (const auto& child : children) {

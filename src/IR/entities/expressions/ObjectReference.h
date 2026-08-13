@@ -18,7 +18,8 @@
 
 #include <memory>
 #include <filesystem>
-#include <deque>
+#include <span>
+#include <ranges>
 #include <expected>
 
 /**
@@ -85,31 +86,30 @@ struct EntityResolutionError {
 };
 
 template <typename T>
-concept DequeOfStringsOrStringViews =
-	std::is_same_v<std::remove_cvref_t<T>, std::deque<std::string>>
-	|| std::is_same_v<std::remove_cvref_t<T>, std::deque<std::string_view>>;
+concept StringLike =
+	std::same_as<std::remove_cvref_t<T>, std::string>
+	|| std::same_as<std::remove_cvref_t<T>, std::string_view>;
 
 template <typename T>
-concept DequeOfASTTokens = std::is_same_v<std::remove_cvref_t<T>, std::deque<AST::Token<std::string>>>;
+concept TokenLike = std::same_as<std::remove_cvref_t<T>, AST::Token<std::string>>;
 
 template <typename T>
-concept EitherStringsOrASTTokens = DequeOfStringsOrStringViews<T> || DequeOfASTTokens<T>;
+concept IdentifierElement = StringLike<T> || TokenLike<T>;
 
-
+template <typename T>
+requires IdentifierElement<T>
 std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_entity(
 	std::filesystem::path file,
 	std::shared_ptr<Entity> context,
-	EitherStringsOrASTTokens auto&& ids
+	std::span<T> ids
 ) {
 	bpp_assert(context != nullptr, "resolve_entity() should be called with a non-null context pointer");
 	auto program = context->get_containing_program().lock();
 	bpp_assert(program != nullptr, "resolve_entity() should be called with a context that is part of a program");
+	bpp_assert(!std::ranges::empty(ids), "resolve_entity() should be called with at least one identifier");
 
-	// If 'ids' is a container of AST::Token<std::string>, then we can provide diagnostics to the containing program
-	// If not, then we'll skip that
-	constexpr bool provide_diagnostics = DequeOfASTTokens<decltype(ids)>;
+	constexpr bool provide_diagnostics = TokenLike<T>;
 
-	// Helper for failures:
 	auto fail = [&](std::string message, auto const& token) -> std::unexpected<EntityResolutionError> {
 		EntityResolutionError result;
 		result.message = std::move(message);
@@ -121,10 +121,11 @@ std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_en
 		return std::unexpected(std::move(result));
 	};
 
-	bool self_reference = ids.front() == "this" || ids.front() == "super";
-	bool super = ids.front() == "super";
+	const auto first = ids.front();
+	std::string first_id(first);
+	bool self_reference = first_id == "this" || first_id == "super";
+	bool super = first_id == "super";
 
-	std::string first_id(ids.front());
 	if (super) first_id = "this"; // For the purpose of looking up the object, treat @super as @this
 
 	auto obj = context->get_object(first_id);
@@ -133,13 +134,13 @@ std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_en
 		return fail(
 			self_reference
 				? "Cannot use @this or @super outside of a class context"
-				: "Object not found: " + std::string(ids.front()),
-			ids.front()
+				: "Object not found: " + std::string(first),
+			first
 		);
 	}
 
 	if constexpr (provide_diagnostics) {
-		obj->add_reference_position({file, ids.front().getLine(), ids.front().getCharPositionInLine()});
+		obj->add_reference_position(SymbolPosition{file, first.getLine(), first.getCharPositionInLine()});
 	}
 
 	// Special-case: if @super, create a "faux" object as a copy of the 'this' pointer,
@@ -149,7 +150,7 @@ std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_en
 		bpp_assert(this_class != nullptr, "Object has no type in resolve_entity()");
 		const auto parent_class = this_class->get_parent_class();
 		if (parent_class == nullptr) {
-			return fail(this_class->get_name() + " has no parent class to reference with @super", ids.front());
+			return fail(this_class->get_name() + " has no parent class to reference with @super", first);
 		}
 		auto faux_object = std::make_shared<Object>(*obj);
 		faux_object->set_name("super");
@@ -159,14 +160,13 @@ std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_en
 
 	auto current_class = obj->get_type().lock();
 	bpp_assert(current_class != nullptr, "Object has no type in resolve_entity()");
-	ids.pop_front();
-
+	auto remaining = ids.subspan(1);
 	ObjectReference::ReferenceChain chain(obj);
 
-	while (!ids.empty()) {
-		const auto current_token = ids.front();
+	while (!std::ranges::empty(remaining)) {
+		const auto current_token = remaining.front();
 		const std::string id(current_token);
-		ids.pop_front();
+		remaining = remaining.subspan(1);
 
 		if (id.contains("__")) {
 			return fail("Invalid identifier: " + id + " (Bash++ identifiers cannot contain double underscores)", current_token);
@@ -178,12 +178,12 @@ std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_en
 		if (data_member) {
 			chain.append(data_member.value());
 			current_class = data_member.value()->get_type().lock();
-			if (current_class == nullptr && !ids.empty()) {
-				return fail("Unexpected identifier after primitive object reference", ids.front());
+			if (current_class == nullptr && !std::ranges::empty(remaining)) {
+				return fail("Unexpected identifier after primitive object reference", remaining.front());
 			}
 		} else if (method) {
-			if (!ids.empty()) {
-				return fail("Unexpected identifier after method reference", ids.front());
+			if (!std::ranges::empty(remaining)) {
+				return fail("Unexpected identifier after method reference", remaining.front());
 			}
 			chain.set_method(method.value());
 		} else if (data_member.error() == LookupError::INACCESSIBLE || method.error() == LookupError::INACCESSIBLE) {

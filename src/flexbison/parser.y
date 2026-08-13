@@ -889,7 +889,7 @@ object_instantiation:
 			std::uint32_t column_number = @1.begin.column;
 			node->setPosition(line_number, column_number);
 			node->setEndPosition(@2.end.line, @2.end.column);
-			node->setIdentifier($2);
+			node->setRootIdentifier($2);
 			node->setLvalue(true);
 			node->setAddressOf(false);
 			node->setPointerDereference(false);
@@ -1254,7 +1254,7 @@ object_reference:
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 
-		node->setIdentifier($2);
+		node->setRootIdentifier($2);
 		node->setLvalue(false);
 		node->setSelfReference(false);
 
@@ -1267,7 +1267,7 @@ object_reference:
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@6.end.line, @6.end.column);
 
-		node->setIdentifier($3);
+		node->setRootIdentifier($3);
 		node->setLvalue(false);
 		node->setSelfReference(false);
 
@@ -1289,7 +1289,7 @@ object_reference_lvalue:
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 
-		node->setIdentifier($2);
+		node->setRootIdentifier($2);
 		node->setLvalue(true);
 		node->setSelfReference(false);
 
@@ -1304,7 +1304,7 @@ object_reference_lvalue:
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@6.end.line, @6.end.column);
 
-		node->setIdentifier($3);
+		node->setRootIdentifier($3);
 		node->setLvalue(true);
 		node->setSelfReference(false);
 
@@ -1326,7 +1326,7 @@ self_reference:
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 
-		node->setIdentifier(bpp::AST::Token<std::string>("this", @1.begin.line, @1.begin.column + 1));
+		node->setRootIdentifier(bpp::AST::Token<std::string>("this", @1.begin.line, @1.begin.column + 1));
 		node->setLvalue(false);
 		node->setSelfReference(true);
 
@@ -1339,7 +1339,7 @@ self_reference:
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@6.end.line, @6.end.column);
 
-		node->setIdentifier(bpp::AST::Token<std::string>("this", @3.begin.line, @3.begin.column + 1));
+		node->setRootIdentifier(bpp::AST::Token<std::string>("this", @3.begin.line, @3.begin.column + 1));
 		node->setLvalue(false);
 		node->setSelfReference(true);
 
@@ -1358,7 +1358,7 @@ self_reference:
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 
-		node->setIdentifier(bpp::AST::Token<std::string>("super", @1.begin.line, @1.begin.column + 1));
+		node->setRootIdentifier(bpp::AST::Token<std::string>("super", @1.begin.line, @1.begin.column + 1));
 		node->setLvalue(false);
 		node->setSelfReference(true);
 
@@ -1371,7 +1371,7 @@ self_reference:
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@6.end.line, @6.end.column);
 
-		node->setIdentifier(bpp::AST::Token<std::string>("super", @3.begin.line, @3.begin.column + 1));
+		node->setRootIdentifier(bpp::AST::Token<std::string>("super", @3.begin.line, @3.begin.column + 1));
 		node->setLvalue(false);
 		node->setSelfReference(true);
 
@@ -1393,7 +1393,7 @@ self_reference_lvalue:
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 
-		node->setIdentifier(bpp::AST::Token<std::string>("this", @1.begin.line, @1.begin.column + 1));
+		node->setRootIdentifier(bpp::AST::Token<std::string>("this", @1.begin.line, @1.begin.column + 1));
 		node->setLvalue(true);
 		node->setSelfReference(true);
 
@@ -1408,7 +1408,7 @@ self_reference_lvalue:
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@6.end.line, @6.end.column);
 
-		node->setIdentifier(bpp::AST::Token<std::string>("this", @3.begin.line, @3.begin.column + 1));
+		node->setRootIdentifier(bpp::AST::Token<std::string>("this", @3.begin.line, @3.begin.column + 1));
 		node->setLvalue(true);
 		node->setSelfReference(true);
 
@@ -1427,7 +1427,7 @@ self_reference_lvalue:
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@2.end.line, @2.end.column);
 
-		node->setIdentifier(bpp::AST::Token<std::string>("super", @1.begin.line, @1.begin.column + 1));
+		node->setRootIdentifier(bpp::AST::Token<std::string>("super", @1.begin.line, @1.begin.column + 1));
 		node->setLvalue(true);
 		node->setSelfReference(true);
 
@@ -1440,7 +1440,7 @@ self_reference_lvalue:
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@6.end.line, @6.end.column);
 
-		node->setIdentifier(bpp::AST::Token<std::string>("super", @3.begin.line, @3.begin.column + 1));
+		node->setRootIdentifier(bpp::AST::Token<std::string>("super", @3.begin.line, @3.begin.column + 1));
 		node->setLvalue(true);
 		node->setSelfReference(true);
 

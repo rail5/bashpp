@@ -44,10 +44,16 @@ std::string get_reference_chain_prettyprint_string(const ObjectReference::Refere
 	const auto root = chain.get_root().lock();
 	bpp_assert(root != nullptr, "Root object in reference chain is null in get_reference_chain_prettyprint_string()");
 	result += root->get_name();
-	for (auto it = std::next(chain.get_chain().begin()); it != chain.get_chain().end(); ++it) {
+	for (auto it = std::next(chain.begin()); it != chain.end(); ++it) {
 		auto obj = (*it).lock();
 		bpp_assert(obj != nullptr, "Data member in reference chain is null in get_reference_chain_prettyprint_string()");
 		result += '.' + obj->get_name();
+	}
+
+	if (chain.has_method()) {
+		auto method = chain.get_method().lock();
+		bpp_assert(method != nullptr, "Method in reference chain is null in get_reference_chain_prettyprint_string()");
+		result += '.' + method->get_name();
 	}
 
 	return result;
@@ -86,7 +92,7 @@ bpp::CodeGen::CodeSegment ObjectReference::generate_code(bpp::CodeGen::CodeGenSt
 	std::string current_address = root->get_address();
 	std::uint8_t indirection_level = root->is_pointer() ? 1 : 0;
 
-	for (auto it = std::next(ref.get_chain().begin()); it != ref.get_chain().end(); ++it) {
+	for (auto it = std::next(ref.begin()); it != ref.end(); ++it) {
 		const auto dm = (*it).lock();
 		bpp_assert(dm != nullptr, "Data member in reference chain is null in ObjectReference::generate_code()");
 
@@ -109,6 +115,13 @@ bpp::CodeGen::CodeSegment ObjectReference::generate_code(bpp::CodeGen::CodeGenSt
 		indirection_level = std::min(indirection_level + 1, 2);
 	}
 
+	if (ref.has_method()) {
+		auto method = ref.get_method().lock();
+		bpp_assert(method != nullptr, "Method in reference chain is null in ObjectReference::generate_code()");
+		result.add_main_code(method->get_address() + " "); // Call to the method
+	}
+
+	// Add the final address of the object, with appropriate encasement for any indirection
 	result.add_main_code(get_encased_reference(current_address, indirection_level));
 
 	return result;
@@ -118,27 +131,6 @@ PRETTYPRINT_IMPLEMENTATION(ObjectReference, {
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 	os << indent << "(ObjectReference "
 		<< get_reference_chain_prettyprint_string(get_reference_chain())
-		<< ")\n";
-	return os;
-})
-
-bpp::CodeGen::CodeSegment MethodCall::generate_code(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "MethodCall::generate_code() should be called with a non-null state pointer");
-	bpp_assert(!get_reference_chain().empty(), "MethodCall::generate_code() should be called with a non-empty reference chain");
-	bpp_assert(!method.expired(), "MethodCall::generate_code() should be called with a non-null method pointer");
-	bpp::CodeGen::CodeSegment result;
-
-	result.add_main_code(get_method()->get_address() + " "); // Call to the method
-	result.egalitarian_merge(ObjectReference::generate_code(state)); // Add implicit 'this' parameter
-
-	return result;
-}
-
-PRETTYPRINT_IMPLEMENTATION(MethodCall, {
-	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
-	os << indent << "(MethodCall "
-		<< get_reference_chain_prettyprint_string(get_reference_chain())
-		<< "." << get_method()->get_name()
 		<< ")\n";
 	return os;
 })

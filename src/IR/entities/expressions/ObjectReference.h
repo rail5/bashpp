@@ -19,11 +19,10 @@
 #include <memory>
 #include <filesystem>
 #include <deque>
+#include <expected>
 
 /**
  * @brief A reference to a non-primitive object in the IR
- *
- * This is a pure virtual base class.
  */
 namespace bpp::IR {
 
@@ -37,12 +36,15 @@ class ObjectReference : public CodeEntity {
 		class ReferenceChain {
 			private:
 				std::vector<std::weak_ptr<Object>> chain;
+				std::optional<std::weak_ptr<Method>> method = std::nullopt;
 			public:
 				explicit ReferenceChain(std::shared_ptr<Object> root) { chain.push_back(root); }
 				void append(std::shared_ptr<DataMember> datamember) { chain.push_back(datamember); }
 				std::weak_ptr<Object> get_root() const { return chain.front(); }
-				const std::vector<std::weak_ptr<Object>>& get_chain() const { return chain; }
 				std::weak_ptr<Object> get_final_object() const { return chain.back(); }
+				bool has_method() const { return method.has_value(); }
+				void set_method(std::weak_ptr<Method> m) { method = std::move(m); }
+				std::weak_ptr<Method> get_method() const { return method.value_or(std::weak_ptr<Method>()); }
 				std::size_t size() const { return chain.size(); }
 				bool empty() const { return chain.empty(); }
 
@@ -51,46 +53,35 @@ class ObjectReference : public CodeEntity {
 				auto end() { return chain.end(); }
 				auto begin() const { return chain.begin(); }
 				auto end() const { return chain.end(); }
+
+				ReferenceChain() = default;
+				~ReferenceChain() = default;
+				ReferenceChain(const ReferenceChain& other) = default;
+				ReferenceChain& operator=(const ReferenceChain& other) = default;
+				ReferenceChain(ReferenceChain&& other) noexcept = default;
+				ReferenceChain& operator=(ReferenceChain&& other) noexcept = default;
 		};
 
-		explicit ObjectReference(std::shared_ptr<Object> object) : reference(object) {}
-		explicit ObjectReference(ReferenceChain&& chain) : reference(std::move(chain)) {}
-
 		const ReferenceChain& get_reference_chain() const { return reference; }
+		void set_reference_chain(ReferenceChain&& chain) { reference = std::move(chain); }
 
 		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
 		PRETTYPRINT_OVERRIDE();
 
+		ObjectReference() = default;
+		~ObjectReference() = default;
+		ObjectReference(const ObjectReference& other) = default;
+		ObjectReference& operator=(const ObjectReference& other) = default;
+		ObjectReference(ObjectReference&& other) noexcept = default;
+		ObjectReference& operator=(ObjectReference&& other) noexcept = default;
 	private:
 		ReferenceChain reference;
 };
 
-class MethodCall : public ObjectReference {
-	private:
-		std::weak_ptr<Method> method;
-	public:
-		MethodCall() = delete;
-		MethodCall(std::shared_ptr<Object> object, std::shared_ptr<Method> method) : ObjectReference(object), method(method) {}
-		MethodCall(ReferenceChain&& chain, std::shared_ptr<Method> method) : ObjectReference(std::move(chain)), method(method) {}
-		void set_method(std::shared_ptr<Method> method) { this->method = method; }
-		std::shared_ptr<Method> get_method() const { return method.lock(); }
 
-		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
-		PRETTYPRINT_OVERRIDE();
-};
-
-
-struct EntityResolution {
-	std::shared_ptr<ObjectReference> ref = nullptr;
-
-	enum class ResolutionType : std::uint8_t {
-		OBJECT,
-		DATA_MEMBER_ACCESS,
-		METHOD_CALL,
-	} type;
-
-	std::optional<std::string> error_message = std::nullopt;
-	std::optional<AST::Token<std::string>> error_token = std::nullopt;
+struct EntityResolutionError {
+	std::string message;
+	std::optional<AST::Token<std::string>> token = std::nullopt;
 };
 
 template <typename T>
@@ -105,7 +96,7 @@ template <typename T>
 concept EitherStringsOrASTTokens = DequeOfStringsOrStringViews<T> || DequeOfASTTokens<T>;
 
 
-EntityResolution resolve_entity(
+std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_entity(
 	std::filesystem::path file,
 	std::shared_ptr<Entity> context,
 	EitherStringsOrASTTokens auto&& ids
@@ -121,28 +112,27 @@ EntityResolution resolve_entity(
 	bool self_reference = ids.front() == "this" || ids.front() == "super";
 	bool super = ids.front() == "super";
 
-	EntityResolution result;
-
 	std::string first_id(ids.front());
 	if (super) first_id = "this"; // For the purpose of looking up the object, treat @super as @this
 
 	auto obj = context->get_object(first_id);
 
 	if (obj == nullptr) {
+		EntityResolutionError result;
 		if (self_reference) {
-			result.error_message = "Cannot use @this or @super outside of a class context";
+			result.message = "Cannot use @this or @super outside of a class context";
 		} else {
-			result.error_message = "Object not found: " + std::string(ids.front());
+			result.message = "Object not found: " + std::string(ids.front());
 		}
 		if constexpr (provide_diagnostics) {
-			result.error_token = ids.front();
+			result.token = ids.front();
 			program->add_diagnostic({
 				{file},
 				ids.front().getLine(), ids.front().getCharPositionInLine(), ids.front().getValue().size(),
-				result.error_message.value(),
+				result.message,
 			});
 		}
-		return result;
+		return std::unexpected(std::move(result));
 	}
 
 	if constexpr (provide_diagnostics) {
@@ -156,16 +146,17 @@ EntityResolution resolve_entity(
 		bpp_assert(this_class != nullptr, "Object has no type in resolve_entity()");
 		const auto parent_class = this_class->get_parent_class();
 		if (parent_class == nullptr) {
-			result.error_message = this_class->get_name() + " has no parent class to reference with @super";
+			EntityResolutionError result;
+			result.message = this_class->get_name() + " has no parent class to reference with @super";
 			if constexpr (provide_diagnostics) {
-				result.error_token = ids.front();
+				result.token = ids.front();
 				program->add_diagnostic({
 					{file},
 					ids.front().getLine(), ids.front().getCharPositionInLine(), ids.front().getValue().size(),
-					result.error_message.value(),
+					result.message,
 				});
 			}
-			return result;
+			return std::unexpected(std::move(result));
 		}
 		auto faux_object = std::make_shared<Object>(*obj);
 		faux_object->set_name("super");
@@ -185,16 +176,17 @@ EntityResolution resolve_entity(
 		ids.pop_front();
 
 		if (id.contains("__")) {
-			result.error_message = "Invalid identifier: " + id + " (Bash++ identifiers cannot contain double underscores)";
+			EntityResolutionError result;
+			result.message = "Invalid identifier: " + id + " (Bash++ identifiers cannot contain double underscores)";
 			if constexpr (provide_diagnostics) {
-				result.error_token = current_token;
+				result.token = current_token;
 				program->add_diagnostic({
 					{file},
 					current_token.getLine(), current_token.getCharPositionInLine(), current_token.getValue().size(),
-					result.error_message.value(),
+					result.message,
 				});
 			}
-			return result;
+			return std::unexpected(std::move(result));
 		}
 
 		auto data_member = current_class->get_datamember(id, context);
@@ -204,63 +196,63 @@ EntityResolution resolve_entity(
 			chain.append(data_member.value());
 			current_class = data_member.value()->get_type().lock();
 			if (current_class == nullptr && !ids.empty()) {
-				result.error_message = "Unexpected identifier after primitive object reference";
+				EntityResolutionError result;
+				result.message = "Unexpected identifier after primitive object reference";
 				if constexpr (provide_diagnostics) {
-					result.error_token = current_token;
+					result.token = current_token;
 					program->add_diagnostic({
 						{file},
 						current_token.getLine(), current_token.getCharPositionInLine(), current_token.getValue().size(),
-						result.error_message.value(),
+						result.message,
 					});
 				}
-				return result;
+				return std::unexpected(std::move(result));
 			}
 		} else if (method) {
 			if (!ids.empty()) {
-				result.error_message = "Unexpected identifier after method reference";
+				EntityResolutionError result;
+				result.message = "Unexpected identifier after method reference";
 				if constexpr (provide_diagnostics) {
-					result.error_token = current_token;
+					result.token = current_token;
 					program->add_diagnostic({
 						{file},
 						current_token.getLine(), current_token.getCharPositionInLine(), current_token.getValue().size(),
-						result.error_message.value(),
+						result.message,
 					});
 				}
-				return result;
+				return std::unexpected(std::move(result));
 			}
-			result.ref = std::make_shared<MethodCall>(std::move(chain), method.value());
-			return result;
+			chain.set_method(method.value());
 		} else if (data_member.error() == LookupError::INACCESSIBLE || method.error() == LookupError::INACCESSIBLE) {
-			result.error_message = id + " is inaccessible in this context";
+			EntityResolutionError result;
+			result.message = id + " is inaccessible in this context";
 			if constexpr (provide_diagnostics) {
-				result.error_token = current_token;
+				result.token = current_token;
 				program->add_diagnostic({
 					{file},
 					current_token.getLine(), current_token.getCharPositionInLine(), current_token.getValue().size(),
-					result.error_message.value(),
+					result.message,
 				});
 			}
-			return result;
+			return std::unexpected(std::move(result));
 		} else {
 			auto latest_entity = obj;
 			if (!chain.empty()) latest_entity = chain.get_final_object().lock();
-			result.error_message = latest_entity->get_name() + " has no member named " + id;
+			EntityResolutionError result;
+			result.message = latest_entity->get_name() + " has no member named " + id;
 			if constexpr (provide_diagnostics) {
-				result.error_token = current_token;
+				result.token = current_token;
 				program->add_diagnostic({
 					{file},
 					current_token.getLine(), current_token.getCharPositionInLine(), current_token.getValue().size(),
-					result.error_message.value(),
+					result.message,
 				});
 			}
-			return result;
+			return std::unexpected(std::move(result));
 		}
 	}
 
-	// If we're here, it's a data member access, not a method call
-	// (Method call would've returned earlier)
-	result.ref = std::make_shared<ObjectReference>(std::move(chain));
-	return result;
+	return chain;
 }
 
 } // namespace bpp::IR

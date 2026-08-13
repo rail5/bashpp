@@ -34,7 +34,7 @@ bpp::CodeGen::CodeSegment DynamicCast::generate_code(bpp::CodeGen::CodeGenState*
 		if (this->target_variable.has_value()) return this->target_variable.value();
 		return "__dynamicCast" + std::to_string(state->dynamic_cast_counter++);
 	}();
-	
+
 	// If no target variable was explicitly set, this dynamic cast is being used as a temporary value
 	// so we should unset the result variable after using it to avoid cluttering the generated code with unnecessary variables.
 	if (!target_variable.has_value()) result.add_post_code("\nunset " + result_variable + "\n");
@@ -54,7 +54,7 @@ bpp::CodeGen::CodeSegment DynamicCast::generate_code(bpp::CodeGen::CodeGenState*
 		for (const auto& part : cast_to.get_main_code()) result += part;
 		return result;
 	}();
-	
+
 	result.add_pre_code("bpp____dynamic_cast \"" + cast_to_value + "\""
 		+ " \"" + result_variable + "\""
 		+ " \"" + reference_value + "\"\n");
@@ -67,10 +67,11 @@ bpp::CodeGen::CodeSegment DynamicCast::generate_code(bpp::CodeGen::CodeGenState*
 PRETTYPRINT_IMPLEMENTATION(DynamicCast, {
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 	os << indent << "(DynamicCast\n"
-		<< indent << "TargetType:\n";
+		<< indent << "TargetType: ";
 	if (std::holds_alternative<RawCode>(target_type)) {
-		os << indent << std::get<RawCode>(target_type) << "\n";
+		os << std::get<RawCode>(target_type) << "\n";
 	} else if (std::holds_alternative<std::shared_ptr<Entity>>(target_type)) {
+		os << "\n";
 		auto entity = std::get<std::shared_ptr<Entity>>(target_type);
 		entity->prettyPrint(os, indentation_level + 1);
 	} else {

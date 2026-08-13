@@ -96,6 +96,9 @@ bool Method::add_parameter(std::shared_ptr<MethodParameter> parameter) {
 		auto dynamic_cast_builtin = containing_program->get_dynamic_cast_function();
 		bpp_assert(dynamic_cast_builtin != nullptr, "Containing program does not have a dynamic_cast builtin");
 		dynamic_cast_builtin->mark_referenced_by(parameter);
+
+		// Add to our local list of owned objects, so that it can be found by name later
+		local_objects.add(parameter);
 	}
 
 	parameters.push_back(parameter);

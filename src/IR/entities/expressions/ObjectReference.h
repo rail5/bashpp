@@ -109,6 +109,24 @@ std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_en
 	// If not, then we'll skip that
 	constexpr bool provide_diagnostics = DequeOfASTTokens<decltype(ids)>;
 
+	// Helper for failures:
+	auto fail = [&](std::string message, auto const& token) -> std::unexpected<EntityResolutionError> {
+		EntityResolutionError result;
+		result.message = std::move(message);
+
+		if constexpr (provide_diagnostics) {
+			result.token = token;
+			program->add_diagnostic({
+				{file},
+				token.getLine(), token.getCharPositionInLine(),
+				static_cast<std::uint32_t>(token.getValue().size()),
+				result.message,
+			});
+		}
+
+		return std::unexpected(std::move(result));
+	};
+
 	bool self_reference = ids.front() == "this" || ids.front() == "super";
 	bool super = ids.front() == "super";
 
@@ -118,21 +136,12 @@ std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_en
 	auto obj = context->get_object(first_id);
 
 	if (obj == nullptr) {
-		EntityResolutionError result;
-		if (self_reference) {
-			result.message = "Cannot use @this or @super outside of a class context";
-		} else {
-			result.message = "Object not found: " + std::string(ids.front());
-		}
-		if constexpr (provide_diagnostics) {
-			result.token = ids.front();
-			program->add_diagnostic({
-				{file},
-				ids.front().getLine(), ids.front().getCharPositionInLine(), ids.front().getValue().size(),
-				result.message,
-			});
-		}
-		return std::unexpected(std::move(result));
+		return fail(
+			self_reference
+				? "Cannot use @this or @super outside of a class context"
+				: "Object not found: " + std::string(ids.front()),
+			ids.front()
+		);
 	}
 
 	if constexpr (provide_diagnostics) {
@@ -146,17 +155,7 @@ std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_en
 		bpp_assert(this_class != nullptr, "Object has no type in resolve_entity()");
 		const auto parent_class = this_class->get_parent_class();
 		if (parent_class == nullptr) {
-			EntityResolutionError result;
-			result.message = this_class->get_name() + " has no parent class to reference with @super";
-			if constexpr (provide_diagnostics) {
-				result.token = ids.front();
-				program->add_diagnostic({
-					{file},
-					ids.front().getLine(), ids.front().getCharPositionInLine(), ids.front().getValue().size(),
-					result.message,
-				});
-			}
-			return std::unexpected(std::move(result));
+			return fail(this_class->get_name() + " has no parent class to reference with @super", ids.front());
 		}
 		auto faux_object = std::make_shared<Object>(*obj);
 		faux_object->set_name("super");
@@ -176,17 +175,7 @@ std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_en
 		ids.pop_front();
 
 		if (id.contains("__")) {
-			EntityResolutionError result;
-			result.message = "Invalid identifier: " + id + " (Bash++ identifiers cannot contain double underscores)";
-			if constexpr (provide_diagnostics) {
-				result.token = current_token;
-				program->add_diagnostic({
-					{file},
-					current_token.getLine(), current_token.getCharPositionInLine(), current_token.getValue().size(),
-					result.message,
-				});
-			}
-			return std::unexpected(std::move(result));
+			return fail("Invalid identifier: " + id + " (Bash++ identifiers cannot contain double underscores)", current_token);
 		}
 
 		auto data_member = current_class->get_datamember(id, context);
@@ -196,59 +185,19 @@ std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_en
 			chain.append(data_member.value());
 			current_class = data_member.value()->get_type().lock();
 			if (current_class == nullptr && !ids.empty()) {
-				EntityResolutionError result;
-				result.message = "Unexpected identifier after primitive object reference";
-				if constexpr (provide_diagnostics) {
-					result.token = current_token;
-					program->add_diagnostic({
-						{file},
-						current_token.getLine(), current_token.getCharPositionInLine(), current_token.getValue().size(),
-						result.message,
-					});
-				}
-				return std::unexpected(std::move(result));
+				return fail("Unexpected identifier after primitive object reference", ids.front());
 			}
 		} else if (method) {
 			if (!ids.empty()) {
-				EntityResolutionError result;
-				result.message = "Unexpected identifier after method reference";
-				if constexpr (provide_diagnostics) {
-					result.token = current_token;
-					program->add_diagnostic({
-						{file},
-						current_token.getLine(), current_token.getCharPositionInLine(), current_token.getValue().size(),
-						result.message,
-					});
-				}
-				return std::unexpected(std::move(result));
+				return fail("Unexpected identifier after method reference", ids.front());
 			}
 			chain.set_method(method.value());
 		} else if (data_member.error() == LookupError::INACCESSIBLE || method.error() == LookupError::INACCESSIBLE) {
-			EntityResolutionError result;
-			result.message = id + " is inaccessible in this context";
-			if constexpr (provide_diagnostics) {
-				result.token = current_token;
-				program->add_diagnostic({
-					{file},
-					current_token.getLine(), current_token.getCharPositionInLine(), current_token.getValue().size(),
-					result.message,
-				});
-			}
-			return std::unexpected(std::move(result));
+			return fail(id + " is inaccessible in this context", current_token);
 		} else {
 			auto latest_entity = obj;
 			if (!chain.empty()) latest_entity = chain.get_final_object().lock();
-			EntityResolutionError result;
-			result.message = latest_entity->get_name() + " has no member named " + id;
-			if constexpr (provide_diagnostics) {
-				result.token = current_token;
-				program->add_diagnostic({
-					{file},
-					current_token.getLine(), current_token.getCharPositionInLine(), current_token.getValue().size(),
-					result.message,
-				});
-			}
-			return std::unexpected(std::move(result));
+			return fail(latest_entity->get_name() + " has no member named " + id, current_token);
 		}
 	}
 

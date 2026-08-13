@@ -10,10 +10,17 @@
 #include <IR/entities/Entity.h>
 #include <IR/entities/NamedEntity.h>
 
+#include <expected>
+
 namespace bpp::IR {
 
 template <typename T>
 concept ClassMember = std::is_same_v<T, Method> || std::is_same_v<T, DataMember>;
+
+enum class LookupError : std::uint8_t {
+	NOT_FOUND,
+	INACCESSIBLE,
+};
 
 class Class : public Entity, public NamedEntity, public std::enable_shared_from_this<Class> {
 	private:
@@ -23,7 +30,7 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		std::vector<std::shared_ptr<DataMember>> datamembers;
 
 		template <ClassMember T>
-		std::shared_ptr<T> get_member(const std::string& name, std::shared_ptr<Entity> context) const;
+		std::expected<std::shared_ptr<T>, LookupError> get_member(const std::string& name, std::shared_ptr<Entity> context) const;
 	public:
 		Class() = delete;
 		explicit Class(const std::string& name) { set_name(name); }
@@ -61,14 +68,13 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		 *
 		 * If the method is private, it can only be returned if the context is the same as the owning class
 		 *
-		 * If the method is proteted, it can only be returned if the context is the same as the owning class, or is a class derived from the owning class
+		 * If the method is protected, it can only be returned if the context is the same as the owning class, or is a class derived from the owning class
 		 * 
 		 * @param name The name of the method to get
 		 * @param context The context from which the method is being requested
-		 * @return std::shared_ptr<Method> The method, or nullptr if it doesn't exist
-		 * @throws bpp::ErrorHandling::VisibilityError if the context does not permit access
+		 * @return std::expected<std::shared_ptr<Method>, LookupError> The method, or a LookupError if it doesn't exist or is inaccessible
 		 */
-		std::shared_ptr<Method> get_method(const std::string& name, std::shared_ptr<Entity> context) const;
+		std::expected<std::shared_ptr<Method>, LookupError> get_method(const std::string& name, std::shared_ptr<Entity> context) const;
 
 		/**
 		 * @brief Get a data member by name
@@ -79,14 +85,13 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		 *
 		 * If the data member is private, it can only be returned if the context is the same as the owning class
 		 *
-		 * If the data member is proteted, it can only be returned if the context is the same as the owning class, or is a class derived from the owning class
+		 * If the data member is protected, it can only be returned if the context is the same as the owning class, or is a class derived from the owning class
 		 * 
 		 * @param name The name of the data member to get
 		 * @param context The context from which the data member is being requested
-		 * @return std::shared_ptr<DataMember> The data member, or nullptr if it doesn't exist
-		 * @throws bpp::ErrorHandling::VisibilityError if the context does not permit access
+		 * @return std::expected<std::shared_ptr<DataMember>, LookupError> The data member, or a LookupError if it doesn't exist or is inaccessible
 		 */
-		std::shared_ptr<DataMember> get_datamember(const std::string& name, std::shared_ptr<Entity> context) const;
+		std::expected<std::shared_ptr<DataMember>, LookupError> get_datamember(const std::string& name, std::shared_ptr<Entity> context) const;
 
 		/**
 		 * @brief Get a method by name without checking the context against visibility rules

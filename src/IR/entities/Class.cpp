@@ -8,7 +8,6 @@
 #include "Method.h"
 #include "DataMember.h"
 
-#include <error/VisibilityError.h>
 #include <error/InternalError.h>
 
 namespace bpp::IR {
@@ -97,7 +96,7 @@ bool Class::add_datamember(std::shared_ptr<DataMember> datamember) {
 }
 
 template <ClassMember T>
-std::shared_ptr<T> Class::get_member(const std::string& name, std::shared_ptr<Entity> context) const {
+std::expected<std::shared_ptr<T>, LookupError> Class::get_member(const std::string& name, std::shared_ptr<Entity> context) const {
 	const std::vector<std::shared_ptr<T>>* container = nullptr;
 	// The following static_assert is probably redundant since the concept ClassMember is restricted to one of those two types
 	static_assert(std::is_same_v<T, Method> || std::is_same_v<T, DataMember>, "T must be either Method or DataMember");
@@ -128,13 +127,13 @@ std::shared_ptr<T> Class::get_member(const std::string& name, std::shared_ptr<En
 		// If we're here:
 		// - The class was found
 		// - Visibility rules denied access given the context
-		throw bpp::ErrorHandling::VisibilityError();
+		return std::unexpected(LookupError::INACCESSIBLE);
 	}
 
-	return nullptr;
+	return std::unexpected(LookupError::NOT_FOUND);
 }
 
-std::shared_ptr<Method> Class::get_method(const std::string& name, std::shared_ptr<Entity> context) const {
+std::expected<std::shared_ptr<Method>, LookupError> Class::get_method(const std::string& name, std::shared_ptr<Entity> context) const {
 	return get_member<Method>(name, context);
 }
 
@@ -146,7 +145,7 @@ std::shared_ptr<Method> Class::get_method_UNSAFE(const std::string& name) const 
 	return nullptr;
 }
 
-std::shared_ptr<DataMember> Class::get_datamember(const std::string& name, std::shared_ptr<Entity> context) const {
+std::expected<std::shared_ptr<DataMember>, LookupError> Class::get_datamember(const std::string& name, std::shared_ptr<Entity> context) const {
 	return get_member<DataMember>(name, context);
 }
 

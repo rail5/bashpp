@@ -89,6 +89,13 @@ bool Method::add_parameter(std::shared_ptr<MethodParameter> parameter) {
 		dynamic_cast_entity->add("$" + std::to_string(parameter->get_index()));
 		// Set the initial value of this parameter to be the result of the dynamic cast
 		parameter->set_initial_value(dynamic_cast_entity);
+
+		// Mark the dynamic_cast builtin as referenced by this parameter
+		auto containing_program = get_containing_program().lock();
+		bpp_assert(containing_program != nullptr, "MethodParameter does not have a containing program");
+		auto dynamic_cast_builtin = containing_program->get_dynamic_cast_function();
+		bpp_assert(dynamic_cast_builtin != nullptr, "Containing program does not have a dynamic_cast builtin");
+		dynamic_cast_builtin->mark_referenced_by(parameter);
 	}
 
 	parameters.push_back(parameter);

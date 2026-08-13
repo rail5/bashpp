@@ -116,12 +116,6 @@ std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_en
 
 		if constexpr (provide_diagnostics) {
 			result.token = token;
-			program->add_diagnostic({
-				{file},
-				token.getLine(), token.getCharPositionInLine(),
-				static_cast<std::uint32_t>(token.getValue().size()),
-				result.message,
-			});
 		}
 
 		return std::unexpected(std::move(result));
@@ -164,7 +158,7 @@ std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_en
 	}
 
 	auto current_class = obj->get_type().lock();
-	bpp_assert(context != nullptr, "Object has no type in resolve_entity()");
+	bpp_assert(current_class != nullptr, "Object has no type in resolve_entity()");
 	ids.pop_front();
 
 	ObjectReference::ReferenceChain chain(obj);

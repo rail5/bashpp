@@ -42,13 +42,7 @@ void Listener::enter(ObjectReference* node) {
 		}
 	}
 
-	if (resolution.is_data_member_access()) {
-		current_code_entity->add(resolution.data_member_access);
-	} else if (resolution.is_method_call()) {
-		current_code_entity->add(resolution.method_call);
-	} else if (resolution.is_object()) {
-		current_code_entity->add(resolution.object);
-	}
+	current_code_entity->add(resolution.ref);
 }
 
 template <>

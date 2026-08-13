@@ -7,7 +7,7 @@
 #pragma once
 
 #include <IR/bpp.h>
-#include <IR/entities/Entity.h>
+#include <IR/entities/CodeEntity.h>
 #include <IR/entities/Program.h>
 #include <IR/entities/Object.h>
 #include <IR/entities/DataMember.h>
@@ -27,17 +27,30 @@
  */
 namespace bpp::IR {
 
-class ObjectReference : public Entity {
+class ObjectReference : public CodeEntity {
 	public:
 		/**
-		 * @brief A chain starting from a root object, following to an inner (data member) object, etc, ultimately ending at the referenced object.
+		 * @brief A chain starting from a root object and following a series of data member accesses to reach a final object.
+		 *
+		 * Each element after the root must be a pointer to a DataMember of the previous object in the chain.
 		 */
-		struct ReferenceChain {
-			std::weak_ptr<Object> root;
-			std::vector<std::weak_ptr<DataMember>> chain;
+		class ReferenceChain {
+			private:
+				std::vector<std::weak_ptr<Object>> chain;
+			public:
+				explicit ReferenceChain(std::shared_ptr<Object> root) { chain.push_back(root); }
+				void append(std::shared_ptr<DataMember> datamember) { chain.push_back(datamember); }
+				std::weak_ptr<Object> get_root() const { return chain.front(); }
+				const std::vector<std::weak_ptr<Object>>& get_chain() const { return chain; }
+				std::weak_ptr<Object> get_final_object() const { return chain.back(); }
+				std::size_t size() const { return chain.size(); }
+				bool empty() const { return chain.empty(); }
 
-			explicit ReferenceChain(std::shared_ptr<Object> root) : root(root) {}
-			void append(std::shared_ptr<DataMember> datamember) { chain.push_back(datamember); }
+				// Iterators
+				auto begin() { return chain.begin(); }
+				auto end() { return chain.end(); }
+				auto begin() const { return chain.begin(); }
+				auto end() const { return chain.end(); }
 		};
 
 		explicit ObjectReference(std::shared_ptr<Object> object) : reference(object) {}
@@ -46,14 +59,8 @@ class ObjectReference : public Entity {
 		const ReferenceChain& get_reference_chain() const { return reference; }
 
 		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
-		PRETTYPRINT_OVERRIDE() = 0;
+		PRETTYPRINT_OVERRIDE();
 
-		virtual ~ObjectReference() = 0; // Pure virtual destructor to prevent direct instantiation
-
-		ObjectReference(const ObjectReference&) = default;
-		ObjectReference(ObjectReference&&) = default;
-		ObjectReference& operator=(const ObjectReference&) = default;
-		ObjectReference& operator=(ObjectReference&&) = default;
 	private:
 		ReferenceChain reference;
 };
@@ -70,41 +77,20 @@ class MethodCall : public ObjectReference {
 
 		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
 		PRETTYPRINT_OVERRIDE();
-
-		~MethodCall() override = default;
-		MethodCall(const MethodCall&) = default;
-		MethodCall(MethodCall&&) = default;
-		MethodCall& operator=(const MethodCall&) = default;
-		MethodCall& operator=(MethodCall&&) = default;
-};
-
-class DataMemberAccess : public ObjectReference {
-	public:
-		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
-		PRETTYPRINT_OVERRIDE();
-
-		DataMemberAccess() = delete;
-		explicit DataMemberAccess(std::shared_ptr<Object> object) : ObjectReference(object) {}
-		explicit DataMemberAccess(ReferenceChain&& chain) : ObjectReference(std::move(chain)) {}
-		~DataMemberAccess() override = default;
-		DataMemberAccess(const DataMemberAccess&) = default;
-		DataMemberAccess(DataMemberAccess&&) = default;
-		DataMemberAccess& operator=(const DataMemberAccess&) = default;
-		DataMemberAccess& operator=(DataMemberAccess&&) = default;
 };
 
 
 struct EntityResolution {
-	std::shared_ptr<Object> object = nullptr;
-	std::shared_ptr<DataMemberAccess> data_member_access = nullptr;
-	std::shared_ptr<MethodCall> method_call = nullptr;
+	std::shared_ptr<ObjectReference> ref = nullptr;
+
+	enum class ResolutionType : std::uint8_t {
+		OBJECT,
+		DATA_MEMBER_ACCESS,
+		METHOD_CALL,
+	} type;
 
 	std::optional<std::string> error_message = std::nullopt;
 	std::optional<AST::Token<std::string>> error_token = std::nullopt;
-
-	bool is_object() const { return object != nullptr; }
-	bool is_data_member_access() const { return data_member_access != nullptr; }
-	bool is_method_call() const { return method_call != nullptr; }
 };
 
 template <typename T>
@@ -140,9 +126,9 @@ EntityResolution resolve_entity(
 	std::string first_id(ids.front());
 	if (super) first_id = "this"; // For the purpose of looking up the object, treat @super as @this
 
-	result.object = context->get_object(first_id);
+	auto obj = context->get_object(first_id);
 
-	if (result.object == nullptr) {
+	if (obj == nullptr) {
 		if (self_reference) {
 			result.error_message = "Cannot use @this or @super outside of a class context";
 		} else {
@@ -160,17 +146,16 @@ EntityResolution resolve_entity(
 	}
 
 	if constexpr (provide_diagnostics) {
-		result.object->add_reference_position({file, ids.front().getLine(), ids.front().getCharPositionInLine()});
+		obj->add_reference_position({file, ids.front().getLine(), ids.front().getCharPositionInLine()});
 	}
 
 	// Special-case: if @super, create a "faux" object as a copy of the 'this' pointer,
 	// but with the type of the parent class.
 	if (super) {
-		const auto this_class = result.object->get_type().lock();
+		const auto this_class = obj->get_type().lock();
 		bpp_assert(this_class != nullptr, "Object has no type in resolve_entity()");
 		const auto parent_class = this_class->get_parent_class();
 		if (parent_class == nullptr) {
-			result.object = nullptr;
 			result.error_message = this_class->get_name() + " has no parent class to reference with @super";
 			if constexpr (provide_diagnostics) {
 				result.error_token = ids.front();
@@ -182,17 +167,17 @@ EntityResolution resolve_entity(
 			}
 			return result;
 		}
-		auto faux_object = std::make_shared<Object>(*result.object);
+		auto faux_object = std::make_shared<Object>(*obj);
 		faux_object->set_name("super");
 		faux_object->set_type(parent_class);
-		result.object = std::move(faux_object);
+		obj = std::move(faux_object);
 	}
 
-	auto current_class = result.object->get_type().lock();
+	auto current_class = obj->get_type().lock();
 	bpp_assert(context != nullptr, "Object has no type in resolve_entity()");
 	ids.pop_front();
 
-	DataMemberAccess::ReferenceChain chain(result.object);
+	ObjectReference::ReferenceChain chain(obj);
 
 	while (!ids.empty()) {
 		const auto current_token = ids.front();
@@ -200,7 +185,6 @@ EntityResolution resolve_entity(
 		ids.pop_front();
 
 		if (id.contains("__")) {
-			result.object = nullptr;
 			result.error_message = "Invalid identifier: " + id + " (Bash++ identifiers cannot contain double underscores)";
 			if constexpr (provide_diagnostics) {
 				result.error_token = current_token;
@@ -220,7 +204,6 @@ EntityResolution resolve_entity(
 			chain.append(data_member.value());
 			current_class = data_member.value()->get_type().lock();
 			if (current_class == nullptr && !ids.empty()) {
-				result.object = nullptr;
 				result.error_message = "Unexpected identifier after primitive object reference";
 				if constexpr (provide_diagnostics) {
 					result.error_token = current_token;
@@ -233,10 +216,7 @@ EntityResolution resolve_entity(
 				return result;
 			}
 		} else if (method) {
-			result.method_call = std::make_shared<MethodCall>(std::move(chain), method.value());
 			if (!ids.empty()) {
-				result.method_call = nullptr;
-				result.object = nullptr;
 				result.error_message = "Unexpected identifier after method reference";
 				if constexpr (provide_diagnostics) {
 					result.error_token = current_token;
@@ -248,9 +228,9 @@ EntityResolution resolve_entity(
 				}
 				return result;
 			}
+			result.ref = std::make_shared<MethodCall>(std::move(chain), method.value());
 			return result;
 		} else if (data_member.error() == LookupError::INACCESSIBLE || method.error() == LookupError::INACCESSIBLE) {
-			result.object = nullptr;
 			result.error_message = id + " is inaccessible in this context";
 			if constexpr (provide_diagnostics) {
 				result.error_token = current_token;
@@ -262,9 +242,8 @@ EntityResolution resolve_entity(
 			}
 			return result;
 		} else {
-			auto latest_entity = result.object;
-			if (!chain.chain.empty()) latest_entity = chain.chain.back().lock();
-			result.object = nullptr;
+			auto latest_entity = obj;
+			if (!chain.empty()) latest_entity = chain.get_final_object().lock();
 			result.error_message = latest_entity->get_name() + " has no member named " + id;
 			if constexpr (provide_diagnostics) {
 				result.error_token = current_token;
@@ -280,8 +259,7 @@ EntityResolution resolve_entity(
 
 	// If we're here, it's a data member access, not a method call
 	// (Method call would've returned earlier)
-	result.data_member_access = std::make_shared<DataMemberAccess>(std::move(chain));
-	result.object = nullptr;
+	result.ref = std::make_shared<ObjectReference>(std::move(chain));
 	return result;
 }
 

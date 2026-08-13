@@ -37,19 +37,19 @@ std::string get_encased_reference(const std::string& ref, std::uint8_t indirecti
 
 #ifndef NDEBUG
 std::string get_reference_chain_prettyprint_string(const ObjectReference::ReferenceChain& chain) {
+	// E.g.: @object.inner.member
 	std::string result = "@";
-	if (auto root = chain.root.lock()) {
-		result += root->get_name();
-	} else {
-		result += "<expired>";
+
+	bpp_assert(!chain.empty(), "Reference chain is empty in get_reference_chain_prettyprint_string()");
+	const auto root = chain.get_root().lock();
+	bpp_assert(root != nullptr, "Root object in reference chain is null in get_reference_chain_prettyprint_string()");
+	result += root->get_name();
+	for (auto it = std::next(chain.get_chain().begin()); it != chain.get_chain().end(); ++it) {
+		auto obj = (*it).lock();
+		bpp_assert(obj != nullptr, "Data member in reference chain is null in get_reference_chain_prettyprint_string()");
+		result += '.' + obj->get_name();
 	}
-	for (const auto& dm_weak : chain.chain) {
-		if (auto dm = dm_weak.lock()) {
-			result += "." + dm->get_name();
-		} else {
-			result += ".<expired>";
-		}
-	}
+
 	return result;
 }
 #endif // NDEBUG
@@ -58,7 +58,8 @@ std::string get_reference_chain_prettyprint_string(const ObjectReference::Refere
 
 bpp::CodeGen::CodeSegment ObjectReference::generate_code(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "ObjectReference::generate_code() should be called with a non-null state pointer");
-	bpp_assert(!get_reference_chain().root.expired(), "ObjectReference::generate_code() should be called with a non-null object pointer");
+	bpp_assert(!get_reference_chain().empty(), "ObjectReference::generate_code() should be called with a non-empty reference chain");
+	bpp_assert(!get_reference_chain().get_root().expired(), "ObjectReference::generate_code() should be called with a non-null object pointer");
 	bpp::CodeGen::CodeSegment result;
 
 	/* The purpose of ObjectReference::generate_code is to calculate the address of the final object in the reference chain
@@ -80,13 +81,13 @@ bpp::CodeGen::CodeSegment ObjectReference::generate_code(bpp::CodeGen::CodeGenSt
 	 *                                                                         etc
 	 */
 	const auto& ref = get_reference_chain();
-	const auto root = ref.root.lock();
+	const auto root = ref.get_root().lock();
 
 	std::string current_address = root->get_address();
 	std::uint8_t indirection_level = root->is_pointer() ? 1 : 0;
 
-	for (const auto& dm_weak : ref.chain) {
-		const auto dm = dm_weak.lock();
+	for (auto it = std::next(ref.get_chain().begin()); it != ref.get_chain().end(); ++it) {
+		const auto dm = (*it).lock();
 		bpp_assert(dm != nullptr, "Data member in reference chain is null in ObjectReference::generate_code()");
 
 		if (indirection_level > 0) {
@@ -113,9 +114,17 @@ bpp::CodeGen::CodeSegment ObjectReference::generate_code(bpp::CodeGen::CodeGenSt
 	return result;
 }
 
+PRETTYPRINT_IMPLEMENTATION(ObjectReference, {
+	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
+	os << indent << "(ObjectReference "
+		<< get_reference_chain_prettyprint_string(get_reference_chain())
+		<< ")\n";
+	return os;
+})
+
 bpp::CodeGen::CodeSegment MethodCall::generate_code(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "MethodCall::generate_code() should be called with a non-null state pointer");
-	bpp_assert(!get_reference_chain().root.expired(), "MethodCall::generate_code() should be called with a non-null object pointer");
+	bpp_assert(!get_reference_chain().empty(), "MethodCall::generate_code() should be called with a non-empty reference chain");
 	bpp_assert(!method.expired(), "MethodCall::generate_code() should be called with a non-null method pointer");
 	bpp::CodeGen::CodeSegment result;
 
@@ -133,23 +142,5 @@ PRETTYPRINT_IMPLEMENTATION(MethodCall, {
 		<< ")\n";
 	return os;
 })
-
-bpp::CodeGen::CodeSegment DataMemberAccess::generate_code(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "DataMemberAccess::generate_code() should be called with a non-null state pointer");
-	bpp_assert(!get_reference_chain().root.expired(), "DataMemberAccess::generate_code() should be called with a non-null object pointer");
-	bpp_assert(!get_reference_chain().chain.empty(), "DataMemberAccess::generate_code() should be called with a non-empty reference chain");
-
-	return ObjectReference::generate_code(state);
-}
-
-PRETTYPRINT_IMPLEMENTATION(DataMemberAccess, {
-	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
-	os << indent << "(DataMemberAccess "
-		<< get_reference_chain_prettyprint_string(get_reference_chain())
-		<< ")\n";
-	return os;
-})
-
-ObjectReference::~ObjectReference() = default;
 
 } // namespace bpp::IR

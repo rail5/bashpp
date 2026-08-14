@@ -38,8 +38,13 @@ class ObjectReference : public CodeEntity {
 			private:
 				std::vector<std::weak_ptr<Object>> chain;
 				std::optional<std::weak_ptr<Method>> method = std::nullopt;
+
+				std::shared_ptr<Object> owned_synthetic_root = nullptr; // If the root object is a synthetic object, we need to own it to keep it alive
 			public:
-				explicit ReferenceChain(std::shared_ptr<Object> root) { chain.push_back(root); }
+				explicit ReferenceChain(std::shared_ptr<Object> root, bool own = false) {
+					chain.push_back(root);
+					if (own) owned_synthetic_root = std::move(root);
+				}
 				void append(std::shared_ptr<DataMember> datamember) { chain.push_back(datamember); }
 				std::weak_ptr<Object> get_root() const { return chain.front(); }
 				std::weak_ptr<Object> get_final_object() const { return chain.back(); }
@@ -152,7 +157,9 @@ std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_en
 		if (parent_class == nullptr) {
 			return fail(this_class->get_name() + " has no parent class to reference with @super", first);
 		}
-		auto faux_object = std::make_shared<Object>(*obj);
+		const auto this_ptr = std::dynamic_pointer_cast<ThisPtr>(obj);
+		bpp_assert(this_ptr != nullptr, "Object is not a ThisPtr in resolve_entity() when resolving @super");
+		auto faux_object = std::make_shared<ThisPtr>(*this_ptr);
 		faux_object->set_name("super");
 		faux_object->set_type(parent_class);
 		obj = std::move(faux_object);
@@ -161,7 +168,9 @@ std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_en
 	auto current_class = obj->get_type().lock();
 	bpp_assert(current_class != nullptr, "Object has no type in resolve_entity()");
 	auto remaining = ids.subspan(1);
-	ObjectReference::ReferenceChain chain(obj);
+
+	// If 'super', the root object is a synthetic object (one we created on the fly), so we need to own it to keep it alive.
+	ObjectReference::ReferenceChain chain(obj, super);
 
 	while (!std::ranges::empty(remaining)) {
 		const auto current_token = remaining.front();

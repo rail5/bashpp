@@ -10,47 +10,12 @@
 #include <IR/entities/BashFunction.h>
 #include <IR/entities/Object.h>
 #include <IR/entities/AddressableEntity.h>
+#include <IR/entities/MethodParameter.h>
 
 #include <vector>
 #include <memory>
 
 namespace bpp::IR {
-
-/**
- * @brief A parameter to a method in a class
- *
- * Note that some parameters may be removed from the method's parameter list by optimizations, if they are unused.
- *
- * For this reason it's important to retain the index of the parameter in the original parameter list,
- * so that it can be matched up with the corresponding argument in the method call (e.g. `local arg3="$3"`),
- * rather than just relying on the parameter's position in the parameter list.
- */
-class MethodParameter : public Object {
-	protected:
-		/// The index of this parameter in the method's parameter list (1-based)
-		std::uint32_t index = 1;
-		std::weak_ptr<Method> containing_method;
-	public:
-		MethodParameter() = delete;
-		explicit MethodParameter(std::shared_ptr<Method> method) : containing_method(method) {}
-		std::uint32_t get_index() const { return index; }
-		void set_index(std::uint32_t index) { this->index = index; }
-
-		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
-};
-
-/**
- * @brief The implicit `this` parameter of a method, which refers to the object on which the method was called.
- */
-class ThisPtr : public MethodParameter {
-	public:
-		ThisPtr() = delete;
-		explicit ThisPtr(std::shared_ptr<Method> containing_method);
-
-		std::string get_address() const override { return "__this"; }
-
-		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
-};
 
 /**
  * @brief A method in a class

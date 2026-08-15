@@ -27,7 +27,7 @@ class Object : public Entity, public NamedEntity, public AddressableEntity {
 	protected:
 		bool m_is_pointer = false;
 
-		std::weak_ptr<Class> type;
+		std::weak_ptr<const Class> type;
 
 		// Initialization information:
 		/// If a pointer or primitive, the initial value (if any)
@@ -41,8 +41,8 @@ class Object : public Entity, public NamedEntity, public AddressableEntity {
 		bool is_pointer() const { return m_is_pointer; }
 		void set_is_pointer(bool is_pointer) { m_is_pointer = is_pointer; }
 
-		std::weak_ptr<Class> get_type() const { return type; }
-		void set_type(std::weak_ptr<Class> type) { this->type = std::move(type); }
+		std::weak_ptr<const Class> get_type() const { return type; }
+		void set_type(std::weak_ptr<const Class> type) { this->type = std::move(type); }
 
 		bool is_primitive() const { return type.expired(); }
 

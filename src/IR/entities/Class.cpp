@@ -6,11 +6,26 @@
 
 #include "Class.h"
 #include "Method.h"
+#include "MethodParameter.h"
 #include "DataMember.h"
 
 #include <error/InternalError.h>
 
 namespace bpp::IR {
+
+void Class::init_special_pointers() const {
+	if (special_pointers_initialized) return;
+
+	this_ptr = std::make_shared<ThisPtr>(shared_from_this());
+	this_ptr->set_containing_program(containing_program);
+
+	if (auto parent = parent_class.lock()) {
+		super_ptr = std::make_shared<ThisPtr>(parent);
+		super_ptr->set_name("super");
+	}
+
+	special_pointers_initialized = true;
+}
 
 bool Class::is_derived_from(std::shared_ptr<const Class> other) const {
 	auto parent = this->parent_class.lock();

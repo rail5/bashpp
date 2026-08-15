@@ -38,13 +38,8 @@ class ObjectReference : public CodeEntity {
 			private:
 				std::vector<std::weak_ptr<Object>> chain;
 				std::optional<std::weak_ptr<Method>> method = std::nullopt;
-
-				std::shared_ptr<Object> owned_synthetic_root = nullptr; // If the root object is a synthetic object, we need to own it to keep it alive
 			public:
-				explicit ReferenceChain(std::shared_ptr<Object> root, bool own = false) {
-					chain.push_back(root);
-					if (own) owned_synthetic_root = std::move(root);
-				}
+				explicit ReferenceChain(std::shared_ptr<Object> root) { chain.push_back(root); }
 				void append(std::shared_ptr<DataMember> datamember) { chain.push_back(datamember); }
 				std::weak_ptr<Object> get_root() const { return chain.front(); }
 				std::weak_ptr<Object> get_final_object() const { return chain.back(); }
@@ -131,46 +126,30 @@ std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_en
 	bool self_reference = first_id == "this" || first_id == "super";
 	bool super = first_id == "super";
 
-	if (super) first_id = "this"; // For the purpose of looking up the object, treat @super as @this
-
 	auto obj = context->get_object(first_id);
 
+	if (self_reference) {
+		if (auto containing_class = context->get_containing_class().lock()) {
+			obj = super ? containing_class->get_super_ptr() : containing_class->get_this_ptr();
+			if (!obj && super) return fail(containing_class->get_name() + " has no parent class to reference with @super", first);
+		} else {
+			return fail("Cannot use @this or @super outside of a class context", first);
+		}
+	}
+
 	if (obj == nullptr) {
-		return fail(
-			self_reference
-				? "Cannot use @this or @super outside of a class context"
-				: "Object not found: " + std::string(first),
-			first
-		);
+		return fail("Object not found: " + first_id, first);
 	}
 
 	if constexpr (provide_diagnostics) {
 		obj->add_reference_position(SymbolPosition{file, first.getLine(), first.getCharPositionInLine()});
 	}
 
-	// Special-case: if @super, create a "faux" object as a copy of the 'this' pointer,
-	// but with the type of the parent class.
-	if (super) {
-		const auto this_class = obj->get_type().lock();
-		bpp_assert(this_class != nullptr, "Object has no type in resolve_entity()");
-		const auto parent_class = this_class->get_parent_class();
-		if (parent_class == nullptr) {
-			return fail(this_class->get_name() + " has no parent class to reference with @super", first);
-		}
-		const auto this_ptr = std::dynamic_pointer_cast<ThisPtr>(obj);
-		bpp_assert(this_ptr != nullptr, "Object is not a ThisPtr in resolve_entity() when resolving @super");
-		auto faux_object = std::make_shared<ThisPtr>(*this_ptr);
-		faux_object->set_name("super");
-		faux_object->set_type(parent_class);
-		obj = std::move(faux_object);
-	}
-
 	auto current_class = obj->get_type().lock();
 	bpp_assert(current_class != nullptr, "Object has no type in resolve_entity()");
 	auto remaining = ids.subspan(1);
 
-	// If 'super', the root object is a synthetic object (one we created on the fly), so we need to own it to keep it alive.
-	ObjectReference::ReferenceChain chain(obj, super);
+	ObjectReference::ReferenceChain chain(obj);
 
 	while (!std::ranges::empty(remaining)) {
 		const auto current_token = remaining.front();
@@ -187,10 +166,18 @@ std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_en
 		if (data_member) {
 			chain.append(data_member.value());
 			current_class = data_member.value()->get_type().lock();
+
+			if constexpr (provide_diagnostics) {
+				data_member.value()->add_reference_position(SymbolPosition{file, current_token.getLine(), current_token.getCharPositionInLine()});
+			}
+
 			if (current_class == nullptr && !std::ranges::empty(remaining)) {
 				return fail("Unexpected identifier after primitive object reference", remaining.front());
 			}
 		} else if (method) {
+			if constexpr (provide_diagnostics) {
+				method.value()->add_reference_position(SymbolPosition{file, current_token.getLine(), current_token.getCharPositionInLine()});
+			}
 			if (!std::ranges::empty(remaining)) {
 				return fail("Unexpected identifier after method reference", remaining.front());
 			}

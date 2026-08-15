@@ -7,6 +7,7 @@
 #include <AST/Listener/Listener.h>
 
 #include <IR/entities/Method.h>
+#include <IR/entities/MethodParameter.h>
 #include <IR/entities/Class.h>
 #include <IR/entities/Object.h>
 #include <IR/entities/Program.h>
@@ -63,9 +64,7 @@ void Listener::enter(MethodDefinition* node) {
 	// Set up the method's parameters
 
 	// 1. The implicit `this` parameter, which is always the first parameter of a method
-	auto this_ptr = std::make_shared<bpp::IR::ThisPtr>(method);
-	this_ptr->inherit(method);
-	method->add_parameter(this_ptr);
+	method->add_parameter(current_class->get_this_ptr());
 
 	// 2. The user-defined parameters
 	for (const auto& p : node->PARAMETERS()) {
@@ -100,7 +99,7 @@ void Listener::enter(MethodDefinition* node) {
 			}
 		}
 
-		auto parameter_entity = std::make_shared<bpp::IR::MethodParameter>(method);
+		auto parameter_entity = std::make_shared<bpp::IR::MethodParameter>();
 		parameter_entity->inherit(method);
 		parameter_entity->set_type(param_type);
 		parameter_entity->set_is_pointer(param_type != nullptr);

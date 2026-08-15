@@ -10,6 +10,8 @@
 #include <IR/entities/Entity.h>
 #include <IR/entities/NamedEntity.h>
 
+#include <error/InternalError.h>
+
 #include <expected>
 
 namespace bpp::IR {
@@ -25,6 +27,20 @@ enum class LookupError : std::uint8_t {
 class Class : public Entity, public NamedEntity, public std::enable_shared_from_this<Class> {
 	private:
 		std::weak_ptr<Class> parent_class;
+
+		mutable std::shared_ptr<ThisPtr> this_ptr = nullptr;
+		mutable std::shared_ptr<ThisPtr> super_ptr = nullptr;
+		mutable bool special_pointers_initialized = false;
+
+		/**
+		 * @brief Initializes the class's special "@this" and "@super" pointers.
+		 *
+		 * Although the *bits* of these pointers are not const,
+		 * the pointers themselves are logically const,
+		 * in the sense that they never change from the perspective of the public API
+		 * from the first request for them to the end of the class's lifetime.
+		 */
+		void init_special_pointers() const;
 
 		std::vector<std::shared_ptr<Method>> methods;
 		std::vector<std::shared_ptr<DataMember>> datamembers;
@@ -139,6 +155,29 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		 * @return false Otherwise
 		 */
 		bool is_derived_from(std::shared_ptr<const Class> other) const;
+
+		/**
+		 * @brief Get the "@this" pointer for this class,
+		 * which is a special method parameter that points to the current instance of the class.
+		 * 
+		 * @return std::shared_ptr<ThisPtr> The "this" pointer for this class
+		 */
+		std::shared_ptr<ThisPtr> get_this_ptr() const {
+			init_special_pointers();
+			return this_ptr;
+		}
+
+		/**
+		 * @brief Get the "@super" pointer for this class,
+		 * which is a special method parameter that points to the current instance of the class,
+		 * but considers it to be an instance of the parent class.
+		 * 
+		 * @return std::shared_ptr<ThisPtr> The "super" pointer for this class, or nullptr if this class has no parent
+		 */
+		std::shared_ptr<ThisPtr> get_super_ptr() const {
+			init_special_pointers();
+			return super_ptr;
+		}
 
 		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
 

@@ -33,9 +33,7 @@ void Listener::enter(DestructorDefinition* node) {
 		node->getCharPositionInLine()
 	});
 
-	auto this_ptr = std::make_shared<bpp::IR::ThisPtr>(destructor);
-	this_ptr->inherit(destructor);
-	destructor->add_parameter(this_ptr);
+	destructor->add_parameter(current_class->get_this_ptr());
 
 	entity_stack.push(destructor);
 }

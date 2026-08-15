@@ -147,6 +147,7 @@ class CodeSegment {
 struct CodeGenState {
 	BashVersion target_bash_version{5, 2};
 	bool in_method = false;
+	std::string current_method_name;
 	bool in_class = false;
 	std::uint64_t nested_bash_function_depth = 0;
 	std::uint64_t nested_supershell_depth = 0;

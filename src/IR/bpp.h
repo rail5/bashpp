@@ -130,6 +130,7 @@ class Class;
 class Method;
 class Object;
 class DataMember;
-class Parameter;
+class MethodParameter;
+class ThisPtr;
 
 } // namespace bpp::IR

@@ -236,6 +236,9 @@ class Arguments {
 			}
 			m_optimization_options.set_optimization_level(static_cast<std::uint8_t>(level));
 		}
+		const bpp::IR::OptimizationOptions& optimization_options() const {
+			return this->m_optimization_options;
+		}
 
 	#ifndef NDEBUG
 		void set_display_tokens(bool display) {

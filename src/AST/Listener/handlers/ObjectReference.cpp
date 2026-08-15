@@ -47,6 +47,18 @@ void Listener::exit(ObjectReference* node) {
 	if (resolution) {
 		reference_entity->set_reference_chain(std::move(resolution.value()));
 		current_code_entity->add(reference_entity);
+
+		// For each entity in the reference chain, mark it as referenced by this entity (to prevent DCE in the optimizer)
+		for (const auto& weak_entity : reference_entity->get_reference_chain()) {
+			if (auto entity = weak_entity.lock()) {
+				entity->mark_referenced_by(reference_entity);
+			}
+		}
+		if (reference_entity->get_reference_chain().has_method()) {
+			if (auto method = reference_entity->get_reference_chain().get_method().lock()) {
+				method->mark_referenced_by(reference_entity);
+			}
+		}
 	} else {
 		const auto& error = resolution.error();
 		if (error.token.has_value()) {

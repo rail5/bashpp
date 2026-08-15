@@ -32,9 +32,7 @@ void Listener::enter(ConstructorDefinition* node) {
 		node->getCharPositionInLine()
 	});
 
-	auto this_ptr = std::make_shared<bpp::IR::ThisPtr>(constructor);
-	this_ptr->inherit(constructor);
-	constructor->add_parameter(this_ptr);
+	constructor->add_parameter(current_class->get_this_ptr());
 
 	if (auto parent_class = current_class->get_parent_class()) {
 		auto parent_constructor = parent_class->get_method_UNSAFE("__constructor");

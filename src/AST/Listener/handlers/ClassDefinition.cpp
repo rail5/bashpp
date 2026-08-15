@@ -8,6 +8,7 @@
 
 #include <IR/entities/Class.h>
 #include <IR/entities/Method.h>
+#include <IR/entities/MethodParameter.h>
 #include <IR/entities/Program.h>
 
 #include <error/InternalError.h>
@@ -72,7 +73,7 @@ void Listener::enter(ClassDefinition* node) {
 	auto new_method = std::make_shared<bpp::IR::Method>();
 	new_method->set_name("__new");
 	new_method->inherit(class_entity);
-	auto requested_address_param = std::make_shared<bpp::IR::MethodParameter>(new_method);
+	auto requested_address_param = std::make_shared<bpp::IR::MethodParameter>();
 	requested_address_param->set_name("__this");
 	new_method->add_parameter(requested_address_param);
 
@@ -80,33 +81,33 @@ void Listener::enter(ClassDefinition* node) {
 	delete_method->set_name("__delete");
 	delete_method->set_is_virtual(true);
 	delete_method->inherit(class_entity);
-	delete_method->add_parameter(std::make_shared<bpp::IR::ThisPtr>(delete_method));
+	delete_method->add_parameter(class_entity->get_this_ptr());
 
 	auto copy_method = std::make_shared<bpp::IR::Method>();
 	copy_method->set_name("__copy");
 	copy_method->set_is_virtual(true);
 	copy_method->inherit(class_entity);
-	copy_method->add_parameter(std::make_shared<bpp::IR::ThisPtr>(copy_method));
+	copy_method->add_parameter(class_entity->get_this_ptr());
 
 	auto constructor_method = std::make_shared<bpp::IR::Method>();
 	constructor_method->set_name("__constructor");
 	constructor_method->set_is_overridable(true);
 	constructor_method->inherit(class_entity);
-	constructor_method->add_parameter(std::make_shared<bpp::IR::ThisPtr>(constructor_method));
+	constructor_method->add_parameter(class_entity->get_this_ptr());
 
 	auto destructor_method = std::make_shared<bpp::IR::Method>();
 	destructor_method->set_name("__destructor");
 	destructor_method->set_is_virtual(true);
 	destructor_method->set_is_overridable(true);
 	destructor_method->inherit(class_entity);
-	destructor_method->add_parameter(std::make_shared<bpp::IR::ThisPtr>(destructor_method));
+	destructor_method->add_parameter(class_entity->get_this_ptr());
 
 	auto toPrimitive_method = std::make_shared<bpp::IR::Method>();
 	toPrimitive_method->set_name("toPrimitive");
 	toPrimitive_method->set_is_virtual(true);
 	toPrimitive_method->set_is_overridable(true);
 	toPrimitive_method->inherit(class_entity);
-	toPrimitive_method->add_parameter(std::make_shared<bpp::IR::ThisPtr>(toPrimitive_method));
+	toPrimitive_method->add_parameter(class_entity->get_this_ptr());
 	toPrimitive_method->add("echo \"" + class_entity->get_name() + " Instance\"\n");
 
 	class_entity->add_method(new_method);

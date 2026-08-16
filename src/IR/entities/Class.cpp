@@ -69,24 +69,24 @@ void Class::inherit(std::shared_ptr<Class> parent) {
 }
 
 bool Class::add_method(std::shared_ptr<Method> method) {
-	for (auto it = methods.begin(); it != methods.end(); it++) {
-		const auto& existing_method = *it;
-		if (existing_method->get_name() != method->get_name()) continue; // Not the same name, so no conflict
-		if (existing_method->is_overridable()) {
-			methods.erase(it); // Remove the existing method, since it is being overridden
-			method->set_is_overridable(false); // Can't override it twice
-			method->set_is_inherited(false); // This is a new method, not inherited
-			method->set_parent_method(existing_method->get_parent_method()); // Keep the chain of inheritance intact
-			break;
-		} else {
-			return false; // Conflict with an existing method that is not overridable
-		}
+	if (auto existing_method = get_method_UNSAFE(method->get_name())) {
+		if (!existing_method->is_overridable()) return false; // Not overridable, so can't override it
+
+		// Otherwise: override
+		auto parent_method = existing_method->get_parent_method();
+
+		*existing_method = *method;
+
+		existing_method->set_parent_method(parent_method); // Keep the chain of inheritance intact
+		existing_method->set_is_overridable(false); // Can't override it twice
+		existing_method->set_is_inherited(false); // This is a new method, not inherited
+		existing_method->set_containing_class(weak_from_this());
+
+		return true;
 	}
 
 	// If this method shares a name with a data member, that's an error
-	for (const auto& d : datamembers) {
-		if (d->get_name() == method->get_name()) return false;
-	}
+	if (get_datamember_UNSAFE(method->get_name())) return false;
 
 	method->set_containing_class(weak_from_this());
 
@@ -95,14 +95,8 @@ bool Class::add_method(std::shared_ptr<Method> method) {
 }
 
 bool Class::add_datamember(std::shared_ptr<DataMember> datamember) {
-	for (const auto& d : datamembers) {
-		if (d->get_name() == datamember->get_name()) return false; // Conflict with an existing data member
-	}
-
-	// If this data member shares a name with a method, that's an error
-	for (const auto& m : methods) {
-		if (m->get_name() == datamember->get_name()) return false;
-	}
+	if (get_datamember_UNSAFE(datamember->get_name())) return false; // Conflict with an existing data member
+	if (get_method_UNSAFE(datamember->get_name())) return false; // Conflict with an existing method
 
 	datamember->set_containing_class(weak_from_this());
 

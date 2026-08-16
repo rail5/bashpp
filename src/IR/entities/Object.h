@@ -68,11 +68,11 @@ class Object : public Entity, public NamedEntity, public AddressableEntity {
 			if (initial_value.has_value()) {
 				os << "\n" << indent << "  =\n";
 				initial_value.value()->prettyPrint(os, indentation_level + 1);
+				os << indent;
+			} else if (copy_from != nullptr) {
+				os << "\n" << indent << "  = copy of " << copy_from->get_name() << "\n" << indent;
 			}
-			if (copy_from != nullptr) {
-				os << "\n" << indent << "  = copy of " << copy_from->get_name() << "\n";
-			}
-			os <<")\n";
+			os << ")\n";
 			return os;
 		})
 };

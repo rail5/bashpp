@@ -102,28 +102,39 @@ bpp::CodeGen::CodeSegment CodeEntity::generate_code(bpp::CodeGen::CodeGenState* 
 	return code_segment;
 }
 
+#ifndef NDEBUG
+namespace {
+
+std::ostream& print_raw_code(std::ostream& os, const RawCode& code) {
+	for (const char c : code) {
+		// Escape special characters for pretty-printing
+		switch (c) {
+			case '\n': os << "\\n"; break;
+			case '\t': os << "\\t"; break;
+			case '\r': os << "\\r"; break;
+			default: os << c; break;
+		}
+	}
+	return os;
+}
+
+} // anonymous namespace
+#endif // NDEBUG
+
 PRETTYPRINT_IMPLEMENTATION(CodeEntity, {
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
-	os << indent << "(\n";
+
 	for (const auto& child : children) {
 		if (std::holds_alternative<RawCode>(child)) {
 			auto str = std::get<RawCode>(child);
 			// Replace all newlines in str with "\n"
-			os << indent << "    ";
-			for (const char c : str) {
-				switch (c) {
-					case '\n': os << "\\n"; break;
-					case '\t': os << "\\t"; break;
-					case '\r': os << "\\r"; break;
-					default: os << c; break;
-				}
-			}
+			os << indent;
+			print_raw_code(os, str);
 			os << "\n";
 		} else if (std::holds_alternative<std::shared_ptr<Entity>>(child)) {
-			std::get<std::shared_ptr<Entity>>(child)->prettyPrint(os, indentation_level + 1);
+			std::get<std::shared_ptr<Entity>>(child)->prettyPrint(os, indentation_level);
 		}
 	}
-	os << indent << ")\n";
 	return os;
 })
 

@@ -18,24 +18,26 @@ void Listener::enter(DestructorDefinition* node) {
 	auto current_class = std::dynamic_pointer_cast<bpp::IR::Class>(entity_stack.top());
 	if (!current_class) throw bpp::ErrorHandling::SyntaxError(this, node, "Destructor definition outside of class body");
 
-	auto destructor = std::make_shared<bpp::IR::Method>();
-	destructor->inherit(current_class);
-	destructor->set_name("__destructor");
-	destructor->set_scope(bpp::IR::VisibilityScope::PUBLIC);
-	destructor->set_is_virtual(true);
+	auto new_destructor = std::make_shared<bpp::IR::Method>();
+	new_destructor->inherit(current_class);
+	new_destructor->set_name("__destructor");
+	new_destructor->set_scope(bpp::IR::VisibilityScope::PUBLIC);
+	new_destructor->set_is_virtual(true);
 
-	if (!current_class->add_method(destructor)) {
+	auto res = current_class->add_method(std::move(new_destructor));
+	if (!res) {
 		throw bpp::ErrorHandling::SyntaxError(this, node, "Destructor already defined in class '" + current_class->get_name() + "'");
 	}
-	destructor->set_definition_position({
+	const auto& stored_destructor = res.value();
+	stored_destructor->set_definition_position({
 		get_current_source_file(),
 		node->getLine(),
 		node->getCharPositionInLine()
 	});
 
-	destructor->add_parameter(current_class->get_this_ptr());
+	stored_destructor->add_parameter(current_class->get_this_ptr());
 
-	entity_stack.push(destructor);
+	entity_stack.push(stored_destructor);
 }
 
 template <>

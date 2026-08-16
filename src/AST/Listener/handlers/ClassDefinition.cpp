@@ -110,12 +110,18 @@ void Listener::enter(ClassDefinition* node) {
 	toPrimitive_method->add_parameter(class_entity->get_this_ptr());
 	toPrimitive_method->add("echo \"" + class_entity->get_name() + " Instance\"\n");
 
-	class_entity->add_method(new_method);
-	class_entity->add_method(delete_method);
-	class_entity->add_method(copy_method);
-	class_entity->add_method(constructor_method);
-	class_entity->add_method(destructor_method);
-	class_entity->add_method(toPrimitive_method);
+	auto add_system_method = [&](std::shared_ptr<bpp::IR::Method>&& method) {
+		if (!class_entity->add_method(std::move(method))) {
+			throw bpp::ErrorHandling::InternalError("Failed to add system method to class '" + class_entity->get_name() + "'");
+		}
+	};
+
+	add_system_method(std::move(new_method));
+	add_system_method(std::move(delete_method));
+	add_system_method(std::move(copy_method));
+	add_system_method(std::move(constructor_method));
+	add_system_method(std::move(destructor_method));
+	add_system_method(std::move(toPrimitive_method));
 
 	entity_stack.push(class_entity);
 	current_program->add_class(class_entity); // Add the class to the program's list of known classes, so that it can be found by name later

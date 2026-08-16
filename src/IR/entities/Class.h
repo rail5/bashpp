@@ -24,6 +24,11 @@ enum class LookupError : std::uint8_t {
 	INACCESSIBLE,
 };
 
+enum class AddError : std::uint8_t {
+	NAME_CONFLICTS_WITH_EXISTING_METHOD,
+	NAME_CONFLICTS_WITH_EXISTING_DATAMEMBER,
+};
+
 class Class : public Entity, public NamedEntity, public std::enable_shared_from_this<Class> {
 	private:
 		std::weak_ptr<Class> parent_class;
@@ -55,25 +60,27 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		std::weak_ptr<const Class> get_containing_class_const() const override { return weak_from_this(); }
 
 		/**
-		 * @brief Add a method to this class
+		 * @brief Add a method to this class, and return the actual method object that was added
+		 * (which may be different from the one passed in, if it was overridden).
 		 *
 		 * If this method shares a name with an existing method, we will attempt to override the existing method.
-		 * If the existing method is not overridable, this will fail and return false.
+		 * If the existing method is not overridable, this will fail and return an error.
 		 *
-		 * If the method name conflicts with the name of a data member, this will fail and return false.
+		 * If the method name conflicts with the name of a data member, this will fail and return an error.
 		 * 
 		 * @param method The method to add
+		 * @return The method object that was added (which may be different from the one passed in, if it was overridden), or an error if the operation failed
 		 */
-		bool add_method(std::shared_ptr<Method> method);
+		[[ nodiscard ]] std::expected<std::shared_ptr<Method>, AddError> add_method(std::shared_ptr<Method>&& method);
 
 		/**
 		 * @brief Add a data member to this class
 		 *
-		 * If the data member name conflicts with the name of an existing data member or method, this will fail and return false.
+		 * If the data member name conflicts with the name of an existing data member or method, this will fail and return an error.
 		 * 
 		 * @param datamember The data member to add
 		 */
-		bool add_datamember(std::shared_ptr<DataMember> datamember);
+		[[ nodiscard ]] std::expected<void, AddError> add_datamember(std::shared_ptr<DataMember> datamember);
 
 		/**
 		 * @brief Get a method by name

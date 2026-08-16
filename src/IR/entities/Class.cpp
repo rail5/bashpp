@@ -51,7 +51,9 @@ void Class::inherit(std::shared_ptr<Class> parent) {
 		inherited_method->set_is_inherited(true);
 		inherited_method->set_parent_method(m);
 		if (inherited_method->is_virtual()) inherited_method->set_is_overridable(true);
-		add_method(inherited_method);
+		if (!add_method(std::move(inherited_method))) {
+			throw bpp::ErrorHandling::InternalError("Failed to inherit method '" + m->get_name() + "' from parent class '" + parent->get_name() + "'");
+		}
 	}
 
 	// Inherit data members
@@ -62,46 +64,48 @@ void Class::inherit(std::shared_ptr<Class> parent) {
 			inherited_datamember->set_scope(VisibilityScope::INACCESSIBLE);
 		}
 		inherited_datamember->set_parent_datamember(d);
-		add_datamember(inherited_datamember);
+		if (!add_datamember(inherited_datamember)) {
+			throw bpp::ErrorHandling::InternalError("Failed to inherit data member '" + d->get_name() + "' from parent class '" + parent->get_name() + "'");
+		}
 	}
 
 	this->parent_class = parent;
 }
 
-bool Class::add_method(std::shared_ptr<Method> method) {
+std::expected<std::shared_ptr<Method>, AddError> Class::add_method(std::shared_ptr<Method>&& method) {
 	if (auto existing_method = get_method_UNSAFE(method->get_name())) {
-		if (!existing_method->is_overridable()) return false; // Not overridable, so can't override it
+		if (!existing_method->is_overridable()) return std::unexpected(AddError::NAME_CONFLICTS_WITH_EXISTING_METHOD); // Not overridable, so can't override it
 
 		// Otherwise: override
 		auto parent_method = existing_method->get_parent_method();
 
-		*existing_method = *method;
+		*existing_method = std::move(*method);
 
 		existing_method->set_parent_method(parent_method); // Keep the chain of inheritance intact
 		existing_method->set_is_overridable(false); // Can't override it twice
 		existing_method->set_is_inherited(false); // This is a new method, not inherited
 		existing_method->set_containing_class(weak_from_this());
 
-		return true;
+		return existing_method;
 	}
 
 	// If this method shares a name with a data member, that's an error
-	if (get_datamember_UNSAFE(method->get_name())) return false;
+	if (get_datamember_UNSAFE(method->get_name())) return std::unexpected(AddError::NAME_CONFLICTS_WITH_EXISTING_DATAMEMBER);
 
 	method->set_containing_class(weak_from_this());
 
-	methods.push_back(method);
-	return true;
+	methods.emplace_back(std::move(method));
+	return methods.back();
 }
 
-bool Class::add_datamember(std::shared_ptr<DataMember> datamember) {
-	if (get_datamember_UNSAFE(datamember->get_name())) return false; // Conflict with an existing data member
-	if (get_method_UNSAFE(datamember->get_name())) return false; // Conflict with an existing method
+std::expected<void, AddError> Class::add_datamember(std::shared_ptr<DataMember> datamember) {
+	if (get_datamember_UNSAFE(datamember->get_name())) return std::unexpected(AddError::NAME_CONFLICTS_WITH_EXISTING_DATAMEMBER);
+	if (get_method_UNSAFE(datamember->get_name())) return std::unexpected(AddError::NAME_CONFLICTS_WITH_EXISTING_METHOD);
 
 	datamember->set_containing_class(weak_from_this());
 
 	datamembers.push_back(datamember);
-	return true;
+	return {};
 }
 
 template <ClassMember T>

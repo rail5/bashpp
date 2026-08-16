@@ -66,18 +66,13 @@ void Listener::exit(DatamemberDeclaration* node) {
 
 	bpp_assert(topmost_entity_is<bpp::IR::Class>(), "Topmost entity on stack is not a Class when exiting DatamemberDeclaration node");
 	auto current_class = std::static_pointer_cast<bpp::IR::Class>(entity_stack.top());
-	if (!current_class->add_datamember(dm)) {
-		// Error: naming conflict
-		// Let's get specifics on the error: with what does this name conflict?
-		auto existing_datamember = current_class->get_datamember_UNSAFE(dm->get_name());
-		auto existing_method = current_class->get_method_UNSAFE(dm->get_name());
-
-		if (existing_datamember) {
+	auto res = current_class->add_datamember(dm);
+	if (!res) {
+		if (res.error() == bpp::IR::AddError::NAME_CONFLICTS_WITH_EXISTING_DATAMEMBER) {
 			throw bpp::ErrorHandling::SyntaxError(this, node,
 				"Data member name has already been used: @" + current_class->get_name() + "." + dm->get_name());
 		}
-
-		if (existing_method) {
+		if (res.error() == bpp::IR::AddError::NAME_CONFLICTS_WITH_EXISTING_METHOD) {
 			throw bpp::ErrorHandling::SyntaxError(this, node,
 				"Data member name conflicts with existing method: " + current_class->get_name() + "." + dm->get_name());
 		}

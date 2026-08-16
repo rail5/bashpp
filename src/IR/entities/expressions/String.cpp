@@ -39,4 +39,25 @@ bpp::CodeGen::CodeSegment String::generate_code(bpp::CodeGen::CodeGenState* stat
 	return result;
 }
 
+PRETTYPRINT_IMPLEMENTATION(String, {
+	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
+	os << indent << "\"";
+
+	bool last_printed_was_entity = false;
+	for (const auto& child : children) {
+		if (std::holds_alternative<RawCode>(child)) {
+			if (last_printed_was_entity) os << indent;
+			prettyprint_raw_code(os, std::get<RawCode>(child));
+			last_printed_was_entity = false;
+		} else if (std::holds_alternative<std::shared_ptr<Entity>>(child)) {
+			os << "\n";
+			std::get<std::shared_ptr<Entity>>(child)->prettyPrint(os, indentation_level);
+			last_printed_was_entity = true;
+		}
+	}
+	if (last_printed_was_entity) os << indent;
+	os << "\"\n";
+	return os;
+})
+
 } // namespace bpp::IR

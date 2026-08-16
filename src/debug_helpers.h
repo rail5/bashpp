@@ -7,6 +7,7 @@
 #pragma once
 
 #ifndef NDEBUG
+#include <iostream>
 	// Number of spaces per indentation level when pretty-printing the AST or the entity tree
 	#define PRETTYPRINT_INDENTATION_AMOUNT 4
 
@@ -25,6 +26,19 @@
 	#define PRETTYPRINT_IMPLEMENTATION(classname, ...) \
 		std::ostream& classname::prettyPrint(std::ostream& os, std::size_t indentation_level) const \
 			__VA_ARGS__
+
+	inline std::ostream& prettyprint_raw_code(std::ostream& os, const std::string& code) {
+		for (const char c : code) {
+			// Escape special characters for pretty-printing
+			switch (c) {
+				case '\n': os << "\\n"; break;
+				case '\t': os << "\\t"; break;
+				case '\r': os << "\\r"; break;
+				default: os << c; break;
+			}
+		}
+		return os;
+	}
 #else
 	#define PRETTYPRINT_HELPERS(baseclassname)
 	#define PRETTYPRINT_OVERRIDE(...)

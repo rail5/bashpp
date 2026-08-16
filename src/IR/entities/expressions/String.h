@@ -28,6 +28,8 @@ class StringType : public CodeEntity {
 class String : public StringType {
 	public:
 		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
+
+		PRETTYPRINT_OVERRIDE();
 };
 
 } // namespace bpp::IR

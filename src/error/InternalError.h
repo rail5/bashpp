@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <source_location>
 #include <stdexcept>
 
 namespace bpp::ErrorHandling {
@@ -22,8 +23,8 @@ struct InternalError : public std::runtime_error {
 	explicit InternalError(const std::string& msg)
 		: std::runtime_error(msg + "\nYou've found a bug! Please report it.") {}
 
-	InternalError(const std::string& msg, const std::string& file, int line)
-		: std::runtime_error(msg + "\nYou've found a bug! Please report it.\nAt " + file + ":" + std::to_string(line)) {}
+	InternalError(const std::string& msg, std::source_location location)
+		: std::runtime_error(msg + "\nYou've found a bug! Please report it.\nAt " + location.file_name() + ":" + std::to_string(location.line())) {}
 };
 
 } // namespace bpp::ErrorHandling
@@ -32,7 +33,7 @@ struct InternalError : public std::runtime_error {
 	#define bpp_assert(expr, msg) \
 		do { \
 			if (!(expr)) { \
-				throw bpp::ErrorHandling::InternalError(msg, __FILE__, __LINE__); \
+				throw bpp::ErrorHandling::InternalError(msg, std::source_location::current()); \
 			} \
 		} while (false)
 #else

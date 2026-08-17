@@ -39,6 +39,8 @@ class DataMember : public Object {
 		std::shared_ptr<DataMember> get_parent_datamember() const { return parent_datamember.lock(); }
 
 		void add_reference_position(const SymbolPosition& pos) override;
+
+		PRETTYPRINT_OVERRIDE();
 };
 
 } // namespace bpp::IR

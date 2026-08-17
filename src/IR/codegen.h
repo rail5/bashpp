@@ -146,16 +146,18 @@ class CodeSegment {
 
 struct CodeGenState {
 	BashVersion target_bash_version{5, 2};
-	bool in_method = false;
-	std::string current_method_name;
-	bool in_class = false;
+	std::shared_ptr<const bpp::IR::Method> current_method = nullptr;
+	std::shared_ptr<const bpp::IR::Class> current_class = nullptr;
 	std::uint64_t nested_bash_function_depth = 0;
 	std::uint64_t nested_supershell_depth = 0;
 	std::uint64_t dynamic_cast_counter = 0;
 	std::uint64_t supershell_counter = 0;
 
+	bool in_class() const { return current_class != nullptr; }
+	bool in_method() const { return current_method != nullptr; }
+
 	bool should_declare_local() const {
-		return in_class || in_method || nested_bash_function_depth > 0;
+		return in_class() || in_method() || nested_bash_function_depth > 0;
 	}
 
 	bool should_localize_object_instantiation() const {

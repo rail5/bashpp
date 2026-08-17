@@ -174,9 +174,13 @@ bpp::CodeGen::CodeSegment Class::generate_code(bpp::CodeGen::CodeGenState* state
 	bpp_assert(state != nullptr, "Class::generate_code() should be called with a non-null state pointer");
 	bpp::CodeGen::CodeSegment code;
 
+	state->current_class = shared_from_this();
+
 	for (const auto& method : methods) {
 		code.absorb_all_to_main(method->generate_code(state));
 	}
+
+	state->current_class = nullptr;
 
 	return code;
 }

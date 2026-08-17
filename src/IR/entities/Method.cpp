@@ -65,8 +65,7 @@ std::string Method::get_address() const {
 
 bpp::CodeGen::CodeSegment Method::generate_code(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "Method::generate_code() should be called with a non-null state pointer");
-	state->in_method = true;
-	state->current_method_name = name;
+	state->current_method = shared_from_this();
 	bpp::CodeGen::CodeSegment code;
 
 	code.add_pre_code(get_address() + "() {\n");
@@ -82,8 +81,7 @@ bpp::CodeGen::CodeSegment Method::generate_code(bpp::CodeGen::CodeGenState* stat
 
 	code.add_post_code("}\n");
 
-	state->in_method = false;
-	state->current_method_name.clear();
+	state->current_method = nullptr;
 	return code;
 }
 

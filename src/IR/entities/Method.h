@@ -20,7 +20,7 @@ namespace bpp::IR {
 /**
  * @brief A method in a class
  */
-class Method : public BashFunction, public AddressableEntity {
+class Method : public BashFunction, public AddressableEntity, public std::enable_shared_from_this<Method> {
 	private:
 		/// List of parameters expected to be given as arguments to the method
 		std::vector<std::shared_ptr<MethodParameter>> parameters;

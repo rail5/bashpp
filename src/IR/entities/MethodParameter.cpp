@@ -8,6 +8,7 @@
 
 #include <IR/entities/Object.h>
 #include <IR/entities/expressions/DynamicCast.h>
+#include <IR/entities/Method.h>
 
 #include <IR/entities/Program.h>
 
@@ -38,6 +39,7 @@ bpp::CodeGen::CodeSegment MethodParameter::generate_code(bpp::CodeGen::CodeGenSt
 bpp::CodeGen::CodeSegment ThisPtr::generate_code(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "ThisPtr::generate_code() should be called with a non-null state pointer");
 	bpp_assert(has_initial_value(), "ThisPtr has no initial value set");
+	bpp_assert(state->in_method(), "ThisPtr::generate_code() should only be called when generating code for a method");
 	bpp::CodeGen::CodeSegment code;
 
 	code.add_pre_code("local __this\n");
@@ -53,7 +55,7 @@ bpp::CodeGen::CodeSegment ThisPtr::generate_code(bpp::CodeGen::CodeGenState* sta
 	code.add_pre_code(dynamic_cast_entity->generate_code(state).get_pre_code());
 	code.add_pre_code("then\n"
 	"\t>&2 echo \"Bash++: Error: Attempted to call @"
-	+ type.lock()->get_name() + "." + state->current_method_name
+	+ type.lock()->get_name() + "." + state->current_method->get_name()
 		+ " on null object\"\n"
 		"\treturn 1\n"
 		"fi\n"

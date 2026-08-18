@@ -49,18 +49,15 @@ class CodeEntity : public Entity {
 		void add(const std::shared_ptr<Entity>& child);
 
 		/**
-		 * @brief Instantiate an object in this code entity
-		 *
-		 * This function adds the object to the local objects of this code entity, and also adds it to the entity tree as a child of this code entity.
-		 *
-		 * The object being in the "local objects" map of this code entity means that this code entity is responsible for the object's lifetime.
-		 *
-		 * The object being in the entity tree as a child of this code entity means that the object is instantiated at this point in the code.
-		 *
+		 * @brief Add an object to this code entity, making it responsible for the object's lifetime.
 		 *
 		 * If the object name conflicts with an existing object or class known to this code entity, this function will return false and not add the object.
+		 *
+		 * Note that this does not guarantee instantiation.
+		 * The Listener (or other caller) is responsible for ensuring that the Method call necessary
+		 * to instantiate the object is added to the entity tree at the appropriate location.
 		 * 
-		 * @param object The object to instantiate
+		 * @param object The object to add
 		 */
 		bool add_object(std::shared_ptr<Object> object);
 		const OwnedEntityList<Object>& get_local_objects() const { return local_objects; }

@@ -62,16 +62,8 @@ bool CodeEntity::add_object(std::shared_ptr<Object> object) {
 	if (get_object(object->get_name())) return false; // Object with this name already exists
 	if (get_class(object->get_name())) return false; // Name conflicts with an existing class
 
-	// Add the object to 2 places:
-
-	// 1. To our local list of owned objects, so that it can be found by name later
-	local_objects.add(object);
-
-	// 2. To the entity tree, so that it can be traversed later
-	//    (e.g., its position in the entity tree signifies where its instantiation should be placed)
-	this->add(object);
-
-	return true;
+	// Add the object to our local list of owned objects, so that it can be found by name later
+	return local_objects.add(object);
 }
 
 void CodeEntity::adopt_objects_of(std::shared_ptr<CodeEntity> other) {

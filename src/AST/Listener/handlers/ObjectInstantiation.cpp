@@ -9,6 +9,7 @@
 #include <IR/entities/Object.h>
 #include <IR/entities/DataMember.h>
 #include <IR/entities/Method.h>
+#include <IR/entities/expressions/ObjectReference.h>
 
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>
@@ -77,11 +78,6 @@ void Listener::enter(ObjectInstantiation* node) {
 		object_name.getCharPositionInLine()
 	});
 
-	// Mark the class's "__new" method as used
-	auto new_method = object_class->get_method_UNSAFE("__new");
-	bpp_assert(new_method != nullptr, "Class '" + object_class->get_name() + "' does not have a '__new' method");
-	new_method->mark_referenced_by(object);
-
 	entity_stack.push(object);
 }
 
@@ -105,7 +101,28 @@ void Listener::exit(ObjectInstantiation* /*node*/) {
 	// Otherwise, add the object to the current code entity
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity when exiting ObjectInstantiation node");
 	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
-	current_code_entity->add_object(object);
+	if (!current_code_entity->add_object(object)) {
+		const auto named_code_entity = std::dynamic_pointer_cast<bpp::IR::NamedEntity>(current_code_entity);
+		std::string error_message = "Failed to add object '" + object->get_name() + "' to code entity";
+		if (named_code_entity) error_message += " '" + named_code_entity->get_name() + "'";
+		throw bpp::ErrorHandling::InternalError(error_message);
+	}
+
+	// Add a call to the class's __new method to instantiate the object
+	const auto object_class = object->get_type().lock();
+	bpp_assert(object_class != nullptr, "Object has no type when exiting ObjectInstantiation node");
+	auto new_method = object_class->get_method_UNSAFE("__new");
+	bpp_assert(new_method != nullptr, "Class '" + object_class->get_name() + "' does not have a '__new' method");
+
+	auto method_call = std::make_shared<bpp::IR::ObjectReference>();
+	method_call->inherit(current_code_entity);
+	bpp::IR::ObjectReference::ReferenceChain chain(object);
+	chain.set_method(new_method);
+	method_call->set_reference_chain(std::move(chain));
+	current_code_entity->add(method_call);
+
+	// Mark the class's "__new" method as used
+	new_method->mark_referenced_by(method_call);
 }
 
 } // namespace bpp::AST

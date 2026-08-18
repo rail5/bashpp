@@ -23,25 +23,4 @@ std::string Object::get_address() const {
 	return address;
 }
 
-bpp::CodeGen::CodeSegment Object::generate_code(bpp::CodeGen::CodeGenState* state) const {
-	bpp::CodeGen::CodeSegment result;
-
-	if (m_is_pointer) {
-		bpp_assert(!type.expired(), "Pointer does not have a type");
-
-		if (state->should_declare_local()) {
-			result.add_main_code("local ");
-		}
-		result.add_main_code(get_address() + "=");
-		if (has_initial_value()) {
-			result.egalitarian_merge(initial_value.value()->generate_code(state));
-		}
-		result.add_main_code("\n");
-	} else {
-		// FIXME(@rail5): Handle non-pointers
-	}
-
-	return result;
-}
-
 } // namespace bpp::IR

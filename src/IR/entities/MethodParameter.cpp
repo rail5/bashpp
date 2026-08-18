@@ -29,9 +29,15 @@ bpp::CodeGen::CodeSegment MethodParameter::generate_code(bpp::CodeGen::CodeGenSt
 		// Pointer to nonprimitive: per the Bash++ spec, this is an implicit dynamic cast to the expected type
 		// I.e., retrieve the corresponding positional parameter, run it through a dynamic cast, and assign the result to this pointer
 		//
-		// In this case, this is handled by the base Object's generate_code() method,
-		// assuming that the field `initial_value` has been properly set to point to the dynamic cast code entity.
-		code.egalitarian_merge(Object::generate_code(state));
+		// We expect that the `initial_value` should have already been set to a DynamicCast
+		bpp_assert(is_pointer(), "MethodParameter is not a pointer but has a nonprimitive type");
+		bpp_assert(has_initial_value(), "MethodParameter has a nonprimitive type but no initial value set");
+		bpp_assert(std::dynamic_pointer_cast<DynamicCast>(initial_value.value()), "MethodParameter has a nonprimitive type but its initial value is not a DynamicCast");
+
+		if (state->should_declare_local()) code.add_main_code("local ");
+		code.add_main_code(get_address() + "=");
+		code.egalitarian_merge(initial_value.value()->generate_code(state));
+		code.add_main_code("\n");
 	}
 	return code;
 }

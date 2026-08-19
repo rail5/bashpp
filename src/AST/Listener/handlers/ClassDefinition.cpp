@@ -7,7 +7,7 @@
 #include <AST/Listener/Listener.h>
 
 #include <IR/entities/Class.h>
-#include <IR/entities/Method.h>
+#include <IR/entities/SystemMethod.h>
 #include <IR/entities/MethodParameter.h>
 #include <IR/entities/Program.h>
 
@@ -70,21 +70,18 @@ void Listener::enter(ClassDefinition* node) {
 	// __new, __delete, __copy, __constructor, __destructor
 	// As well as a default 'toPrimitive' method
 	// The contents of these methods will be filled in later
-	auto new_method = std::make_shared<bpp::IR::Method>();
-	new_method->set_name("__new");
+	auto new_method = std::make_shared<bpp::IR::Builtins::SystemMethod>(bpp::IR::Builtins::SystemMethod::Type::NEW);
 	new_method->inherit(class_entity);
 	auto requested_address_param = std::make_shared<bpp::IR::MethodParameter>();
 	requested_address_param->set_name("__this");
 	new_method->add_parameter(requested_address_param);
 
-	auto delete_method = std::make_shared<bpp::IR::Method>();
-	delete_method->set_name("__delete");
+	auto delete_method = std::make_shared<bpp::IR::Builtins::SystemMethod>(bpp::IR::Builtins::SystemMethod::Type::DELETE);
 	delete_method->set_is_virtual(true);
 	delete_method->inherit(class_entity);
 	delete_method->add_parameter(class_entity->get_this_ptr());
 
-	auto copy_method = std::make_shared<bpp::IR::Method>();
-	copy_method->set_name("__copy");
+	auto copy_method = std::make_shared<bpp::IR::Builtins::SystemMethod>(bpp::IR::Builtins::SystemMethod::Type::COPY);
 	copy_method->set_is_virtual(true);
 	copy_method->inherit(class_entity);
 	copy_method->add_parameter(class_entity->get_this_ptr());
@@ -117,8 +114,8 @@ void Listener::enter(ClassDefinition* node) {
 	};
 
 	add_system_method(std::move(new_method));
-	add_system_method(std::move(delete_method));
-	add_system_method(std::move(copy_method));
+	//add_system_method(std::move(delete_method));
+	//add_system_method(std::move(copy_method));
 	add_system_method(std::move(constructor_method));
 	add_system_method(std::move(destructor_method));
 	add_system_method(std::move(toPrimitive_method));

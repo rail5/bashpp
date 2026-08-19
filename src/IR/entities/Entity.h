@@ -44,7 +44,7 @@ class Entity {
 		std::list<SymbolPosition> reference_positions;
 
 		/// A list of all entities that reference this entity (used for optimization and dead-code elimination)
-		std::list<std::weak_ptr<Entity>> referencing_entities;
+		std::list<std::weak_ptr<const Entity>> referencing_entities;
 	public:
 		Entity() = default;
 		virtual ~Entity() = default;
@@ -134,8 +134,8 @@ class Entity {
 		 * For example, if a class's method is never called, we don't need to generate code for it.
 		 */
 		bool is_referenced() const;
-		void mark_referenced_by(std::shared_ptr<Entity> referencing_entity) { referencing_entities.push_back(referencing_entity); }
-		const std::list<std::weak_ptr<Entity>>& get_referencing_entities() const { return referencing_entities; }
+		void mark_referenced_by(std::shared_ptr<const Entity> referencing_entity) { referencing_entities.push_back(referencing_entity); }
+		const std::list<std::weak_ptr<const Entity>>& get_referencing_entities() const { return referencing_entities; }
 
 		PRETTYPRINT_HELPERS(Entity)
 };

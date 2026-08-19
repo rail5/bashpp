@@ -109,7 +109,7 @@ std::expected<void, AddError> Class::add_datamember(std::shared_ptr<DataMember> 
 }
 
 template <ClassMember T>
-std::expected<std::shared_ptr<T>, LookupError> Class::get_member(const std::string& name, std::shared_ptr<Entity> context) const {
+std::expected<std::shared_ptr<T>, LookupError> Class::get_member(const std::string& name, std::shared_ptr<const Entity> context) const {
 	const std::vector<std::shared_ptr<T>>* container = nullptr;
 	// The following static_assert is probably redundant since the concept ClassMember is restricted to one of those two types
 	static_assert(std::is_same_v<T, Method> || std::is_same_v<T, DataMember>, "T must be either Method or DataMember");
@@ -126,11 +126,11 @@ std::expected<std::shared_ptr<T>, LookupError> Class::get_member(const std::stri
 			case VisibilityScope::INACCESSIBLE: break; // Never OK
 			case VisibilityScope::PUBLIC: return m; // Always OK
 			case VisibilityScope::PRIVATE:
-				if (context->get_containing_class().lock() == shared_from_this()) return m; // Only OK if the context is in precisely the same class
+				if (context->get_containing_class_const().lock() == shared_from_this()) return m; // Only OK if the context is in precisely the same class
 				break;
 			case VisibilityScope::PROTECTED: {
 				// OK if the context is in either this same class or a descendant (child) class
-				auto possible_descendant = context->get_containing_class().lock();
+				auto possible_descendant = context->get_containing_class_const().lock();
 				if (!possible_descendant) break; // Context is not in a class, so not OK
 				if (possible_descendant == shared_from_this() || possible_descendant->is_derived_from(shared_from_this())) return m;
 				break;
@@ -146,7 +146,7 @@ std::expected<std::shared_ptr<T>, LookupError> Class::get_member(const std::stri
 	return std::unexpected(LookupError::NOT_FOUND);
 }
 
-std::expected<std::shared_ptr<Method>, LookupError> Class::get_method(const std::string& name, std::shared_ptr<Entity> context) const {
+std::expected<std::shared_ptr<Method>, LookupError> Class::get_method(const std::string& name, std::shared_ptr<const Entity> context) const {
 	return get_member<Method>(name, context);
 }
 
@@ -158,7 +158,7 @@ std::shared_ptr<Method> Class::get_method_UNSAFE(const std::string& name) const 
 	return nullptr;
 }
 
-std::expected<std::shared_ptr<DataMember>, LookupError> Class::get_datamember(const std::string& name, std::shared_ptr<Entity> context) const {
+std::expected<std::shared_ptr<DataMember>, LookupError> Class::get_datamember(const std::string& name, std::shared_ptr<const Entity> context) const {
 	return get_member<DataMember>(name, context);
 }
 

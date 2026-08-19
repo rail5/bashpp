@@ -20,21 +20,7 @@
 namespace bpp::AST {
 
 template <>
-void Listener::enter(ObjectReference* /*node*/) {
-	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "ObjectReference node must be inside a code entity");
-	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
-
-	auto reference_entity = std::make_shared<bpp::IR::ObjectReference>();
-	reference_entity->inherit(current_code_entity);
-	entity_stack.push(reference_entity);
-}
-
-template <>
-void Listener::exit(ObjectReference* node) {
-	bpp_assert(topmost_entity_is<bpp::IR::ObjectReference>(), "Topmost entity on stack is not an ObjectReference when exiting ObjectReference node");
-	auto reference_entity = std::static_pointer_cast<bpp::IR::ObjectReference>(entity_stack.top());
-	entity_stack.pop();
-
+void Listener::enter(ObjectReference* node) {
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "ObjectReference node must be inside a code entity");
 	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
 
@@ -44,29 +30,32 @@ void Listener::exit(ObjectReference* node) {
 		std::span{node->IDENTIFIERS()}
 	);
 
-	if (resolution) {
-		reference_entity->set_reference_chain(std::move(resolution.value()));
-		current_code_entity->add(reference_entity);
-
-		// For each entity in the reference chain, mark it as referenced by this entity (to prevent DCE in the optimizer)
-		for (const auto& weak_entity : reference_entity->get_reference_chain()) {
-			if (auto entity = weak_entity.lock()) {
-				entity->mark_referenced_by(reference_entity);
-			}
-		}
-		if (reference_entity->get_reference_chain().has_method()) {
-			if (auto method = reference_entity->get_reference_chain().get_method().lock()) {
-				method->mark_referenced_by(reference_entity);
-			}
-		}
-	} else {
+	if (!resolution) {
 		const auto& error = resolution.error();
 		if (error.token.has_value()) {
 			throw bpp::ErrorHandling::SyntaxError(this, error.token.value(), error.message);
 		} else {
 			throw bpp::ErrorHandling::SyntaxError(this, node, error.message);
 		}
+		return; // Unreachable, but keeps the compiler happy
 	}
+
+	const auto& reference_entity = resolution.value();
+
+	reference_entity->inherit(current_code_entity);
+	entity_stack.push(reference_entity);
+}
+
+template <>
+void Listener::exit(ObjectReference* /*node*/) {
+	bpp_assert(topmost_entity_is<bpp::IR::ObjectReference>(), "Topmost entity on stack is not an ObjectReference when exiting ObjectReference node");
+	auto reference_entity = std::static_pointer_cast<bpp::IR::ObjectReference>(entity_stack.top());
+	entity_stack.pop();
+
+	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "ObjectReference node must be inside a code entity");
+	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
+
+	current_code_entity->add(reference_entity);
 }
 
 } // namespace bpp::AST

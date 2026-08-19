@@ -36,16 +36,16 @@ class ObjectReference : public CodeEntity {
 		 */
 		class ReferenceChain {
 			private:
-				std::vector<std::weak_ptr<Object>> chain;
-				std::optional<std::weak_ptr<Method>> method = std::nullopt;
+				std::vector<std::weak_ptr<const Object>> chain;
+				std::optional<std::weak_ptr<const Method>> method = std::nullopt;
 			public:
-				explicit ReferenceChain(std::shared_ptr<Object> root) { chain.push_back(root); }
-				void append(std::shared_ptr<DataMember> datamember) { chain.push_back(datamember); }
-				std::weak_ptr<Object> get_root() const { return chain.front(); }
-				std::weak_ptr<Object> get_final_object() const { return chain.back(); }
+				explicit ReferenceChain(std::shared_ptr<const Object> root) { chain.push_back(root); }
+				void append(std::shared_ptr<const DataMember> datamember) { chain.push_back(datamember); }
+				std::weak_ptr<const Object> get_root() const { return chain.front(); }
+				std::weak_ptr<const Object> get_final_object() const { return chain.back(); }
 				bool has_method() const { return method.has_value(); }
-				void set_method(std::weak_ptr<Method> m) { method = std::move(m); }
-				std::weak_ptr<Method> get_method() const { return method.value_or(std::weak_ptr<Method>()); }
+				void set_method(std::weak_ptr<const Method> m) { method = std::move(m); }
+				std::weak_ptr<const Method> get_method() const { return method.value_or(std::weak_ptr<const Method>()); }
 				std::size_t size() const { return chain.size(); }
 				bool empty() const { return chain.empty(); }
 
@@ -98,15 +98,17 @@ concept IdentifierElement = StringLike<T> || TokenLike<T>;
 
 template <typename T>
 requires IdentifierElement<T>
-std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_entity(
+std::expected<std::shared_ptr<ObjectReference>, EntityResolutionError> resolve_entity(
 	std::filesystem::path file,
-	std::shared_ptr<Entity> context,
+	std::shared_ptr<const Entity> context,
 	std::span<T> ids
 ) {
 	bpp_assert(context != nullptr, "resolve_entity() should be called with a non-null context pointer");
-	auto program = context->get_containing_program().lock();
+	auto program = context->get_containing_program_const().lock();
 	bpp_assert(program != nullptr, "resolve_entity() should be called with a context that is part of a program");
 	bpp_assert(!std::ranges::empty(ids), "resolve_entity() should be called with at least one identifier");
+
+	std::shared_ptr<ObjectReference> result = std::make_shared<ObjectReference>();
 
 	constexpr bool provide_diagnostics = TokenLike<T>;
 
@@ -129,7 +131,7 @@ std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_en
 	auto obj = context->get_object(first_id);
 
 	if (self_reference) {
-		if (auto containing_class = context->get_containing_class().lock()) {
+		if (auto containing_class = context->get_containing_class_const().lock()) {
 			obj = super ? containing_class->get_super_ptr() : containing_class->get_this_ptr();
 			if (!obj && super) return fail(containing_class->get_name() + " has no parent class to reference with @super", first);
 		} else {
@@ -143,6 +145,7 @@ std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_en
 
 	if constexpr (provide_diagnostics) {
 		obj->add_reference_position(SymbolPosition{file, first.getLine(), first.getCharPositionInLine()});
+		obj->mark_referenced_by(result);
 	}
 
 	auto current_class = obj->get_type().lock();
@@ -169,6 +172,7 @@ std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_en
 
 			if constexpr (provide_diagnostics) {
 				data_member.value()->add_reference_position(SymbolPosition{file, current_token.getLine(), current_token.getCharPositionInLine()});
+				data_member.value()->mark_referenced_by(result);
 			}
 
 			if (current_class == nullptr && !std::ranges::empty(remaining)) {
@@ -177,6 +181,7 @@ std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_en
 		} else if (method) {
 			if constexpr (provide_diagnostics) {
 				method.value()->add_reference_position(SymbolPosition{file, current_token.getLine(), current_token.getCharPositionInLine()});
+				method.value()->mark_referenced_by(result);
 			}
 			if (!std::ranges::empty(remaining)) {
 				return fail("Unexpected identifier after method reference", remaining.front());
@@ -185,13 +190,15 @@ std::expected<ObjectReference::ReferenceChain, EntityResolutionError> resolve_en
 		} else if (data_member.error() == LookupError::INACCESSIBLE || method.error() == LookupError::INACCESSIBLE) {
 			return fail(id + " is inaccessible in this context", current_token);
 		} else {
-			auto latest_entity = obj;
+			std::shared_ptr<const Object> latest_entity = obj;
 			if (!chain.empty()) latest_entity = chain.get_final_object().lock();
 			return fail(latest_entity->get_name() + " has no member named " + id, current_token);
 		}
 	}
 
-	return chain;
+	result->set_reference_chain(std::move(chain));
+
+	return result;
 }
 
 } // namespace bpp::IR

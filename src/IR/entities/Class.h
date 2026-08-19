@@ -51,7 +51,7 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		std::vector<std::shared_ptr<DataMember>> datamembers;
 
 		template <ClassMember T>
-		std::expected<std::shared_ptr<T>, LookupError> get_member(const std::string& name, std::shared_ptr<Entity> context) const;
+		std::expected<std::shared_ptr<T>, LookupError> get_member(const std::string& name, std::shared_ptr<const Entity> context) const;
 	public:
 		Class() = delete;
 		explicit Class(const std::string& name) { set_name(name); }
@@ -97,7 +97,7 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		 * @param context The context from which the method is being requested
 		 * @return std::expected<std::shared_ptr<Method>, LookupError> The method, or a LookupError if it doesn't exist or is inaccessible
 		 */
-		std::expected<std::shared_ptr<Method>, LookupError> get_method(const std::string& name, std::shared_ptr<Entity> context) const;
+		std::expected<std::shared_ptr<Method>, LookupError> get_method(const std::string& name, std::shared_ptr<const Entity> context) const;
 
 		/**
 		 * @brief Get a data member by name
@@ -114,7 +114,7 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		 * @param context The context from which the data member is being requested
 		 * @return std::expected<std::shared_ptr<DataMember>, LookupError> The data member, or a LookupError if it doesn't exist or is inaccessible
 		 */
-		std::expected<std::shared_ptr<DataMember>, LookupError> get_datamember(const std::string& name, std::shared_ptr<Entity> context) const;
+		std::expected<std::shared_ptr<DataMember>, LookupError> get_datamember(const std::string& name, std::shared_ptr<const Entity> context) const;
 
 		/**
 		 * @brief Get a method by name without checking the context against visibility rules

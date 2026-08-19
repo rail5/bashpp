@@ -57,16 +57,15 @@ class Program : public CodeEntity, public std::enable_shared_from_this<Program> 
 		 */
 		void adopt_classes_of(std::shared_ptr<IncludedProgram> other_program);
 
-		std::weak_ptr<Program> get_containing_program() override { return weak_from_this(); }
-		std::weak_ptr<const Program> get_containing_program_const() const override { return weak_from_this(); }
+		std::weak_ptr<const Program> get_containing_program() const override { return weak_from_this(); }
 
 		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
 
-		std::shared_ptr<Builtins::SystemFunction> get_supershell_function() { return supershell_function; }
-		std::shared_ptr<Builtins::SystemFunction> get_repeat_function() { return repeat_function; }
-		std::shared_ptr<Builtins::SystemFunction> get_vtable_lookup_function() { return vtable_lookup_function; }
-		std::shared_ptr<Builtins::SystemFunction> get_dynamic_cast_function() { return dynamic_cast_function; }
-		std::shared_ptr<Builtins::SystemFunction> get_typeof_function() { return typeof_function; }
+		std::shared_ptr<Builtins::SystemFunction> get_supershell_function() const { return supershell_function; }
+		std::shared_ptr<Builtins::SystemFunction> get_repeat_function() const { return repeat_function; }
+		std::shared_ptr<Builtins::SystemFunction> get_vtable_lookup_function() const { return vtable_lookup_function; }
+		std::shared_ptr<Builtins::SystemFunction> get_dynamic_cast_function() const { return dynamic_cast_function; }
+		std::shared_ptr<Builtins::SystemFunction> get_typeof_function() const { return typeof_function; }
 
 		void set_supershell_function(std::shared_ptr<Builtins::SystemFunction> func) { supershell_function = std::move(func); }
 		void set_repeat_function(std::shared_ptr<Builtins::SystemFunction> func) { repeat_function = std::move(func); }
@@ -109,8 +108,7 @@ class IncludedProgram : public Program {
 		/// Get all classes *owned* by this IncludedProgram (i.e., not including those of its containing program)
 		std::vector<std::shared_ptr<Class>> get_owned_classes() const { return Program::get_all_known_classes(); }
 
-		std::weak_ptr<Program> get_containing_program() override { return containing_program; }
-		std::weak_ptr<const Program> get_containing_program_const() const override { return containing_program; }
+		std::weak_ptr<const Program> get_containing_program() const override { return containing_program; }
 
 		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
 };

@@ -38,7 +38,7 @@ bool Class::is_derived_from(std::shared_ptr<const Class> other) const {
 	return false;
 }
 
-void Class::inherit(std::shared_ptr<Class> parent) {
+void Class::inherit(std::shared_ptr<const Class> parent) {
 	// Inherit methods
 	methods.reserve(methods.size() + parent->methods.size());
 	for (const auto& m : parent->get_methods()) {
@@ -126,11 +126,11 @@ std::expected<std::shared_ptr<T>, LookupError> Class::get_member(const std::stri
 			case VisibilityScope::INACCESSIBLE: break; // Never OK
 			case VisibilityScope::PUBLIC: return m; // Always OK
 			case VisibilityScope::PRIVATE:
-				if (context->get_containing_class_const().lock() == shared_from_this()) return m; // Only OK if the context is in precisely the same class
+				if (context->get_containing_class().lock() == shared_from_this()) return m; // Only OK if the context is in precisely the same class
 				break;
 			case VisibilityScope::PROTECTED: {
 				// OK if the context is in either this same class or a descendant (child) class
-				auto possible_descendant = context->get_containing_class_const().lock();
+				auto possible_descendant = context->get_containing_class().lock();
 				if (!possible_descendant) break; // Context is not in a class, so not OK
 				if (possible_descendant == shared_from_this() || possible_descendant->is_derived_from(shared_from_this())) return m;
 				break;

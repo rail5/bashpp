@@ -38,7 +38,7 @@ bpp::CodeGen::CodeSegment SystemMethod::generate_inline_code(bpp::CodeGen::CodeG
 	bpp_assert(state != nullptr, "SystemMethod::generate_inline_code() should be called with a non-null state pointer");
 
 	if (!obj) {
-		auto cls = get_containing_class_const().lock();
+		auto cls = get_containing_class().lock();
 		bpp_assert(cls != nullptr, "SystemMethod::generate_inline_code() called on a SystemMethod with no containing class");
 		obj = cls->get_this_ptr();
 		bpp_assert(obj != nullptr, "SystemMethod::generate_inline_code() called on a SystemMethod with no this pointer in its containing class");
@@ -62,7 +62,7 @@ bpp::CodeGen::CodeSegment SystemMethod::generate_inline_new_code(bpp::CodeGen::C
 
 	if (obj_address == "__this") obj_address = "${__this}"; // TODO(@rail5): HACK. Special-casing the @this pointer to add encasement
 
-	const auto cls = get_containing_class_const().lock();
+	const auto cls = get_containing_class().lock();
 	bpp_assert(cls != nullptr, "SystemMethod::generate_inline_new_code() called on a SystemMethod with no containing class");
 
 	bpp::CodeGen::CodeSegment result;

@@ -104,7 +104,7 @@ std::expected<std::shared_ptr<ObjectReference>, EntityResolutionError> resolve_e
 	std::span<T> ids
 ) {
 	bpp_assert(context != nullptr, "resolve_entity() should be called with a non-null context pointer");
-	auto program = context->get_containing_program_const().lock();
+	auto program = context->get_containing_program().lock();
 	bpp_assert(program != nullptr, "resolve_entity() should be called with a context that is part of a program");
 	bpp_assert(!std::ranges::empty(ids), "resolve_entity() should be called with at least one identifier");
 
@@ -131,7 +131,7 @@ std::expected<std::shared_ptr<ObjectReference>, EntityResolutionError> resolve_e
 	auto obj = context->get_object(first_id);
 
 	if (self_reference) {
-		if (auto containing_class = context->get_containing_class_const().lock()) {
+		if (auto containing_class = context->get_containing_class().lock()) {
 			obj = super ? containing_class->get_super_ptr() : containing_class->get_this_ptr();
 			if (!obj && super) return fail(containing_class->get_name() + " has no parent class to reference with @super", first);
 		} else {

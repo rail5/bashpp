@@ -29,13 +29,13 @@ class Entity {
 		std::size_t program_visible_class_count_at_creation = 0;
 
 		/// The entity from which this entity inherits (applies to all entities except Program)
-		std::weak_ptr<Entity> parent_entity;
+		std::weak_ptr<const Entity> parent_entity;
 
 		/// If this entity is inside of a class definition, this points to that class. Otherwise, it is null.
-		std::weak_ptr<Class> containing_class;
+		std::weak_ptr<const Class> containing_class;
 
 		/// The program that this entity belongs to (only null for the Program entity itself)
-		std::weak_ptr<Program> containing_program;
+		std::weak_ptr<const Program> containing_program;
 
 		/// Where in the source this entity was defined (used for error reporting / language server features)
 		SymbolPosition definition_position;
@@ -54,13 +54,11 @@ class Entity {
 		Entity(Entity&& other) = default;
 		Entity& operator=(Entity&& other) = default;
 
-		virtual std::weak_ptr<Class> get_containing_class() { return containing_class; }
-		virtual std::weak_ptr<const Class> get_containing_class_const() const { return containing_class; }
-		void set_containing_class(std::weak_ptr<Class> containing_class) { this->containing_class = std::move(containing_class); }
+		virtual std::weak_ptr<const Class> get_containing_class() const { return containing_class; }
+		void set_containing_class(std::weak_ptr<const Class> containing_class) { this->containing_class = std::move(containing_class); }
 
-		virtual std::weak_ptr<Program> get_containing_program() { return containing_program; }
-		virtual std::weak_ptr<const Program> get_containing_program_const() const { return containing_program; }
-		void set_containing_program(std::weak_ptr<Program> containing_program) { this->containing_program = std::move(containing_program); }
+		virtual std::weak_ptr<const Program> get_containing_program() const { return containing_program; }
+		void set_containing_program(std::weak_ptr<const Program> containing_program) { this->containing_program = std::move(containing_program); }
 
 		SymbolPosition get_definition_position() const { return definition_position; }
 		void set_definition_position(const SymbolPosition& pos) { this->definition_position = pos; }
@@ -88,7 +86,7 @@ class Entity {
 		 * 
 		 * @param parent The entity to inherit from
 		 */
-		void inherit(std::shared_ptr<Entity> parent);
+		void inherit(std::shared_ptr<const Entity> parent);
 
 		/**
 		 * @brief Get a class by name

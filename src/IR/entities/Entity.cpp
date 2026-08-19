@@ -13,7 +13,7 @@
 
 namespace bpp::IR {
 
-void Entity::inherit(std::shared_ptr<Entity> parent) {
+void Entity::inherit(std::shared_ptr<const Entity> parent) {
 	if (containing_program.expired()) containing_program = parent->get_containing_program();
 	if (containing_class.expired()) containing_class = parent->get_containing_class();
 
@@ -37,7 +37,7 @@ std::shared_ptr<Class> Entity::get_class(const std::string& name, std::size_t /*
 				? std::string(" '" + dynamic_cast<const NamedEntity*>(this)->get_name() + "'")
 				: std::string(""))
 			+ std::string(" does not have a containing program"));
-	const std::shared_ptr<Program> containing_program_ptr = containing_program.lock();
+	const auto containing_program_ptr = containing_program.lock();
 	return containing_program_ptr->get_class(name, program_visible_class_count_at_creation);
 }
 

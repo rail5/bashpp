@@ -31,7 +31,7 @@ enum class AddError : std::uint8_t {
 
 class Class : public Entity, public NamedEntity, public std::enable_shared_from_this<Class> {
 	private:
-		std::weak_ptr<Class> parent_class;
+		std::weak_ptr<const Class> parent_class;
 
 		mutable std::shared_ptr<ThisPtr> this_ptr = nullptr;
 		mutable std::shared_ptr<ThisPtr> super_ptr = nullptr;
@@ -56,8 +56,7 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		Class() = delete;
 		explicit Class(const std::string& name) { set_name(name); }
 
-		std::weak_ptr<Class> get_containing_class() override { return weak_from_this(); }
-		std::weak_ptr<const Class> get_containing_class_const() const override { return weak_from_this(); }
+		std::weak_ptr<const Class> get_containing_class() const override { return weak_from_this(); }
 
 		/**
 		 * @brief Add a method to this class, and return the actual method object that was added
@@ -150,9 +149,16 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		 * 
 		 * @param parent The parent class from which to inherit methods and data members.
 		 */
-		void inherit(std::shared_ptr<Class> parent);
+		void inherit(std::shared_ptr<const Class> parent);
 
-		std::shared_ptr<Class> get_parent_class() const { return parent_class.lock(); }
+		// Guide for the C++ compiler:
+		// This is a convenience overload that allows the caller to pass a non-const Class pointer,
+		// and have it automatically converted to a const Class pointer for the inherit() function above.
+		// Without this, the call to inherit() is ambiguous,
+		// because the compiler can't decide whether to convert it to a const Class pointer or a const Entity pointer.
+		void inherit(std::shared_ptr<Class> parent) { inherit(std::const_pointer_cast<const Class>(parent)); }
+
+		std::shared_ptr<const Class> get_parent_class() const { return parent_class.lock(); }
 
 		/**
 		 * @brief Check if this class is derived from some other particular class

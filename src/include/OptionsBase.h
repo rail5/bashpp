@@ -51,6 +51,7 @@ class OptionsBase {
 		void enable(Option opt) { flags.set(static_cast<std::size_t>(opt), true); }
 		void disable(Option opt) { flags.set(static_cast<std::size_t>(opt), false); }
 		[[nodiscard]] bool is_enabled(Option opt) const { return flags.test(static_cast<std::size_t>(opt)); }
+		[[nodiscard]] bool has_options_enabled() const { return flags.any(); }
 
 		std::optional<Option> get_option_by_cli_string(std::string_view cli_string) const {
 			for (const auto& [str, option] : option_map) {

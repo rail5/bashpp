@@ -70,22 +70,22 @@ bpp____supershell() {
 )EOF";
 
 [[maybe_unused]] constexpr static std::string_view bpp_dynamic_cast_function = R"EOF(bpp____dynamic_cast() {
-	local __type="$1" __outputVar="$2" __this="$3"
+	local __type="$1" __outputVar="$2" __address="$3"
 	([[ -z "${__outputVar}" ]]) && >&2 echo "Bash++: Error: Invalid dynamic_cast" && exit 1
 	eval "${__outputVar}=0"
 	while : ; do
-		if ! eval "declare -p \"${__this}\"" &>/dev/null; then
+		if ! eval "declare -p \"${__address}\"" &>/dev/null; then
 			break
 		fi
-		[[ -z "${!__this}" ]] && break
-		__this="${!__this}"
+		[[ -z "${!__address}" ]] && break
+		__address="${!__address}"
 	done
-	local __vTable="${__this}____vPointer"
+	local __vTable="${__address}____vPointer"
 	if ! eval "declare -p \"${__vTable}\"" &>/dev/null; then
 		return 1
 	fi
 	while [[ ! -z "${!__vTable}" ]] 2>/dev/null; do
-		[[ "${!__vTable}" == "bpp__${__type}____vTable" ]] && eval "${__outputVar}=\"${__this}\"" && return 0
+		[[ "${!__vTable}" == "bpp__${__type}____vTable" ]] && eval "${__outputVar}=\"${__address}\"" && return 0
 		__vTable="${!__vTable}[\"__parent__\"]"
 	done
 	return 1

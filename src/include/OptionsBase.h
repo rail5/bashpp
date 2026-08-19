@@ -33,8 +33,6 @@ concept EnumType = std::is_enum_v<T> && requires { T::EnumCount; };
 template <typename Derived, EnumType Enum, const auto& string_to_enum_map>
 class OptionsBase {
 	private:
-		Derived& self() { return static_cast<Derived&>(*this); }
-
 		std::string error_message(const std::string& invalid_option) {
 			if constexpr (requires { Derived::get_error_message(invalid_option); }) {
 				return Derived::get_error_message(invalid_option);
@@ -75,11 +73,9 @@ class OptionsBase {
 				[](unsigned char c) { return std::tolower(c); });
 
 			// Special casing:
-			// If the derived class defines 'enable_all' and 'disable_all' methods, then we can handle the special cases of "all" and "none" options
-			if constexpr (requires { self().enable_all(); self().disable_all(); }) {
-				if (cli_string == "all") { self().enable_all(); return; }
-				if (cli_string == "none") { self().disable_all(); return; }
-			}
+			// "all" enables all options, "none" disables all options
+			if (cli_string == "all") { flags.set(); return; }
+			if (cli_string == "none") { flags.reset(); return; }
 
 			bool enable = true;
 			if (cli_string.starts_with("no-")) {

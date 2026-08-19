@@ -58,9 +58,6 @@ class WarningOptions : public OptionsBase<WarningOptions, WarningType, warning_c
 		static std::string get_error_message(const std::string& invalid_option) {
 			return "Unknown warning flag: '" + invalid_option + "'";
 		}
-
-		void enable_all() { flags.set(); }
-		void disable_all() { flags.reset(); }
 };
 
 } // namespace bpp::ErrorHandling

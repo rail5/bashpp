@@ -79,7 +79,11 @@ bpp::CodeGen::CodeSegment SystemMethod::generate_inline_new_code(bpp::CodeGen::C
 	for (const auto& dm : cls->get_datamembers()) {
 		if (dm->is_primitive() || dm->is_pointer()) {
 			bpp::CodeGen::CodeSegment default_value_code;
-			if (dm->get_initial_value().has_value()) default_value_code = dm->get_initial_value().value()->generate_code(state);
+			if (dm->get_initial_value().has_value()) {
+				default_value_code = dm->get_initial_value().value()->generate_code(state);
+			} else {
+				default_value_code.add_main_code("=");
+			}
 
 			result.add_main_code(default_value_code.get_pre_code());
 

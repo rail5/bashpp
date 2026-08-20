@@ -8,6 +8,7 @@
 
 #include <IR/entities/Class.h>
 #include <IR/entities/DataMember.h>
+#include <IR/entities/expressions/ValueAssignment.h>
 
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>
@@ -64,6 +65,15 @@ void Listener::exit(DatamemberDeclaration* node) {
 	auto dm = std::static_pointer_cast<bpp::IR::DataMember>(entity_stack.top());
 	entity_stack.pop();
 
+	if (dm->is_pointer() && !dm->has_initial_value()) {
+		// Pointers should be auto-initialized to @nullptr (0) if no initial value is provided
+		auto value_assignment = std::make_shared<bpp::IR::ValueAssignment>();
+		value_assignment->inherit(dm);
+		value_assignment->set_lvalue_object(dm);
+		value_assignment->add("0");
+		dm->set_initial_value(value_assignment);
+	}
+
 	bpp_assert(topmost_entity_is<bpp::IR::Class>(), "Topmost entity on stack is not a Class when exiting DatamemberDeclaration node");
 	auto current_class = std::static_pointer_cast<bpp::IR::Class>(entity_stack.top());
 	auto res = current_class->add_datamember(dm);
@@ -76,10 +86,6 @@ void Listener::exit(DatamemberDeclaration* node) {
 			throw bpp::ErrorHandling::SyntaxError(this, node,
 				"Data member name conflicts with existing method: " + current_class->get_name() + "." + dm->get_name());
 		}
-
-		// Generic error if we can't determine the cause
-		throw bpp::ErrorHandling::SyntaxError(this, node,
-			"Data member name '" + dm->get_name() + "' already used in class '" + current_class->get_name() + "'");
 	}
 }
 

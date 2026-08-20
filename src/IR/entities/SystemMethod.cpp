@@ -18,6 +18,7 @@ namespace bpp::IR::Builtins {
 
 bpp::CodeGen::CodeSegment SystemMethod::generate_code(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "SystemMethod::generate_code() should be called with a non-null state pointer");
+	state->current_method = shared_from_this();
 
 	bpp::CodeGen::CodeSegment result;
 
@@ -31,6 +32,8 @@ bpp::CodeGen::CodeSegment SystemMethod::generate_code(bpp::CodeGen::CodeGenState
 
 	result.add_post_code("\n}\n");
 
+
+	state->current_method = nullptr;
 	return result;
 }
 

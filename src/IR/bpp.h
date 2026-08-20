@@ -87,17 +87,17 @@ template <class T>
 class OwnedEntityList {
 	private:
 		std::vector<std::shared_ptr<T>> entities;
-		std::unordered_map<std::string, std::size_t> name_to_index;
+		std::unordered_map<std::string_view, std::size_t> name_to_index;
 	public:
 		bool add(std::shared_ptr<T> entity) {
-			const std::string& name = entity->get_name();
+			const std::string_view name = entity->view_name();
 			if (name_to_index.contains(name)) return false; // Entity with this name already exists
 			entities.push_back(entity);
 			name_to_index[name] = entities.size() - 1;
 			return true;
 		}
 
-		std::shared_ptr<T> find(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const {
+		std::shared_ptr<T> find(std::string_view name, std::size_t max_visible_index = SIZE_MAX) const {
 			auto it = name_to_index.find(name);
 			if (it == name_to_index.end()) return nullptr; // No entity with this name
 			std::size_t index = it->second;

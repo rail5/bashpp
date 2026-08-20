@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 
 namespace bpp::IR {
 
@@ -20,6 +21,7 @@ class NamedEntity {
 		std::string name;
 	public:
 		const std::string& get_name() const { return name; }
+		std::string_view view_name() const { return name; }
 		void set_name(const std::string& name) { this->name = name; }
 };
 

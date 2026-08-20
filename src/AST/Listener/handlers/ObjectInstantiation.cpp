@@ -120,6 +120,7 @@ void Listener::exit(ObjectInstantiation* /*node*/) {
 	chain.set_method(new_method);
 	method_call->set_reference_chain(std::move(chain));
 	current_code_entity->add(method_call);
+	current_code_entity->add(" >/dev/null\n"); // Discard the output of the __new method, since it will echo the address of the new object
 
 	// Mark the class's "__new" method as used
 	new_method->mark_referenced_by(method_call);

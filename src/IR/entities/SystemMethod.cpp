@@ -30,8 +30,10 @@ bpp::CodeGen::CodeSegment SystemMethod::generate_code(bpp::CodeGen::CodeGenState
 
 	result.egalitarian_merge(generate_inline_code(state, false));
 
-	result.add_post_code("\n}\n");
+	// __new should echo the address of the new object, so that it can be captured by the caller
+	if (type == Type::NEW) result.add_main_code("\necho ${__this}\n");
 
+	result.add_post_code("}\n");
 
 	state->current_method = nullptr;
 	return result;

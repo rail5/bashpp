@@ -72,8 +72,8 @@ void Listener::enter(ClassDefinition* node) {
 	// The contents of these methods will be filled in later
 	auto new_method = std::make_shared<bpp::IR::Builtins::SystemMethod>(bpp::IR::Builtins::SystemMethod::Type::NEW);
 	new_method->inherit(class_entity);
-	auto requested_address_param = std::make_shared<bpp::IR::MethodParameter>();
-	requested_address_param->set_name("__this");
+	auto requested_address_param = std::make_shared<bpp::IR::RequestedAddressParam>(class_entity);
+	requested_address_param->inherit(new_method);
 	new_method->add_parameter(requested_address_param);
 
 	auto delete_method = std::make_shared<bpp::IR::Builtins::SystemMethod>(bpp::IR::Builtins::SystemMethod::Type::DELETE);

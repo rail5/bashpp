@@ -50,4 +50,16 @@ class ThisPtr : public MethodParameter {
 		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
 };
 
+/**
+ * @brief A special parameter passed to __new, which is the optional requested address of the new object to be created.
+ * If the caller does not specify a requested address, this parameter will be empty, and the __new method will generate a new address for the object.
+ */
+class RequestedAddressParam : public ThisPtr {
+	public:
+		RequestedAddressParam() = delete;
+		explicit RequestedAddressParam(std::shared_ptr<const Class> containing_class) : ThisPtr(containing_class) {}
+
+		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
+};
+
 } // namespace bpp::IR

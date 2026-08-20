@@ -72,6 +72,27 @@ bpp::CodeGen::CodeSegment ThisPtr::generate_code(bpp::CodeGen::CodeGenState* sta
 	return code;
 }
 
+bpp::CodeGen::CodeSegment RequestedAddressParam::generate_code(bpp::CodeGen::CodeGenState* state) const {
+	bpp_assert(state != nullptr, "RequestedAddressParam::generate_code() should be called with a non-null state pointer");
+	bpp_assert(state->in_method(), "RequestedAddressParam::generate_code() should only be called when generating code for a method");
+
+	auto cls = get_containing_class().lock();
+	bpp_assert(cls != nullptr, "RequestedAddressParam::generate_code() called on a RequestedAddressParam with no containing class");
+	bpp::CodeGen::CodeSegment code;
+
+	code.add_pre_code("local __this=$1\n");
+
+	code.add_pre_code(R"EOF(if [[ -z "${__this}" ]]; then
+	while : ; do
+		__this="bpp__)EOF" + cls->get_name() + R"EOF(__$RANDOM$RANDOM$RANDOM$RANDOM"
+		local __vpVar="${__this}____vPointer"
+		[[ -z "${!__vpVar+x}" ]] && break
+	done
+fi
+)EOF");
+
+	code.add_post_code("shift 1\n"); // Shift the positional parameters to remove the `this` argument
+
 	return code;
 }
 

@@ -67,6 +67,11 @@ bpp::CodeGen::CodeSegment ThisPtr::generate_code(bpp::CodeGen::CodeGenState* sta
 		"fi\n"
 	);
 
+	code.add_post_code("shift 1\n"); // Shift the positional parameters to remove the `this` argument
+
+	return code;
+}
+
 	return code;
 }
 

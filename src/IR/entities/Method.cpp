@@ -20,7 +20,10 @@ bool Method::add_parameter(std::shared_ptr<MethodParameter> parameter) {
 		if (p->get_name() == parameter->get_name()) return false; // Parameter with this name already exists
 	}
 
-	parameter->set_index(static_cast<std::uint32_t>(parameters.size() + 1));
+	// The @this pointer will always be given an index of 1
+	// But, after @this, we shift the positional arguments of the method,
+	// so the next parameter is *also* given an index of 1, then 2, then 3, etc.
+	parameter->set_index(std::max(static_cast<std::uint32_t>(parameters.size()), 1u));
 
 	// Per the spec: if a method is declared to take a pointer as a parameter,
 	// then the argument passed to that parameter is implicitly dynamically cast to the expected type at the start of the method.

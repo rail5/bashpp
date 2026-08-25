@@ -71,6 +71,7 @@ void Listener::enter(MethodDefinition* node) {
 	}
 
 	// Set up the method's parameters
+	stored_method->reserve_parameters(node->PARAMETERS().size() + 1); // +1 for the implicit `this` parameter
 
 	// 1. The implicit `this` parameter, which is always the first parameter of a method
 	stored_method->add_parameter(current_class->get_this_ptr());

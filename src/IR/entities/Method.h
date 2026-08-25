@@ -47,6 +47,15 @@ class Method : public BashFunction, public AddressableEntity, public std::enable
 		bool add_parameter(std::shared_ptr<MethodParameter> parameter);
 		const std::vector<std::shared_ptr<MethodParameter>>& get_parameters() const { return parameters; }
 
+		/**
+		 * @brief Reserve space for a number of parameters in the parameters vector
+		 *
+		 * Used by the Listener to avoid repeated reallocations when adding parameters to a method.
+		 * 
+		 * @param count The number of parameters to reserve space for
+		 */
+		void reserve_parameters(std::size_t count) { parameters.reserve(count); }
+
 		std::string get_address() const override;
 
 		void set_scope(VisibilityScope scope) { this->scope = scope; }

@@ -138,6 +138,8 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		const std::vector<std::shared_ptr<Method>>& get_methods() const { return methods; }
 		const std::vector<std::shared_ptr<DataMember>>& get_datamembers() const { return datamembers; }
 
+		bool contains_nonprimitive_datamembers() const;
+
 		using Entity::inherit;
 
 		/**

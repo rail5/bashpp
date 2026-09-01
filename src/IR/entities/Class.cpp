@@ -170,6 +170,13 @@ std::shared_ptr<DataMember> Class::get_datamember_UNSAFE(const std::string& name
 	return nullptr;
 }
 
+bool Class::contains_nonprimitive_datamembers() const {
+	for (const auto& dm : datamembers) {
+		if (!dm->is_primitive() && !dm->is_pointer()) return true;
+	}
+	return false;
+}
+
 bpp::CodeGen::CodeSegment Class::generate_code(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "Class::generate_code() should be called with a non-null state pointer");
 	bpp::CodeGen::CodeSegment code;

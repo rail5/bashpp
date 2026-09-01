@@ -130,6 +130,10 @@ void Listener::exit(ClassDefinition* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::Class>(), "Topmost entity on stack is not a Class when exiting ClassDefinition node");
 	auto class_entity = std::static_pointer_cast<bpp::IR::Class>(entity_stack.top());
 	entity_stack.pop();
+
+	if (class_entity->contains_nonprimitive_datamembers()) {
+		program->get_supershell_function()->mark_referenced_by(class_entity->get_method_UNSAFE("__new"));
+	}
 }
 
 } // namespace bpp::AST

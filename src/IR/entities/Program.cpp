@@ -32,7 +32,10 @@ bpp::CodeGen::CodeSegment Program::generate_code(bpp::CodeGen::CodeGenState* sta
 
 	code.add_pre_code("#!/usr/bin/env bash\n");
 
-	code.absorb_all_to_pre(this->supershell_function->generate_code(state));
+	if (state->target_bash_version < BashVersion{5, 3}) {
+		code.absorb_all_to_pre(this->supershell_function->generate_code(state));
+	} // Bash>=5.3 has a native supershell implementation, skip adding our own
+
 	code.absorb_all_to_pre(this->repeat_function->generate_code(state));
 	code.absorb_all_to_pre(this->vtable_lookup_function->generate_code(state));
 	code.absorb_all_to_pre(this->dynamic_cast_function->generate_code(state));

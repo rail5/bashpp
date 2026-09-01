@@ -121,15 +121,12 @@ bpp::CodeGen::CodeSegment SystemMethod::generate_inline_new_code(bpp::CodeGen::C
 			// Recursively localize 'new' for the data member
 			result.absorb_all_to_main(dm_new_sys_method->generate_inline_code(state, localize, obj));
 		} else {
-			// If not localizing, call the __new method
-			ObjectReference::ReferenceChain ref(obj);
-			ref.append(dm);
-			ref.set_method(dm_new_sys_method);
-
-			std::shared_ptr<ObjectReference> obj_ref = std::make_shared<ObjectReference>();
-			obj_ref->set_reference_chain(std::move(ref));
-
-			result.absorb_all_to_main(obj_ref->generate_code(state));
+			// If not localizing, call the __new method in a supershell, and assign its output to the datamember
+			bpp::IR::Supershell sp;
+			sp.inherit(shared_from_this());
+			sp.add(dm_new_sys_method->get_address());
+			result.add_main_code("eval " + obj_address + dm->get_address() + "=");
+			result.egalitarian_merge(sp.generate_code(state));
 		}
 	}
 

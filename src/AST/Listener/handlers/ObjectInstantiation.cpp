@@ -108,22 +108,31 @@ void Listener::exit(ObjectInstantiation* /*node*/) {
 		throw bpp::ErrorHandling::InternalError(error_message);
 	}
 
-	// Add a call to the class's __new method to instantiate the object
-	const auto object_class = object->get_type().lock();
-	bpp_assert(object_class != nullptr, "Object has no type when exiting ObjectInstantiation node");
-	auto new_method = object_class->get_method_UNSAFE("__new");
-	bpp_assert(new_method != nullptr, "Class '" + object_class->get_name() + "' does not have a '__new' method");
+	if (!object->is_pointer()) {
+		// Add a call to the class's __new method to instantiate the object
+		const auto object_class = object->get_type().lock();
+		bpp_assert(object_class != nullptr, "Object has no type when exiting ObjectInstantiation node");
+		auto new_method = object_class->get_method_UNSAFE("__new");
+		bpp_assert(new_method != nullptr, "Class '" + object_class->get_name() + "' does not have a '__new' method");
 
-	auto method_call = std::make_shared<bpp::IR::ObjectReference>();
-	method_call->inherit(current_code_entity);
-	bpp::IR::ObjectReference::ReferenceChain chain(object);
-	chain.set_method(new_method);
-	method_call->set_reference_chain(std::move(chain));
-	current_code_entity->add(method_call);
-	current_code_entity->add(" >/dev/null\n"); // Discard the output of the __new method, since it will echo the address of the new object
+		auto method_call = std::make_shared<bpp::IR::ObjectReference>();
+		method_call->inherit(current_code_entity);
+		bpp::IR::ObjectReference::ReferenceChain chain(object);
+		chain.set_method(new_method);
+		method_call->set_reference_chain(std::move(chain));
+		current_code_entity->add(method_call);
+		current_code_entity->add(" >/dev/null\n"); // Discard the output of the __new method, since it will echo the address of the new object
 
-	// Mark the class's "__new" method as used
-	new_method->mark_referenced_by(method_call);
+		// Mark the class's "__new" method as used
+		new_method->mark_referenced_by(method_call);
+	} else {
+		current_code_entity->add(object->get_address());
+		if (object->has_initial_value()) {
+			current_code_entity->add(object->get_initial_value().value());
+		} else {
+			current_code_entity->add("=0"); // Default-initialize pointers to null
+		}
+	}
 }
 
 } // namespace bpp::AST

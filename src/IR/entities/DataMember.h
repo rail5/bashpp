@@ -9,6 +9,7 @@
 #include <IR/bpp.h>
 #include <IR/entities/Entity.h>
 #include <IR/entities/Object.h>
+#include <IR/entities/ClassMemberEntity.h>
 
 namespace bpp::IR {
 
@@ -18,24 +19,18 @@ namespace bpp::IR {
  * Although this inherits from Object, it can also be a primitive.
  * The case in which the data member is a primitive is represented by type == nullptr.
  */
-class DataMember : public Object {
+class DataMember : public Object, public ClassMemberEntity {
 	private:
-		VisibilityScope scope = VisibilityScope::PRIVATE;
 		bool m_is_array = false;
-
-		/// If this data member is inherited from a parent class, this points to the parent class's version of this data member.
-		std::weak_ptr<DataMember> parent_datamember;
 	public:
 		/// Addresses of data members can only be returned as suffixes to be appended to the address of the containing object.
 		std::string getAddress() const override { return "__" + getName(); }
-		void set_scope(VisibilityScope scope) { this->scope = scope; }
-               VisibilityScope get_scope() const { return scope; }
 
 		void setIsArray(bool is_array) { this->m_is_array = is_array; }
 		bool isArray() const { return m_is_array; }
 
-		void set_parent_datamember(std::shared_ptr<DataMember> parent_datamember) { this->parent_datamember = parent_datamember; }
-		std::shared_ptr<DataMember> get_parent_datamember() const { return parent_datamember.lock(); }
+		void setParentDatamember(std::shared_ptr<DataMember> parent_datamember) { setParentMember(parent_datamember); }
+		std::shared_ptr<DataMember> getParentDatamember() const { return std::static_pointer_cast<DataMember>(getParentMember()); }
 
 		void addReferencePosition(const SymbolPosition& pos) override;
 

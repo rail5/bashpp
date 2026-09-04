@@ -10,6 +10,7 @@
 #include <IR/entities/BashFunction.h>
 #include <IR/entities/Object.h>
 #include <IR/entities/AddressableEntity.h>
+#include <IR/entities/ClassMemberEntity.h>
 #include <IR/entities/MethodParameter.h>
 
 #include <vector>
@@ -20,18 +21,13 @@ namespace bpp::IR {
 /**
  * @brief A method in a class
  */
-class Method : public BashFunction, public AddressableEntity, public std::enable_shared_from_this<Method> {
+class Method : public BashFunction, public AddressableEntity, public ClassMemberEntity, public std::enable_shared_from_this<Method> {
 	private:
 		/// List of parameters expected to be given as arguments to the method
 		std::vector<std::shared_ptr<MethodParameter>> parameters;
-		VisibilityScope scope = VisibilityScope::PUBLIC;
 
 		bool m_is_virtual = false;
 		bool m_is_overridable = false;
-		bool m_is_inherited = false;
-
-		/// If this method is inherited from a parent class (or even overridden), this points to the parent class's version of this method.
-		std::weak_ptr<Method> parent_method;
 	public:
 		/**
 		 * @brief Add a parameter to this method

@@ -90,7 +90,7 @@ class OwnedEntityList {
 		std::unordered_map<std::string_view, std::size_t> name_to_index;
 	public:
 		bool add(std::shared_ptr<T> entity) {
-			const std::string_view name = entity->view_name();
+			const std::string_view name = entity->viewName();
 			if (name_to_index.contains(name)) return false; // Entity with this name already exists
 			entities.push_back(entity);
 			name_to_index[name] = entities.size() - 1;

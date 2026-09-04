@@ -24,7 +24,7 @@ namespace bpp::IR {
  * It also includes constructs such as compound statements (e.g., 'if' statements and 'while' loops), although these entities don't have names.
  */
 class Entity {
-	protected:
+	private:
 		std::size_t parent_visible_object_count_at_creation = 0;
 		std::size_t program_visible_class_count_at_creation = 0;
 
@@ -54,22 +54,22 @@ class Entity {
 		Entity(Entity&& other) = default;
 		Entity& operator=(Entity&& other) = default;
 
-		virtual std::weak_ptr<const Class> get_containing_class() const { return containing_class; }
-		void set_containing_class(std::weak_ptr<const Class> containing_class) { this->containing_class = std::move(containing_class); }
+		virtual std::weak_ptr<const Class> getContainingClass() const { return containing_class; }
+		void setContainingClass(std::weak_ptr<const Class> containing_class) { this->containing_class = std::move(containing_class); }
 
-		virtual std::weak_ptr<const Program> get_containing_program() const { return containing_program; }
-		void set_containing_program(std::weak_ptr<const Program> containing_program) { this->containing_program = std::move(containing_program); }
+		virtual std::weak_ptr<const Program> getContainingProgram() const { return containing_program; }
+		void setContainingProgram(std::weak_ptr<const Program> containing_program) { this->containing_program = std::move(containing_program); }
 
-		SymbolPosition get_definition_position() const { return definition_position; }
-		void set_definition_position(const SymbolPosition& pos) { this->definition_position = pos; }
+		SymbolPosition getDefinitionPosition() const { return definition_position; }
+		void setDefinitionPosition(const SymbolPosition& pos) { this->definition_position = pos; }
 
-		const std::list<SymbolPosition>& get_reference_positions() const { return reference_positions; }
+		const std::list<SymbolPosition>& getReferencePositions() const { return reference_positions; }
 
 		// Note: Methods require a different procedure.
 		// Adding a reference to a derived class's version of an inherited method should also add a reference
 		// to the base class's version of the method, since both are considered "used" in that case.
 		// Likewise for data members.
-		virtual void add_reference_position(const SymbolPosition& pos) { this->reference_positions.push_back(pos); }
+		virtual void addReferencePosition(const SymbolPosition& pos) { this->reference_positions.push_back(pos); }
 
 		/**
 		 * @brief Inherit from another entity
@@ -88,6 +88,8 @@ class Entity {
 		 */
 		void inherit(std::shared_ptr<const Entity> parent);
 
+		std::weak_ptr<const Entity> getParentEntity() const { return parent_entity; }
+
 		/**
 		 * @brief Get a class by name
 		 *
@@ -99,7 +101,7 @@ class Entity {
 		 * @param max_visible_index The maximum visible index of the class to get (for scoping purposes)
 		 * @return std::shared_ptr<Class> The class, or nullptr if not found
 		 */
-		virtual std::shared_ptr<Class> get_class(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const;
+		virtual std::shared_ptr<Class> getClass(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const;
 
 		/**
 		 * @brief Get an object by name
@@ -114,15 +116,15 @@ class Entity {
 		 * @param max_visible_index The maximum visible index of the object to get (for scoping purposes)
 		 * @return std::shared_ptr<Object> The object, or nullptr if not found
 		 */
-		virtual std::shared_ptr<Object> get_object(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const;
+		virtual std::shared_ptr<Object> getObject(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const;
 
-		virtual std::vector<std::shared_ptr<Class>> get_all_known_classes() const;
-		virtual std::vector<std::shared_ptr<Object>> get_all_known_objects() const;
+		virtual std::vector<std::shared_ptr<Class>> getAllKnownClasses() const;
+		virtual std::vector<std::shared_ptr<Object>> getAllKnownObjects() const;
 
-		virtual std::size_t number_of_known_objects() const;
-		virtual std::size_t number_of_known_classes() const;
+		virtual std::size_t getNumberOfKnownObjects() const;
+		virtual std::size_t getNumberOfKnownClasses() const;
 
-		virtual bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* /*state*/) const { return {}; }
+		virtual bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* /*state*/) const { return {}; }
 
 		/**
 		 * @brief Whether this entity is referenced by any other entities in the program
@@ -131,9 +133,9 @@ class Entity {
 		 *
 		 * For example, if a class's method is never called, we don't need to generate code for it.
 		 */
-		bool is_referenced() const;
-		void mark_referenced_by(std::shared_ptr<const Entity> referencing_entity) { referencing_entities.push_back(referencing_entity); }
-		const std::list<std::weak_ptr<const Entity>>& get_referencing_entities() const { return referencing_entities; }
+		bool isReferenced() const;
+		void markReferencedBy(std::shared_ptr<const Entity> referencing_entity) { referencing_entities.push_back(referencing_entity); }
+		const std::list<std::weak_ptr<const Entity>>& getReferencingEntities() const { return referencing_entities; }
 
 		PRETTYPRINT_HELPERS(Entity)
 };

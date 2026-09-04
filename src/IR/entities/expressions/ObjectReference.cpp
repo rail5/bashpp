@@ -41,19 +41,19 @@ std::string get_reference_chain_prettyprint_string(const ObjectReference::Refere
 	std::string result = "@";
 
 	bpp_assert(!chain.empty(), "Reference chain is empty in get_reference_chain_prettyprint_string()");
-	const auto root = chain.get_root().lock();
+	const auto root = chain.getRoot().lock();
 	bpp_assert(root != nullptr, "Root object in reference chain is null in get_reference_chain_prettyprint_string()");
-	result += root->get_name();
+	result += root->getName();
 	for (auto it = std::next(chain.begin()); it != chain.end(); ++it) {
 		auto obj = (*it).lock();
 		bpp_assert(obj != nullptr, "Data member in reference chain is null in get_reference_chain_prettyprint_string()");
-		result += '.' + obj->get_name();
+		result += '.' + obj->getName();
 	}
 
-	if (chain.has_method()) {
-		auto method = chain.get_method().lock();
+	if (chain.hasMethod()) {
+		auto method = chain.getMethod().lock();
 		bpp_assert(method != nullptr, "Method in reference chain is null in get_reference_chain_prettyprint_string()");
-		result += '.' + method->get_name();
+		result += '.' + method->getName();
 	}
 
 	return result;
@@ -62,10 +62,10 @@ std::string get_reference_chain_prettyprint_string(const ObjectReference::Refere
 
 } // anonymous namespace
 
-bpp::CodeGen::CodeSegment ObjectReference::generate_code(bpp::CodeGen::CodeGenState* state) const {
+bpp::CodeGen::CodeSegment ObjectReference::generateCode(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "ObjectReference::generate_code() should be called with a non-null state pointer");
-	bpp_assert(!get_reference_chain().empty(), "ObjectReference::generate_code() should be called with a non-empty reference chain");
-	bpp_assert(!get_reference_chain().get_root().expired(), "ObjectReference::generate_code() should be called with a non-null object pointer");
+	bpp_assert(!getReferenceChain().empty(), "ObjectReference::generate_code() should be called with a non-empty reference chain");
+	bpp_assert(!getReferenceChain().getRoot().expired(), "ObjectReference::generate_code() should be called with a non-null object pointer");
 	bpp::CodeGen::CodeSegment result;
 
 	/* The purpose of ObjectReference::generate_code is to calculate the address of the final object in the reference chain
@@ -86,11 +86,11 @@ bpp::CodeGen::CodeSegment ObjectReference::generate_code(bpp::CodeGen::CodeGenSt
 	 *                                                                         tmp2=$(!tmp)__member2
 	 *                                                                         etc
 	 */
-	const auto& ref = get_reference_chain();
-	const auto root = ref.get_root().lock();
+	const auto& ref = getReferenceChain();
+	const auto root = ref.getRoot().lock();
 
-	std::string current_address = root->get_address();
-	std::uint8_t indirection_level = root->is_pointer() ? 1 : 0;
+	std::string current_address = root->getAddress();
+	std::uint8_t indirection_level = root->isPointer() ? 1 : 0;
 
 	for (auto it = std::next(ref.begin()); it != ref.end(); ++it) {
 		const auto dm = (*it).lock();
@@ -98,8 +98,8 @@ bpp::CodeGen::CodeSegment ObjectReference::generate_code(bpp::CodeGen::CodeGenSt
 
 		if (indirection_level > 0) {
 			// If there's been indirection, we need to set up temporaries & dereference
-			const std::string lhs = current_address + dm->get_address();
-			const std::string rhs = get_encased_reference(current_address, indirection_level) + dm->get_address();
+			const std::string lhs = current_address + dm->getAddress();
+			const std::string rhs = get_encased_reference(current_address, indirection_level) + dm->getAddress();
 
 			if (state->should_declare_local()) result.add_pre_code("local ");
 
@@ -111,18 +111,18 @@ bpp::CodeGen::CodeSegment ObjectReference::generate_code(bpp::CodeGen::CodeGenSt
 			// Maybe in certain "safer" cases, e.g. small non-recursive functions etc
 		}
 
-		current_address += dm->get_address(); // Append suffix without any encasement, repeatedly, until the end of the sequence
+		current_address += dm->getAddress(); // Append suffix without any encasement, repeatedly, until the end of the sequence
 		indirection_level = std::min(indirection_level + 1, 2);
 	}
 
-	if (ref.has_method()) {
-		auto method = ref.get_method().lock();
+	if (ref.hasMethod()) {
+		auto method = ref.getMethod().lock();
 		bpp_assert(method != nullptr, "Method in reference chain is null in ObjectReference::generate_code()");
-		result.add_main_code(method->get_address() + " "); // Call to the method
+		result.add_main_code(method->getAddress() + " "); // Call to the method
 	}
 
 	// Add the final address of the object, with appropriate encasement for any indirection
-	result.add_main_code(get_encased_reference(current_address, indirection_level));
+	result.add_main_code(get_encased_reference(current_address, indirection_level > 0 ? indirection_level - 1 : 0));
 
 	return result;
 }
@@ -130,7 +130,7 @@ bpp::CodeGen::CodeSegment ObjectReference::generate_code(bpp::CodeGen::CodeGenSt
 PRETTYPRINT_IMPLEMENTATION(ObjectReference, {
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 	os << indent << "(ObjectReference "
-		<< get_reference_chain_prettyprint_string(get_reference_chain())
+		<< get_reference_chain_prettyprint_string(getReferenceChain())
 		<< ")\n";
 	return os;
 })

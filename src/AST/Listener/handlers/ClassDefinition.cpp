@@ -34,10 +34,10 @@ void Listener::enter(ClassDefinition* node) {
 	}
 
 	// 3. Verify that the class name is not already used in the program
-	if (current_program->get_class(class_name)) {
+	if (current_program->getClass(class_name)) {
 		throw bpp::ErrorHandling::SyntaxError(this, node, "Class '" + class_name + "' already defined in program");
 	}
-	if (current_program->get_object(class_name)) {
+	if (current_program->getObject(class_name)) {
 		throw bpp::ErrorHandling::SyntaxError(this, node, "Class name '" + class_name + "' conflicts with an object in the program");
 	}
 
@@ -47,20 +47,20 @@ void Listener::enter(ClassDefinition* node) {
 	// Inherit from a parent class if specified
 	if (node->PARENTCLASSNAME().has_value()) {
 		auto parent_class_name = node->PARENTCLASSNAME().value().getValue();
-		auto parent_class = current_program->get_class(parent_class_name);
+		auto parent_class = current_program->getClass(parent_class_name);
 		if (!parent_class) {
 			throw bpp::ErrorHandling::SyntaxError(this, node, "Parent class '" + parent_class_name + "' not found");
 		}
 		class_entity->inherit(parent_class);
 
-		parent_class->add_reference_position({
+		parent_class->addReferencePosition({
 			get_current_source_file(),
 			node->PARENTCLASSNAME().value().getLine(),
 			node->PARENTCLASSNAME().value().getCharPositionInLine()
 		});
 	}
 
-	class_entity->set_definition_position({
+	class_entity->setDefinitionPosition({
 		get_current_source_file(),
 		node->CLASSNAME().getLine(),
 		node->CLASSNAME().getCharPositionInLine()
@@ -74,42 +74,48 @@ void Listener::enter(ClassDefinition* node) {
 	new_method->inherit(class_entity);
 	auto requested_address_param = std::make_shared<bpp::IR::RequestedAddressParam>(class_entity);
 	requested_address_param->inherit(new_method);
-	new_method->add_parameter(requested_address_param);
+	new_method->addParameter(requested_address_param);
+	new_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
 
 	auto delete_method = std::make_shared<bpp::IR::Builtins::SystemMethod>(bpp::IR::Builtins::SystemMethod::Type::DELETE);
-	delete_method->set_is_virtual(true);
+	delete_method->setIsVirtual(true);
 	delete_method->inherit(class_entity);
-	delete_method->add_parameter(class_entity->get_this_ptr());
+	delete_method->addParameter(class_entity->getThisPtr());
+	delete_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
 
 	auto copy_method = std::make_shared<bpp::IR::Builtins::SystemMethod>(bpp::IR::Builtins::SystemMethod::Type::COPY);
-	copy_method->set_is_virtual(true);
+	copy_method->setIsVirtual(true);
 	copy_method->inherit(class_entity);
-	copy_method->add_parameter(class_entity->get_this_ptr());
+	copy_method->addParameter(class_entity->getThisPtr());
+	copy_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
 
 	auto constructor_method = std::make_shared<bpp::IR::Method>();
-	constructor_method->set_name("__constructor");
-	constructor_method->set_is_overridable(true);
+	constructor_method->setName("__constructor");
+	constructor_method->setIsOverridable(true);
 	constructor_method->inherit(class_entity);
-	constructor_method->add_parameter(class_entity->get_this_ptr());
+	constructor_method->addParameter(class_entity->getThisPtr());
+	constructor_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
 
 	auto destructor_method = std::make_shared<bpp::IR::Method>();
-	destructor_method->set_name("__destructor");
-	destructor_method->set_is_virtual(true);
-	destructor_method->set_is_overridable(true);
+	destructor_method->setName("__destructor");
+	destructor_method->setIsVirtual(true);
+	destructor_method->setIsOverridable(true);
 	destructor_method->inherit(class_entity);
-	destructor_method->add_parameter(class_entity->get_this_ptr());
+	destructor_method->addParameter(class_entity->getThisPtr());
+	destructor_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
 
 	auto toPrimitive_method = std::make_shared<bpp::IR::Method>();
-	toPrimitive_method->set_name("toPrimitive");
-	toPrimitive_method->set_is_virtual(true);
-	toPrimitive_method->set_is_overridable(true);
+	toPrimitive_method->setName("toPrimitive");
+	toPrimitive_method->setIsVirtual(true);
+	toPrimitive_method->setIsOverridable(true);
 	toPrimitive_method->inherit(class_entity);
-	toPrimitive_method->add_parameter(class_entity->get_this_ptr());
-	toPrimitive_method->add("echo \"" + class_entity->get_name() + " Instance\"\n");
+	toPrimitive_method->addParameter(class_entity->getThisPtr());
+	toPrimitive_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
+	toPrimitive_method->add("echo \"" + class_entity->getName() + " Instance\"\n");
 
 	auto add_system_method = [&](std::shared_ptr<bpp::IR::Method>&& method) {
-		if (!class_entity->add_method(std::move(method))) {
-			throw bpp::ErrorHandling::InternalError("Failed to add system method to class '" + class_entity->get_name() + "'");
+		if (!class_entity->addMethod(std::move(method))) {
+			throw bpp::ErrorHandling::InternalError("Failed to add system method to class '" + class_entity->getName() + "'");
 		}
 	};
 
@@ -121,7 +127,7 @@ void Listener::enter(ClassDefinition* node) {
 	add_system_method(std::move(toPrimitive_method));
 
 	entity_stack.push(class_entity);
-	current_program->add_class(class_entity); // Add the class to the program's list of known classes, so that it can be found by name later
+	current_program->addClass(class_entity); // Add the class to the program's list of known classes, so that it can be found by name later
 	current_program->add(class_entity); // Add the class to the entity tree, so that it can be traversed later (e.g. for codegen)
 }
 
@@ -131,8 +137,8 @@ void Listener::exit(ClassDefinition* /*node*/) {
 	auto class_entity = std::static_pointer_cast<bpp::IR::Class>(entity_stack.top());
 	entity_stack.pop();
 
-	if (class_entity->contains_nonprimitive_datamembers()) {
-		program->get_supershell_function()->mark_referenced_by(class_entity->get_method_UNSAFE("__new"));
+	if (class_entity->containsNonprimitiveDatamembers()) {
+		program->getSupershellFunction()->markReferencedBy(class_entity->getMethod_UNSAFE("__new"));
 	}
 }
 

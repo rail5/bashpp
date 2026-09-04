@@ -24,7 +24,7 @@ namespace bpp::IR {
  * Whether the object is a pointer, as well as its type, must be given in the constructor.
  */
 class Object : public Entity, public NamedEntity, public AddressableEntity {
-	protected:
+	private:
 		bool m_is_pointer = false;
 
 		std::weak_ptr<const Class> type;
@@ -36,22 +36,22 @@ class Object : public Entity, public NamedEntity, public AddressableEntity {
 		/// If not a pointer, the object from which this is copied (if any)
 		std::shared_ptr<Object> copy_from = nullptr;
 	public:
-		std::string get_address() const override;
+		std::string getAddress() const override;
 
-		bool is_pointer() const { return m_is_pointer; }
-		void set_is_pointer(bool is_pointer) { m_is_pointer = is_pointer; }
+		bool isPointer() const { return m_is_pointer; }
+		void setIsPointer(bool is_pointer) { m_is_pointer = is_pointer; }
 
-		std::weak_ptr<const Class> get_type() const { return type; }
-		void set_type(std::weak_ptr<const Class> type) { this->type = std::move(type); }
+		std::weak_ptr<const Class> getType() const { return type; }
+		void setType(std::weak_ptr<const Class> type) { this->type = std::move(type); }
 
-		bool is_primitive() const { return type.expired(); }
+		bool isPrimitive() const { return type.expired(); }
 
-		void set_initial_value(const std::shared_ptr<CodeEntity>& value) { initial_value = value; }
-		const std::optional<std::shared_ptr<CodeEntity>>& get_initial_value() const { return initial_value; }
-		bool has_initial_value() const { return initial_value.has_value(); }
+		void setInitialValue(const std::shared_ptr<CodeEntity>& value) { initial_value = value; }
+		const std::optional<std::shared_ptr<CodeEntity>>& getInitialValue() const { return initial_value; }
+		bool hasInitialValue() const { return initial_value.has_value(); }
 
-		void set_copy_from(std::shared_ptr<Object> other) { copy_from = std::move(other); }
-		std::shared_ptr<Object> get_copy_from() const { return copy_from; }
+		void setCopyFrom(std::shared_ptr<Object> other) { copy_from = std::move(other); }
+		std::shared_ptr<Object> getCopyFrom() const { return copy_from; }
 
 		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
@@ -59,7 +59,7 @@ class Object : public Entity, public NamedEntity, public AddressableEntity {
 			if (type.expired()) {
 				os << "Primitive";
 			} else {
-				os << type.lock()->get_name();
+				os << type.lock()->getName();
 			}
 			if (m_is_pointer) os << "*";
 			os << " " << name;
@@ -68,7 +68,7 @@ class Object : public Entity, public NamedEntity, public AddressableEntity {
 				initial_value.value()->prettyPrint(os, indentation_level + 1);
 				os << indent;
 			} else if (copy_from != nullptr) {
-				os << "\n" << indent << "  = copy of " << copy_from->get_name() << "\n" << indent;
+				os << "\n" << indent << "  = copy of " << copy_from->getName() << "\n" << indent;
 			}
 			os << ")\n";
 			return os;

@@ -18,11 +18,11 @@ namespace bpp::IR {
  * Because of the importance of addresses in code generation, and the need for deterministic compilation (esp. for dynamic includes),
  * the entity's address must be determinable entirely by the entity's properties without modifying state, or relying on any external state
  * (e.g., the order of compilation, or the order of declaration of entities).
- * Hence the const-ness of the get_address() method.
+ * Hence the const-ness of the getAddress() method.
  */
 class AddressableEntity {
 	public:
-		virtual std::string get_address() const = 0;
+		virtual std::string getAddress() const = 0;
 	protected:
 		~AddressableEntity() = default;
 		AddressableEntity() = default;

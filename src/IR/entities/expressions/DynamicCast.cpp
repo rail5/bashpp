@@ -13,11 +13,11 @@
 
 namespace bpp::IR {
 
-bpp::CodeGen::CodeSegment DynamicCast::generate_code(bpp::CodeGen::CodeGenState* state) const {
+bpp::CodeGen::CodeSegment DynamicCast::generateCode(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "DynamicCast::generate_code() should be called with a non-null state pointer");
 	bpp::CodeGen::CodeSegment result;
 
-	const auto& inner_code = StringType::generate_code(state);
+	const auto& inner_code = StringType::generateCode(state);
 
 	result.add_pre_code(inner_code.get_pre_code());
 	result.add_post_code(inner_code.get_post_code());
@@ -44,7 +44,7 @@ bpp::CodeGen::CodeSegment DynamicCast::generate_code(bpp::CodeGen::CodeGenState*
 		cast_to.copy_to_main_code(std::get<RawCode>(target_type));
 	} else if (std::holds_alternative<std::shared_ptr<Entity>>(target_type)) {
 		auto entity = std::get<std::shared_ptr<Entity>>(target_type);
-		cast_to.egalitarian_merge(entity->generate_code(state));
+		cast_to.egalitarian_merge(entity->generateCode(state));
 	}
 
 	result.add_pre_code(cast_to.get_pre_code());

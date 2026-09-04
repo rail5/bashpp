@@ -21,7 +21,7 @@ void Listener::enter(RawSubshell* node) {
 	raw_subshell_entity->inherit(current_code_entity);
 	entity_stack.push(raw_subshell_entity);
 
-	raw_subshell_entity->set_definition_position({
+	raw_subshell_entity->setDefinitionPosition({
 		get_current_source_file(),
 		node->getLine(),
 		node->getCharPositionInLine()

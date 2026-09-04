@@ -34,7 +34,7 @@ void Listener::exit(BashVariable* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity when exiting BashVariable node");
 	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
 	current_code_entity->add(bash_variable_entity);
-	current_code_entity->adopt_objects_of(bash_variable_entity);
+	current_code_entity->adoptObjectsOf(bash_variable_entity);
 }
 
 } // namespace bpp::AST

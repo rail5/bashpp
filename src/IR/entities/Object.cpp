@@ -10,7 +10,7 @@
 
 namespace bpp::IR {
 
-std::string Object::get_address() const {
+std::string Object::getAddress() const {
 	bpp_assert(!type.expired(), "Object does not have a type");
 	bpp_assert(!name.empty(), "Object does not have a name");
 
@@ -18,7 +18,7 @@ std::string Object::get_address() const {
 
 	if (m_is_pointer) address += "__ptr__";
 
-	address += type.lock()->get_name() + "__" + name;
+	address += type.lock()->getName() + "__" + name;
 
 	return address;
 }

@@ -20,22 +20,22 @@ void Listener::enter(DestructorDefinition* node) {
 
 	auto new_destructor = std::make_shared<bpp::IR::Method>();
 	new_destructor->inherit(current_class);
-	new_destructor->set_name("__destructor");
-	new_destructor->set_scope(bpp::IR::VisibilityScope::PUBLIC);
-	new_destructor->set_is_virtual(true);
+	new_destructor->setName("__destructor");
+	new_destructor->setScope(bpp::IR::VisibilityScope::PUBLIC);
+	new_destructor->setIsVirtual(true);
 
-	auto res = current_class->add_method(std::move(new_destructor));
+	auto res = current_class->addMethod(std::move(new_destructor));
 	if (!res) {
-		throw bpp::ErrorHandling::SyntaxError(this, node, "Destructor already defined in class '" + current_class->get_name() + "'");
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Destructor already defined in class '" + current_class->getName() + "'");
 	}
 	const auto& stored_destructor = res.value();
-	stored_destructor->set_definition_position({
+	stored_destructor->setDefinitionPosition({
 		get_current_source_file(),
 		node->getLine(),
 		node->getCharPositionInLine()
 	});
 
-	stored_destructor->add_parameter(current_class->get_this_ptr());
+	stored_destructor->addParameter(current_class->getThisPtr());
 
 	entity_stack.push(stored_destructor);
 }
@@ -45,15 +45,15 @@ void Listener::exit(DestructorDefinition* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::Method>(), "Topmost entity on stack is not a Method when exiting DestructorDefinition node");
 	auto destructor = std::static_pointer_cast<bpp::IR::Method>(entity_stack.top());
 
-	auto current_class = destructor->get_containing_class().lock();
+	auto current_class = destructor->getContainingClass().lock();
 	bpp_assert(current_class != nullptr, "Destructor's containing class is null when exiting DestructorDefinition node");
-	auto parent_class = current_class->get_parent_class();
+	auto parent_class = current_class->getParentClass();
 	if (parent_class) {
-		auto parent_destructor = parent_class->get_method_UNSAFE("__destructor");
+		auto parent_destructor = parent_class->getMethod_UNSAFE("__destructor");
 		if (parent_destructor) {
 			// FIXME(@rail5): Call parent destructor at the end of the child destructor.
 
-			parent_destructor->mark_referenced_by(destructor);
+			parent_destructor->markReferencedBy(destructor);
 		}
 	}
 

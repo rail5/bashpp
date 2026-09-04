@@ -34,36 +34,36 @@ void Listener::enter(MethodDefinition* node) {
 		throw bpp::ErrorHandling::SyntaxError(this, node, msg);
 	}
 
-	new_method->set_name(node->NAME());
-	new_method->set_is_virtual(node->VIRTUAL());
+	new_method->setName(node->NAME());
+	new_method->setIsVirtual(node->VIRTUAL());
 	switch (node->ACCESSMODIFIER().getValue()) {
-		case AccessModifier::PUBLIC: new_method->set_scope(bpp::IR::VisibilityScope::PUBLIC); break;
-		case AccessModifier::PRIVATE: new_method->set_scope(bpp::IR::VisibilityScope::PRIVATE); break;
-		case AccessModifier::PROTECTED: new_method->set_scope(bpp::IR::VisibilityScope::PROTECTED); break;
+		case AccessModifier::PUBLIC: new_method->setScope(bpp::IR::VisibilityScope::PUBLIC); break;
+		case AccessModifier::PRIVATE: new_method->setScope(bpp::IR::VisibilityScope::PRIVATE); break;
+		case AccessModifier::PROTECTED: new_method->setScope(bpp::IR::VisibilityScope::PROTECTED); break;
 		default: throw bpp::ErrorHandling::InternalError("Unknown access modifier in method definition");
 	}
 
-	auto res = current_class->add_method(std::move(new_method));
+	auto res = current_class->addMethod(std::move(new_method));
 	if (!res) {
 		std::string error_message = "Method '" + node->NAME().getValue() + "' ";
 		if (res.error() == bpp::IR::AddError::NAME_CONFLICTS_WITH_EXISTING_DATAMEMBER) {
-			error_message += "conflicts with existing data member in class '" + current_class->get_name() + "'";
+			error_message += "conflicts with existing data member in class '" + current_class->getName() + "'";
 		} else {
-			error_message += "already defined in class '" + current_class->get_name() + "'";
+			error_message += "already defined in class '" + current_class->getName() + "'";
 		}
 		throw bpp::ErrorHandling::SyntaxError(this, node->NAME(), error_message);
 	}
 
 	const auto& stored_method = res.value();
 
-	stored_method->set_definition_position({
+	stored_method->setDefinitionPosition({
 		get_current_source_file(),
 		node->NAME().getLine(),
 		node->NAME().getCharPositionInLine()
 	});
 
-	if (auto parent_method = stored_method->get_parent_method()) {
-		parent_method->add_reference_position({
+	if (auto parent_method = stored_method->getParentMethod()) {
+		parent_method->addReferencePosition({
 			get_current_source_file(),
 			node->NAME().getLine(),
 			node->NAME().getCharPositionInLine()
@@ -71,10 +71,10 @@ void Listener::enter(MethodDefinition* node) {
 	}
 
 	// Set up the method's parameters
-	stored_method->reserve_parameters(node->PARAMETERS().size() + 1); // +1 for the implicit `this` parameter
+	stored_method->reserveParameters(node->PARAMETERS().size() + 1); // +1 for the implicit `this` parameter
 
 	// 1. The implicit `this` parameter, which is always the first parameter of a method
-	stored_method->add_parameter(current_class->get_this_ptr());
+	stored_method->addParameter(current_class->getThisPtr());
 
 	// 2. The user-defined parameters
 	for (const auto& p : node->PARAMETERS()) {
@@ -84,7 +84,7 @@ void Listener::enter(MethodDefinition* node) {
 
 		if (param.type.has_value()) {
 			auto type_name = param.type.value().getValue();
-			param_type = stored_method->get_class(type_name);
+			param_type = stored_method->getClass(type_name);
 			if (!param_type) throw bpp::ErrorHandling::SyntaxError(this, p, "Unknown class: " + type_name);
 
 			if (!param.pointer) throw bpp::ErrorHandling::SyntaxError(this, p, "Methods can only accept pointers as parameters, not objects");
@@ -96,7 +96,7 @@ void Listener::enter(MethodDefinition* node) {
 				throw bpp::ErrorHandling::SyntaxError(this, p, msg);
 			}
 
-			param_type->add_reference_position({
+			param_type->addReferencePosition({
 				get_current_source_file(),
 				param.type.value().getLine(),
 				param.type.value().getCharPositionInLine()
@@ -111,20 +111,20 @@ void Listener::enter(MethodDefinition* node) {
 
 		auto parameter_entity = std::make_shared<bpp::IR::MethodParameter>();
 		parameter_entity->inherit(stored_method);
-		parameter_entity->set_type(param_type);
-		parameter_entity->set_is_pointer(param_type != nullptr);
-		parameter_entity->set_name(param_name);
+		parameter_entity->setType(param_type);
+		parameter_entity->setIsPointer(param_type != nullptr);
+		parameter_entity->setName(param_name);
 
-		parameter_entity->set_definition_position({
+		parameter_entity->setDefinitionPosition({
 			get_current_source_file(),
 			param.name.getLine(),
 			param.name.getCharPositionInLine()
 		});
 
-		if (!stored_method->add_parameter(parameter_entity)) {
-			if (parameter_entity->get_type().lock()) {
-				if (stored_method->get_object(param_name)) throw bpp::ErrorHandling::SyntaxError(this, param.name, "Parameter name conflicts with existing object: " + param_name);
-				if (stored_method->get_class(param_name)) throw bpp::ErrorHandling::SyntaxError(this, param.name, "Parameter name conflicts with existing class: " + param_name);
+		if (!stored_method->addParameter(parameter_entity)) {
+			if (parameter_entity->getType().lock()) {
+				if (stored_method->getObject(param_name)) throw bpp::ErrorHandling::SyntaxError(this, param.name, "Parameter name conflicts with existing object: " + param_name);
+				if (stored_method->getClass(param_name)) throw bpp::ErrorHandling::SyntaxError(this, param.name, "Parameter name conflicts with existing class: " + param_name);
 			}
 			// If we reach here, the parameter name is already in use
 			throw bpp::ErrorHandling::SyntaxError(this, param.name, "Duplicate parameter name: " + param_name);

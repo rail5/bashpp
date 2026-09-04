@@ -24,9 +24,9 @@ void Listener::enter(DatamemberDeclaration* node) {
 	dm->inherit(current_class);
 
 	switch (node->ACCESSMODIFIER().getValue()) {
-		case AccessModifier::PUBLIC: dm->set_scope(bpp::IR::VisibilityScope::PUBLIC); break;
-		case AccessModifier::PRIVATE: dm->set_scope(bpp::IR::VisibilityScope::PRIVATE); break;
-		case AccessModifier::PROTECTED: dm->set_scope(bpp::IR::VisibilityScope::PROTECTED); break;
+		case AccessModifier::PUBLIC: dm->setScope(bpp::IR::VisibilityScope::PUBLIC); break;
+		case AccessModifier::PRIVATE: dm->setScope(bpp::IR::VisibilityScope::PRIVATE); break;
+		case AccessModifier::PROTECTED: dm->setScope(bpp::IR::VisibilityScope::PROTECTED); break;
 		default: throw bpp::ErrorHandling::InternalError("Unknown access modifier in data member declaration");
 	}
 
@@ -40,16 +40,16 @@ void Listener::enter(DatamemberDeclaration* node) {
 	const auto& id = node->IDENTIFIER();
 	if (id.has_value()) {
 		// This is a primitive data member
-		dm->set_name(id.value().getValue());
+		dm->setName(id.value().getValue());
 
-		if (!bpp::IR::is_valid_identifier(dm->get_name())) {
-			std::string msg = "Invalid data member name: '" + dm->get_name() + "'";
-			if (dm->get_name().contains("__")) msg += " (Bash++ identifiers cannot contain double underscores)";
-			if (bpp::IR::is_protected_keyword(dm->get_name())) msg += " ('" + dm->get_name() + "' is a keyword)";
+		if (!bpp::IR::is_valid_identifier(dm->getName())) {
+			std::string msg = "Invalid data member name: '" + dm->getName() + "'";
+			if (dm->getName().contains("__")) msg += " (Bash++ identifiers cannot contain double underscores)";
+			if (bpp::IR::is_protected_keyword(dm->getName())) msg += " ('" + dm->getName() + "' is a keyword)";
 			throw bpp::ErrorHandling::SyntaxError(this, node, msg);
 		}
 
-		dm->set_definition_position({
+		dm->setDefinitionPosition({
 			get_current_source_file(),
 			id.value().getLine(),
 			id.value().getCharPositionInLine()
@@ -65,26 +65,26 @@ void Listener::exit(DatamemberDeclaration* node) {
 	auto dm = std::static_pointer_cast<bpp::IR::DataMember>(entity_stack.top());
 	entity_stack.pop();
 
-	if (dm->is_pointer() && !dm->has_initial_value()) {
+	if (dm->isPointer() && !dm->hasInitialValue()) {
 		// Pointers should be auto-initialized to @nullptr (0) if no initial value is provided
 		auto value_assignment = std::make_shared<bpp::IR::ValueAssignment>();
 		value_assignment->inherit(dm);
-		value_assignment->set_lvalue_object(dm);
+		value_assignment->setLvalueObject(dm);
 		value_assignment->add("0");
-		dm->set_initial_value(value_assignment);
+		dm->setInitialValue(value_assignment);
 	}
 
 	bpp_assert(topmost_entity_is<bpp::IR::Class>(), "Topmost entity on stack is not a Class when exiting DatamemberDeclaration node");
 	auto current_class = std::static_pointer_cast<bpp::IR::Class>(entity_stack.top());
-	auto res = current_class->add_datamember(dm);
+	auto res = current_class->addDatamember(dm);
 	if (!res) {
 		if (res.error() == bpp::IR::AddError::NAME_CONFLICTS_WITH_EXISTING_DATAMEMBER) {
 			throw bpp::ErrorHandling::SyntaxError(this, node,
-				"Data member name has already been used: @" + current_class->get_name() + "." + dm->get_name());
+				"Data member name has already been used: @" + current_class->getName() + "." + dm->getName());
 		}
 		if (res.error() == bpp::IR::AddError::NAME_CONFLICTS_WITH_EXISTING_METHOD) {
 			throw bpp::ErrorHandling::SyntaxError(this, node,
-				"Data member name conflicts with existing method: " + current_class->get_name() + "." + dm->get_name());
+				"Data member name conflicts with existing method: " + current_class->getName() + "." + dm->getName());
 		}
 	}
 }

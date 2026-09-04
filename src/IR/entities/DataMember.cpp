@@ -8,10 +8,10 @@
 
 namespace bpp::IR {
 
-void DataMember::add_reference_position(const SymbolPosition& pos) {
-	Entity::add_reference_position(pos);
-	if (auto parent = parent_datamember.lock()) {
-		parent->add_reference_position(pos);
+void DataMember::addReferencePosition(const SymbolPosition& pos) {
+	Entity::addReferencePosition(pos);
+	if (auto parent = getParentDatamember()) {
+		parent->addReferencePosition(pos);
 	}
 }
 
@@ -19,9 +19,9 @@ PRETTYPRINT_IMPLEMENTATION(DataMember, {
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 
 	os << indent;
-	os << "(DataMember: " << get_name() << " [";
+	os << "(DataMember: " << getName() << " [";
 
-	switch (scope) {
+	switch (getScope()) {
 		case VisibilityScope::PUBLIC: os << "public"; break;
 		case VisibilityScope::PRIVATE: os << "private"; break;
 		case VisibilityScope::PROTECTED: os << "protected"; break;
@@ -29,20 +29,20 @@ PRETTYPRINT_IMPLEMENTATION(DataMember, {
 		default: os << "<error_scope>"; break;
 	}
 
-	if (is_primitive()) {
+	if (isPrimitive()) {
 		os << ", primitive";
-		if (is_array()) os << ", array";
+		if (isArray()) os << ", array";
 	} else {
-		bpp_assert(!type.expired(), "DataMember is not primitive but has no type");
-		os << ", " << type.lock()->get_name();
-		if (is_pointer()) os << ", pointer";
+		bpp_assert(!getType().expired(), "DataMember is not primitive but has no type");
+		os << ", " << getType().lock()->getName();
+		if (isPointer()) os << ", pointer";
 	}
 
 	os << "]";
 
-	if (get_initial_value().has_value()) {
+	if (getInitialValue().has_value()) {
 		os << "\n" << indent << std::string(PRETTYPRINT_INDENTATION_AMOUNT, ' ') << "=\n";
-		get_initial_value().value()->prettyPrint(os, indentation_level + 1);
+		getInitialValue().value()->prettyPrint(os, indentation_level + 1);
 		os << indent;
 	}
 

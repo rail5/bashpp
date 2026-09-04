@@ -10,14 +10,14 @@
 
 namespace bpp::IR {
 
-bpp::CodeGen::CodeSegment BashFunction::generate_code(bpp::CodeGen::CodeGenState* state) const {
+bpp::CodeGen::CodeSegment BashFunction::generateCode(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "BashFunction::generate_code() should be called with a non-null state pointer");
 	bpp::CodeGen::CodeSegment code;
 
 	state->nested_bash_function_depth++;
 
 	code.add_pre_code(name + "() {\n");
-	code.egalitarian_merge(CodeEntity::generate_code(state));
+	code.egalitarian_merge(CodeEntity::generateCode(state));
 	code.add_post_code("}\n");
 
 	state->nested_bash_function_depth--;

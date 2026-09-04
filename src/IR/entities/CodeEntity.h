@@ -32,7 +32,7 @@ class CodeEntity : public Entity {
 		/// The children of this node in the entity tree
 		std::vector<RawCodeOrEntity> children;
 	public:
-		const std::vector<RawCodeOrEntity>& get_children() const { return children; }
+		const std::vector<RawCodeOrEntity>& getChildren() const { return children; }
 
 		/**
 		 * @brief Add raw code to the entity tree as a child of this code entity
@@ -59,8 +59,8 @@ class CodeEntity : public Entity {
 		 * 
 		 * @param object The object to add
 		 */
-		bool add_object(std::shared_ptr<Object> object);
-		const OwnedEntityList<Object>& get_local_objects() const { return local_objects; }
+		bool addObject(std::shared_ptr<Object> object);
+		const OwnedEntityList<Object>& getLocalObjects() const { return local_objects; }
 
 		/**
 		 * @brief Get an object by name, searching local objects first, then parent entities
@@ -69,15 +69,15 @@ class CodeEntity : public Entity {
 		 * @param max_visible_index The maximum visible index of the object to get (for scoping purposes)
 		 * @return std::shared_ptr<Object> The object, or nullptr if not found
 		 */
-		std::shared_ptr<Object> get_object(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const override;
+		std::shared_ptr<Object> getObject(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const override;
 
 		/**
 		 * @brief Get a list of all objects known to this code entity, whether owned by this code entity or merely visible to it
 		 * 
 		 * @return std::vector<std::shared_ptr<Object>> A vector of all objects known to this code entity
 		 */
-		std::vector<std::shared_ptr<Object>> get_all_known_objects() const override;
-		std::size_t number_of_known_objects() const override;
+		std::vector<std::shared_ptr<Object>> getAllKnownObjects() const override;
+		std::size_t getNumberOfKnownObjects() const override;
 
 		/**
 		 * @brief Adopt all local objects from another CodeEntity into this one.
@@ -86,9 +86,9 @@ class CodeEntity : public Entity {
 		 * 
 		 * @param other The other CodeEntity from which to adopt local objects
 		 */
-		void adopt_objects_of(std::shared_ptr<CodeEntity> other);
+		void adoptObjectsOf(std::shared_ptr<CodeEntity> other);
 
-		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 
 		PRETTYPRINT_OVERRIDE();
 };

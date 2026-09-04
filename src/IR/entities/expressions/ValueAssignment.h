@@ -21,21 +21,21 @@ class ValueAssignment : public StringType {
 		bool array_assignment = false; // E.g arr=()
 		bool adding = false; // E.g. arr+=("value")
 	public:
-		void set_rvalue_nonprimitive(bool is_nonprimitive) { rvalue_nonprimitive = is_nonprimitive; }
-		void set_lvalue_nonprimitive(bool is_nonprimitive) { lvalue_nonprimitive = is_nonprimitive; }
-		void set_lvalue_object(std::shared_ptr<Object> obj) { lvalue_object = std::move(obj); }
-		void set_rvalue_object(std::shared_ptr<Object> obj) { rvalue_object = std::move(obj); }
-		void set_array_assignment(bool is_array_assignment) { array_assignment = is_array_assignment; }
-		void set_adding(bool is_adding) { adding = is_adding; }
+		void setLvalueNonprimitive(bool is_nonprimitive) { lvalue_nonprimitive = is_nonprimitive; }
+		void setRvalueNonprimitive(bool is_nonprimitive) { rvalue_nonprimitive = is_nonprimitive; }
+		void setLvalueObject(std::shared_ptr<Object> obj) { lvalue_object = std::move(obj); }
+		void setRvalueObject(std::shared_ptr<Object> obj) { rvalue_object = std::move(obj); }
+		void setArrayAssignment(bool is_array_assignment) { array_assignment = is_array_assignment; }
+		void setAdding(bool is_adding) { adding = is_adding; }
 
-		bool is_lvalue_nonprimitive() const { return lvalue_nonprimitive; }
-		bool is_rvalue_nonprimitive() const { return rvalue_nonprimitive; }
-		std::shared_ptr<Object> get_lvalue_object() const { return lvalue_object; }
-		std::shared_ptr<Object> get_rvalue_object() const { return rvalue_object; }
-		bool is_array_assignment() const { return array_assignment; }
-		bool is_adding() const { return adding; }
+		bool isLvalueNonprimitive() const { return lvalue_nonprimitive; }
+		bool isRvalueNonprimitive() const { return rvalue_nonprimitive; }
+		std::shared_ptr<Object> getLvalueObject() const { return lvalue_object; }
+		std::shared_ptr<Object> getRvalueObject() const { return rvalue_object; }
+		bool isArrayAssignment() const { return array_assignment; }
+		bool isAdding() const { return adding; }
 
-		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 		PRETTYPRINT_OVERRIDE();
 };
 

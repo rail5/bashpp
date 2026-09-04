@@ -16,19 +16,19 @@
 
 namespace bpp::IR::Builtins {
 
-bpp::CodeGen::CodeSegment SystemMethod::generate_code(bpp::CodeGen::CodeGenState* state) const {
+bpp::CodeGen::CodeSegment SystemMethod::generateCode(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "SystemMethod::generate_code() should be called with a non-null state pointer");
 	state->current_method = shared_from_this();
 
 	bpp::CodeGen::CodeSegment result;
 
-	result.add_pre_code(get_address() + "() {\n");
+	result.add_pre_code(getAddress() + "() {\n");
 
-	for (const auto& param : get_parameters()) {
-		result.absorb_all_to_pre(param->generate_code(state));
+	for (const auto& param : getParameters()) {
+		result.absorb_all_to_pre(param->generateCode(state));
 	}
 
-	result.egalitarian_merge(generate_inline_code(state, false));
+	result.egalitarian_merge(generateInlineCode(state, false));
 
 	// __new should echo the address of the new object, so that it can be captured by the caller
 	if (type == Type::NEW) result.add_main_code("\necho ${__this}\n");
@@ -39,18 +39,18 @@ bpp::CodeGen::CodeSegment SystemMethod::generate_code(bpp::CodeGen::CodeGenState
 	return result;
 }
 
-bpp::CodeGen::CodeSegment SystemMethod::generate_inline_code(bpp::CodeGen::CodeGenState* state, bool localize, std::shared_ptr<const Object> obj) const {
+bpp::CodeGen::CodeSegment SystemMethod::generateInlineCode(bpp::CodeGen::CodeGenState* state, bool localize, std::shared_ptr<const Object> obj) const {
 	bpp_assert(state != nullptr, "SystemMethod::generate_inline_code() should be called with a non-null state pointer");
 
 	if (!obj) {
-		auto cls = get_containing_class().lock();
+		auto cls = getContainingClass().lock();
 		bpp_assert(cls != nullptr, "SystemMethod::generate_inline_code() called on a SystemMethod with no containing class");
-		obj = cls->get_this_ptr();
+		obj = cls->getThisPtr();
 		bpp_assert(obj != nullptr, "SystemMethod::generate_inline_code() called on a SystemMethod with no this pointer in its containing class");
 	}
 
 	switch (type) {
-		case Type::NEW: return generate_inline_new_code(state, localize, obj);
+		case Type::NEW: return generateInlineNewCode(state, localize, obj);
 		//case Type::DELETE: return generate_inline_delete_code(state, localize, obj);
 		//case Type::COPY: return generate_inline_copy_code(state, localize, obj);
 		default:
@@ -58,39 +58,39 @@ bpp::CodeGen::CodeSegment SystemMethod::generate_inline_code(bpp::CodeGen::CodeG
 	}
 }
 
-bpp::CodeGen::CodeSegment SystemMethod::generate_inline_new_code(bpp::CodeGen::CodeGenState* state, bool localize, std::shared_ptr<const Object> obj) const {
+bpp::CodeGen::CodeSegment SystemMethod::generateInlineNewCode(bpp::CodeGen::CodeGenState* state, bool localize, std::shared_ptr<const Object> obj) const {
 	bpp_assert(state != nullptr, "SystemMethod::generate_inline_new_code() should be called with a non-null state pointer");
 	bpp_assert(type == Type::NEW, "SystemMethod::generate_inline_new_code() called on a non-NEW SystemMethod");
 	bpp_assert(obj != nullptr, "SystemMethod::generate_inline_new_code() called with a null object pointer");
 
-	std::string obj_address = obj->get_address();
+	std::string obj_address = obj->getAddress();
 
 	if (obj_address == "__this") obj_address = "${__this}"; // TODO(@rail5): HACK. Special-casing the @this pointer to add encasement
 
-	const auto cls = get_containing_class().lock();
+	const auto cls = getContainingClass().lock();
 	bpp_assert(cls != nullptr, "SystemMethod::generate_inline_new_code() called on a SystemMethod with no containing class");
 
 	bpp::CodeGen::CodeSegment result;
 
 	std::string maybe_local = localize ? "local " : "";
 
-	result.add_pre_code("eval \"" + maybe_local + obj_address + "____vPointer=bpp__" + cls->get_name() + "____vTable\"\n");
+	result.add_pre_code("eval \"" + maybe_local + obj_address + "____vPointer=bpp__" + cls->getName() + "____vTable\"\n");
 
-	for (const auto& dm : cls->get_datamembers()) {
-		if (dm->is_primitive() || dm->is_pointer()) {
+	for (const auto& dm : cls->getAllDatamembers()) {
+		if (dm->isPrimitive() || dm->isPointer()) {
 			bpp::CodeGen::CodeSegment default_value_code;
-			if (dm->get_initial_value().has_value()) {
-				default_value_code = dm->get_initial_value().value()->generate_code(state);
+			if (dm->getInitialValue().has_value()) {
+				default_value_code = dm->getInitialValue().value()->generateCode(state);
 			} else {
 				default_value_code.add_main_code("=");
 			}
 
 			result.add_main_code(default_value_code.get_pre_code());
 
-			if (dm->is_array()) {
-				if (!dm->get_initial_value().has_value()) default_value_code.add_main_code("()");
+			if (dm->isArray()) {
+				if (!dm->getInitialValue().has_value()) default_value_code.add_main_code("()");
 
-				result.add_main_code("eval \"" + maybe_local + obj_address + dm->get_address());
+				result.add_main_code("eval \"" + maybe_local + obj_address + dm->getAddress());
 				result.add_main_code(default_value_code.get_main_code());
 				result.add_main_code("\n");
 
@@ -100,7 +100,7 @@ bpp::CodeGen::CodeSegment SystemMethod::generate_inline_new_code(bpp::CodeGen::C
 				result.add_main_code(default_value_code.get_main_code());
 				result.add_main_code("\n");
 
-				result.add_main_code("eval \"" + maybe_local + obj_address + dm->get_address() + "=\\$__objAssignment\"\n");
+				result.add_main_code("eval \"" + maybe_local + obj_address + dm->getAddress() + "=\\$__objAssignment\"\n");
 
 				result.add_main_code(default_value_code.get_post_code());
 			}
@@ -109,24 +109,24 @@ bpp::CodeGen::CodeSegment SystemMethod::generate_inline_new_code(bpp::CodeGen::C
 		}
 
 		// Non-primitive, non-pointer case
-		const auto dm_cls = dm->get_type().lock();
+		const auto dm_cls = dm->getType().lock();
 		bpp_assert(dm_cls != nullptr, "Nonprimitive data member has no type in SystemMethod::generate_inline_new_code()");
 
-		const auto dm_new_method = dm_cls->get_method_UNSAFE("__new");
-		bpp_assert(dm_new_method != nullptr, "Class " + dm_cls->get_name() + " has no __new method in SystemMethod::generate_inline_new_code()");
-		bpp_assert(std::dynamic_pointer_cast<SystemMethod>(dm_new_method) != nullptr, "Class " + dm_cls->get_name() + " has a non-SystemMethod __new method in SystemMethod::generate_inline_new_code()");
+		const auto dm_new_method = dm_cls->getMethod_UNSAFE("__new");
+		bpp_assert(dm_new_method != nullptr, "Class " + dm_cls->getName() + " has no __new method in SystemMethod::generate_inline_new_code()");
+		bpp_assert(std::dynamic_pointer_cast<SystemMethod>(dm_new_method) != nullptr, "Class " + dm_cls->getName() + " has a non-SystemMethod __new method in SystemMethod::generate_inline_new_code()");
 		const auto dm_new_sys_method = std::static_pointer_cast<SystemMethod>(dm_new_method);
 
 		if (localize) {
 			// Recursively localize 'new' for the data member
-			result.absorb_all_to_main(dm_new_sys_method->generate_inline_code(state, localize, obj));
+			result.absorb_all_to_main(dm_new_sys_method->generateInlineCode(state, localize, obj));
 		} else {
 			// If not localizing, call the __new method in a supershell, and assign its output to the datamember
 			bpp::IR::Supershell sp;
 			sp.inherit(shared_from_this());
-			sp.add(dm_new_sys_method->get_address());
-			result.add_main_code("eval " + obj_address + dm->get_address() + "=");
-			result.egalitarian_merge(sp.generate_code(state));
+			sp.add(dm_new_sys_method->getAddress());
+			result.add_main_code("eval " + obj_address + dm->getAddress() + "=");
+			result.egalitarian_merge(sp.generateCode(state));
 		}
 	}
 

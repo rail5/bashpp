@@ -31,7 +31,7 @@ class Program : public CodeEntity, public std::enable_shared_from_this<Program> 
 		std::shared_ptr<Builtins::SystemFunction> dynamic_cast_function = nullptr;
 		std::shared_ptr<Builtins::SystemFunction> typeof_function = nullptr;
 	public:
-		void add_diagnostic(bpp::ErrorHandling::Diagnostic diagnostic) {}
+		void addDiagnostic(bpp::ErrorHandling::Diagnostic diagnostic) {}
 
 		/**
 		 * @brief Add a class to the program's list of known classes
@@ -40,13 +40,12 @@ class Program : public CodeEntity, public std::enable_shared_from_this<Program> 
 		 * To place the class's definition, you must call `Program::add(entity)`, as with any other entity.
 		 * 
 		 * @param class_entity The class to add
-		 * @return true if the class was added successfully
-		 * @return false if a class with the same name already exists in the program
+		 * @return true if the class was added successfully, false if a class with the same name already exists in the program
 		 */
-		bool add_class(std::shared_ptr<Class> class_entity);
-		std::shared_ptr<Class> get_class(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const override { return classes.find(name, max_visible_index); }
-		std::vector<std::shared_ptr<Class>> get_all_known_classes() const override { return classes.get_entities(); }
-		std::size_t number_of_known_classes() const override { return classes.size(); }
+		bool addClass(std::shared_ptr<Class> class_entity);
+		std::shared_ptr<Class> getClass(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const override { return classes.find(name, max_visible_index); }
+		std::vector<std::shared_ptr<Class>> getAllKnownClasses() const override { return classes.get_entities(); }
+		std::size_t getNumberOfKnownClasses() const override { return classes.size(); }
 
 		/**
 		 * @brief Take ownership of the classes of another program.
@@ -55,23 +54,23 @@ class Program : public CodeEntity, public std::enable_shared_from_this<Program> 
 		 * 
 		 * @param other_program The program whose classes we are adopting
 		 */
-		void adopt_classes_of(std::shared_ptr<IncludedProgram> other_program);
+		void adoptClassesOf(std::shared_ptr<IncludedProgram> other_program);
 
-		std::weak_ptr<const Program> get_containing_program() const override { return weak_from_this(); }
+		std::weak_ptr<const Program> getContainingProgram() const override { return weak_from_this(); }
 
-		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 
-		std::shared_ptr<Builtins::SystemFunction> get_supershell_function() const { return supershell_function; }
-		std::shared_ptr<Builtins::SystemFunction> get_repeat_function() const { return repeat_function; }
-		std::shared_ptr<Builtins::SystemFunction> get_vtable_lookup_function() const { return vtable_lookup_function; }
-		std::shared_ptr<Builtins::SystemFunction> get_dynamic_cast_function() const { return dynamic_cast_function; }
-		std::shared_ptr<Builtins::SystemFunction> get_typeof_function() const { return typeof_function; }
+		std::shared_ptr<Builtins::SystemFunction> getSupershellFunction() const { return supershell_function; }
+		std::shared_ptr<Builtins::SystemFunction> getRepeatFunction() const { return repeat_function; }
+		std::shared_ptr<Builtins::SystemFunction> getVtableLookupFunction() const { return vtable_lookup_function; }
+		std::shared_ptr<Builtins::SystemFunction> getDynamicCastFunction() const { return dynamic_cast_function; }
+		std::shared_ptr<Builtins::SystemFunction> getTypeofFunction() const { return typeof_function; }
 
-		void set_supershell_function(std::shared_ptr<Builtins::SystemFunction> func) { supershell_function = std::move(func); }
-		void set_repeat_function(std::shared_ptr<Builtins::SystemFunction> func) { repeat_function = std::move(func); }
-		void set_vtable_lookup_function(std::shared_ptr<Builtins::SystemFunction> func) { vtable_lookup_function = std::move(func); }
-		void set_dynamic_cast_function(std::shared_ptr<Builtins::SystemFunction> func) { dynamic_cast_function = std::move(func); }
-		void set_typeof_function(std::shared_ptr<Builtins::SystemFunction> func) { typeof_function = std::move(func); }
+		void setSupershellFunction(std::shared_ptr<Builtins::SystemFunction> func) { supershell_function = std::move(func); }
+		void setRepeatFunction(std::shared_ptr<Builtins::SystemFunction> func) { repeat_function = std::move(func); }
+		void setVtableLookupFunction(std::shared_ptr<Builtins::SystemFunction> func) { vtable_lookup_function = std::move(func); }
+		void setDynamicCastFunction(std::shared_ptr<Builtins::SystemFunction> func) { dynamic_cast_function = std::move(func); }
+		void setTypeofFunction(std::shared_ptr<Builtins::SystemFunction> func) { typeof_function = std::move(func); }
 };
 
 /**
@@ -99,18 +98,18 @@ class IncludedProgram : public Program {
 		IncludedProgram() = delete;
 		explicit IncludedProgram(std::shared_ptr<Program> containing_program);
 
-		void set_dynamic_include(bool is_dynamic) { is_dynamic_include = is_dynamic; }
+		void setDynamicInclude(bool is_dynamic) { is_dynamic_include = is_dynamic; }
 
 		// IncludedProgram override checks both its *own* classes and those of its containing program
-		std::shared_ptr<Class> get_class(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const override;
-		std::vector<std::shared_ptr<Class>> get_all_known_classes() const override;
+		std::shared_ptr<Class> getClass(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const override;
+		std::vector<std::shared_ptr<Class>> getAllKnownClasses() const override;
 
 		/// Get all classes *owned* by this IncludedProgram (i.e., not including those of its containing program)
-		std::vector<std::shared_ptr<Class>> get_owned_classes() const { return Program::get_all_known_classes(); }
+		std::vector<std::shared_ptr<Class>> getOwnedClasses() const { return Program::getAllKnownClasses(); }
 
-		std::weak_ptr<const Program> get_containing_program() const override { return containing_program; }
+		std::weak_ptr<const Program> getContainingProgram() const override { return Entity::getContainingProgram(); }
 
-		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 };
 
 } // namespace bpp::IR

@@ -23,7 +23,7 @@ void Listener::enter(NewStatement* node) {
 	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
 
 	const auto& type = node->TYPE();
-	auto class_entity = current_code_entity->get_class(type);
+	auto class_entity = current_code_entity->getClass(type);
 	if (!class_entity) {
 		throw bpp::ErrorHandling::SyntaxError(this, type, "Class not found: " + type.getValue());
 	}
@@ -31,9 +31,9 @@ void Listener::enter(NewStatement* node) {
 	// Call __new in a supershell
 	auto supershell = std::make_shared<bpp::IR::Supershell>();
 	supershell->inherit(current_code_entity);
-	supershell->add(class_entity->get_method_UNSAFE("__new")->get_address());
+	supershell->add(class_entity->getMethod_UNSAFE("__new")->getAddress());
 
-	program->get_supershell_function()->mark_referenced_by(supershell);
+	program->getSupershellFunction()->markReferencedBy(supershell);
 
 	current_code_entity->add(supershell);
 }

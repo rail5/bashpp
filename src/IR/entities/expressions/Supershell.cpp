@@ -11,7 +11,7 @@
 
 namespace bpp::IR {
 
-bpp::CodeGen::CodeSegment Supershell::generate_code(bpp::CodeGen::CodeGenState* state) const {
+bpp::CodeGen::CodeSegment Supershell::generateCode(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "Supershell::generate_code() should be called with a non-null state pointer");
 	state->nested_supershell_depth++;
 	bpp::CodeGen::CodeSegment result;
@@ -21,7 +21,7 @@ bpp::CodeGen::CodeSegment Supershell::generate_code(bpp::CodeGen::CodeGenState* 
 	state->supershell_counter++;
 
 	result.add_pre_code(supershell_function_name + "() {\n");
-	result.absorb_all_to_pre(StringType::generate_code(state));
+	result.absorb_all_to_pre(StringType::generateCode(state));
 	result.add_pre_code("\n}\n");
 
 	result.add_post_code("\nunset -f " + supershell_function_name + "\n");

@@ -16,13 +16,13 @@
 
 namespace bpp::IR {
 
-bpp::CodeGen::CodeSegment MethodParameter::generate_code(bpp::CodeGen::CodeGenState* state) const {
+bpp::CodeGen::CodeSegment MethodParameter::generateCode(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "MethodParameter::generate_code() should be called with a non-null state pointer");
 	bpp::CodeGen::CodeSegment code;
 
-	bpp_assert(type.expired() || m_is_pointer, "MethodParameter is neither a pointer nor a primitive type");
+	bpp_assert(getType().expired() || isPointer(), "MethodParameter is neither a pointer nor a primitive type");
 
-	if (type.expired()) {
+	if (getType().expired()) {
 		// Primitive type: retrieve the value from the corresponding positional parameter
 		code.add_main_code("local " + name + "=\"$" + std::to_string(index) + "\"\n");
 	} else {
@@ -30,38 +30,38 @@ bpp::CodeGen::CodeSegment MethodParameter::generate_code(bpp::CodeGen::CodeGenSt
 		// I.e., retrieve the corresponding positional parameter, run it through a dynamic cast, and assign the result to this pointer
 		//
 		// We expect that the `initial_value` should have already been set to a DynamicCast
-		bpp_assert(is_pointer(), "MethodParameter is not a pointer but has a nonprimitive type");
-		bpp_assert(has_initial_value(), "MethodParameter has a nonprimitive type but no initial value set");
-		bpp_assert(std::dynamic_pointer_cast<DynamicCast>(initial_value.value()), "MethodParameter has a nonprimitive type but its initial value is not a DynamicCast");
+		bpp_assert(isPointer(), "MethodParameter is not a pointer but has a nonprimitive type");
+		bpp_assert(hasInitialValue(), "MethodParameter has a nonprimitive type but no initial value set");
+		bpp_assert(std::dynamic_pointer_cast<DynamicCast>(getInitialValue().value()), "MethodParameter has a nonprimitive type but its initial value is not a DynamicCast");
 
 		if (state->should_declare_local()) code.add_main_code("local ");
-		code.add_main_code(get_address() + "=");
-		code.egalitarian_merge(initial_value.value()->generate_code(state));
+		code.add_main_code(getAddress() + "=");
+		code.egalitarian_merge(getInitialValue().value()->generateCode(state));
 		code.add_main_code("\n");
 	}
 	return code;
 }
 
-bpp::CodeGen::CodeSegment ThisPtr::generate_code(bpp::CodeGen::CodeGenState* state) const {
+bpp::CodeGen::CodeSegment ThisPtr::generateCode(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "ThisPtr::generate_code() should be called with a non-null state pointer");
-	bpp_assert(has_initial_value(), "ThisPtr has no initial value set");
+	bpp_assert(hasInitialValue(), "ThisPtr has no initial value set");
 	bpp_assert(state->in_method(), "ThisPtr::generate_code() should only be called when generating code for a method");
 	bpp::CodeGen::CodeSegment code;
 
 	code.add_pre_code("local __this\n");
 
-	auto dynamic_cast_entity = std::dynamic_pointer_cast<DynamicCast>(initial_value.value());
+	auto dynamic_cast_entity = std::dynamic_pointer_cast<DynamicCast>(getInitialValue().value());
 	if (!dynamic_cast_entity) {
 		throw bpp::ErrorHandling::InternalError("The initial value of the implicit `this` parameter is not a DynamicCast entity");
 	}
-	dynamic_cast_entity->set_target_variable("__this");
+	dynamic_cast_entity->setTargetVariable("__this");
 
 	// A dynamic cast of $1 to the expected type, with the result assigned to `this`.
 	code.add_pre_code("if ! ");
-	code.add_pre_code(dynamic_cast_entity->generate_code(state).get_pre_code());
+	code.add_pre_code(dynamic_cast_entity->generateCode(state).get_pre_code());
 	code.add_pre_code("then\n"
 	"\t>&2 echo \"Bash++: Error: Attempted to call @"
-	+ type.lock()->get_name() + "." + state->current_method->get_name()
+	+ getType().lock()->getName() + "." + state->current_method->getName()
 		+ " on null object\"\n"
 		"\treturn 1\n"
 		"fi\n"
@@ -72,11 +72,11 @@ bpp::CodeGen::CodeSegment ThisPtr::generate_code(bpp::CodeGen::CodeGenState* sta
 	return code;
 }
 
-bpp::CodeGen::CodeSegment RequestedAddressParam::generate_code(bpp::CodeGen::CodeGenState* state) const {
+bpp::CodeGen::CodeSegment RequestedAddressParam::generateCode(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "RequestedAddressParam::generate_code() should be called with a non-null state pointer");
 	bpp_assert(state->in_method(), "RequestedAddressParam::generate_code() should only be called when generating code for a method");
 
-	auto cls = get_containing_class().lock();
+	auto cls = getContainingClass().lock();
 	bpp_assert(cls != nullptr, "RequestedAddressParam::generate_code() called on a RequestedAddressParam with no containing class");
 	bpp::CodeGen::CodeSegment code;
 
@@ -84,7 +84,7 @@ bpp::CodeGen::CodeSegment RequestedAddressParam::generate_code(bpp::CodeGen::Cod
 
 	code.add_pre_code(R"EOF(if [[ -z "${__this}" ]]; then
 	while : ; do
-		__this="bpp__)EOF" + cls->get_name() + R"EOF(__$RANDOM$RANDOM$RANDOM$RANDOM"
+		__this="bpp__)EOF" + cls->getName() + R"EOF(__$RANDOM$RANDOM$RANDOM$RANDOM"
 		local __vpVar="${__this}____vPointer"
 		[[ -z "${!__vpVar+x}" ]] && break
 	done

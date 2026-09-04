@@ -19,7 +19,7 @@ namespace bpp::IR {
  */
 class StringType : public CodeEntity {
 	public:
-		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 };
 
 /**
@@ -27,7 +27,7 @@ class StringType : public CodeEntity {
  */
 class String : public StringType {
 	public:
-		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 
 		PRETTYPRINT_OVERRIDE();
 };

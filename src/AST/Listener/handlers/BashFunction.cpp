@@ -30,10 +30,10 @@ void Listener::enter(BashFunction* node) {
 
 	auto function_entity = std::make_shared<bpp::IR::BashFunction>();
 	function_entity->inherit(current_code_entity);
-	function_entity->set_name(function_name.getValue());
+	function_entity->setName(function_name.getValue());
 	entity_stack.push(function_entity);
 
-	function_entity->set_definition_position({
+	function_entity->setDefinitionPosition({
 		get_current_source_file(),
 		function_name.getLine(),
 		function_name.getCharPositionInLine()

@@ -26,11 +26,11 @@ void Listener::enter(DynamicCast* /*node*/) {
 	entity_stack.push(dynamic_cast_entity);
 	nested_dynamic_cast_depth++;
 
-	auto containing_program = current_code_entity->get_containing_program();
+	auto containing_program = current_code_entity->getContainingProgram();
 	bpp_assert(!containing_program.expired(), "Containing program is null when entering DynamicCast node");
-	auto dynamic_cast_builtin = containing_program.lock()->get_dynamic_cast_function();
+	auto dynamic_cast_builtin = containing_program.lock()->getDynamicCastFunction();
 	bpp_assert(dynamic_cast_builtin != nullptr, "DynamicCast builtin function is null when entering DynamicCast node");
-	dynamic_cast_builtin->mark_referenced_by(dynamic_cast_entity);
+	dynamic_cast_builtin->markReferencedBy(dynamic_cast_entity);
 }
 
 template <>
@@ -43,7 +43,7 @@ void Listener::exit(DynamicCast* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity when exiting DynamicCast node");
 	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
 	current_code_entity->add(dynamic_cast_entity);
-	current_code_entity->adopt_objects_of(dynamic_cast_entity);
+	current_code_entity->adoptObjectsOf(dynamic_cast_entity);
 }
 
 template <>
@@ -69,10 +69,10 @@ void Listener::exit(DynamicCastTarget* node) {
 	if (node->TARGETTYPE().has_value()) {
 		// The user gave a class name directly
 		const auto& class_name = node->TARGETTYPE().value().getValue();
-		dynamic_cast_entity->set_target_type(class_name);
+		dynamic_cast_entity->setTargetType(class_name);
 
 		// Verify the class exists, and possibly issue a warning if not
-		auto target_class = dynamic_cast_entity->get_class(class_name);
+		auto target_class = dynamic_cast_entity->getClass(class_name);
 		if (!target_class) {
 			show_warning(
 				node,
@@ -80,7 +80,7 @@ void Listener::exit(DynamicCastTarget* node) {
 				"Class not found: '" + class_name + "'" + ". This cast may fail at runtime."
 			);
 		} else {
-			target_class->add_reference_position({
+			target_class->addReferencePosition({
 				get_current_source_file(),
 				node->TARGETTYPE().value().getLine(),
 				node->TARGETTYPE().value().getCharPositionInLine()
@@ -88,10 +88,10 @@ void Listener::exit(DynamicCastTarget* node) {
 		}
 	} else {
 		// The user gave an expression which will evaluate to a class name at runtime
-		dynamic_cast_entity->set_target_type(target_type_entity);
+		dynamic_cast_entity->setTargetType(target_type_entity);
 	}
 
-	dynamic_cast_entity->adopt_objects_of(target_type_entity);
+	dynamic_cast_entity->adoptObjectsOf(target_type_entity);
 }
 
 } // namespace bpp::AST

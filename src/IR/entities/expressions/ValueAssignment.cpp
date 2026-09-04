@@ -11,14 +11,14 @@
 
 namespace bpp::IR {
 
-bpp::CodeGen::CodeSegment ValueAssignment::generate_code(bpp::CodeGen::CodeGenState* state) const {
+bpp::CodeGen::CodeSegment ValueAssignment::generateCode(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "ValueAssignment::generate_code() should be called with a non-null state pointer");
 	bpp::CodeGen::CodeSegment result;
 
 	// FIXME(@rail5): Handle non-primitive lvalues and rvalues (this currently only handles primitive assignments, var=value)
 
-	result.add_main_code(this->is_adding() ? "+=" : "=");
-	result.egalitarian_merge(StringType::generate_code(state));
+	result.add_main_code(this->isAdding() ? "+=" : "=");
+	result.egalitarian_merge(StringType::generateCode(state));
 
 	return result;
 }

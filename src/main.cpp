@@ -110,7 +110,7 @@ int main(int argc, char** argv) {
 #endif
 		bpp::CodeGen::CodeGenState codegen_state;
 		codegen_state.target_bash_version = args.target_bash_version();
-		*output_stream << listener->get_program()->generate_code(&codegen_state);
+		*output_stream << listener->get_program()->generateCode(&codegen_state);
 
 		int exit_code = 0;
 

@@ -20,29 +20,29 @@ void Listener::enter(ConstructorDefinition* node) {
 
 	auto new_constructor = std::make_shared<bpp::IR::Method>();
 	new_constructor->inherit(current_class);
-	new_constructor->set_name("__constructor");
-	new_constructor->set_scope(bpp::IR::VisibilityScope::PUBLIC);
+	new_constructor->setName("__constructor");
+	new_constructor->setScope(bpp::IR::VisibilityScope::PUBLIC);
 
-	auto res = current_class->add_method(std::move(new_constructor));
+	auto res = current_class->addMethod(std::move(new_constructor));
 	if (!res) {
-		throw bpp::ErrorHandling::SyntaxError(this, node, "Constructor already defined in class '" + current_class->get_name() + "'");
+		throw bpp::ErrorHandling::SyntaxError(this, node, "Constructor already defined in class '" + current_class->getName() + "'");
 	}
 	const auto& stored_constructor = res.value();
 
-	stored_constructor->set_definition_position({
+	stored_constructor->setDefinitionPosition({
 		get_current_source_file(),
 		node->getLine(),
 		node->getCharPositionInLine()
 	});
 
-	stored_constructor->add_parameter(current_class->get_this_ptr());
+	stored_constructor->addParameter(current_class->getThisPtr());
 
-	if (auto parent_class = current_class->get_parent_class()) {
-		auto parent_constructor = parent_class->get_method_UNSAFE("__constructor");
+	if (auto parent_class = current_class->getParentClass()) {
+		auto parent_constructor = parent_class->getMethod_UNSAFE("__constructor");
 		if (parent_constructor) {
 			// FIXME(@rail5): Call parent constructor at the beginning of the child constructor.
 
-			parent_constructor->mark_referenced_by(stored_constructor);
+			parent_constructor->markReferencedBy(stored_constructor);
 		}
 	}
 

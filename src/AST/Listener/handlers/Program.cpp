@@ -22,18 +22,18 @@ void Listener::enter(Program* /*node*/) {
 		entity_stack.push(program);
 		this->program = program;
 
-		program->set_supershell_function(std::make_shared<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_supershell_function));
-		program->set_repeat_function(std::make_shared<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_repeat_function));
-		program->set_vtable_lookup_function(std::make_shared<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_vtable_lookup_function));
-		program->set_dynamic_cast_function(std::make_shared<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_dynamic_cast_function));
-		program->set_typeof_function(std::make_shared<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_typeof_function));
+		program->setSupershellFunction(std::make_shared<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_supershell_function));
+		program->setRepeatFunction(std::make_shared<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_repeat_function));
+		program->setVtableLookupFunction(std::make_shared<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_vtable_lookup_function));
+		program->setDynamicCastFunction(std::make_shared<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_dynamic_cast_function));
+		program->setTypeofFunction(std::make_shared<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_typeof_function));
 	} else {
 		// This program was reached via `@include`
 		bpp_assert(topmost_entity_is<bpp::IR::Program>(), "Topmost entity on stack is not a Program when entering an included Program node");
 		auto current_program = std::static_pointer_cast<bpp::IR::Program>(entity_stack.top());
 		auto included_program = std::make_shared<bpp::IR::IncludedProgram>(current_program);
 		entity_stack.push(included_program);
-		included_program->set_dynamic_include(included_type_stack.top() == IncludedType::DYNAMICALLY_INCLUDED);
+		included_program->setDynamicInclude(included_type_stack.top() == IncludedType::DYNAMICALLY_INCLUDED);
 		current_program->add(included_program);
 	}
 }
@@ -49,8 +49,8 @@ void Listener::exit(Program* /*node*/) {
 	} else {
 		bpp_assert(topmost_entity_is<bpp::IR::Program>(), "Topmost entity on stack is not a Program when exiting an included Program node");
 		auto parent_program = std::static_pointer_cast<bpp::IR::Program>(entity_stack.top());
-		parent_program->adopt_classes_of(std::static_pointer_cast<bpp::IR::IncludedProgram>(program));
-		parent_program->adopt_objects_of(program);
+		parent_program->adoptClassesOf(std::static_pointer_cast<bpp::IR::IncludedProgram>(program));
+		parent_program->adoptObjectsOf(program);
 	}
 }
 

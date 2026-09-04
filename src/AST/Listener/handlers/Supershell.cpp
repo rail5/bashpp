@@ -22,17 +22,17 @@ void Listener::enter(Supershell* node) {
 	supershell_entity->inherit(current_code_entity);
 	entity_stack.push(supershell_entity);
 
-	supershell_entity->set_definition_position({
+	supershell_entity->setDefinitionPosition({
 		get_current_source_file(),
 		node->getLine(),
 		node->getCharPositionInLine()
 	});
 
-	auto containing_program = current_code_entity->get_containing_program();
+	auto containing_program = current_code_entity->getContainingProgram();
 	bpp_assert(!containing_program.expired(), "Containing program is null when entering Supershell node");
-	auto supershell_builtin = containing_program.lock()->get_supershell_function();
+	auto supershell_builtin = containing_program.lock()->getSupershellFunction();
 	bpp_assert(supershell_builtin != nullptr, "Supershell builtin function is null when entering Supershell node");
-	supershell_builtin->mark_referenced_by(supershell_entity);
+	supershell_builtin->markReferencedBy(supershell_entity);
 }
 
 template <>
@@ -44,7 +44,7 @@ void Listener::exit(Supershell* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity when exiting Supershell node");
 	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
 	current_code_entity->add(supershell_entity);
-	current_code_entity->adopt_objects_of(supershell_entity);
+	current_code_entity->adoptObjectsOf(supershell_entity);
 }
 
 } // namespace bpp::AST

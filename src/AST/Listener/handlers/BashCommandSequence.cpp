@@ -32,7 +32,7 @@ void Listener::exit(BashPipeline* /*node*/) {
 
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity when exiting BashPipeline node");
 	auto current_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
-	current_entity->adopt_objects_of(pipeline_entity);
+	current_entity->adoptObjectsOf(pipeline_entity);
 }
 
 template <>
@@ -54,7 +54,7 @@ void Listener::exit(BashCommandSequence* /*node*/) {
 
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity when exiting BashCommandSequence node");
 	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
-	current_code_entity->adopt_objects_of(command_sequence_entity);
+	current_code_entity->adoptObjectsOf(command_sequence_entity);
 }
 
 } // namespace bpp::AST

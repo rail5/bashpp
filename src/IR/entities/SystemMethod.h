@@ -27,23 +27,23 @@ class SystemMethod : public Method {
 		SystemMethod() = delete;
 		explicit SystemMethod(Type type) : type(type) {
 			switch (type) {
-				case Type::NEW: set_name("__new"); break;
-				case Type::DELETE: set_name("__delete"); break;
-				case Type::COPY: set_name("__copy"); break;
+				case Type::NEW: setName("__new"); break;
+				case Type::DELETE: setName("__delete"); break;
+				case Type::COPY: setName("__copy"); break;
 				default: throw bpp::ErrorHandling::InternalError("Unknown SystemMethodType");
 			}
 		}
 
-		bpp::CodeGen::CodeSegment generate_inline_code(bpp::CodeGen::CodeGenState* state, bool localize, std::shared_ptr<const Object> obj = nullptr) const;
-		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
+		bpp::CodeGen::CodeSegment generateInlineCode(bpp::CodeGen::CodeGenState* state, bool localize, std::shared_ptr<const Object> obj = nullptr) const;
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 		PRETTYPRINT_OVERRIDE();
 
 	private:
 		 Type type = Type::NEW;
 
-		 bpp::CodeGen::CodeSegment generate_inline_new_code(bpp::CodeGen::CodeGenState* state, bool localize, std::shared_ptr<const Object> obj) const;
-		 bpp::CodeGen::CodeSegment generate_inline_delete_code(bpp::CodeGen::CodeGenState* state, bool localize, std::shared_ptr<const Object> obj) const;
-		 bpp::CodeGen::CodeSegment generate_inline_copy_code(bpp::CodeGen::CodeGenState* state, bool localize, std::shared_ptr<const Object> obj) const;
+		 bpp::CodeGen::CodeSegment generateInlineNewCode(bpp::CodeGen::CodeGenState* state, bool localize, std::shared_ptr<const Object> obj) const;
+		 bpp::CodeGen::CodeSegment generateInlineDeleteCode(bpp::CodeGen::CodeGenState* state, bool localize, std::shared_ptr<const Object> obj) const;
+		 bpp::CodeGen::CodeSegment generateInlineCopyCode(bpp::CodeGen::CodeGenState* state, bool localize, std::shared_ptr<const Object> obj) const;
 };
 
 } // namespace bpp::IR::Builtins

@@ -45,18 +45,18 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		 * in the sense that they never change from the perspective of the public API
 		 * from the first request for them to the end of the class's lifetime.
 		 */
-		void init_special_pointers() const;
+		void initSpecialPointers() const;
 
 		std::vector<std::shared_ptr<Method>> methods;
 		std::vector<std::shared_ptr<DataMember>> datamembers;
 
 		template <ClassMember T>
-		std::expected<std::shared_ptr<T>, LookupError> get_member(const std::string& name, std::shared_ptr<const Entity> context) const;
+		std::expected<std::shared_ptr<T>, LookupError> getMember(const std::string& name, std::shared_ptr<const Entity> context) const;
 	public:
 		Class() = delete;
-		explicit Class(const std::string& name) { set_name(name); }
+		explicit Class(const std::string& name) { setName(name); }
 
-		std::weak_ptr<const Class> get_containing_class() const override { return weak_from_this(); }
+		std::weak_ptr<const Class> getContainingClass() const override { return weak_from_this(); }
 
 		/**
 		 * @brief Add a method to this class, and return the actual method object that was added
@@ -70,7 +70,7 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		 * @param method The method to add
 		 * @return The method object that was added (which may be different from the one passed in, if it was overridden), or an error if the operation failed
 		 */
-		[[ nodiscard ]] std::expected<std::shared_ptr<Method>, AddError> add_method(std::shared_ptr<Method>&& method);
+		[[ nodiscard ]] std::expected<std::shared_ptr<Method>, AddError> addMethod(std::shared_ptr<Method>&& method);
 
 		/**
 		 * @brief Add a data member to this class
@@ -79,7 +79,7 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		 * 
 		 * @param datamember The data member to add
 		 */
-		[[ nodiscard ]] std::expected<void, AddError> add_datamember(std::shared_ptr<DataMember> datamember);
+		[[ nodiscard ]] std::expected<void, AddError> addDatamember(std::shared_ptr<DataMember> datamember);
 
 		/**
 		 * @brief Get a method by name
@@ -96,7 +96,7 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		 * @param context The context from which the method is being requested
 		 * @return std::expected<std::shared_ptr<Method>, LookupError> The method, or a LookupError if it doesn't exist or is inaccessible
 		 */
-		std::expected<std::shared_ptr<Method>, LookupError> get_method(const std::string& name, std::shared_ptr<const Entity> context) const;
+		std::expected<std::shared_ptr<Method>, LookupError> getMethod(const std::string& name, std::shared_ptr<const Entity> context) const;
 
 		/**
 		 * @brief Get a data member by name
@@ -113,7 +113,7 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		 * @param context The context from which the data member is being requested
 		 * @return std::expected<std::shared_ptr<DataMember>, LookupError> The data member, or a LookupError if it doesn't exist or is inaccessible
 		 */
-		std::expected<std::shared_ptr<DataMember>, LookupError> get_datamember(const std::string& name, std::shared_ptr<const Entity> context) const;
+		std::expected<std::shared_ptr<DataMember>, LookupError> getDatamember(const std::string& name, std::shared_ptr<const Entity> context) const;
 
 		/**
 		 * @brief Get a method by name without checking the context against visibility rules
@@ -123,7 +123,7 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		 * @param name The name of the method to get
 		 * @return std::shared_ptr<Method> The method, or nullptr if not found
 		 */
-		std::shared_ptr<Method> get_method_UNSAFE(const std::string& name) const;
+		std::shared_ptr<Method> getMethod_UNSAFE(const std::string& name) const;
 
 		/**
 		 * @brief Get a data member by name without checking the context against visibility rules
@@ -133,12 +133,12 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		 * @param name The name of the data member to get
 		 * @return std::shared_ptr<DataMember> The data member, or nullptr if not found
 		 */
-		std::shared_ptr<DataMember> get_datamember_UNSAFE(const std::string& name) const;
+		std::shared_ptr<DataMember> getDatamember_UNSAFE(const std::string& name) const;
 
-		const std::vector<std::shared_ptr<Method>>& get_methods() const { return methods; }
-		const std::vector<std::shared_ptr<DataMember>>& get_datamembers() const { return datamembers; }
+		const std::vector<std::shared_ptr<Method>>& getAllMethods() const { return methods; }
+		const std::vector<std::shared_ptr<DataMember>>& getAllDatamembers() const { return datamembers; }
 
-		bool contains_nonprimitive_datamembers() const;
+		bool containsNonprimitiveDatamembers() const;
 
 		using Entity::inherit;
 
@@ -160,7 +160,12 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		// because the compiler can't decide whether to convert it to a const Class pointer or a const Entity pointer.
 		void inherit(std::shared_ptr<Class> parent) { inherit(std::const_pointer_cast<const Class>(parent)); }
 
-		std::shared_ptr<const Class> get_parent_class() const { return parent_class.lock(); }
+		/**
+		 * @brief Get the parent class of this class, if it has one.
+		 * 
+		 * @return std::shared_ptr<const Class> The parent class, or nullptr if this class has no parent.
+		 */
+		std::shared_ptr<const Class> getParentClass() const { return parent_class.lock(); }
 
 		/**
 		 * @brief Check if this class is derived from some other particular class
@@ -169,7 +174,7 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		 * @return true If `other` is an ancestor (or immediate parent) of this class
 		 * @return false Otherwise
 		 */
-		bool is_derived_from(std::shared_ptr<const Class> other) const;
+		bool isDerivedFrom(std::shared_ptr<const Class> other) const;
 
 		/**
 		 * @brief Get the "@this" pointer for this class,
@@ -177,8 +182,8 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		 * 
 		 * @return std::shared_ptr<ThisPtr> The "this" pointer for this class
 		 */
-		std::shared_ptr<ThisPtr> get_this_ptr() const {
-			init_special_pointers();
+		std::shared_ptr<ThisPtr> getThisPtr() const {
+			initSpecialPointers();
 			return this_ptr;
 		}
 
@@ -189,12 +194,12 @@ class Class : public Entity, public NamedEntity, public std::enable_shared_from_
 		 * 
 		 * @return std::shared_ptr<ThisPtr> The "super" pointer for this class, or nullptr if this class has no parent
 		 */
-		std::shared_ptr<ThisPtr> get_super_ptr() const {
-			init_special_pointers();
+		std::shared_ptr<ThisPtr> getSuperPtr() const {
+			initSpecialPointers();
 			return super_ptr;
 		}
 
-		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 
 		PRETTYPRINT_OVERRIDE();
 };

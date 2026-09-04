@@ -48,19 +48,19 @@ void Listener::enter(ObjectInstantiation* node) {
 		throw bpp::ErrorHandling::SyntaxError(this, object_name, msg);
 	}
 	// 2. Name already in use?
-	if (current_code_entity->get_class(object_name)) {
+	if (current_code_entity->getClass(object_name)) {
 		throw bpp::ErrorHandling::SyntaxError(this, object_name, "Object name '" + object_name.getValue() + "' conflicts with a class name");
 	}
-	if (current_code_entity->get_object(object_name)) {
+	if (current_code_entity->getObject(object_name)) {
 		throw bpp::ErrorHandling::SyntaxError(this, object_name, "Object '" + object_name.getValue() + "' already defined in this scope");
 	}
 
-	const auto object_class = current_code_entity->get_class(type_name);
+	const auto object_class = current_code_entity->getClass(type_name);
 	if (!object_class) {
 		throw bpp::ErrorHandling::SyntaxError(this, type_name, "Class not found: '" + type_name.getValue() + "'");
 	}
 
-	object_class->add_reference_position({
+	object_class->addReferencePosition({
 		get_current_source_file(),
 		type_name.getLine(),
 		type_name.getCharPositionInLine()
@@ -68,11 +68,11 @@ void Listener::enter(ObjectInstantiation* node) {
 
 	auto object = std::make_shared<bpp::IR::Object>();
 	object->inherit(current_code_entity);
-	object->set_type(object_class);
-	object->set_is_pointer(node->isPointer());
-	object->set_name(object_name);
+	object->setType(object_class);
+	object->setIsPointer(node->isPointer());
+	object->setName(object_name);
 
-	object->set_definition_position({
+	object->setDefinitionPosition({
 		get_current_source_file(),
 		object_name.getLine(),
 		object_name.getCharPositionInLine()
@@ -90,45 +90,45 @@ void Listener::exit(ObjectInstantiation* /*node*/) {
 	if (auto datamember_declaration = std::dynamic_pointer_cast<bpp::IR::DataMember>(entity_stack.top())) {
 		// This object instantiation is part of a class's data member declaration
 		// The data for this object should be moved to the data member, and the object should be discarded
-		datamember_declaration->set_type(object->get_type());
-		datamember_declaration->set_is_pointer(object->is_pointer());
-		datamember_declaration->set_name(object->get_name());
-		if (object->has_initial_value()) datamember_declaration->set_initial_value(object->get_initial_value().value());
-		datamember_declaration->set_definition_position(object->get_definition_position());
+		datamember_declaration->setType(object->getType());
+		datamember_declaration->setIsPointer(object->isPointer());
+		datamember_declaration->setName(object->getName());
+		if (object->hasInitialValue()) datamember_declaration->setInitialValue(object->getInitialValue().value());
+		datamember_declaration->setDefinitionPosition(object->getDefinitionPosition());
 		return;
 	}
 
 	// Otherwise, add the object to the current code entity
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity when exiting ObjectInstantiation node");
 	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
-	if (!current_code_entity->add_object(object)) {
+	if (!current_code_entity->addObject(object)) {
 		const auto named_code_entity = std::dynamic_pointer_cast<bpp::IR::NamedEntity>(current_code_entity);
-		std::string error_message = "Failed to add object '" + object->get_name() + "' to code entity";
-		if (named_code_entity) error_message += " '" + named_code_entity->get_name() + "'";
+		std::string error_message = "Failed to add object '" + object->getName() + "' to code entity";
+		if (named_code_entity) error_message += " '" + named_code_entity->getName() + "'";
 		throw bpp::ErrorHandling::InternalError(error_message);
 	}
 
-	if (!object->is_pointer()) {
+	if (!object->isPointer()) {
 		// Add a call to the class's __new method to instantiate the object
-		const auto object_class = object->get_type().lock();
+		const auto object_class = object->getType().lock();
 		bpp_assert(object_class != nullptr, "Object has no type when exiting ObjectInstantiation node");
-		auto new_method = object_class->get_method_UNSAFE("__new");
-		bpp_assert(new_method != nullptr, "Class '" + object_class->get_name() + "' does not have a '__new' method");
+		auto new_method = object_class->getMethod_UNSAFE("__new");
+		bpp_assert(new_method != nullptr, "Class '" + object_class->getName() + "' does not have a '__new' method");
 
 		auto method_call = std::make_shared<bpp::IR::ObjectReference>();
 		method_call->inherit(current_code_entity);
 		bpp::IR::ObjectReference::ReferenceChain chain(object);
-		chain.set_method(new_method);
-		method_call->set_reference_chain(std::move(chain));
+		chain.setMethod(new_method);
+		method_call->setReferenceChain(std::move(chain));
 		current_code_entity->add(method_call);
 		current_code_entity->add(" >/dev/null\n"); // Discard the output of the __new method, since it will echo the address of the new object
 
 		// Mark the class's "__new" method as used
-		new_method->mark_referenced_by(method_call);
+		new_method->markReferencedBy(method_call);
 	} else {
-		current_code_entity->add(object->get_address());
-		if (object->has_initial_value()) {
-			current_code_entity->add(object->get_initial_value().value());
+		current_code_entity->add(object->getAddress());
+		if (object->hasInitialValue()) {
+			current_code_entity->add(object->getInitialValue().value());
 		} else {
 			current_code_entity->add("=0"); // Default-initialize pointers to null
 		}

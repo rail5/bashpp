@@ -26,7 +26,7 @@ namespace bpp::ErrorHandling {
 void Diagnostic::print() const {
 	// Add to the program's diagnostics
 	auto source_file = include_chain.back().string();
-	if (program != nullptr) program->add_diagnostic(*this);
+	if (program != nullptr) program->addDiagnostic(*this);
 	if (lsp_mode) return; // The language server doesn't need to print errors to stderr, just add them to the diagnostics list
 
 	// Colorize output if the output is a TTY

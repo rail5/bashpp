@@ -30,7 +30,7 @@ void Listener::enter(Bash53NativeSupershell* node) {
 	b53_supershell_entity->add(node->STARTTOKEN()); // Copy the `${` or `${|` start token as RawCode into the entity
 
 	entity_stack.push(b53_supershell_entity);
-	b53_supershell_entity->set_definition_position({
+	b53_supershell_entity->setDefinitionPosition({
 		get_current_source_file(),
 		node->getLine(),
 		node->getCharPositionInLine()
@@ -48,7 +48,7 @@ void Listener::exit(Bash53NativeSupershell* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity when exiting Bash53NativeSupershell node");
 	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
 	current_code_entity->add(b53_supershell_entity);
-	current_code_entity->adopt_objects_of(b53_supershell_entity);
+	current_code_entity->adoptObjectsOf(b53_supershell_entity);
 }
 
 } // namespace bpp::AST

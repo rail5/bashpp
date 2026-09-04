@@ -30,7 +30,7 @@ class SubshellSubstitution : public StringType {
 		void setIsCatReplacement(bool value) { is_cat_replacement = value; }
 		bool isCatReplacement() const { return is_cat_replacement; }
 
-		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 
 		PRETTYPRINT_OVERRIDE();
 };

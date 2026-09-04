@@ -11,16 +11,16 @@
 
 namespace bpp::IR {
 
-bpp::CodeGen::CodeSegment SubshellSubstitution::generate_code(bpp::CodeGen::CodeGenState* state) const {
+bpp::CodeGen::CodeSegment SubshellSubstitution::generateCode(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "SubshellSubstitution::generate_code() should be called with a non-null state pointer");
 	bpp::CodeGen::CodeSegment result;
 	result.add_main_code("$(");
 	if (is_cat_replacement) {
 		// egliatarian_merge places the pre-code before the main code, and the post-code after the main code
-		result.egalitarian_merge(StringType::generate_code(state));
+		result.egalitarian_merge(StringType::generateCode(state));
 	} else {
 		// otherwise, place all of it inside the main code
-		result.absorb_all_to_main(StringType::generate_code(state));
+		result.absorb_all_to_main(StringType::generateCode(state));
 	}
 	result.add_main_code(")");
 	return result;

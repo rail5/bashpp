@@ -25,14 +25,14 @@ void Listener::enter(ValueAssignment* node) {
 
 	auto current_object_instantiation = std::dynamic_pointer_cast<bpp::IR::Object>(entity_stack.top());
 	if (current_object_instantiation) {
-		va->set_lvalue_nonprimitive(!(current_object_instantiation->is_primitive() || current_object_instantiation->is_pointer()));
-		va->set_lvalue_object(current_object_instantiation);
+		va->setLvalueNonprimitive(!(current_object_instantiation->isPrimitive() || current_object_instantiation->isPointer()));
+		va->setLvalueObject(current_object_instantiation);
 	}
 
 	const auto& op = node->OPERATOR();
-	va->set_adding(op.getValue() == "+=");
+	va->setAdding(op.getValue() == "+=");
 
-	if (va->is_lvalue_nonprimitive()) {
+	if (va->isLvalueNonprimitive()) {
 		context_expectations_stack.push({false, true}); // rvalue must also be nonprimitive
 	} else {
 		context_expectations_stack.push({true, false}); // rvalue must be primitive
@@ -48,14 +48,14 @@ void Listener::exit(ValueAssignment* node) {
 	entity_stack.pop();
 	context_expectations_stack.pop();
 
-	if (va->is_lvalue_nonprimitive() && !va->is_rvalue_nonprimitive()) {
+	if (va->isLvalueNonprimitive() && !va->isRvalueNonprimitive()) {
 		throw bpp::ErrorHandling::SyntaxError(this, node, "Cannot assign a primitive value to a non-primitive object");
 	}
 
 	auto current_datamember = std::dynamic_pointer_cast<bpp::IR::DataMember>(entity_stack.top());
 	if (current_datamember) {
-		current_datamember->set_initial_value(va);
-		if (va->is_array_assignment()) current_datamember->set_is_array(true);
+		current_datamember->setInitialValue(va);
+		if (va->isArrayAssignment()) current_datamember->setIsArray(true);
 		return;
 	}
 
@@ -64,10 +64,10 @@ void Listener::exit(ValueAssignment* node) {
 	auto current_object = std::dynamic_pointer_cast<bpp::IR::Object>(entity_stack.top());
 	if (current_object) {
 		// FIXME(@rail5): This only handles the pointer case, handle the non-pointer case
-		if (va->is_array_assignment()) {
+		if (va->isArrayAssignment()) {
 			throw bpp::ErrorHandling::SyntaxError(this, node, "Cannot assign an array to an object");
 		}
-		current_object->set_initial_value(va);
+		current_object->setInitialValue(va);
 		return;
 	}
 

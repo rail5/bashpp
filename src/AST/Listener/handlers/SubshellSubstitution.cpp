@@ -22,7 +22,7 @@ void Listener::enter(SubshellSubstitution* node) {
 	subshell_substitution_entity->setIsCatReplacement(node->isCatReplacement());
 	entity_stack.push(subshell_substitution_entity);
 
-	subshell_substitution_entity->set_definition_position({
+	subshell_substitution_entity->setDefinitionPosition({
 		get_current_source_file(),
 		node->getLine(),
 		node->getCharPositionInLine()

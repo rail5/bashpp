@@ -27,18 +27,17 @@ class DataMember : public Object {
 		std::weak_ptr<DataMember> parent_datamember;
 	public:
 		/// Addresses of data members can only be returned as suffixes to be appended to the address of the containing object.
-		std::string get_address() const override { return "__" + get_name(); }
-
+		std::string getAddress() const override { return "__" + getName(); }
 		void set_scope(VisibilityScope scope) { this->scope = scope; }
-		VisibilityScope get_scope() const { return scope; }
+               VisibilityScope get_scope() const { return scope; }
 
-		void set_is_array(bool is_array) { this->m_is_array = is_array; }
-		bool is_array() const { return m_is_array; }
+		void setIsArray(bool is_array) { this->m_is_array = is_array; }
+		bool isArray() const { return m_is_array; }
 
 		void set_parent_datamember(std::shared_ptr<DataMember> parent_datamember) { this->parent_datamember = parent_datamember; }
 		std::shared_ptr<DataMember> get_parent_datamember() const { return parent_datamember.lock(); }
 
-		void add_reference_position(const SymbolPosition& pos) override;
+		void addReferencePosition(const SymbolPosition& pos) override;
 
 		PRETTYPRINT_OVERRIDE();
 };

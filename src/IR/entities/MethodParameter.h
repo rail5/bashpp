@@ -27,10 +27,10 @@ class MethodParameter : public Object {
 		/// The index of this parameter in the method's parameter list (1-based)
 		std::uint32_t index = 1;
 	public:
-		std::uint32_t get_index() const { return index; }
-		void set_index(std::uint32_t index) { this->index = index; }
+		std::uint32_t getIndex() const { return index; }
+		void setIndex(std::uint32_t index) { this->index = index; }
 
-		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 };
 
 /**
@@ -40,14 +40,14 @@ class ThisPtr : public MethodParameter {
 	public:
 		ThisPtr() = delete;
 		explicit ThisPtr(std::shared_ptr<const Class> containing_class) {
-			set_name("this");
-			set_type(containing_class);
-			set_is_pointer(true);
+			setName("this");
+			setType(containing_class);
+			setIsPointer(true);
 		}
 
-		std::string get_address() const override { return "__this"; }
+		std::string getAddress() const override { return "__this"; }
 
-		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 };
 
 /**
@@ -59,7 +59,7 @@ class RequestedAddressParam : public ThisPtr {
 		RequestedAddressParam() = delete;
 		explicit RequestedAddressParam(std::shared_ptr<const Class> containing_class) : ThisPtr(containing_class) {}
 
-		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 };
 
 } // namespace bpp::IR

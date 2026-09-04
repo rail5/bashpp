@@ -41,11 +41,11 @@ class ObjectReference : public CodeEntity {
 			public:
 				explicit ReferenceChain(std::shared_ptr<const Object> root) { chain.push_back(root); }
 				void append(std::shared_ptr<const DataMember> datamember) { chain.push_back(datamember); }
-				std::weak_ptr<const Object> get_root() const { return chain.front(); }
-				std::weak_ptr<const Object> get_final_object() const { return chain.back(); }
-				bool has_method() const { return method.has_value(); }
-				void set_method(std::weak_ptr<const Method> m) { method = std::move(m); }
-				std::weak_ptr<const Method> get_method() const { return method.value_or(std::weak_ptr<const Method>()); }
+				std::weak_ptr<const Object> getRoot() const { return chain.front(); }
+				std::weak_ptr<const Object> getFinalObject() const { return chain.back(); }
+				bool hasMethod() const { return method.has_value(); }
+				void setMethod(std::weak_ptr<const Method> m) { method = std::move(m); }
+				std::weak_ptr<const Method> getMethod() const { return method.value_or(std::weak_ptr<const Method>()); }
 				std::size_t size() const { return chain.size(); }
 				bool empty() const { return chain.empty(); }
 
@@ -63,10 +63,48 @@ class ObjectReference : public CodeEntity {
 				ReferenceChain& operator=(ReferenceChain&& other) noexcept = default;
 		};
 
-		const ReferenceChain& get_reference_chain() const { return reference; }
-		void set_reference_chain(ReferenceChain&& chain) { reference = std::move(chain); }
+		const ReferenceChain& getReferenceChain() const { return reference; }
+		void setReferenceChain(ReferenceChain&& chain) { reference = std::move(chain); }
 
-		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
+		bool isMethodCall() const { return reference.hasMethod(); }
+
+		bool isPointer() const {
+			if (isMethodCall()) return false;
+			auto final_object = reference.getFinalObject().lock();
+			bpp_assert(final_object != nullptr, "ObjectReference::isPointer() called on a reference chain with a null final object");
+			return final_object->isPointer();
+		}
+
+		bool isPrimitive() const {
+			if (isMethodCall()) return false;
+			auto final_object = reference.getFinalObject().lock();
+			bpp_assert(final_object != nullptr, "ObjectReference::isPrimitive() called on a reference chain with a null final object");
+			return final_object->isPrimitive();
+		}
+
+		bool isNonprimitive() const {
+			if (isMethodCall()) return false;
+			auto final_object = reference.getFinalObject().lock();
+			bpp_assert(final_object != nullptr, "ObjectReference::isNonprimitive() called on a reference chain with a null final object");
+			return !isPointer() && !isPrimitive();
+		}
+
+		/**
+		 * @brief This amends the object reference to include a call to the final object's toPrimitive method.
+		 */
+		void addToPrimitiveCall() {
+			bpp_assert(!reference.empty(), "ObjectReference::addToPrimitiveCall() called on an empty reference chain");
+			auto final_object = reference.getFinalObject().lock();
+			bpp_assert(final_object != nullptr, "ObjectReference::addToPrimitiveCall() called on a reference chain with a null final object");
+			bpp_assert(!final_object->isPrimitive(), "ObjectReference::addToPrimitiveCall() called on a reference chain with a primitive final object");
+			auto final_class = final_object->getType().lock();
+			bpp_assert(final_class != nullptr, "ObjectReference::addToPrimitiveCall(): final object has no type");
+			auto to_primitive_method = final_class->getMethod_UNSAFE("toPrimitive");
+			bpp_assert(to_primitive_method != nullptr, "ObjectReference::addToPrimitiveCall(): final object's class has no toPrimitive method");
+			reference.setMethod(to_primitive_method);
+		}
+
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 		PRETTYPRINT_OVERRIDE();
 
 		ObjectReference() = default;
@@ -104,7 +142,7 @@ std::expected<std::shared_ptr<ObjectReference>, EntityResolutionError> resolve_e
 	std::span<T> ids
 ) {
 	bpp_assert(context != nullptr, "resolve_entity() should be called with a non-null context pointer");
-	auto program = context->get_containing_program().lock();
+	auto program = context->getContainingProgram().lock();
 	bpp_assert(program != nullptr, "resolve_entity() should be called with a context that is part of a program");
 	bpp_assert(!std::ranges::empty(ids), "resolve_entity() should be called with at least one identifier");
 
@@ -128,12 +166,12 @@ std::expected<std::shared_ptr<ObjectReference>, EntityResolutionError> resolve_e
 	bool self_reference = first_id == "this" || first_id == "super";
 	bool super = first_id == "super";
 
-	auto obj = context->get_object(first_id);
+	auto obj = context->getObject(first_id);
 
 	if (self_reference) {
-		if (auto containing_class = context->get_containing_class().lock()) {
-			obj = super ? containing_class->get_super_ptr() : containing_class->get_this_ptr();
-			if (!obj && super) return fail(containing_class->get_name() + " has no parent class to reference with @super", first);
+		if (auto containing_class = context->getContainingClass().lock()) {
+			obj = super ? containing_class->getSuperPtr() : containing_class->getThisPtr();
+			if (!obj && super) return fail(containing_class->getName() + " has no parent class to reference with @super", first);
 		} else {
 			return fail("Cannot use @this or @super outside of a class context", first);
 		}
@@ -144,11 +182,11 @@ std::expected<std::shared_ptr<ObjectReference>, EntityResolutionError> resolve_e
 	}
 
 	if constexpr (provide_diagnostics) {
-		obj->add_reference_position(SymbolPosition{file, first.getLine(), first.getCharPositionInLine()});
-		obj->mark_referenced_by(result);
+		obj->addReferencePosition(SymbolPosition{file, first.getLine(), first.getCharPositionInLine()});
+		obj->markReferencedBy(result);
 	}
 
-	auto current_class = obj->get_type().lock();
+	auto current_class = obj->getType().lock();
 	bpp_assert(current_class != nullptr, "Object has no type in resolve_entity()");
 	auto remaining = ids.subspan(1);
 
@@ -163,16 +201,16 @@ std::expected<std::shared_ptr<ObjectReference>, EntityResolutionError> resolve_e
 			return fail("Invalid identifier: " + id + " (Bash++ identifiers cannot contain double underscores)", current_token);
 		}
 
-		auto data_member = current_class->get_datamember(id, context);
-		auto method = current_class->get_method(id, context);
+		auto data_member = current_class->getDatamember(id, context);
+		auto method = current_class->getMethod(id, context);
 
 		if (data_member) {
 			chain.append(data_member.value());
-			current_class = data_member.value()->get_type().lock();
+			current_class = data_member.value()->getType().lock();
 
 			if constexpr (provide_diagnostics) {
-				data_member.value()->add_reference_position(SymbolPosition{file, current_token.getLine(), current_token.getCharPositionInLine()});
-				data_member.value()->mark_referenced_by(result);
+				data_member.value()->addReferencePosition(SymbolPosition{file, current_token.getLine(), current_token.getCharPositionInLine()});
+				data_member.value()->markReferencedBy(result);
 			}
 
 			if (current_class == nullptr && !std::ranges::empty(remaining)) {
@@ -180,23 +218,23 @@ std::expected<std::shared_ptr<ObjectReference>, EntityResolutionError> resolve_e
 			}
 		} else if (method) {
 			if constexpr (provide_diagnostics) {
-				method.value()->add_reference_position(SymbolPosition{file, current_token.getLine(), current_token.getCharPositionInLine()});
-				method.value()->mark_referenced_by(result);
+				method.value()->addReferencePosition(SymbolPosition{file, current_token.getLine(), current_token.getCharPositionInLine()});
+				method.value()->markReferencedBy(result);
 			}
 			if (!std::ranges::empty(remaining)) {
 				return fail("Unexpected identifier after method reference", remaining.front());
 			}
-			chain.set_method(method.value());
+			chain.setMethod(method.value());
 		} else if (data_member.error() == LookupError::INACCESSIBLE || method.error() == LookupError::INACCESSIBLE) {
 			return fail(id + " is inaccessible in this context", current_token);
 		} else {
 			std::shared_ptr<const Object> latest_entity = obj;
-			if (!chain.empty()) latest_entity = chain.get_final_object().lock();
-			return fail(latest_entity->get_name() + " has no member named " + id, current_token);
+			if (!chain.empty()) latest_entity = chain.getFinalObject().lock();
+			return fail(latest_entity->getName() + " has no member named " + id, current_token);
 		}
 	}
 
-	result->set_reference_chain(std::move(chain));
+	result->setReferenceChain(std::move(chain));
 
 	return result;
 }

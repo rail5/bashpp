@@ -44,8 +44,8 @@ class Method : public BashFunction, public AddressableEntity, public std::enable
 		 * @param parameter The parameter to add
 		 * @return true if the parameter was added successfully, false otherwise
 		 */
-		bool add_parameter(std::shared_ptr<MethodParameter> parameter);
-		const std::vector<std::shared_ptr<MethodParameter>>& get_parameters() const { return parameters; }
+		bool addParameter(std::shared_ptr<MethodParameter> parameter);
+		const std::vector<std::shared_ptr<MethodParameter>>& getParameters() const { return parameters; }
 
 		/**
 		 * @brief Reserve space for a number of parameters in the parameters vector
@@ -54,28 +54,22 @@ class Method : public BashFunction, public AddressableEntity, public std::enable
 		 * 
 		 * @param count The number of parameters to reserve space for
 		 */
-		void reserve_parameters(std::size_t count) { parameters.reserve(count); }
+		void reserveParameters(std::size_t count) { parameters.reserve(count); }
 
-		std::string get_address() const override;
+		std::string getAddress() const override;
 
-		void set_scope(VisibilityScope scope) { this->scope = scope; }
-		VisibilityScope get_scope() const { return scope; }
+		void setIsVirtual(bool is_virtual) { this->m_is_virtual = is_virtual; }
+		bool isVirtual() const { return m_is_virtual; }
 
-		void set_is_virtual(bool is_virtual) { this->m_is_virtual = is_virtual; }
-		bool is_virtual() const { return m_is_virtual; }
+		void setIsOverridable(bool is_overridable) { this->m_is_overridable = is_overridable; }
+		bool isOverridable() const { return m_is_overridable; }
 
-		void set_is_overridable(bool is_overridable) { this->m_is_overridable = is_overridable; }
-		bool is_overridable() const { return m_is_overridable; }
+		void setParentMethod(std::shared_ptr<Method> parent_method) { setParentMember(parent_method); }
+		std::shared_ptr<Method> getParentMethod() const { return std::static_pointer_cast<Method>(getParentMember()); }
 
-		void set_is_inherited(bool is_inherited) { this->m_is_inherited = is_inherited; }
-		bool is_inherited() const { return m_is_inherited; }
+		void addReferencePosition(const SymbolPosition& pos) override;
 
-		void set_parent_method(std::shared_ptr<Method> parent_method) { this->parent_method = parent_method; }
-		std::shared_ptr<Method> get_parent_method() const { return parent_method.lock(); }
-
-		void add_reference_position(const SymbolPosition& pos) override;
-
-		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 
 		PRETTYPRINT_OVERRIDE();
 };

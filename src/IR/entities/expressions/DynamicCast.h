@@ -25,12 +25,12 @@ class DynamicCast : public StringType {
 		/// If set, this variable will be used to store the result of the dynamic cast, instead of a temporary variable. This is used in cases like method parameters, where the result of the dynamic cast needs to be stored in a specific variable (i.e., the parameter name)
 		std::optional<std::string> target_variable;
 	public:
-		RawCodeOrEntity get_target_type() const { return target_type; }
-		void set_target_type(const RawCodeOrEntity& type) { target_type = type; }
+		RawCodeOrEntity getTargetType() const { return target_type; }
+		void setTargetType(const RawCodeOrEntity& type) { target_type = type; }
 
-		void set_target_variable(const std::string& var_name) { target_variable = var_name; }
+		void setTargetVariable(const std::string& var_name) { target_variable = var_name; }
 
-		bpp::CodeGen::CodeSegment generate_code(bpp::CodeGen::CodeGenState* state) const override;
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 
 		PRETTYPRINT_OVERRIDE();
 };

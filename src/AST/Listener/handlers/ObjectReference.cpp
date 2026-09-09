@@ -27,22 +27,22 @@ void Listener::enter(ObjectReference* node) {
 
 	/*
 	 * There are 12 possible combinations of flags here:
-	 *		LVALUE	SELF_REF	POINTER_DEREF	OBJ_ADDRESS   Meaning
-	 * 1.	0		0			0				0			  Object reference as rvalue
-	 * 2.	0		0			0				1			  Object address as rvalue
-	 * 3.	0		0			1				0			  Pointer dereference as rvalue
-	 * 4.	0		1			0				0			  Self reference as rvalue
-	 * 5.	0		1			0				1			  Self reference as rvalue (address of)
-	 * 6.	0		1			1				0			  Self reference as rvalue (pointer deref)
-	 * 7.	1		0			0				0			  Object reference as lvalue
-	 * 8.	1		0			0				1			  Object address as lvalue
-	 * 9.	1		0			1				0			  Pointer dereference as lvalue
-	 * 10.	1		1			0				0			  Self reference as lvalue
-	 * 11.	1		1			0				1			  Self reference as lvalue (address of)
-	 * 12.	1		1			1				0			  Self reference as lvalue (pointer deref)
+	 *      LVALUE  SELF_REF    POINTER_DEREF   OBJ_ADDRESS   Meaning                                   Example
+	 * 1.   0       0           0               0             Object reference as rvalue                echo @obj.member
+	 * 2.   0       0           0               1             Object address as rvalue                  echo &@obj.member
+	 * 3.   0       0           1               0             Pointer dereference as rvalue             echo *@obj.member
+	 * 4.   0       1           0               0             Self reference as rvalue                  echo @this.member
+	 * 5.   0       1           0               1             Self reference as rvalue (address of)     echo &@this.member
+	 * 6.   0       1           1               0             Self reference as rvalue (pointer deref)  echo *@this.member
+	 * 7.   1       0           0               0             Object reference as lvalue                @obj.member arg1 arg2
+	 * 8.   1       0           0               1             Object address as lvalue                  &@obj.member arg1 arg2
+	 * 9.   1       0           1               0             Pointer dereference as lvalue             *@obj.member arg1 arg2
+	 * 10.  1       1           0               0             Self reference as lvalue                  @this.member arg1 arg2
+	 * 11.  1       1           0               1             Self reference as lvalue (address of)     &@this.member arg1 arg2
+	 * 12.  1       1           1               0             Self reference as lvalue (pointer deref)  *@this.member arg1 arg2
 	 *
 	 * POINTER_DEREF and OBJ_ADDRESS are mutually exclusive, so combinations where both are 1 are invalid
-	 * 
+	 *
 	 */
 	
 	bpp_assert(!(node->isPointerDereference() && node->isAddressOf()), "Detected simultaneous pointer dereference and object address");

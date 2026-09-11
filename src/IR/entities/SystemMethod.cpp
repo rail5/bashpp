@@ -77,7 +77,7 @@ bpp::CodeGen::CodeSegment SystemMethod::generateInlineNewCode(bpp::CodeGen::Code
 	result.add_pre_code("eval \"" + maybe_local + obj_address + "____vPointer=bpp__" + cls->getName() + "____vTable\"\n");
 
 	for (const auto& dm : cls->getAllDatamembers()) {
-		if (dm->isPrimitive() || dm->isPointer()) {
+		if (dm->isPrimitive()) {
 			bpp::CodeGen::CodeSegment default_value_code;
 			if (dm->getInitialValue().has_value()) {
 				default_value_code = dm->getInitialValue().value()->generateCode(state);

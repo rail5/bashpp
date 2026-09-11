@@ -44,7 +44,7 @@ class Object : public Entity, public NamedEntity, public AddressableEntity {
 		std::weak_ptr<const Class> getType() const { return type; }
 		void setType(std::weak_ptr<const Class> type) { this->type = std::move(type); }
 
-		bool isPrimitive() const { return type.expired(); }
+		bool isPrimitive() const { return type.expired() || isPointer(); }
 
 		void setInitialValue(const std::shared_ptr<CodeEntity>& value) { initial_value = value; }
 		const std::optional<std::shared_ptr<CodeEntity>>& getInitialValue() const { return initial_value; }

@@ -170,7 +170,7 @@ std::shared_ptr<DataMember> Class::getDatamember_UNSAFE(const std::string& name)
 
 bool Class::containsNonprimitiveDatamembers() const {
 	for (const auto& dm : datamembers) {
-		if (!dm->isPrimitive() && !dm->isPointer()) return true;
+		if (!dm->isPrimitive()) return true;
 	}
 	return false;
 }

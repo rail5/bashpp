@@ -68,13 +68,6 @@ class ObjectReference : public CodeEntity {
 
 		bool isMethodCall() const { return reference.hasMethod(); }
 
-		bool isPointer() const {
-			if (isMethodCall()) return false;
-			auto final_object = reference.getFinalObject().lock();
-			bpp_assert(final_object != nullptr, "ObjectReference::isPointer() called on a reference chain with a null final object");
-			return final_object->isPointer();
-		}
-
 		bool isPrimitive() const {
 			if (isMethodCall()) return false;
 			auto final_object = reference.getFinalObject().lock();
@@ -82,11 +75,18 @@ class ObjectReference : public CodeEntity {
 			return final_object->isPrimitive();
 		}
 
+		bool isPointer() const {
+			if (!isPrimitive()) return false;
+			auto final_object = reference.getFinalObject().lock();
+			bpp_assert(final_object != nullptr, "ObjectReference::isPointer() called on a reference chain with a null final object");
+			return final_object->isPointer();
+		}
+
 		bool isNonprimitive() const {
 			if (isMethodCall()) return false;
 			auto final_object = reference.getFinalObject().lock();
 			bpp_assert(final_object != nullptr, "ObjectReference::isNonprimitive() called on a reference chain with a null final object");
-			return !isPointer() && !isPrimitive();
+			return !isPrimitive();
 		}
 
 		/**
@@ -96,7 +96,7 @@ class ObjectReference : public CodeEntity {
 			bpp_assert(!reference.empty(), "ObjectReference::addToPrimitiveCall() called on an empty reference chain");
 			auto final_object = reference.getFinalObject().lock();
 			bpp_assert(final_object != nullptr, "ObjectReference::addToPrimitiveCall() called on a reference chain with a null final object");
-			bpp_assert(!final_object->isPrimitive(), "ObjectReference::addToPrimitiveCall() called on a reference chain with a primitive final object");
+			bpp_assert(!final_object->isPrimitive() || final_object->isPointer(), "ObjectReference::addToPrimitiveCall() called on a reference chain with a primitive final object");
 			auto final_class = final_object->getType().lock();
 			bpp_assert(final_class != nullptr, "ObjectReference::addToPrimitiveCall(): final object has no type");
 			auto to_primitive_method = final_class->getMethod_UNSAFE("toPrimitive");

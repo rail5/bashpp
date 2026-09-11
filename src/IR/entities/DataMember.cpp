@@ -29,7 +29,7 @@ PRETTYPRINT_IMPLEMENTATION(DataMember, {
 		default: os << "<error_scope>"; break;
 	}
 
-	if (isPrimitive()) {
+	if (isPrimitive() && !isPointer()) {
 		os << ", primitive";
 		if (isArray()) os << ", array";
 	} else {

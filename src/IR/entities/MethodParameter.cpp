@@ -50,10 +50,8 @@ bpp::CodeGen::CodeSegment ThisPtr::generateCode(bpp::CodeGen::CodeGenState* stat
 
 	code.add_pre_code("local __this\n");
 
-	auto dynamic_cast_entity = std::dynamic_pointer_cast<DynamicCast>(getInitialValue().value());
-	if (!dynamic_cast_entity) {
-		throw bpp::ErrorHandling::InternalError("The initial value of the implicit `this` parameter is not a DynamicCast entity");
-	}
+	bpp_assert(std::dynamic_pointer_cast<DynamicCast>(getInitialValue().value()), "The initial value of the implicit `this` parameter is not a DynamicCast entity");
+	auto dynamic_cast_entity = std::static_pointer_cast<DynamicCast>(getInitialValue().value());
 	dynamic_cast_entity->setTargetVariable("__this");
 
 	// A dynamic cast of $1 to the expected type, with the result assigned to `this`.

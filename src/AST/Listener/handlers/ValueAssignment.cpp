@@ -25,7 +25,7 @@ void Listener::enter(ValueAssignment* node) {
 
 	auto current_object_instantiation = std::dynamic_pointer_cast<bpp::IR::Object>(entity_stack.top());
 	if (current_object_instantiation) {
-		va->setLvalueNonprimitive(!(current_object_instantiation->isPrimitive() || current_object_instantiation->isPointer()));
+		va->setLvalueNonprimitive(!current_object_instantiation->isPrimitive());
 		va->setLvalueObject(current_object_instantiation);
 	}
 

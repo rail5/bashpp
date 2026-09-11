@@ -8,6 +8,7 @@
 #include <IR/entities/Object.h>
 #include <IR/entities/Method.h>
 #include <IR/entities/DataMember.h>
+#include <IR/entities/expressions/Supershell.h>
 #include <IR/entities/Program.h>
 #include "ObjectReference.h"
 
@@ -115,14 +116,39 @@ bpp::CodeGen::CodeSegment ObjectReference::generateCode(bpp::CodeGen::CodeGenSta
 		indirection_level = std::min(indirection_level + 1, 2);
 	}
 
+	auto refString = get_encased_reference(current_address, indirection_level);
+
 	if (ref.hasMethod()) {
 		auto method = ref.getMethod().lock();
 		bpp_assert(method != nullptr, "Method in reference chain is null in ObjectReference::generate_code()");
-		result.add_main_code(method->getAddress() + " "); // Call to the method
+
+		if (!isLvalue() && !isAddressOf()) {
+			// Rvalue method call: Implicit supershell
+			IR::Supershell sp;
+			sp.inherit(shared_from_this());
+			sp.add(method->getAddress() + " " + std::move(refString));
+			result.egalitarian_merge(sp.generateCode(state));
+			return result;
+		}
+
+		// Either an lvalue method call, or a request for the address of the method
+		// In either case, we write the method's address to the main code
+		result.add_main_code(method->getAddress() + " ");
+	}
+
+	if (isAddressOf() && !ref.hasMethod()) {
+		// Remove a layer of indirection if possible
+		indirection_level = indirection_level > 0 ? indirection_level - 1 : 0;
+		// If it's not possible, then it's also not necessary
+		// E.g., `echo &@obj` -- the address-of operator has already transformed this into a direct reference
+		// rather than an implicit method call to toPrimitive
+		// which means that, naturally, @obj's address will be written here without removing any indirection,
+		// the same as it would've been written after the method's address had it been a method call
+		refString = get_encased_reference(current_address, indirection_level);
 	}
 
 	// Add the final address of the object, with appropriate encasement for any indirection
-	result.add_main_code(get_encased_reference(current_address, indirection_level > 0 ? indirection_level - 1 : 0));
+	result.add_main_code(std::move(refString));
 
 	return result;
 }

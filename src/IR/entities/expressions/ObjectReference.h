@@ -27,7 +27,7 @@
  */
 namespace bpp::IR {
 
-class ObjectReference : public CodeEntity {
+class ObjectReference : public CodeEntity, public std::enable_shared_from_this<ObjectReference> {
 	public:
 		/**
 		 * @brief A chain starting from a root object and following a series of data member accesses to reach a final object.
@@ -104,6 +104,11 @@ class ObjectReference : public CodeEntity {
 			reference.setMethod(to_primitive_method);
 		}
 
+		void setLvalue(bool lvalue) { this->lvalue = lvalue; }
+		bool isLvalue() const { return lvalue; }
+		void setAddressOf(bool address_of) { this->address_of = address_of; }
+		bool isAddressOf() const { return address_of; }
+
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 		PRETTYPRINT_OVERRIDE();
 
@@ -115,6 +120,8 @@ class ObjectReference : public CodeEntity {
 		ObjectReference& operator=(ObjectReference&& other) noexcept = default;
 	private:
 		ReferenceChain reference;
+		bool lvalue = false;
+		bool address_of = false;
 };
 
 

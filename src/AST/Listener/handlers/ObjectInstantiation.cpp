@@ -120,6 +120,7 @@ void Listener::exit(ObjectInstantiation* /*node*/) {
 		bpp::IR::ObjectReference::ReferenceChain chain(object);
 		chain.setMethod(new_method);
 		method_call->setReferenceChain(std::move(chain));
+		method_call->setLvalue(true);
 		current_code_entity->add(method_call);
 		current_code_entity->add(" >/dev/null\n"); // Discard the output of the __new method, since it will echo the address of the new object
 

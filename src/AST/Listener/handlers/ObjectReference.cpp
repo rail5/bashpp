@@ -80,11 +80,13 @@ void Listener::enter(ObjectReference* node) {
 	}
 
 	reference_entity->inherit(current_code_entity);
+	reference_entity->setLvalue(node->isLvalue());
+	reference_entity->setAddressOf(node->isAddressOf());
 	entity_stack.push(reference_entity);
 }
 
 template <>
-void Listener::exit(ObjectReference* node) {
+void Listener::exit(ObjectReference* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::ObjectReference>(), "Topmost entity on stack is not an ObjectReference when exiting ObjectReference node");
 	auto reference_entity = std::static_pointer_cast<bpp::IR::ObjectReference>(entity_stack.top());
 	entity_stack.pop();
@@ -92,18 +94,7 @@ void Listener::exit(ObjectReference* node) {
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "ObjectReference node must be inside a code entity");
 	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
 
-	std::shared_ptr<bpp::IR::CodeEntity> entity_to_add = reference_entity;
-
-	if (reference_entity->isMethodCall() && !node->isLvalue() && !node->isAddressOf()) {
-		// Implicit supershell
-		auto supershell = std::make_shared<bpp::IR::Supershell>();
-		supershell->inherit(current_code_entity);
-		supershell->add(reference_entity);
-		program->getSupershellFunction()->markReferencedBy(supershell);
-		entity_to_add = supershell;
-	}
-
-	current_code_entity->add(entity_to_add);
+	current_code_entity->add(reference_entity);
 }
 
 } // namespace bpp::AST

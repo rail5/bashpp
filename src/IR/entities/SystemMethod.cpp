@@ -122,10 +122,8 @@ bpp::CodeGen::CodeSegment SystemMethod::generateInlineNewCode(bpp::CodeGen::Code
 			result.absorb_all_to_main(dm_new_sys_method->generateInlineCode(state, localize, obj));
 		} else {
 			// If not localizing, call the __new method in a supershell, and assign its output to the datamember
-			bpp::CodeGen::CodeSegment call;
-			call.add_main_code(dm_new_sys_method->getAddress());
 			result.add_main_code("eval " + obj_address + dm->getAddress() + "=");
-			result.egalitarian_merge(bpp::IR::Supershell::wrap(state, std::move(call)));
+			result.egalitarian_merge(bpp::IR::Supershell::wrap(state, dm_new_sys_method->getAddress()));
 		}
 	}
 

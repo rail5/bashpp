@@ -36,6 +36,11 @@ void Listener::enter(MethodDefinition* node) {
 
 	new_method->setName(node->NAME());
 	new_method->setIsVirtual(node->VIRTUAL());
+
+	if (new_method->isVirtual()) {
+		program->getVtableLookupFunction()->markReferencedBy(new_method);
+	}
+
 	switch (node->ACCESSMODIFIER().getValue()) {
 		case AccessModifier::PUBLIC: new_method->setScope(bpp::IR::VisibilityScope::PUBLIC); break;
 		case AccessModifier::PRIVATE: new_method->setScope(bpp::IR::VisibilityScope::PRIVATE); break;

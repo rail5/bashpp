@@ -52,6 +52,7 @@ bpp____supershell() {
 [[maybe_unused]] constexpr static std::string_view bpp_vtable_lookup_function = R"EOF(bpp____vTable_lookup() {
 	local __this="$1" __method="$2" __outputVar="$3"
 	([[ -z "${__this}" ]] || [[ -z "${__method}" ]] || [[ -z "${__outputVar}" ]]) && >&2 echo "Bash++: Error: Invalid vTable lookup" && exit 1
+	eval "${__outputVar}=0"
 	while : ; do
 		if ! eval "declare -p \"${__this}\"" &>/dev/null; then
 			break
@@ -61,10 +62,11 @@ bpp____supershell() {
 	done
 	local __vTable="${__this}____vPointer"
 	if ! eval "declare -p \"${__vTable}\"" &>/dev/null; then
-		return 1
+		>&2 echo "Bash++: Error: Object '${__this}' has no vTable pointer" && return 1
 	fi
 	local __result="${!__vTable}[\"${__method}\"]"
 	[[ -z "${!__result}" ]] && >&2 echo "Bash++: Error: Method '${__method}' not found in vTable for object '${__this}'" && return 1
+	__result=${!__result}
 	eval "${__outputVar}=\$__result"
 }
 )EOF";

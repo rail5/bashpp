@@ -19,7 +19,7 @@ class Supershell : public StringType {
 	public:
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 
-		static bpp::CodeGen::CodeSegment inlineCode(bpp::CodeGen::CodeGenState* state, bpp::CodeGen::CodeSegment&& supershell_body);
+		static bpp::CodeGen::CodeSegment wrap(bpp::CodeGen::CodeGenState* state, bpp::CodeGen::CodeSegment&& supershell_body);
 		PRETTYPRINT_OVERRIDE();
 };
 

@@ -135,7 +135,7 @@ bpp::CodeGen::CodeSegment ObjectReference::generateCode(bpp::CodeGen::CodeGenSta
 
 		if (!isLvalue() && !isAddressOf()) {
 			// Rvalue method call: Implicit supershell
-			result.egalitarian_merge(bpp::IR::Supershell::inlineCode(state, std::move(call)));
+			result.egalitarian_merge(bpp::IR::Supershell::wrap(state, std::move(call)));
 		} else {
 			// Either an lvalue method call, or a request for the address of the method
 			// In either case, we write the method's address to the main code

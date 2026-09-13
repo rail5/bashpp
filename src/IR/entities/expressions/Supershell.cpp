@@ -13,10 +13,10 @@ namespace bpp::IR {
 
 bpp::CodeGen::CodeSegment Supershell::generateCode(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "Supershell::generateCode() should be called with a non-null state pointer");
-	return Supershell::inlineCode(state, StringType::generateCode(state));
+	return Supershell::wrap(state, StringType::generateCode(state));
 }
 
-bpp::CodeGen::CodeSegment Supershell::inlineCode(bpp::CodeGen::CodeGenState* state, bpp::CodeGen::CodeSegment&& supershell_body) {
+bpp::CodeGen::CodeSegment Supershell::wrap(bpp::CodeGen::CodeGenState* state, bpp::CodeGen::CodeSegment&& supershell_body) {
 	bpp_assert(state != nullptr, "Supershell::inlineCode() should be called with a non-null state pointer");
 	state->nested_supershell_depth++;
 	bpp::CodeGen::CodeSegment result;

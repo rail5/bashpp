@@ -77,12 +77,13 @@ std::expected<std::shared_ptr<Method>, AddError> Class::addMethod(std::shared_pt
 
 		// Otherwise: override
 		auto parent_method = existing_method->getParentMethod();
+		bool wasVirtual = existing_method->isVirtual();
 
 		*existing_method = std::move(*method);
 
 		existing_method->setParentMethod(parent_method); // Keep the chain of inheritance intact
 		existing_method->setIsOverridable(false); // Can't override it twice
-		existing_method->setIsVirtual(true); // Keep it virtual, since it was virtual in the parent class
+		existing_method->setIsVirtual(wasVirtual);
 		existing_method->setContainingClass(weak_from_this());
 
 		return existing_method;

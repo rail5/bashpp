@@ -181,8 +181,16 @@ bpp::CodeGen::CodeSegment Class::generateCode(bpp::CodeGen::CodeGenState* state)
 
 	state->current_class = shared_from_this();
 
+	code.add_post_code("declare -A bpp__" + getName() + "____vTable\n");
+	if (auto parent = getParentClass()) {
+		code.add_post_code("bpp__" + getName() + R"(____vTable["__parent__"]="bpp__)" + parent->getName() + "____vTable\"\n");
+	}
+
 	for (const auto& method : methods) {
 		code.absorb_all_to_main(method->generateCode(state));
+		if (method->isVirtual()) {
+			code.add_post_code("bpp__" + getName() + "____vTable[\"" + method->getName() + "\"]=\"" + method->getAddress() +"\"\n");
+		}
 	}
 
 	state->current_class = nullptr;

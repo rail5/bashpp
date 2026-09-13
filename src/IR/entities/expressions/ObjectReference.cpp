@@ -118,25 +118,35 @@ bpp::CodeGen::CodeSegment ObjectReference::generateCode(bpp::CodeGen::CodeGenSta
 
 	auto refString = get_encased_reference(current_address, indirection_level);
 
+	// FIXME(@rail5): HACK. Unify procedure
 	if (ref.hasMethod()) {
 		auto method = ref.getMethod().lock();
 		bpp_assert(method != nullptr, "Method in reference chain is null in ObjectReference::generate_code()");
 
-		if (!isLvalue() && !isAddressOf()) {
-			// Rvalue method call: Implicit supershell
-			IR::Supershell sp;
-			sp.inherit(shared_from_this());
-			sp.add(method->getAddress() + " " + std::move(refString));
-			result.egalitarian_merge(sp.generateCode(state));
-			return result;
+		bpp::CodeGen::CodeSegment call;
+
+		if (method->isVirtual()) {
+			if (state->should_declare_local()) call.add_pre_code("local __func\n");
+			call.add_pre_code("bpp____vTable_lookup " + refString + " " + method->getName() + " __func\n");
+			call.add_main_code("${__func} " + std::move(refString));
+		} else {
+			call.add_main_code(method->getAddress() + " " + std::move(refString));
 		}
 
-		// Either an lvalue method call, or a request for the address of the method
-		// In either case, we write the method's address to the main code
-		result.add_main_code(method->getAddress() + " ");
+		if (!isLvalue() && !isAddressOf()) {
+			// Rvalue method call: Implicit supershell
+			result.egalitarian_merge(bpp::IR::Supershell::inlineCode(state, std::move(call)));
+		} else {
+			// Either an lvalue method call, or a request for the address of the method
+			// In either case, we write the method's address to the main code
+			result.egalitarian_merge(std::move(call));
+		}
+		return result;
 	}
 
-	if (isAddressOf() && !ref.hasMethod()) {
+	// Here: not a method call
+
+	if (isAddressOf()) {
 		// Remove a layer of indirection if possible
 		indirection_level = indirection_level > 0 ? indirection_level - 1 : 0;
 		// If it's not possible, then it's also not necessary

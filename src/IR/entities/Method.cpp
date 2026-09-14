@@ -63,11 +63,16 @@ void Method::addReferencePosition(const SymbolPosition& pos) {
 
 std::string Method::getAddress() const {
 	bpp_assert(!getContainingClass().expired(), "Method does not have a containing class");
+	if (m_points_to_parent_method) {
+		bpp_assert(getParentMethod() != nullptr, "Method points to parent method but has no parent method");
+		return getParentMethod()->getAddress();
+	}
 	return "bpp__" + getContainingClass().lock()->getName() + "__" + name;
 }
 
 bpp::CodeGen::CodeSegment Method::generateCode(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "State pointer is null");
+	if (m_points_to_parent_method) return {}; // Skip generating code for non-overridden inherited methods
 	state->current_method = shared_from_this();
 	bpp::CodeGen::CodeSegment code;
 
@@ -89,6 +94,7 @@ bpp::CodeGen::CodeSegment Method::generateCode(bpp::CodeGen::CodeGenState* state
 }
 
 PRETTYPRINT_IMPLEMENTATION(Method, {
+	if (m_points_to_parent_method) return os; // Skip pretty-printing non-overridden inherited methods, it would be redundant
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 	os << indent << "(Method: " << name << " [";
 	switch (getScope()) {

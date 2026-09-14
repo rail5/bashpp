@@ -44,12 +44,7 @@ void Class::inherit(std::shared_ptr<const Class> parent) {
 	for (const auto& m : parent->getAllMethods()) {
 		if (m->getName() == "toPrimitive") continue; // Don't inherit the toPrimitive method, since it is automatically generated for all classes
 		if (m->getName().starts_with("__")) continue; // Don't inherit system methods, since they are automatically generated for all classes
-		auto inherited_method = std::make_shared<Method>(*m);
-		if (inherited_method->getScope() == VisibilityScope::PRIVATE) {
-			inherited_method->setScope(VisibilityScope::INACCESSIBLE);
-		}
-		inherited_method->setParentMethod(m);
-		if (inherited_method->isVirtual()) inherited_method->setIsOverridable(true);
+		auto inherited_method = std::make_shared<Method>(m);
 		if (!addMethod(std::move(inherited_method))) {
 			throw bpp::ErrorHandling::InternalError("Failed to inherit method '" + m->getName() + "' from parent class '" + parent->getName() + "'");
 		}

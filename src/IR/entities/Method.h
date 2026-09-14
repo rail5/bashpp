@@ -28,7 +28,41 @@ class Method : public BashFunction, public AddressableEntity, public ClassMember
 
 		bool m_is_virtual = false;
 		bool m_is_overridable = false;
+
+		/**
+		 * @brief This flag is set if this is an inherited method that has not been overridden.
+		 * In that case, there's no sense duplicating the code of the parent method; we'll just call the parent method directly.
+		 */
+		bool m_points_to_parent_method = false;
 	public:
+		Method() = default;
+
+		/**
+		 * @brief Create a new Method that is inherited (and not overridden) from a parent method.
+		 * This method will be a hollow "pointer" to the parent method, and will not generate its own code.
+		 * Calls to this method will be redirected to the parent method.
+		 * @param parent_method The parent method to inherit from
+		 */
+		explicit Method(std::shared_ptr<Method> parent_method) {
+			bpp_assert(parent_method != nullptr, "Parent method pointer is null");
+			while (parent_method->pointsToParentMethod()) {
+				// If the parent method is itself an inherited method that points to its own parent, traverse the chain up to the original method.
+				// This is not strictly necessary but will save time later during lookup
+				parent_method = parent_method->getParentMethod();
+				bpp_assert(parent_method != nullptr, "Parent method pointer is null");
+			}
+			inherit(parent_method);
+			setParentMethod(parent_method);
+			setName(parent_method->getName());
+			if (parent_method->getScope() == VisibilityScope::PRIVATE) {
+				setScope(VisibilityScope::INACCESSIBLE);
+			} else {
+				setScope(parent_method->getScope());
+			}
+			setIsVirtual(parent_method->isVirtual());
+			setIsOverridable(parent_method->isVirtual());
+			m_points_to_parent_method = true;
+		}
 		/**
 		 * @brief Add a parameter to this method
 		 *
@@ -62,6 +96,8 @@ class Method : public BashFunction, public AddressableEntity, public ClassMember
 
 		void setParentMethod(std::shared_ptr<Method> parent_method) { setParentMember(parent_method); }
 		std::shared_ptr<Method> getParentMethod() const { return std::static_pointer_cast<Method>(getParentMember()); }
+
+		bool pointsToParentMethod() const { return m_points_to_parent_method; }
 
 		void addReferencePosition(const SymbolPosition& pos) override;
 

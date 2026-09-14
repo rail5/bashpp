@@ -13,6 +13,9 @@
 
 namespace bpp::IR {
 
+/**
+ * @brief An instantiation of an object (i.e., a call to __new and optionally __constructor)
+ */
 class ObjectInstantiation : public Entity {
 	private:
 		std::weak_ptr<const Class> type;

@@ -11,6 +11,7 @@
 #include <IR/entities/DataMember.h>
 #include <IR/entities/Method.h>
 #include <IR/entities/expressions/ObjectReference.h>
+#include <IR/entities/expressions/ObjectAssignment.h>
 #include <IR/entities/expressions/Supershell.h>
 
 #include <error/InternalError.h>
@@ -93,6 +94,11 @@ void Listener::exit(ObjectReference* /*node*/) {
 
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "ObjectReference node must be inside a code entity");
 	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
+
+	if (auto object_assignment = std::dynamic_pointer_cast<bpp::IR::ObjectAssignment>(current_code_entity)) {
+		object_assignment->setLHS(reference_entity);
+		return;
+	}
 
 	current_code_entity->add(reference_entity);
 }

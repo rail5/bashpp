@@ -26,6 +26,8 @@ namespace bpp::IR {
 
 /**
  * @brief A reference to a non-primitive object in the IR
+ *
+ * E.g., @object.member
  */
 class ObjectReference : public CodeEntity, public std::enable_shared_from_this<ObjectReference> {
 	public:

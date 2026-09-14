@@ -211,6 +211,8 @@ template<> void Listener::enter  (DestructorDefinition*   node);
 template<> void Listener::exit   (DestructorDefinition*   node);
 template<> void Listener::enter  (ObjectInstantiation*    node);
 template<> void Listener::exit   (ObjectInstantiation*    node);
+template<> void Listener::enter  (ObjectAssignment*       node);
+template<> void Listener::exit   (ObjectAssignment*       node);
 template<> void Listener::enter  (NewStatement*           node);
 template<> void Listener::exit   (NewStatement*           node);
 template<> void Listener::enter  (ObjectReference*        node);

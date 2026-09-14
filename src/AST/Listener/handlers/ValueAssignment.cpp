@@ -10,6 +10,7 @@
 
 #include <IR/entities/DataMember.h>
 #include <IR/entities/Object.h>
+#include <IR/entities/expressions/ObjectAssignment.h>
 
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>
@@ -21,12 +22,12 @@ void Listener::enter(ValueAssignment* node) {
 	auto va = std::make_shared<bpp::IR::ValueAssignment>();
 	va->inherit(entity_stack.top());
 
-	// FIXME(@rail5): Check object assignment context
+	if (auto current_object_assignment = std::dynamic_pointer_cast<bpp::IR::ObjectAssignment>(entity_stack.top())) {
+		va->setLvalueNonprimitive(current_object_assignment->getLHS()->isNonprimitive());
+	}
 
-	auto current_object_instantiation = std::dynamic_pointer_cast<bpp::IR::Object>(entity_stack.top());
-	if (current_object_instantiation) {
+	if (auto current_object_instantiation = std::dynamic_pointer_cast<bpp::IR::Object>(entity_stack.top())) {
 		va->setLvalueNonprimitive(!current_object_instantiation->isPrimitive());
-		va->setLvalueObject(current_object_instantiation);
 	}
 
 	const auto& op = node->OPERATOR();
@@ -52,17 +53,18 @@ void Listener::exit(ValueAssignment* node) {
 		throw bpp::ErrorHandling::SyntaxError(this, node, "Cannot assign a primitive value to a non-primitive object");
 	}
 
-	auto current_datamember = std::dynamic_pointer_cast<bpp::IR::DataMember>(entity_stack.top());
-	if (current_datamember) {
+	if (auto current_datamember = std::dynamic_pointer_cast<bpp::IR::DataMember>(entity_stack.top())) {
 		current_datamember->setInitialValue(va);
 		if (va->isArrayAssignment()) current_datamember->setIsArray(true);
 		return;
 	}
 
-	// FIXME(@rail5): Handle object assignment
+	if (auto current_object_assignment = std::dynamic_pointer_cast<bpp::IR::ObjectAssignment>(entity_stack.top())) {
+		current_object_assignment->setRHS(va);
+		return;
+	}
 
-	auto current_object = std::dynamic_pointer_cast<bpp::IR::Object>(entity_stack.top());
-	if (current_object) {
+	if (auto current_object = std::dynamic_pointer_cast<bpp::IR::Object>(entity_stack.top())) {
 		// FIXME(@rail5): This only handles the pointer case, handle the non-pointer case
 		if (va->isArrayAssignment()) {
 			throw bpp::ErrorHandling::SyntaxError(this, node, "Cannot assign an array to an object");

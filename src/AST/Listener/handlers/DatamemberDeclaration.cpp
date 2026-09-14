@@ -69,7 +69,6 @@ void Listener::exit(DatamemberDeclaration* node) {
 		// Pointers should be auto-initialized to @nullptr (0) if no initial value is provided
 		auto value_assignment = std::make_shared<bpp::IR::ValueAssignment>();
 		value_assignment->inherit(dm);
-		value_assignment->setLvalueObject(dm);
 		value_assignment->add("0");
 		dm->setInitialValue(value_assignment);
 	}

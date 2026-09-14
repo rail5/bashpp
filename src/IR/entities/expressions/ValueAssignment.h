@@ -15,7 +15,6 @@ class ValueAssignment : public StringType {
 	private:
 		bool lvalue_nonprimitive = false;
 		bool rvalue_nonprimitive = false;
-		std::shared_ptr<Object> lvalue_object = nullptr;
 		std::shared_ptr<Object> rvalue_object = nullptr;
 
 		bool array_assignment = false; // E.g arr=()
@@ -23,14 +22,12 @@ class ValueAssignment : public StringType {
 	public:
 		void setLvalueNonprimitive(bool is_nonprimitive) { lvalue_nonprimitive = is_nonprimitive; }
 		void setRvalueNonprimitive(bool is_nonprimitive) { rvalue_nonprimitive = is_nonprimitive; }
-		void setLvalueObject(std::shared_ptr<Object> obj) { lvalue_object = std::move(obj); }
 		void setRvalueObject(std::shared_ptr<Object> obj) { rvalue_object = std::move(obj); }
 		void setArrayAssignment(bool is_array_assignment) { array_assignment = is_array_assignment; }
 		void setAdding(bool is_adding) { adding = is_adding; }
 
 		bool isLvalueNonprimitive() const { return lvalue_nonprimitive; }
 		bool isRvalueNonprimitive() const { return rvalue_nonprimitive; }
-		std::shared_ptr<Object> getLvalueObject() const { return lvalue_object; }
 		std::shared_ptr<Object> getRvalueObject() const { return rvalue_object; }
 		bool isArrayAssignment() const { return array_assignment; }
 		bool isAdding() const { return adding; }

@@ -165,8 +165,11 @@ bpp::CodeGen::CodeSegment ObjectReference::generateCode(bpp::CodeGen::CodeGenSta
 
 PRETTYPRINT_IMPLEMENTATION(ObjectReference, {
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
-	os << indent << "(ObjectReference "
-		<< get_reference_chain_prettyprint_string(getReferenceChain())
+	os << indent << "(ObjectReference ";
+
+	if (isAddressOf()) os << "&";
+
+	os << get_reference_chain_prettyprint_string(getReferenceChain())
 		<< ")\n";
 	return os;
 })

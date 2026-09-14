@@ -19,7 +19,7 @@ bpp::CodeGen::CodeSegment ObjectInstantiation::generateCode(bpp::CodeGen::CodeGe
 	bpp_assert(state != nullptr, "ObjectInstantiation::generateCode() should be called with a non-null state pointer");
 	bpp_assert(!type.expired(), "ObjectInstantiation::generateCode() should be called with a non-null type pointer");
 
-	auto object = getObjectToInstantiate().lock();
+	auto object = getStackLikeObject().lock();
 
 	if (object && !object->isPointer()) {
 		// Stack-like @TYPE ID instantiation
@@ -61,7 +61,7 @@ bpp::CodeGen::CodeSegment ObjectInstantiation::heapLikeInstantiation(bpp::CodeGe
 bpp::CodeGen::CodeSegment ObjectInstantiation::stackLikeInstantiation(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "ObjectInstantiation::stackLikeInstantiation() should be called with a non-null state pointer");
 	bpp_assert(!type.expired(), "ObjectInstantiation::stackLikeInstantiation() should be called with a non-null type pointer");
-	bpp_assert(!objectToInstantiate.expired(), "ObjectInstantiation::stackLikeInstantiation() should be called with a non-null object pointer");
+	bpp_assert(!stackLikeObject.expired(), "ObjectInstantiation::stackLikeInstantiation() should be called with a non-null object pointer");
 
 	bpp::CodeGen::CodeSegment result;
 
@@ -69,7 +69,7 @@ bpp::CodeGen::CodeSegment ObjectInstantiation::stackLikeInstantiation(bpp::CodeG
 	auto new_method = cls->getMethod_UNSAFE("__new");
 	auto constructor = cls->getMethod_UNSAFE("__constructor");
 
-	auto obj = objectToInstantiate.lock();
+	auto obj = stackLikeObject.lock();
 	bpp_assert(!obj->isPrimitive(), "ObjectInstantiation::stackLikeInstantiation() should be called with a non-primitive object pointer");
 	auto requested_address = obj->getAddress();
 
@@ -85,7 +85,7 @@ PRETTYPRINT_IMPLEMENTATION(ObjectInstantiation, {
 	bpp_assert(!type.expired(), "ObjectInstantiation has no type in prettyprint()");
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 	os << indent << "(ObjectInstantiation ";
-	auto object = getObjectToInstantiate().lock();
+	auto object = getStackLikeObject().lock();
 	if (object && !object->isPointer()) {
 		bpp_assert(!object->isPrimitive(), "ObjectInstantiation has a primitive object in prettyprint()");
 		// Stack-like @TYPE ID instantiation

@@ -116,7 +116,7 @@ void Listener::exit(ObjectInstantiation* /*node*/) {
 		auto instantiation = std::make_shared<bpp::IR::ObjectInstantiation>();
 		instantiation->inherit(current_code_entity);
 		instantiation->setType(object_class);
-		instantiation->setObjectToInstantiate(object);
+		instantiation->setStackLikeObject(object);
 
 		current_code_entity->add(instantiation);
 

@@ -10,6 +10,8 @@
 #include <IR/entities/DataMember.h>
 #include <IR/entities/Method.h>
 #include <IR/entities/expressions/ObjectInstantiation.h>
+#include <IR/entities/expressions/ObjectReference.h>
+#include <IR/entities/expressions/ObjectAssignment.h>
 
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>
@@ -109,7 +111,6 @@ void Listener::exit(ObjectInstantiation* /*node*/) {
 	}
 
 	if (!object->isPointer()) {
-		// Add a call to the class's __new method to instantiate the object
 		const auto object_class = object->getType().lock();
 		bpp_assert(object_class != nullptr, "Object has no type when exiting ObjectInstantiation node");
 		
@@ -127,12 +128,26 @@ void Listener::exit(ObjectInstantiation* /*node*/) {
 		new_method->markReferencedBy(instantiation);
 		if (constructor_method) constructor_method->markReferencedBy(instantiation);
 	} else {
-		current_code_entity->add(object->getAddress());
+		auto object_reference = std::make_shared<bpp::IR::ObjectReference>();
+		object_reference->inherit(current_code_entity);
+		object_reference->setReferenceChain(bpp::IR::ObjectReference::ReferenceChain(object));
+
+		auto pointer_assignment = std::make_shared<bpp::IR::ObjectAssignment>();
+		pointer_assignment->inherit(current_code_entity);
+		pointer_assignment->setLHS(object_reference);
+
 		if (object->hasInitialValue()) {
-			current_code_entity->add(object->getInitialValue().value());
+			bpp_assert(std::dynamic_pointer_cast<bpp::IR::ValueAssignment>(object->getInitialValue().value()), "Object initial value is not a ValueAssignment when exiting ObjectInstantiation node");
+			auto va = std::static_pointer_cast<bpp::IR::ValueAssignment>(object->getInitialValue().value());
+			pointer_assignment->setRHS(va);
 		} else {
-			current_code_entity->add("=0"); // Default-initialize pointers to null
+			auto va = std::make_shared<bpp::IR::ValueAssignment>();
+			va->inherit(current_code_entity);
+			va->add("0"); // Default-initialize pointers to null
+			pointer_assignment->setRHS(va);
 		}
+
+		current_code_entity->add(pointer_assignment);
 	}
 }
 

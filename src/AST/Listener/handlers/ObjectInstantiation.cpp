@@ -9,7 +9,7 @@
 #include <IR/entities/Object.h>
 #include <IR/entities/DataMember.h>
 #include <IR/entities/Method.h>
-#include <IR/entities/expressions/ObjectReference.h>
+#include <IR/entities/expressions/ObjectInstantiation.h>
 
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>
@@ -112,20 +112,20 @@ void Listener::exit(ObjectInstantiation* /*node*/) {
 		// Add a call to the class's __new method to instantiate the object
 		const auto object_class = object->getType().lock();
 		bpp_assert(object_class != nullptr, "Object has no type when exiting ObjectInstantiation node");
+		
+		auto instantiation = std::make_shared<bpp::IR::ObjectInstantiation>();
+		instantiation->inherit(current_code_entity);
+		instantiation->setType(object_class);
+		instantiation->setObjectToInstantiate(object);
+
+		current_code_entity->add(instantiation);
+
+		// Mark the class's __new and __constructor methods as referenced by this instantiation
 		auto new_method = object_class->getMethod_UNSAFE("__new");
-		bpp_assert(new_method != nullptr, "Class '" + object_class->getName() + "' does not have a '__new' method");
-
-		auto method_call = std::make_shared<bpp::IR::ObjectReference>();
-		method_call->inherit(current_code_entity);
-		bpp::IR::ObjectReference::ReferenceChain chain(object);
-		chain.setMethod(new_method);
-		method_call->setReferenceChain(std::move(chain));
-		method_call->setLvalue(true);
-		current_code_entity->add(method_call);
-		current_code_entity->add(" >/dev/null\n"); // Discard the output of the __new method, since it will echo the address of the new object
-
-		// Mark the class's "__new" method as used
-		new_method->markReferencedBy(method_call);
+		auto constructor_method = object_class->getMethod_UNSAFE("__constructor");
+		bpp_assert(new_method != nullptr, "Class has no __new method when exiting ObjectInstantiation node");
+		new_method->markReferencedBy(instantiation);
+		if (constructor_method) constructor_method->markReferencedBy(instantiation);
 	} else {
 		current_code_entity->add(object->getAddress());
 		if (object->hasInitialValue()) {

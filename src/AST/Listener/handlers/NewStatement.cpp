@@ -7,10 +7,10 @@
 #include <AST/Listener/Listener.h>
 
 #include <IR/entities/CodeEntity.h>
-#include <IR/entities/Class.h>
 #include <IR/entities/Program.h>
+#include <IR/entities/Class.h>
 #include <IR/entities/Method.h>
-#include <IR/entities/expressions/Supershell.h>
+#include <IR/entities/expressions/ObjectInstantiation.h>
 
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>
@@ -28,14 +28,23 @@ void Listener::enter(NewStatement* node) {
 		throw bpp::ErrorHandling::SyntaxError(this, type, "Class not found: " + type.getValue());
 	}
 
-	// Call __new in a supershell
-	auto supershell = std::make_shared<bpp::IR::Supershell>();
-	supershell->inherit(current_code_entity);
-	supershell->add(class_entity->getMethod_UNSAFE("__new")->getAddress());
+	auto instantiation = std::make_shared<bpp::IR::ObjectInstantiation>();
+	instantiation->inherit(current_code_entity);
+	instantiation->setType(class_entity);
+	// By not setting the "object to instantiate," we indicate that this is a heap-like instantiation (i.e., a call to @new TYPE)
+	current_code_entity->add(instantiation);
 
-	program->getSupershellFunction()->markReferencedBy(supershell);
+	// Mark __new, __constructor as used by this instantiation
+	auto new_method = class_entity->getMethod_UNSAFE("__new");
+	bpp_assert(new_method != nullptr, "Class has no __new method when entering NewStatement node");
+	new_method->markReferencedBy(instantiation);
+	auto constructor_method = class_entity->getMethod_UNSAFE("__constructor");
+	if (constructor_method) constructor_method->markReferencedBy(instantiation);
 
-	current_code_entity->add(supershell);
+	// Mark system supershell function as used by this instantiation
+	auto supershell_function = program->getSupershellFunction();
+	bpp_assert(supershell_function != nullptr, "Program has no supershell function when entering NewStatement node");
+	supershell_function->markReferencedBy(instantiation);
 }
 
 template <>

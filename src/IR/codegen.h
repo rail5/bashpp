@@ -112,6 +112,34 @@ class CodeSegment {
 			add_post_code(std::move(other.post_code));
 		}
 
+		/**
+		 * @brief Move all of this CodeSegment's code into its pre-code container, preserving order, but clearing the main code and post-code containers.
+		 */
+		void collapse_to_pre_code() {
+			add_pre_code(std::move(main_code));
+			add_pre_code(std::move(post_code));
+			main_code.clear();
+			post_code.clear();
+		}
+
+		/**
+		 * @brief Move all of this CodeSegment's code into its main code container, preserving order, but clearing the pre-code and post-code containers.
+		 */
+		void collapse_to_main_code() {
+			collapse_to_pre_code();
+			add_main_code(std::move(pre_code));
+			pre_code.clear();
+		}
+
+		/**
+		 * @brief Move all of this CodeSegment's code into its post-code container, preserving order, but clearing the pre-code and main code containers.
+		 */
+		void collapse_to_post_code() {
+			collapse_to_pre_code();
+			add_post_code(std::move(pre_code));
+			pre_code.clear();
+		}
+
 		std::vector<std::string> get_pre_code() const { return pre_code; }
 		std::vector<std::string> get_main_code() const { return main_code; }
 		std::vector<std::string> get_post_code() const { return post_code; }

@@ -22,11 +22,11 @@
 #include <ranges>
 #include <expected>
 
+namespace bpp::IR {
+
 /**
  * @brief A reference to a non-primitive object in the IR
  */
-namespace bpp::IR {
-
 class ObjectReference : public CodeEntity, public std::enable_shared_from_this<ObjectReference> {
 	public:
 		/**

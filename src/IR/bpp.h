@@ -123,7 +123,11 @@ enum class VisibilityScope : std::uint8_t {
 
 // Forward decl. entity types:
 class Entity;
+class AddressableEntity;
+class NamedEntity;
 class CodeEntity;
+class BashFunction;
+class BashPipeline;
 class Program;
 class IncludedProgram;
 class Class;
@@ -132,5 +136,15 @@ class Object;
 class DataMember;
 class MethodParameter;
 class ThisPtr;
+
+class DynamicCast;
+class ObjectAssignment;
+class ObjectInstantiation;
+class ObjectReference;
+class RawSubshell;
+class String;
+class SubshellSubstitution;
+class Supershell;
+class ValueAssignment;
 
 } // namespace bpp::IR

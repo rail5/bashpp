@@ -41,7 +41,7 @@ bool Method::addParameter(std::shared_ptr<MethodParameter> parameter) {
 
 		// Mark the dynamic_cast builtin as referenced by this parameter
 		auto containing_program = getContainingProgram().lock();
-		bpp_assert(containing_program != nullptr, "MethodParameter does not have a containing program");
+		bpp_assert(containing_program != nullptr, "Containing program is null");
 		auto dynamic_cast_builtin = containing_program->getDynamicCastFunction();
 		bpp_assert(dynamic_cast_builtin != nullptr, "Containing program does not have a dynamic_cast builtin");
 		dynamic_cast_builtin->markReferencedBy(parameter);
@@ -67,7 +67,7 @@ std::string Method::getAddress() const {
 }
 
 bpp::CodeGen::CodeSegment Method::generateCode(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "Method::generate_code() should be called with a non-null state pointer");
+	bpp_assert(state != nullptr, "State pointer is null");
 	state->current_method = shared_from_this();
 	bpp::CodeGen::CodeSegment code;
 

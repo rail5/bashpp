@@ -24,7 +24,8 @@ struct InternalError : public std::runtime_error {
 		: std::runtime_error(msg + "\nYou've found a bug! Please report it.") {}
 
 	InternalError(const std::string& msg, std::source_location location)
-		: std::runtime_error(msg + "\nYou've found a bug! Please report it.\nAt " + location.file_name() + ":" + std::to_string(location.line())) {}
+		: std::runtime_error(msg + " (`" + location.function_name() + "`)"
+			+ "\nYou've found a bug! Please report it.\nAt " + location.file_name() + ":" + std::to_string(location.line())) {}
 };
 
 } // namespace bpp::ErrorHandling

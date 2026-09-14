@@ -41,19 +41,19 @@ std::string get_reference_chain_prettyprint_string(const ObjectReference::Refere
 	// E.g.: @object.inner.member
 	std::string result = "@";
 
-	bpp_assert(!chain.empty(), "Reference chain is empty in get_reference_chain_prettyprint_string()");
+	bpp_assert(!chain.empty(), "Reference chain is empty");
 	const auto root = chain.getRoot().lock();
-	bpp_assert(root != nullptr, "Root object in reference chain is null in get_reference_chain_prettyprint_string()");
+	bpp_assert(root != nullptr, "Root object is null");
 	result += root->getName();
 	for (auto it = std::next(chain.begin()); it != chain.end(); ++it) {
 		auto obj = (*it).lock();
-		bpp_assert(obj != nullptr, "Data member in reference chain is null in get_reference_chain_prettyprint_string()");
+		bpp_assert(obj != nullptr, "Data member in reference chain is null");
 		result += '.' + obj->getName();
 	}
 
 	if (chain.hasMethod()) {
 		auto method = chain.getMethod().lock();
-		bpp_assert(method != nullptr, "Method in reference chain is null in get_reference_chain_prettyprint_string()");
+		bpp_assert(method != nullptr, "Method is null");
 		result += '.' + method->getName();
 	}
 
@@ -64,9 +64,9 @@ std::string get_reference_chain_prettyprint_string(const ObjectReference::Refere
 } // anonymous namespace
 
 bpp::CodeGen::CodeSegment ObjectReference::generateCode(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "ObjectReference::generate_code() should be called with a non-null state pointer");
-	bpp_assert(!getReferenceChain().empty(), "ObjectReference::generate_code() should be called with a non-empty reference chain");
-	bpp_assert(!getReferenceChain().getRoot().expired(), "ObjectReference::generate_code() should be called with a non-null object pointer");
+	bpp_assert(state != nullptr, "State pointer is null");
+	bpp_assert(!getReferenceChain().empty(), "Reference chain is empty");
+	bpp_assert(!getReferenceChain().getRoot().expired(), "Object pointer is null");
 	bpp::CodeGen::CodeSegment result;
 
 	/* The purpose of ObjectReference::generate_code is to calculate the address of the final object in the reference chain
@@ -95,7 +95,7 @@ bpp::CodeGen::CodeSegment ObjectReference::generateCode(bpp::CodeGen::CodeGenSta
 
 	for (auto it = std::next(ref.begin()); it != ref.end(); ++it) {
 		const auto dm = (*it).lock();
-		bpp_assert(dm != nullptr, "Data member in reference chain is null in ObjectReference::generate_code()");
+		bpp_assert(dm != nullptr, "Data member in reference chain is null");
 
 		if (indirection_level > 0) {
 			// If there's been indirection, we need to set up temporaries & dereference
@@ -121,7 +121,7 @@ bpp::CodeGen::CodeSegment ObjectReference::generateCode(bpp::CodeGen::CodeGenSta
 	// FIXME(@rail5): HACK. Unify procedure
 	if (ref.hasMethod()) {
 		auto method = ref.getMethod().lock();
-		bpp_assert(method != nullptr, "Method in reference chain is null in ObjectReference::generate_code()");
+		bpp_assert(method != nullptr, "Method is null");
 
 		bpp::CodeGen::CodeSegment call;
 

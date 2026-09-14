@@ -178,7 +178,7 @@ bool Class::containsNonprimitiveDatamembers() const {
 }
 
 bpp::CodeGen::CodeSegment Class::generateCode(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "Class::generate_code() should be called with a non-null state pointer");
+	bpp_assert(state != nullptr, "State pointer is null");
 	bpp::CodeGen::CodeSegment code;
 
 	state->current_class = shared_from_this();

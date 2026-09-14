@@ -12,7 +12,7 @@
 namespace bpp::IR {
 
 bpp::CodeGen::CodeSegment RawSubshell::generateCode(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "RawSubshell::generate_code() should be called with a non-null state pointer");
+	bpp_assert(state != nullptr, "State pointer is null");
 	bpp::CodeGen::CodeSegment result;
 	result.add_main_code("(");
 	result.absorb_all_to_main(CodeEntity::generateCode(state));

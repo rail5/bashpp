@@ -17,7 +17,7 @@
 namespace bpp::IR {
 
 bpp::CodeGen::CodeSegment MethodParameter::generateCode(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "MethodParameter::generate_code() should be called with a non-null state pointer");
+	bpp_assert(state != nullptr, "State pointer is null");
 	bpp::CodeGen::CodeSegment code;
 
 	bpp_assert(getType().expired() || isPointer(), "MethodParameter is neither a pointer nor a primitive type");
@@ -43,9 +43,9 @@ bpp::CodeGen::CodeSegment MethodParameter::generateCode(bpp::CodeGen::CodeGenSta
 }
 
 bpp::CodeGen::CodeSegment ThisPtr::generateCode(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "ThisPtr::generate_code() should be called with a non-null state pointer");
+	bpp_assert(state != nullptr, "State pointer is null");
 	bpp_assert(hasInitialValue(), "ThisPtr has no initial value set");
-	bpp_assert(state->in_method(), "ThisPtr::generate_code() should only be called when generating code for a method");
+	bpp_assert(state->in_method(), "Must be generating code for a method");
 	bpp::CodeGen::CodeSegment code;
 
 	code.add_pre_code("local __this\n");
@@ -71,11 +71,11 @@ bpp::CodeGen::CodeSegment ThisPtr::generateCode(bpp::CodeGen::CodeGenState* stat
 }
 
 bpp::CodeGen::CodeSegment RequestedAddressParam::generateCode(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "RequestedAddressParam::generate_code() should be called with a non-null state pointer");
-	bpp_assert(state->in_method(), "RequestedAddressParam::generate_code() should only be called when generating code for a method");
+	bpp_assert(state != nullptr, "State pointer is null");
+	bpp_assert(state->in_method(), "Must be generating code for a method");
 
 	auto cls = getContainingClass().lock();
-	bpp_assert(cls != nullptr, "RequestedAddressParam::generate_code() called on a RequestedAddressParam with no containing class");
+	bpp_assert(cls != nullptr, "Containing class is null");
 	bpp::CodeGen::CodeSegment code;
 
 	code.add_pre_code("local __this=$1\n");

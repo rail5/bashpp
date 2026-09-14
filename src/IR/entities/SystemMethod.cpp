@@ -17,7 +17,7 @@
 namespace bpp::IR::Builtins {
 
 bpp::CodeGen::CodeSegment SystemMethod::generateCode(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "SystemMethod::generate_code() should be called with a non-null state pointer");
+	bpp_assert(state != nullptr, "State pointer is null");
 	state->current_method = shared_from_this();
 
 	bpp::CodeGen::CodeSegment result;
@@ -40,13 +40,13 @@ bpp::CodeGen::CodeSegment SystemMethod::generateCode(bpp::CodeGen::CodeGenState*
 }
 
 bpp::CodeGen::CodeSegment SystemMethod::generateInlineCode(bpp::CodeGen::CodeGenState* state, bool localize, std::shared_ptr<const Object> obj) const {
-	bpp_assert(state != nullptr, "SystemMethod::generate_inline_code() should be called with a non-null state pointer");
+	bpp_assert(state != nullptr, "State pointer is null");
 
 	if (!obj) {
 		auto cls = getContainingClass().lock();
-		bpp_assert(cls != nullptr, "SystemMethod::generate_inline_code() called on a SystemMethod with no containing class");
+		bpp_assert(cls != nullptr, "Containing class is null");
 		obj = cls->getThisPtr();
-		bpp_assert(obj != nullptr, "SystemMethod::generate_inline_code() called on a SystemMethod with no this pointer in its containing class");
+		bpp_assert(obj != nullptr, "SystemMethod's containing class has no @this pointer");
 	}
 
 	switch (type) {
@@ -59,16 +59,16 @@ bpp::CodeGen::CodeSegment SystemMethod::generateInlineCode(bpp::CodeGen::CodeGen
 }
 
 bpp::CodeGen::CodeSegment SystemMethod::generateInlineNewCode(bpp::CodeGen::CodeGenState* state, bool localize, std::shared_ptr<const Object> obj) const {
-	bpp_assert(state != nullptr, "SystemMethod::generate_inline_new_code() should be called with a non-null state pointer");
-	bpp_assert(type == Type::NEW, "SystemMethod::generate_inline_new_code() called on a non-NEW SystemMethod");
-	bpp_assert(obj != nullptr, "SystemMethod::generate_inline_new_code() called with a null object pointer");
+	bpp_assert(state != nullptr, "State pointer is null");
+	bpp_assert(type == Type::NEW, "SystemMethod is not NEW");
+	bpp_assert(obj != nullptr, "Object pointer is null");
 
 	std::string obj_address = obj->getAddress();
 
 	if (obj_address == "__this") obj_address = "${__this}"; // TODO(@rail5): HACK. Special-casing the @this pointer to add encasement
 
 	const auto cls = getContainingClass().lock();
-	bpp_assert(cls != nullptr, "SystemMethod::generate_inline_new_code() called on a SystemMethod with no containing class");
+	bpp_assert(cls != nullptr, "Containing class is null");
 
 	bpp::CodeGen::CodeSegment result;
 
@@ -110,11 +110,11 @@ bpp::CodeGen::CodeSegment SystemMethod::generateInlineNewCode(bpp::CodeGen::Code
 
 		// Non-primitive, non-pointer case
 		const auto dm_cls = dm->getType().lock();
-		bpp_assert(dm_cls != nullptr, "Nonprimitive data member has no type in SystemMethod::generate_inline_new_code()");
+		bpp_assert(dm_cls != nullptr, "Nonprimitive data member has no type");
 
 		const auto dm_new_method = dm_cls->getMethod_UNSAFE("__new");
-		bpp_assert(dm_new_method != nullptr, "Class " + dm_cls->getName() + " has no __new method in SystemMethod::generate_inline_new_code()");
-		bpp_assert(std::dynamic_pointer_cast<SystemMethod>(dm_new_method) != nullptr, "Class " + dm_cls->getName() + " has a non-SystemMethod __new method in SystemMethod::generate_inline_new_code()");
+		bpp_assert(dm_new_method != nullptr, "Class " + dm_cls->getName() + " has no __new method");
+		bpp_assert(std::dynamic_pointer_cast<SystemMethod>(dm_new_method) != nullptr, "Class " + dm_cls->getName() + " has a non-SystemMethod __new method");
 		const auto dm_new_sys_method = std::static_pointer_cast<SystemMethod>(dm_new_method);
 
 		if (localize) {

@@ -14,7 +14,7 @@
 namespace bpp::IR {
 
 bpp::CodeGen::CodeSegment DynamicCast::generateCode(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "DynamicCast::generate_code() should be called with a non-null state pointer");
+	bpp_assert(state != nullptr, "State pointer is null");
 	bpp::CodeGen::CodeSegment result;
 
 	const auto& inner_code = StringType::generateCode(state);

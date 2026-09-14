@@ -69,7 +69,7 @@ bool CodeEntity::addObject(std::shared_ptr<Object> object) {
 void CodeEntity::adoptObjectsOf(std::shared_ptr<CodeEntity> other) {
 	const auto& objects = other->getLocalObjects().get_entities();
 	for (const auto& obj : objects) {
-		bpp_assert(obj != nullptr, "Null object in other CodeEntity's local objects");
+		bpp_assert(obj != nullptr, "Object pointer in other CodeEntity's local objects is null");
 		bpp_assert(
 			this->getObject(obj->getName()) == nullptr,
 			"Name conflict when adopting local objects from another CodeEntity: " + obj->getName()
@@ -79,7 +79,7 @@ void CodeEntity::adoptObjectsOf(std::shared_ptr<CodeEntity> other) {
 }
 
 bpp::CodeGen::CodeSegment CodeEntity::generateCode(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "CodeEntity::generate_code() should be called with a non-null state pointer");
+	bpp_assert(state != nullptr, "State pointer is null");
 	bpp::CodeGen::CodeSegment code_segment;
 
 	for (const auto& child : children) {

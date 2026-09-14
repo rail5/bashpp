@@ -16,8 +16,8 @@
 namespace bpp::IR {
 
 bpp::CodeGen::CodeSegment ObjectInstantiation::generateCode(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "ObjectInstantiation::generateCode() should be called with a non-null state pointer");
-	bpp_assert(!type.expired(), "ObjectInstantiation::generateCode() should be called with a non-null type pointer");
+	bpp_assert(state != nullptr, "State pointer is null");
+	bpp_assert(!type.expired(), "Type pointer is null");
 
 	auto object = getStackLikeObject().lock();
 
@@ -31,8 +31,8 @@ bpp::CodeGen::CodeSegment ObjectInstantiation::generateCode(bpp::CodeGen::CodeGe
 }
 
 bpp::CodeGen::CodeSegment ObjectInstantiation::heapLikeInstantiation(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "ObjectInstantiation::heapLikeInstantiation() should be called with a non-null state pointer");
-	bpp_assert(!type.expired(), "ObjectInstantiation::heapLikeInstantiation() should be called with a non-null type pointer");
+	bpp_assert(state != nullptr, "State pointer is null");
+	bpp_assert(!type.expired(), "Type pointer is null");
 
 	bpp::CodeGen::CodeSegment result;
 
@@ -59,9 +59,9 @@ bpp::CodeGen::CodeSegment ObjectInstantiation::heapLikeInstantiation(bpp::CodeGe
 }
 
 bpp::CodeGen::CodeSegment ObjectInstantiation::stackLikeInstantiation(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "ObjectInstantiation::stackLikeInstantiation() should be called with a non-null state pointer");
-	bpp_assert(!type.expired(), "ObjectInstantiation::stackLikeInstantiation() should be called with a non-null type pointer");
-	bpp_assert(!stackLikeObject.expired(), "ObjectInstantiation::stackLikeInstantiation() should be called with a non-null object pointer");
+	bpp_assert(state != nullptr, "State pointer is null");
+	bpp_assert(!type.expired(), "Type pointer is null");
+	bpp_assert(!stackLikeObject.expired(), "Object pointer is null");
 
 	bpp::CodeGen::CodeSegment result;
 
@@ -70,7 +70,7 @@ bpp::CodeGen::CodeSegment ObjectInstantiation::stackLikeInstantiation(bpp::CodeG
 	auto constructor = cls->getMethod_UNSAFE("__constructor");
 
 	auto obj = stackLikeObject.lock();
-	bpp_assert(!obj->isPrimitive(), "ObjectInstantiation::stackLikeInstantiation() should be called with a non-primitive object pointer");
+	bpp_assert(!obj->isPrimitive(), "Object is primitive");
 	auto requested_address = obj->getAddress();
 
 	result.add_main_code(new_method->getAddress() + " " + requested_address + " >/dev/null\n");
@@ -82,12 +82,12 @@ bpp::CodeGen::CodeSegment ObjectInstantiation::stackLikeInstantiation(bpp::CodeG
 }
 
 PRETTYPRINT_IMPLEMENTATION(ObjectInstantiation, {
-	bpp_assert(!type.expired(), "ObjectInstantiation has no type in prettyprint()");
+	bpp_assert(!type.expired(), "Type pointer is null");
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 	os << indent << "(ObjectInstantiation ";
 	auto object = getStackLikeObject().lock();
 	if (object && !object->isPointer()) {
-		bpp_assert(!object->isPrimitive(), "ObjectInstantiation has a primitive object in prettyprint()");
+		bpp_assert(!object->isPrimitive(), "Object is primitive");
 		// Stack-like @TYPE ID instantiation
 		os << '@' << type.lock()->getName() << ' ' << object->getName();
 	} else {

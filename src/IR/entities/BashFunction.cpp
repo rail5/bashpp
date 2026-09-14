@@ -11,7 +11,7 @@
 namespace bpp::IR {
 
 bpp::CodeGen::CodeSegment BashFunction::generateCode(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "BashFunction::generate_code() should be called with a non-null state pointer");
+	bpp_assert(state != nullptr, "State pointer is null");
 	bpp::CodeGen::CodeSegment code;
 
 	state->nested_bash_function_depth++;

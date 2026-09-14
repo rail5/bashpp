@@ -22,7 +22,7 @@ bpp::CodeGen::CodeSegment Supershell::wrap(bpp::CodeGen::CodeGenState* state, st
 }
 
 bpp::CodeGen::CodeSegment Supershell::wrap(bpp::CodeGen::CodeGenState* state, bpp::CodeGen::CodeSegment&& supershell_body) {
-	bpp_assert(state != nullptr, "Supershell::inlineCode() should be called with a non-null state pointer");
+	bpp_assert(state != nullptr, "State pointer is null");
 	state->nested_supershell_depth++;
 	bpp::CodeGen::CodeSegment result;
 

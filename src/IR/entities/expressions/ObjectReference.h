@@ -71,21 +71,21 @@ class ObjectReference : public CodeEntity, public std::enable_shared_from_this<O
 		bool isPrimitive() const {
 			if (isMethodCall()) return false;
 			auto final_object = reference.getFinalObject().lock();
-			bpp_assert(final_object != nullptr, "ObjectReference::isPrimitive() called on a reference chain with a null final object");
+			bpp_assert(final_object != nullptr, "Final object is null");
 			return final_object->isPrimitive();
 		}
 
 		bool isPointer() const {
 			if (!isPrimitive()) return false;
 			auto final_object = reference.getFinalObject().lock();
-			bpp_assert(final_object != nullptr, "ObjectReference::isPointer() called on a reference chain with a null final object");
+			bpp_assert(final_object != nullptr, "Final object is null");
 			return final_object->isPointer();
 		}
 
 		bool isNonprimitive() const {
 			if (isMethodCall()) return false;
 			auto final_object = reference.getFinalObject().lock();
-			bpp_assert(final_object != nullptr, "ObjectReference::isNonprimitive() called on a reference chain with a null final object");
+			bpp_assert(final_object != nullptr, "Final object is null");
 			return !isPrimitive();
 		}
 
@@ -93,14 +93,14 @@ class ObjectReference : public CodeEntity, public std::enable_shared_from_this<O
 		 * @brief This amends the object reference to include a call to the final object's toPrimitive method.
 		 */
 		void addToPrimitiveCall() {
-			bpp_assert(!reference.empty(), "ObjectReference::addToPrimitiveCall() called on an empty reference chain");
+			bpp_assert(!reference.empty(), "Reference chain is empty");
 			auto final_object = reference.getFinalObject().lock();
-			bpp_assert(final_object != nullptr, "ObjectReference::addToPrimitiveCall() called on a reference chain with a null final object");
-			bpp_assert(!final_object->isPrimitive() || final_object->isPointer(), "ObjectReference::addToPrimitiveCall() called on a reference chain with a primitive final object");
+			bpp_assert(final_object != nullptr, "Final object is null");
+			bpp_assert(!final_object->isPrimitive() || final_object->isPointer(), "Final object is primitive");
 			auto final_class = final_object->getType().lock();
-			bpp_assert(final_class != nullptr, "ObjectReference::addToPrimitiveCall(): final object has no type");
+			bpp_assert(final_class != nullptr, "Final object has no type");
 			auto to_primitive_method = final_class->getMethod_UNSAFE("toPrimitive");
-			bpp_assert(to_primitive_method != nullptr, "ObjectReference::addToPrimitiveCall(): final object's class has no toPrimitive method");
+			bpp_assert(to_primitive_method != nullptr, "Final object's class has no toPrimitive method");
 			reference.setMethod(to_primitive_method);
 		}
 
@@ -148,10 +148,10 @@ std::expected<std::shared_ptr<ObjectReference>, EntityResolutionError> resolve_e
 	std::shared_ptr<const Entity> context,
 	std::span<T> ids
 ) {
-	bpp_assert(context != nullptr, "resolve_entity() should be called with a non-null context pointer");
+	bpp_assert(context != nullptr, "Context pointer is null");
 	auto program = context->getContainingProgram().lock();
-	bpp_assert(program != nullptr, "resolve_entity() should be called with a context that is part of a program");
-	bpp_assert(!std::ranges::empty(ids), "resolve_entity() should be called with at least one identifier");
+	bpp_assert(program != nullptr, "Containing program is null");
+	bpp_assert(!std::ranges::empty(ids), "At least one identifier is required");
 
 	std::shared_ptr<ObjectReference> result = std::make_shared<ObjectReference>();
 
@@ -194,7 +194,7 @@ std::expected<std::shared_ptr<ObjectReference>, EntityResolutionError> resolve_e
 	}
 
 	auto current_class = obj->getType().lock();
-	bpp_assert(current_class != nullptr, "Object has no type in resolve_entity()");
+	bpp_assert(current_class != nullptr, "Object has no type");
 	auto remaining = ids.subspan(1);
 
 	ObjectReference::ReferenceChain chain(obj);

@@ -18,7 +18,7 @@ bool Program::addClass(std::shared_ptr<Class> class_entity) {
 }
 
 void Program::adoptClassesOf(std::shared_ptr<IncludedProgram> other_program) {
-	bpp_assert(other_program != nullptr, "adopt_classes_of() was given a null other_program pointer");
+	bpp_assert(other_program != nullptr, "Other program pointer is null");
 	for (const auto& class_entity : other_program->getOwnedClasses()) {
 		if (!this->addClass(class_entity)) {
 			throw bpp::ErrorHandling::InternalError("adopt_classes_of() failed to adopt class '" + class_entity->getName() + "' from another program");
@@ -27,7 +27,7 @@ void Program::adoptClassesOf(std::shared_ptr<IncludedProgram> other_program) {
 }
 
 bpp::CodeGen::CodeSegment Program::generateCode(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "Program::generate_code() should be called with a non-null state pointer");
+	bpp_assert(state != nullptr, "State pointer is null");
 	bpp::CodeGen::CodeSegment code;
 
 	code.add_pre_code("#!/usr/bin/env bash\n");
@@ -48,7 +48,7 @@ bpp::CodeGen::CodeSegment Program::generateCode(bpp::CodeGen::CodeGenState* stat
 
 
 IncludedProgram::IncludedProgram(std::shared_ptr<Program> containing_program) {
-	bpp_assert(containing_program != nullptr, "IncludedProgram constructor was given a null containing_program pointer");
+	bpp_assert(containing_program != nullptr, "Containing program pointer is null");
 	// Inherit the containing program, so that this included program can see all of its classes
 	this->inherit(containing_program);
 	this->setContainingProgram(containing_program);
@@ -85,7 +85,7 @@ std::vector<std::shared_ptr<Class>> IncludedProgram::getAllKnownClasses() const 
 }
 
 bpp::CodeGen::CodeSegment IncludedProgram::generateCode(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "IncludedProgram::generate_code() should be called with a non-null state pointer");
+	bpp_assert(state != nullptr, "State pointer is null");
 	bpp::CodeGen::CodeSegment code;
 
 	// If this included program is a dynamic include, it does not generate code

@@ -12,7 +12,7 @@
 namespace bpp::IR {
 
 bpp::CodeGen::CodeSegment SubshellSubstitution::generateCode(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "SubshellSubstitution::generate_code() should be called with a non-null state pointer");
+	bpp_assert(state != nullptr, "State pointer is null");
 	bpp::CodeGen::CodeSegment result;
 	result.add_main_code("$(");
 	if (is_cat_replacement) {

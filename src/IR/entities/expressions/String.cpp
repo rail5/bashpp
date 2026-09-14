@@ -13,7 +13,7 @@
 namespace bpp::IR {
 
 bpp::CodeGen::CodeSegment StringType::generateCode(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "StringType::generate_code() should be called with a non-null state pointer");
+	bpp_assert(state != nullptr, "State pointer is null");
 	bpp::CodeGen::CodeSegment result;
 
 	for (const auto& child : children) {
@@ -29,7 +29,7 @@ bpp::CodeGen::CodeSegment StringType::generateCode(bpp::CodeGen::CodeGenState* s
 }
 
 bpp::CodeGen::CodeSegment String::generateCode(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "String::generate_code() should be called with a non-null state pointer");
+	bpp_assert(state != nullptr, "State pointer is null");
 	bpp::CodeGen::CodeSegment result;
 	// Surround the result of StringType::generate_code() with double quotes
 	result.add_main_code("\"");

@@ -197,7 +197,11 @@ bpp::CodeGen::CodeSegment Class::generateCode(bpp::CodeGen::CodeGenState* state)
 
 PRETTYPRINT_IMPLEMENTATION(Class, {
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
-	os << indent << "(Class " << name << "\n";
+	os << indent << "(Class " << name;
+	if (auto parent = getParentClass()) {
+		os << " : " << parent->getName();
+	}
+	os << "\n";
 
 	for (const auto& datamember : datamembers) {
 		datamember->prettyPrint(os, indentation_level + 1);

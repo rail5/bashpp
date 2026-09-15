@@ -32,11 +32,19 @@ void Listener::exit(ObjectAssignment* node) {
 
 	const bool lhs_is_nonprimitive = assignment_entity->getLHS()->isNonprimitive();
 	const bool rhs_is_nonprimitive = assignment_entity->getRHS()->isRvalueNonprimitive();
+
+	if (lhs_is_nonprimitive && !rhs_is_nonprimitive) {
+		const auto value_assignment_ast_node = node->getLastChild(); // FIXME(@rail5): Brittle
+		throw bpp::ErrorHandling::SyntaxError(this, value_assignment_ast_node, "Cannot assign a primitive value to a non-primitive object");
+	}
+
 	bpp_assert(lhs_is_nonprimitive == rhs_is_nonprimitive, "LHS/RHS primitive/non-primitive mismatch in ObjectAssignment");
 
 	if (lhs_is_nonprimitive && rhs_is_nonprimitive) {
-		auto lhs_type = assignment_entity->getLHS()->getReferenceChain().getFinalObject().lock()->getType().lock();
-		auto rhs_type = assignment_entity->getRHS()->getRvalueObject()->getReferenceChain().getFinalObject().lock()->getType().lock();
+		const auto lhs = assignment_entity->getLHS()->getReferenceChain().getFinalObject().lock();
+		const auto lhs_type = lhs->getType().lock();
+		const auto rhs = assignment_entity->getRHS()->getRvalueObject()->getReferenceChain().getFinalObject().lock();
+		const auto rhs_type = rhs->getType().lock();
 		bpp_assert(lhs_type != nullptr, "LHS type is null in ObjectAssignment");
 		bpp_assert(rhs_type != nullptr, "RHS type is null in ObjectAssignment");
 		// The RHS type must be the same as or a subclass of the LHS type
@@ -48,17 +56,20 @@ void Listener::exit(ObjectAssignment* node) {
 		if (rhs_type->isDerivedFrom(lhs_type)) {
 			const std::size_t lhs_size = lhs_type->getAllDatamembers().size();
 			const std::size_t rhs_size = rhs_type->getAllDatamembers().size();
+			const bool at_least_one_object_is_a_pointer = lhs->isPointer() || rhs->isPointer();
 			if (rhs_size > lhs_size) {
 				const std::size_t slicing_count = rhs_size - lhs_size;
-				std::string warning_message = "Copying derived class object of type '";
-				warning_message += rhs_type->getName();
-				warning_message += "' to base class object of type '";
-				warning_message += lhs_type->getName();
-				warning_message += "' results in slicing (losing ";
-				warning_message += std::to_string(slicing_count);
-				warning_message += " data member";
-				if (slicing_count > 1) warning_message += 's';
-				warning_message += ')';
+				const std::string_view warning_verb = at_least_one_object_is_a_pointer ? "may result" : "results";
+				const std::string_view warning_plural = slicing_count > 1 ? "s" : "";
+				const std::string warning_message = std::format(
+					"Copying derived class object of type '{}' to base class object of type '{}' "
+					"{} in slicing (losing {} data member{})",
+					rhs_type->getName(),
+					lhs_type->getName(),
+					warning_verb,
+					slicing_count,
+					warning_plural
+				);
 				show_warning(node, bpp::ErrorHandling::WarningType::Slicing, warning_message);
 			}
 		}

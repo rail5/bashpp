@@ -83,10 +83,7 @@ void Listener::enter(ObjectReference* node) {
 
 	if (auto value_assignment = std::dynamic_pointer_cast<bpp::IR::ValueAssignment>(current_code_entity)) {
 		// This object reference is the RHS of a value assignment
-		if (value_assignment->isLvalueNonprimitive()) {
-			if (!is_nonprimitive_reference) {
-				throw bpp::ErrorHandling::SyntaxError(this, node, "Cannot assign a primitive value to a non-primitive object");
-			}
+		if (value_assignment->isLvalueNonprimitive() && is_nonprimitive_reference) {
 			value_assignment->setRvalueObject(reference_entity);
 		}
 	}

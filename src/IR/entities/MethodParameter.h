@@ -62,4 +62,19 @@ class RequestedAddressParam : public ThisPtr {
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 };
 
+/**
+ * @brief A special parameter passed to __copy, which is the address of the object to be copied from.
+ */
+class CopyFromParam : public ThisPtr {
+	public:
+		CopyFromParam() = delete;
+		explicit CopyFromParam(std::shared_ptr<const Class> containing_class) : ThisPtr(containing_class) {
+			setName("source");
+		}
+
+		std::string getAddress() const override { return "__source"; }
+
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
+};
+
 } // namespace bpp::IR

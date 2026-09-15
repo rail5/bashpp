@@ -20,7 +20,7 @@ namespace bpp::IR {
  * Or @obj1=@obj2
  * Etc
  */
-class ObjectAssignment : public StringType {
+class ObjectAssignment : public StringType, public std::enable_shared_from_this<ObjectAssignment> {
 	private:
 		std::shared_ptr<ObjectReference> lhs;
 		std::shared_ptr<ValueAssignment> rhs;

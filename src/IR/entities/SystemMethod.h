@@ -15,7 +15,8 @@ namespace bpp::IR::Builtins {
  * @brief A Bash++ system method, which is a special type of method whose contents are automatically generated for each class that contains it,
  * based on the state of the class entity.
  * The system methods represented by this class are __new, __delete, and __copy.
- * 
+ *
+ * __new can be inlined. __copy and __delete can't be inlined.
  */
 class SystemMethod : public Method {
 	public:
@@ -34,16 +35,15 @@ class SystemMethod : public Method {
 			}
 		}
 
-		bpp::CodeGen::CodeSegment generateInlineCode(bpp::CodeGen::CodeGenState* state, bool localize, std::shared_ptr<const Object> obj = nullptr) const;
+		bpp::CodeGen::CodeSegment generateInlineNewCode(bpp::CodeGen::CodeGenState* state, bool localize, std::shared_ptr<const Object> obj = nullptr) const;
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 		PRETTYPRINT_OVERRIDE();
 
 	private:
 		 Type type = Type::NEW;
 
-		 bpp::CodeGen::CodeSegment generateInlineNewCode(bpp::CodeGen::CodeGenState* state, bool localize, std::shared_ptr<const Object> obj) const;
-		 bpp::CodeGen::CodeSegment generateInlineDeleteCode(bpp::CodeGen::CodeGenState* state, bool localize, std::shared_ptr<const Object> obj) const;
-		 bpp::CodeGen::CodeSegment generateInlineCopyCode(bpp::CodeGen::CodeGenState* state, bool localize, std::shared_ptr<const Object> obj) const;
+		 bpp::CodeGen::CodeSegment generateCopyCode(bpp::CodeGen::CodeGenState* state) const;
+		 // bpp::CodeGen::CodeSegment generateDeleteCode(bpp::CodeGen::CodeGenState* state) const;
 };
 
 } // namespace bpp::IR::Builtins

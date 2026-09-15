@@ -84,11 +84,16 @@ void Listener::enter(ClassDefinition* node) {
 	delete_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
 	program->getVtableLookupFunction()->markReferencedBy(delete_method);
 
+
 	auto copy_method = std::make_shared<bpp::IR::Builtins::SystemMethod>(bpp::IR::Builtins::SystemMethod::Type::COPY);
 	copy_method->setIsVirtual(true);
 	copy_method->inherit(class_entity);
 	copy_method->addParameter(class_entity->getThisPtr());
+	auto copy_from_param = std::make_shared<bpp::IR::CopyFromParam>(class_entity);
+	copy_from_param->inherit(copy_method);
+	copy_method->addParameter(copy_from_param);
 	copy_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
+
 
 	auto constructor_method = std::make_shared<bpp::IR::Method>();
 	constructor_method->setName("__constructor");
@@ -124,7 +129,7 @@ void Listener::enter(ClassDefinition* node) {
 
 	add_system_method(std::move(new_method));
 	//add_system_method(std::move(delete_method));
-	//add_system_method(std::move(copy_method));
+	add_system_method(std::move(copy_method));
 	add_system_method(std::move(constructor_method));
 	add_system_method(std::move(destructor_method));
 	add_system_method(std::move(toPrimitive_method));

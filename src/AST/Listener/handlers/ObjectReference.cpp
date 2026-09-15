@@ -65,7 +65,7 @@ void Listener::enter(ObjectReference* node) {
 
 	const auto& reference_entity = resolution.value();
 
-	const bool is_nonprimitive_reference = [&node, &reference_entity]() {
+	bool is_nonprimitive_reference = [&node, &reference_entity]() {
 		if (node->isAddressOf()) return false;
 
 		if (reference_entity->isNonprimitive()) return true;
@@ -78,6 +78,17 @@ void Listener::enter(ObjectReference* node) {
 	if (is_nonprimitive_reference && !context_expectations_stack.canTakeObject()) {
 		// Non-primitive referenced where a primitive is expected: implicit call to .toPrimitive
 		reference_entity->addToPrimitiveCall();
+		is_nonprimitive_reference = false; // The output of .toPrimitive is of course a primitive
+	}
+
+	if (auto value_assignment = std::dynamic_pointer_cast<bpp::IR::ValueAssignment>(current_code_entity)) {
+		// This object reference is the RHS of a value assignment
+		if (value_assignment->isLvalueNonprimitive()) {
+			if (!is_nonprimitive_reference) {
+				throw bpp::ErrorHandling::SyntaxError(this, node, "Cannot assign a primitive value to a non-primitive object");
+			}
+			value_assignment->setRvalueObject(reference_entity);
+		}
 	}
 
 	reference_entity->inherit(current_code_entity);
@@ -98,6 +109,10 @@ void Listener::exit(ObjectReference* /*node*/) {
 	if (auto object_assignment = std::dynamic_pointer_cast<bpp::IR::ObjectAssignment>(current_code_entity)) {
 		object_assignment->setLHS(reference_entity);
 		return;
+	}
+
+	if (auto value_assignment = std::dynamic_pointer_cast<bpp::IR::ValueAssignment>(current_code_entity)) {
+		return; // Already handled
 	}
 
 	current_code_entity->add(reference_entity);

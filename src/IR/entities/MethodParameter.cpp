@@ -94,4 +94,28 @@ fi
 	return code;
 }
 
+bpp::CodeGen::CodeSegment CopyFromParam::generateCode(bpp::CodeGen::CodeGenState* state) const {
+	bpp_assert(state != nullptr, "State pointer is null");
+	bpp_assert(hasInitialValue(), "CopyFromParam has no initial value set");
+	bpp_assert(state->in_method(), "Must be generating code for a method");
+	bpp_assert(state->current_method->viewName() == "__copy", "CopyFromParam can only be used in the __copy method");
+	bpp::CodeGen::CodeSegment code;
+
+	code.add_pre_code("local __source\n");
+
+	bpp_assert(std::dynamic_pointer_cast<DynamicCast>(getInitialValue().value()), "The initial value of the implicit `source` parameter is not a DynamicCast entity");
+	auto dynamic_cast_entity = std::static_pointer_cast<DynamicCast>(getInitialValue().value());
+	dynamic_cast_entity->setTargetVariable("__source");
+
+	code.add_pre_code("if ! ");
+	code.add_pre_code(dynamic_cast_entity->generateCode(state).get_pre_code());
+	code.add_pre_code("then\n"
+	"\t>&2 echo \"Bash++: Error: Class " + getType().lock()->getName() + ": Attempted to copy from null object or object of incompatible type\"\n"
+		"\treturn 1\n"
+		"fi\n"
+	);
+
+	return code;
+}
+
 } // namespace bpp::IR

@@ -52,6 +52,7 @@ void Listener::exit(ValueAssignment* node) {
 	if (va->isLvalueNonprimitive() && !va->isRvalueNonprimitive()) {
 		throw bpp::ErrorHandling::SyntaxError(this, node, "Cannot assign a primitive value to a non-primitive object");
 	}
+	bpp_assert(va->isLvalueNonprimitive() || !va->isRvalueNonprimitive(), "Compiler attempted to assign a non-primitive value to a primitive variable");
 
 	if (auto current_datamember = std::dynamic_pointer_cast<bpp::IR::DataMember>(entity_stack.top())) {
 		current_datamember->setInitialValue(va);

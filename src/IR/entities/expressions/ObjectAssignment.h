@@ -28,7 +28,11 @@ class ObjectAssignment : public StringType, public std::enable_shared_from_this<
 		void setLHS(std::shared_ptr<ObjectReference> l) {
 			lhs = std::move(l);
 			lhs->setLvalue(true);
-			lhs->setAddressOf(true);
+
+			// If the reference refers to a nonprimitive object, this will ultimately be a call to the __copy method
+			// If however the reference is a primitive data member, we're assigning something to the *address* of the data member
+			// FIXME(@rail5): This is almost certainly not the proper place for this concern
+			if (lhs->isPrimitive()) lhs->setAddressOf(true);
 		}
 		void setRHS(std::shared_ptr<ValueAssignment> r) { rhs = std::move(r); }
 

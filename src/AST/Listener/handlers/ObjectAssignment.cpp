@@ -43,7 +43,7 @@ void Listener::exit(ObjectAssignment* node) {
 	if (lhs_is_nonprimitive && rhs_is_nonprimitive) {
 		const auto lhs = assignment_entity->getLHS()->getReferenceChain().getFinalObject().lock();
 		const auto lhs_type = lhs->getType().lock();
-		const auto rhs = assignment_entity->getRHS()->getRvalueObject()->getReferenceChain().getFinalObject().lock();
+		const auto rhs = assignment_entity->getRHS()->getRvalueReference()->getReferenceChain().getFinalObject().lock();
 		const auto rhs_type = rhs->getType().lock();
 		bpp_assert(lhs_type != nullptr, "LHS type is null in ObjectAssignment");
 		bpp_assert(rhs_type != nullptr, "RHS type is null in ObjectAssignment");

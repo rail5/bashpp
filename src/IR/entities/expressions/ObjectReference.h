@@ -67,29 +67,56 @@ class ObjectReference : public CodeEntity, public std::enable_shared_from_this<O
 
 		const ReferenceChain& getReferenceChain() const { return reference; }
 		void setReferenceChain(ReferenceChain&& chain) { reference = std::move(chain); }
+		std::weak_ptr<const Object> getFinalObject() const { return reference.getFinalObject(); }
 
-		bool isMethodCall() const { return reference.hasMethod(); }
-
+		/**
+		 * @brief Whether this reference is ultimately primitive
+		 * This check takes into account semantics such as pointer dereferencing (*@obj) and address-of (&@obj), as well as the fact that pointers are primitives
+		 *
+		 * E.g.: &@obj is primitive, even if @obj is non-primitive
+		 * And: *@ptr (if .toPrimitive is not implied) is non-primitive, even though pointers are primitives
+		 * And: @obj.method is primitive, because the output of a method is always primitive
+		 *
+		 * If you want to check whether the referenced object *itself* is primitive (disregarding language semantics), check on getFinalObject()
+		 * @return true if the reference is ultimately primitive, false if not
+		 */
 		bool isPrimitive() const {
-			if (isMethodCall()) return false;
-			auto final_object = reference.getFinalObject().lock();
+			auto final_object = getFinalObject().lock();
 			bpp_assert(final_object != nullptr, "Final object is null");
-			return final_object->isPrimitive();
+			if (isAddressOf()) return true; // '&' transforms everything into a primitive
+			if (reference.hasMethod()) return true; // The output of a method is a primitive
+			if (final_object->isPointer() && isPointerDereference()) return false; // Pointers are primitives, but dereferenced pointers are objects
+			if (final_object->isPrimitive()) return true;
+
+			return false;
 		}
 
+		/**
+		 * @brief Whether this reference is ultimately a pointer
+		 * This check takes into account semantics such as pointer dereferencing (*@obj) and address-of (&@obj)
+		 *
+		 * E.g.: &@ptr is not a pointer, even though @ptr is a pointer
+		 * And: *@ptr is not a pointer, even though @ptr is a pointer
+		 *
+		 * If you want to check whether the referenced object *itself* is a pointer (disregarding language semantics), check on getFinalObject()
+		 * @return true if the reference is ultimately a pointer, false if not
+		 */
 		bool isPointer() const {
-			if (!isPrimitive()) return false;
 			auto final_object = reference.getFinalObject().lock();
 			bpp_assert(final_object != nullptr, "Final object is null");
-			return final_object->isPointer();
+			if (isAddressOf()) return false;
+			if (reference.hasMethod()) return false;
+
+			return final_object->isPointer() && !isPointerDereference();
 		}
 
-		bool isNonprimitive() const {
-			if (isMethodCall()) return false;
-			auto final_object = reference.getFinalObject().lock();
-			bpp_assert(final_object != nullptr, "Final object is null");
-			return !isPrimitive();
-		}
+		/**
+		 * @brief Whether this reference is ultimately non-primitive
+		 * This is the inverse of isPrimitive().
+		 *
+		 * @return true if the reference is ultimately non-primitive, false if not
+		 */
+		bool isNonprimitive() const { return !isPrimitive(); }
 
 		/**
 		 * @brief This amends the object reference to include a call to the final object's toPrimitive method.
@@ -110,6 +137,8 @@ class ObjectReference : public CodeEntity, public std::enable_shared_from_this<O
 		bool isLvalue() const { return lvalue; }
 		void setAddressOf(bool address_of) { this->address_of = address_of; }
 		bool isAddressOf() const { return address_of; }
+		void setPointerDereference(bool pointer_dereference) { this->pointer_dereference = pointer_dereference; }
+		bool isPointerDereference() const { return pointer_dereference; }
 
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 		PRETTYPRINT_OVERRIDE();
@@ -124,6 +153,7 @@ class ObjectReference : public CodeEntity, public std::enable_shared_from_this<O
 		ReferenceChain reference;
 		bool lvalue = false;
 		bool address_of = false;
+		bool pointer_dereference = false;
 };
 
 

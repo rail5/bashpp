@@ -30,7 +30,7 @@ bpp::CodeGen::CodeSegment ObjectAssignment::generateCode(bpp::CodeGen::CodeGenSt
 		copy_call.setReferenceChain(std::move(lhs_chain));
 		copy_call.setLvalue(true);
 
-		ObjectReference rhs_ref = *rhs->getRvalueObject();
+		ObjectReference rhs_ref = *rhs->getRvalueReference();
 		rhs_ref.setAddressOf(true);
 
 		result.egalitarian_merge(copy_call.generateCode(state));

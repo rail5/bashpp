@@ -16,6 +16,8 @@ namespace bpp::IR {
  */
 class BashPipeline : public StringType {
 	public:
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
+
 		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(BashPipeline\n";

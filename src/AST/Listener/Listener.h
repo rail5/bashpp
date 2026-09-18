@@ -52,7 +52,6 @@ namespace bpp::AST {
 	X(BashWhileStatement) \
 	X(Block) \
 	X(ClassDefinition) \
-	X(Connective) \
 	X(ConstructorDefinition) \
 	X(DatamemberDeclaration) \
 	X(DeleteStatement) \

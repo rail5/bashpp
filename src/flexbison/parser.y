@@ -300,12 +300,8 @@ shell_command_sequence:
 	}
 	| shell_command_sequence logical_connective maybe_whitespace pipeline {
 		auto commandSequence = std::static_pointer_cast<bpp::AST::BashCommandSequence>($1);
-		auto connective = std::make_shared<bpp::AST::Connective>();
-		if ($2.getValue() == "&&") {
-			connective->setType(bpp::AST::Connective::ConnectiveType::AND);
-		} else {
-			connective->setType(bpp::AST::Connective::ConnectiveType::OR);
-		}
+		auto connective = std::make_shared<bpp::AST::RawText>();
+		connective->setText($2);
 		commandSequence->addChild(connective);
 		commandSequence->addChild($4);
 		commandSequence->setEndPosition(@4.end.line, @4.end.column);
@@ -333,8 +329,8 @@ pipeline:
 	;
 
 logical_connective:
-	DOUBLEAMPERSAND { $$ = "&&"; }
-	| DOUBLEPIPE { $$ = "||"; }
+	DOUBLEAMPERSAND { $$ = " && "; }
+	| DOUBLEPIPE { $$ = " || "; }
 	;
 
 shell_command:
@@ -434,12 +430,8 @@ simple_command_sequence:
 	}
 	| simple_command_sequence logical_connective maybe_whitespace simple_pipeline {
 		auto commandSequence = std::static_pointer_cast<bpp::AST::BashCommandSequence>($1);
-		auto connective = std::make_shared<bpp::AST::Connective>();
-		if ($2.getValue() == "&&") {
-			connective->setType(bpp::AST::Connective::ConnectiveType::AND);
-		} else {
-			connective->setType(bpp::AST::Connective::ConnectiveType::OR);
-		}
+		auto connective = std::make_shared<bpp::AST::RawText>();
+		connective->setText($2);
 		commandSequence->addChild(connective);
 		commandSequence->addChild($4);
 		commandSequence->setEndPosition(@4.end.line, @4.end.column);

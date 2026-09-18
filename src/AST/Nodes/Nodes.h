@@ -34,7 +34,6 @@
 #include <AST/Nodes/BashFunction.h>
 #include <AST/Nodes/Block.h>
 #include <AST/Nodes/ClassDefinition.h>
-#include <AST/Nodes/Connective.h>
 #include <AST/Nodes/ConstructorDefinition.h>
 #include <AST/Nodes/DatamemberDeclaration.h>
 #include <AST/Nodes/DeleteStatement.h>

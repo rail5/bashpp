@@ -39,7 +39,6 @@ enum class NodeType : std::uint8_t {
 	BashFunction,
 	Block,
 	ClassDefinition,
-	Connective,
 	ConstructorDefinition,
 	DatamemberDeclaration,
 	DeleteStatement,

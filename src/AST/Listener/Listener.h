@@ -252,5 +252,7 @@ template<> void Listener::enter  (BashVariable*               node);
 template<> void Listener::exit   (BashVariable*               node);
 template<> void Listener::enter  (PrimitiveAssignment*        node);
 template<> void Listener::exit   (PrimitiveAssignment*        node);
+template<> void Listener::enter  (BashArithmeticSubstitution* node);
+template<> void Listener::exit   (BashArithmeticSubstitution* node);
 
 } // namespace bpp::AST

@@ -183,6 +183,7 @@ void yyerror(const char *s);
 %type <ASTNodePtr> doublequoted_string quote_contents string_interpolation
 
 %type <ASTNodePtr> valid_rvalue concatenatable_rvalue concatenated_rvalue
+%type <std::vector<ASTNodePtr>> sequence_of_rvalues
 %type <ASTNodePtr> value_assignment maybe_default_value maybe_value_assignment
 %type <ASTNodePtr> object_assignment shell_variable_assignment
 
@@ -2299,8 +2300,17 @@ arith_operator:
 	| DECREMENT_OPERATOR { $$ = "--"; }
 	;
 
+sequence_of_rvalues:
+	valid_rvalue { $$ = std::vector<ASTNodePtr>({$1}); }
+	| sequence_of_rvalues WS valid_rvalue {
+		auto node = std::move($1);
+		node.push_back($3);
+		$$ = node;
+	}
+	;
+
 bash_arithmetic_substitution:
-	BASH_ARITHMETIC_START statements BASH_ARITHMETIC_END {
+	BASH_ARITHMETIC_START sequence_of_rvalues BASH_ARITHMETIC_END {
 		auto node = std::make_shared<bpp::AST::BashArithmeticSubstitution>();
 		std::uint32_t line_number = @1.begin.line;
 		std::uint32_t column_number = @1.begin.column;

@@ -13,6 +13,7 @@
 #include <IR/entities/expressions/ObjectReference.h>
 #include <IR/entities/expressions/ObjectAssignment.h>
 #include <IR/entities/expressions/Supershell.h>
+#include <IR/entities/expressions/DeleteStatement.h>
 
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>
@@ -71,14 +72,14 @@ void Listener::enter(ObjectReference* node) {
 
 	if (reference_entity->isNonprimitive() && !context_expectations_stack.canTakeObject()) {
 		// Non-primitive referenced where a primitive is expected: implicit call to .toPrimitive
-		reference_entity->addToPrimitiveCall();
+		reference_entity->addMethodCall_UNSAFE("toPrimitive");
 	}
 
 	entity_stack.push(reference_entity);
 }
 
 template <>
-void Listener::exit(ObjectReference* /*node*/) {
+void Listener::exit(ObjectReference* node) {
 	bpp_assert(topmost_entity_is<bpp::IR::ObjectReference>(), "Topmost entity on stack is not an ObjectReference when exiting ObjectReference node");
 	auto reference_entity = std::static_pointer_cast<bpp::IR::ObjectReference>(entity_stack.top());
 	entity_stack.pop();
@@ -96,6 +97,25 @@ void Listener::exit(ObjectReference* /*node*/) {
 			value_assignment->setRvalueReference(reference_entity);
 			return;
 		}
+	}
+
+	if (auto delete_statement = std::dynamic_pointer_cast<bpp::IR::DeleteStatement>(current_code_entity)) {
+		if (!reference_entity->isNonprimitive() && !reference_entity->isPointer()) {
+			throw bpp::ErrorHandling::SyntaxError(this, node, "Cannot delete a primitive object");
+		}
+		delete_statement->setObjectToDelete(reference_entity);
+		// Mark the destructor and delete methods as referenced by this delete statement
+		auto final_object = reference_entity->getReferenceChain().getFinalObject().lock();
+		bpp_assert(final_object != nullptr, "Final object in reference chain is null");
+		auto final_class = final_object->getType().lock();
+		bpp_assert(final_class != nullptr, "Final object in reference chain has no type");
+		auto destructor_method = final_class->getMethod_UNSAFE("__destructor");
+		bpp_assert(destructor_method != nullptr, "Final object's class has no __destructor method");
+		destructor_method->markReferencedBy(delete_statement);
+		auto delete_method = final_class->getMethod_UNSAFE("__delete");
+		bpp_assert(delete_method != nullptr, "Final object's class has no __delete method");
+		delete_method->markReferencedBy(delete_statement);
+		return;
 	}
 
 	current_code_entity->add(reference_entity);

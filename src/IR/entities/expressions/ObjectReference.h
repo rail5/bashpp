@@ -47,6 +47,7 @@ class ObjectReference : public CodeEntity, public std::enable_shared_from_this<O
 				std::weak_ptr<const Object> getFinalObject() const { return chain.back(); }
 				bool hasMethod() const { return method.has_value(); }
 				void setMethod(std::weak_ptr<const Method> m) { method = std::move(m); }
+				void removeMethod() { method.reset(); }
 				std::weak_ptr<const Method> getMethod() const { return method.value_or(std::weak_ptr<const Method>()); }
 				std::size_t size() const { return chain.size(); }
 				bool empty() const { return chain.empty(); }
@@ -119,18 +120,29 @@ class ObjectReference : public CodeEntity, public std::enable_shared_from_this<O
 		bool isNonprimitive() const { return !isPrimitive(); }
 
 		/**
-		 * @brief This amends the object reference to include a call to the final object's toPrimitive method.
+		 * @brief This amends the object reference to include a call to a method of the final object in the reference chain.
+		 *
+		 * This function is UNSAFE in several ways:
+		 *  1. It does not check accessibility restrictions of the requested method against current context
+		 *  2. It will throw an InternalError if the requested method does not exist
+		 *  3. It will throw an InternalError if the final object is primitive
+		 *
+		 * It is the caller's responsibility to ensure safe use of this function.
+		 *
+		 * This function should only be used to call methods that are guaranteed to exist, such as toPrimitive, __new, etc.
+		 * 
+		 * @param method_name The name of the method to call on the final object in the reference chain
 		 */
-		void addToPrimitiveCall() {
+		void addMethodCall_UNSAFE(const std::string& method_name) {
 			bpp_assert(!reference.empty(), "Reference chain is empty");
 			auto final_object = reference.getFinalObject().lock();
 			bpp_assert(final_object != nullptr, "Final object is null");
-			bpp_assert(!final_object->isPrimitive() || final_object->isPointer(), "Final object is primitive");
+			bpp_assert(isNonprimitive() || isPointer(), "Final object is primitive");
 			auto final_class = final_object->getType().lock();
 			bpp_assert(final_class != nullptr, "Final object has no type");
-			auto to_primitive_method = final_class->getMethod_UNSAFE("toPrimitive");
-			bpp_assert(to_primitive_method != nullptr, "Final object's class has no toPrimitive method");
-			reference.setMethod(to_primitive_method);
+			auto method = final_class->getMethod_UNSAFE(method_name);
+			bpp_assert(method != nullptr, "Final object's class has no method named " + method_name);
+			reference.setMethod(method);
 		}
 
 		void setLvalue(bool lvalue) { this->lvalue = lvalue; }
@@ -277,5 +289,9 @@ std::expected<std::shared_ptr<ObjectReference>, EntityResolutionError> resolve_e
 
 	return result;
 }
+
+#ifndef NDEBUG
+std::string get_reference_chain_prettyprint_string(const ObjectReference::ReferenceChain& chain);
+#endif // NDEBUG
 
 } // namespace bpp::IR

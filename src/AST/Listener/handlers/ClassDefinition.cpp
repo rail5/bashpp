@@ -128,7 +128,7 @@ void Listener::enter(ClassDefinition* node) {
 	};
 
 	add_system_method(std::move(new_method));
-	//add_system_method(std::move(delete_method));
+	add_system_method(std::move(delete_method));
 	add_system_method(std::move(copy_method));
 	add_system_method(std::move(constructor_method));
 	add_system_method(std::move(destructor_method));

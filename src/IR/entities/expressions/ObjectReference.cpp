@@ -36,6 +36,8 @@ std::string get_encased_reference(const std::string& ref, std::uint8_t indirecti
 	return encase_open + indirection + ref + encase_close;
 }
 
+} // anonymous namespace
+
 #ifndef NDEBUG
 std::string get_reference_chain_prettyprint_string(const ObjectReference::ReferenceChain& chain) {
 	// E.g.: @object.inner.member
@@ -60,8 +62,6 @@ std::string get_reference_chain_prettyprint_string(const ObjectReference::Refere
 	return result;
 }
 #endif // NDEBUG
-
-} // anonymous namespace
 
 bpp::CodeGen::CodeSegment ObjectReference::generateCode(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "State pointer is null");

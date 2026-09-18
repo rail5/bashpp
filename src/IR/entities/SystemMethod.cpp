@@ -36,7 +36,9 @@ bpp::CodeGen::CodeSegment SystemMethod::generateCode(bpp::CodeGen::CodeGenState*
 		case Type::COPY:
 			result.egalitarian_merge(generateCopyCode(state));
 			break;
-		// case Type::DELETE:
+		case Type::DELETE:
+			result.egalitarian_merge(generateDeleteCode(state));
+			break;
 		default:
 			throw bpp::ErrorHandling::InternalError("Unknown SystemMethod type");
 	}
@@ -159,6 +161,32 @@ bpp::CodeGen::CodeSegment SystemMethod::generateCopyCode(bpp::CodeGen::CodeGenSt
 	return result;
 }
 
+bpp::CodeGen::CodeSegment SystemMethod::generateDeleteCode(bpp::CodeGen::CodeGenState* state) const {
+	bpp_assert(state != nullptr, "State pointer is null");
+	bpp_assert(type == Type::DELETE, "SystemMethod is not DELETE");
+
+	const auto cls = getContainingClass().lock();
+	bpp_assert(cls != nullptr, "Containing class is null");
+
+	bpp::CodeGen::CodeSegment result;
+
+	for (const auto& dm : cls->getAllDatamembers()) {
+		if (dm->isPrimitive()) {
+			result.add_main_code("unset ${__this}" + dm->getAddress() + "\n");
+		} else {
+			// Recursively delete non-primitive data members
+			const auto dm_cls = dm->getType().lock();
+			bpp_assert(dm_cls != nullptr, "Nonprimitive data member has no type");
+			const auto dm_delete_method = dm_cls->getMethod_UNSAFE("__delete");
+			bpp_assert(dm_delete_method != nullptr, "Class " + dm_cls->getName() + " has no __delete method");
+			result.add_main_code(dm_delete_method->getAddress() + " ${__this}" + dm->getAddress() + "\n");
+		}
+	}
+
+	result.add_main_code("unset ${__this}____vPointer\n");
+
+	return result;
+}
 
 PRETTYPRINT_IMPLEMENTATION(SystemMethod, {
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');

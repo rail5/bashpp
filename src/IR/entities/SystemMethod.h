@@ -40,10 +40,10 @@ class SystemMethod : public Method {
 		PRETTYPRINT_OVERRIDE();
 
 	private:
-		 Type type = Type::NEW;
+		Type type = Type::NEW;
 
-		 bpp::CodeGen::CodeSegment generateCopyCode(bpp::CodeGen::CodeGenState* state) const;
-		 // bpp::CodeGen::CodeSegment generateDeleteCode(bpp::CodeGen::CodeGenState* state) const;
+		bpp::CodeGen::CodeSegment generateCopyCode(bpp::CodeGen::CodeGenState* state) const;
+		bpp::CodeGen::CodeSegment generateDeleteCode(bpp::CodeGen::CodeGenState* state) const;
 };
 
 } // namespace bpp::IR::Builtins

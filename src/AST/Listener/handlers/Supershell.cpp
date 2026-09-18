@@ -27,12 +27,6 @@ void Listener::enter(Supershell* node) {
 		node->getLine(),
 		node->getCharPositionInLine()
 	});
-
-	auto containing_program = current_code_entity->getContainingProgram();
-	bpp_assert(!containing_program.expired(), "Containing program is null when entering Supershell node");
-	auto supershell_builtin = containing_program.lock()->getSupershellFunction();
-	bpp_assert(supershell_builtin != nullptr, "Supershell builtin function is null when entering Supershell node");
-	supershell_builtin->markReferencedBy(supershell_entity);
 }
 
 template <>

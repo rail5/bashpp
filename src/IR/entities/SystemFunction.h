@@ -24,7 +24,8 @@ class SystemFunction : public BashFunction {
 		SystemFunction() = delete;
 		explicit SystemFunction(std::string_view contents) : m_contents(contents) {}
 
-		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override { return generateCode(state, false); }
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state, bool force_output) const;
 		PRETTYPRINT_OVERRIDE();
 };
 

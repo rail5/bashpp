@@ -23,6 +23,7 @@ void Listener::enter(Program* /*node*/) {
 		this->program = program;
 
 		program->setSupershellFunction(std::make_shared<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_supershell_function));
+		program->setRepeatFunction(std::make_shared<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_repeat_function));
 		program->setVtableLookupFunction(std::make_shared<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_vtable_lookup_function));
 		program->setDynamicCastFunction(std::make_shared<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_dynamic_cast_function));
 		program->setTypeofFunction(std::make_shared<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_typeof_function));

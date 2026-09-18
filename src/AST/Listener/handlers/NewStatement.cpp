@@ -40,11 +40,6 @@ void Listener::enter(NewStatement* node) {
 	new_method->markReferencedBy(instantiation);
 	auto constructor_method = class_entity->getMethod_UNSAFE("__constructor");
 	if (constructor_method) constructor_method->markReferencedBy(instantiation);
-
-	// Mark system supershell function as used by this instantiation
-	auto supershell_function = program->getSupershellFunction();
-	bpp_assert(supershell_function != nullptr, "Program has no supershell function when entering NewStatement node");
-	supershell_function->markReferencedBy(instantiation);
 }
 
 template <>

@@ -11,8 +11,8 @@
 
 namespace bpp::IR::Builtins {
 
-bpp::CodeGen::CodeSegment SystemFunction::generateCode(bpp::CodeGen::CodeGenState* /*state*/) const {
-	if (!this->isReferenced()) return {};
+bpp::CodeGen::CodeSegment SystemFunction::generateCode(bpp::CodeGen::CodeGenState* /*state*/, bool force_output) const {
+	if (!this->isReferenced() && !force_output) return {};
 	bpp::CodeGen::CodeSegment result;
 	result.add_main_code(std::string(this->m_contents));
 	return result;

@@ -31,10 +31,6 @@ class Program : public CodeEntity, public std::enable_shared_from_this<Program> 
 		std::shared_ptr<Builtins::SystemFunction> dynamic_cast_function = nullptr;
 		std::shared_ptr<Builtins::SystemFunction> typeof_function = nullptr;
 
-		constexpr static std::string_view bpp_repeat_function = R"EOF(bpp____repeat() {
-	return $1
-}
-)EOF";
 	public:
 		void addDiagnostic(bpp::ErrorHandling::Diagnostic diagnostic) {}
 
@@ -66,11 +62,13 @@ class Program : public CodeEntity, public std::enable_shared_from_this<Program> 
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 
 		std::shared_ptr<Builtins::SystemFunction> getSupershellFunction() const { return supershell_function; }
+		std::shared_ptr<Builtins::SystemFunction> getRepeatFunction() const { return repeat_function; }
 		std::shared_ptr<Builtins::SystemFunction> getVtableLookupFunction() const { return vtable_lookup_function; }
 		std::shared_ptr<Builtins::SystemFunction> getDynamicCastFunction() const { return dynamic_cast_function; }
 		std::shared_ptr<Builtins::SystemFunction> getTypeofFunction() const { return typeof_function; }
 
 		void setSupershellFunction(std::shared_ptr<Builtins::SystemFunction> func) { supershell_function = std::move(func); }
+		void setRepeatFunction(std::shared_ptr<Builtins::SystemFunction> func) { repeat_function = std::move(func); }
 		void setVtableLookupFunction(std::shared_ptr<Builtins::SystemFunction> func) { vtable_lookup_function = std::move(func); }
 		void setDynamicCastFunction(std::shared_ptr<Builtins::SystemFunction> func) { dynamic_cast_function = std::move(func); }
 		void setTypeofFunction(std::shared_ptr<Builtins::SystemFunction> func) { typeof_function = std::move(func); }

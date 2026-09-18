@@ -123,7 +123,6 @@ void yyerror(const char *s);
 %token BASH_KEYWORD_WHILE BASH_KEYWORD_UNTIL
 %token BASH_KEYWORD_FUNCTION BASH_FUNCTION_OPEN
 %token <bpp::AST::Token<std::string>> BASH_FUNCTION_LABEL
-%token BASH_TEST_CONDITION_START BASH_TEST_CONDITION_END
 %token BASH_KEYWORD_LOCAL
 
 %token EXCLAM
@@ -140,7 +139,7 @@ void yyerror(const char *s);
 
 
 %precedence CONCAT_STOP
-%precedence LANGLE LANGLE_AMPERSAND RANGLE RANGLE_AMPERSAND AMPERSAND_RANGLE HEREDOC_START HERESTRING_START BASH_ARITHMETIC_START BASH_TEST_CONDITION_START ARRAY_ASSIGNMENT_START BASH_53_NATIVE_SUPERSHELL_START
+%precedence LANGLE LANGLE_AMPERSAND RANGLE RANGLE_AMPERSAND AMPERSAND_RANGLE HEREDOC_START HERESTRING_START BASH_ARITHMETIC_START ARRAY_ASSIGNMENT_START BASH_53_NATIVE_SUPERSHELL_START
 %precedence IDENTIFIER INTEGER SINGLEQUOTED_STRING KEYWORD_NULLPTR
 %precedence QUOTE_BEGIN
 %precedence AT REF_START
@@ -214,7 +213,6 @@ void yyerror(const char *s);
 
 %type <ASTNodePtr> bash_while_statement bash_until_statement bash_while_or_until_condition
 %type <ASTNodePtr> bash_function bash_arithmetic_substitution
-%type <ASTNodePtr> bash_test_condition_command
 %type <ASTNodePtr> bash_53_native_supershell
 %type <ASTNodePtr> array_assignment
 
@@ -492,24 +490,6 @@ simple_command:
 		$1->addChild($2);
 		$1->setEndPosition(@2.end.line, @2.end.column);
 		$$ = $1;
-	}
-	| bash_test_condition_command {
-		current_command_can_receive_lvalues = false;
-		auto node = std::make_shared<bpp::AST::BashCommand>();
-		std::uint32_t line_number = @1.begin.line;
-		std::uint32_t column_number = @1.begin.column;
-		node->setPosition(line_number, column_number);
-		node->setEndPosition(@1.end.line, @1.end.column);
-		node->addChild($1);
-		$$ = node;
-	}
-	| simple_command WS bash_test_condition_command {
-		current_command_can_receive_lvalues = false;
-		auto command = std::static_pointer_cast<bpp::AST::BashCommand>($1);
-		command->addText(" "); // Preserve whitespace
-		command->addChild($3);
-		command->setEndPosition(@3.end.line, @3.end.column);
-		$$ = command;
 	}
 	;
 
@@ -2489,18 +2469,6 @@ bash_function:
 		node->addChild($3);
 		$$ = node;
 	}
-
-bash_test_condition_command:
-	BASH_TEST_CONDITION_START simple_command_sequence BASH_TEST_CONDITION_END {
-		auto node = std::make_shared<bpp::AST::BashTestConditionCommand>();
-		std::uint32_t line_number = @1.begin.line;
-		std::uint32_t column_number = @1.begin.column;
-		node->setPosition(line_number, column_number);
-		node->setEndPosition(@3.end.line, @3.end.column);
-		node->addChild($2);
-		$$ = node;
-	}
-	;
 
 bash_53_native_supershell:
 	BASH_53_NATIVE_SUPERSHELL_START statements BASH_53_NATIVE_SUPERSHELL_END {

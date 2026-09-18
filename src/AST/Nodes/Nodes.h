@@ -27,7 +27,6 @@
 #include <AST/Nodes/BashPipeline.h>
 #include <AST/Nodes/BashRedirection.h>
 #include <AST/Nodes/BashSelectStatement.h>
-#include <AST/Nodes/BashTestConditionCommand.h>
 #include <AST/Nodes/BashUntilStatement.h>
 #include <AST/Nodes/BashVariable.h>
 #include <AST/Nodes/BashWhileOrUntilCondition.h>

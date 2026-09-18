@@ -790,21 +790,19 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 
 \[\[[ \t]+ {
 	// Matches the opening '[[' of a bash test condition
+	// If it's not an lvalue token, it's just normal text.
 	if (thisLexerState.incoming_token_can_be_lvalue) {
 		thisLexerState.incoming_token_can_be_lvalue = false;
 		thisModeStack.push(BASH_TEST_CONDITION_MODE);
-		emit(BASH_TEST_CONDITION_START);
-	} else {
-		// If it's not an lvalue token, it's just normal text.
-		emit(CATCHALL, tokenText);
 	}
+	emit(CATCHALL, tokenText);
 }
 
 <BASH_TEST_CONDITION_MODE>{
 	[ \t]*\]\]/[ \t\n;]+ {
 		// Matches the closing ']]'
 		thisModeStack.pop();
-		emit(BASH_TEST_CONDITION_END);
+		emit(CATCHALL, tokenText);
 	}
 }
 

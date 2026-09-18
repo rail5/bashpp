@@ -46,7 +46,6 @@ namespace bpp::AST {
 	X(BashPipeline) \
 	X(BashRedirection) \
 	X(BashSelectStatement) \
-	X(BashTestConditionCommand) \
 	X(BashUntilStatement) \
 	X(BashVariable) \
 	X(BashWhileOrUntilCondition) \
@@ -230,8 +229,6 @@ template<> void Listener::enter  (BashIfCondition*          node);
 template<> void Listener::exit   (BashIfCondition*          node);
 template<> void Listener::enter  (BashIfBranch*             node);
 template<> void Listener::exit   (BashIfBranch*             node);
-template<> void Listener::enter  (BashTestConditionCommand* node);
-template<> void Listener::exit   (BashTestConditionCommand* node);
 template<> void Listener::enter  (BashFunction*             node);
 template<> void Listener::exit   (BashFunction*             node);
 template<> void Listener::enter  (RawText*                  node);

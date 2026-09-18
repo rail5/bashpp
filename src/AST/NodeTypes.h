@@ -32,7 +32,6 @@ enum class NodeType : std::uint8_t {
 	BashPipeline,
 	BashRedirection,
 	BashSelectStatement,
-	BashTestConditionCommand,
 	BashUntilStatement,
 	BashVariable,
 	BashWhileOrUntilCondition,

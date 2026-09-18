@@ -180,6 +180,7 @@ struct CodeGenState {
 	std::uint64_t nested_supershell_depth = 0;
 	std::uint64_t dynamic_cast_counter = 0;
 	std::uint64_t supershell_counter = 0;
+	bool requires_repeat_function = false;
 
 	bool in_class() const { return current_class != nullptr; }
 	bool in_method() const { return current_method != nullptr; }

@@ -45,10 +45,6 @@ bpp____supershell() {
 }
 )EOF";
 
-[[maybe_unused]] constexpr static std::string_view bpp_repeat_function = R"EOF(bpp____repeat() {
-	return $1
-})EOF";
-
 [[maybe_unused]] constexpr static std::string_view bpp_vtable_lookup_function = R"EOF(bpp____vTable_lookup() {
 	local __this="$1" __method="$2" __outputVar="$3"
 	([[ -z "${__this}" ]] || [[ -z "${__method}" ]] || [[ -z "${__outputVar}" ]]) && >&2 echo "Bash++: Error: Invalid vTable lookup" && exit 1

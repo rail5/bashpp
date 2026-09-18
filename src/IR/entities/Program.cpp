@@ -36,12 +36,15 @@ bpp::CodeGen::CodeSegment Program::generateCode(bpp::CodeGen::CodeGenState* stat
 		code.absorb_all_to_pre(this->supershell_function->generateCode(state));
 	} // Bash>=5.3 has a native supershell implementation, skip adding our own
 
-	code.absorb_all_to_pre(this->repeat_function->generateCode(state));
 	code.absorb_all_to_pre(this->vtable_lookup_function->generateCode(state));
 	code.absorb_all_to_pre(this->dynamic_cast_function->generateCode(state));
 	code.absorb_all_to_pre(this->typeof_function->generateCode(state));
 
-	code.egalitarian_merge(CodeEntity::generateCode(state));
+	code.absorb_all_to_main(CodeEntity::generateCode(state));
+
+	// We unfortunately don't know until codegen-time whether we'll need to use bpp____repeat
+	// If codegen for one of our child entities has told us that we need it, then we include it here
+	if (state->requires_repeat_function) code.add_pre_code(std::string(Program::bpp_repeat_function));
 
 	return code;
 }
@@ -54,7 +57,6 @@ IncludedProgram::IncludedProgram(std::shared_ptr<Program> containing_program) {
 	this->setContainingProgram(containing_program);
 
 	this->setSupershellFunction(containing_program->getSupershellFunction());
-	this->setRepeatFunction(containing_program->getRepeatFunction());
 	this->setVtableLookupFunction(containing_program->getVtableLookupFunction());
 	this->setDynamicCastFunction(containing_program->getDynamicCastFunction());
 	this->setTypeofFunction(containing_program->getTypeofFunction());

@@ -17,16 +17,19 @@ void Listener::enter(DoublequotedString* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity when entering DoublequotedString node");
 	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
 
-	auto string_entity = std::make_shared<bpp::IR::String>();
+	auto string_entity = std::make_shared<bpp::IR::StringType>();
 	string_entity->inherit(current_code_entity);
+	string_entity->add("\"");
 	entity_stack.push(string_entity);
 }
 
 template <>
 void Listener::exit(DoublequotedString* /*node*/) {
-	bpp_assert(topmost_entity_is<bpp::IR::String>(), "Topmost entity is not a String when exiting DoublequotedString node");
-	auto string_entity = std::static_pointer_cast<bpp::IR::String>(entity_stack.top());
+	bpp_assert(topmost_entity_is<bpp::IR::StringType>(), "Topmost entity is not a StringType when exiting DoublequotedString node");
+	auto string_entity = std::static_pointer_cast<bpp::IR::StringType>(entity_stack.top());
 	entity_stack.pop();
+
+	string_entity->add("\"");
 
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity when exiting DoublequotedString node");
 	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());

@@ -28,36 +28,12 @@ bpp::CodeGen::CodeSegment StringType::generateCode(bpp::CodeGen::CodeGenState* s
 	return result;
 }
 
-bpp::CodeGen::CodeSegment String::generateCode(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "State pointer is null");
-	bpp::CodeGen::CodeSegment result;
-	// Surround the result of StringType::generate_code() with double quotes
-	result.add_main_code("\"");
-	result.egalitarian_merge(StringType::generateCode(state));
-	result.add_main_code("\"");
-
-	return result;
-}
-
-PRETTYPRINT_IMPLEMENTATION(String, {
+PRETTYPRINT_IMPLEMENTATION(StringType, {
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
-	os << indent << "\"";
-
-	bool last_printed_was_entity = false;
-	for (const auto& child : children) {
-		if (std::holds_alternative<RawCode>(child)) {
-			if (last_printed_was_entity) os << indent;
-			prettyprint_raw_code(os, std::get<RawCode>(child));
-			last_printed_was_entity = false;
-		} else if (std::holds_alternative<std::shared_ptr<Entity>>(child)) {
-			os << "\n";
-			std::get<std::shared_ptr<Entity>>(child)->prettyPrint(os, indentation_level);
-			last_printed_was_entity = true;
-		}
-	}
-	if (last_printed_was_entity) os << indent;
-	os << "\"\n";
+	os << indent << "(StringType\n";
+	CodeEntity::prettyPrint(os, indentation_level + 1);
+	os << indent << ")\n";
 	return os;
-})
+});
 
 } // namespace bpp::IR

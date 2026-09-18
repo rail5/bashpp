@@ -20,14 +20,6 @@ namespace bpp::IR {
 class StringType : public CodeEntity {
 	public:
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
-};
-
-/**
- * @brief A double-quoted string which may contain interpolated expressions
- */
-class String : public StringType {
-	public:
-		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 
 		PRETTYPRINT_OVERRIDE();
 };

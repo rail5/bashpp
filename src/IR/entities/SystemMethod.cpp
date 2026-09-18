@@ -71,7 +71,8 @@ bpp::CodeGen::CodeSegment SystemMethod::generateInlineNewCode(bpp::CodeGen::Code
 
 	std::string maybe_local = localize ? "local " : "";
 
-	result.add_pre_code("eval \"" + maybe_local + obj_address + "____vPointer=bpp__" + cls->getName() + "____vTable\"\n");
+	if (localize) result.add_pre_code("local " + obj_address + "____vPointer\n");
+	result.add_pre_code("printf -v \"" + obj_address + "____vPointer\" '%s' \"bpp__" + cls->getName() + "____vTable\"\n");
 
 	for (const auto& dm : cls->getAllDatamembers()) {
 		if (dm->isPrimitive()) {
@@ -97,7 +98,8 @@ bpp::CodeGen::CodeSegment SystemMethod::generateInlineNewCode(bpp::CodeGen::Code
 				result.add_main_code(default_value_code.get_main_code());
 				result.add_main_code("\n");
 
-				result.add_main_code("eval \"" + maybe_local + obj_address + dm->getAddress() + "=\\$__objAssignment\"\n");
+				if (localize) result.add_main_code("local " + obj_address + dm->getAddress() + "\n");
+				result.add_main_code("printf -v \"" + obj_address + dm->getAddress() + "\" '%s' \"${__objAssignment}\"\n");
 
 				result.add_main_code(default_value_code.get_post_code());
 			}
@@ -119,8 +121,9 @@ bpp::CodeGen::CodeSegment SystemMethod::generateInlineNewCode(bpp::CodeGen::Code
 			result.absorb_all_to_main(dm_new_sys_method->generateInlineNewCode(state, localize, obj));
 		} else {
 			// If not localizing, call the __new method in a supershell, and assign its output to the datamember
-			result.add_main_code("eval " + obj_address + dm->getAddress() + "=");
+			result.add_main_code("printf -v \"" + obj_address + dm->getAddress() + "\" '%s' \"");
 			result.egalitarian_merge(bpp::IR::Supershell::wrap(state, dm_new_sys_method->getAddress()));
+			result.add_main_code("\"\n");
 		}
 	}
 
@@ -136,14 +139,14 @@ bpp::CodeGen::CodeSegment SystemMethod::generateCopyCode(bpp::CodeGen::CodeGenSt
 
 	bpp::CodeGen::CodeSegment result;
 
-	result.add_pre_code("eval \"${__this}____vPointer=bpp__" + cls->getName() + "____vTable\"\n");
+	result.add_pre_code(R"(printf -v "${__this}____vPointer" '%s' ")" + cls->getName() + "____vTable\"\n");
 
 	for (const auto& dm : cls->getAllDatamembers()) {
 		if (dm->isPrimitive()) {
 			if (!dm->isArray()) {
 				result.add_main_code("local __objAssignment=${__source}" + dm->getAddress() + "\n");
 				result.add_main_code("__objAssignment=${!__objAssignment}\n");
-				result.add_main_code("eval \"${__this}" + dm->getAddress() + "=\\$__objAssignment\"\n");
+				result.add_main_code("printf -v \"${__this}" + dm->getAddress() + "\" '%s' \"${__objAssignment}\"\n");
 			} else {
 				// FIXME(@rail5): Review. Known not to work for associative arrays. Is it robust enough for ordinary arrays?
 				result.add_main_code("eval \"${__this}" + dm->getAddress() + "=(\\${__source}" + dm->getAddress() + "[@])\"\n");

@@ -47,9 +47,9 @@ bpp::CodeGen::CodeSegment ObjectAssignment::generateCode(bpp::CodeGen::CodeGenSt
 
 	if (!state->should_declare_local()) result.add_post_code("\nunset __assignment\n");
 
-	result.add_main_code("eval ");
+	result.add_main_code("printf -v \"");
 	result.egalitarian_merge(lhs->generateCode(state));
-	result.add_main_code("=\\$__assignment\n");
+	result.add_main_code("\" '%s' \"$__assignment\"\n");
 
 	return result;
 }

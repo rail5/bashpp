@@ -19,6 +19,9 @@
  *
  * - Associative arrays were introduced in Bash 4.0.
  *    This is used by the vTable lookup and dynamic_cast functions to store method pointers and to check types.
+ *
+ * - The '-v' option was added to the printf builtin in Bash 3.1.
+ *   printf -v is used in almost everything
  */
 
 namespace bpp::IR::Builtins {
@@ -40,7 +43,7 @@ bpp____supershell() {
 		__temporaryStorage=$(< "/dev/fd/${!__supershellFD}")
 	fi
 	$__command 1>"/dev/fd/${!__supershellFD}"
-	eval "$__outputVar=\$(< "/dev/fd/${!__supershellFD}")"
+	printf -v "${__outputVar}" '%s' "$(< "/dev/fd/${!__supershellFD}")"
 	echo "${__temporaryStorage}">"/dev/fd/${!__supershellFD}"
 }
 )EOF";
@@ -52,43 +55,47 @@ bpp____supershell() {
 
 [[maybe_unused]] constexpr static std::string_view bpp_vtable_lookup_function = R"EOF(bpp____vTable_lookup() {
 	local __this="$1" __method="$2" __outputVar="$3"
-	([[ -z "${__this}" ]] || [[ -z "${__method}" ]] || [[ -z "${__outputVar}" ]]) && >&2 echo "Bash++: Error: Invalid vTable lookup" && exit 1
-	eval "${__outputVar}=0"
-	while : ; do
-		if ! eval "declare -p \"${__this}\"" &>/dev/null; then
-			break
-		fi
-		[[ -z "${!__this}" ]] && break
+	if [[ -z "${__this}" ]] || [[ -z "${__method}" ]] || [[ -z "${__outputVar}" ]]; then
+		>&2 echo "Bash++: Error: Invalid vTable lookup"
+		exit 1
+	fi
+	printf -v "${__outputVar}" '%s' 0
+	while [[ -v "${__this}" ]] && [[ ! -z "${__this}" ]]; do
 		__this="${!__this}"
 	done
 	local __vTable="${__this}____vPointer"
-	if ! eval "declare -p \"${__vTable}\"" &>/dev/null; then
+	if [[ ! -v "${__vTable}" ]]; then
 		>&2 echo "Bash++: Error: Object '${__this}' has no vTable pointer" && return 1
 	fi
 	local __result="${!__vTable}[\"${__method}\"]"
-	[[ -z "${!__result}" ]] && >&2 echo "Bash++: Error: Method '${__method}' not found in vTable for object '${__this}'" && return 1
+	if [[ -z "${!__result}" ]]; then
+		>&2 echo "Bash++: Error: Method '${__method}' not found in vTable for object '${__this}'"
+		return 1
+	fi
 	__result=${!__result}
-	eval "${__outputVar}=\$__result"
+	printf -v "${__outputVar}" '%s' "${__result}"
 }
 )EOF";
 
 [[maybe_unused]] constexpr static std::string_view bpp_dynamic_cast_function = R"EOF(bpp____dynamic_cast() {
 	local __type="$1" __outputVar="$2" __address="$3"
-	([[ -z "${__outputVar}" ]]) && >&2 echo "Bash++: Error: Invalid dynamic_cast" && exit 1
-	eval "${__outputVar}=0"
-	while : ; do
-		if ! eval "declare -p \"${__address}\"" &>/dev/null; then
-			break
-		fi
-		[[ -z "${!__address}" ]] && break
+	if [[ -z "${__outputVar}" ]]; then
+		>&2 echo "Bash++: Error: Invalid dynamic_cast"
+		exit 1
+	fi
+	printf -v "${__outputVar}" '%s' 0
+	while [[ -v "${__address}" ]] && [[ ! -z "${!__address}" ]]; do
 		__address="${!__address}"
 	done
 	local __vTable="${__address}____vPointer"
-	if ! eval "declare -p \"${__vTable}\"" &>/dev/null; then
+	if [[ ! -v "${__vTable}" ]]; then
 		return 1
 	fi
 	while [[ ! -z "${!__vTable}" ]] 2>/dev/null; do
-		[[ "${!__vTable}" == "bpp__${__type}____vTable" ]] && eval "${__outputVar}=\"${__address}\"" && return 0
+		if [[ "${!__vTable}" == "bpp__${__type}____vTable" ]]; then
+			printf -v "${__outputVar}" '%s' "${__address}"
+			return 0
+		fi
 		__vTable="${!__vTable}[\"__parent__\"]"
 	done
 	return 1
@@ -97,22 +104,21 @@ bpp____supershell() {
 
 [[maybe_unused]] constexpr static std::string_view bpp_typeof_function = R"EOF(bpp____typeof() {
 	local __this="$1" __outputVar="$2"
-	[[ -z "${__this}" ]] && >&2 echo "Bash++: Error: Invalid type name request" && exit 1
-	while : ; do
-		if ! eval "declare -p \"${__this}\"" &>/dev/null; then
-			break
-		fi
-		[[ -z "${!__this}" ]] && break
+	if [[ -z "${__this}" ]]; then
+		>&2 echo "Bash++: Error: Invalid type name request"
+		exit 1
+	fi
+	while [[ -v "${__this}" ]] && [[ ! -z "${!__this}" ]]; do
 		__this="${!__this}"
 	done
 	local __vTable="${__this}____vPointer"
-	if ! eval "declare -p \"${__vTable}\"" &>/dev/null; then
+	if [[ ! -v "${__vTable}" ]]; then
 		return 1
 	fi
 	__vTable="${!__vTable}"
 	local __typeName="${__vTable/bpp__/}"
 	__typeName="${__typeName/____vTable/}"
-	eval "${__outputVar}=\"${__typeName}\""
+	printf -v "${__outputVar}" '%s' "${__typeName}"
 }
 )EOF";
 

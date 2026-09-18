@@ -31,7 +31,7 @@ void Listener::enter(NewStatement* node) {
 	auto instantiation = std::make_shared<bpp::IR::ObjectInstantiation>();
 	instantiation->inherit(current_code_entity);
 	instantiation->setType(class_entity);
-	// By not setting the "object to instantiate," we indicate that this is a heap-like instantiation (i.e., a call to @new TYPE)
+	// By not setting the "stackLikeObject" we indicate that this is a heap-like instantiation (i.e., a call to @new TYPE)
 	current_code_entity->add(instantiation);
 
 	// Mark __new, __constructor as used by this instantiation

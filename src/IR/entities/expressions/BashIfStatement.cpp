@@ -6,9 +6,6 @@
 
 #include "BashIfStatement.h"
 
-#include <IR/entities/Class.h>
-#include <IR/entities/Program.h>
-
 #include <error/InternalError.h>
 
 namespace bpp::IR {

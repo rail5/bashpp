@@ -56,53 +56,26 @@ void Listener::exit(BashIfCondition* /*node*/) {
 }
 
 template <>
-void Listener::enter(BashIfRootBranch* /*node*/) {
-	bpp_assert(topmost_entity_is<bpp::IR::BashIfStatement>(), "Topmost entity is not a BashIfStatement when entering BashIfRootBranch node");
+void Listener::enter(BashIfBranch* node) {
+	bpp_assert(topmost_entity_is<bpp::IR::BashIfStatement>(), "Topmost entity is not a BashIfStatement when entering BashIfBranch node");
 	auto if_statement_entity = std::static_pointer_cast<bpp::IR::BashIfStatement>(entity_stack.top());
-	bpp_assert(if_statement_entity->getBranches().empty(), "BashIfStatement already has branches when entering BashIfRootBranch node");
 
-	auto root_branch_entity = std::make_shared<bpp::IR::BashIfBranch>();
-	root_branch_entity->inherit(if_statement_entity);
-	root_branch_entity->setIsRoot(true);
+	auto branch_entity = std::make_shared<bpp::IR::BashIfBranch>();
+	branch_entity->inherit(if_statement_entity);
+	branch_entity->setIsRoot(node->isRootBranch());
 
-	entity_stack.push(root_branch_entity);
+	entity_stack.push(branch_entity);
 }
 
 template <>
-void Listener::exit(BashIfRootBranch* /*node*/) {
-	bpp_assert(topmost_entity_is<bpp::IR::BashIfBranch>(), "Topmost entity is not a BashIfBranch when exiting BashIfRootBranch node");
+void Listener::exit(BashIfBranch* /*node*/) {
+	bpp_assert(topmost_entity_is<bpp::IR::BashIfBranch>(), "Topmost entity is not a BashIfBranch when exiting BashIfBranch node");
 	auto root_branch_entity = std::static_pointer_cast<bpp::IR::BashIfBranch>(entity_stack.top());
 	entity_stack.pop();
 
-	bpp_assert(root_branch_entity->getCondition().has_value(), "BashIfRootBranch must have a condition when exiting BashIfRootBranch node");
-
-	bpp_assert(topmost_entity_is<bpp::IR::BashIfStatement>(), "Topmost entity is not a BashIfStatement when exiting BashIfRootBranch node");
+	bpp_assert(topmost_entity_is<bpp::IR::BashIfStatement>(), "Topmost entity is not a BashIfStatement when exiting BashIfBranch node");
 	auto if_statement_entity = std::static_pointer_cast<bpp::IR::BashIfStatement>(entity_stack.top());
 	if_statement_entity->addBranch(root_branch_entity);
-}
-
-template <>
-void Listener::enter(BashIfElseBranch* /*node*/) {
-	bpp_assert(topmost_entity_is<bpp::IR::BashIfStatement>(), "Topmost entity is not a BashIfStatement when entering BashIfElseBranch node");
-	auto if_statement_entity = std::static_pointer_cast<bpp::IR::BashIfStatement>(entity_stack.top());
-	bpp_assert(!if_statement_entity->getBranches().empty(), "BashIfStatement must have branches when entering BashIfElseBranch node");
-
-	auto else_branch_entity = std::make_shared<bpp::IR::BashIfBranch>();
-	else_branch_entity->inherit(if_statement_entity);
-	else_branch_entity->setIsRoot(false);
-
-	entity_stack.push(else_branch_entity);
-}
-
-template <>
-void Listener::exit(BashIfElseBranch* /*node*/) {
-	bpp_assert(topmost_entity_is<bpp::IR::BashIfBranch>(), "Topmost entity is not a BashIfBranch when exiting BashIfElseBranch node");
-	auto else_branch_entity = std::static_pointer_cast<bpp::IR::BashIfBranch>(entity_stack.top());
-	entity_stack.pop();
-
-	bpp_assert(topmost_entity_is<bpp::IR::BashIfStatement>(), "Topmost entity is not a BashIfStatement when exiting BashIfElseBranch node");
-	auto if_statement_entity = std::static_pointer_cast<bpp::IR::BashIfStatement>(entity_stack.top());
-	if_statement_entity->addBranch(else_branch_entity);
 }
 
 } // namespace bpp::AST

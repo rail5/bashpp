@@ -10,11 +10,19 @@
 
 namespace bpp::AST {
 
-class BashIfElseBranch : public ASTNode {
+class BashIfBranch : public ASTNode {
 	protected:
+		bool m_isRootBranch = false;
 		bool m_hasCondition = false;
 	public:
-		constexpr BashIfElseBranch() : ASTNode(bpp::AST::NodeType::BashIfElseBranch) {}
+		constexpr BashIfBranch() : ASTNode(bpp::AST::NodeType::BashIfBranch) {}
+
+		bool isRootBranch() const {
+			return m_isRootBranch;
+		}
+		void setIsRootBranch(bool isRoot) {
+			m_isRootBranch = isRoot;
+		}
 
 		bool hasCondition() const {
 			return m_hasCondition;
@@ -25,7 +33,8 @@ class BashIfElseBranch : public ASTNode {
 
 		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
-			os << indent << "(BashIfElseBranch";
+			os << indent << "(BashIfBranch";
+			if (m_isRootBranch) os << " [root]";
 			for (const auto& child : children) {
 				os << std::endl;
 				child->prettyPrint(os, indentation_level + 1);

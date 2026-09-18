@@ -40,8 +40,7 @@ namespace bpp::AST {
 	X(BashForStatement) \
 	X(BashFunction) \
 	X(BashIfCondition) \
-	X(BashIfElseBranch) \
-	X(BashIfRootBranch) \
+	X(BashIfBranch) \
 	X(BashIfStatement) \
 	X(BashInCondition) \
 	X(BashPipeline) \
@@ -229,10 +228,8 @@ template<> void Listener::enter  (BashIfStatement*        node);
 template<> void Listener::exit   (BashIfStatement*        node);
 template<> void Listener::enter  (BashIfCondition*        node);
 template<> void Listener::exit   (BashIfCondition*        node);
-template<> void Listener::enter  (BashIfRootBranch*       node);
-template<> void Listener::exit   (BashIfRootBranch*       node);
-template<> void Listener::enter  (BashIfElseBranch*       node);
-template<> void Listener::exit   (BashIfElseBranch*       node);
+template<> void Listener::enter  (BashIfBranch*           node);
+template<> void Listener::exit   (BashIfBranch*           node);
 template<> void Listener::enter  (BashFunction*           node);
 template<> void Listener::exit   (BashFunction*           node);
 template<> void Listener::enter  (RawText*                node);

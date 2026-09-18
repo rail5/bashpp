@@ -2354,9 +2354,11 @@ bash_if_root_branch:
 		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 
-		auto rootBranch = std::make_shared<bpp::AST::BashIfRootBranch>();
+		auto rootBranch = std::make_shared<bpp::AST::BashIfBranch>();
 		rootBranch->setPosition(@1.begin.line, @1.begin.column);
 		rootBranch->setEndPosition(@7.end.line, @7.end.column);
+		rootBranch->setHasCondition(true);
+		rootBranch->setIsRootBranch(true);
 		rootBranch->addChild($2); // condition
 		rootBranch->addChildren($7); // statements
 
@@ -2385,25 +2387,27 @@ maybe_bash_if_else_branches:
 
 bash_if_else_branch:
 	BASH_KEYWORD_ELIF bash_if_condition DELIM maybe_whitespace BASH_KEYWORD_THEN maybe_whitespace statements {
-		auto node = std::make_shared<bpp::AST::BashIfElseBranch>();
+		auto node = std::make_shared<bpp::AST::BashIfBranch>();
 		std::uint32_t line_number = @1.begin.line;
 		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@7.end.line, @7.end.column);
 		node->setHasCondition(true);
+		node->setIsRootBranch(false);
 		node->addChild($2); // condition
 		node->addChildren($7); // statements
 
 		$$ = node;
 	}
 	| BASH_KEYWORD_ELSE DELIM maybe_whitespace statements {
-		auto node = std::make_shared<bpp::AST::BashIfElseBranch>();
+		auto node = std::make_shared<bpp::AST::BashIfBranch>();
 		std::uint32_t line_number = @1.begin.line;
 		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@4.end.line, @4.end.column);
 		// 'else' branch has no condition
 		node->setHasCondition(false);
+		node->setIsRootBranch(false);
 		node->addChildren($4); // statements
 
 		$$ = node;

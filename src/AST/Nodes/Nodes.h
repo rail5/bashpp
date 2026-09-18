@@ -21,8 +21,7 @@
 #include <AST/Nodes/BashCommandSequence.h>
 #include <AST/Nodes/BashForStatement.h>
 #include <AST/Nodes/BashIfCondition.h>
-#include <AST/Nodes/BashIfElseBranch.h>
-#include <AST/Nodes/BashIfRootBranch.h>
+#include <AST/Nodes/BashIfBranch.h>
 #include <AST/Nodes/BashIfStatement.h>
 #include <AST/Nodes/BashInCondition.h>
 #include <AST/Nodes/BashPipeline.h>

@@ -40,16 +40,20 @@ bpp::CodeGen::CodeSegment ObjectAssignment::generateCode(bpp::CodeGen::CodeGenSt
 		return result;
 	}
 
-	if (state->should_declare_local()) result.add_main_code("local ");
-	result.add_main_code("__assignment");
+	bpp::CodeGen::CodeSegment nameref_assignment;
+	nameref_assignment.add_main_code("declare -n __ref="); // No need to check for state->should_declare_local(), 'declare' will automatically create a local variable if necessary
+	nameref_assignment.egalitarian_merge(lhs->generateCode(state));
+
+	result.absorb_all_to_pre(std::move(nameref_assignment));
+	result.add_pre_code("\n");
+
+	result.add_main_code("\n__ref");
 	result.egalitarian_merge(rhs->generateCode(state));
 	result.add_main_code("\n");
 
-	if (!state->should_declare_local()) result.add_post_code("\nunset __assignment\n");
-
-	result.add_main_code("printf -v \"");
-	result.egalitarian_merge(lhs->generateCode(state));
-	result.add_main_code("\" '%s' \"$__assignment\"\n");
+	if (!state->should_declare_local()) {
+		result.add_post_code("unset -n __ref\n");
+	}
 
 	return result;
 }

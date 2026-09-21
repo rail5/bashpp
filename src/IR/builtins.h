@@ -22,6 +22,10 @@
  *
  * - The '-v' option was added to the printf builtin in Bash 3.1.
  *   printf -v is used in almost everything
+ *
+ * - The '-n' option was added to 'local' and 'declare' in Bash 4.3
+ *   This is used in the (pre-Bash 5.3) supershell initialization function,
+ *   and in *many* other places throughout generated code.
  */
 
 namespace bpp::IR::Builtins {
@@ -32,7 +36,9 @@ namespace bpp::IR::Builtins {
 		bpp____supershellDirectory="${TMPDIR:-/tmp/}"
 	fi
 	local bpp____supershelltempfile="$(mktemp "${bpp____supershellDirectory}/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")"
-	eval "exec {bpp____supershellFD__$BASHPID}<>\"$bpp____supershelltempfile\""
+	declare -g -x bpp____supershellFD__$BASHPID
+	local -n __ref=bpp____supershellFD__$BASHPID
+	exec {__ref}<>"$bpp____supershelltempfile"
 	rm "$bpp____supershelltempfile"
 }
 bpp____supershell() {

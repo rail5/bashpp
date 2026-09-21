@@ -69,8 +69,6 @@ bpp::CodeGen::CodeSegment SystemMethod::generateInlineNewCode(bpp::CodeGen::Code
 
 	bpp::CodeGen::CodeSegment result;
 
-	std::string maybe_local = localize ? "local " : "";
-
 	if (localize) result.add_pre_code("local " + obj_address + "____vPointer\n");
 	result.add_pre_code("printf -v \"" + obj_address + "____vPointer\" '%s' \"bpp__" + cls->getName() + "____vTable\"\n");
 
@@ -85,24 +83,12 @@ bpp::CodeGen::CodeSegment SystemMethod::generateInlineNewCode(bpp::CodeGen::Code
 
 			result.add_main_code(default_value_code.get_pre_code());
 
-			if (dm->isArray()) {
-				if (!dm->getInitialValue().has_value()) default_value_code.add_main_code("()");
-
-				result.add_main_code("eval \"" + maybe_local + obj_address + dm->getAddress());
-				result.add_main_code(default_value_code.get_main_code());
-				result.add_main_code("\n");
-
-				result.add_main_code(default_value_code.get_post_code());
-			} else {
-				result.add_main_code("local __objAssignment");
-				result.add_main_code(default_value_code.get_main_code());
-				result.add_main_code("\n");
-
-				if (localize) result.add_main_code("local " + obj_address + dm->getAddress() + "\n");
-				result.add_main_code("printf -v \"" + obj_address + dm->getAddress() + "\" '%s' \"${__objAssignment}\"\n");
-
-				result.add_main_code(default_value_code.get_post_code());
-			}
+			if (localize) result.add_main_code("local " + obj_address + dm->getAddress());
+			result.add_main_code("local -n __ref=" + obj_address + dm->getAddress());
+			result.add_main_code("\n__ref");
+			result.add_main_code(default_value_code.get_main_code());
+			result.add_main_code("\n");
+			result.add_main_code(default_value_code.get_post_code());
 
 			continue;
 		}
@@ -143,14 +129,25 @@ bpp::CodeGen::CodeSegment SystemMethod::generateCopyCode(bpp::CodeGen::CodeGenSt
 
 	for (const auto& dm : cls->getAllDatamembers()) {
 		if (dm->isPrimitive()) {
-			if (!dm->isArray()) {
-				result.add_main_code("local __objAssignment=${__source}" + dm->getAddress() + "\n");
-				result.add_main_code("__objAssignment=${!__objAssignment}\n");
-				result.add_main_code("printf -v \"${__this}" + dm->getAddress() + "\" '%s' \"${__objAssignment}\"\n");
-			} else {
-				// FIXME(@rail5): Review. Known not to work for associative arrays. Is it robust enough for ordinary arrays?
-				result.add_main_code("eval \"${__this}" + dm->getAddress() + "=(\\${__source}" + dm->getAddress() + "[@])\"\n");
-			}
+			result.add_main_code("local -n __src_ref=${__source}" + dm->getAddress() + "\n");
+			result.add_main_code("local -n __dst_ref=${__this}" + dm->getAddress() + "\n");
+			result.add_main_code("local __attrs=${__src_ref@a}\n"); // At runtime, get the TYPE of variable
+
+			result.add_main_code("case \"$__attrs\" in\n"); // Runtime-determined procedure based on the type
+
+			result.add_main_code("*A*)\n"); // Associative array case
+			result.add_main_code("unset ${!__dst_ref}\ndeclare -g -A ${!__dst_ref}\n"); // Remove the existing variable, declare the new one with the "associative" attribute
+			result.add_main_code("for __k in \"${!__src_ref[@]}\"; do\n");
+			result.add_main_code("__dst_ref[\"$__k\"]=${__src_ref[\"$__k\"]}\n"); // Slow: copy elements one-by-one
+			result.add_main_code("done\n;;\n");
+
+			result.add_main_code("*a*)\n"); // Normal (indexed) array case
+			result.add_main_code("__dst_ref=(${__src_ref[@]})\n;;\n");
+
+			result.add_main_code("*)\n"); // Non-array case
+			result.add_main_code("__dst_ref=${__src_ref}\n;;\n");
+
+			result.add_main_code("esac\n");
 		} else {
 			// Recursively copy non-primitive data members
 			const auto dm_cls = dm->getType().lock();

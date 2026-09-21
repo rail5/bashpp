@@ -1,0 +1,12 @@
+=== STEP ONE ===
+STEP ONE: obj.member value: default value
+STEP ONE: changed obj.member value to: modified value from step one
+STEP ONE: released ownership, exiting
+=== STEP TWO ===
+STEP TWO: obj.member value: modified value from step one
+STEP TWO: changed obj.member value to: modified value from step two
+=== STEP THREE ===
+STEP THREE: obj.member value: modified value from step two
+STEP THREE: exiting, obj will be destroyed when ptr goes out of scope
+Nontrivial destructor called
+=== STEP THREE FINISHED, EXITING ===

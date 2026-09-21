@@ -1,0 +1,42 @@
+@include <ScopedPtr>
+
+@class Object {
+	@public member="default value"
+	@destructor {
+		echo "Nontrivial destructor called"
+	}
+}
+
+@class Controller {
+	@public @method stepOne @ScopedPtr* output {
+		@ScopedPtr ptr
+		@ptr.assign @new Object
+		@Object* obj=@ptr.view
+		echo "STEP ONE: obj.member value: @obj.member"
+		@obj.member="modified value from step one"
+		echo "STEP ONE: changed obj.member value to: @obj.member"
+		@output.assign @ptr.release
+		echo "STEP ONE: released ownership, exiting"
+	}
+
+	@public @method stepThree input {
+		@ScopedPtr ptr
+		@ptr.assign $input
+		@Object* obj=@ptr.view
+		echo "STEP THREE: obj.member value: @obj.member"
+		echo "STEP THREE: exiting, obj will be destroyed when ptr goes out of scope"
+	}
+}
+
+@Controller ct
+echo "=== STEP ONE ==="
+@ScopedPtr global_ptr
+@ct.stepOne &@global_ptr
+echo "=== STEP TWO ==="
+@Object* obj=@global_ptr.view
+echo "STEP TWO: obj.member value: @obj.member"
+@obj.member="modified value from step two"
+echo "STEP TWO: changed obj.member value to: @obj.member"
+echo "=== STEP THREE ==="
+@ct.stepThree @global_ptr.release
+echo "=== STEP THREE FINISHED, EXITING ==="

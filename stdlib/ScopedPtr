@@ -1,0 +1,67 @@
+#!/usr/bin/env bpp
+
+# Copyright (C) 2026 Andrew S. Rightenburg
+# SPDX-License-Identifier: GPL-3.0-or-later
+# This file is part of the Bash++ Standard Library.
+
+## RAII owning pointer
+##
+## ScopedPtr holds a raw pointer and deletes the pointed-to object in its destructor.
+## Ownership can be transferred out via .release and taken in via .assign.
+##
+## This allows us to ensure the contained object's lifetime is automatically managed,
+## while being able to move that object from one scope to another,
+## having it automatically destroyed when its final scope ends.
+##
+## This is in contrast to ordinary "stack-like" objects, which will be destroyed when the scope in which they were created ends.
+## It is also in contrast to manual @new and @delete, which require the programmer to remember to delete the object at the right time.
+##
+## Example usage: @ScopedPtr.assign @new ObjectType
+@class ScopedPtr {
+	## @ignore
+	@private ptr=@nullptr
+
+	## @ignore
+	@private @method _delete_ptr {
+		if [[ @this.ptr != @nullptr ]]; then
+			@ScopedPtr* ptr=@this.ptr
+			@delete @ptr
+			# "Dirty-casting" to @ScopedPtr is a language hack,
+			# but is perfectly in line with the Bash++ spec
+			#
+			# All destructors are virtual: even if the declared type
+			# of the pointer is completely unrelated to the actual
+			# type of the object, the correct destructor will be
+			# deduced at runtime and called.
+		fi
+	}
+
+	## Take ownership of a raw pointer, deleting the previously owned object if any.
+	## @param value The raw pointer to take ownership of.
+	## @outputs nothing
+	@public @method assign value {
+		@this._delete_ptr
+		@this.ptr=$value
+	}
+
+	## Release ownership and echo the raw pointer, without deleting the object.
+	## After this call, the ScopedPtr will no longer manage the lifetime of the object.
+	## @outputs The raw pointer that was released, or @nullptr if empty
+	@public @method release {
+		echo @this.ptr
+		@this.ptr=@nullptr
+	}
+
+	## Echo the raw pointer without releasing ownership.
+	## The returned pointer is non-owning.
+	## DO NOT pass it to another ScopedPtr.
+	## If you want to transfer ownership, use .release instead.
+	## @outputs The raw pointer, or @nullptr if empty
+	@public @method view {
+		echo @this.ptr
+	}
+
+	@destructor {
+		@this._delete_ptr
+	}
+}

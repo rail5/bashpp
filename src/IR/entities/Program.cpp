@@ -84,6 +84,12 @@ std::vector<std::shared_ptr<Class>> IncludedProgram::getAllKnownClasses() const 
 	return owned_classes;
 }
 
+std::size_t IncludedProgram::getNumberOfKnownClasses() const {
+	bpp_assert(!getParentProgram().expired(), "IncludedProgram does not have a containing program");
+	std::size_t owned_count = Program::getNumberOfKnownClasses();
+	return owned_count + getParentProgram().lock()->getNumberOfKnownClasses();
+}
+
 bpp::CodeGen::CodeSegment IncludedProgram::generateCode(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "State pointer is null");
 	bpp::CodeGen::CodeSegment code;

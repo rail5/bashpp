@@ -104,6 +104,7 @@ class IncludedProgram : public Program {
 		// IncludedProgram override checks both its *own* classes and those of its containing program
 		std::shared_ptr<Class> getClass(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const override;
 		std::vector<std::shared_ptr<Class>> getAllKnownClasses() const override;
+		std::size_t getNumberOfKnownClasses() const override;
 
 		/// Get all classes *owned* by this IncludedProgram (i.e., not including those of its containing program)
 		std::vector<std::shared_ptr<Class>> getOwnedClasses() const { return Program::getAllKnownClasses(); }

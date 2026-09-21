@@ -108,7 +108,11 @@ class IncludedProgram : public Program {
 		/// Get all classes *owned* by this IncludedProgram (i.e., not including those of its containing program)
 		std::vector<std::shared_ptr<Class>> getOwnedClasses() const { return Program::getAllKnownClasses(); }
 
-		std::weak_ptr<const Program> getContainingProgram() const override { return Entity::getContainingProgram(); }
+		/// As with IR::Program, calling IncludedProgram::getContainingProgram() will return itself
+		using Program::getContainingProgram;
+
+		/// Explicitly request a pointer to the IncludedProgram's parent program (which may be either the root program, or an earlier IncludedProgram)
+		std::weak_ptr<const Program> getParentProgram() const { return Entity::getContainingProgram(); }
 
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 };

@@ -66,8 +66,8 @@ std::shared_ptr<Class> IncludedProgram::getClass(const std::string& name, std::s
 	if (owned_class) return owned_class;
 
 	// If not, check the containing program (the program that included this one)
-	bpp_assert(!getContainingProgram().expired(), "IncludedProgram does not have a containing program");
-	return getContainingProgram().lock()->getClass(name, max_visible_index);
+	bpp_assert(!getParentProgram().expired(), "IncludedProgram does not have a containing program");
+	return getParentProgram().lock()->getClass(name, max_visible_index);
 }
 
 std::vector<std::shared_ptr<Class>> IncludedProgram::getAllKnownClasses() const {
@@ -75,8 +75,8 @@ std::vector<std::shared_ptr<Class>> IncludedProgram::getAllKnownClasses() const 
 	auto owned_classes = Program::getAllKnownClasses();
 
 	// Get all classes from the containing program (the program that included this one)
-	bpp_assert(!getContainingProgram().expired(), "IncludedProgram does not have a containing program");
-	const auto& containing_program_classes = getContainingProgram().lock()->getAllKnownClasses();
+	bpp_assert(!getParentProgram().expired(), "IncludedProgram does not have a containing program");
+	const auto& containing_program_classes = getParentProgram().lock()->getAllKnownClasses();
 
 	// Combine the two lists of classes
 	owned_classes.insert(owned_classes.end(), containing_program_classes.begin(), containing_program_classes.end());

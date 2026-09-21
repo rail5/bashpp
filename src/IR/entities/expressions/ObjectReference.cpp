@@ -116,7 +116,17 @@ bpp::CodeGen::CodeSegment ObjectReference::generateCode(bpp::CodeGen::CodeGenSta
 		indirection_level = std::min(indirection_level + 1, 2);
 	}
 
-	auto refString = get_encased_reference(current_address, indirection_level);
+	auto possible_parameter_expansion = StringType::generateCode(state);
+
+	result.add_pre_code(possible_parameter_expansion.get_pre_code());
+	result.add_post_code(possible_parameter_expansion.get_post_code());
+
+	std::string address_plus_parameter_expansion = current_address;
+	for (auto& str : possible_parameter_expansion.get_main_code()) {
+		address_plus_parameter_expansion += str;
+	}
+
+	auto refString = get_encased_reference(address_plus_parameter_expansion, indirection_level);
 
 	// FIXME(@rail5): HACK. Unify procedure
 	if (ref.hasMethod()) {
@@ -154,7 +164,7 @@ bpp::CodeGen::CodeSegment ObjectReference::generateCode(bpp::CodeGen::CodeGenSta
 		// rather than an implicit method call to toPrimitive
 		// which means that, naturally, @obj's address will be written here without removing any indirection,
 		// the same as it would've been written after the method's address had it been a method call
-		refString = get_encased_reference(current_address, indirection_level);
+		refString = get_encased_reference(address_plus_parameter_expansion, indirection_level);
 	}
 
 	// Add the final address of the object, with appropriate encasement for any indirection

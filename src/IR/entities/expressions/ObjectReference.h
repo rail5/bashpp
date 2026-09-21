@@ -7,7 +7,7 @@
 #pragma once
 
 #include <IR/bpp.h>
-#include <IR/entities/CodeEntity.h>
+#include <IR/entities/expressions/String.h>
 #include <IR/entities/Program.h>
 #include <IR/entities/Object.h>
 #include <IR/entities/DataMember.h>
@@ -29,7 +29,7 @@ namespace bpp::IR {
  *
  * E.g., @object.member
  */
-class ObjectReference : public CodeEntity, public std::enable_shared_from_this<ObjectReference> {
+class ObjectReference : public StringType, public std::enable_shared_from_this<ObjectReference> {
 	public:
 		/**
 		 * @brief A chain starting from a root object and following a series of data member accesses to reach a final object.
@@ -151,6 +151,8 @@ class ObjectReference : public CodeEntity, public std::enable_shared_from_this<O
 		bool isAddressOf() const { return address_of; }
 		void setPointerDereference(bool pointer_dereference) { this->pointer_dereference = pointer_dereference; }
 		bool isPointerDereference() const { return pointer_dereference; }
+		void setHasHashkey(bool has_hashkey) { this->has_hashkey = has_hashkey; }
+		bool hasHashkey() const { return has_hashkey; }
 
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 		PRETTYPRINT_OVERRIDE();
@@ -166,6 +168,8 @@ class ObjectReference : public CodeEntity, public std::enable_shared_from_this<O
 		bool lvalue = false;
 		bool address_of = false;
 		bool pointer_dereference = false;
+		bool has_hashkey = false; // FIXME(@rail5): Find a better way to represent this
+		// What's being represented is @{#object.reference[@]} vs @{object.reference[@]}
 };
 
 

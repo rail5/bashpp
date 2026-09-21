@@ -69,6 +69,7 @@ void Listener::enter(ObjectReference* node) {
 	reference_entity->setLvalue(node->isLvalue());
 	reference_entity->setAddressOf(node->isAddressOf());
 	reference_entity->setPointerDereference(node->isPointerDereference());
+	reference_entity->setHasHashkey(node->hasHashkey());
 
 	if (reference_entity->isNonprimitive() && !context_expectations_stack.canTakeObject()) {
 		// Non-primitive referenced where a primitive is expected: implicit call to .toPrimitive

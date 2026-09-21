@@ -19,9 +19,9 @@ void Listener::enter(ConstructorDefinition* node) {
 	if (!current_class) throw bpp::ErrorHandling::SyntaxError(this, node, "Constructor definition outside of class body");
 
 	auto new_constructor = std::make_shared<bpp::IR::Method>();
-	new_constructor->inherit(current_class);
 	new_constructor->setName("__constructor");
 	new_constructor->setScope(bpp::IR::VisibilityScope::PUBLIC);
+	new_constructor->inherit(current_class);
 
 	auto res = current_class->addMethod(std::move(new_constructor));
 	if (!res) {

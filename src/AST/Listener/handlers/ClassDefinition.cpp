@@ -42,6 +42,7 @@ void Listener::enter(ClassDefinition* node) {
 	}
 
 	auto class_entity = std::make_shared<bpp::IR::Class>(class_name);
+	current_program->addClass(class_entity); // Add the class to the program's list of known classes, so that it can be found by name later
 	class_entity->inherit(current_program);
 
 	// Inherit from a parent class if specified
@@ -135,7 +136,6 @@ void Listener::enter(ClassDefinition* node) {
 	add_system_method(std::move(toPrimitive_method));
 
 	entity_stack.push(class_entity);
-	current_program->addClass(class_entity); // Add the class to the program's list of known classes, so that it can be found by name later
 	current_program->add(class_entity); // Add the class to the entity tree, so that it can be traversed later (e.g. for codegen)
 }
 

@@ -115,10 +115,10 @@ void Listener::enter(MethodDefinition* node) {
 		}
 
 		auto parameter_entity = std::make_shared<bpp::IR::MethodParameter>();
-		parameter_entity->inherit(stored_method);
 		parameter_entity->setType(param_type);
 		parameter_entity->setIsPointer(param_type != nullptr);
 		parameter_entity->setName(param_name);
+		parameter_entity->inherit(stored_method);
 
 		parameter_entity->setDefinitionPosition({
 			get_current_source_file(),

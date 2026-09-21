@@ -19,10 +19,10 @@ void Listener::enter(DestructorDefinition* node) {
 	if (!current_class) throw bpp::ErrorHandling::SyntaxError(this, node, "Destructor definition outside of class body");
 
 	auto new_destructor = std::make_shared<bpp::IR::Method>();
-	new_destructor->inherit(current_class);
 	new_destructor->setName("__destructor");
 	new_destructor->setScope(bpp::IR::VisibilityScope::PUBLIC);
 	new_destructor->setIsVirtual(true);
+	new_destructor->inherit(current_class);
 
 	auto res = current_class->addMethod(std::move(new_destructor));
 	if (!res) {

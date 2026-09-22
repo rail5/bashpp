@@ -75,7 +75,7 @@ class Program : public CodeEntity, public std::enable_shared_from_this<Program> 
 };
 
 /**
- * @brief A Program node that is reached via an `@include` or `@include_once` directive, representing an included Bash++ program
+ * @brief A Program node that is reached via an `@include` or `@include_always` directive, representing an included Bash++ program
  * Once that `@include` directive is reached in AST traversal, the linked file is lexed, parsed, and traversed to generate an entity tree of its own.
  * The `IncludedProgram` node is the root of *that* entity tree, which becomes a subtree of the main entity tree.
  *

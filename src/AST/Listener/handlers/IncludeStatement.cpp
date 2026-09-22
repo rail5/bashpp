@@ -24,7 +24,7 @@ void Listener::enter(IncludeStatement* node) {
 
 	const bool is_quoted_include = node->PATHTYPE() == AST::IncludeStatement::PathType::QUOTED;
 	const bool is_dynamic_include = node->TYPE() == AST::IncludeStatement::IncludeType::DYNAMIC;
-	const bool include_once = node->KEYWORD() == AST::IncludeStatement::IncludeKeyword::INCLUDE_ONCE;
+	const bool include_always = node->KEYWORD() == AST::IncludeStatement::IncludeKeyword::INCLUDE_ALWAYS;
 	const auto& source_path_node = node->PATH();
 	const auto& as_path_node = node->ASPATH();
 	const std::string source_path = source_path_node.getValue().substr(1, source_path_node.getValue().length() - 2); // Remove surrounding quotes or angle brackets
@@ -60,7 +60,7 @@ void Listener::enter(IncludeStatement* node) {
 	include_path = std::filesystem::canonical(include_path);
 
 	auto res = included_files.insert(include_path);
-	if (!res.second && include_once) return; // File has already been included and include_once is specified, so skip it
+	if (!res.second && !include_always) return; // File has already been included and include_always is not specified
 
 	if (include_chain.size() >= 200) { // TODO(@rail5): Can this limit be made configurable?
 		throw bpp::ErrorHandling::SyntaxError(this, source_path_node, "Nested include depth exceeds maximum of 200");

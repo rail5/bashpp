@@ -106,7 +106,7 @@ class Listener final {
 
 		std::stack<IncludedType> included_type_stack = std::stack<IncludedType>({IncludedType::NOT_INCLUDED});
 
-		/// A set of (unique) included files (used for `@include_once` to avoid including the same file multiple times)
+		/// A set of (unique) included files (used to avoid including the same file multiple times, unless `@include_always` is given)
 		std::set<std::filesystem::path> included_files;
 
 		/// A list of paths to search for angle-bracket included files (e.g., `@include <file>`). The last path is always the standard library path.

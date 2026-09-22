@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.9.0]
+- Updated syntax rules to reflect the removal of the `@include_once` directive from Bash++ in favor of the new `@include_always` directive
+  - The `@include_once` directive has been removed from Bash++ as of v0.9.0, and `@include` directives now default to including files only once. If you want to include a file every time the directive is reached, you can use the new `@include_always` directive instead.
+
 ## [0.8.1]
 - Added support for bpp-lsp's `-j`/`--threads` option to specify the number of worker threads in the language server
   - This option allows users to configure the performance of the language server by specifying how many worker threads it should use for processing requests.

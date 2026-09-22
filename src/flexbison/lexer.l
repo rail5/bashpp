@@ -317,8 +317,8 @@ INTEGER                 [0-9]+
 KEYWORD_NEW             @new
 KEYWORD_DELETE          @delete
 KEYWORD_DYNAMIC_CAST    @dynamic_cast
-KEYWORD_INCLUDE_ONCE    @include_once
 KEYWORD_INCLUDE         @include
+KEYWORD_INCLUDE_ALWAYS  @include_always
 KEYWORD_NULLPTR	        @nullptr
 KEYWORD_CLASS           @class
 KEYWORD_METHOD          @method
@@ -514,8 +514,8 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 {AT}                                 { thisModeStack.push(BPP_MODE); reconsume_token(); }
 
 <BPP_MODE>{
-	{KEYWORD_INCLUDE}/[^a-zA-Z0-9_]      { thisModeStack.pop(); thisModeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE); }
-	{KEYWORD_INCLUDE_ONCE}/[^a-zA-Z0-9_] { thisModeStack.pop(); thisModeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE_ONCE); }
+	{KEYWORD_INCLUDE}/[^a-zA-Z0-9_]        { thisModeStack.pop(); thisModeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE); }
+	{KEYWORD_INCLUDE_ALWAYS}/[^a-zA-Z0-9_] { thisModeStack.pop(); thisModeStack.push(BPP_INCLUDE_MODE); emit(KEYWORD_INCLUDE_ALWAYS); }
 
 	{KEYWORD_CLASS}/[^a-zA-Z0-9_]        { thisModeStack.pop(); thisModeStack.push(BPP_CLASS_HEADER_MODE); emit(KEYWORD_CLASS); }
 	{KEYWORD_PUBLIC}/[^a-zA-Z0-9_]       { thisModeStack.pop(); emit(KEYWORD_PUBLIC); }

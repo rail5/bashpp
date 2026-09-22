@@ -30,7 +30,7 @@ namespace bpp::IR {
  */
 inline constexpr std::array<std::string_view, 18> protected_keywords = {
 	"class", "constructor", "delete", "destructor",
-	"dynamic_cast", "include", "include_once", "local",
+	"dynamic_cast", "include", "include_always", "local",
 	"method", "new", "nullptr","private",
 	"protected", "public", "super", "this",
 	"typeof", "virtual",

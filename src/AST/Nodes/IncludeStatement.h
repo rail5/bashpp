@@ -15,7 +15,7 @@ class IncludeStatement : public ASTNode {
 	public:
 		enum class IncludeKeyword : std::uint8_t {
 			INCLUDE,
-			INCLUDE_ONCE,
+			INCLUDE_ALWAYS,
 		};
 
 		enum class IncludeType : std::uint8_t {
@@ -83,7 +83,7 @@ class IncludeStatement : public ASTNode {
 		PRETTYPRINT_OVERRIDE({
 			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 			os << indent << "(IncludeStatement\n"
-				<< indent << "  @" << ((m_KEYWORD.getValue() == IncludeKeyword::INCLUDE) ? "include" : "include_once") << " "
+				<< indent << "  @" << ((m_KEYWORD.getValue() == IncludeKeyword::INCLUDE) ? "include" : "include_always") << " "
 				<< ((m_TYPE.getValue() == IncludeType::STATIC) ? "static" : "dynamic") << " "
 				<< m_PATH;
 			if (m_ASPATH.has_value()) {

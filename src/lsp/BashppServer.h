@@ -238,9 +238,9 @@ class BashppServer {
 					.detail = "Include a file"
 				},
 				CompletionItem{
-					.label = "include_once",
+					.label = "include_always",
 					.kind = CompletionItemKind::Keyword,
-					.detail = "Include a file only once"
+					.detail = "Include a file even if it has been included before"
 				},
 				CompletionItem{
 					.label = "dynamic_cast",

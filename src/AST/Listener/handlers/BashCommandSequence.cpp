@@ -15,6 +15,16 @@
 namespace bpp::AST {
 
 template <>
+void Listener::enter(BashCommand* node) {
+	bpp_assert(topmost_entity_is<bpp::IR::BashPipeline>(), "Topost entity is not a BashPipeline");
+	auto pipeline_entity = std::static_pointer_cast<bpp::IR::BashPipeline>(entity_stack.top());
+	pipeline_entity->setExitPointType(node->getExitPointType());
+}
+
+template <>
+void Listener::exit(BashCommand* /*node*/) {}
+
+template <>
 void Listener::enter(BashPipeline* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity when entering BashPipeline node");
 	auto current_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());

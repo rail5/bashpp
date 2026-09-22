@@ -25,6 +25,7 @@ class Program : public CodeEntity, public std::enable_shared_from_this<Program> 
 		OwnedEntityList<Class> classes;
 
 		// System functions:
+		std::shared_ptr<Builtins::SystemFunction> global_object_stack_function = nullptr;
 		std::shared_ptr<Builtins::SystemFunction> supershell_function = nullptr;
 		std::shared_ptr<Builtins::SystemFunction> repeat_function = nullptr;
 		std::shared_ptr<Builtins::SystemFunction> vtable_lookup_function = nullptr;
@@ -61,12 +62,14 @@ class Program : public CodeEntity, public std::enable_shared_from_this<Program> 
 
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 
+		std::shared_ptr<Builtins::SystemFunction> getGlobalObjectStackFunction() const { return global_object_stack_function; }
 		std::shared_ptr<Builtins::SystemFunction> getSupershellFunction() const { return supershell_function; }
 		std::shared_ptr<Builtins::SystemFunction> getRepeatFunction() const { return repeat_function; }
 		std::shared_ptr<Builtins::SystemFunction> getVtableLookupFunction() const { return vtable_lookup_function; }
 		std::shared_ptr<Builtins::SystemFunction> getDynamicCastFunction() const { return dynamic_cast_function; }
 		std::shared_ptr<Builtins::SystemFunction> getTypeofFunction() const { return typeof_function; }
 
+		void setGlobalObjectStackFunction(std::shared_ptr<Builtins::SystemFunction> func) { global_object_stack_function = std::move(func); }
 		void setSupershellFunction(std::shared_ptr<Builtins::SystemFunction> func) { supershell_function = std::move(func); }
 		void setRepeatFunction(std::shared_ptr<Builtins::SystemFunction> func) { repeat_function = std::move(func); }
 		void setVtableLookupFunction(std::shared_ptr<Builtins::SystemFunction> func) { vtable_lookup_function = std::move(func); }

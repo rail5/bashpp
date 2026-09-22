@@ -17,7 +17,9 @@ bpp::CodeGen::CodeSegment BashFunction::generateCode(bpp::CodeGen::CodeGenState*
 	state->nested_bash_function_depth++;
 
 	code.add_pre_code(name + "() {\n");
+	code.add_pre_code("local __scopeFrames=(0)\n");
 	code.egalitarian_merge(CodeEntity::generateCode(state));
+	code.absorb_all_to_main(destroyLocalObjects(state));
 	code.add_post_code("}\n");
 
 	state->nested_bash_function_depth--;

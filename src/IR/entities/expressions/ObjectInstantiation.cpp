@@ -77,7 +77,14 @@ bpp::CodeGen::CodeSegment ObjectInstantiation::stackLikeInstantiation(bpp::CodeG
 	if (constructor) {
 		result.add_main_code(constructor->getAddress() + " " + requested_address + "\n");
 	}
+	// If the object has a destructor, register it with the global object stack, so that it will be called at the end of the program
+	auto destructor = cls->getMethod_UNSAFE("__destructor");
+	if (destructor) {
+		result.add_main_code("bpp____push_objectStack \"" + requested_address + "\"\n");
+		state->requires_global_object_stack = true;
 
+		result.add_main_code("__scopeFrames[-1]=$((${__scopeFrames[-1]} + 1))\n");
+	}
 	return result;
 }
 

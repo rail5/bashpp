@@ -22,7 +22,7 @@ void Listener::enter(DeleteStatement* /*node*/) {
 	delete_entity->inherit(current_code_entity);
 	entity_stack.push(delete_entity);
 
-	context_expectations_stack.push({true, true}); // @delete accepts both pointers and nonprimitives directly
+	context_expectations_stack.push({true, false}); // @delete *only* accepts pointers
 	// Pointers are primitives, although @delete won't accept "just any" primitive
 }
 

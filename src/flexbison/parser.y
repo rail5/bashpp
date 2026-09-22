@@ -74,6 +74,8 @@ void yyerror(const char *s);
 
 		return true;
 	}
+
+	bool exec_received_A_option = false;
 }
 
 %token <bpp::AST::Token<std::string>> ESCAPED_CHAR WS DELIM
@@ -133,6 +135,12 @@ void yyerror(const char *s);
 %token BASH_ARITHMETIC_START BASH_ARITHMETIC_END
 %token <bpp::AST::Token<std::string>> BASH_53_NATIVE_SUPERSHELL_START
 %token BASH_53_NATIVE_SUPERSHELL_END
+
+/* For detecting possible early-exit paths */
+%token <bpp::AST::Token<std::string>> BASH_KEYWORD_RETURN BASH_KEYWORD_EXIT BASH_KEYWORD_EXEC BASH_KEYWORD_BREAK BASH_KEYWORD_CONTINUE
+
+/* For named file descriptors as in {var}<>file */
+%token <bpp::AST::Token<std::string>> BASH_NAMED_FD
 
 /* Handling unrecognized tokens */
 %token <bpp::AST::Token<std::string>> CATCHALL
@@ -216,6 +224,8 @@ void yyerror(const char *s);
 %type <ASTNodePtr> bash_function bash_arithmetic_substitution
 %type <ASTNodePtr> bash_53_native_supershell
 %type <ASTNodePtr> array_assignment
+
+%type <ASTNodePtr> bash_break_or_continue_command maybe_break_or_continue_argument
 
 %type <bpp::AST::Token<std::string>> maybe_include_type maybe_as_clause maybe_parent_class
 %type <bpp::AST::Token<std::string>> assignment_operator
@@ -325,6 +335,8 @@ pipeline:
 		pipeline->addText(" | "); // Preserve pipe symbol
 		pipeline->addChild($4);
 		pipeline->setEndPosition(@4.end.line, @4.end.column);
+		pipeline->unmarkAllExitPaths(); //'return', 'exit', and 'exec' can't exit the program here, since they are part of longer pipelines
+
 		$$ = pipeline;
 	}
 	;
@@ -458,6 +470,8 @@ simple_pipeline:
 		pipeline->addText(" | "); // Preserve pipe symbol
 		pipeline->addChild($4);
 		pipeline->setEndPosition(@4.end.line, @4.end.column);
+		pipeline->unmarkAllExitPaths(); //'return', 'exit', and 'exec' can't exit program/function here, since they are part of longer pipelines
+		// Likewise, 'break' and 'continue' can't exit any loops here, for the same reason
 		$$ = pipeline;
 	}
 	;
@@ -472,11 +486,88 @@ simple_command:
 		node->addChild($1);
 		$$ = node;
 	}
+	| BASH_KEYWORD_RETURN {
+		auto node = std::make_shared<bpp::AST::BashCommand>();
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
+		auto rawTextNode = std::make_shared<bpp::AST::RawText>();
+		rawTextNode->setPosition(line_number, column_number);
+		rawTextNode->setEndPosition(@1.end.line, @1.end.column);
+		rawTextNode->setText($1);
+		node->addChild(rawTextNode);
+		node->setExitPointType(bpp::ExitPointType::FUNCTION_EXIT);
+		$$ = node;
+	}
+	| BASH_KEYWORD_EXIT {
+		auto node = std::make_shared<bpp::AST::BashCommand>();
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
+		auto rawTextNode = std::make_shared<bpp::AST::RawText>();
+		rawTextNode->setPosition(line_number, column_number);
+		rawTextNode->setEndPosition(@1.end.line, @1.end.column);
+		rawTextNode->setText($1);
+		node->addChild(rawTextNode);
+		node->setExitPointType(bpp::ExitPointType::PROGRAM_EXIT);
+		$$ = node;
+	}
+	| BASH_KEYWORD_EXEC {
+		auto node = std::make_shared<bpp::AST::BashCommand>();
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
+		auto rawTextNode = std::make_shared<bpp::AST::RawText>();
+		rawTextNode->setPosition(line_number, column_number);
+		rawTextNode->setEndPosition(@1.end.line, @1.end.column);
+		rawTextNode->setText($1);
+		node->addChild(rawTextNode);
+		node->setIsExec(true); // exec *might* exit early, depends on later parsing
+		// Exec only exits early if a non-option argument that is not encased in curly-braces is provided.
+		// E.g., exec program-name, or exec -l program-name
+		// exec {var}<>file will not exit. 'exec' on its own will not exit. 'exec -l' (no program given) will not exit.
+		// Likewise, exec -a ID will not exit. '-a' is the only option to exec that takes an argument.
+		// The argument also needs to not be an argument to -a.
+		exec_received_A_option = false;
+		$$ = node;
+	}
+	| bash_break_or_continue_command { $$ = $1; }
 	| simple_command WS simple_command_element {
 		auto command = std::static_pointer_cast<bpp::AST::BashCommand>($1);
 		command->addText(" "); // Preserve whitespace
 		command->addChild($3);
 		command->setEndPosition(@3.end.line, @3.end.column);
+
+		// Below is a massive HACK to deal with the fact that 'exec' only exits early under certain conditions
+		// TODO(@rail5): Brittle, dependent on specific AST structure
+		// If:
+		// 1. The command is 'exec'
+		// 2. The next element is an rvalue (not a redirection, etc)
+		if (command->isExec() && $3->getType() == bpp::AST::NodeType::Rvalue) {
+			// 3. The rvalue actually has a child node
+			if (auto r_child = $3->getFirstChild()) {
+				// 4. The rvalue child is a RawText node
+				// 5. The option is not the argument to '-a'
+				// 6. The RawText node's text does not start with a hyphen
+				if (r_child->getType() == bpp::AST::NodeType::RawText) {
+					auto rawTextNode = std::static_pointer_cast<bpp::AST::RawText>(r_child);
+					if (exec_received_A_option) {
+						// If the -a option was received, then the next argument is the ID to use for the exec'd program.
+						// This is not an early exit point, so we don't setIsEarlyExitPoint(true)
+						exec_received_A_option = false; // Reset for next command
+					} else if (rawTextNode->TEXT().getValue() == "-a") {
+						// If the -a option is received, then the next argument is the ID to use for the exec'd program.
+						// This is not an early exit point, so we don't setIsEarlyExitPoint(true)
+						exec_received_A_option = true; // Set for next command
+					} else if (!rawTextNode->TEXT().getValue().starts_with('-')) {
+						command->setExitPointType(bpp::ExitPointType::PROGRAM_EXIT);
+					}
+				}
+			}
+		}
 		$$ = command;
 	}
 	| simple_command redirection {
@@ -486,11 +577,46 @@ simple_command:
 	}
 	;
 
+maybe_break_or_continue_argument:
+	/* empty */ { $$ = nullptr; }
+	| WS valid_rvalue { $$ = $2; }
+	;
+
+bash_break_or_continue_command:
+	BASH_KEYWORD_BREAK maybe_break_or_continue_argument {
+		// This business with 'maybe_argument' introduces a shift/reduce conflict,
+		// but the default action of shifting is exactly what we want.
+		auto node = std::make_shared<bpp::AST::BashBreakOrContinueCommand>();
+		node->setPosition(@1.begin.line, @1.begin.column);
+		node->setEndPosition(@2.end.line, @2.end.column);
+		node->setIsBreak(true);
+		node->addChild($2);
+		$$ = node;
+	}
+	| BASH_KEYWORD_CONTINUE maybe_break_or_continue_argument {
+		auto node = std::make_shared<bpp::AST::BashBreakOrContinueCommand>();
+		node->setPosition(@1.begin.line, @1.begin.column);
+		node->setEndPosition(@2.end.line, @2.end.column);
+		node->setIsBreak(false);
+		node->addChild($2);
+		$$ = node;
+	}
+	;
+
 simple_command_element:
 	shell_variable_assignment { $$ = $1; }
 	| object_assignment { $$ = $1; }
 	| pointer_declaration { $$ = $1; }
 	| redirection { $$ = $1; }
+	| BASH_NAMED_FD {
+		auto node = std::make_shared<bpp::AST::RawText>();
+		std::uint32_t line_number = @1.begin.line;
+		std::uint32_t column_number = @1.begin.column;
+		node->setPosition(line_number, column_number);
+		node->setEndPosition(@1.end.line, @1.end.column);
+		node->setText($1);
+		$$ = node;
+	}
 	| operative_command_element { current_command_can_receive_lvalues = false; $$ = $1; }
 	| valid_rvalue %prec CONCAT_STOP { current_command_can_receive_lvalues = false; $$ = $1; }
 	| block { current_command_can_receive_lvalues = false; $$ = $1; }

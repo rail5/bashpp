@@ -53,7 +53,10 @@ bpp::CodeGen::CodeSegment BashIfBranch::generateCode(bpp::CodeGen::CodeGenState*
 
 	result.add_main_code("\n");
 
+	result.add_main_code("__scopeFrames+=(0)\n");
+
 	result.absorb_all_to_main(CodeEntity::generateCode(state));
+	result.absorb_all_to_main(destroyLocalObjects(state));
 	return result;
 }
 

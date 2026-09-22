@@ -50,6 +50,7 @@ namespace bpp::AST {
 	X(BashVariable) \
 	X(BashWhileOrUntilCondition) \
 	X(BashWhileStatement) \
+	X(BashBreakOrContinueCommand) \
 	X(Block) \
 	X(ClassDefinition) \
 	X(ConstructorDefinition) \
@@ -220,10 +221,14 @@ template<> void Listener::enter  (DynamicCast*                node);
 template<> void Listener::exit   (DynamicCast*                node);
 template<> void Listener::enter  (DynamicCastTarget*          node);
 template<> void Listener::exit   (DynamicCastTarget*          node);
+template<> void Listener::enter  (BashCommand*                node);
+template<> void Listener::exit   (BashCommand*                node);
 template<> void Listener::enter  (BashPipeline*               node);
 template<> void Listener::exit   (BashPipeline*               node);
 template<> void Listener::enter  (BashCommandSequence*        node);
 template<> void Listener::exit   (BashCommandSequence*        node);
+template<> void Listener::enter  (BashBreakOrContinueCommand* node);
+template<> void Listener::exit   (BashBreakOrContinueCommand* node);
 template<> void Listener::enter  (BashIfStatement*            node);
 template<> void Listener::exit   (BashIfStatement*            node);
 template<> void Listener::enter  (BashIfCondition*            node);

@@ -22,6 +22,7 @@ void Listener::enter(Program* /*node*/) {
 		entity_stack.push(program);
 		this->program = program;
 
+		program->setGlobalObjectStackFunction(std::make_shared<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_object_stack_function));
 		program->setSupershellFunction(std::make_shared<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_supershell_function));
 		program->setRepeatFunction(std::make_shared<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_repeat_function));
 		program->setVtableLookupFunction(std::make_shared<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_vtable_lookup_function));

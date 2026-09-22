@@ -77,6 +77,7 @@ bpp::CodeGen::CodeSegment Method::generateCode(bpp::CodeGen::CodeGenState* state
 	bpp::CodeGen::CodeSegment code;
 
 	code.add_pre_code(getAddress() + "() {\n");
+	code.add_pre_code("local __scopeFrames=(0)\n");
 
 	for (const auto& param : parameters) {
 		code.absorb_all_to_main(param->generateCode(state));
@@ -86,6 +87,9 @@ bpp::CodeGen::CodeSegment Method::generateCode(bpp::CodeGen::CodeGenState* state
 	// because BashFunction::generate_code() would add a function header and footer (and that without its proper mangled name from get_address())
 	// NOLINTNEXTLINE(bugprone-parent-virtual-call)
 	code.absorb_all_to_main(CodeEntity::generateCode(state));
+
+	// Destroy all local stack-like objects that were created in this method, in reverse order of creation
+	code.absorb_all_to_main(destroyLocalObjects(state));
 
 	code.add_post_code("}\n");
 

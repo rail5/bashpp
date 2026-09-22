@@ -31,6 +31,7 @@
 #include <AST/Nodes/BashVariable.h>
 #include <AST/Nodes/BashWhileOrUntilCondition.h>
 #include <AST/Nodes/BashWhileStatement.h>
+#include <AST/Nodes/BashBreakOrContinueCommand.h>
 #include <AST/Nodes/BashFunction.h>
 #include <AST/Nodes/Block.h>
 #include <AST/Nodes/ClassDefinition.h>

@@ -78,6 +78,15 @@ void CodeEntity::adoptObjectsOf(std::shared_ptr<CodeEntity> other) {
 	}
 }
 
+bpp::CodeGen::CodeSegment CodeEntity::destroyLocalObjects(bpp::CodeGen::CodeGenState* state) {
+	bpp_assert(state != nullptr, "State pointer is null");
+	bpp::CodeGen::CodeSegment result;
+
+	// Destroy objects in reverse order of creation
+	result.add_main_code("\nbpp____destroy_objectStack ${__scopeFrames[-1]}\nunset __scopeFrames[-1]\n");
+	return result;
+}
+
 bpp::CodeGen::CodeSegment CodeEntity::generateCode(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "State pointer is null");
 	bpp::CodeGen::CodeSegment code_segment;

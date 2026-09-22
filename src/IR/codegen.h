@@ -178,10 +178,14 @@ struct CodeGenState {
 	std::shared_ptr<const bpp::IR::Class> current_class = nullptr;
 	std::uint64_t nested_bash_function_depth = 0;
 	std::uint64_t nested_supershell_depth = 0;
+	std::uint64_t nested_subshell_depth = 0;
+	std::uint64_t nested_loop_depth = 0;
 	std::uint64_t dynamic_cast_counter = 0;
 	std::uint64_t supershell_counter = 0;
 	bool requires_repeat_function = false;
 	bool requires_supershell_function = false;
+	bool requires_global_object_stack = false;
+	bool requires_vtable_lookup_function = false;
 
 	bool in_class() const { return current_class != nullptr; }
 	bool in_method() const { return current_method != nullptr; }

@@ -128,4 +128,66 @@ bpp____supershell() {
 }
 )EOF";
 
+/**
+ * @brief Functions for managing a global stack of objects, so that destructors can be called when the program exits.
+ *
+ * __push_objectStack registers an object to be destroyed when the program exits.
+ *
+ * __destroy_objectStack destroys all registered objects in reverse order of registration, by calling their destructors.
+ * If argument 'n' is given, only the 'n' topmost objects are destroyed, and the rest remain on the stack.
+ * If no argument is given, all objects are destroyed.
+ * Small optimization:
+ *  - If any object has a virtual method, the vTable lookup function has been defined in the generated code
+ *  - All destructors are virtual
+ *  - Therefore, if any object has a destructor defined, the vTable lookup function will be defined
+ *  - Therefore, if the vTable is NOT defined, then NO objects have destructors.
+ * So, in __destroy_objectStack, we bail out early if the vTable lookup function is not defined, since that means there are no destructors to call.
+ *
+ *
+ * A note on the data structures involved:
+ *
+ *  - __objectStack is a global stack of object addresses, in order of registration.
+ *    We add to the end of the array when registering an object, and remove from the end of the array when destroying objects.
+ *
+ *  - __scopeFrames is a stack showing *how many* objects were registered in each scope.
+ *    When a new scope is entered, we push a 0 onto this stack.
+ *    When an object is registered, we increment the top of this stack.
+ *    When a scope is exited, we pop the top of this stack, and destroy that many objects from the object stack.
+ *    This ensures that objects are destroyed in reverse order of registration,
+ *    and that objects registered in a scope are destroyed when that scope is exited.
+ *
+ * - __loopFrames is a stack showing which scopeFrames belong to loops, in order.
+ *   After entering a loop, we store an index into 'scopeFrames' at the top of the 'loopFrames' stack.
+ *     a. When we exit the loop via its "natural" exit (i.e., not via break or continue):
+ *        The top of the 'loopFrames' stack tells us which scopeFrame to unwind to, and we destroy local objects only up until that point,
+ *        so that we don't destroy local objects from outer loop(s) when exiting a nested loop.
+ *     b. When we exit the loop via break or continue:
+ *        The argument to break or continue tells us how many loops to exit, (call it 'N')
+ *        and checking N entries down the 'loopFrames' stack is equivalent to breaking out of N nested loops.
+ *        We then unwind the 'scopeFrames' stack to that index, and destroy local objects up until that point.
+ */
+[[maybe_unused]] constexpr static std::string_view bpp_object_stack_function = R"EOF(bpp____push_objectStack() {
+	local __address="$1"
+	declare -g -a __objectStack
+	__objectStack+=("${__address}")
+}
+bpp____destroy_objectStack() {
+	declare -g -a __objectStack
+	local __n=$1
+	if [[ -z "${__n}" ]]; then
+		__n=${#__objectStack[@]}
+	fi
+	if ! declare -f bpp____vTable_lookup > /dev/null 2>&1; then
+		return 0
+	fi
+	while [[ ${__n} -gt 0 ]]; do
+		__n=$((__n - 1))
+		local __obj="${__objectStack[-1]}"
+		local __destructor
+		bpp____vTable_lookup "${__obj}" "__destructor" __destructor
+		${__destructor} "${__obj}"
+		unset __objectStack[-1]
+	done
+}
+)EOF";
 } // namespace bpp::IR::Builtins

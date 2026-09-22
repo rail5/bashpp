@@ -88,6 +88,7 @@ class CodeEntity : public Entity {
 		 */
 		void adoptObjectsOf(std::shared_ptr<CodeEntity> other);
 
+		static bpp::CodeGen::CodeSegment destroyLocalObjects(bpp::CodeGen::CodeGenState* state);
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 
 		PRETTYPRINT_OVERRIDE();

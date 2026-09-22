@@ -61,6 +61,21 @@ bpp::CodeGen::CodeSegment BashPipeline::generateCode(bpp::CodeGen::CodeGenState*
 		result = std::move(stringTypeCodegen);
 	}
 
+	switch (getExitPointType()) {
+		case ExitPointType::NO_EXIT: break; // This pipeline does not cause an exit, no special procedure needed
+		case ExitPointType::FUNCTION_EXIT:
+			if (!state->should_declare_local()) break; // If we're not inside a generated function, 'return' should not destroy any objects
+			result.add_pre_code("\nwhile [[ ${#__scopeFrames[@]} -gt 0 ]]; do\n");
+			result.add_pre_code("bpp____destroy_objectStack ${__scopeFrames[-1]}\n");
+			result.add_pre_code("unset __scopeFrames[-1]\n");
+			result.add_pre_code("done\n");
+			break;
+		case ExitPointType::PROGRAM_EXIT:
+			// Omitting the argument means "destroy everything"
+			result.add_pre_code("\nbpp____destroy_objectStack\n");
+			break;
+	}
+
 	return result;
 }
 

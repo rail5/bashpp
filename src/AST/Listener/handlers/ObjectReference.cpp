@@ -101,8 +101,8 @@ void Listener::exit(ObjectReference* node) {
 	}
 
 	if (auto delete_statement = std::dynamic_pointer_cast<bpp::IR::DeleteStatement>(current_code_entity)) {
-		if (!reference_entity->isNonprimitive() && !reference_entity->isPointer()) {
-			throw bpp::ErrorHandling::SyntaxError(this, node, "Cannot delete a primitive object");
+		if (!reference_entity->isPointer()) {
+			throw bpp::ErrorHandling::SyntaxError(this, node, "@delete can only be used on pointers");
 		}
 		delete_statement->setObjectToDelete(reference_entity);
 		// Mark the destructor and delete methods as referenced by this delete statement

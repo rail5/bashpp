@@ -627,6 +627,10 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 		emit(PIPE);
 	}
 }
+\{[a-zA-Z_][a-zA-Z0-9_]*\}/(\<|\>|\&\>) {
+	// A named file descriptor preceding a redirection operator, e.g. {myfd}<>
+	emit(BASH_NAMED_FD, tokenText);
+}
 {LBRACE} {
 	if (thisModeStack.top() == BPP_CLASS_HEADER_MODE) {
 		thisModeStack.pop(); // Exit BPP_CLASS_HEADER_MODE
@@ -666,6 +670,51 @@ ANGLEBRACKET_INCLUDE_PATH <([^>])+>
 \{[0-9]+\.\.[0-9]+\.\.[0-9]+\}       { emit(CATCHALL, tokenText); /* Range expression with step, e.g., {1..10..2} */ }
 [\*]/[@]                             { emit(DEREFERENCE_OPERATOR); }
 [&]/[@]                              { emit(AMPERSAND); }
+
+return/[ \t\n;&|<>] {
+	if (thisLexerState.incoming_token_can_be_lvalue) {
+		thisLexerState.incoming_token_can_be_lvalue = false;
+		emit(BASH_KEYWORD_RETURN, tokenText);
+	} else {
+		emit(IDENTIFIER, tokenText);
+	}
+}
+
+exit/[ \t\n;&|<>] {
+	if (thisLexerState.incoming_token_can_be_lvalue) {
+		thisLexerState.incoming_token_can_be_lvalue = false;
+		emit(BASH_KEYWORD_EXIT, tokenText);
+	} else {
+		emit(IDENTIFIER, tokenText);
+	}
+}
+
+exec/[ \t\n;&|<>] {
+	if (thisLexerState.incoming_token_can_be_lvalue) {
+		thisLexerState.incoming_token_can_be_lvalue = false;
+		emit(BASH_KEYWORD_EXEC, tokenText);
+	} else {
+		emit(IDENTIFIER, tokenText);
+	}
+}
+
+break/[ \t\n;&|<>] {
+	if (thisLexerState.incoming_token_can_be_lvalue) {
+		thisLexerState.incoming_token_can_be_lvalue = false;
+		emit(BASH_KEYWORD_BREAK, tokenText);
+	} else {
+		emit(IDENTIFIER, tokenText);
+	}
+}
+
+continue/[ \t\n;&|<>] {
+	if (thisLexerState.incoming_token_can_be_lvalue) {
+		thisLexerState.incoming_token_can_be_lvalue = false;
+		emit(BASH_KEYWORD_CONTINUE, tokenText);
+	} else {
+		emit(IDENTIFIER, tokenText);
+	}
+}
 
 <BASH_FUNCTION_MODE>{
 	[ \t\n]+ { /* Ignore whitespace in this mode */ }

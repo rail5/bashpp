@@ -125,7 +125,7 @@ bpp::CodeGen::CodeSegment SystemMethod::generateCopyCode(bpp::CodeGen::CodeGenSt
 
 	bpp::CodeGen::CodeSegment result;
 
-	result.add_pre_code(R"(printf -v "${__this}____vPointer" '%s' ")" + cls->getName() + "____vTable\"\n");
+	result.add_pre_code(R"(printf -v "${__this}____vPointer" '%s' "bpp__)" + cls->getName() + "____vTable\"\n");
 
 	for (const auto& dm : cls->getAllDatamembers()) {
 		if (dm->isPrimitive()) {

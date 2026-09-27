@@ -119,6 +119,7 @@ void Listener::enter(IncludeStatement* node) {
 			+ runtime_path.string()
 			+ "\"; then\n"
 			"\t>&2 echo \"Bash++: Error: Failed to include file '" + runtime_path.string() + "'\"\n"
+			"\tbpp____destroy_objectStack\n"
 			"\texit 1\n"
 			"fi\n"
 		);

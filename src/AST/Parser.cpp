@@ -86,7 +86,7 @@ void bpp::AST::Parser::_destroy_lexer() {
 	input_file = nullptr;
 }
 
-void bpp::AST::Parser::_parse() {
+void bpp::AST::Parser::parse() {
 	_initialize_lexer();
 
 	try {
@@ -141,11 +141,12 @@ void bpp::AST::Parser::setIncludeChain(const std::vector<std::filesystem::path>&
 	include_chain = includes;
 }
 
-std::shared_ptr<bpp::AST::Program> bpp::AST::Parser::program() {
-	if (m_program == nullptr) {
-		_parse();
-	}
-	return m_program;
+bpp::AST::Program* bpp::AST::Parser::view_program() {
+	return m_program.get();
+}
+
+std::unique_ptr<bpp::AST::Program> bpp::AST::Parser::release_program() {
+	return std::move(m_program);
 }
 
 const std::vector<bpp::ErrorHandling::ParserError>& bpp::AST::Parser::get_errors() const {

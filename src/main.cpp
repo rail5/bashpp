@@ -71,7 +71,8 @@ int main(int argc, char** argv) {
 	parser.setDisplayLexerOutput(args.display_tokens());
 #endif
 
-	auto program = parser.program();
+	parser.parse();
+	auto program = parser.release_program();
 	for (const auto& e : parser.get_errors()) {
 		e.print();
 		listener->set_has_errors(true);

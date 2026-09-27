@@ -23,10 +23,10 @@ class BashPipeline : public StringType {
 		void unmarkAllExitPaths() {
 			for (auto& child : children) {
 				if (child->getType() == bpp::AST::NodeType::BashCommand) {
-					auto command = std::static_pointer_cast<BashCommand>(child);
+					auto* command = static_cast<BashCommand*>(child.get());
 					command->setExitPointType(ExitPointType::NO_EXIT);
 				} else if (child->getType() == bpp::AST::NodeType::BashBreakOrContinueCommand) {
-					auto command = std::static_pointer_cast<BashBreakOrContinueCommand>(child);
+					auto* command = static_cast<BashBreakOrContinueCommand*>(child.get());
 					command->unmarkExitPath();
 				}
 			}

@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <memory>
 #include <vector>
+#include <span>
 
 #include <AST/NodeTypes.h>
 #include <AST/Position.h>
@@ -28,7 +29,7 @@ class ASTNode {
 	private:
 		bpp::AST::NodeType _type = bpp::AST::NodeType::ERROR_TYPE;
 	protected:
-		std::vector<std::shared_ptr<bpp::AST::ASTNode>> children;
+		std::vector<std::unique_ptr<bpp::AST::ASTNode>> children;
 		bpp::AST::FilePosition position;
 		bpp::AST::FilePosition end_position;
 
@@ -37,8 +38,8 @@ class ASTNode {
 		constexpr explicit ASTNode(bpp::AST::NodeType type) : _type(type) {}
 		virtual ~ASTNode() = default;
 
-		ASTNode(const ASTNode& other) = default;
-		ASTNode& operator=(const ASTNode& other) = default;
+		ASTNode(const ASTNode& other) = delete;
+		ASTNode& operator=(const ASTNode& other) = delete;
 		ASTNode(ASTNode&& other) noexcept = default;
 		ASTNode& operator=(ASTNode&& other) noexcept = default;
 
@@ -52,7 +53,7 @@ class ASTNode {
 		 * 
 		 * @param child The child AST node to add.
 		 */
-		void addChild(const std::shared_ptr<ASTNode>& child);
+		void addChild(std::unique_ptr<ASTNode>&& child);
 
 		/**
 		 * @brief Add a vector of child nodes to this AST node.
@@ -62,8 +63,9 @@ class ASTNode {
 		 * 
 		 * @param childs The vector of child AST nodes to add.
 		 */
-		void addChildren(const std::vector<std::shared_ptr<ASTNode>>& childs);
-		const std::vector<std::shared_ptr<ASTNode>>& getChildren() const;
+		void addChildren(std::vector<std::unique_ptr<ASTNode>>&& childs);
+		std::span<const std::unique_ptr<ASTNode>> getChildren() const;
+		std::vector<std::unique_ptr<ASTNode>> releaseChildren() { return std::move(children); }
 		void setPosition(const bpp::AST::FilePosition& pos);
 		void setPosition(std::uint32_t line, std::uint32_t column);
 		const bpp::AST::FilePosition& getPosition() const;
@@ -74,9 +76,9 @@ class ASTNode {
 		std::uint32_t getLine() const;
 		std::uint32_t getCharPositionInLine() const;
 
-		std::shared_ptr<ASTNode> getChildAt(std::size_t index) const;
-		std::shared_ptr<ASTNode> getFirstChild() const;
-		std::shared_ptr<ASTNode> getLastChild() const;
+		ASTNode* getChildAt(std::size_t index) const;
+		ASTNode* getFirstChild() const;
+		ASTNode* getLastChild() const;
 		std::size_t getChildrenCount() const;
 
 		void clear();
@@ -84,5 +86,18 @@ class ASTNode {
 
 		PRETTYPRINT_HELPERS(ASTNode)
 };
+
+/**
+ * @brief Casts a unique_ptr of ASTNode to a unique_ptr of a derived type T.
+ * This function does not perform any type checking. It should only be used when the caller is certain that the type is in fact T.
+ * The inputted unique_ptr will be released, and ownership of the pointed-to object will be transferred to the returned unique_ptr.
+ * @tparam T The derived type to cast to.
+ * @param p The unique_ptr of ASTNode to cast.
+ * @return std::unique_ptr<T> The casted unique_ptr of type T.
+ */
+template <typename T>
+std::unique_ptr<T> static_uniqueptr_cast(std::unique_ptr<bpp::AST::ASTNode>&& p) {
+	return std::unique_ptr<T>(static_cast<T*>(p.release()));
+}
 
 } // namespace bpp::AST

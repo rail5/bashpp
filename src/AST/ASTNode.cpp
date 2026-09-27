@@ -10,33 +10,39 @@
 
 namespace bpp::AST {
 
-void ASTNode::addChild(const std::shared_ptr<ASTNode>& child) {
+// We use getType() to check the types of ASTNodes, we can safely use static_cast here
+// NOLINTBEGIN(cppcoreguidelines-pro-type-static-cast-downcast)
+
+void ASTNode::addChild(std::unique_ptr<ASTNode>&& child) {
 	if (child == nullptr) return;
 	if (child->getType() == bpp::AST::NodeType::RawText
 		&& !children.empty()
 		&& children.back()->getType() == bpp::AST::NodeType::RawText
 	) {
 		// Merge with last RawText child
-		auto lastRawText = std::static_pointer_cast<bpp::AST::RawText>(children.back());
-		auto newRawText = std::static_pointer_cast<bpp::AST::RawText>(child);
+		auto* lastRawText = static_cast<bpp::AST::RawText*>(children.back().get());
+		auto* newRawText = static_cast<bpp::AST::RawText*>(child.get());
 		lastRawText->appendText(newRawText->TEXT());
 		return;
 	}
-	children.push_back(child);
+	children.push_back(std::move(child));
 }
 
-void ASTNode::addChildren(const std::vector<std::shared_ptr<ASTNode>>& childs) {
+void ASTNode::addChildren(std::vector<std::unique_ptr<ASTNode>>&& childs) {
 	if (childs.empty()) return;
 
 	children.reserve(children.size() + childs.size());
 
-	auto lastRawText = std::dynamic_pointer_cast<bpp::AST::RawText>(children.empty() ? nullptr : children.back());
+	bpp::AST::RawText* lastRawText = nullptr;
+	if (!children.empty() && children.back()->getType() == bpp::AST::NodeType::RawText) {
+		lastRawText = static_cast<bpp::AST::RawText*>(children.back().get());
+	}
 
-	for (const auto& child : childs) {
+	for (auto&& child : childs) {
 		if (child == nullptr) continue;
 
 		if (child->getType() != bpp::AST::NodeType::RawText) {
-			children.push_back(child);
+			children.push_back(std::move(child));
 			lastRawText = nullptr;
 			continue;
 		}
@@ -44,17 +50,17 @@ void ASTNode::addChildren(const std::vector<std::shared_ptr<ASTNode>>& childs) {
 		// Child is RawText
 		if (lastRawText != nullptr) {
 			// Merge with last RawText child
-			auto newRawText = std::static_pointer_cast<bpp::AST::RawText>(child);
+			auto* newRawText = static_cast<bpp::AST::RawText*>(child.get());
 			lastRawText->appendText(newRawText->TEXT());
 		} else {
-			children.push_back(child);
-			lastRawText = std::static_pointer_cast<bpp::AST::RawText>(child);
+			lastRawText = static_cast<bpp::AST::RawText*>(child.get());
+			children.push_back(std::move(child));
 		}
 	}
 }
 
-const std::vector<std::shared_ptr<bpp::AST::ASTNode>>& ASTNode::getChildren() const {
-	return children;
+std::span<const std::unique_ptr<bpp::AST::ASTNode>> ASTNode::getChildren() const {
+	return {children.data(), children.size()};
 }
 
 void ASTNode::setPosition(const bpp::AST::FilePosition& pos) {
@@ -95,23 +101,23 @@ std::uint32_t ASTNode::getCharPositionInLine() const {
 	return position.column;
 }
 
-std::shared_ptr<ASTNode> ASTNode::getChildAt(std::size_t index) const {
+ASTNode* ASTNode::getChildAt(std::size_t index) const {
 	if (index < children.size()) {
-		return children[index];
+		return children[index].get();
 	}
 	return nullptr;
 }
 
-std::shared_ptr<ASTNode> ASTNode::getFirstChild() const {
+ASTNode* ASTNode::getFirstChild() const {
 	if (!children.empty()) {
-		return children.front();
+		return children.front().get();
 	}
 	return nullptr;
 }
 
-std::shared_ptr<ASTNode> ASTNode::getLastChild() const {
+ASTNode* ASTNode::getLastChild() const {
 	if (!children.empty()) {
-		return children.back();
+		return children.back().get();
 	}
 	return nullptr;
 }
@@ -128,5 +134,7 @@ void ASTNode::clear() {
 void ASTNode::clearChildren() {
 	children.clear();
 }
+
+// NOLINTEND(cppcoreguidelines-pro-type-static-cast-downcast)
 
 } // namespace bpp::AST

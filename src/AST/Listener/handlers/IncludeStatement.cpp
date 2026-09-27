@@ -68,7 +68,7 @@ void Listener::enter(IncludeStatement* node) {
 
 	include_chain.push_back(include_path);
 
-	std::shared_ptr<bpp::AST::Program> included_program_ast_root;
+	std::unique_ptr<bpp::AST::Program> included_program_ast_root;
 
 	{
 		AST::Parser parser;
@@ -79,7 +79,8 @@ void Listener::enter(IncludeStatement* node) {
 		// FIXME(@rail5): replacement file contents for bpp-lsp
 		parser.setInputFromFilePath(include_path);
 
-		included_program_ast_root = parser.program();
+		parser.parse();
+		included_program_ast_root = parser.release_program();
 		for (const auto& e : parser.get_errors()) {
 			e.print();
 			this->program_has_errors = true;

@@ -158,7 +158,7 @@ class ObjectReference : public StringType, public std::enable_shared_from_this<O
 		PRETTYPRINT_OVERRIDE();
 
 		ObjectReference() = default;
-		~ObjectReference() = default;
+		~ObjectReference() override = default;
 		ObjectReference(const ObjectReference& other) = default;
 		ObjectReference& operator=(const ObjectReference& other) = default;
 		ObjectReference(ObjectReference&& other) noexcept = default;

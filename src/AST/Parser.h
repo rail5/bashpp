@@ -28,7 +28,7 @@ namespace bpp::AST {
 class Parser final {
 	private:
 		yyscan_t lexer = nullptr;
-		std::shared_ptr<AST::Program> m_program = nullptr;
+		std::unique_ptr<AST::Program> m_program = nullptr;
 		bool current_command_can_receive_lvalues = true; // State variable needed by the parser
 
 		bool utf16_mode = false; // Whether to use UTF-16 mode for character counting
@@ -54,7 +54,6 @@ class Parser final {
 
 		void _initialize_lexer();
 		void _destroy_lexer();
-		void _parse();
 	public:
 		void setUTF16Mode(bool enabled);
 		void setLSPMode(bool enabled);
@@ -66,7 +65,10 @@ class Parser final {
 
 		void setIncludeChain(const std::vector<std::filesystem::path>& includes);
 
-		std::shared_ptr<AST::Program> program();
+		void parse();
+
+		AST::Program* view_program();
+		std::unique_ptr<AST::Program> release_program();
 
 		const std::vector<bpp::ErrorHandling::ParserError>& get_errors() const;
 };

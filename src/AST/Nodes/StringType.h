@@ -31,25 +31,25 @@ class StringType : public ASTNode {
 		 * @param text The text to add.
 		 */
 		void addText(const AST::Token<std::string>& text) {
-			auto lastChild = getLastChild();
+			auto* lastChild = getLastChild();
 			if (lastChild && lastChild->getType() == bpp::AST::NodeType::RawText) {
-				std::static_pointer_cast<AST::RawText>(lastChild)->appendText(text);
+				static_cast<AST::RawText*>(lastChild)->appendText(text);
 			} else {
-				auto rawTextNode = std::make_shared<AST::RawText>();
+				auto rawTextNode = std::make_unique<AST::RawText>();
 				rawTextNode->setText(text);
-				addChild(rawTextNode);
+				addChild(std::move(rawTextNode));
 			}
 		}
 
 		void addText(const std::string& text) {
-			auto lastChild = getLastChild();
+			auto* lastChild = getLastChild();
 			if (lastChild && lastChild->getType() == bpp::AST::NodeType::RawText) {
-				std::static_pointer_cast<AST::RawText>(lastChild)->appendText(text);
+				static_cast<AST::RawText*>(lastChild)->appendText(text);
 			} else {
-				auto rawTextNode = std::make_shared<AST::RawText>();
+				auto rawTextNode = std::make_unique<AST::RawText>();
 				AST::Token<std::string> token(text, UINT32_MAX, UINT32_MAX); // Line and column unknown
 				rawTextNode->setText(token);
-				addChild(rawTextNode);
+				addChild(std::move(rawTextNode));
 			}
 		}
 };

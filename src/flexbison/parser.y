@@ -1626,12 +1626,18 @@ bash_variable:
 		$$ = node;
 	}
 	| BASH_VAR {
-		auto node = std::make_shared<bpp::AST::RawText>();
+		auto node = std::make_shared<bpp::AST::BashVariable>();
 		std::uint32_t line_number = @1.begin.line;
 		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@1.end.line, @1.end.column);
-		node->setText($1);
+
+		bpp::AST::Token<std::string> text;
+		text.setLine(line_number);
+		// Skip the '$' at the beginning of the token
+		text.setCharPositionInLine(column_number + 1);
+		text.setValue($1.getValue().substr(1));
+		node->setText(text);
 		$$ = node;
 	}
 	;

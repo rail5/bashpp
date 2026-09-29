@@ -1,8 +1,8 @@
 # C++ CONFIG
 CXX      ?= g++
-CXXFLAGS ?= -O3 -flto=auto -s
+CXXFLAGS ?= -O2 -s
 # С++ required flags
-CXXFLAGS += -std=gnu++23 -Wall -MMD -MP
+CXXFLAGS += -std=gnu++23 -Wall -MMD -MP -flto=auto
 # standard preprocessor and linker variables
 CPPFLAGS ?=
 CPPFLAGS += -Isrc/

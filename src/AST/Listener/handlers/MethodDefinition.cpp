@@ -51,7 +51,9 @@ void Listener::enter(MethodDefinition* node) {
 	});
 
 	// 1. The implicit `this` parameter, which is always the first parameter of a method
-	new_method->addParameter(current_class->getThisPtr());
+	if (!new_method->addParameter(current_class->getThisPtr())) {
+		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to user-defined method: " + node->NAME().getValue());
+	}
 
 	// 2. The user-defined parameters
 	for (const auto& p : node->PARAMETERS()) {

@@ -30,7 +30,9 @@ void Listener::enter(ConstructorDefinition* node) {
 		node->getCharPositionInLine()
 	});
 
-	new_constructor->addParameter(current_class->getThisPtr());
+	if (!new_constructor->addParameter(current_class->getThisPtr())) {
+		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to user-defined constructor");
+	}
 
 	if (const auto* parent_class = current_class->getParentClass()) {
 		auto* parent_constructor = parent_class->getMethod_UNSAFE("__constructor");

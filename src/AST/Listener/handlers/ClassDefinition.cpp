@@ -70,22 +70,30 @@ void Listener::enter(ClassDefinition* node) {
 	new_method->inherit(class_entity.get());
 	auto requested_address_param = std::make_unique<bpp::IR::RequestedAddressParam>(class_entity.get());
 	requested_address_param->inherit(new_method.get());
-	new_method->addParameter(std::move(requested_address_param));
+	if (!new_method->addParameter(std::move(requested_address_param))) {
+		throw bpp::ErrorHandling::InternalError("Failed to add requested address parameter to __new method");
+	}
 	new_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
 
 	auto delete_method = std::make_unique<bpp::IR::Builtins::SystemMethod>(bpp::IR::Builtins::SystemMethod::Type::DELETE);
 	delete_method->setIsVirtual(true);
 	delete_method->inherit(class_entity.get());
-	delete_method->addParameter(class_entity->getThisPtr());
+	if (!delete_method->addParameter(class_entity->getThisPtr())) {
+		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to __delete method");
+	}
 	delete_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
 
 	auto copy_method = std::make_unique<bpp::IR::Builtins::SystemMethod>(bpp::IR::Builtins::SystemMethod::Type::COPY);
 	copy_method->setIsVirtual(true);
 	copy_method->inherit(class_entity.get());
-	copy_method->addParameter(class_entity->getThisPtr());
+	if (!copy_method->addParameter(class_entity->getThisPtr())) {
+		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to __copy method");
+	}
 	auto copy_from_param = std::make_unique<bpp::IR::CopyFromParam>(class_entity.get());
 	copy_from_param->inherit(copy_method.get());
-	copy_method->addParameter(std::move(copy_from_param));
+	if (!copy_method->addParameter(std::move(copy_from_param))) {
+		throw bpp::ErrorHandling::InternalError("Failed to add 'copy from' parameter to __copy method");
+	}
 	copy_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
 
 
@@ -93,7 +101,9 @@ void Listener::enter(ClassDefinition* node) {
 	constructor_method->setName("__constructor");
 	constructor_method->setIsOverridable(true);
 	constructor_method->inherit(class_entity.get());
-	constructor_method->addParameter(class_entity->getThisPtr());
+	if (!constructor_method->addParameter(class_entity->getThisPtr())) {
+		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to auto-generated constructor method");
+	}
 	constructor_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
 
 	auto destructor_method = std::make_unique<bpp::IR::Method>();
@@ -101,7 +111,9 @@ void Listener::enter(ClassDefinition* node) {
 	destructor_method->setIsVirtual(true);
 	destructor_method->setIsOverridable(true);
 	destructor_method->inherit(class_entity.get());
-	destructor_method->addParameter(class_entity->getThisPtr());
+	if (!destructor_method->addParameter(class_entity->getThisPtr())) {
+		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to auto-generated destructor method");
+	}
 	destructor_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
 
 	auto toPrimitive_method = std::make_unique<bpp::IR::Method>();
@@ -109,7 +121,9 @@ void Listener::enter(ClassDefinition* node) {
 	toPrimitive_method->setIsVirtual(true);
 	toPrimitive_method->setIsOverridable(true);
 	toPrimitive_method->inherit(class_entity.get());
-	toPrimitive_method->addParameter(class_entity->getThisPtr());
+	if (!toPrimitive_method->addParameter(class_entity->getThisPtr())) {
+		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to auto-generated toPrimitive method");
+	}
 	toPrimitive_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
 	toPrimitive_method->add("echo \"" + class_entity->getName() + " Instance\"\n");
 

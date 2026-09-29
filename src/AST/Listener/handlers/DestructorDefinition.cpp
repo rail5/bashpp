@@ -31,7 +31,9 @@ void Listener::enter(DestructorDefinition* node) {
 		node->getCharPositionInLine()
 	});
 
-	new_destructor->addParameter(current_class->getThisPtr());
+	if (!new_destructor->addParameter(current_class->getThisPtr())) {
+		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to user-defined destructor");
+	}
 
 	entity_stack.push(std::move(new_destructor));
 }

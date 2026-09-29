@@ -23,7 +23,9 @@ void Listener::enter(ValueAssignment* node) {
 	va->inherit(entity_stack.top());
 
 	if (auto* current_object_assignment = dynamic_cast<bpp::IR::ObjectAssignment*>(entity_stack.top())) {
-		va->setLvalueNonprimitive(current_object_assignment->getLHS()->isNonprimitive());
+		if (current_object_assignment->getLHS()) {
+			va->setLvalueNonprimitive(current_object_assignment->getLHS()->isNonprimitive());
+		}
 	}
 
 	if (auto* current_object_instantiation = dynamic_cast<bpp::IR::Object*>(entity_stack.top())) {

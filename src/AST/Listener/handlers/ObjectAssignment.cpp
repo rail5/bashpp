@@ -28,6 +28,11 @@ void Listener::exit(ObjectAssignment* node) {
 	auto assignment_entity = entity_stack.pop_as<bpp::IR::ObjectAssignment>();
 	context_expectations_stack.pop();
 
+	// If one of the inner handlers bailed out early due to an error,
+	//  (e.g., the LHS or RHS were invalid)
+	// then we should also bail out early here (don't duplicate the same error messages, the user's already seen them)
+	if (!assignment_entity->getLHS() || !assignment_entity->getRHS()) return;
+
 	const bool lhs_is_nonprimitive = assignment_entity->getLHS()->isNonprimitive();
 	const bool rhs_is_nonprimitive = assignment_entity->getRHS()->isRvalueNonprimitive();
 

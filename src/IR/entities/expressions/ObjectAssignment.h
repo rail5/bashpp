@@ -20,12 +20,12 @@ namespace bpp::IR {
  * Or @obj1=@obj2
  * Etc
  */
-class ObjectAssignment : public StringType, public std::enable_shared_from_this<ObjectAssignment> {
+class ObjectAssignment : public StringType {
 	private:
-		std::shared_ptr<ObjectReference> lhs;
-		std::shared_ptr<ValueAssignment> rhs;
+		std::unique_ptr<ObjectReference> lhs;
+		std::unique_ptr<ValueAssignment> rhs;
 	public:
-		void setLHS(std::shared_ptr<ObjectReference> l) {
+		void setLHS(std::unique_ptr<ObjectReference> l) {
 			lhs = std::move(l);
 			lhs->setLvalue(true);
 
@@ -34,10 +34,10 @@ class ObjectAssignment : public StringType, public std::enable_shared_from_this<
 			// FIXME(@rail5): This is almost certainly not the proper place for this concern
 			if (lhs->isPrimitive()) lhs->setAddressOf(true);
 		}
-		void setRHS(std::shared_ptr<ValueAssignment> r) { rhs = std::move(r); }
+		void setRHS(std::unique_ptr<ValueAssignment> r) { rhs = std::move(r); }
 
-		std::shared_ptr<const ObjectReference> getLHS() const { return lhs; }
-		std::shared_ptr<const ValueAssignment> getRHS() const { return rhs; }
+		const ObjectReference* getLHS() const { return lhs.get(); }
+		const ValueAssignment* getRHS() const { return rhs.get(); }
 
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 		PRETTYPRINT_OVERRIDE();

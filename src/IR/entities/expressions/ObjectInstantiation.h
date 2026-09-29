@@ -9,8 +9,6 @@
 #include <IR/bpp.h>
 #include <IR/entities/Entity.h>
 
-#include <memory>
-
 namespace bpp::IR {
 
 /**
@@ -18,16 +16,16 @@ namespace bpp::IR {
  */
 class ObjectInstantiation : public Entity {
 	private:
-		std::weak_ptr<const Class> type;
-		std::weak_ptr<const Object> stackLikeObject;
+		const Class* type;
+		const Object* stackLikeObject;
 
 		bpp::CodeGen::CodeSegment heapLikeInstantiation(bpp::CodeGen::CodeGenState* state) const;
 		bpp::CodeGen::CodeSegment stackLikeInstantiation(bpp::CodeGen::CodeGenState* state) const;
 	public:
-		std::weak_ptr<const Class> getType() const { return type; }
-		void setType(std::weak_ptr<const Class> t) { type = std::move(t); }
-		std::weak_ptr<const Object> getStackLikeObject() const { return stackLikeObject; }
-		void setStackLikeObject(std::weak_ptr<const Object> o) { stackLikeObject = std::move(o); }
+		const Class* getType() const { return type; }
+		void setType(const Class* t) { type = t; }
+		const Object* getStackLikeObject() const { return stackLikeObject; }
+		void setStackLikeObject(const Object* o) { stackLikeObject = o; }
 
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 		PRETTYPRINT_OVERRIDE();

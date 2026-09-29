@@ -10,15 +10,17 @@
 
 namespace bpp::IR {
 
-void DeleteStatement::setObjectToDelete(std::shared_ptr<ObjectReference> obj_ref) {
+void DeleteStatement::setObjectToDelete(std::unique_ptr<ObjectReference> obj_ref) {
 	bpp_assert(obj_ref != nullptr, "Object reference is null");
-	bpp_assert(obj_ref->isPointer() || obj_ref->isNonprimitive(), "Object reference is neither a pointer nor a nonprimitive");
+	bpp_assert(obj_ref->isPointer(), "Object reference is not a pointer");
 
-	destructor_method_call = std::make_shared<ObjectReference>(*obj_ref);
+	destructor_method_call = std::make_unique<ObjectReference>();
+	destructor_method_call->setReferenceChain(obj_ref->getReferenceChain());
 	destructor_method_call->addMethodCall_UNSAFE("__destructor");
 	destructor_method_call->setLvalue(true);
 
-	delete_method_call = std::make_shared<ObjectReference>(*obj_ref);
+	delete_method_call = std::make_unique<ObjectReference>();
+	delete_method_call->setReferenceChain(obj_ref->getReferenceChain());
 	delete_method_call->addMethodCall_UNSAFE("__delete");
 	delete_method_call->setLvalue(true);
 }

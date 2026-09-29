@@ -15,12 +15,12 @@ namespace bpp::IR {
 class BashWhileOrUntilStatement : public CodeEntity {
 	private:
 		bool is_until = false;
-		std::shared_ptr<StringType> condition;
+		std::unique_ptr<StringType> condition;
 	public:
 		bool isUntil() const { return is_until; }
 		void setIsUntil(bool until) { is_until = until; }
-		std::shared_ptr<StringType> getCondition() const { return condition; }
-		void setCondition(std::shared_ptr<StringType> cond) { condition = std::move(cond); }
+		const StringType* getCondition() const { return condition.get(); }
+		void setCondition(std::unique_ptr<StringType> cond) { condition = std::move(cond); }
 
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 		PRETTYPRINT_OVERRIDE();

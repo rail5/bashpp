@@ -19,18 +19,15 @@ class DynamicCast : public StringType {
 		 * Otherwise (if the user gave an expression which will expand to a class name at runtime),
 		 * this will be a pointer to the entity whose code generation will produce that result.
 		 */
-		RawCodeOrEntity target_type;
+		RawCodeOrOwnedEntity target_type;
 
-		// For codegen:
-		/// If set, this variable will be used to store the result of the dynamic cast, instead of a temporary variable. This is used in cases like method parameters, where the result of the dynamic cast needs to be stored in a specific variable (i.e., the parameter name)
-		std::optional<std::string> target_variable;
 	public:
-		RawCodeOrEntity getTargetType() const { return target_type; }
-		void setTargetType(const RawCodeOrEntity& type) { target_type = type; }
-
-		void setTargetVariable(const std::string& var_name) { target_variable = var_name; }
+		RawCodeOrUnownedEntity getTargetType() const;
+		void setTargetType(const RawCode& type);
+		void setTargetType(std::unique_ptr<Entity> type);
 
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state, const std::string& target_var) const;
 
 		PRETTYPRINT_OVERRIDE();
 };

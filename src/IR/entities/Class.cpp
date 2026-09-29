@@ -9,6 +9,8 @@
 #include "MethodParameter.h"
 #include "DataMember.h"
 
+#include <IR/entities/expressions/DynamicCast.h>
+
 #include <error/InternalError.h>
 
 namespace bpp::IR {
@@ -16,19 +18,26 @@ namespace bpp::IR {
 void Class::initSpecialPointers() const {
 	if (special_pointers_initialized) return;
 
-	this_ptr = std::make_shared<ThisPtr>(shared_from_this());
+	this_ptr = std::make_unique<ThisPtr>(this);
 	this_ptr->setContainingProgram(getContainingProgram());
 
-	if (auto parent = parent_class.lock()) {
-		super_ptr = std::make_shared<ThisPtr>(parent);
+	// Set initial value: dynamic cast of $1 to this class type
+	auto dynamic_cast_entity = std::make_unique<DynamicCast>();
+	dynamic_cast_entity->inherit(this_ptr.get());
+	dynamic_cast_entity->setTargetType(getName());
+	dynamic_cast_entity->add("$1");
+	this_ptr->setInitialValue(std::move(dynamic_cast_entity));
+
+	if (parent_class) {
+		super_ptr = std::make_unique<ThisPtr>(parent_class);
 		super_ptr->setName("super");
 	}
 
 	special_pointers_initialized = true;
 }
 
-bool Class::isDerivedFrom(std::shared_ptr<const Class> other) const {
-	auto parent = this->parent_class.lock();
+bool Class::isDerivedFrom(const Class* other) const {
+	const Class* parent = this->parent_class;
 
 	while (parent != nullptr) {
 		if (parent == other) return true;
@@ -38,13 +47,13 @@ bool Class::isDerivedFrom(std::shared_ptr<const Class> other) const {
 	return false;
 }
 
-void Class::inherit(std::shared_ptr<const Class> parent) {
+void Class::inherit(const Class* parent) {
 	// Inherit methods
 	methods.reserve(methods.size() + parent->methods.size());
 	for (const auto& m : parent->getAllMethods()) {
 		if (m->getName() == "toPrimitive") continue; // Don't inherit the toPrimitive method, since it is automatically generated for all classes
 		if (m->getName().starts_with("__")) continue; // Don't inherit system methods, since they are automatically generated for all classes
-		auto inherited_method = std::make_shared<Method>(m);
+		auto inherited_method = std::make_unique<Method>(m.get());
 		if (!addMethod(std::move(inherited_method))) {
 			throw bpp::ErrorHandling::InternalError("Failed to inherit method '" + m->getName() + "' from parent class '" + parent->getName() + "'");
 		}
@@ -53,12 +62,12 @@ void Class::inherit(std::shared_ptr<const Class> parent) {
 	// Inherit data members
 	datamembers.reserve(datamembers.size() + parent->datamembers.size());
 	for (const auto& d : parent->getAllDatamembers()) {
-		auto inherited_datamember = std::make_shared<DataMember>(*d);
+		auto inherited_datamember = std::make_unique<DataMember>(*d);
 		if (inherited_datamember->getScope() == VisibilityScope::PRIVATE) {
 			inherited_datamember->setScope(VisibilityScope::INACCESSIBLE);
 		}
-		inherited_datamember->setParentDatamember(d);
-		if (!addDatamember(inherited_datamember)) {
+		inherited_datamember->setParentDatamember(d.get());
+		if (!addDatamember(std::move(inherited_datamember))) {
 			throw bpp::ErrorHandling::InternalError("Failed to inherit data member '" + d->getName() + "' from parent class '" + parent->getName() + "'");
 		}
 	}
@@ -66,12 +75,14 @@ void Class::inherit(std::shared_ptr<const Class> parent) {
 	this->parent_class = parent;
 }
 
-std::expected<std::shared_ptr<Method>, AddError> Class::addMethod(std::shared_ptr<Method>&& method) {
-	if (auto existing_method = getMethod_UNSAFE(method->getName())) {
-		if (!existing_method->isOverridable()) return std::unexpected(AddError::NAME_CONFLICTS_WITH_EXISTING_METHOD); // Not overridable, so can't override it
+std::expected<void, NameConflictError> Class::addMethod(std::unique_ptr<Method> method) {
+	preregistered_method = nullptr;
+
+	if (auto* existing_method = getMethod_UNSAFE(method->getName())) {
+		if (!existing_method->isOverridable()) return std::unexpected(NameConflictError::EXISTING_METHOD); // Not overridable, so can't override it		
 
 		// Otherwise: override
-		auto parent_method = existing_method->getParentMethod();
+		const auto* parent_method = existing_method->getParentMethod();
 		bool wasVirtual = existing_method->isVirtual();
 
 		*existing_method = std::move(*method);
@@ -79,33 +90,39 @@ std::expected<std::shared_ptr<Method>, AddError> Class::addMethod(std::shared_pt
 		existing_method->setParentMethod(parent_method); // Keep the chain of inheritance intact
 		existing_method->setIsOverridable(false); // Can't override it twice
 		existing_method->setIsVirtual(wasVirtual);
-		existing_method->setContainingClass(weak_from_this());
+		existing_method->setContainingClass(this);
 
-		return existing_method;
+		return {};
 	}
 
 	// If this method shares a name with a data member, that's an error
-	if (getDatamember_UNSAFE(method->getName())) return std::unexpected(AddError::NAME_CONFLICTS_WITH_EXISTING_DATAMEMBER);
+	if (getDatamember_UNSAFE(method->getName())) return std::unexpected(NameConflictError::EXISTING_DATAMEMBER);
 
-	method->setContainingClass(weak_from_this());
+	method->setContainingClass(this);
 
 	methods.emplace_back(std::move(method));
-	return methods.back();
+	return {};
 }
 
-std::expected<void, AddError> Class::addDatamember(std::shared_ptr<DataMember> datamember) {
-	if (getDatamember_UNSAFE(datamember->getName())) return std::unexpected(AddError::NAME_CONFLICTS_WITH_EXISTING_DATAMEMBER);
-	if (getMethod_UNSAFE(datamember->getName())) return std::unexpected(AddError::NAME_CONFLICTS_WITH_EXISTING_METHOD);
+void Class::preregisterMethod(Method* method) {
+	bpp_assert(method != nullptr, "Method pointer is null");
+	method->setContainingClass(this);
+	preregistered_method = method;
+}
 
-	datamember->setContainingClass(weak_from_this());
+std::expected<void, NameConflictError> Class::addDatamember(std::unique_ptr<DataMember> datamember) {
+	if (getDatamember_UNSAFE(datamember->getName())) return std::unexpected(NameConflictError::EXISTING_DATAMEMBER);
+	if (getMethod_UNSAFE(datamember->getName())) return std::unexpected(NameConflictError::EXISTING_METHOD);
 
-	datamembers.push_back(datamember);
+	datamember->setContainingClass(this);
+
+	datamembers.push_back(std::move(datamember));
 	return {};
 }
 
 template <ClassMember T>
-std::expected<std::shared_ptr<T>, LookupError> Class::getMember(const std::string& name, std::shared_ptr<const Entity> context) const {
-	const std::vector<std::shared_ptr<T>>* container = nullptr;
+std::expected<T*, LookupError> Class::getMember(const std::string& name, const Entity* context) const {
+	const std::vector<std::unique_ptr<T>>* container = nullptr;
 	// The following static_assert is probably redundant since the concept ClassMember is restricted to one of those two types
 	static_assert(std::is_same_v<T, Method> || std::is_same_v<T, DataMember>, "T must be either Method or DataMember");
 	if constexpr (std::is_same_v<T, Method>) {
@@ -119,15 +136,15 @@ std::expected<std::shared_ptr<T>, LookupError> Class::getMember(const std::strin
 
 		switch (m->getScope()) {
 			case VisibilityScope::INACCESSIBLE: break; // Never OK
-			case VisibilityScope::PUBLIC: return m; // Always OK
+			case VisibilityScope::PUBLIC: return m.get(); // Always OK
 			case VisibilityScope::PRIVATE:
-				if (context->getContainingClass().lock() == shared_from_this()) return m; // Only OK if the context is in precisely the same class
+				if (context->getContainingClass() == this) return m.get(); // Only OK if the context is in precisely the same class
 				break;
 			case VisibilityScope::PROTECTED: {
 				// OK if the context is in either this same class or a descendant (child) class
-				auto possible_descendant = context->getContainingClass().lock();
+				const auto* possible_descendant = context->getContainingClass();
 				if (!possible_descendant) break; // Context is not in a class, so not OK
-				if (possible_descendant == shared_from_this() || possible_descendant->isDerivedFrom(shared_from_this())) return m;
+				if (possible_descendant == this || possible_descendant->isDerivedFrom(this)) return m.get();
 				break;
 			}
 		}
@@ -141,25 +158,33 @@ std::expected<std::shared_ptr<T>, LookupError> Class::getMember(const std::strin
 	return std::unexpected(LookupError::NOT_FOUND);
 }
 
-std::expected<std::shared_ptr<Method>, LookupError> Class::getMethod(const std::string& name, std::shared_ptr<const Entity> context) const {
-	return getMember<Method>(name, context);
+std::expected<Method*, LookupError> Class::getMethod(const std::string& name, const Entity* context) const {
+	auto res = getMember<Method>(name, context);
+	if (!res && res.error() == LookupError::NOT_FOUND) {
+		// If not found in the class itself, check preregistered methods
+		if (preregistered_method && preregistered_method->getName() == name) return preregistered_method;
+	}
+	return res;
 }
 
-std::shared_ptr<Method> Class::getMethod_UNSAFE(const std::string& name) const {
+Method* Class::getMethod_UNSAFE(const std::string& name) const {
 	for (const auto& method : methods) {
-		if (method->getName() == name) return method;
+		if (method->getName() == name) return method.get();
 	}
+
+	// If not found in the class itself, check preregistered methods
+	if (preregistered_method && preregistered_method->getName() == name) return preregistered_method;
 
 	return nullptr;
 }
 
-std::expected<std::shared_ptr<DataMember>, LookupError> Class::getDatamember(const std::string& name, std::shared_ptr<const Entity> context) const {
+std::expected<DataMember*, LookupError> Class::getDatamember(const std::string& name, const Entity* context) const {
 	return getMember<DataMember>(name, context);
 }
 
-std::shared_ptr<DataMember> Class::getDatamember_UNSAFE(const std::string& name) const {
+DataMember* Class::getDatamember_UNSAFE(const std::string& name) const {
 	for (const auto& datamember : datamembers) {
-		if (datamember->getName() == name) return datamember;
+		if (datamember->getName() == name) return datamember.get();
 	}
 
 	return nullptr;
@@ -176,10 +201,10 @@ bpp::CodeGen::CodeSegment Class::generateCode(bpp::CodeGen::CodeGenState* state)
 	bpp_assert(state != nullptr, "State pointer is null");
 	bpp::CodeGen::CodeSegment code;
 
-	state->current_class = shared_from_this();
+	state->current_class = this;
 
 	code.add_post_code("declare -A bpp__" + getName() + "____vTable\n");
-	if (auto parent = getParentClass()) {
+	if (const auto* parent = getParentClass()) {
 		code.add_post_code("bpp__" + getName() + R"(____vTable["__parent__"]="bpp__)" + parent->getName() + "____vTable\"\n");
 	}
 

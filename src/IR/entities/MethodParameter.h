@@ -9,8 +9,6 @@
 #include <IR/bpp.h>
 #include <IR/entities/Object.h>
 
-#include <memory>
-
 namespace bpp::IR {
 
 /**
@@ -23,14 +21,9 @@ namespace bpp::IR {
  * rather than just relying on the parameter's position in the parameter list.
  */
 class MethodParameter : public Object {
-	protected:
-		/// The index of this parameter in the method's parameter list (1-based)
-		std::uint32_t index = 1;
 	public:
-		std::uint32_t getIndex() const { return index; }
-		void setIndex(std::uint32_t index) { this->index = index; }
-
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
+		virtual bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state, std::uint32_t index) const;
 };
 
 /**
@@ -39,15 +32,11 @@ class MethodParameter : public Object {
 class ThisPtr : public MethodParameter {
 	public:
 		ThisPtr() = delete;
-		explicit ThisPtr(std::shared_ptr<const Class> containing_class) {
-			setName("this");
-			setType(containing_class);
-			setIsPointer(true);
-		}
+		explicit ThisPtr(const Class* containing_class);
 
 		std::string getAddress() const override { return "__this"; }
 
-		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state, std::uint32_t index) const override;
 };
 
 /**
@@ -57,9 +46,9 @@ class ThisPtr : public MethodParameter {
 class RequestedAddressParam : public ThisPtr {
 	public:
 		RequestedAddressParam() = delete;
-		explicit RequestedAddressParam(std::shared_ptr<const Class> containing_class) : ThisPtr(containing_class) {}
+		explicit RequestedAddressParam(const Class* containing_class);
 
-		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state, std::uint32_t index) const override;
 };
 
 /**
@@ -68,13 +57,11 @@ class RequestedAddressParam : public ThisPtr {
 class CopyFromParam : public ThisPtr {
 	public:
 		CopyFromParam() = delete;
-		explicit CopyFromParam(std::shared_ptr<const Class> containing_class) : ThisPtr(containing_class) {
-			setName("source");
-		}
+		explicit CopyFromParam(const Class* containing_class);
 
 		std::string getAddress() const override { return "__source"; }
 
-		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state, std::uint32_t index) const override;
 };
 
 } // namespace bpp::IR

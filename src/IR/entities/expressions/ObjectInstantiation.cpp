@@ -17,9 +17,9 @@ namespace bpp::IR {
 
 bpp::CodeGen::CodeSegment ObjectInstantiation::generateCode(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "State pointer is null");
-	bpp_assert(!type.expired(), "Type pointer is null");
+	bpp_assert(type != nullptr, "Type pointer is null");
 
-	auto object = getStackLikeObject().lock();
+	const auto* object = getStackLikeObject();
 
 	if (object && !object->isPointer()) {
 		// Stack-like @TYPE ID instantiation
@@ -32,13 +32,12 @@ bpp::CodeGen::CodeSegment ObjectInstantiation::generateCode(bpp::CodeGen::CodeGe
 
 bpp::CodeGen::CodeSegment ObjectInstantiation::heapLikeInstantiation(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "State pointer is null");
-	bpp_assert(!type.expired(), "Type pointer is null");
+	bpp_assert(type != nullptr, "Type pointer is null");
 
 	bpp::CodeGen::CodeSegment result;
 
-	auto cls = type.lock();
-	auto new_method = cls->getMethod_UNSAFE("__new");
-	auto constructor = cls->getMethod_UNSAFE("__constructor");
+	auto* new_method = type->getMethod_UNSAFE("__new");
+	auto* constructor = type->getMethod_UNSAFE("__constructor");
 
 	if (state->should_declare_local()) result.add_main_code("local ");
 	result.add_main_code("__newAddress=");
@@ -60,25 +59,23 @@ bpp::CodeGen::CodeSegment ObjectInstantiation::heapLikeInstantiation(bpp::CodeGe
 
 bpp::CodeGen::CodeSegment ObjectInstantiation::stackLikeInstantiation(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "State pointer is null");
-	bpp_assert(!type.expired(), "Type pointer is null");
-	bpp_assert(!stackLikeObject.expired(), "Object pointer is null");
+	bpp_assert(type != nullptr, "Type pointer is null");
+	bpp_assert(stackLikeObject != nullptr, "Object pointer is null");
 
 	bpp::CodeGen::CodeSegment result;
 
-	auto cls = type.lock();
-	auto new_method = cls->getMethod_UNSAFE("__new");
-	auto constructor = cls->getMethod_UNSAFE("__constructor");
+	auto* new_method = type->getMethod_UNSAFE("__new");
+	auto* constructor = type->getMethod_UNSAFE("__constructor");
 
-	auto obj = stackLikeObject.lock();
-	bpp_assert(!obj->isPrimitive(), "Object is primitive");
-	auto requested_address = obj->getAddress();
+	bpp_assert(!stackLikeObject->isPrimitive(), "Object is primitive");
+	auto requested_address = stackLikeObject->getAddress();
 
 	result.add_main_code(new_method->getAddress() + " " + requested_address + " >/dev/null\n");
 	if (constructor) {
 		result.add_main_code(constructor->getAddress() + " " + requested_address + "\n");
 	}
 	// If the object has a destructor, register it with the global object stack, so that it will be called at the end of the program
-	auto destructor = cls->getMethod_UNSAFE("__destructor");
+	auto* destructor = type->getMethod_UNSAFE("__destructor");
 	if (destructor) {
 		result.add_main_code("bpp____push_objectStack \"" + requested_address + "\"\n");
 		state->requires_global_object_stack = true;
@@ -89,17 +86,17 @@ bpp::CodeGen::CodeSegment ObjectInstantiation::stackLikeInstantiation(bpp::CodeG
 }
 
 PRETTYPRINT_IMPLEMENTATION(ObjectInstantiation, {
-	bpp_assert(!type.expired(), "Type pointer is null");
+	bpp_assert(type != nullptr, "Type pointer is null");
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 	os << indent << "(ObjectInstantiation ";
-	auto object = getStackLikeObject().lock();
+	const auto* object = getStackLikeObject();
 	if (object && !object->isPointer()) {
 		bpp_assert(!object->isPrimitive(), "Object is primitive");
 		// Stack-like @TYPE ID instantiation
-		os << '@' << type.lock()->getName() << ' ' << object->getName();
+		os << '@' << type->getName() << ' ' << object->getName();
 	} else {
 		// Heap-like call to @new TYPE
-		os << "@new " << type.lock()->getName();
+		os << "@new " << type->getName();
 	}
 	os << ")\n";
 	return os;

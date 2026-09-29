@@ -29,10 +29,8 @@ class DataMember : public Object, public ClassMemberEntity {
 		void setIsArray(bool is_array) { this->m_is_array = is_array; }
 		bool isArray() const { return m_is_array; }
 
-		void setParentDatamember(std::shared_ptr<DataMember> parent_datamember) { setParentMember(parent_datamember); }
-		std::shared_ptr<DataMember> getParentDatamember() const { return std::static_pointer_cast<DataMember>(getParentMember()); }
-
-		void addReferencePosition(const SymbolPosition& pos) override;
+		void setParentDatamember(const DataMember* parent_datamember) { setParentMember(parent_datamember); }
+		const DataMember* getParentDatamember() const { return static_cast<const DataMember*>(getParentMember()); }
 
 		PRETTYPRINT_OVERRIDE();
 };

@@ -19,14 +19,14 @@ namespace bpp::AST {
 
 template <>
 void Listener::enter(ValueAssignment* node) {
-	auto va = std::make_shared<bpp::IR::ValueAssignment>();
+	auto va = std::make_unique<bpp::IR::ValueAssignment>();
 	va->inherit(entity_stack.top());
 
-	if (auto current_object_assignment = std::dynamic_pointer_cast<bpp::IR::ObjectAssignment>(entity_stack.top())) {
+	if (auto* current_object_assignment = dynamic_cast<bpp::IR::ObjectAssignment*>(entity_stack.top())) {
 		va->setLvalueNonprimitive(current_object_assignment->getLHS()->isNonprimitive());
 	}
 
-	if (auto current_object_instantiation = std::dynamic_pointer_cast<bpp::IR::Object>(entity_stack.top())) {
+	if (auto* current_object_instantiation = dynamic_cast<bpp::IR::Object*>(entity_stack.top())) {
 		va->setLvalueNonprimitive(!current_object_instantiation->isPrimitive());
 	}
 
@@ -39,42 +39,41 @@ void Listener::enter(ValueAssignment* node) {
 		context_expectations_stack.push({true, false}); // rvalue must be primitive
 	}
 
-	entity_stack.push(va);
+	entity_stack.push(std::move(va));
 }
 
 template <>
 void Listener::exit(ValueAssignment* node) {
 	bpp_assert(topmost_entity_is<bpp::IR::ValueAssignment>(), "Topmost entity on stack is not a ValueAssignment when exiting ValueAssignment node");
-	auto va = std::static_pointer_cast<bpp::IR::ValueAssignment>(entity_stack.top());
-	entity_stack.pop();
+	auto va = entity_stack.pop_as<bpp::IR::ValueAssignment>();
 	context_expectations_stack.pop();
 
 	bpp_assert(va->isLvalueNonprimitive() || !va->isRvalueNonprimitive(), "Compiler attempted to assign a non-primitive value to a primitive variable");
 
-	if (auto current_datamember = std::dynamic_pointer_cast<bpp::IR::DataMember>(entity_stack.top())) {
-		current_datamember->setInitialValue(va);
+	if (auto* current_datamember = dynamic_cast<bpp::IR::DataMember*>(entity_stack.top())) {
 		if (va->isArrayAssignment()) current_datamember->setIsArray(true);
+		current_datamember->setInitialValue(std::move(va));
 		return;
 	}
 
-	if (auto current_object_assignment = std::dynamic_pointer_cast<bpp::IR::ObjectAssignment>(entity_stack.top())) {
-		current_object_assignment->setRHS(va);
+	if (auto* current_object_assignment = dynamic_cast<bpp::IR::ObjectAssignment*>(entity_stack.top())) {
+		current_object_assignment->setRHS(std::move(va));
 		return;
 	}
 
-	if (auto current_object = std::dynamic_pointer_cast<bpp::IR::Object>(entity_stack.top())) {
+	if (auto* current_object = dynamic_cast<bpp::IR::Object*>(entity_stack.top())) {
 		// FIXME(@rail5): This only handles the pointer case, handle the non-pointer case
 		if (va->isArrayAssignment()) {
 			throw bpp::ErrorHandling::SyntaxError(this, node, "Cannot assign an array to an object");
 		}
-		current_object->setInitialValue(va);
+		current_object->setInitialValue(std::move(va));
 		return;
 	}
 
 	// Default case: just send it up the chain
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity when exiting ValueAssignment node");
-	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
-	current_code_entity->add(va);
+	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
+	current_code_entity->add(std::move(va));
 }
 
 } // namespace bpp::AST

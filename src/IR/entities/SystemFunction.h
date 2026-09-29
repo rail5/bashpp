@@ -8,6 +8,7 @@
 
 #include <IR/bpp.h>
 #include <IR/entities/BashFunction.h>
+#include <IR/entities/Object.h>
 
 namespace bpp::IR::Builtins {
 

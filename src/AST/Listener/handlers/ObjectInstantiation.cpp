@@ -20,8 +20,8 @@ namespace bpp::AST {
 
 template <>
 void Listener::enter(ObjectInstantiation* node) {
-	// Note: All object instantiations must be
-	// a) directly inside a code entity
+	// Note: All object instantiations must be either
+	// a) directly inside a code entity, or
 	// b) part of a data member declaration
 	if (!topmost_entity_is<bpp::IR::CodeEntity>() && !topmost_entity_is<bpp::IR::DataMember>()) {
 		// Special case to provide more useful information to the user:
@@ -38,7 +38,7 @@ void Listener::enter(ObjectInstantiation* node) {
 	const auto& type_name = node->TYPE();
 	const auto& object_name = node->IDENTIFIER();
 
-	const auto current_code_entity = latest_code_entity();
+	const auto* current_code_entity = latest_code_entity();
 	bpp_assert(current_code_entity != nullptr, "No code entity found on stack when entering ObjectInstantiation node");
 
 	// Name validation
@@ -57,18 +57,12 @@ void Listener::enter(ObjectInstantiation* node) {
 		throw bpp::ErrorHandling::SyntaxError(this, object_name, "Object '" + object_name.getValue() + "' already defined in this scope");
 	}
 
-	const auto object_class = current_code_entity->getClass(type_name);
+	const auto* object_class = current_code_entity->getClass(type_name);
 	if (!object_class) {
 		throw bpp::ErrorHandling::SyntaxError(this, type_name, "Class not found: '" + type_name.getValue() + "'");
 	}
 
-	object_class->addReferencePosition({
-		get_current_source_file(),
-		type_name.getLine(),
-		type_name.getCharPositionInLine()
-	});
-
-	auto object = std::make_shared<bpp::IR::Object>();
+	auto object = std::make_unique<bpp::IR::Object>();
 	object->inherit(current_code_entity);
 	object->setType(object_class);
 	object->setIsPointer(node->isPointer());
@@ -80,74 +74,67 @@ void Listener::enter(ObjectInstantiation* node) {
 		object_name.getCharPositionInLine()
 	});
 
-	entity_stack.push(object);
+	entity_stack.push(std::move(object));
 }
 
 template <>
-void Listener::exit(ObjectInstantiation* /*node*/) {
+void Listener::exit(ObjectInstantiation* node) {
 	bpp_assert(topmost_entity_is<bpp::IR::Object>(), "Topmost entity on stack is not an Object when exiting ObjectInstantiation node");
-	auto object = std::static_pointer_cast<bpp::IR::Object>(entity_stack.top());
-	entity_stack.pop();
+	auto object = entity_stack.pop_as<bpp::IR::Object>();
 
-	if (auto datamember_declaration = std::dynamic_pointer_cast<bpp::IR::DataMember>(entity_stack.top())) {
+	if (auto* datamember_declaration = dynamic_cast<bpp::IR::DataMember*>(entity_stack.top())) {
 		// This object instantiation is part of a class's data member declaration
 		// The data for this object should be moved to the data member, and the object should be discarded
 		datamember_declaration->setType(object->getType());
 		datamember_declaration->setIsPointer(object->isPointer());
 		datamember_declaration->setName(object->getName());
-		if (object->hasInitialValue()) datamember_declaration->setInitialValue(object->getInitialValue().value());
+		if (object->hasInitialValue()) datamember_declaration->setInitialValue(object->releaseInitialValue());
 		datamember_declaration->setDefinitionPosition(object->getDefinitionPosition());
 		return;
 	}
 
 	// Otherwise, add the object to the current code entity
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity when exiting ObjectInstantiation node");
-	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
-	if (!current_code_entity->addObject(object)) {
-		const auto named_code_entity = std::dynamic_pointer_cast<bpp::IR::NamedEntity>(current_code_entity);
-		std::string error_message = "Failed to add object '" + object->getName() + "' to code entity";
-		if (named_code_entity) error_message += " '" + named_code_entity->getName() + "'";
-		throw bpp::ErrorHandling::InternalError(error_message);
-	}
+	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 
 	if (!object->isPointer()) {
-		const auto object_class = object->getType().lock();
+		const auto* object_class = object->getType();
 		bpp_assert(object_class != nullptr, "Object has no type when exiting ObjectInstantiation node");
 		
-		auto instantiation = std::make_shared<bpp::IR::ObjectInstantiation>();
+		auto instantiation = std::make_unique<bpp::IR::ObjectInstantiation>();
 		instantiation->inherit(current_code_entity);
 		instantiation->setType(object_class);
-		instantiation->setStackLikeObject(object);
+		instantiation->setStackLikeObject(object.get());
 
-		current_code_entity->add(instantiation);
-
-		// Mark the class's __new and __constructor methods as referenced by this instantiation
-		auto new_method = object_class->getMethod_UNSAFE("__new");
-		auto constructor_method = object_class->getMethod_UNSAFE("__constructor");
-		bpp_assert(new_method != nullptr, "Class has no __new method when exiting ObjectInstantiation node");
-		new_method->markReferencedBy(instantiation);
-		if (constructor_method) constructor_method->markReferencedBy(instantiation);
+		current_code_entity->add(std::move(instantiation));
 	} else {
-		auto object_reference = std::make_shared<bpp::IR::ObjectReference>();
+		auto object_reference = std::make_unique<bpp::IR::ObjectReference>();
 		object_reference->inherit(current_code_entity);
-		object_reference->setReferenceChain(bpp::IR::ObjectReference::ReferenceChain(object));
+		object_reference->setReferenceChain(bpp::IR::ObjectReference::ReferenceChain(object.get()));
 
-		auto pointer_assignment = std::make_shared<bpp::IR::ObjectAssignment>();
+		auto pointer_assignment = std::make_unique<bpp::IR::ObjectAssignment>();
 		pointer_assignment->inherit(current_code_entity);
-		pointer_assignment->setLHS(object_reference);
+		pointer_assignment->setLHS(std::move(object_reference));
 
 		if (object->hasInitialValue()) {
-			bpp_assert(std::dynamic_pointer_cast<bpp::IR::ValueAssignment>(object->getInitialValue().value()), "Object initial value is not a ValueAssignment when exiting ObjectInstantiation node");
-			auto va = std::static_pointer_cast<bpp::IR::ValueAssignment>(object->getInitialValue().value());
-			pointer_assignment->setRHS(va);
+			bpp_assert(dynamic_cast<const bpp::IR::ValueAssignment*>(object->getInitialValue().value()), "Object initial value is not a ValueAssignment when exiting ObjectInstantiation node");
+			auto va = std::unique_ptr<bpp::IR::ValueAssignment>(static_cast<bpp::IR::ValueAssignment*>(object->releaseInitialValue().release()));
+			pointer_assignment->setRHS(std::move(va));
 		} else {
-			auto va = std::make_shared<bpp::IR::ValueAssignment>();
+			auto va = std::make_unique<bpp::IR::ValueAssignment>();
 			va->inherit(current_code_entity);
 			va->add("0"); // Default-initialize pointers to null
-			pointer_assignment->setRHS(va);
+			pointer_assignment->setRHS(std::move(va));
 		}
 
-		current_code_entity->add(pointer_assignment);
+		current_code_entity->add(std::move(pointer_assignment));
+	}
+
+	if (!current_code_entity->addObject(std::move(object))) {
+		const auto* named_code_entity = dynamic_cast<bpp::IR::NamedEntity*>(current_code_entity);
+		std::string error_message = "Failed to add object '" + node->IDENTIFIER().getValue() + "' to code entity";
+		if (named_code_entity) error_message += " '" + named_code_entity->getName() + "'";
+		throw bpp::ErrorHandling::InternalError(error_message);
 	}
 }
 

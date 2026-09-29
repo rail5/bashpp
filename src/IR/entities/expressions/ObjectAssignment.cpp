@@ -22,15 +22,18 @@ bpp::CodeGen::CodeSegment ObjectAssignment::generateCode(bpp::CodeGen::CodeGenSt
 	// FIXME(@rail5): HACK.
 	if (is_nonprimitive_copy) {
 		ObjectReference::ReferenceChain lhs_chain = lhs->getReferenceChain();
-		auto copy_method = lhs_chain.getFinalObject().lock()->getType().lock()->getMethod_UNSAFE("__copy");
+		auto* copy_method = lhs_chain.getFinalObject()->getType()->getMethod_UNSAFE("__copy");
 		lhs_chain.setMethod(copy_method);
 
 		ObjectReference copy_call;
-		copy_call.inherit(shared_from_this());
+		copy_call.inherit(this);
 		copy_call.setReferenceChain(std::move(lhs_chain));
 		copy_call.setLvalue(true);
 
-		ObjectReference rhs_ref = *rhs->getRvalueReference();
+		ObjectReference rhs_ref;
+		rhs_ref.inherit(this);
+		rhs_ref.setReferenceChain(rhs->getRvalueReference()->getReferenceChain());
+		rhs_ref.setLvalue(false);
 		rhs_ref.setAddressOf(true);
 
 		result.egalitarian_merge(copy_call.generateCode(state));

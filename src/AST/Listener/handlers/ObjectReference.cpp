@@ -25,7 +25,7 @@ namespace bpp::AST {
 template <>
 void Listener::enter(ObjectReference* node) {
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "ObjectReference node must be inside a code entity");
-	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
+	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 
 	/*
 	 * There are 12 possible combinations of flags here:
@@ -64,7 +64,7 @@ void Listener::enter(ObjectReference* node) {
 		}
 	}
 
-	const auto& reference_entity = resolution.value();
+	auto reference_entity = std::move(resolution.value());
 	reference_entity->inherit(current_code_entity);
 	reference_entity->setLvalue(node->isLvalue());
 	reference_entity->setAddressOf(node->isAddressOf());
@@ -76,50 +76,38 @@ void Listener::enter(ObjectReference* node) {
 		reference_entity->addMethodCall_UNSAFE("toPrimitive");
 	}
 
-	entity_stack.push(reference_entity);
+	entity_stack.push(std::move(reference_entity));
 }
 
 template <>
 void Listener::exit(ObjectReference* node) {
 	bpp_assert(topmost_entity_is<bpp::IR::ObjectReference>(), "Topmost entity on stack is not an ObjectReference when exiting ObjectReference node");
-	auto reference_entity = std::static_pointer_cast<bpp::IR::ObjectReference>(entity_stack.top());
-	entity_stack.pop();
+	auto reference_entity = entity_stack.pop_as<bpp::IR::ObjectReference>();
 
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "ObjectReference node must be inside a code entity");
-	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
+	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 
-	if (auto object_assignment = std::dynamic_pointer_cast<bpp::IR::ObjectAssignment>(current_code_entity)) {
-		object_assignment->setLHS(reference_entity);
+	if (auto* object_assignment = dynamic_cast<bpp::IR::ObjectAssignment*>(current_code_entity)) {
+		object_assignment->setLHS(std::move(reference_entity));
 		return;
 	}
 
-	if (auto value_assignment = std::dynamic_pointer_cast<bpp::IR::ValueAssignment>(current_code_entity)) {
+	if (auto* value_assignment = dynamic_cast<bpp::IR::ValueAssignment*>(current_code_entity)) {
 		if (value_assignment->isLvalueNonprimitive() && reference_entity->isNonprimitive()) {
-			value_assignment->setRvalueReference(reference_entity);
+			value_assignment->setRvalueReference(std::move(reference_entity));
 			return;
 		}
 	}
 
-	if (auto delete_statement = std::dynamic_pointer_cast<bpp::IR::DeleteStatement>(current_code_entity)) {
+	if (auto* delete_statement = dynamic_cast<bpp::IR::DeleteStatement*>(current_code_entity)) {
 		if (!reference_entity->isPointer()) {
 			throw bpp::ErrorHandling::SyntaxError(this, node, "@delete can only be used on pointers");
 		}
-		delete_statement->setObjectToDelete(reference_entity);
-		// Mark the destructor and delete methods as referenced by this delete statement
-		auto final_object = reference_entity->getReferenceChain().getFinalObject().lock();
-		bpp_assert(final_object != nullptr, "Final object in reference chain is null");
-		auto final_class = final_object->getType().lock();
-		bpp_assert(final_class != nullptr, "Final object in reference chain has no type");
-		auto destructor_method = final_class->getMethod_UNSAFE("__destructor");
-		bpp_assert(destructor_method != nullptr, "Final object's class has no __destructor method");
-		destructor_method->markReferencedBy(delete_statement);
-		auto delete_method = final_class->getMethod_UNSAFE("__delete");
-		bpp_assert(delete_method != nullptr, "Final object's class has no __delete method");
-		delete_method->markReferencedBy(delete_statement);
+		delete_statement->setObjectToDelete(std::move(reference_entity));
 		return;
 	}
 
-	current_code_entity->add(reference_entity);
+	current_code_entity->add(std::move(reference_entity));
 }
 
 } // namespace bpp::AST

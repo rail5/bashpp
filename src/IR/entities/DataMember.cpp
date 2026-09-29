@@ -6,14 +6,11 @@
 
 #include "DataMember.h"
 
-namespace bpp::IR {
+#include <IR/entities/Class.h>
 
-void DataMember::addReferencePosition(const SymbolPosition& pos) {
-	Entity::addReferencePosition(pos);
-	if (auto parent = getParentDatamember()) {
-		parent->addReferencePosition(pos);
-	}
-}
+#include <error/InternalError.h>
+
+namespace bpp::IR {
 
 PRETTYPRINT_IMPLEMENTATION(DataMember, {
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
@@ -33,8 +30,8 @@ PRETTYPRINT_IMPLEMENTATION(DataMember, {
 		os << ", primitive";
 		if (isArray()) os << ", array";
 	} else {
-		bpp_assert(!getType().expired(), "DataMember is not primitive but has no type");
-		os << ", " << getType().lock()->getName();
+		bpp_assert(getType(), "DataMember is not primitive but has no type");
+		os << ", " << getType()->getName();
 		if (isPointer()) os << ", pointer";
 	}
 

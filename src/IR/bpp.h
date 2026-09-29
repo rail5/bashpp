@@ -12,6 +12,7 @@
 #include <string>
 #include <algorithm>
 #include <vector>
+#include <span>
 #include <unordered_map>
 #include <memory>
 #include <filesystem>
@@ -86,32 +87,44 @@ struct SymbolPosition {
 template <class T>
 class OwnedEntityList {
 	private:
-		std::vector<std::shared_ptr<T>> entities;
+		std::vector<std::unique_ptr<T>> entities;
 		std::unordered_map<std::string_view, std::size_t> name_to_index;
 	public:
-		bool add(std::shared_ptr<T> entity) {
+		bool add(std::unique_ptr<T> entity) {
 			const std::string_view name = entity->viewName();
 			if (name_to_index.contains(name)) return false; // Entity with this name already exists
-			entities.push_back(entity);
+			entities.push_back(std::move(entity));
 			name_to_index[name] = entities.size() - 1;
 			return true;
 		}
 
-		std::shared_ptr<T> find(std::string_view name, std::size_t max_visible_index = SIZE_MAX) const {
+		T* find(std::string_view name, std::size_t max_visible_index = SIZE_MAX) const {
 			auto it = name_to_index.find(name);
 			if (it == name_to_index.end()) return nullptr; // No entity with this name
 			std::size_t index = it->second;
 			if (index > max_visible_index) return nullptr; // Entity exists but is out of bounds
-			return entities[index];
+			return entities[index].get();
 		}
 
 		std::size_t size() const {
 			return entities.size();
 		}
 
-		const std::vector<std::shared_ptr<T>>& get_entities() const {
-			return entities;
+		std::span<const std::unique_ptr<T>> view_entities() const {
+			return {entities.data(), entities.size()};
 		}
+
+		std::vector<std::unique_ptr<T>> release_entities() {
+			name_to_index.clear();
+			return std::move(entities);
+		}
+
+		OwnedEntityList() = default;
+		~OwnedEntityList() = default;
+		OwnedEntityList(const OwnedEntityList& other) = delete;
+		OwnedEntityList& operator=(const OwnedEntityList& other) = delete;
+		OwnedEntityList(OwnedEntityList&& other) noexcept = default;
+		OwnedEntityList& operator=(OwnedEntityList&& other) noexcept = default;
 };
 
 enum class VisibilityScope : std::uint8_t {
@@ -119,6 +132,19 @@ enum class VisibilityScope : std::uint8_t {
 	PROTECTED,
 	PRIVATE,
 	INACCESSIBLE,
+};
+
+enum class LookupError : std::uint8_t {
+	NOT_FOUND,
+	INACCESSIBLE,
+};
+
+enum class NameConflictError : std::uint8_t {
+	EXISTING_CLASS,
+	EXISTING_OBJECT,
+	EXISTING_METHOD,
+	EXISTING_DATAMEMBER,
+	EXISTING_PARAMETER,
 };
 
 // Forward decl. entity types:

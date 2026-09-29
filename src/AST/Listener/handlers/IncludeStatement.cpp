@@ -20,7 +20,7 @@ void Listener::enter(IncludeStatement* node) {
 	if (!topmost_entity_is<bpp::IR::Program>()) {
 		throw bpp::ErrorHandling::SyntaxError(this, node, "Include statements can only be used at the top level of a program");
 	}
-	auto current_program = std::static_pointer_cast<bpp::IR::Program>(entity_stack.top());
+	auto* current_program = entity_stack.top_as<bpp::IR::Program>();
 
 	const bool is_quoted_include = node->PATHTYPE() == AST::IncludeStatement::PathType::QUOTED;
 	const bool is_dynamic_include = node->TYPE() == AST::IncludeStatement::IncludeType::DYNAMIC;
@@ -114,7 +114,7 @@ void Listener::enter(IncludeStatement* node) {
 			}
 		}
 
-		auto runtime_source_command = std::make_shared<bpp::IR::CodeEntity>();
+		auto runtime_source_command = std::make_unique<bpp::IR::CodeEntity>();
 		runtime_source_command->add("if ! source \""
 			+ runtime_path.string()
 			+ "\"; then\n"
@@ -123,7 +123,7 @@ void Listener::enter(IncludeStatement* node) {
 			"\texit 1\n"
 			"fi\n"
 		);
-		current_program->add(runtime_source_command);
+		current_program->add(std::move(runtime_source_command));
 	}
 }
 

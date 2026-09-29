@@ -13,18 +13,33 @@
 #include <IR/entities/ClassMemberEntity.h>
 #include <IR/entities/MethodParameter.h>
 
-#include <vector>
+#include <map>
 #include <memory>
+#include <optional>
+#include <expected>
+
+#include <error/InternalError.h>
 
 namespace bpp::IR {
 
 /**
  * @brief A method in a class
  */
-class Method : public BashFunction, public AddressableEntity, public ClassMemberEntity, public std::enable_shared_from_this<Method> {
+class Method : public BashFunction, public AddressableEntity, public ClassMemberEntity {
 	private:
 		/// List of parameters expected to be given as arguments to the method
-		std::vector<std::shared_ptr<MethodParameter>> parameters;
+		class ParameterList {
+			private:
+				std::map<std::uint32_t, const MethodParameter*> params;
+				std::uint32_t next_index = 0;
+			public:
+				void add(const MethodParameter* parameter);
+				const MethodParameter* getByIndex(std::uint32_t index) const;
+				const MethodParameter* getByName(std::string_view name) const;
+				const std::map<std::uint32_t, const MethodParameter*>& view() const { return params; }
+				std::uint32_t getNextIndex() const { return next_index; }
+				std::optional<std::uint32_t> getHighestIndex() const;
+		} parameters;
 
 		bool m_is_virtual = false;
 		bool m_is_overridable = false;
@@ -43,7 +58,7 @@ class Method : public BashFunction, public AddressableEntity, public ClassMember
 		 * Calls to this method will be redirected to the parent method.
 		 * @param parent_method The parent method to inherit from
 		 */
-		explicit Method(std::shared_ptr<Method> parent_method) {
+		explicit Method(const Method* parent_method) {
 			bpp_assert(parent_method != nullptr, "Parent method pointer is null");
 			while (parent_method->pointsToParentMethod()) {
 				// If the parent method is itself an inherited method that points to its own parent, traverse the chain up to the original method.
@@ -72,19 +87,19 @@ class Method : public BashFunction, public AddressableEntity, public ClassMember
 		 * and verify that its name does not conflict with any known classes or objects in the containing method's context.
 		 * 
 		 * @param parameter The parameter to add
-		 * @return true if the parameter was added successfully, false otherwise
+		 * @return std::expected<void, NameConflictError> Returns an error if the parameter's name conflicts with an existing parameter, class, or object
 		 */
-		bool addParameter(std::shared_ptr<MethodParameter> parameter);
-		const std::vector<std::shared_ptr<MethodParameter>>& getParameters() const { return parameters; }
+		std::expected<void, NameConflictError> addParameter(std::unique_ptr<MethodParameter> owned_parameter);
 
 		/**
-		 * @brief Reserve space for a number of parameters in the parameters vector
-		 *
-		 * Used by the Listener to avoid repeated reallocations when adding parameters to a method.
-		 * 
-		 * @param count The number of parameters to reserve space for
+		 * @brief Add a non-owned parameter to this method (e.g., the class's `this` pointer)
+		 * This will not modify the parameter in any way, and the method will not take ownership of it.
+		 * @param parameter The parameter to add
+		 * @return std::expected<void, NameConflictError> Returns an error if the parameter's name conflicts with an existing parameter, class, or object
 		 */
-		void reserveParameters(std::size_t count) { parameters.reserve(count); }
+		std::expected<void, NameConflictError> addParameter(const MethodParameter* unowned_parameter);
+
+		const std::map<std::uint32_t, const MethodParameter*>& getParameters() const { return parameters.view(); }
 
 		std::string getAddress() const override;
 
@@ -94,12 +109,10 @@ class Method : public BashFunction, public AddressableEntity, public ClassMember
 		void setIsOverridable(bool is_overridable) { this->m_is_overridable = is_overridable; }
 		bool isOverridable() const { return m_is_overridable; }
 
-		void setParentMethod(std::shared_ptr<Method> parent_method) { setParentMember(parent_method); }
-		std::shared_ptr<Method> getParentMethod() const { return std::static_pointer_cast<Method>(getParentMember()); }
+		void setParentMethod(const Method* parent_method) { setParentMember(parent_method); }
+		const Method* getParentMethod() const { return static_cast<const Method*>(getParentMember()); }
 
 		bool pointsToParentMethod() const { return m_points_to_parent_method; }
-
-		void addReferencePosition(const SymbolPosition& pos) override;
 
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 

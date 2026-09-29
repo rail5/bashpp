@@ -96,7 +96,7 @@ class ASTNode {
  * @return std::unique_ptr<T> The casted unique_ptr of type T.
  */
 template <typename T>
-std::unique_ptr<T> static_uniqueptr_cast(std::unique_ptr<bpp::AST::ASTNode>&& p) {
+std::unique_ptr<T> static_uniqueptr_cast(std::unique_ptr<bpp::AST::ASTNode> p) {
 	return std::unique_ptr<T>(static_cast<T*>(p.release()));
 }
 

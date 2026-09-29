@@ -22,7 +22,7 @@ void Listener::enter(ClassDefinition* node) {
 	if (!topmost_entity_is<bpp::IR::Program>()) {
 		throw bpp::ErrorHandling::SyntaxError(this, node, "Class definition must be at the top level of the program");
 	}
-	auto current_program = std::static_pointer_cast<bpp::IR::Program>(entity_stack.top());
+	auto* current_program = entity_stack.top_as<bpp::IR::Program>();
 
 	// 2. Verify that the class name is valid
 	std::string class_name = node->CLASSNAME();
@@ -41,24 +41,19 @@ void Listener::enter(ClassDefinition* node) {
 		throw bpp::ErrorHandling::SyntaxError(this, node, "Class name '" + class_name + "' conflicts with an object in the program");
 	}
 
-	auto class_entity = std::make_shared<bpp::IR::Class>(class_name);
-	current_program->addClass(class_entity); // Add the class to the program's list of known classes, so that it can be found by name later
+	auto class_entity = std::make_unique<bpp::IR::Class>(class_name);
+	current_program->preregisterClass(class_entity.get());
 	class_entity->inherit(current_program);
 
 	// Inherit from a parent class if specified
 	if (node->PARENTCLASSNAME().has_value()) {
 		auto parent_class_name = node->PARENTCLASSNAME().value().getValue();
-		auto parent_class = current_program->getClass(parent_class_name);
+		auto* parent_class = current_program->getClass(parent_class_name);
 		if (!parent_class) {
+			current_program->unPreregisterClass();
 			throw bpp::ErrorHandling::SyntaxError(this, node, "Parent class '" + parent_class_name + "' not found");
 		}
 		class_entity->inherit(parent_class);
-
-		parent_class->addReferencePosition({
-			get_current_source_file(),
-			node->PARENTCLASSNAME().value().getLine(),
-			node->PARENTCLASSNAME().value().getCharPositionInLine()
-		});
 	}
 
 	class_entity->setDefinitionPosition({
@@ -71,58 +66,54 @@ void Listener::enter(ClassDefinition* node) {
 	// __new, __delete, __copy, __constructor, __destructor
 	// As well as a default 'toPrimitive' method
 	// The contents of these methods will be filled in later
-	auto new_method = std::make_shared<bpp::IR::Builtins::SystemMethod>(bpp::IR::Builtins::SystemMethod::Type::NEW);
-	new_method->inherit(class_entity);
-	auto requested_address_param = std::make_shared<bpp::IR::RequestedAddressParam>(class_entity);
-	requested_address_param->inherit(new_method);
-	new_method->addParameter(requested_address_param);
+	auto new_method = std::make_unique<bpp::IR::Builtins::SystemMethod>(bpp::IR::Builtins::SystemMethod::Type::NEW);
+	new_method->inherit(class_entity.get());
+	auto requested_address_param = std::make_unique<bpp::IR::RequestedAddressParam>(class_entity.get());
+	requested_address_param->inherit(new_method.get());
+	new_method->addParameter(std::move(requested_address_param));
 	new_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
 
-	auto delete_method = std::make_shared<bpp::IR::Builtins::SystemMethod>(bpp::IR::Builtins::SystemMethod::Type::DELETE);
+	auto delete_method = std::make_unique<bpp::IR::Builtins::SystemMethod>(bpp::IR::Builtins::SystemMethod::Type::DELETE);
 	delete_method->setIsVirtual(true);
-	delete_method->inherit(class_entity);
+	delete_method->inherit(class_entity.get());
 	delete_method->addParameter(class_entity->getThisPtr());
 	delete_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
-	program->getVtableLookupFunction()->markReferencedBy(delete_method);
 
-
-	auto copy_method = std::make_shared<bpp::IR::Builtins::SystemMethod>(bpp::IR::Builtins::SystemMethod::Type::COPY);
+	auto copy_method = std::make_unique<bpp::IR::Builtins::SystemMethod>(bpp::IR::Builtins::SystemMethod::Type::COPY);
 	copy_method->setIsVirtual(true);
-	copy_method->inherit(class_entity);
+	copy_method->inherit(class_entity.get());
 	copy_method->addParameter(class_entity->getThisPtr());
-	auto copy_from_param = std::make_shared<bpp::IR::CopyFromParam>(class_entity);
-	copy_from_param->inherit(copy_method);
-	copy_method->addParameter(copy_from_param);
+	auto copy_from_param = std::make_unique<bpp::IR::CopyFromParam>(class_entity.get());
+	copy_from_param->inherit(copy_method.get());
+	copy_method->addParameter(std::move(copy_from_param));
 	copy_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
 
 
-	auto constructor_method = std::make_shared<bpp::IR::Method>();
+	auto constructor_method = std::make_unique<bpp::IR::Method>();
 	constructor_method->setName("__constructor");
 	constructor_method->setIsOverridable(true);
-	constructor_method->inherit(class_entity);
+	constructor_method->inherit(class_entity.get());
 	constructor_method->addParameter(class_entity->getThisPtr());
 	constructor_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
 
-	auto destructor_method = std::make_shared<bpp::IR::Method>();
+	auto destructor_method = std::make_unique<bpp::IR::Method>();
 	destructor_method->setName("__destructor");
 	destructor_method->setIsVirtual(true);
 	destructor_method->setIsOverridable(true);
-	destructor_method->inherit(class_entity);
+	destructor_method->inherit(class_entity.get());
 	destructor_method->addParameter(class_entity->getThisPtr());
 	destructor_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
-	program->getVtableLookupFunction()->markReferencedBy(destructor_method);
 
-	auto toPrimitive_method = std::make_shared<bpp::IR::Method>();
+	auto toPrimitive_method = std::make_unique<bpp::IR::Method>();
 	toPrimitive_method->setName("toPrimitive");
 	toPrimitive_method->setIsVirtual(true);
 	toPrimitive_method->setIsOverridable(true);
-	toPrimitive_method->inherit(class_entity);
+	toPrimitive_method->inherit(class_entity.get());
 	toPrimitive_method->addParameter(class_entity->getThisPtr());
 	toPrimitive_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
 	toPrimitive_method->add("echo \"" + class_entity->getName() + " Instance\"\n");
-	program->getVtableLookupFunction()->markReferencedBy(toPrimitive_method);
 
-	auto add_system_method = [&](std::shared_ptr<bpp::IR::Method>&& method) {
+	auto add_system_method = [&](std::unique_ptr<bpp::IR::Method> method) {
 		if (!class_entity->addMethod(std::move(method))) {
 			throw bpp::ErrorHandling::InternalError("Failed to add system method to class '" + class_entity->getName() + "'");
 		}
@@ -135,15 +126,30 @@ void Listener::enter(ClassDefinition* node) {
 	add_system_method(std::move(destructor_method));
 	add_system_method(std::move(toPrimitive_method));
 
-	entity_stack.push(class_entity);
-	current_program->add(class_entity); // Add the class to the entity tree, so that it can be traversed later (e.g. for codegen)
+	entity_stack.push(std::move(class_entity));
 }
 
 template <>
-void Listener::exit(ClassDefinition* /*node*/) {
+void Listener::exit(ClassDefinition* node) {
 	bpp_assert(topmost_entity_is<bpp::IR::Class>(), "Topmost entity on stack is not a Class when exiting ClassDefinition node");
-	auto class_entity = std::static_pointer_cast<bpp::IR::Class>(entity_stack.top());
-	entity_stack.pop();
+	auto class_entity = entity_stack.pop_as<bpp::IR::Class>();
+
+	bpp_assert(topmost_entity_is<bpp::IR::Program>(), "Topmost entity on stack is not a Program when exiting ClassDefinition node");
+	auto* current_program = entity_stack.top_as<bpp::IR::Program>();
+
+	current_program->unPreregisterClass(); // Remove the preregistered class pointer, since the class has now been fully defined
+
+	auto res = current_program->addClass(std::move(class_entity));
+	if (!res) {
+		std::string error_message = "Class name conflicts with existing ";
+		switch (res.error()) {
+			case bpp::IR::NameConflictError::EXISTING_CLASS: error_message += "class"; break;
+			case bpp::IR::NameConflictError::EXISTING_OBJECT: error_message += "object"; break;
+			default: error_message += "entity"; break;
+		}
+		error_message += ": " + node->CLASSNAME().getValue();
+		throw bpp::ErrorHandling::SyntaxError(this, node, error_message);
+	}
 }
 
 } // namespace bpp::AST

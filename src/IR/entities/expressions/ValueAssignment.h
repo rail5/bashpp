@@ -8,25 +8,26 @@
 
 #include <IR/bpp.h>
 #include <IR/entities/expressions/String.h>
+#include <IR/entities/expressions/ObjectReference.h>
 
 namespace bpp::IR {
 
 class ValueAssignment : public StringType {
 	private:
 		bool lvalue_nonprimitive = false;
-		std::shared_ptr<ObjectReference> rvalue_reference = nullptr;
+		std::unique_ptr<ObjectReference> rvalue_reference;
 
 		bool array_assignment = false; // E.g arr=()
 		bool adding = false; // E.g. arr+=("value")
 	public:
 		void setLvalueNonprimitive(bool is_nonprimitive) { lvalue_nonprimitive = is_nonprimitive; }
-		void setRvalueReference(std::shared_ptr<ObjectReference> obj) { rvalue_reference = std::move(obj); }
+		void setRvalueReference(std::unique_ptr<ObjectReference> obj) { rvalue_reference = std::move(obj); }
 		void setArrayAssignment(bool is_array_assignment) { array_assignment = is_array_assignment; }
 		void setAdding(bool is_adding) { adding = is_adding; }
 
 		bool isLvalueNonprimitive() const { return lvalue_nonprimitive; }
 		bool isRvalueNonprimitive() const { return rvalue_reference != nullptr; }
-		std::shared_ptr<ObjectReference> getRvalueReference() const { return rvalue_reference; }
+		const ObjectReference* getRvalueReference() const { return rvalue_reference.get(); }
 		bool isArrayAssignment() const { return array_assignment; }
 		bool isAdding() const { return adding; }
 

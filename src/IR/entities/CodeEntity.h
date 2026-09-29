@@ -12,11 +12,13 @@
 
 #include <IR/bpp.h>
 #include <IR/entities/Entity.h>
+#include <IR/entities/Object.h>
 
 namespace bpp::IR {
 
 using RawCode = std::string;
-using RawCodeOrEntity = std::variant<RawCode, std::shared_ptr<Entity>>;
+using RawCodeOrOwnedEntity = std::variant<RawCode, std::unique_ptr<Entity>>;
+using RawCodeOrUnownedEntity = std::variant<RawCode, const Entity*>;
 
 /**
  * @brief Any entity which can contain executable code.
@@ -30,9 +32,9 @@ class CodeEntity : public Entity {
 		/// Objects owned by this entity (i.e., this entity is responsible for their lifetime)
 		OwnedEntityList<Object> local_objects;
 		/// The children of this node in the entity tree
-		std::vector<RawCodeOrEntity> children;
+		std::vector<RawCodeOrOwnedEntity> children;
 	public:
-		const std::vector<RawCodeOrEntity>& getChildren() const { return children; }
+		const std::vector<RawCodeOrOwnedEntity>& getChildren() const { return children; }
 
 		/**
 		 * @brief Add raw code to the entity tree as a child of this code entity
@@ -46,7 +48,7 @@ class CodeEntity : public Entity {
 		 * 
 		 * @param child The entity to add
 		 */
-		void add(const std::shared_ptr<Entity>& child);
+		void add(std::unique_ptr<Entity> child);
 
 		/**
 		 * @brief Add an object to this code entity, making it responsible for the object's lifetime.
@@ -59,24 +61,25 @@ class CodeEntity : public Entity {
 		 * 
 		 * @param object The object to add
 		 */
-		bool addObject(std::shared_ptr<Object> object);
+		bool addObject(std::unique_ptr<Object> object);
 		const OwnedEntityList<Object>& getLocalObjects() const { return local_objects; }
+		OwnedEntityList<Object> releaseLocalObjects();
 
 		/**
 		 * @brief Get an object by name, searching local objects first, then parent entities
 		 * 
 		 * @param name The name of the object to get
 		 * @param max_visible_index The maximum visible index of the object to get (for scoping purposes)
-		 * @return std::shared_ptr<Object> The object, or nullptr if not found
+		 * @return Object* The object, or nullptr if not found
 		 */
-		std::shared_ptr<Object> getObject(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const override;
+		Object* getObject(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const override;
 
 		/**
 		 * @brief Get a list of all objects known to this code entity, whether owned by this code entity or merely visible to it
 		 * 
-		 * @return std::vector<std::shared_ptr<Object>> A vector of all objects known to this code entity
+		 * @return std::vector<Object*> A vector of all objects known to this code entity
 		 */
-		std::vector<std::shared_ptr<Object>> getAllKnownObjects() const override;
+		std::vector<Object*> getAllKnownObjects() const override;
 		std::size_t getNumberOfKnownObjects() const override;
 
 		/**
@@ -86,7 +89,7 @@ class CodeEntity : public Entity {
 		 * 
 		 * @param other The other CodeEntity from which to adopt local objects
 		 */
-		void adoptObjectsOf(std::shared_ptr<CodeEntity> other);
+		void adoptObjectsOf(CodeEntity* other);
 
 		static bpp::CodeGen::CodeSegment destroyLocalObjects(bpp::CodeGen::CodeGenState* state);
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;

@@ -6,6 +6,7 @@
 
 #include <IR/bpp.h>
 #include <IR/entities/DataMember.h>
+#include <IR/entities/Class.h>
 
 #include <IR/entities/expressions/Supershell.h>
 #include <IR/entities/expressions/ObjectReference.h>
@@ -18,14 +19,14 @@ namespace bpp::IR::Builtins {
 
 bpp::CodeGen::CodeSegment SystemMethod::generateCode(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "State pointer is null");
-	state->current_method = shared_from_this();
+	state->current_method = this;
 
 	bpp::CodeGen::CodeSegment result;
 
 	result.add_pre_code(getAddress() + "() {\n");
 
-	for (const auto& param : getParameters()) {
-		result.absorb_all_to_pre(param->generateCode(state));
+	for (const auto [index, param] : getParameters()) {
+		result.absorb_all_to_pre(param->generateCode(state, index));
 	}
 
 	switch (type) {
@@ -49,12 +50,12 @@ bpp::CodeGen::CodeSegment SystemMethod::generateCode(bpp::CodeGen::CodeGenState*
 	return result;
 }
 
-bpp::CodeGen::CodeSegment SystemMethod::generateInlineNewCode(bpp::CodeGen::CodeGenState* state, bool localize, std::shared_ptr<const Object> obj) const {
+bpp::CodeGen::CodeSegment SystemMethod::generateInlineNewCode(bpp::CodeGen::CodeGenState* state, bool localize, const Object* obj) const {
 	bpp_assert(state != nullptr, "State pointer is null");
 	bpp_assert(type == Type::NEW, "System method type is not NEW");
 
 	if (!obj) {
-		auto cls = getContainingClass().lock();
+		const auto* cls = getContainingClass();
 		bpp_assert(cls != nullptr, "Containing class is null");
 		obj = cls->getThisPtr();
 		bpp_assert(obj != nullptr, "SystemMethod's containing class has no @this pointer");
@@ -64,7 +65,7 @@ bpp::CodeGen::CodeSegment SystemMethod::generateInlineNewCode(bpp::CodeGen::Code
 
 	if (obj_address == "__this") obj_address = "${__this}"; // TODO(@rail5): HACK. Special-casing the @this pointer to add encasement
 
-	const auto cls = getContainingClass().lock();
+	const auto* cls = getContainingClass();
 	bpp_assert(cls != nullptr, "Containing class is null");
 
 	bpp::CodeGen::CodeSegment result;
@@ -94,13 +95,13 @@ bpp::CodeGen::CodeSegment SystemMethod::generateInlineNewCode(bpp::CodeGen::Code
 		}
 
 		// Non-primitive, non-pointer case
-		const auto dm_cls = dm->getType().lock();
+		const auto* dm_cls = dm->getType();
 		bpp_assert(dm_cls != nullptr, "Nonprimitive data member has no type");
 
-		const auto dm_new_method = dm_cls->getMethod_UNSAFE("__new");
+		const auto* dm_new_method = dm_cls->getMethod_UNSAFE("__new");
 		bpp_assert(dm_new_method != nullptr, "Class " + dm_cls->getName() + " has no __new method");
-		bpp_assert(std::dynamic_pointer_cast<SystemMethod>(dm_new_method) != nullptr, "Class " + dm_cls->getName() + " has a non-SystemMethod __new method");
-		const auto dm_new_sys_method = std::static_pointer_cast<SystemMethod>(dm_new_method);
+		bpp_assert(dynamic_cast<const SystemMethod*>(dm_new_method) != nullptr, "Class " + dm_cls->getName() + " has a non-SystemMethod __new method");
+		const auto* dm_new_sys_method = static_cast<const SystemMethod*>(dm_new_method);
 
 		if (localize) {
 			// Recursively localize 'new' for the data member
@@ -120,7 +121,7 @@ bpp::CodeGen::CodeSegment SystemMethod::generateCopyCode(bpp::CodeGen::CodeGenSt
 	bpp_assert(state != nullptr, "State pointer is null");
 	bpp_assert(type == Type::COPY, "SystemMethod is not COPY");
 
-	const auto cls = getContainingClass().lock();
+	const auto* cls = getContainingClass();
 	bpp_assert(cls != nullptr, "Containing class is null");
 
 	bpp::CodeGen::CodeSegment result;
@@ -150,9 +151,9 @@ bpp::CodeGen::CodeSegment SystemMethod::generateCopyCode(bpp::CodeGen::CodeGenSt
 			result.add_main_code("esac\n");
 		} else {
 			// Recursively copy non-primitive data members
-			const auto dm_cls = dm->getType().lock();
+			const auto* dm_cls = dm->getType();
 			bpp_assert(dm_cls != nullptr, "Nonprimitive data member has no type");
-			const auto dm_copy_method = dm_cls->getMethod_UNSAFE("__copy");
+			const auto* dm_copy_method = dm_cls->getMethod_UNSAFE("__copy");
 			bpp_assert(dm_copy_method != nullptr, "Class " + dm_cls->getName() + " has no __copy method");
 			result.add_main_code(dm_copy_method->getAddress() + " ${__this}" + dm->getAddress() + " ${__source}" + dm->getAddress() + "\n");
 		}
@@ -165,7 +166,7 @@ bpp::CodeGen::CodeSegment SystemMethod::generateDeleteCode(bpp::CodeGen::CodeGen
 	bpp_assert(state != nullptr, "State pointer is null");
 	bpp_assert(type == Type::DELETE, "SystemMethod is not DELETE");
 
-	const auto cls = getContainingClass().lock();
+	const auto* cls = getContainingClass();
 	bpp_assert(cls != nullptr, "Containing class is null");
 
 	bpp::CodeGen::CodeSegment result;
@@ -175,9 +176,9 @@ bpp::CodeGen::CodeSegment SystemMethod::generateDeleteCode(bpp::CodeGen::CodeGen
 			result.add_main_code("unset ${__this}" + dm->getAddress() + "\n");
 		} else {
 			// Recursively delete non-primitive data members
-			const auto dm_cls = dm->getType().lock();
+			const auto* dm_cls = dm->getType();
 			bpp_assert(dm_cls != nullptr, "Nonprimitive data member has no type");
-			const auto dm_delete_method = dm_cls->getMethod_UNSAFE("__delete");
+			const auto* dm_delete_method = dm_cls->getMethod_UNSAFE("__delete");
 			bpp_assert(dm_delete_method != nullptr, "Class " + dm_cls->getName() + " has no __delete method");
 			result.add_main_code(dm_delete_method->getAddress() + " ${__this}" + dm->getAddress() + "\n");
 		}

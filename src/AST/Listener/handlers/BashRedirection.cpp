@@ -15,7 +15,7 @@ namespace bpp::AST {
 template <>
 void Listener::enter(BashRedirection* node) {
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity when entering BashRedirection node");
-	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
+	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 
 	// Just add the redirection operator as RawCode to the current code entity
 	current_code_entity->add(node->OPERATOR().getValue() + " ");

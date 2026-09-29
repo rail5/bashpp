@@ -32,12 +32,12 @@ class BashIfCondition : public StringType {
 class BashIfBranch : public CodeEntity {
 	private:
 		bool root_branch = false;
-		std::optional<std::shared_ptr<BashIfCondition>> condition = std::nullopt;
+		std::optional<std::unique_ptr<BashIfCondition>> condition = std::nullopt;
 	public:
 		void setIsRoot(bool is_root) { root_branch = is_root; }
 		bool isRoot() const { return root_branch; }
-		void setCondition(std::shared_ptr<BashIfCondition> cond) { condition = std::move(cond); }
-		const std::optional<std::shared_ptr<BashIfCondition>>& getCondition() const { return condition; }
+		void setCondition(std::unique_ptr<BashIfCondition> cond) { condition = std::move(cond); }
+		const std::optional<std::unique_ptr<BashIfCondition>>& getCondition() const { return condition; }
 
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 
@@ -49,10 +49,10 @@ class BashIfBranch : public CodeEntity {
  */
 class BashIfStatement : public Entity {
 	private:
-		std::vector<std::shared_ptr<BashIfBranch>> branches;
+		std::vector<std::unique_ptr<BashIfBranch>> branches;
 	public:
-		void addBranch(std::shared_ptr<BashIfBranch> branch) { branches.push_back(std::move(branch)); }
-		const std::vector<std::shared_ptr<BashIfBranch>>& getBranches() const { return branches; }
+		void addBranch(std::unique_ptr<BashIfBranch> branch) { branches.push_back(std::move(branch)); }
+		const std::vector<std::unique_ptr<BashIfBranch>>& getBranches() const { return branches; }
 
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 

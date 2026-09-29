@@ -7,7 +7,6 @@
 #pragma once
 
 #include <IR/bpp.h>
-#include <memory>
 
 namespace bpp::IR {
 
@@ -19,15 +18,15 @@ namespace bpp::IR {
 class ClassMemberEntity {
 	private:
 		VisibilityScope scope = VisibilityScope::PRIVATE;
-		std::weak_ptr<ClassMemberEntity> parent_member;
+		const ClassMemberEntity* parent_member = nullptr;
 
 	public:
 		void setScope(VisibilityScope scope) { this->scope = scope; }
 		VisibilityScope getScope() const { return scope; }
 
 	protected:
-		void setParentMember(std::shared_ptr<ClassMemberEntity> parent_member) { this->parent_member = parent_member; }
-		std::shared_ptr<ClassMemberEntity> getParentMember() const { return parent_member.lock(); }
+		void setParentMember(const ClassMemberEntity* parent_member) { this->parent_member = parent_member; }
+		const ClassMemberEntity* getParentMember() const { return parent_member; }
 };
 
 } // namespace bpp::IR

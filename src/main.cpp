@@ -105,13 +105,13 @@ int main(int argc, char** argv) {
 		if (listener->has_errors()) return 1;
 #ifndef NDEBUG
 		if (args.display_entity_tree()) {
-			std::cout << *listener->get_program() << std::endl;
+			std::cout << *listener->view_program() << std::endl;
 			return 0;
 		}
 #endif
 		bpp::CodeGen::CodeGenState codegen_state;
 		codegen_state.target_bash_version = args.target_bash_version();
-		*output_stream << listener->get_program()->generateCode(&codegen_state);
+		*output_stream << listener->view_program()->generateCode(&codegen_state);
 
 		int exit_code = 0;
 

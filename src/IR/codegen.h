@@ -174,8 +174,8 @@ class CodeSegment {
 
 struct CodeGenState {
 	BashVersion target_bash_version{5, 2};
-	std::shared_ptr<const bpp::IR::Method> current_method = nullptr;
-	std::shared_ptr<const bpp::IR::Class> current_class = nullptr;
+	const bpp::IR::Method* current_method = nullptr;
+	const bpp::IR::Class* current_class = nullptr;
 	std::uint64_t nested_bash_function_depth = 0;
 	std::uint64_t nested_supershell_depth = 0;
 	std::uint64_t nested_subshell_depth = 0;
@@ -186,6 +186,8 @@ struct CodeGenState {
 	bool requires_supershell_function = false;
 	bool requires_global_object_stack = false;
 	bool requires_vtable_lookup_function = false;
+	bool requires_dynamic_cast_function = false;
+	bool requires_typeof_function = false;
 
 	bool in_class() const { return current_class != nullptr; }
 	bool in_method() const { return current_method != nullptr; }

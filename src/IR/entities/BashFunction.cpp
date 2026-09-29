@@ -6,6 +6,8 @@
 
 #include "BashFunction.h"
 
+#include <IR/entities/Object.h>
+
 #include <error/InternalError.h>
 
 namespace bpp::IR {

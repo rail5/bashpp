@@ -10,12 +10,13 @@
 #include <IR/entities/Entity.h>
 #include <IR/entities/NamedEntity.h>
 #include <IR/entities/AddressableEntity.h>
-#include <IR/entities/Class.h>
-#include <IR/entities/CodeEntity.h>
 
 #include <optional>
+#include <variant>
 
 namespace bpp::IR {
+
+using OptionallyOwnedCodeEntity = std::variant<std::unique_ptr<CodeEntity>, const CodeEntity*>;
 
 /**
  * @brief An object in Bash++.
@@ -27,52 +28,47 @@ class Object : public Entity, public NamedEntity, public AddressableEntity {
 	private:
 		bool m_is_pointer = false;
 
-		std::weak_ptr<const Class> type;
+		const Class* type = nullptr;
 
 		// Initialization information:
 		/// If a pointer or primitive, the initial value (if any)
-		std::optional<std::shared_ptr<CodeEntity>> initial_value = std::nullopt;
+		std::optional<OptionallyOwnedCodeEntity> initial_value;
 
 		/// If not a pointer, the object from which this is copied (if any)
-		std::shared_ptr<Object> copy_from = nullptr;
+		const Object* copy_from = nullptr;
 	public:
+		Object() = default;
+		Object(const Object& other);
+		Object& operator=(const Object& other) = delete;
+		Object(Object&& other) = default;
+		Object& operator=(Object&& other) = default;
+		~Object() override = default;
+
 		std::string getAddress() const override;
 
 		bool isPointer() const { return m_is_pointer; }
 		void setIsPointer(bool is_pointer) { m_is_pointer = is_pointer; }
 
-		std::weak_ptr<const Class> getType() const { return type; }
-		void setType(std::weak_ptr<const Class> type) { this->type = std::move(type); }
+		const Class* getType() const { return type; }
+		void setType(const Class* type) { this->type = type; }
 
-		bool isPrimitive() const { return type.expired() || isPointer(); }
+		bool isPrimitive() const { return type == nullptr || isPointer(); }
 
-		void setInitialValue(const std::shared_ptr<CodeEntity>& value) { initial_value = value; }
-		const std::optional<std::shared_ptr<CodeEntity>>& getInitialValue() const { return initial_value; }
+		void setInitialValue(std::unique_ptr<CodeEntity> value);
+		std::optional<const CodeEntity*> getInitialValue() const;
 		bool hasInitialValue() const { return initial_value.has_value(); }
 
-		void setCopyFrom(std::shared_ptr<Object> other) { copy_from = std::move(other); }
-		std::shared_ptr<Object> getCopyFrom() const { return copy_from; }
+		/**
+		 * @brief Release ownership of the initial value, if any, and return it.
+		 * If no initial value is set, returns nullptr.
+		 * @return std::unique_ptr<CodeEntity> The initial value, or nullptr if none is set.
+		 */
+		std::unique_ptr<CodeEntity> releaseInitialValue();
 
-		PRETTYPRINT_OVERRIDE({
-			std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
-			os << indent << "(";
-			if (type.expired()) {
-				os << "Primitive";
-			} else {
-				os << type.lock()->getName();
-			}
-			if (m_is_pointer) os << "*";
-			os << " " << name;
-			if (initial_value.has_value()) {
-				os << "\n" << indent << "  =\n";
-				initial_value.value()->prettyPrint(os, indentation_level + 1);
-				os << indent;
-			} else if (copy_from != nullptr) {
-				os << "\n" << indent << "  = copy of " << copy_from->getName() << "\n" << indent;
-			}
-			os << ")\n";
-			return os;
-		})
+		void setCopyFrom(const Object* other) { copy_from = other; }
+		const Object* getCopyFrom() const { return copy_from; }
+
+		PRETTYPRINT_OVERRIDE();
 };
 
 } // namespace bpp::IR

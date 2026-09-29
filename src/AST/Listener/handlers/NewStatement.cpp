@@ -20,26 +20,19 @@ namespace bpp::AST {
 template <>
 void Listener::enter(NewStatement* node) {
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity when entering NewStatement node");
-	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
+	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 
 	const auto& type = node->TYPE();
-	auto class_entity = current_code_entity->getClass(type);
+	auto* class_entity = current_code_entity->getClass(type);
 	if (!class_entity) {
 		throw bpp::ErrorHandling::SyntaxError(this, type, "Class not found: " + type.getValue());
 	}
 
-	auto instantiation = std::make_shared<bpp::IR::ObjectInstantiation>();
+	auto instantiation = std::make_unique<bpp::IR::ObjectInstantiation>();
 	instantiation->inherit(current_code_entity);
 	instantiation->setType(class_entity);
 	// By not setting the "stackLikeObject" we indicate that this is a heap-like instantiation (i.e., a call to @new TYPE)
-	current_code_entity->add(instantiation);
-
-	// Mark __new, __constructor as used by this instantiation
-	auto new_method = class_entity->getMethod_UNSAFE("__new");
-	bpp_assert(new_method != nullptr, "Class has no __new method when entering NewStatement node");
-	new_method->markReferencedBy(instantiation);
-	auto constructor_method = class_entity->getMethod_UNSAFE("__constructor");
-	if (constructor_method) constructor_method->markReferencedBy(instantiation);
+	current_code_entity->add(std::move(instantiation));
 }
 
 template <>

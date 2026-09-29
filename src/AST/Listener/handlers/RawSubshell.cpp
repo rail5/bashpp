@@ -15,28 +15,28 @@ namespace bpp::AST {
 template <>
 void Listener::enter(RawSubshell* node) {
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity when entering RawSubshell node");
-	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
+	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 
-	auto raw_subshell_entity = std::make_shared<bpp::IR::RawSubshell>();
+	auto raw_subshell_entity = std::make_unique<bpp::IR::RawSubshell>();
 	raw_subshell_entity->inherit(current_code_entity);
-	entity_stack.push(raw_subshell_entity);
 
 	raw_subshell_entity->setDefinitionPosition({
 		get_current_source_file(),
 		node->getLine(),
 		node->getCharPositionInLine()
 	});
+
+	entity_stack.push(std::move(raw_subshell_entity));
 }
 
 template <>
 void Listener::exit(RawSubshell* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::RawSubshell>(), "Topmost entity is not a RawSubshell when exiting RawSubshell node");
-	auto raw_subshell_entity = std::static_pointer_cast<bpp::IR::RawSubshell>(entity_stack.top());
-	entity_stack.pop();
+	auto raw_subshell_entity = entity_stack.pop_as<bpp::IR::RawSubshell>();
 
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity when exiting RawSubshell node");
-	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
-	current_code_entity->add(raw_subshell_entity);
+	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
+	current_code_entity->add(std::move(raw_subshell_entity));
 }
 
 } // namespace bpp::AST

@@ -44,17 +44,17 @@ std::string get_reference_chain_prettyprint_string(const ObjectReference::Refere
 	std::string result = "@";
 
 	bpp_assert(!chain.empty(), "Reference chain is empty");
-	const auto root = chain.getRoot().lock();
+	const auto* root = chain.getRoot();
 	bpp_assert(root != nullptr, "Root object is null");
 	result += root->getName();
 	for (auto it = std::next(chain.begin()); it != chain.end(); ++it) {
-		auto obj = (*it).lock();
+		const auto* obj = *it;
 		bpp_assert(obj != nullptr, "Data member in reference chain is null");
 		result += '.' + obj->getName();
 	}
 
 	if (chain.hasMethod()) {
-		auto method = chain.getMethod().lock();
+		const auto* method = chain.getMethod();
 		bpp_assert(method != nullptr, "Method is null");
 		result += '.' + method->getName();
 	}
@@ -66,7 +66,7 @@ std::string get_reference_chain_prettyprint_string(const ObjectReference::Refere
 bpp::CodeGen::CodeSegment ObjectReference::generateCode(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "State pointer is null");
 	bpp_assert(!getReferenceChain().empty(), "Reference chain is empty");
-	bpp_assert(!getReferenceChain().getRoot().expired(), "Object pointer is null");
+	bpp_assert(getReferenceChain().getRoot() != nullptr, "Object pointer is null");
 	bpp::CodeGen::CodeSegment result;
 
 	/* The purpose of ObjectReference::generate_code is to calculate the address of the final object in the reference chain
@@ -88,13 +88,13 @@ bpp::CodeGen::CodeSegment ObjectReference::generateCode(bpp::CodeGen::CodeGenSta
 	 *                                                                         etc
 	 */
 	const auto& ref = getReferenceChain();
-	const auto root = ref.getRoot().lock();
+	const auto* root = ref.getRoot();
 
 	std::string current_address = root->getAddress();
 	std::uint8_t indirection_level = root->isPointer() ? 1 : 0;
 
 	for (auto it = std::next(ref.begin()); it != ref.end(); ++it) {
-		const auto dm = (*it).lock();
+		const auto* dm = *it;
 		bpp_assert(dm != nullptr, "Data member in reference chain is null");
 
 		if (indirection_level > 0) {
@@ -130,7 +130,7 @@ bpp::CodeGen::CodeSegment ObjectReference::generateCode(bpp::CodeGen::CodeGenSta
 
 	// FIXME(@rail5): HACK. Unify procedure
 	if (ref.hasMethod()) {
-		auto method = ref.getMethod().lock();
+		const auto* method = ref.getMethod();
 		bpp_assert(method != nullptr, "Method is null");
 
 		bpp::CodeGen::CodeSegment call;
@@ -139,6 +139,7 @@ bpp::CodeGen::CodeSegment ObjectReference::generateCode(bpp::CodeGen::CodeGenSta
 			if (state->should_declare_local()) call.add_pre_code("local __func\n");
 			call.add_pre_code("bpp____vTable_lookup " + refString + " " + method->getName() + " __func\n");
 			call.add_main_code("${__func} " + std::move(refString));
+			state->requires_vtable_lookup_function = true;
 		} else {
 			call.add_main_code(method->getAddress() + " " + std::move(refString));
 		}

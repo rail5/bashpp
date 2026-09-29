@@ -13,8 +13,31 @@
 
 namespace bpp::IR {
 
+RawCodeOrUnownedEntity DynamicCast::getTargetType() const {
+	if (std::holds_alternative<RawCode>(target_type)) {
+		return std::get<RawCode>(target_type);
+	} else if (std::holds_alternative<std::unique_ptr<Entity>>(target_type)) {
+		return std::get<std::unique_ptr<Entity>>(target_type).get();
+	}
+
+	throw bpp::ErrorHandling::InternalError("DynamicCast::getTargetType(): target_type is in an invalid state");
+}
+
+void DynamicCast::setTargetType(const RawCode& type) {
+	target_type = type;
+}
+
+void DynamicCast::setTargetType(std::unique_ptr<Entity> type) {
+	target_type = std::move(type);
+}
+
 bpp::CodeGen::CodeSegment DynamicCast::generateCode(bpp::CodeGen::CodeGenState* state) const {
+	return generateCode(state, "");
+}
+
+bpp::CodeGen::CodeSegment DynamicCast::generateCode(bpp::CodeGen::CodeGenState* state, const std::string& target_var) const {
 	bpp_assert(state != nullptr, "State pointer is null");
+	state->requires_dynamic_cast_function = true;
 	bpp::CodeGen::CodeSegment result;
 
 	const auto& inner_code = StringType::generateCode(state);
@@ -30,20 +53,20 @@ bpp::CodeGen::CodeSegment DynamicCast::generateCode(bpp::CodeGen::CodeGenState* 
 
 	// The 'main code' of the inner expression is the reference value, i.e., the address of the object to be casted.
 
-	const std::string result_variable = [state, this]() {
-		if (this->target_variable.has_value()) return this->target_variable.value();
+	const std::string result_variable = [state, target_var]() {
+		if (!target_var.empty()) return target_var;
 		return "__dynamicCast" + std::to_string(state->dynamic_cast_counter++);
 	}();
 
 	// If no target variable was explicitly set, this dynamic cast is being used as a temporary value
 	// so we should unset the result variable after using it to avoid cluttering the generated code with unnecessary variables.
-	if (!target_variable.has_value()) result.add_post_code("\nunset " + result_variable + "\n");
+	if (target_var.empty()) result.add_post_code("\nunset " + result_variable + "\n");
 
 	bpp::CodeGen::CodeSegment cast_to;
 	if (std::holds_alternative<RawCode>(target_type)) {
 		cast_to.copy_to_main_code(std::get<RawCode>(target_type));
-	} else if (std::holds_alternative<std::shared_ptr<Entity>>(target_type)) {
-		auto entity = std::get<std::shared_ptr<Entity>>(target_type);
+	} else if (std::holds_alternative<std::unique_ptr<Entity>>(target_type)) {
+		const auto* entity = std::get<std::unique_ptr<Entity>>(target_type).get();
 		cast_to.egalitarian_merge(entity->generateCode(state));
 	}
 
@@ -70,9 +93,9 @@ PRETTYPRINT_IMPLEMENTATION(DynamicCast, {
 		<< indent << "TargetType: ";
 	if (std::holds_alternative<RawCode>(target_type)) {
 		os << std::get<RawCode>(target_type) << "\n";
-	} else if (std::holds_alternative<std::shared_ptr<Entity>>(target_type)) {
+	} else if (std::holds_alternative<std::unique_ptr<Entity>>(target_type)) {
 		os << "\n";
-		auto entity = std::get<std::shared_ptr<Entity>>(target_type);
+		const auto* entity = std::get<std::unique_ptr<Entity>>(target_type).get();
 		entity->prettyPrint(os, indentation_level + 1);
 	} else {
 		os << indent << "<Invalid target type>\n";

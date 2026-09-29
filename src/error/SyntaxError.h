@@ -7,7 +7,6 @@
 #pragma once
 
 #include <string>
-#include <memory>
 #include <cstdint>
 #include <stdexcept>
 #include <filesystem>
@@ -53,7 +52,7 @@ class Diagnostic : virtual public std::runtime_error {
 		 * @brief The Program that produced this diagnostic.
 		 * This is used to add the diagnostic to the program's diagnostics list for language server support.
 		 */
-		std::shared_ptr<bpp::IR::Program> program;
+		bpp::IR::Program* program = nullptr;
 
 		/// Any accompanying message (error or warning) to display to the user
 		std::string message;
@@ -64,7 +63,7 @@ class Diagnostic : virtual public std::runtime_error {
 		template <bpp::detail::ASTNodePtrORToken T>
 		void set_from_listener(bpp::AST::Listener* listener, const T& error_ctx) {
 			include_chain = listener->get_include_chain();
-			program = listener->get_program();
+			program = listener->view_program();
 			//lsp_mode = listener->get_lsp_mode();
 
 			text_length = 1;

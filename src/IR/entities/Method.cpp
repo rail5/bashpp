@@ -7,6 +7,8 @@
 #include "Method.h"
 
 #include <IR/entities/Object.h>
+#include <IR/entities/Class.h>
+#include <IR/entities/MethodParameter.h>
 #include <IR/entities/expressions/DynamicCast.h>
 
 #include <IR/entities/Program.h>
@@ -15,72 +17,84 @@
 
 namespace bpp::IR {
 
-bool Method::addParameter(std::shared_ptr<MethodParameter> parameter) {
-	for (const auto& p : parameters) {
-		if (p->getName() == parameter->getName()) return false; // Parameter with this name already exists
-	}
+void Method::ParameterList::add(const MethodParameter* parameter) {
+	params[next_index++] = parameter;
+}
 
-	// The @this pointer will always be given an index of 1
-	// But, after @this, we shift the positional arguments of the method,
-	// so the next parameter is *also* given an index of 1, then 2, then 3, etc.
-	parameter->setIndex(std::max(static_cast<std::uint32_t>(parameters.size()), 1u));
+const MethodParameter* Method::ParameterList::getByIndex(std::uint32_t index) const {
+	if (!params.contains(index)) return nullptr;
+	return params.at(index);
+}
+
+const MethodParameter* Method::ParameterList::getByName(std::string_view name) const {
+	for (const auto& [index, param] : params) {
+		if (param->viewName() == name) return param;
+	}
+	return nullptr;
+}
+
+std::optional<std::uint32_t> Method::ParameterList::getHighestIndex() const {
+	if (next_index == 0) return std::nullopt;
+	return next_index - 1;
+}
+
+std::expected<void, NameConflictError> Method::addParameter(std::unique_ptr<MethodParameter> owned_parameter) {
+	if (getClass(owned_parameter->getName())) return std::unexpected(NameConflictError::EXISTING_CLASS);
+	if (getObject(owned_parameter->getName())) return std::unexpected(NameConflictError::EXISTING_OBJECT);
+	if (parameters.getByName(owned_parameter->viewName())) return std::unexpected(NameConflictError::EXISTING_PARAMETER);
 
 	// Per the spec: if a method is declared to take a pointer as a parameter,
 	// then the argument passed to that parameter is implicitly dynamically cast to the expected type at the start of the method.
-	if (auto param_type = parameter->getType().lock()) {
-		// Verify that this parameter's name doesn't conflict with any known classes or objects
-		if (getObject(parameter->getName()) || getClass(parameter->getName())) return false;
-
-		auto dynamic_cast_entity = std::make_shared<DynamicCast>();
-		dynamic_cast_entity->inherit(parameter);
+	if (const auto* param_type = owned_parameter->getType()) {
+		auto dynamic_cast_entity = std::make_unique<DynamicCast>();
+		dynamic_cast_entity->inherit(owned_parameter.get());
 		dynamic_cast_entity->setTargetType(param_type->getName());
 		// Tell the dynamic cast entity which positional parameter to use as its input (i.e., the argument passed to this parameter)
-		dynamic_cast_entity->add("$" + std::to_string(parameter->getIndex()));
+		dynamic_cast_entity->add("$" + std::to_string(parameters.getNextIndex()));
 		// Set the initial value of this parameter to be the result of the dynamic cast
-		parameter->setInitialValue(dynamic_cast_entity);
+		owned_parameter->setInitialValue(std::move(dynamic_cast_entity));
 
 		// Mark the dynamic_cast builtin as referenced by this parameter
-		auto containing_program = getContainingProgram().lock();
+		const auto* containing_program = getContainingProgram();
 		bpp_assert(containing_program != nullptr, "Containing program is null");
-		auto dynamic_cast_builtin = containing_program->getDynamicCastFunction();
+		const auto* dynamic_cast_builtin = containing_program->getDynamicCastFunction();
 		bpp_assert(dynamic_cast_builtin != nullptr, "Containing program does not have a dynamic_cast builtin");
-		dynamic_cast_builtin->markReferencedBy(parameter);
-
-		// Add to our local list of owned objects, so that it can be found by name later
-		local_objects.add(parameter);
 	}
 
-	parameters.push_back(parameter);
-	return true;
+	parameters.add(owned_parameter.get());
+	// Add to our local list of owned objects
+	local_objects.add(std::move(owned_parameter));
+	return {};
 }
 
-void Method::addReferencePosition(const SymbolPosition& pos) {
-	Entity::addReferencePosition(pos);
-	if (auto parent = getParentMethod()) {
-		parent->addReferencePosition(pos);
-	}
+std::expected<void, NameConflictError> Method::addParameter(const MethodParameter* unowned_parameter) {
+	if (getClass(unowned_parameter->getName())) return std::unexpected(NameConflictError::EXISTING_CLASS);
+	if (getObject(unowned_parameter->getName())) return std::unexpected(NameConflictError::EXISTING_OBJECT);
+	if (parameters.getByName(unowned_parameter->viewName())) return std::unexpected(NameConflictError::EXISTING_PARAMETER);
+	parameters.add(unowned_parameter);
+	return {};
 }
 
 std::string Method::getAddress() const {
-	bpp_assert(!getContainingClass().expired(), "Method does not have a containing class");
+	bpp_assert(getContainingClass(), "Method does not have a containing class");
 	if (m_points_to_parent_method) {
 		bpp_assert(getParentMethod() != nullptr, "Method points to parent method but has no parent method");
 		return getParentMethod()->getAddress();
 	}
-	return "bpp__" + getContainingClass().lock()->getName() + "__" + name;
+	return "bpp__" + getContainingClass()->getName() + "__" + name;
 }
 
 bpp::CodeGen::CodeSegment Method::generateCode(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "State pointer is null");
 	if (m_points_to_parent_method) return {}; // Skip generating code for non-overridden inherited methods
-	state->current_method = shared_from_this();
+	state->current_method = this;
 	bpp::CodeGen::CodeSegment code;
 
 	code.add_pre_code(getAddress() + "() {\n");
 	code.add_pre_code("local __scopeFrames=(0)\n");
 
-	for (const auto& param : parameters) {
-		code.absorb_all_to_main(param->generateCode(state));
+	for (const auto [index, param] : parameters.view()) {
+		code.absorb_all_to_main(param->generateCode(state, index));
 	}
 
 	// We deliberately call CodeEntity::generate_code() here, rather than BashFunction::generate_code(),
@@ -110,7 +124,7 @@ PRETTYPRINT_IMPLEMENTATION(Method, {
 	if (m_is_virtual) os << ", virtual";
 	if (getParentMethod()) os << ", inherited";
 	os << "]\n";
-	for (const auto& param : parameters) {
+	for (const auto [index, param] : parameters.view()) {
 		param->prettyPrint(os, indentation_level + 1);
 	}
 

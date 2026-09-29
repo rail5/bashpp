@@ -12,6 +12,7 @@
 #include <IR/entities/Object.h>
 #include <IR/entities/DataMember.h>
 #include <IR/entities/Method.h>
+#include <IR/entities/Class.h>
 #include <AST/Token.h>
 
 #include <error/InternalError.h>
@@ -29,7 +30,7 @@ namespace bpp::IR {
  *
  * E.g., @object.member
  */
-class ObjectReference : public StringType, public std::enable_shared_from_this<ObjectReference> {
+class ObjectReference : public StringType {
 	public:
 		/**
 		 * @brief A chain starting from a root object and following a series of data member accesses to reach a final object.
@@ -38,17 +39,17 @@ class ObjectReference : public StringType, public std::enable_shared_from_this<O
 		 */
 		class ReferenceChain {
 			private:
-				std::vector<std::weak_ptr<const Object>> chain;
-				std::optional<std::weak_ptr<const Method>> method = std::nullopt;
+				std::vector<const Object*> chain;
+				std::optional<const Method*> method = std::nullopt;
 			public:
-				explicit ReferenceChain(std::shared_ptr<const Object> root) { chain.push_back(root); }
-				void append(std::shared_ptr<const DataMember> datamember) { chain.push_back(datamember); }
-				std::weak_ptr<const Object> getRoot() const { return chain.front(); }
-				std::weak_ptr<const Object> getFinalObject() const { return chain.back(); }
+				explicit ReferenceChain(const Object* root) { chain.push_back(root); }
+				void append(const DataMember* datamember) { chain.push_back(datamember); }
+				const Object* getRoot() const { return chain.front(); }
+				const Object* getFinalObject() const { return chain.back(); }
 				bool hasMethod() const { return method.has_value(); }
-				void setMethod(std::weak_ptr<const Method> m) { method = std::move(m); }
+				void setMethod(const Method* m) { method = m; }
 				void removeMethod() { method.reset(); }
-				std::weak_ptr<const Method> getMethod() const { return method.value_or(std::weak_ptr<const Method>()); }
+				const Method* getMethod() const { return method.value_or(nullptr); }
 				std::size_t size() const { return chain.size(); }
 				bool empty() const { return chain.empty(); }
 
@@ -68,7 +69,8 @@ class ObjectReference : public StringType, public std::enable_shared_from_this<O
 
 		const ReferenceChain& getReferenceChain() const { return reference; }
 		void setReferenceChain(ReferenceChain&& chain) { reference = std::move(chain); }
-		std::weak_ptr<const Object> getFinalObject() const { return reference.getFinalObject(); }
+		void setReferenceChain(const ReferenceChain& chain) { reference = chain; }
+		const Object* getFinalObject() const { return reference.getFinalObject(); }
 
 		/**
 		 * @brief Whether this reference is ultimately primitive
@@ -82,7 +84,7 @@ class ObjectReference : public StringType, public std::enable_shared_from_this<O
 		 * @return true if the reference is ultimately primitive, false if not
 		 */
 		bool isPrimitive() const {
-			auto final_object = getFinalObject().lock();
+			const auto* final_object = getFinalObject();
 			bpp_assert(final_object != nullptr, "Final object is null");
 			if (isAddressOf()) return true; // '&' transforms everything into a primitive
 			if (reference.hasMethod()) return true; // The output of a method is a primitive
@@ -103,7 +105,7 @@ class ObjectReference : public StringType, public std::enable_shared_from_this<O
 		 * @return true if the reference is ultimately a pointer, false if not
 		 */
 		bool isPointer() const {
-			auto final_object = reference.getFinalObject().lock();
+			const auto* final_object = reference.getFinalObject();
 			bpp_assert(final_object != nullptr, "Final object is null");
 			if (isAddressOf()) return false;
 			if (reference.hasMethod()) return false;
@@ -135,12 +137,12 @@ class ObjectReference : public StringType, public std::enable_shared_from_this<O
 		 */
 		void addMethodCall_UNSAFE(const std::string& method_name) {
 			bpp_assert(!reference.empty(), "Reference chain is empty");
-			auto final_object = reference.getFinalObject().lock();
+			const auto* final_object = reference.getFinalObject();
 			bpp_assert(final_object != nullptr, "Final object is null");
 			bpp_assert(isNonprimitive() || isPointer(), "Final object is primitive");
-			auto final_class = final_object->getType().lock();
+			const auto* final_class = final_object->getType();
 			bpp_assert(final_class != nullptr, "Final object has no type");
-			auto method = final_class->getMethod_UNSAFE(method_name);
+			const auto* method = final_class->getMethod_UNSAFE(method_name);
 			bpp_assert(method != nullptr, "Final object's class has no method named " + method_name);
 			reference.setMethod(method);
 		}
@@ -159,8 +161,8 @@ class ObjectReference : public StringType, public std::enable_shared_from_this<O
 
 		ObjectReference() = default;
 		~ObjectReference() override = default;
-		ObjectReference(const ObjectReference& other) = default;
-		ObjectReference& operator=(const ObjectReference& other) = default;
+		ObjectReference(const ObjectReference& other) = delete;
+		ObjectReference& operator=(const ObjectReference& other) = delete;
 		ObjectReference(ObjectReference&& other) noexcept = default;
 		ObjectReference& operator=(ObjectReference&& other) noexcept = default;
 	private:
@@ -191,17 +193,17 @@ concept IdentifierElement = StringLike<T> || TokenLike<T>;
 
 template <typename T>
 requires IdentifierElement<T>
-std::expected<std::shared_ptr<ObjectReference>, EntityResolutionError> resolve_entity(
+std::expected<std::unique_ptr<ObjectReference>, EntityResolutionError> resolve_entity(
 	std::filesystem::path file,
-	std::shared_ptr<const Entity> context,
+	const Entity* context,
 	std::span<T> ids
 ) {
 	bpp_assert(context != nullptr, "Context pointer is null");
-	auto program = context->getContainingProgram().lock();
+	const auto* program = context->getContainingProgram();
 	bpp_assert(program != nullptr, "Containing program is null");
 	bpp_assert(!std::ranges::empty(ids), "At least one identifier is required");
 
-	std::shared_ptr<ObjectReference> result = std::make_shared<ObjectReference>();
+	std::unique_ptr<ObjectReference> result = std::make_unique<ObjectReference>();
 
 	constexpr bool provide_diagnostics = TokenLike<T>;
 
@@ -221,10 +223,10 @@ std::expected<std::shared_ptr<ObjectReference>, EntityResolutionError> resolve_e
 	bool self_reference = first_id == "this" || first_id == "super";
 	bool super = first_id == "super";
 
-	auto obj = context->getObject(first_id);
+	auto* obj = context->getObject(first_id);
 
 	if (self_reference) {
-		if (auto containing_class = context->getContainingClass().lock()) {
+		if (const auto* containing_class = context->getContainingClass()) {
 			obj = super ? containing_class->getSuperPtr() : containing_class->getThisPtr();
 			if (!obj && super) return fail(containing_class->getName() + " has no parent class to reference with @super", first);
 		} else {
@@ -236,12 +238,7 @@ std::expected<std::shared_ptr<ObjectReference>, EntityResolutionError> resolve_e
 		return fail("Object not found: " + first_id, first);
 	}
 
-	if constexpr (provide_diagnostics) {
-		obj->addReferencePosition(SymbolPosition{file, first.getLine(), first.getCharPositionInLine()});
-		obj->markReferencedBy(result);
-	}
-
-	auto current_class = obj->getType().lock();
+	const auto* current_class = obj->getType();
 	bpp_assert(current_class != nullptr, "Object has no type");
 	auto remaining = ids.subspan(1);
 
@@ -261,21 +258,12 @@ std::expected<std::shared_ptr<ObjectReference>, EntityResolutionError> resolve_e
 
 		if (data_member) {
 			chain.append(data_member.value());
-			current_class = data_member.value()->getType().lock();
-
-			if constexpr (provide_diagnostics) {
-				data_member.value()->addReferencePosition(SymbolPosition{file, current_token.getLine(), current_token.getCharPositionInLine()});
-				data_member.value()->markReferencedBy(result);
-			}
+			current_class = data_member.value()->getType();
 
 			if (current_class == nullptr && !std::ranges::empty(remaining)) {
 				return fail("Unexpected identifier after primitive object reference", remaining.front());
 			}
 		} else if (method) {
-			if constexpr (provide_diagnostics) {
-				method.value()->addReferencePosition(SymbolPosition{file, current_token.getLine(), current_token.getCharPositionInLine()});
-				method.value()->markReferencedBy(result);
-			}
 			if (!std::ranges::empty(remaining)) {
 				return fail("Unexpected identifier after method reference", remaining.front());
 			}
@@ -283,8 +271,8 @@ std::expected<std::shared_ptr<ObjectReference>, EntityResolutionError> resolve_e
 		} else if (data_member.error() == LookupError::INACCESSIBLE || method.error() == LookupError::INACCESSIBLE) {
 			return fail(id + " is inaccessible in this context", current_token);
 		} else {
-			std::shared_ptr<const Object> latest_entity = obj;
-			if (!chain.empty()) latest_entity = chain.getFinalObject().lock();
+			const Object* latest_entity = obj;
+			if (!chain.empty()) latest_entity = chain.getFinalObject();
 			return fail(latest_entity->getName() + " has no member named " + id, current_token);
 		}
 	}

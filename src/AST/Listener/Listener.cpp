@@ -10,6 +10,9 @@
 #include <error/SyntaxError.h>
 
 #include <IR/entities/CodeEntity.h>
+#include <IR/entities/Program.h>
+
+#include <ranges>
 
 namespace bpp::AST {
 
@@ -40,14 +43,16 @@ void Listener::walk(bpp::AST::ASTNode* node) {
 	}
 }
 
-std::shared_ptr<bpp::IR::CodeEntity> Listener::latest_code_entity() const {
-	std::stack<std::shared_ptr<bpp::IR::Entity>> temp_stack = entity_stack;
-	while (!temp_stack.empty()) {
-		auto top = std::dynamic_pointer_cast<bpp::IR::CodeEntity>(temp_stack.top());
+bpp::IR::CodeEntity* Listener::latest_code_entity() const {
+	for (const auto& it : std::views::reverse(entity_stack)) {
+		auto* top = dynamic_cast<bpp::IR::CodeEntity*>(it.get());
 		if (top) return top;
-		temp_stack.pop();
 	}
 	return nullptr;
+}
+
+std::unique_ptr<bpp::IR::Program> Listener::release_program() {
+	return std::move(program);
 }
 
 } // namespace bpp::AST

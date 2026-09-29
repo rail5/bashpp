@@ -11,19 +11,58 @@
 
 namespace bpp::IR {
 
-bool Program::addClass(std::shared_ptr<Class> class_entity) {
-	if (classes.find(class_entity->getName())) return false; // Class with this name already exists
+std::expected<void, NameConflictError> Program::addClass(std::unique_ptr<Class> class_entity) {
+	// If this class was pre-registered, remove it from the preregistered list, since it is now being fully defined
+	preregistered_class = nullptr;
 
-	return classes.add(class_entity);
+	if (classes.find(class_entity->viewName())) return std::unexpected(NameConflictError::EXISTING_CLASS);
+	if (getObject(class_entity->getName())) return std::unexpected(NameConflictError::EXISTING_OBJECT);
+
+	classes.add(std::move(class_entity));
+	return {};
 }
 
-void Program::adoptClassesOf(std::shared_ptr<IncludedProgram> other_program) {
+void Program::preregisterClass(Class* class_entity) {
+	bpp_assert(class_entity != nullptr, "Class pointer is null");
+	preregistered_class = class_entity;
+}
+
+Class* Program::getClass(const std::string& name, std::size_t max_visible_index) const {
+	Class* res = classes.find(name, max_visible_index);
+	if (res) return res;
+
+	// If not found in the owned classes, check the preregistered classes
+	if (preregistered_class && preregistered_class->getName() == name) {
+		if (max_visible_index <= classes.size()) return nullptr; // The preregistered class is not visible at this index
+		return preregistered_class;
+	}
+	return nullptr;
+}
+
+std::vector<Class*> Program::getAllKnownClasses() const {
+	std::vector<Class*> result;
+	result.reserve(classes.size() + 1);
+	std::transform(classes.view_entities().begin(), classes.view_entities().end(), std::back_inserter(result), [](const std::unique_ptr<Class>& class_ptr) { return class_ptr.get(); });
+	if (preregistered_class) result.push_back(preregistered_class);
+	return result;
+}
+
+std::size_t Program::getNumberOfKnownClasses() const {
+	return classes.size() + (preregistered_class ? 1 : 0);
+}
+
+void Program::adoptClassesOf(IncludedProgram* other_program) {
 	bpp_assert(other_program != nullptr, "Other program pointer is null");
-	for (const auto& class_entity : other_program->getOwnedClasses()) {
-		if (!this->addClass(class_entity)) {
-			throw bpp::ErrorHandling::InternalError("adopt_classes_of() failed to adopt class '" + class_entity->getName() + "' from another program");
+	for (auto&& class_entity : other_program->releaseOwnedClasses().release_entities()) {
+		std::string name = class_entity->getName();
+		if (!this->addClass(std::move(class_entity))) {
+			throw bpp::ErrorHandling::InternalError("adopt_classes_of() failed to adopt class '" + name + "' from another program");
 		}
 	}
+}
+
+bpp::IR::OwnedEntityList<Class> Program::releaseOwnedClasses() {
+	return std::move(classes);
 }
 
 bpp::CodeGen::CodeSegment Program::generateCode(bpp::CodeGen::CodeGenState* state) const {
@@ -31,6 +70,10 @@ bpp::CodeGen::CodeSegment Program::generateCode(bpp::CodeGen::CodeGenState* stat
 	bpp::CodeGen::CodeSegment code;
 
 	code.add_pre_code("#!/usr/bin/env bash\n");
+
+	for (const auto& class_entity : classes.view_entities()) {
+		code.absorb_all_to_main(class_entity->generateCode(state));
+	}
 
 	code.absorb_all_to_main(CodeEntity::generateCode(state));
 
@@ -58,8 +101,8 @@ bpp::CodeGen::CodeSegment Program::generateCode(bpp::CodeGen::CodeGenState* stat
 	} // Bash>=5.3 has a native supershell implementation, skip adding our own
 
 	code.absorb_all_to_pre(this->vtable_lookup_function->generateCode(state, state->requires_vtable_lookup_function));
-	code.absorb_all_to_pre(this->dynamic_cast_function->generateCode(state));
-	code.absorb_all_to_pre(this->typeof_function->generateCode(state));
+	code.absorb_all_to_pre(this->dynamic_cast_function->generateCode(state, state->requires_dynamic_cast_function));
+	code.absorb_all_to_pre(this->typeof_function->generateCode(state, state->requires_typeof_function));
 	code.absorb_all_to_pre(this->repeat_function->generateCode(state, state->requires_repeat_function));
 
 	code.add_post_code("\nbpp____destroy_objectStack\n");
@@ -69,37 +112,30 @@ bpp::CodeGen::CodeSegment Program::generateCode(bpp::CodeGen::CodeGenState* stat
 }
 
 
-IncludedProgram::IncludedProgram(std::shared_ptr<Program> containing_program) {
+IncludedProgram::IncludedProgram(const Program* containing_program) {
 	bpp_assert(containing_program != nullptr, "Containing program pointer is null");
 	// Inherit the containing program, so that this included program can see all of its classes
 	this->inherit(containing_program);
 	this->setContainingProgram(containing_program);
-
-	this->setGlobalObjectStackFunction(containing_program->getGlobalObjectStackFunction());
-	this->setSupershellFunction(containing_program->getSupershellFunction());
-	this->setRepeatFunction(containing_program->getRepeatFunction());
-	this->setVtableLookupFunction(containing_program->getVtableLookupFunction());
-	this->setDynamicCastFunction(containing_program->getDynamicCastFunction());
-	this->setTypeofFunction(containing_program->getTypeofFunction());
 }
 
-std::shared_ptr<Class> IncludedProgram::getClass(const std::string& name, std::size_t max_visible_index) const {
+Class* IncludedProgram::getClass(const std::string& name, std::size_t max_visible_index) const {
 	// First, check if this included program has a class with this name
-	auto owned_class = Program::getClass(name, max_visible_index);
+	auto* owned_class = Program::getClass(name, max_visible_index);
 	if (owned_class) return owned_class;
 
 	// If not, check the containing program (the program that included this one)
-	bpp_assert(!getParentProgram().expired(), "IncludedProgram does not have a containing program");
-	return getParentProgram().lock()->getClass(name, max_visible_index);
+	bpp_assert(getParentProgram(), "IncludedProgram does not have a containing program");
+	return getParentProgram()->getClass(name, max_visible_index);
 }
 
-std::vector<std::shared_ptr<Class>> IncludedProgram::getAllKnownClasses() const {
+std::vector<Class*> IncludedProgram::getAllKnownClasses() const {
 	// Get all classes from this included program
 	auto owned_classes = Program::getAllKnownClasses();
 
 	// Get all classes from the containing program (the program that included this one)
-	bpp_assert(!getParentProgram().expired(), "IncludedProgram does not have a containing program");
-	const auto& containing_program_classes = getParentProgram().lock()->getAllKnownClasses();
+	bpp_assert(getParentProgram(), "IncludedProgram does not have a containing program");
+	const auto& containing_program_classes = getParentProgram()->getAllKnownClasses();
 
 	// Combine the two lists of classes
 	owned_classes.insert(owned_classes.end(), containing_program_classes.begin(), containing_program_classes.end());
@@ -108,9 +144,9 @@ std::vector<std::shared_ptr<Class>> IncludedProgram::getAllKnownClasses() const 
 }
 
 std::size_t IncludedProgram::getNumberOfKnownClasses() const {
-	bpp_assert(!getParentProgram().expired(), "IncludedProgram does not have a containing program");
+	bpp_assert(getParentProgram(), "IncludedProgram does not have a containing program");
 	std::size_t owned_count = Program::getNumberOfKnownClasses();
-	return owned_count + getParentProgram().lock()->getNumberOfKnownClasses();
+	return owned_count + getParentProgram()->getNumberOfKnownClasses();
 }
 
 bpp::CodeGen::CodeSegment IncludedProgram::generateCode(bpp::CodeGen::CodeGenState* state) const {

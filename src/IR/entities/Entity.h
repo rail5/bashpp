@@ -29,13 +29,13 @@ class Entity {
 		std::size_t program_visible_class_count_at_creation = 0;
 
 		/// The entity from which this entity inherits (applies to all entities except Program)
-		std::weak_ptr<const Entity> parent_entity;
+		const Entity* parent_entity = nullptr;
 
 		/// If this entity is inside of a class definition, this points to that class. Otherwise, it is null.
-		std::weak_ptr<const Class> containing_class;
+		const Class* containing_class = nullptr;
 
 		/// The program that this entity belongs to (only null for the Program entity itself)
-		std::weak_ptr<const Program> containing_program;
+		const Program* containing_program = nullptr;
 
 		/// Where in the source this entity was defined (used for error reporting / language server features)
 		SymbolPosition definition_position;
@@ -43,8 +43,6 @@ class Entity {
 		/// A list of all positions where this entity is referenced in the source (used for language server features)
 		std::list<SymbolPosition> reference_positions;
 
-		/// A list of all entities that reference this entity (used for optimization and dead-code elimination)
-		std::list<std::weak_ptr<const Entity>> referencing_entities;
 	public:
 		Entity() = default;
 		virtual ~Entity() = default;
@@ -54,22 +52,16 @@ class Entity {
 		Entity(Entity&& other) = default;
 		Entity& operator=(Entity&& other) = default;
 
-		virtual std::weak_ptr<const Class> getContainingClass() const { return containing_class; }
-		void setContainingClass(std::weak_ptr<const Class> containing_class) { this->containing_class = std::move(containing_class); }
+		virtual const Class* getContainingClass() const { return containing_class; }
+		void setContainingClass(const Class* containing_class) { this->containing_class = containing_class; }
 
-		virtual std::weak_ptr<const Program> getContainingProgram() const { return containing_program; }
-		void setContainingProgram(std::weak_ptr<const Program> containing_program) { this->containing_program = std::move(containing_program); }
+		virtual const Program* getContainingProgram() const { return containing_program; }
+		void setContainingProgram(const Program* containing_program) { this->containing_program = containing_program; }
 
 		SymbolPosition getDefinitionPosition() const { return definition_position; }
 		void setDefinitionPosition(const SymbolPosition& pos) { this->definition_position = pos; }
 
 		const std::list<SymbolPosition>& getReferencePositions() const { return reference_positions; }
-
-		// Note: Methods require a different procedure.
-		// Adding a reference to a derived class's version of an inherited method should also add a reference
-		// to the base class's version of the method, since both are considered "used" in that case.
-		// Likewise for data members.
-		virtual void addReferencePosition(const SymbolPosition& pos) { this->reference_positions.push_back(pos); }
 
 		/**
 		 * @brief Inherit from another entity
@@ -86,9 +78,9 @@ class Entity {
 		 * 
 		 * @param parent The entity to inherit from
 		 */
-		void inherit(std::shared_ptr<const Entity> parent);
+		void inherit(const Entity* parent);
 
-		std::weak_ptr<const Entity> getParentEntity() const { return parent_entity; }
+		const Entity* getParentEntity() const { return parent_entity; }
 
 		/**
 		 * @brief Get a class by name
@@ -99,9 +91,9 @@ class Entity {
 		 * 
 		 * @param name The name of the class to get
 		 * @param max_visible_index The maximum visible index of the class to get (for scoping purposes)
-		 * @return std::shared_ptr<Class> The class, or nullptr if not found
+		 * @return Class* The class, or nullptr if not found
 		 */
-		virtual std::shared_ptr<Class> getClass(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const;
+		virtual Class* getClass(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const;
 
 		/**
 		 * @brief Get an object by name
@@ -114,28 +106,17 @@ class Entity {
 		 * 
 		 * @param name The name of the object to get
 		 * @param max_visible_index The maximum visible index of the object to get (for scoping purposes)
-		 * @return std::shared_ptr<Object> The object, or nullptr if not found
+		 * @return Object* The object, or nullptr if not found
 		 */
-		virtual std::shared_ptr<Object> getObject(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const;
+		virtual Object* getObject(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const;
 
-		virtual std::vector<std::shared_ptr<Class>> getAllKnownClasses() const;
-		virtual std::vector<std::shared_ptr<Object>> getAllKnownObjects() const;
+		virtual std::vector<Class*> getAllKnownClasses() const;
+		virtual std::vector<Object*> getAllKnownObjects() const;
 
 		virtual std::size_t getNumberOfKnownObjects() const;
 		virtual std::size_t getNumberOfKnownClasses() const;
 
 		virtual bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* /*state*/) const { return {}; }
-
-		/**
-		 * @brief Whether this entity is referenced by any other entities in the program
-		 *
-		 * This is used for optimization and dead-code elimination.
-		 *
-		 * For example, if a class's method is never called, we don't need to generate code for it.
-		 */
-		bool isReferenced() const;
-		void markReferencedBy(std::shared_ptr<const Entity> referencing_entity) { referencing_entities.push_back(referencing_entity); }
-		const std::list<std::weak_ptr<const Entity>>& getReferencingEntities() const { return referencing_entities; }
 
 		PRETTYPRINT_HELPERS(Entity)
 };

@@ -9,6 +9,7 @@
 #include <memory>
 #include <stack>
 #include <set>
+#include <vector>
 #include <filesystem>
 
 #include <AST/ASTNode.h>
@@ -18,6 +19,7 @@
 #include <error/detail.h>
 
 #include "ContextExpectations.h"
+#include "EntityStack.h"
 
 #include <IR/bpp.h>
 
@@ -83,7 +85,7 @@ namespace bpp::AST {
 class Listener final {
 	private:
 		/// The program (root node of the entity tree) being constructed by this listener
-		std::shared_ptr<bpp::IR::Program> program;
+		std::unique_ptr<bpp::IR::Program> program;
 
 		bool program_has_errors = false;
 
@@ -116,7 +118,7 @@ class Listener final {
 		/// A chain of included files, from the original main file to the current file being processed
 		std::vector<std::filesystem::path> include_chain;
 
-		std::stack<std::shared_ptr<bpp::IR::Entity>> entity_stack;
+		bpp::IR::EntityStack entity_stack;
 
 		/**
 		 * @brief Helper function to check the type of the top of the entity stack
@@ -128,7 +130,7 @@ class Listener final {
 		template <class T>
 		bool topmost_entity_is() const {
 			if (entity_stack.empty()) return false;
-			return std::dynamic_pointer_cast<T>(entity_stack.top()) != nullptr;
+			return dynamic_cast<T*>(entity_stack.top()) != nullptr;
 		}
 
 		/**
@@ -137,9 +139,9 @@ class Listener final {
 		 * This traverses the stack from top to bottom, returning the first entity that is a CodeEntity (or derived from CodeEntity).
 		 * The entity returned may not be the topmost entity on the stack.
 		 * 
-		 * @return std::shared_ptr<bpp::IR::Entity> The latest code entity on the stack, or nullptr if there is none
+		 * @return bpp::IR::CodeEntity* The latest code entity on the stack, or nullptr if there is none
 		 */
-		std::shared_ptr<bpp::IR::CodeEntity> latest_code_entity() const;
+		bpp::IR::CodeEntity* latest_code_entity() const;
 
 		ExpectationsStack context_expectations_stack;
 
@@ -147,7 +149,8 @@ class Listener final {
 	public:
 		void walk(bpp::AST::ASTNode* node);
 
-		std::shared_ptr<bpp::IR::Program> get_program() const { return program; }
+		bpp::IR::Program* view_program() const { return program.get(); }
+		std::unique_ptr<bpp::IR::Program> release_program();
 
 		// Default (empty) implementations of enter/exit for each node type.
 		// Specializations are provided for node types that need to be handled.

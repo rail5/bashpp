@@ -16,26 +16,25 @@ namespace bpp::AST {
 template <>
 void Listener::enter(ArrayIndex* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity");
-	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
+	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 
-	auto array_index_entity = std::make_shared<bpp::IR::StringType>();
+	auto array_index_entity = std::make_unique<bpp::IR::StringType>();
 	array_index_entity->inherit(current_code_entity);
 	array_index_entity->add("[");
 
-	entity_stack.push(array_index_entity);
+	entity_stack.push(std::move(array_index_entity));
 }
 
 template <>
 void Listener::exit(ArrayIndex* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::StringType>(), "Topmost entity is not a StringType");
-	auto array_index_entity = std::static_pointer_cast<bpp::IR::StringType>(entity_stack.top());
-	entity_stack.pop();
+	auto array_index_entity = entity_stack.pop_as<bpp::IR::StringType>();
 
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity");
-	auto current_code_entity = std::static_pointer_cast<bpp::IR::CodeEntity>(entity_stack.top());
+	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 
 	array_index_entity->add("]");
-	current_code_entity->add(array_index_entity);
+	current_code_entity->add(std::move(array_index_entity));
 }
 
 } // namespace bpp::AST

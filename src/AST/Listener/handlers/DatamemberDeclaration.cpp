@@ -17,10 +17,10 @@ namespace bpp::AST {
 
 template <>
 void Listener::enter(DatamemberDeclaration* node) {
-	auto current_class = std::dynamic_pointer_cast<bpp::IR::Class>(entity_stack.top());
+	auto* current_class = entity_stack.top_as<bpp::IR::Class>();
 	if (!current_class) throw bpp::ErrorHandling::SyntaxError(this, node, "Data member declaration outside of class body");
 
-	auto dm = std::make_shared<bpp::IR::DataMember>();
+	auto dm = std::make_unique<bpp::IR::DataMember>();
 	dm->inherit(current_class);
 
 	switch (node->ACCESSMODIFIER().getValue()) {
@@ -56,34 +56,33 @@ void Listener::enter(DatamemberDeclaration* node) {
 		});
 	}
 
-	entity_stack.push(dm);
+	entity_stack.push(std::move(dm));
 }
 
 template <>
 void Listener::exit(DatamemberDeclaration* node) {
 	bpp_assert(topmost_entity_is<bpp::IR::DataMember>(), "Topmost entity on stack is not a DataMember when exiting DatamemberDeclaration node");
-	auto dm = std::static_pointer_cast<bpp::IR::DataMember>(entity_stack.top());
-	entity_stack.pop();
+	auto dm = entity_stack.pop_as<bpp::IR::DataMember>();
 
 	if (dm->isPointer() && !dm->hasInitialValue()) {
 		// Pointers should be auto-initialized to @nullptr (0) if no initial value is provided
-		auto value_assignment = std::make_shared<bpp::IR::ValueAssignment>();
-		value_assignment->inherit(dm);
+		auto value_assignment = std::make_unique<bpp::IR::ValueAssignment>();
+		value_assignment->inherit(dm.get());
 		value_assignment->add("0");
-		dm->setInitialValue(value_assignment);
+		dm->setInitialValue(std::move(value_assignment));
 	}
 
 	bpp_assert(topmost_entity_is<bpp::IR::Class>(), "Topmost entity on stack is not a Class when exiting DatamemberDeclaration node");
-	auto current_class = std::static_pointer_cast<bpp::IR::Class>(entity_stack.top());
-	auto res = current_class->addDatamember(dm);
+	auto* current_class = entity_stack.top_as<bpp::IR::Class>();
+	auto res = current_class->addDatamember(std::move(dm));
 	if (!res) {
-		if (res.error() == bpp::IR::AddError::NAME_CONFLICTS_WITH_EXISTING_DATAMEMBER) {
+		if (res.error() == bpp::IR::NameConflictError::EXISTING_DATAMEMBER) {
 			throw bpp::ErrorHandling::SyntaxError(this, node,
-				"Data member name has already been used: @" + current_class->getName() + "." + dm->getName());
+				"Data member name has already been used: @" + current_class->getName() + "." + node->IDENTIFIER().value().getValue());
 		}
-		if (res.error() == bpp::IR::AddError::NAME_CONFLICTS_WITH_EXISTING_METHOD) {
+		if (res.error() == bpp::IR::NameConflictError::EXISTING_METHOD) {
 			throw bpp::ErrorHandling::SyntaxError(this, node,
-				"Data member name conflicts with existing method: " + current_class->getName() + "." + dm->getName());
+				"Data member name conflicts with existing method: " + current_class->getName() + "." + node->IDENTIFIER().value().getValue());
 		}
 	}
 }

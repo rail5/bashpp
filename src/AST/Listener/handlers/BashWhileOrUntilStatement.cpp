@@ -6,7 +6,7 @@
 
 #include <AST/Listener/Listener.h>
 
-#include <IR/entities/expressions/BashWhileOrUntilStatement.h>
+#include <IR/entities/expressions/bash/BashWhileOrUntilStatement.h>
 
 #include <error/InternalError.h>
 

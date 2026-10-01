@@ -6,7 +6,7 @@
 
 #include <AST/Listener/Listener.h>
 
-#include <IR/entities/expressions/BashCaseStatement.h>
+#include <IR/entities/expressions/bash/BashCaseStatement.h>
 
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>

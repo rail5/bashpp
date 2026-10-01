@@ -6,7 +6,7 @@
 
 #include <AST/Listener/Listener.h>
 
-#include <IR/entities/expressions/DeleteStatement.h>
+#include <IR/entities/expressions/bpp/DeleteStatement.h>
 
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>

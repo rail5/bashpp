@@ -6,7 +6,7 @@
 
 #include <AST/Listener/Listener.h>
 
-#include <IR/entities/expressions/DynamicCast.h>
+#include <IR/entities/expressions/bpp/DynamicCast.h>
 #include <IR/entities/Class.h>
 #include <IR/entities/Program.h>
 

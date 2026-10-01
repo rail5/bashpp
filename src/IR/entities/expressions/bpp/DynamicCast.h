@@ -7,7 +7,7 @@
 #pragma once
 
 #include <IR/bpp.h>
-#include "String.h"
+#include <IR/entities/expressions/String.h>
 
 namespace bpp::IR {
 

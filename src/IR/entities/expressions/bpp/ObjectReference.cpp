@@ -8,7 +8,7 @@
 #include <IR/entities/Object.h>
 #include <IR/entities/Method.h>
 #include <IR/entities/DataMember.h>
-#include <IR/entities/expressions/Supershell.h>
+#include <IR/entities/expressions/bpp/Supershell.h>
 #include <IR/entities/Program.h>
 #include "ObjectReference.h"
 

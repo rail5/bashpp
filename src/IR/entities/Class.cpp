@@ -5,11 +5,11 @@
  */
 
 #include "Class.h"
-#include "Method.h"
-#include "MethodParameter.h"
-#include "DataMember.h"
+#include <IR/entities/Method.h>
+#include <IR/entities/MethodParameter.h>
+#include <IR/entities/DataMember.h>
 
-#include <IR/entities/expressions/DynamicCast.h>
+#include <IR/entities/expressions/bpp/DynamicCast.h>
 
 #include <error/InternalError.h>
 

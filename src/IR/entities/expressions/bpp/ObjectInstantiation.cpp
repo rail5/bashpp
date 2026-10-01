@@ -9,7 +9,7 @@
 #include <IR/entities/Class.h>
 #include <IR/entities/Method.h>
 #include <IR/entities/Object.h>
-#include <IR/entities/expressions/Supershell.h>
+#include <IR/entities/expressions/bpp/Supershell.h>
 
 #include <error/InternalError.h>
 

@@ -10,7 +10,7 @@
 #include <IR/entities/Program.h>
 #include <IR/entities/Class.h>
 #include <IR/entities/Method.h>
-#include <IR/entities/expressions/ObjectInstantiation.h>
+#include <IR/entities/expressions/bpp/ObjectInstantiation.h>
 
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>

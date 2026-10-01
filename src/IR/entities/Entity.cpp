@@ -5,9 +5,9 @@
  */
 
 #include "Entity.h"
-#include "Program.h"
-#include "Object.h"
-#include "NamedEntity.h"
+#include <IR/entities/Program.h>
+#include <IR/entities/Object.h>
+#include <IR/entities/NamedEntity.h>
 
 #include <error/InternalError.h>
 

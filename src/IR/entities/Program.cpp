@@ -5,7 +5,7 @@
  */
 
 #include "Program.h"
-#include "Class.h"
+#include <IR/entities/Class.h>
 
 #include <error/InternalError.h>
 

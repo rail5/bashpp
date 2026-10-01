@@ -9,9 +9,9 @@
 #include <IR/entities/Object.h>
 #include <IR/entities/DataMember.h>
 #include <IR/entities/Method.h>
-#include <IR/entities/expressions/ObjectInstantiation.h>
-#include <IR/entities/expressions/ObjectReference.h>
-#include <IR/entities/expressions/ObjectAssignment.h>
+#include <IR/entities/expressions/bpp/ObjectInstantiation.h>
+#include <IR/entities/expressions/bpp/ObjectReference.h>
+#include <IR/entities/expressions/bpp/ObjectAssignment.h>
 
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>

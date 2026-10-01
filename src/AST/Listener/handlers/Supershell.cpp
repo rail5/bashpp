@@ -6,7 +6,7 @@
 
 #include <AST/Listener/Listener.h>
 
-#include <IR/entities/expressions/Supershell.h>
+#include <IR/entities/expressions/bpp/Supershell.h>
 #include <IR/entities/Program.h>
 
 #include <error/InternalError.h>

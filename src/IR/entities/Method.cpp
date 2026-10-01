@@ -9,8 +9,7 @@
 #include <IR/entities/Object.h>
 #include <IR/entities/Class.h>
 #include <IR/entities/MethodParameter.h>
-#include <IR/entities/expressions/DynamicCast.h>
-
+#include <IR/entities/expressions/bpp/DynamicCast.h>
 #include <IR/entities/Program.h>
 
 #include <error/InternalError.h>

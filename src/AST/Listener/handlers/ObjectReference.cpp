@@ -10,10 +10,10 @@
 #include <IR/entities/Object.h>
 #include <IR/entities/DataMember.h>
 #include <IR/entities/Method.h>
-#include <IR/entities/expressions/ObjectReference.h>
-#include <IR/entities/expressions/ObjectAssignment.h>
-#include <IR/entities/expressions/Supershell.h>
-#include <IR/entities/expressions/DeleteStatement.h>
+#include <IR/entities/expressions/bpp/ObjectReference.h>
+#include <IR/entities/expressions/bpp/ObjectAssignment.h>
+#include <IR/entities/expressions/bpp/Supershell.h>
+#include <IR/entities/expressions/bpp/DeleteStatement.h>
 
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>

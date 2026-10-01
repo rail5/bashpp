@@ -6,7 +6,7 @@
 #include <variant>
 
 #include <IR/bpp.h>
-#include <IR/entities/expressions/String.h>
+#include "String.h"
 
 #include <error/InternalError.h>
 

@@ -6,7 +6,7 @@
 
 #include <AST/Listener/Listener.h>
 
-#include <IR/entities/expressions/ObjectAssignment.h>
+#include <IR/entities/expressions/bpp/ObjectAssignment.h>
 
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>

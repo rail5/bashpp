@@ -7,8 +7,8 @@
 #include <AST/Listener/Listener.h>
 
 #include <IR/entities/CodeEntity.h>
-#include <IR/entities/BashPipeline.h>
-#include <IR/entities/expressions/BashBreakOrContinueCommand.h>
+#include <IR/entities/expressions/bash/BashPipeline.h>
+#include <IR/entities/expressions/bash/BashBreakOrContinueCommand.h>
 
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>

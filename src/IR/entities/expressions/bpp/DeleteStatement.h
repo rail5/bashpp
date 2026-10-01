@@ -8,7 +8,7 @@
 
 #include <IR/bpp.h>
 #include <IR/entities/CodeEntity.h>
-#include <IR/entities/expressions/ObjectReference.h>
+#include <IR/entities/expressions/bpp/ObjectReference.h>
 
 namespace bpp::IR {
 

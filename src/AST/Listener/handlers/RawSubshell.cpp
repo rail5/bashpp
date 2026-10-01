@@ -6,7 +6,7 @@
 
 #include <AST/Listener/Listener.h>
 
-#include <IR/entities/expressions/RawSubshell.h>
+#include <IR/entities/expressions/bash/RawSubshell.h>
 
 #include <error/InternalError.h>
 

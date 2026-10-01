@@ -6,7 +6,7 @@
 
 #include "ObjectAssignment.h"
 
-#include <IR/entities/expressions/ObjectReference.h>
+#include <IR/entities/expressions/bpp/ObjectReference.h>
 
 namespace bpp::IR {
 

@@ -6,7 +6,7 @@
 
 #include <AST/Listener/Listener.h>
 
-#include <IR/entities/expressions/BashIfStatement.h>
+#include <IR/entities/expressions/bash/BashIfStatement.h>
 
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>

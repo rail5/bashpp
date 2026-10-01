@@ -25,11 +25,12 @@ const MethodParameter* Method::ParameterList::getByIndex(std::uint32_t index) co
 	return params.at(index);
 }
 
-const MethodParameter* Method::ParameterList::getByName(std::string_view name) const {
+std::vector<const MethodParameter*> Method::ParameterList::getByName(std::string_view name) const {
+	std::vector<const MethodParameter*> result;
 	for (const auto& [index, param] : params) {
-		if (param->viewName() == name) return param;
+		if (param->viewName() == name) result.push_back(param);
 	}
-	return nullptr;
+	return result;
 }
 
 std::optional<std::uint32_t> Method::ParameterList::getHighestIndex() const {
@@ -38,9 +39,19 @@ std::optional<std::uint32_t> Method::ParameterList::getHighestIndex() const {
 }
 
 std::expected<void, NameConflictError> Method::addParameter(std::unique_ptr<MethodParameter> owned_parameter) {
+	auto existing_params = parameters.getByName(owned_parameter->viewName());
+	for (const auto* existing_param : existing_params) {
+		// Don't ban '$arg' and '@arg' from coexisting in the same method, since they are unambiguous
+		// But if there's already '$arg', a second '$arg' is a conflict, etc.
+		if (existing_param->isPointer() == owned_parameter->isPointer()) {
+			return std::unexpected(NameConflictError::EXISTING_PARAMETER);
+		}
+	}
+
 	if (getClass(owned_parameter->getName())) return std::unexpected(NameConflictError::EXISTING_CLASS);
 	if (getObject(owned_parameter->getName())) return std::unexpected(NameConflictError::EXISTING_OBJECT);
-	if (parameters.getByName(owned_parameter->viewName())) return std::unexpected(NameConflictError::EXISTING_PARAMETER);
+
+	parameters.add(owned_parameter.get());
 
 	// Per the spec: if a method is declared to take a pointer as a parameter,
 	// then the argument passed to that parameter is implicitly dynamically cast to the expected type at the start of the method.
@@ -53,23 +64,27 @@ std::expected<void, NameConflictError> Method::addParameter(std::unique_ptr<Meth
 		// Set the initial value of this parameter to be the result of the dynamic cast
 		owned_parameter->setInitialValue(std::move(dynamic_cast_entity));
 
-		// Mark the dynamic_cast builtin as referenced by this parameter
-		const auto* containing_program = getContainingProgram();
-		bpp_assert(containing_program != nullptr, "Containing program is null");
-		const auto* dynamic_cast_builtin = containing_program->getDynamicCastFunction();
-		bpp_assert(dynamic_cast_builtin != nullptr, "Containing program does not have a dynamic_cast builtin");
+		// Add to our local list of owned objects
+		local_objects.add(std::move(owned_parameter));
+	} else {
+		// Add to our local list of owned primitive parameters
+		primitive_parameters.add(std::move(owned_parameter));
 	}
 
-	parameters.add(owned_parameter.get());
-	// Add to our local list of owned objects
-	local_objects.add(std::move(owned_parameter));
 	return {};
 }
 
 std::expected<void, NameConflictError> Method::addParameter(const MethodParameter* unowned_parameter) {
+	auto existing_params = parameters.getByName(unowned_parameter->viewName());
+	for (const auto* existing_param : existing_params) {
+		if (existing_param->isPointer() == unowned_parameter->isPointer()) {
+			return std::unexpected(NameConflictError::EXISTING_PARAMETER);
+		}
+	}
+
 	if (getClass(unowned_parameter->getName())) return std::unexpected(NameConflictError::EXISTING_CLASS);
 	if (getObject(unowned_parameter->getName())) return std::unexpected(NameConflictError::EXISTING_OBJECT);
-	if (parameters.getByName(unowned_parameter->viewName())) return std::unexpected(NameConflictError::EXISTING_PARAMETER);
+
 	parameters.add(unowned_parameter);
 	return {};
 }

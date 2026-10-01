@@ -35,11 +35,30 @@ class Method : public BashFunction, public Components::Addressable, public Compo
 			public:
 				void add(const MethodParameter* parameter);
 				const MethodParameter* getByIndex(std::uint32_t index) const;
-				const MethodParameter* getByName(std::string_view name) const;
+				/**
+				 * @brief Get all parameters with the given name.
+				 * There will be *at most* 2 parameters with the same name: one primitive and one pointer parameter.
+				 */
+				std::vector<const MethodParameter*> getByName(std::string_view name) const;
 				const std::map<std::uint32_t, const MethodParameter*>& view() const { return params; }
 				std::uint32_t getNextIndex() const { return next_index; }
 				std::optional<std::uint32_t> getHighestIndex() const;
 		} parameters;
+
+		/**
+		 * @brief A list of parameters that are primitives (i.e., not pointers to objects).
+		 *
+		 * Pointer parameters are stored in the local objects list rather than this one.
+		 *
+		 * Since there is no chance of ambiguity between referencing `$arg' and `@arg',
+		 * there is no rule against having a primitive parameter and a pointer parameter with the same name.
+		 * That being the case, it's important to store the primitive parameters in a separate container.
+		 * It also prevents accidental discovery from `@ID` lookups, which should never find pure primitives.
+		 *
+		 * The ParameterList stores non-owning pointers to both primitive and pointer parameters.
+		 * This container (and the local objects list) are the *owners* of the parameters, and are responsible for their lifetime.
+		 */
+		OwnedEntityList<MethodParameter> primitive_parameters;
 
 		bool m_is_virtual = false;
 		bool m_is_overridable = false;

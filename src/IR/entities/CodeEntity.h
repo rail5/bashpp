@@ -11,6 +11,7 @@
 #include <variant>
 
 #include <IR/bpp.h>
+#include <IR/OwnedEntityList.h>
 #include <IR/entities/Entity.h>
 #include <IR/entities/Object.h>
 

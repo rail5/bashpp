@@ -11,6 +11,7 @@
 #include <expected>
 
 #include <IR/bpp.h>
+#include <IR/OwnedEntityList.h>
 #include <IR/entities/CodeEntity.h>
 #include <IR/entities/Object.h>
 #include <IR/entities/Class.h>

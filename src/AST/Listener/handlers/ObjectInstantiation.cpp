@@ -6,6 +6,8 @@
 
 #include <AST/Listener/Listener.h>
 
+#include <IR/identifiers.h>
+
 #include <IR/entities/Object.h>
 #include <IR/entities/DataMember.h>
 #include <IR/entities/Method.h>

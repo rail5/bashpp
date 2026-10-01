@@ -7,14 +7,6 @@
 #pragma once
 
 #include <cstdint>
-#include <array>
-#include <string_view>
-#include <string>
-#include <algorithm>
-#include <vector>
-#include <span>
-#include <unordered_map>
-#include <memory>
 #include <filesystem>
 
 namespace bpp {
@@ -25,55 +17,6 @@ constexpr std::filesystem::path get_standard_library_path() {
 
 namespace bpp::IR {
 
-/**
- * @var protected_keywords
- * @brief A list of keywords that are reserved and cannot be used as identifiers in Bash++
- */
-inline constexpr std::array<std::string_view, 18> protected_keywords = {
-	"class", "constructor", "delete", "destructor",
-	"dynamic_cast", "include", "include_always", "local",
-	"method", "new", "nullptr","private",
-	"protected", "public", "super", "this",
-	"typeof", "virtual",
-};
-
-/**
- * @brief Check if a string matches any of our protected keywords
- * @param keyword The string to check
- */
-inline bool is_protected_keyword(const std::string& keyword) {
-	return std::ranges::contains(protected_keywords, keyword);
-}
-
-/**
- * @brief Check if a string is a valid identifier in Bash++
- * @param identifier The string to check
- * @return true if the string is a valid identifier, false otherwise
- */
-inline bool is_valid_identifier(const std::string& identifier) {
-	// Verify it's not empty, and not a reserved keyword
-	if (identifier.empty() || is_protected_keyword(identifier)) {
-		return false;
-	}
-
-	// Verify it doesn't contain two consecutive underscores
-	if (identifier.contains("__")) return false;
-
-	// Verify it starts with a letter or underscore, and contains only letters, digits, and underscores
-	if (!isalpha(identifier[0]) && identifier[0] != '_') {
-		return false;
-	}
-
-	for (char c : identifier) {
-		if (!isalnum(c) && c != '_') {
-			return false;
-		}
-	}
-
-	// If all checks passed, it's a valid identifier
-	return true;
-}
-
 struct SymbolPosition {
 	std::filesystem::path file;
 	std::uint64_t line = 0;
@@ -82,49 +25,6 @@ struct SymbolPosition {
 	SymbolPosition() = default;
 	SymbolPosition(const std::filesystem::path& file, std::uint64_t line, std::uint64_t column)
 		: file(file), line(line), column(column) {}
-};
-
-template <class T>
-class OwnedEntityList {
-	private:
-		std::vector<std::unique_ptr<T>> entities;
-		std::unordered_map<std::string_view, std::size_t> name_to_index;
-	public:
-		bool add(std::unique_ptr<T> entity) {
-			const std::string_view name = entity->viewName();
-			if (name_to_index.contains(name)) return false; // Entity with this name already exists
-			entities.push_back(std::move(entity));
-			name_to_index[name] = entities.size() - 1;
-			return true;
-		}
-
-		T* find(std::string_view name, std::size_t max_visible_index = SIZE_MAX) const {
-			auto it = name_to_index.find(name);
-			if (it == name_to_index.end()) return nullptr; // No entity with this name
-			std::size_t index = it->second;
-			if (index > max_visible_index) return nullptr; // Entity exists but is out of bounds
-			return entities[index].get();
-		}
-
-		std::size_t size() const {
-			return entities.size();
-		}
-
-		std::span<const std::unique_ptr<T>> view_entities() const {
-			return {entities.data(), entities.size()};
-		}
-
-		std::vector<std::unique_ptr<T>> release_entities() {
-			name_to_index.clear();
-			return std::move(entities);
-		}
-
-		OwnedEntityList() = default;
-		~OwnedEntityList() = default;
-		OwnedEntityList(const OwnedEntityList& other) = delete;
-		OwnedEntityList& operator=(const OwnedEntityList& other) = delete;
-		OwnedEntityList(OwnedEntityList&& other) noexcept = default;
-		OwnedEntityList& operator=(OwnedEntityList&& other) noexcept = default;
 };
 
 enum class VisibilityScope : std::uint8_t {

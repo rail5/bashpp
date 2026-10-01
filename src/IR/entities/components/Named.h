@@ -9,14 +9,14 @@
 #include <string>
 #include <string_view>
 
-namespace bpp::IR {
+namespace bpp::IR::Components {
 
 /**
  * @brief A base class for entities which have names.
  *
  * Not all entities have names, but those that do (e.g., classes, methods, objects) inherit from this class *as well as* from Entity.
  */
-class NamedEntity {
+class Named {
 	protected:
 		std::string name;
 	public:
@@ -25,4 +25,4 @@ class NamedEntity {
 		void setName(const std::string& name) { this->name = name; }
 };
 
-} // namespace bpp::IR
+} // namespace bpp::IR::Components

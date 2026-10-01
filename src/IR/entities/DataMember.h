@@ -9,7 +9,7 @@
 #include <IR/bpp.h>
 #include <IR/entities/Entity.h>
 #include <IR/entities/Object.h>
-#include <IR/entities/ClassMemberEntity.h>
+#include <IR/entities/components/ClassMember.h>
 
 namespace bpp::IR {
 
@@ -19,7 +19,7 @@ namespace bpp::IR {
  * Although this inherits from Object, it can also be a primitive.
  * The case in which the data member is a primitive is represented by type == nullptr.
  */
-class DataMember : public Object, public ClassMemberEntity {
+class DataMember : public Object, public Components::ClassMember {
 	private:
 		bool m_is_array = false;
 	public:

@@ -8,7 +8,7 @@
 
 #include <IR/bpp.h>
 #include <IR/entities/Entity.h>
-#include <IR/entities/NamedEntity.h>
+#include <IR/entities/components/Named.h>
 #include <IR/entities/Method.h>
 #include <IR/entities/DataMember.h>
 #include <IR/entities/MethodParameter.h>
@@ -22,7 +22,7 @@ namespace bpp::IR {
 template <typename T>
 concept ClassMember = std::is_same_v<T, Method> || std::is_same_v<T, DataMember>;
 
-class Class : public Entity, public NamedEntity {
+class Class : public Entity, public Components::Named {
 	private:
 		const Class* parent_class = nullptr;
 

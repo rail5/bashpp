@@ -14,19 +14,19 @@
 #include <span>
 
 #include <IR/entities/Entity.h>
-#include <IR/entities/NamedEntity.h>
+#include <IR/entities/components/Named.h>
 
 namespace bpp::IR {
 
 template <class T>
-concept EntityWithName = std::is_base_of_v<Entity, T> && std::is_base_of_v<NamedEntity, T>;
+concept NamedEntity = std::is_base_of_v<Entity, T> && std::is_base_of_v<Components::Named, T>;
 
 /**
  * @brief A list of entities that are owned by a parent entity. This class manages the lifetime of the entities it contains, and provides lookup by name.
  * 
  * @tparam T The type of entity to be stored in the list. Must be derived from both Entity and NamedEntity.
  */
-template <EntityWithName T>
+template <NamedEntity T>
 class OwnedEntityList {
 	private:
 		std::vector<std::unique_ptr<T>> entities;

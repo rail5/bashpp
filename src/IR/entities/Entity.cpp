@@ -7,11 +7,19 @@
 #include "Entity.h"
 #include <IR/entities/Program.h>
 #include <IR/entities/Object.h>
-#include <IR/entities/NamedEntity.h>
+#include <IR/entities/components/Named.h>
 
 #include <error/InternalError.h>
 
 namespace bpp::IR {
+
+std::string_view Entity::_getNameIfExists() const {
+	if (const auto* named_entity = dynamic_cast<const Components::Named*>(this)) {
+		return named_entity->getName();
+	}
+
+	return {};
+}
 
 void Entity::inherit(const Entity* parent) {
 	if (!containing_program) containing_program = parent->getContainingProgram();
@@ -21,9 +29,7 @@ void Entity::inherit(const Entity* parent) {
 
 	bpp_assert(containing_program,
 		std::string("Entity")
-			+ (dynamic_cast<const NamedEntity*>(this)
-				? std::string(" '" + dynamic_cast<const NamedEntity*>(this)->getName() + "'")
-				: std::string(""))
+			+ std::string(_getNameIfExists())
 			+ std::string(" does not have a containing program after inheritance"));
 
 	parent_visible_object_count_at_creation = parent->getNumberOfKnownObjects();
@@ -33,9 +39,7 @@ void Entity::inherit(const Entity* parent) {
 Class* Entity::getClass(const std::string& name, std::size_t /*max_visible_index*/) const {
 	bpp_assert(containing_program,
 		std::string("Entity")
-			+ (dynamic_cast<const NamedEntity*>(this)
-				? std::string(" '" + dynamic_cast<const NamedEntity*>(this)->getName() + "'")
-				: std::string(""))
+			+ std::string(_getNameIfExists())
 			+ std::string(" does not have a containing program"));
 	return containing_program->getClass(name, program_visible_class_count_at_creation);
 }

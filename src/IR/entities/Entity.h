@@ -43,6 +43,8 @@ class Entity {
 		/// A list of all positions where this entity is referenced in the source (used for language server features)
 		std::list<SymbolPosition> reference_positions;
 
+		/// If this entity has a name component, this returns the name. Otherwise, it returns an empty string view.
+		std::string_view _getNameIfExists() const;
 	public:
 		Entity() = default;
 		virtual ~Entity() = default;

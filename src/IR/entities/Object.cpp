@@ -12,7 +12,7 @@
 
 namespace bpp::IR {
 
-Object::Object(const Object& other) : Entity(other), NamedEntity(other), AddressableEntity(other),
+Object::Object(const Object& other) : Entity(other), Components::Named(other), Components::Addressable(other),
 	m_is_pointer(other.m_is_pointer), type(other.type), copy_from(other.copy_from)
 {
 	// Because we own a unique_ptr to our initial value, the copy constructor for Object is implicitly deleted

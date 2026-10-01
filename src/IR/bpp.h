@@ -49,8 +49,6 @@ enum class NameConflictError : std::uint8_t {
 
 // Forward decl. entity types:
 class Entity;
-class AddressableEntity;
-class NamedEntity;
 class CodeEntity;
 class BashFunction;
 class BashPipeline;
@@ -72,5 +70,13 @@ class String;
 class SubshellSubstitution;
 class Supershell;
 class ValueAssignment;
+
+namespace Components {
+
+class Named;
+class Addressable;
+class ClassMember;
+
+} // namespace Components
 
 } // namespace bpp::IR

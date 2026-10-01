@@ -133,7 +133,7 @@ void Listener::exit(ObjectInstantiation* node) {
 	}
 
 	if (!current_code_entity->addObject(std::move(object))) {
-		const auto* named_code_entity = dynamic_cast<bpp::IR::NamedEntity*>(current_code_entity);
+		const auto* named_code_entity = dynamic_cast<bpp::IR::Components::Named*>(current_code_entity);
 		std::string error_message = "Failed to add object '" + node->IDENTIFIER().getValue() + "' to code entity";
 		if (named_code_entity) error_message += " '" + named_code_entity->getName() + "'";
 		throw bpp::ErrorHandling::InternalError(error_message);

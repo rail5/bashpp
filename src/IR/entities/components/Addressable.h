@@ -8,7 +8,7 @@
 
 #include <string>
 
-namespace bpp::IR {
+namespace bpp::IR::Components {
 
 /**
  * @brief A base class for entities which have addresses.
@@ -20,16 +20,16 @@ namespace bpp::IR {
  * (e.g., the order of compilation, or the order of declaration of entities).
  * Hence the const-ness of the getAddress() method.
  */
-class AddressableEntity {
+class Addressable {
 	public:
 		virtual std::string getAddress() const = 0;
 	protected:
-		~AddressableEntity() = default;
-		AddressableEntity() = default;
-		AddressableEntity(const AddressableEntity&) = default;
-		AddressableEntity& operator=(const AddressableEntity&) = default;
-		AddressableEntity(AddressableEntity&&) = default;
-		AddressableEntity& operator=(AddressableEntity&&) = default;
+		~Addressable() = default;
+		Addressable() = default;
+		Addressable(const Addressable&) = default;
+		Addressable& operator=(const Addressable&) = default;
+		Addressable(Addressable&&) = default;
+		Addressable& operator=(Addressable&&) = default;
 };
 
-} // namespace bpp::IR
+} // namespace bpp::IR::Components

@@ -8,8 +8,8 @@
 
 #include <IR/bpp.h>
 #include <IR/entities/Entity.h>
-#include <IR/entities/NamedEntity.h>
-#include <IR/entities/AddressableEntity.h>
+#include <IR/entities/components/Named.h>
+#include <IR/entities/components/Addressable.h>
 
 #include <optional>
 #include <variant>
@@ -24,7 +24,7 @@ using OptionallyOwnedCodeEntity = std::variant<std::unique_ptr<CodeEntity>, cons
  * This includes both non-primitives and pointers.
  * Whether the object is a pointer, as well as its type, must be given in the constructor.
  */
-class Object : public Entity, public NamedEntity, public AddressableEntity {
+class Object : public Entity, public Components::Named, public Components::Addressable {
 	private:
 		bool m_is_pointer = false;
 

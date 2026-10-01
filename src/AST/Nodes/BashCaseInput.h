@@ -21,7 +21,7 @@ class BashCaseInput : public ASTNode {
 				os << std::endl;
 				child->prettyPrint(os, indentation_level + 1);
 			}
-			os << "in)" << std::flush;
+			os << " in)" << std::flush;
 			return os;
 		})
 };

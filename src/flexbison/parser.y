@@ -115,8 +115,8 @@ void yyerror(const char *s);
 %token HASH
 %token HEREDOC_CONTENT_START HERESTRING_START
 %token <bpp::AST::Token<std::string>> HEREDOC_START HEREDOC_DELIMITER HEREDOC_END
-%token BASH_KEYWORD_CASE BASH_KEYWORD_IN BASH_CASE_PATTERN_DELIM BASH_CASE_PATTERN_TERMINATOR BASH_KEYWORD_ESAC
-%token <bpp::AST::Token<std::string>> BASH_CASE_BODY_BEGIN
+%token BASH_KEYWORD_CASE BASH_KEYWORD_IN BASH_CASE_PATTERN_DELIM BASH_KEYWORD_ESAC
+%token <bpp::AST::Token<std::string>> BASH_CASE_BODY_BEGIN BASH_CASE_PATTERN_TERMINATOR
 %token BASH_KEYWORD_SELECT BASH_KEYWORD_FOR BASH_KEYWORD_DO BASH_KEYWORD_DONE
 %token ARITH_FOR_CONDITION_START ARITH_FOR_CONDITION_END
 %token INCREMENT_OPERATOR DECREMENT_OPERATOR
@@ -2021,6 +2021,7 @@ bash_case_pattern:
 		node->setEndPosition(@4.end.line, @4.end.column);
 		node->addChild(std::move($1)); // pattern header
 		node->addChildren(std::move($3)); // statements
+		node->setTerminator($4);
 		$$ = std::move(node);
 	}
 	;

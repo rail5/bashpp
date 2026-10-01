@@ -4,3 +4,10 @@ case2
 otherMember is case4
 case3
 case4
+default
+case1
+case2
+final fallthrough
+case2
+final fallthrough
+final fallthrough

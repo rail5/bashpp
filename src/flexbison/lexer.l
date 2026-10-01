@@ -1297,10 +1297,22 @@ function/[ \t]+[a-zA-Z_][a-zA-Z_0-9]* {
 }
 
 <BASH_CASE_PATTERN_ACTION_MODE>{
-	[ \t]*;; {
-		// End of this pattern's action; back to parsing more patterns
+	[ \t]*;;& {
+		// ';;&' meaning in Bash: End of this action; test the pattern in the next clause and execute if the match succeeds
 		thisModeStack.pop(); // Exit BASH_CASE_PATTERN_ACTION_MODE
-		emit(BASH_CASE_PATTERN_TERMINATOR);
+		emit(BASH_CASE_PATTERN_TERMINATOR, bpp::AST::Token<std::string>(";;&", thisLexerState.token_ending.line, thisLexerState.token_ending.column - 2));
+	}
+
+	[ \t]*;; {
+		// ';;' meaning in Bash: End of this action; exit the case statement entirely
+		thisModeStack.pop(); // Exit BASH_CASE_PATTERN_ACTION_MODE
+		emit(BASH_CASE_PATTERN_TERMINATOR, bpp::AST::Token<std::string>(";;", thisLexerState.token_ending.line, thisLexerState.token_ending.column - 1));
+	}
+
+	[ \t]*;& {
+		// ';&' meaning in Bash: End of this action; execute the action in the next clause regardless of whether the pattern matches
+		thisModeStack.pop(); // Exit BASH_CASE_PATTERN_ACTION_MODE
+		emit(BASH_CASE_PATTERN_TERMINATOR, bpp::AST::Token<std::string>(";&", thisLexerState.token_ending.line, thisLexerState.token_ending.column - 1));
 	}
 }
 

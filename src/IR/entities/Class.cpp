@@ -51,7 +51,7 @@ void Class::inherit(const Class* parent) {
 	// Inherit methods
 	methods.reserve(methods.size() + parent->methods.size());
 	for (const auto& m : parent->getAllMethods()) {
-		if (m->getName() == "toPrimitive") continue; // Don't inherit the toPrimitive method, since it is automatically generated for all classes
+		if (m->getName() == "toPrimitive" && m->isDefaulted()) continue; // Only inherit custom overrides of toPrimitive
 		if (m->getName().starts_with("__")) continue; // Don't inherit system methods, since they are automatically generated for all classes
 		auto inherited_method = std::make_unique<Method>(m.get());
 		if (!addMethod(std::move(inherited_method))) {

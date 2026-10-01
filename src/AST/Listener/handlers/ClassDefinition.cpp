@@ -76,6 +76,7 @@ void Listener::enter(ClassDefinition* node) {
 		throw bpp::ErrorHandling::InternalError("Failed to add requested address parameter to __new method");
 	}
 	new_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
+	new_method->setIsDefaulted(true);
 
 	auto delete_method = std::make_unique<bpp::IR::Builtins::SystemMethod>(bpp::IR::Builtins::SystemMethod::Type::DELETE);
 	delete_method->setIsVirtual(true);
@@ -84,6 +85,7 @@ void Listener::enter(ClassDefinition* node) {
 		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to __delete method");
 	}
 	delete_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
+	delete_method->setIsDefaulted(true);
 
 	auto copy_method = std::make_unique<bpp::IR::Builtins::SystemMethod>(bpp::IR::Builtins::SystemMethod::Type::COPY);
 	copy_method->setIsVirtual(true);
@@ -97,6 +99,7 @@ void Listener::enter(ClassDefinition* node) {
 		throw bpp::ErrorHandling::InternalError("Failed to add 'copy from' parameter to __copy method");
 	}
 	copy_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
+	copy_method->setIsDefaulted(true);
 
 
 	auto constructor_method = std::make_unique<bpp::IR::Method>();
@@ -107,6 +110,7 @@ void Listener::enter(ClassDefinition* node) {
 		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to auto-generated constructor method");
 	}
 	constructor_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
+	constructor_method->setIsDefaulted(true);
 
 	auto destructor_method = std::make_unique<bpp::IR::Method>();
 	destructor_method->setName("__destructor");
@@ -117,17 +121,7 @@ void Listener::enter(ClassDefinition* node) {
 		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to auto-generated destructor method");
 	}
 	destructor_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
-
-	auto toPrimitive_method = std::make_unique<bpp::IR::Method>();
-	toPrimitive_method->setName("toPrimitive");
-	toPrimitive_method->setIsVirtual(true);
-	toPrimitive_method->setIsOverridable(true);
-	toPrimitive_method->inherit(class_entity.get());
-	if (!toPrimitive_method->addParameter(class_entity->getThisPtr())) {
-		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to auto-generated toPrimitive method");
-	}
-	toPrimitive_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
-	toPrimitive_method->add("echo \"" + class_entity->getName() + " Instance\"\n");
+	destructor_method->setIsDefaulted(true);
 
 	auto add_system_method = [&](std::unique_ptr<bpp::IR::Method> method) {
 		if (!class_entity->addMethod(std::move(method))) {
@@ -140,7 +134,22 @@ void Listener::enter(ClassDefinition* node) {
 	add_system_method(std::move(copy_method));
 	add_system_method(std::move(constructor_method));
 	add_system_method(std::move(destructor_method));
-	add_system_method(std::move(toPrimitive_method));
+
+	if (!class_entity->getMethod_UNSAFE("toPrimitive")) {
+		// If we didn't inherit a custom toPrimitive method, generate a default one
+		auto toPrimitive_method = std::make_unique<bpp::IR::Method>();
+		toPrimitive_method->setName("toPrimitive");
+		toPrimitive_method->setIsVirtual(true);
+		toPrimitive_method->setIsOverridable(true);
+		toPrimitive_method->inherit(class_entity.get());
+		if (!toPrimitive_method->addParameter(class_entity->getThisPtr())) {
+			throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to auto-generated toPrimitive method");
+		}
+		toPrimitive_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
+		toPrimitive_method->add("echo \"" + class_entity->getName() + " Instance\"\n");
+		toPrimitive_method->setIsDefaulted(true);
+		add_system_method(std::move(toPrimitive_method));
+	}
 
 	entity_stack.push(std::move(class_entity));
 }

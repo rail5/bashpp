@@ -91,7 +91,7 @@ std::expected<void, NameConflictError> Method::addParameter(const MethodParamete
 
 std::string Method::getAddress() const {
 	bpp_assert(getContainingClass(), "Method does not have a containing class");
-	if (m_points_to_parent_method) {
+	if (f_points_to_parent_method) {
 		bpp_assert(getParentMethod() != nullptr, "Method points to parent method but has no parent method");
 		return getParentMethod()->getAddress();
 	}
@@ -100,7 +100,7 @@ std::string Method::getAddress() const {
 
 bpp::CodeGen::CodeSegment Method::generateCode(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "State pointer is null");
-	if (m_points_to_parent_method) return {}; // Skip generating code for non-overridden inherited methods
+	if (f_points_to_parent_method) return {}; // Skip generating code for non-overridden inherited methods
 	state->current_method = this;
 	bpp::CodeGen::CodeSegment code;
 
@@ -126,7 +126,7 @@ bpp::CodeGen::CodeSegment Method::generateCode(bpp::CodeGen::CodeGenState* state
 }
 
 PRETTYPRINT_IMPLEMENTATION(Method, {
-	if (m_points_to_parent_method) return os; // Skip pretty-printing non-overridden inherited methods, it would be redundant
+	if (f_points_to_parent_method) return os; // Skip pretty-printing non-overridden inherited methods, it would be redundant
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 	os << indent << "(Method: " << name << " [";
 	switch (getScope()) {
@@ -135,7 +135,7 @@ PRETTYPRINT_IMPLEMENTATION(Method, {
 		case VisibilityScope::PRIVATE: os << "private"; break;
 		case VisibilityScope::PROTECTED: os << "protected"; break;
 	}
-	if (m_is_virtual) os << ", virtual";
+	if (f_is_virtual) os << ", virtual";
 	if (getParentMethod()) os << ", inherited";
 	os << "]\n";
 	for (const auto [index, param] : parameters.view()) {

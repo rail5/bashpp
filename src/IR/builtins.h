@@ -168,11 +168,13 @@ bpp____supershell() {
  */
 [[maybe_unused]] constexpr static std::string_view bpp_object_stack_function = R"EOF(bpp____push_objectStack() {
 	local __address="$1"
-	declare -g -a __objectStack
+	declare -g -a __objectStack_$BASHPID
+	local -n __objectStack=__objectStack_$BASHPID
 	__objectStack+=("${__address}")
 }
 bpp____destroy_objectStack() {
-	declare -g -a __objectStack
+	declare -g -a __objectStack_$BASHPID
+	local -n __objectStack=__objectStack_$BASHPID
 	local __n=$1
 	if [[ -z "${__n}" ]]; then
 		__n=${#__objectStack[@]}

@@ -79,6 +79,7 @@ bpp::CodeGen::CodeSegment ObjectInstantiation::stackLikeInstantiation(bpp::CodeG
 	if (destructor) {
 		result.add_main_code("bpp____push_objectStack \"" + requested_address + "\"\n");
 		state->requires_global_object_stack = true;
+		state->requires_vtable_lookup_function = true;
 
 		result.add_main_code("__scopeFrames[-1]=$((${__scopeFrames[-1]} + 1))\n");
 	}

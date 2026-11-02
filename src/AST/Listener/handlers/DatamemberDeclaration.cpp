@@ -76,16 +76,22 @@ void Listener::exit(DatamemberDeclaration* node) {
 
 	bpp_assert(topmost_entity_is<bpp::IR::Class>(), "Topmost entity on stack is not a Class when exiting DatamemberDeclaration node");
 	auto* current_class = entity_stack.top_as<bpp::IR::Class>();
+	auto dm_name = dm->getName();
 	auto res = current_class->addDatamember(std::move(dm));
 	if (!res) {
-		if (res.error() == bpp::IR::NameConflictError::EXISTING_DATAMEMBER) {
-			throw bpp::ErrorHandling::SyntaxError(this, node,
-				"Data member name has already been used: @" + current_class->getName() + "." + node->IDENTIFIER().value().getValue());
+		std::string error_message;
+		switch (res.error()) {
+			case bpp::IR::NameConflictError::EXISTING_DATAMEMBER:
+				error_message = "Data member name has already been used: @" + current_class->getName() + "." + dm_name;
+				break;
+			case bpp::IR::NameConflictError::EXISTING_METHOD:
+				error_message = "Data member name conflicts with existing method: " + current_class->getName() + "." + dm_name;
+				break;
+			default:
+				error_message = "Unknown error when adding data member: " + current_class->getName() + "." + dm_name;
+				break;
 		}
-		if (res.error() == bpp::IR::NameConflictError::EXISTING_METHOD) {
-			throw bpp::ErrorHandling::SyntaxError(this, node,
-				"Data member name conflicts with existing method: " + current_class->getName() + "." + node->IDENTIFIER().value().getValue());
-		}
+		throw bpp::ErrorHandling::SyntaxError(this, node, error_message);
 	}
 }
 

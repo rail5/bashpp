@@ -2,8 +2,8 @@
 
 echo "Including file"
 
-@include_once "../extra/included.bpp"
-@include_once "../extra/included.bpp"
+@include "../extra/included.bpp"
+@include "../extra/included.bpp"
 
 @include dynamic "../extra/included.bpp" as "file-does-not-exist.sh" # Runtime error: Failed to include file
 

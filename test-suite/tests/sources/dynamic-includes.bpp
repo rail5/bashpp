@@ -3,9 +3,9 @@
 # Before we begin: compile "test-suite/tests/extra/dynamic-includes-helper2.bpp" just for this test
 $BPP -o test-suite/tests/extra/dynamic-includes-helper2.sh test-suite/tests/extra/dynamic-includes-helper2.bpp
 
-@include_once "../extra/dynamic-includes-helper1.bpp" # static include
+@include "../extra/dynamic-includes-helper1.bpp" # static include
 @Object obj1
-@include_once dynamic "../extra/dynamic-includes-helper2.bpp" # defines 'obj2'
+@include dynamic "../extra/dynamic-includes-helper2.bpp" # defines 'obj2'
 
 echo @obj1.member # "default value"
 echo @obj2.member # "default value"

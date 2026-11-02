@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # This file is part of the Bash++ Standard Library.
 
-@include_once "Queue"
+@include "Queue"
 
 ## Queue which enforces type restrictions on its elements
 ##

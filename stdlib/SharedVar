@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # This file is part of the Bash++ Standard Library.
 
-@include_once "SharedObject"
+@include "SharedObject"
 
 if ! command -v base64 &> /dev/null; then
 	>&2 echo "Bash++: SharedVar requires the 'base64' command to be available."

@@ -1,5 +1,5 @@
-@include_once "basic_meta.bpp"
-@include_once "TestStats.bpp"
+@include "basic_meta.bpp"
+@include "TestStats.bpp"
 
 @class Test {
 	@protected name

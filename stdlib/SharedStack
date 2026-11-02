@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # This file is part of the Bash++ Standard Library.
 
-@include_once "SharedObject"
+@include "SharedObject"
 
 if ! command -v wc &> /dev/null; then
 	>&2 echo "Bash++: SharedStack requires the 'wc' command to be available."

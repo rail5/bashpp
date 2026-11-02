@@ -1,4 +1,4 @@
-@include_once <SharedVar>
+@include <SharedVar>
 @class TestStats {
 	@private @SharedVar* passedTests=@new SharedVar
 	@private @SharedVar* failedTests=@new SharedVar

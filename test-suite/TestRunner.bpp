@@ -1,5 +1,5 @@
-@include_once "TestStats.bpp"
-@include_once "Test.bpp"
+@include "TestStats.bpp"
+@include "Test.bpp"
 
 @class TestRunner {
 	@public @TestStats* stats=@new TestStats

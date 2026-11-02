@@ -1,9 +1,9 @@
 #!/usr/bin/env bpp
 
-@include_once "basic_meta.bpp"
-@include_once "TestStats.bpp"
-@include_once "Test.bpp"
-@include_once "TestRunner.bpp"
+@include "basic_meta.bpp"
+@include "TestStats.bpp"
+@include "Test.bpp"
+@include "TestRunner.bpp"
 
 @TestRunner runner
 

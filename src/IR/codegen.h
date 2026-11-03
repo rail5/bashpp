@@ -182,6 +182,7 @@ struct CodeGenState {
 	std::uint64_t nested_loop_depth = 0;
 	std::uint64_t dynamic_cast_counter = 0;
 	std::uint64_t supershell_counter = 0;
+	std::uint64_t typeof_counter = 0;
 	bool requires_repeat_function = false;
 	bool requires_supershell_function = false;
 	bool requires_global_object_stack = false;

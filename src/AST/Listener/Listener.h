@@ -224,6 +224,8 @@ template<> void Listener::enter  (DynamicCast*                node);
 template<> void Listener::exit   (DynamicCast*                node);
 template<> void Listener::enter  (DynamicCastTarget*          node);
 template<> void Listener::exit   (DynamicCastTarget*          node);
+template<> void Listener::enter  (TypeofExpression*           node);
+template<> void Listener::exit   (TypeofExpression*           node);
 template<> void Listener::enter  (BashCommand*                node);
 template<> void Listener::exit   (BashCommand*                node);
 template<> void Listener::enter  (BashPipeline*               node);

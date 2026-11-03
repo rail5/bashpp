@@ -782,42 +782,6 @@ valid_rvalue:
 		node->addChild(std::move($1));
 		$$ = std::move(node);
 	}
-	| subshell_raw {
-		auto node = std::make_unique<bpp::AST::Rvalue>();
-		std::uint32_t line_number = @1.begin.line;
-		std::uint32_t column_number = @1.begin.column;
-		node->setPosition(line_number, column_number);
-		node->setEndPosition(@1.end.line, @1.end.column);
-		node->addChild(std::move($1));
-		$$ = std::move(node);
-	}
-	| new_statement {
-		auto node = std::make_unique<bpp::AST::Rvalue>();
-		std::uint32_t line_number = @1.begin.line;
-		std::uint32_t column_number = @1.begin.column;
-		node->setPosition(line_number, column_number);
-		node->setEndPosition(@1.end.line, @1.end.column);
-		node->addChild(std::move($1));
-		$$ = std::move(node);
-	}
-	| dynamic_cast {
-		auto node = std::make_unique<bpp::AST::Rvalue>();
-		std::uint32_t line_number = @1.begin.line;
-		std::uint32_t column_number = @1.begin.column;
-		node->setPosition(line_number, column_number);
-		node->setEndPosition(@1.end.line, @1.end.column);
-		node->addChild(std::move($1));
-		$$ = std::move(node);
-	}
-	| typeof_expression {
-		auto node = std::make_unique<bpp::AST::Rvalue>();
-		std::uint32_t line_number = @1.begin.line;
-		std::uint32_t column_number = @1.begin.column;
-		node->setPosition(line_number, column_number);
-		node->setEndPosition(@1.end.line, @1.end.column);
-		node->addChild(std::move($1));
-		$$ = std::move(node);
-	}
 	| concatenated_rvalue %prec CONCAT_STOP { $$ = std::move($1); }
 	;
 
@@ -908,6 +872,10 @@ concatenatable_rvalue:
 	| process_substitution { $$ = std::move($1); }
 	| bash_arithmetic_substitution { $$ = std::move($1); }
 	| bash_53_native_supershell { $$ = std::move($1); }
+	| subshell_raw { $$ = std::move($1); }
+	| new_statement { $$ = std::move($1); }
+	| dynamic_cast { $$ = std::move($1); }
+	| typeof_expression { $$ = std::move($1); }
 	;
 
 maybe_whitespace:

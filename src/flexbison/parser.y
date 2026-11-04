@@ -147,8 +147,9 @@ void yyerror(const char *s);
 
 
 %precedence CONCAT_STOP
+%precedence WS
 %precedence LANGLE LANGLE_AMPERSAND RANGLE RANGLE_AMPERSAND AMPERSAND_RANGLE HEREDOC_START HERESTRING_START BASH_ARITHMETIC_START ARRAY_ASSIGNMENT_START BASH_53_NATIVE_SUPERSHELL_START
-%precedence IDENTIFIER INTEGER SINGLEQUOTED_STRING KEYWORD_NULLPTR
+%precedence IDENTIFIER INTEGER SINGLEQUOTED_STRING KEYWORD_NULLPTR KEYWORD_NEW KEYWORD_DYNAMIC_CAST KEYWORD_TYPEOF
 %precedence QUOTE_BEGIN
 %precedence AT REF_START
 %precedence KEYWORD_THIS KEYWORD_SUPER
@@ -483,7 +484,7 @@ simple_command:
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->addChild(std::move($1));
 		$$ = std::move(node);
-	}
+	} %prec CONCAT_STOP
 	| BASH_KEYWORD_RETURN {
 		auto node = std::make_unique<bpp::AST::BashCommand>();
 		std::uint32_t line_number = @1.begin.line;
@@ -577,7 +578,7 @@ simple_command:
 	;
 
 maybe_break_or_continue_argument:
-	/* empty */ { $$ = nullptr; }
+	/* empty */ { $$ = nullptr; } %prec CONCAT_STOP
 	| WS valid_rvalue { $$ = std::move($2); }
 	;
 
@@ -622,7 +623,7 @@ simple_command_element:
 	;
 
 operative_command_element:
-	operative_command_word { $$ = std::move($1); }
+	operative_command_word { $$ = std::move($1); } %prec CONCAT_STOP
 	| object_reference_lvalue { $$ = std::move($1); }
 	| self_reference_lvalue { $$ = std::move($1); }
 	| pointer_dereference_lvalue { $$ = std::move($1); }
@@ -673,7 +674,7 @@ operative_command_word:
 		node->setEndPosition(@1.end.line, @1.end.column);
 		node->setText($1);
 		$$ = std::move(node);
-	}
+	} %prec CONCAT_STOP
 	| operative_command_word raw_text_token {
 		auto node = static_uniqueptr_cast<bpp::AST::RawText>(std::move($1));
 		node->appendText($2.getValue());
@@ -982,7 +983,7 @@ instantiation_suffix:
 		node->addChild(std::move($3));
 		$$ = std::move(node);
 	}
-	| WS { $$ = nullptr; }
+	| WS { $$ = nullptr; } %prec CONCAT_STOP
 	;
 
 pointer_declaration:
@@ -1516,7 +1517,7 @@ self_reference_lvalue:
 	;
 
 maybe_descend_object_hierarchy:
-	/* empty */ { $$ = std::make_unique<bpp::AST::ObjectReference>(); }
+	/* empty */ { $$ = std::make_unique<bpp::AST::ObjectReference>(); } %prec CONCAT_STOP
 	| maybe_descend_object_hierarchy DOT IDENTIFIER {
 		auto node = static_uniqueptr_cast<bpp::AST::ObjectReference>(std::move($1));
 		node->addIdentifier($3);

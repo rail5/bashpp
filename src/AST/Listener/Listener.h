@@ -296,5 +296,7 @@ template<> void Listener::enter  (ArrayIndex*                 node);
 template<> void Listener::exit   (ArrayIndex*                 node);
 template<> void Listener::enter  (ArrayAssignment*            node);
 template<> void Listener::exit   (ArrayAssignment*            node);
+template<> void Listener::enter  (ParameterExpansion*         node);
+template<> void Listener::exit   (ParameterExpansion*         node);
 
 } // namespace bpp::AST

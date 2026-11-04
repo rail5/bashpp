@@ -14,6 +14,7 @@ bpp::CodeGen::CodeSegment BashForOrSelectStatement::generateCode(bpp::CodeGen::C
 	bpp_assert(state != nullptr, "State pointer is null");
 	bpp_assert(in_condition != nullptr, "For/select statement has no 'in' condition");
 	bpp_assert(!variable.empty(), "For/select statement has no variable name");
+	state->nested_loop_depth++;
 	bpp::CodeGen::CodeSegment result;
 
 	result.add_main_code(is_select ? "select " : "for ");
@@ -32,6 +33,7 @@ bpp::CodeGen::CodeSegment BashForOrSelectStatement::generateCode(bpp::CodeGen::C
 	result.add_main_code("unset __loopFrames[-1]\n");
 
 	result.add_main_code("\ndone\n");
+	state->nested_loop_depth--;
 	return result;
 }
 

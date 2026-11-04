@@ -128,10 +128,7 @@ class Listener final {
 		 * @return false if the top of the entity stack is not of type T and not derived from T
 		 */
 		template <class T>
-		bool topmost_entity_is() const {
-			if (entity_stack.empty()) return false;
-			return dynamic_cast<T*>(entity_stack.top()) != nullptr;
-		}
+		bool topmost_entity_is() const { return entity_stack.top_is<T>(); }
 
 		/**
 		 * @brief Get the latest code entity on the entity stack, or nullptr if there is none
@@ -298,5 +295,7 @@ template<> void Listener::enter  (ArrayAssignment*            node);
 template<> void Listener::exit   (ArrayAssignment*            node);
 template<> void Listener::enter  (ParameterExpansion*         node);
 template<> void Listener::exit   (ParameterExpansion*         node);
+template<> void Listener::enter  (Block*                      node);
+template<> void Listener::exit   (Block*                      node);
 
 } // namespace bpp::AST

@@ -63,6 +63,18 @@ class EntityStack {
 		template <class T>
 		T* top_as() const { return static_cast<T*>(top()); }
 
+		/**
+		 * @brief Check if the top entity on the stack is of a specific type.
+		 * 
+		 * @tparam T The type to check against
+		 * @return true if the top entity on the stack is of type T (or derived from T), false otherwise
+		 */
+		template <class T>
+		bool top_is() const {
+			if (stack.empty()) return false;
+			return dynamic_cast<T*>(stack.back().get()) != nullptr;
+		}
+
 		bool empty() const { return stack.empty(); }
 		std::size_t size() const { return stack.size(); }
 

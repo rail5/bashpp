@@ -52,6 +52,8 @@ class Entity;
 class CodeEntity;
 class BashFunction;
 class BashPipeline;
+class BashForOrSelectStatement;
+class BashArithmeticForStatement;
 class Program;
 class IncludedProgram;
 class Class;

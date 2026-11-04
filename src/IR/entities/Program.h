@@ -6,9 +6,12 @@
 
 #pragma once
 
+#include <ranges>
 #include <string>
 #include <cstdint>
 #include <expected>
+#include <unordered_map>
+#include <filesystem>
 
 #include <IR/bpp.h>
 #include <IR/OwnedEntityList.h>
@@ -16,6 +19,8 @@
 #include <IR/entities/Object.h>
 #include <IR/entities/Class.h>
 #include <IR/entities/SystemFunction.h>
+
+#include <include/EntityMap.h>
 
 #include <error/SyntaxError.h>
 
@@ -46,8 +51,34 @@ class Program : public CodeEntity {
 		std::unique_ptr<Builtins::SystemFunction> dynamic_cast_function;
 		std::unique_ptr<Builtins::SystemFunction> typeof_function;
 
+		/// The source file for this Program entity. Used for diagnostics/LSP
+		std::filesystem::path source_file;
+
+		/// Source file -> EntityMap
+		std::unordered_map<std::filesystem::path, EntityMap> entity_maps;
+
+		/// Source file -> diagnostics
+		std::unordered_map<std::filesystem::path, std::vector<bpp::ErrorHandling::Diagnostic>> diagnostics;
 	public:
-		void addDiagnostic(bpp::ErrorHandling::Diagnostic diagnostic) {}
+		void setSourceFile(const std::filesystem::path& source_file) { this->source_file = source_file; }
+		const std::filesystem::path& getSourceFile() const { return source_file; }
+		void addIncludedSourceFile(const std::filesystem::path& source_file) { entity_maps[source_file]; }
+
+		auto getAllSourceFiles() const { return entity_maps | std::ranges::views::keys; }
+
+		void addDiagnostic(const std::filesystem::path& source_file, bpp::ErrorHandling::Diagnostic diagnostic);
+
+		void markEntity(
+			const std::filesystem::path& source_file,
+			std::uint32_t start_line, std::uint32_t start_column,
+			std::uint32_t end_line, std::uint32_t end_column,
+			const Entity* entity
+		);
+
+		const Entity* getActiveEntity(
+			const std::filesystem::path& source_file,
+			std::uint32_t line, std::uint32_t column
+		) const;
 
 		/**
 		 * @brief Add a class to the program

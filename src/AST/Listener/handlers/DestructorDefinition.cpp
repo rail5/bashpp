@@ -8,6 +8,7 @@
 
 #include <IR/entities/Method.h>
 #include <IR/entities/Class.h>
+#include <IR/entities/Program.h>
 
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>
@@ -26,10 +27,17 @@ void Listener::enter(DestructorDefinition* node) {
 	new_destructor->inherit(current_class);
 
 	new_destructor->setDefinitionPosition({
-		get_current_source_file(),
+		getCurrentSourceFile(),
 		node->getLine(),
 		node->getCharPositionInLine()
 	});
+
+	root_program->markEntity(
+		getCurrentSourceFile(),
+		node->getLine(), node->getCharPositionInLine(),
+		node->getEndPosition().line, node->getEndPosition().column,
+		new_destructor.get()
+	);
 
 	if (!new_destructor->addParameter(current_class->getThisPtr())) {
 		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to user-defined destructor");
@@ -40,10 +48,10 @@ void Listener::enter(DestructorDefinition* node) {
 
 template <>
 void Listener::exit(DestructorDefinition* node) {
-	bpp_assert(topmost_entity_is<bpp::IR::Method>(), "Topmost entity on stack is not a Method when exiting DestructorDefinition node");
+	bpp_assert(topmost_entity_is<bpp::IR::Method>(), "Topmost entity on stack is not a Method");
 	auto destructor = entity_stack.pop_as<bpp::IR::Method>();
 
-	bpp_assert(topmost_entity_is<bpp::IR::Class>(), "Topmost entity on stack is not a Class when exiting DestructorDefinition node");
+	bpp_assert(topmost_entity_is<bpp::IR::Class>(), "Topmost entity on stack is not a Class");
 	auto* current_class = entity_stack.top_as<bpp::IR::Class>();
 
 	const auto* parent_class = current_class->getParentClass();

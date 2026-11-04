@@ -86,6 +86,7 @@ class Listener final {
 	private:
 		/// The program (root node of the entity tree) being constructed by this listener
 		std::unique_ptr<bpp::IR::Program> program;
+		bpp::IR::Program* root_program = nullptr; // Non-owning pointer to the root program
 
 		bool program_has_errors = false;
 
@@ -157,34 +158,34 @@ class Listener final {
 		template <typename NodeType>
 		void exit(NodeType* node) {}
 
-		void set_has_errors(bool has_errors) {
+		void setHasErrors(bool has_errors) {
 			this->program_has_errors = has_errors;
 		}
-		bool has_errors() const {
+		bool hasErrors() const {
 			return program_has_errors;
 		}
 
-		void set_source_file(const std::filesystem::path& source_file) {
+		void setSourceFile(const std::filesystem::path& source_file) {
 			if (!include_chain.empty()) throw std::runtime_error("Source file already set; cannot set source file when include chain is not empty");
 			include_chain.emplace_back(source_file);
 		}
-		const std::filesystem::path& get_main_source_file() const {
+		const std::filesystem::path& getMainSourceFile() const {
 			return include_chain.front();
 		}
-		const std::filesystem::path& get_current_source_file() const {
+		const std::filesystem::path& getCurrentSourceFile() const {
 			return include_chain.back();
 		}
-		const std::vector<std::filesystem::path>& get_include_chain() const {
+		const std::vector<std::filesystem::path>& getIncludeChain() const {
 			return include_chain;
 		}
 
-		void set_warning_options(const bpp::ErrorHandling::WarningOptions& options) {
+		void setWarningOptions(const bpp::ErrorHandling::WarningOptions& options) {
 			this->warning_options = options;
 		}
-		const bpp::ErrorHandling::WarningOptions& get_warning_options() const {
+		const bpp::ErrorHandling::WarningOptions& getWarningOptions() const {
 			return warning_options;
 		}
-		void set_include_paths(const std::vector<std::filesystem::path>& paths) {
+		void setIncludePaths(const std::vector<std::filesystem::path>& paths) {
 			this->include_paths = paths;
 			this->include_paths.emplace_back(bpp::get_standard_library_path());
 		}

@@ -5,14 +5,13 @@
  */
 
 #pragma once
-#include <memory>
 #include "IntervalTree.h"
 
 
 // Forward decl.
-namespace bpp {
-class bpp_entity;
-} // namespace bpp
+namespace bpp::IR {
+class Entity;
+} // namespace bpp::IR
 
 /**
  * @struct FilePosition
@@ -53,24 +52,24 @@ struct FilePosition {
  */
 class EntityMap {
 	private:
-		FlatIntervalTree<std::shared_ptr<bpp::bpp_entity>> tree;
+		FlatIntervalTree<const bpp::IR::Entity*> tree;
 	public:
 
 		/**
 		 * @brief Add an entity to the entity map
 		 */
-		void insert(FilePosition start, FilePosition end, const std::shared_ptr<bpp::bpp_entity>& entity) {
+		void insert(FilePosition start, FilePosition end, const bpp::IR::Entity* entity) {
 			tree.insert(start, end, entity);
 		}
 
-		std::shared_ptr<bpp::bpp_entity> find(FilePosition point) {
+		const bpp::IR::Entity* find(FilePosition point) const {
 			return tree.find_innermost_overlap(point);
 		}
 
 		/**
 		 * @brief Find the active code entity at a specific line and column
 		 */
-		std::shared_ptr<bpp::bpp_entity> find(std::uint32_t line, std::uint32_t column) {
+		const bpp::IR::Entity* find(std::uint32_t line, std::uint32_t column) const {
 			return find(FilePosition(line, column));
 		}
 };

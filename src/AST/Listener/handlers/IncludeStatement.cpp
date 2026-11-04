@@ -49,7 +49,7 @@ void Listener::enter(IncludeStatement* node) {
 		include_path = std::filesystem::path(source_path);
 		if (!include_path.is_absolute()) {
 			// Relative path: resolve it relative to the current source file's directory
-			include_path = get_current_source_file().parent_path() / include_path;
+			include_path = getCurrentSourceFile().parent_path() / include_path;
 		}
 	}
 

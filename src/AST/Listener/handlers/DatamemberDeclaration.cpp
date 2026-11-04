@@ -52,7 +52,7 @@ void Listener::enter(DatamemberDeclaration* node) {
 		}
 
 		dm->setDefinitionPosition({
-			get_current_source_file(),
+			getCurrentSourceFile(),
 			id.value().getLine(),
 			id.value().getCharPositionInLine()
 		});
@@ -63,7 +63,7 @@ void Listener::enter(DatamemberDeclaration* node) {
 
 template <>
 void Listener::exit(DatamemberDeclaration* node) {
-	bpp_assert(topmost_entity_is<bpp::IR::DataMember>(), "Topmost entity on stack is not a DataMember when exiting DatamemberDeclaration node");
+	bpp_assert(topmost_entity_is<bpp::IR::DataMember>(), "Topmost entity on stack is not a DataMember");
 	auto dm = entity_stack.pop_as<bpp::IR::DataMember>();
 
 	if (dm->isPointer() && !dm->hasInitialValue()) {
@@ -74,7 +74,7 @@ void Listener::exit(DatamemberDeclaration* node) {
 		dm->setInitialValue(std::move(value_assignment));
 	}
 
-	bpp_assert(topmost_entity_is<bpp::IR::Class>(), "Topmost entity on stack is not a Class when exiting DatamemberDeclaration node");
+	bpp_assert(topmost_entity_is<bpp::IR::Class>(), "Topmost entity on stack is not a Class");
 	auto* current_class = entity_stack.top_as<bpp::IR::Class>();
 	auto dm_name = dm->getName();
 	auto res = current_class->addDatamember(std::move(dm));

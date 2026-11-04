@@ -9,16 +9,25 @@
 #include <error/InternalError.h>
 
 #include <IR/entities/expressions/bash/BashArithmeticForStatement.h>
+#include <IR/entities/Program.h>
 
 namespace bpp::AST {
 
 template <>
-void Listener::enter(BashArithmeticForStatement* /*node*/) {
+void Listener::enter(BashArithmeticForStatement* node) {
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity");
 	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 
 	auto arithmetic_for_statement_entity = std::make_unique<bpp::IR::BashArithmeticForStatement>();
 	arithmetic_for_statement_entity->inherit(current_code_entity);
+
+	root_program->markEntity(
+		getCurrentSourceFile(),
+		node->getLine(), node->getCharPositionInLine(),
+		node->getEndPosition().line, node->getEndPosition().column,
+		arithmetic_for_statement_entity.get()
+	);
+
 	entity_stack.push(std::move(arithmetic_for_statement_entity));
 }
 
@@ -34,12 +43,20 @@ void Listener::exit(BashArithmeticForStatement* /*node*/) {
 }
 
 template <>
-void Listener::enter(BashArithmeticForCondition* /*node*/) {
+void Listener::enter(BashArithmeticForCondition* node) {
 	bpp_assert(topmost_entity_is<bpp::IR::BashArithmeticForStatement>(), "Topmost entity is not a BashArithmeticForStatement");
 	auto* arithmetic_for_statement_entity = entity_stack.top_as<bpp::IR::BashArithmeticForStatement>();
 
 	auto condition_entity = std::make_unique<bpp::IR::StringType>();
 	condition_entity->inherit(arithmetic_for_statement_entity);
+
+	root_program->markEntity(
+		getCurrentSourceFile(),
+		node->getLine(), node->getCharPositionInLine(),
+		node->getEndPosition().line, node->getEndPosition().column,
+		condition_entity.get()
+	);
+
 	entity_stack.push(std::move(condition_entity));
 }
 

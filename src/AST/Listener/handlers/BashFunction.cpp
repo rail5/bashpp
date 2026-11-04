@@ -7,6 +7,7 @@
 #include <AST/Listener/Listener.h>
 
 #include <IR/entities/BashFunction.h>
+#include <IR/entities/Program.h>
 
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>
@@ -33,20 +34,27 @@ void Listener::enter(BashFunction* node) {
 	function_entity->setName(function_name.getValue());
 
 	function_entity->setDefinitionPosition({
-		get_current_source_file(),
+		getCurrentSourceFile(),
 		function_name.getLine(),
 		function_name.getCharPositionInLine()
 	});
+
+	root_program->markEntity(
+		getCurrentSourceFile(),
+		node->getLine(), node->getCharPositionInLine(),
+		node->getEndPosition().line, node->getEndPosition().column,
+		function_entity.get()
+	);
 
 	entity_stack.push(std::move(function_entity));
 }
 
 template <>
 void Listener::exit(BashFunction* /*node*/) {
-	bpp_assert(topmost_entity_is<bpp::IR::BashFunction>(), "Topmost entity on stack is not a BashFunction when exiting BashFunction node");
+	bpp_assert(topmost_entity_is<bpp::IR::BashFunction>(), "Topmost entity on stack is not a BashFunction");
 	auto function_entity = entity_stack.pop_as<bpp::IR::BashFunction>();
 
-	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity when exiting BashFunction node");
+	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity");
 	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 	current_code_entity->add(std::move(function_entity));
 }

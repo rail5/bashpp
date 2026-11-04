@@ -9,6 +9,7 @@
 #include <error/InternalError.h>
 
 #include <IR/entities/expressions/bash/BashForOrSelectStatement.h>
+#include <IR/entities/Program.h>
 
 namespace bpp::AST {
 
@@ -21,6 +22,14 @@ void Listener::enter(BashForStatement* node) {
 	for_statement_entity->inherit(current_code_entity);
 	for_statement_entity->setIsSelect(false);
 	for_statement_entity->setVariable(node->VARIABLE().getValue());
+
+	root_program->markEntity(
+		getCurrentSourceFile(),
+		node->getLine(), node->getCharPositionInLine(),
+		node->getEndPosition().line, node->getEndPosition().column,
+		for_statement_entity.get()
+	);
+
 	entity_stack.push(std::move(for_statement_entity));
 }
 
@@ -43,6 +52,14 @@ void Listener::enter(BashSelectStatement* node) {
 	select_statement_entity->inherit(current_code_entity);
 	select_statement_entity->setIsSelect(true);
 	select_statement_entity->setVariable(node->VARIABLE().getValue());
+
+	root_program->markEntity(
+		getCurrentSourceFile(),
+		node->getLine(), node->getCharPositionInLine(),
+		node->getEndPosition().line, node->getEndPosition().column,
+		select_statement_entity.get()
+	);
+
 	entity_stack.push(std::move(select_statement_entity));
 }
 
@@ -57,12 +74,20 @@ void Listener::exit(BashSelectStatement* /*node*/) {
 }
 
 template <>
-void Listener::enter(BashInCondition* /*node*/) {
+void Listener::enter(BashInCondition* node) {
 	bpp_assert(topmost_entity_is<bpp::IR::BashForOrSelectStatement>(), "Topmost entity is not a BashForOrSelectStatement");
 	auto* for_or_select_statement_entity = entity_stack.top_as<bpp::IR::BashForOrSelectStatement>();
 
 	auto in_condition_entity = std::make_unique<bpp::IR::StringType>();
 	in_condition_entity->inherit(for_or_select_statement_entity);
+
+	root_program->markEntity(
+		getCurrentSourceFile(),
+		node->getLine(), node->getCharPositionInLine(),
+		node->getEndPosition().line, node->getEndPosition().column,
+		in_condition_entity.get()
+	);
+
 	entity_stack.push(std::move(in_condition_entity));
 }
 

@@ -17,7 +17,7 @@ namespace bpp::AST {
 
 template <>
 void Listener::enter(DynamicCast* /*node*/) {
-	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity when entering DynamicCast node");
+	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity");
 	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 
 	auto dynamic_cast_entity = std::make_unique<bpp::IR::DynamicCast>();
@@ -29,11 +29,11 @@ void Listener::enter(DynamicCast* /*node*/) {
 
 template <>
 void Listener::exit(DynamicCast* /*node*/) {
-	bpp_assert(topmost_entity_is<bpp::IR::DynamicCast>(), "Topmost entity is not a DynamicCast when exiting DynamicCast node");
+	bpp_assert(topmost_entity_is<bpp::IR::DynamicCast>(), "Topmost entity is not a DynamicCast");
 	auto dynamic_cast_entity = entity_stack.pop_as<bpp::IR::DynamicCast>();
 	nested_dynamic_cast_depth--;
 
-	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity when exiting DynamicCast node");
+	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity");
 	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 
 	current_code_entity->adoptObjectsOf(dynamic_cast_entity.get());
@@ -42,7 +42,7 @@ void Listener::exit(DynamicCast* /*node*/) {
 
 template <>
 void Listener::enter(DynamicCastTarget* /*node*/) {
-	bpp_assert(topmost_entity_is<bpp::IR::DynamicCast>(), "Topmost entity is not a DynamicCast when entering DynamicCastTarget node");
+	bpp_assert(topmost_entity_is<bpp::IR::DynamicCast>(), "Topmost entity is not a DynamicCast");
 	auto* dynamic_cast_entity = entity_stack.top_as<bpp::IR::DynamicCast>();
 
 	auto target_type_entity = std::make_unique<bpp::IR::StringType>();
@@ -52,10 +52,10 @@ void Listener::enter(DynamicCastTarget* /*node*/) {
 
 template <>
 void Listener::exit(DynamicCastTarget* node) {
-	bpp_assert(topmost_entity_is<bpp::IR::StringType>(), "Topmost entity is not a StringType when exiting DynamicCastTarget node");
+	bpp_assert(topmost_entity_is<bpp::IR::StringType>(), "Topmost entity is not a StringType");
 	auto target_type_entity = entity_stack.pop_as<bpp::IR::StringType>();
 
-	bpp_assert(topmost_entity_is<bpp::IR::DynamicCast>(), "Topmost entity is not a DynamicCast when exiting DynamicCastTarget node");
+	bpp_assert(topmost_entity_is<bpp::IR::DynamicCast>(), "Topmost entity is not a DynamicCast");
 	auto* dynamic_cast_entity = entity_stack.top_as<bpp::IR::DynamicCast>();
 
 	dynamic_cast_entity->adoptObjectsOf(target_type_entity.get());

@@ -62,7 +62,7 @@ class Diagnostic : virtual public std::runtime_error {
 
 		template <bpp::detail::ASTNodePtrORToken T>
 		void set_from_listener(bpp::AST::Listener* listener, const T& error_ctx) {
-			include_chain = listener->get_include_chain();
+			include_chain = listener->getIncludeChain();
 			program = listener->view_program();
 			//lsp_mode = listener->get_lsp_mode();
 
@@ -185,7 +185,7 @@ class Warning : public Diagnostic {
 			: std::runtime_error(msg), Diagnostic(listener, error_ctx, msg)
 		{
 			this->type = DiagnosticType::DIAGNOSTIC_WARNING;
-			this->warning_cli_string = listener->get_warning_options().get_cli_string_by_option(warning_type);
+			this->warning_cli_string = listener->getWarningOptions().get_cli_string_by_option(warning_type);
 			if (as_error) this->type = DiagnosticType::DIAGNOSTIC_ERROR;
 		}
 

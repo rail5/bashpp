@@ -59,10 +59,17 @@ void Listener::enter(ClassDefinition* node) {
 	}
 
 	class_entity->setDefinitionPosition({
-		get_current_source_file(),
+		getCurrentSourceFile(),
 		node->CLASSNAME().getLine(),
 		node->CLASSNAME().getCharPositionInLine()
 	});
+
+	root_program->markEntity(
+		getCurrentSourceFile(),
+		node->getLine(), node->getCharPositionInLine(),
+		node->getEndPosition().line, node->getEndPosition().column,
+		class_entity.get()
+	);
 
 	// Add placeholders for system methods:
 	// __new, __delete, __copy, __constructor, __destructor
@@ -156,10 +163,10 @@ void Listener::enter(ClassDefinition* node) {
 
 template <>
 void Listener::exit(ClassDefinition* node) {
-	bpp_assert(topmost_entity_is<bpp::IR::Class>(), "Topmost entity on stack is not a Class when exiting ClassDefinition node");
+	bpp_assert(topmost_entity_is<bpp::IR::Class>(), "Topmost entity on stack is not a Class");
 	auto class_entity = entity_stack.pop_as<bpp::IR::Class>();
 
-	bpp_assert(topmost_entity_is<bpp::IR::Program>(), "Topmost entity on stack is not a Program when exiting ClassDefinition node");
+	bpp_assert(topmost_entity_is<bpp::IR::Program>(), "Topmost entity on stack is not a Program");
 	auto* current_program = entity_stack.top_as<bpp::IR::Program>();
 
 	current_program->unPreregisterClass(); // Remove the preregistered class pointer, since the class has now been fully defined

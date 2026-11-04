@@ -14,7 +14,7 @@ namespace bpp::AST {
 
 template <>
 void Listener::enter(ProcessSubstitution* node) {
-	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity when entering ProcessSubstitution node");
+	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity");
 	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 
 	auto process_substitution_entity = std::make_unique<bpp::IR::StringType>();
@@ -27,12 +27,12 @@ void Listener::enter(ProcessSubstitution* node) {
 
 template <>
 void Listener::exit(ProcessSubstitution* /*node*/) {
-	bpp_assert(topmost_entity_is<bpp::IR::StringType>(), "Topmost entity is not a StringType when exiting ProcessSubstitution node");
+	bpp_assert(topmost_entity_is<bpp::IR::StringType>(), "Topmost entity is not a StringType");
 	auto process_substitution_entity = entity_stack.pop_as<bpp::IR::StringType>();
 
 	process_substitution_entity->add(")"); // All process substitutions end with a closing parenthesis
 
-	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity when exiting ProcessSubstitution node");
+	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity");
 	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 	current_code_entity->add(std::move(process_substitution_entity));
 }

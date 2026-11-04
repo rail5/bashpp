@@ -47,10 +47,17 @@ void Listener::enter(MethodDefinition* node) {
 	}
 
 	new_method->setDefinitionPosition({
-		get_current_source_file(),
+		getCurrentSourceFile(),
 		node->NAME().getLine(),
 		node->NAME().getCharPositionInLine()
 	});
+
+	root_program->markEntity(
+		getCurrentSourceFile(),
+		node->getLine(), node->getCharPositionInLine(),
+		node->getEndPosition().line, node->getEndPosition().column,
+		new_method.get()
+	);
 
 	// 1. The implicit `this` parameter, which is always the first parameter of a method
 	if (!new_method->addParameter(current_class->getThisPtr())) {
@@ -91,7 +98,7 @@ void Listener::enter(MethodDefinition* node) {
 		parameter_entity->inherit(new_method.get());
 
 		parameter_entity->setDefinitionPosition({
-			get_current_source_file(),
+			getCurrentSourceFile(),
 			param.name.getLine(),
 			param.name.getCharPositionInLine()
 		});
@@ -119,10 +126,10 @@ void Listener::enter(MethodDefinition* node) {
 
 template <>
 void Listener::exit(MethodDefinition* node) {
-	bpp_assert(topmost_entity_is<bpp::IR::Method>(), "Topmost entity on stack is not a Method when exiting MethodDefinition node");
+	bpp_assert(topmost_entity_is<bpp::IR::Method>(), "Topmost entity on stack is not a Method");
 	auto new_method = entity_stack.pop_as<bpp::IR::Method>();
 
-	bpp_assert(topmost_entity_is<bpp::IR::Class>(), "Topmost entity on stack is not a Class when exiting MethodDefinition node");
+	bpp_assert(topmost_entity_is<bpp::IR::Class>(), "Topmost entity on stack is not a Class");
 	auto* current_class = entity_stack.top_as<bpp::IR::Class>();
 
 	current_class->unPreregisterMethod(); // Remove the preregistered method pointer, since the method has now been fully defined

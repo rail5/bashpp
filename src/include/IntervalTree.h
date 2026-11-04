@@ -45,10 +45,10 @@ private:
 		bool contains(const Interval& other) const { return low <= other.low && high >= other.high; }
 	};
 
-	std::vector<Interval> intervals;
-	bool sorted = false;
+	mutable std::vector<Interval> intervals;
+	mutable bool sorted = false;
 
-	void ensure_sorted() {
+	void ensure_sorted() const {
 		if (!sorted) {
 			// Sort by low, then by high (descending) so wider intervals come first
 			std::sort(intervals.begin(), intervals.end(),
@@ -75,7 +75,7 @@ public:
 	 * @param point The point to query.
 	 * @return T The payload of the innermost overlapping interval, or default-constructed T if none found.
 	 */
-	T find_innermost_overlap(std::uint64_t point) {
+	T find_innermost_overlap(std::uint64_t point) const {
 		ensure_sorted();
 
 		// Binary search for first interval with low <= point

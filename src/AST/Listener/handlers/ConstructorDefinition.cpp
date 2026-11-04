@@ -8,6 +8,7 @@
 
 #include <IR/entities/Method.h>
 #include <IR/entities/Class.h>
+#include <IR/entities/Program.h>
 
 #include <error/InternalError.h>
 #include <error/SyntaxError.h>
@@ -25,10 +26,17 @@ void Listener::enter(ConstructorDefinition* node) {
 	new_constructor->inherit(current_class);
 
 	new_constructor->setDefinitionPosition({
-		get_current_source_file(),
+		getCurrentSourceFile(),
 		node->getLine(),
 		node->getCharPositionInLine()
 	});
+
+	root_program->markEntity(
+		getCurrentSourceFile(),
+		node->getLine(), node->getCharPositionInLine(),
+		node->getEndPosition().line, node->getEndPosition().column,
+		new_constructor.get()
+	);
 
 	if (!new_constructor->addParameter(current_class->getThisPtr())) {
 		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to user-defined constructor");
@@ -46,10 +54,10 @@ void Listener::enter(ConstructorDefinition* node) {
 
 template <>
 void Listener::exit(ConstructorDefinition* node) {
-	bpp_assert(topmost_entity_is<bpp::IR::Method>(), "Topmost entity on stack is not a Method when exiting ConstructorDefinition node");
+	bpp_assert(topmost_entity_is<bpp::IR::Method>(), "Topmost entity on stack is not a Method");
 	auto new_constructor = entity_stack.pop_as<bpp::IR::Method>();
 
-	bpp_assert(topmost_entity_is<bpp::IR::Class>(), "Topmost entity on stack is not a Class when exiting ConstructorDefinition node");
+	bpp_assert(topmost_entity_is<bpp::IR::Class>(), "Topmost entity on stack is not a Class");
 	auto* current_class = entity_stack.top_as<bpp::IR::Class>();
 
 	auto res = current_class->addMethod(std::move(new_constructor));

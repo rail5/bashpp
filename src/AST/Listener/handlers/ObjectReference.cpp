@@ -50,7 +50,7 @@ void Listener::enter(ObjectReference* node) {
 	bpp_assert(!(node->isPointerDereference() && node->isAddressOf()), "Detected simultaneous pointer dereference and object address");
 
 	auto resolution = bpp::IR::resolve_entity(
-		get_current_source_file(),
+		getCurrentSourceFile(),
 		current_code_entity,
 		std::span{node->IDENTIFIERS()}
 	);
@@ -81,7 +81,7 @@ void Listener::enter(ObjectReference* node) {
 
 template <>
 void Listener::exit(ObjectReference* node) {
-	bpp_assert(topmost_entity_is<bpp::IR::ObjectReference>(), "Topmost entity on stack is not an ObjectReference when exiting ObjectReference node");
+	bpp_assert(topmost_entity_is<bpp::IR::ObjectReference>(), "Topmost entity on stack is not an ObjectReference");
 	auto reference_entity = entity_stack.pop_as<bpp::IR::ObjectReference>();
 
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "ObjectReference node must be inside a code entity");

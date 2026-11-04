@@ -30,6 +30,7 @@ void Listener::exit(HeredocBody* node) {
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity");
 	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 
+	current_code_entity->adoptObjectsOf(heredoc_body_entity.get());
 	current_code_entity->add(std::move(heredoc_body_entity));
 	current_code_entity->add(node->DELIMITER().getValue());
 }

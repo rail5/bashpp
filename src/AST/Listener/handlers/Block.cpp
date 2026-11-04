@@ -9,6 +9,7 @@
 #include <error/InternalError.h>
 
 #include <IR/entities/expressions/bash/Block.h>
+#include <IR/entities/Program.h>
 #include <IR/entities/Class.h>
 #include <IR/entities/Method.h>
 #include <IR/entities/BashFunction.h>
@@ -31,7 +32,7 @@ bool is_surrounded_by_larger_construct(const IR::EntityStack& entity_stack) {
 } // anonymous namespace
 
 template <>
-void Listener::enter(Block* /*node*/) {
+void Listener::enter(Block* node) {
 	if (is_surrounded_by_larger_construct(entity_stack)) return; // Block creation handled by the surrounding construct
 
 	// Otherwise:
@@ -39,6 +40,14 @@ void Listener::enter(Block* /*node*/) {
 	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 	auto block_entity = std::make_unique<bpp::IR::Block>();
 	block_entity->inherit(current_code_entity);
+
+	root_program->markEntity(
+		getCurrentSourceFile(),
+		node->getLine(), node->getCharPositionInLine(),
+		node->getEndPosition().line, node->getEndPosition().column,
+		block_entity.get()
+	);
+
 	entity_stack.push(std::move(block_entity));
 }
 

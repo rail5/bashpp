@@ -19,7 +19,7 @@ namespace bpp::AST {
 
 template <>
 void Listener::enter(NewStatement* node) {
-	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity when entering NewStatement node");
+	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity");
 	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 
 	const auto& type = node->TYPE();

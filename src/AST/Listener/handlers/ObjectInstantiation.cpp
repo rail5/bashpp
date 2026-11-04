@@ -41,7 +41,7 @@ void Listener::enter(ObjectInstantiation* node) {
 	const auto& object_name = node->IDENTIFIER();
 
 	const auto* current_code_entity = latest_code_entity();
-	bpp_assert(current_code_entity != nullptr, "No code entity found on stack when entering ObjectInstantiation node");
+	bpp_assert(current_code_entity != nullptr, "No code entity found on stack");
 
 	// Name validation
 	// 1. Valid identifier?
@@ -71,7 +71,7 @@ void Listener::enter(ObjectInstantiation* node) {
 	object->setName(object_name);
 
 	object->setDefinitionPosition({
-		get_current_source_file(),
+		getCurrentSourceFile(),
 		object_name.getLine(),
 		object_name.getCharPositionInLine()
 	});
@@ -81,7 +81,7 @@ void Listener::enter(ObjectInstantiation* node) {
 
 template <>
 void Listener::exit(ObjectInstantiation* node) {
-	bpp_assert(topmost_entity_is<bpp::IR::Object>(), "Topmost entity on stack is not an Object when exiting ObjectInstantiation node");
+	bpp_assert(topmost_entity_is<bpp::IR::Object>(), "Topmost entity on stack is not an Object");
 	auto object = entity_stack.pop_as<bpp::IR::Object>();
 
 	if (auto* datamember_declaration = dynamic_cast<bpp::IR::DataMember*>(entity_stack.top())) {
@@ -96,12 +96,12 @@ void Listener::exit(ObjectInstantiation* node) {
 	}
 
 	// Otherwise, add the object to the current code entity
-	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity when exiting ObjectInstantiation node");
+	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity");
 	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 
 	if (!object->isPointer()) {
 		const auto* object_class = object->getType();
-		bpp_assert(object_class != nullptr, "Object has no type when exiting ObjectInstantiation node");
+		bpp_assert(object_class != nullptr, "Object has no type");
 		
 		auto instantiation = std::make_unique<bpp::IR::ObjectInstantiation>();
 		instantiation->inherit(current_code_entity);
@@ -119,7 +119,7 @@ void Listener::exit(ObjectInstantiation* node) {
 		pointer_assignment->setLHS(std::move(object_reference));
 
 		if (object->hasInitialValue()) {
-			bpp_assert(dynamic_cast<const bpp::IR::ValueAssignment*>(object->getInitialValue().value()), "Object initial value is not a ValueAssignment when exiting ObjectInstantiation node");
+			bpp_assert(dynamic_cast<const bpp::IR::ValueAssignment*>(object->getInitialValue().value()), "Object initial value is not a ValueAssignment");
 			auto va = std::unique_ptr<bpp::IR::ValueAssignment>(static_cast<bpp::IR::ValueAssignment*>(object->releaseInitialValue().release()));
 			pointer_assignment->setRHS(std::move(va));
 		} else {

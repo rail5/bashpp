@@ -15,7 +15,7 @@ namespace bpp::AST {
 
 template <>
 void Listener::enter(ObjectAssignment* /*node*/) {
-	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity when entering ObjectAssignment node");
+	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity");
 	auto assignment_entity = std::make_unique<bpp::IR::ObjectAssignment>();
 	assignment_entity->inherit(entity_stack.top());
 	entity_stack.push(std::move(assignment_entity));
@@ -24,7 +24,7 @@ void Listener::enter(ObjectAssignment* /*node*/) {
 
 template <>
 void Listener::exit(ObjectAssignment* node) {
-	bpp_assert(topmost_entity_is<bpp::IR::ObjectAssignment>(), "Topmost entity is not an ObjectAssignment when exiting ObjectAssignment node");
+	bpp_assert(topmost_entity_is<bpp::IR::ObjectAssignment>(), "Topmost entity is not an ObjectAssignment");
 	auto assignment_entity = entity_stack.pop_as<bpp::IR::ObjectAssignment>();
 	context_expectations_stack.pop();
 
@@ -78,7 +78,7 @@ void Listener::exit(ObjectAssignment* node) {
 		}
 	}
 
-	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity when exiting ObjectAssignment node");
+	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity");
 	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 
 	current_code_entity->add(std::move(assignment_entity));

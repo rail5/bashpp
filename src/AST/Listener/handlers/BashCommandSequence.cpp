@@ -26,7 +26,7 @@ void Listener::exit(BashCommand* /*node*/) {}
 
 template <>
 void Listener::enter(BashPipeline* /*node*/) {
-	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity when entering BashPipeline node");
+	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity");
 	auto* current_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 	auto pipeline_entity = std::make_unique<bpp::IR::BashPipeline>();
 	pipeline_entity->inherit(current_entity);
@@ -35,10 +35,10 @@ void Listener::enter(BashPipeline* /*node*/) {
 
 template <>
 void Listener::exit(BashPipeline* /*node*/) {
-	bpp_assert(topmost_entity_is<bpp::IR::BashPipeline>(), "Topmost entity on stack is not a BashPipeline when exiting BashPipeline node");
+	bpp_assert(topmost_entity_is<bpp::IR::BashPipeline>(), "Topmost entity on stack is not a BashPipeline");
 	auto pipeline_entity = entity_stack.pop_as<bpp::IR::BashPipeline>();
 
-	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity when exiting BashPipeline node");
+	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity");
 	auto* current_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 	current_entity->adoptObjectsOf(pipeline_entity.get());
 	current_entity->add(std::move(pipeline_entity));
@@ -56,10 +56,10 @@ void Listener::enter(BashCommandSequence* node) {
 
 template <>
 void Listener::exit(BashCommandSequence* /*node*/) {
-	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity when exiting BashCommandSequence node");
+	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity");
 	auto command_sequence_entity = entity_stack.pop_as<bpp::IR::CodeEntity>();
 
-	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity when exiting BashCommandSequence node");
+	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity");
 	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 	current_code_entity->adoptObjectsOf(command_sequence_entity.get());
 	current_code_entity->add(std::move(command_sequence_entity));

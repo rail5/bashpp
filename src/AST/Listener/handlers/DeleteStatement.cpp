@@ -15,7 +15,7 @@ namespace bpp::AST {
 
 template <>
 void Listener::enter(DeleteStatement* /*node*/) {
-	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity when entering NewStatement node");
+	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity");
 	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 
 	auto delete_entity = std::make_unique<bpp::IR::DeleteStatement>();
@@ -28,11 +28,11 @@ void Listener::enter(DeleteStatement* /*node*/) {
 
 template <>
 void Listener::exit(DeleteStatement* /*node*/) {
-	bpp_assert(topmost_entity_is<bpp::IR::DeleteStatement>(), "Topmost entity is not a DeleteStatement when exiting DeleteStatement node");
+	bpp_assert(topmost_entity_is<bpp::IR::DeleteStatement>(), "Topmost entity is not a DeleteStatement");
 	auto delete_entity = entity_stack.pop_as<bpp::IR::DeleteStatement>();
 	context_expectations_stack.pop();
 
-	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity when exiting DeleteStatement node");
+	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity");
 	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 
 	current_code_entity->add(std::move(delete_entity));

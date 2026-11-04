@@ -46,7 +46,7 @@ void Listener::enter(ValueAssignment* node) {
 
 template <>
 void Listener::exit(ValueAssignment* node) {
-	bpp_assert(topmost_entity_is<bpp::IR::ValueAssignment>(), "Topmost entity on stack is not a ValueAssignment when exiting ValueAssignment node");
+	bpp_assert(topmost_entity_is<bpp::IR::ValueAssignment>(), "Topmost entity on stack is not a ValueAssignment");
 	auto va = entity_stack.pop_as<bpp::IR::ValueAssignment>();
 	context_expectations_stack.pop();
 
@@ -73,7 +73,7 @@ void Listener::exit(ValueAssignment* node) {
 	}
 
 	// Default case: just send it up the chain
-	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity when exiting ValueAssignment node");
+	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity");
 	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 	current_code_entity->add(std::move(va));
 }

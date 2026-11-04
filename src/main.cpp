@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
 	auto program = parser.release_program();
 	for (const auto& e : parser.get_errors()) {
 		e.print();
-		listener->set_has_errors(true);
+		listener->setHasErrors(true);
 	}
 
 	if (program == nullptr) {
@@ -95,14 +95,14 @@ int main(int argc, char** argv) {
 	}
 #endif
 
-	listener->set_source_file(args.input_file().value_or("<stdin>"));
-	listener->set_warning_options(args.warning_options());
-	listener->set_include_paths(args.include_paths());
+	listener->setSourceFile(args.input_file().value_or("<stdin>"));
+	listener->setWarningOptions(args.warning_options());
+	listener->setIncludePaths(args.include_paths());
 
 	try {
 		listener->walk(program.get());
 
-		if (listener->has_errors()) return 1;
+		if (listener->hasErrors()) return 1;
 #ifndef NDEBUG
 		if (args.display_entity_tree()) {
 			std::cout << *listener->view_program() << std::endl;

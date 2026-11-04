@@ -19,6 +19,8 @@
 
 namespace bpp::AST {
 
+class Block; // forward decl.
+
 /**
  * @class ASTNode
  * @brief The base class for all non-terminal nodes in the Bash++ AST.
@@ -64,6 +66,14 @@ class ASTNode {
 		 * @param childs The vector of child AST nodes to add.
 		 */
 		void addChildren(std::vector<std::unique_ptr<ASTNode>>&& childs);
+
+		/**
+		 * @brief Absorb the children of a Block node into this AST node, without adding the Block node itself.
+		 * I.e., this function "unwraps" the Block node and adds its children directly to this node.
+		 * @param block_node The Block node whose children are to be absorbed.
+		 */
+		void absorbBlock(std::unique_ptr<Block>&& block_node);
+
 		std::span<const std::unique_ptr<ASTNode>> getChildren() const;
 		std::vector<std::unique_ptr<ASTNode>> releaseChildren() { return std::move(children); }
 		void setPosition(const bpp::AST::FilePosition& pos);

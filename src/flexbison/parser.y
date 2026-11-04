@@ -1057,7 +1057,7 @@ class_definition:
 		node->setEndPosition(@5.end.line, @5.end.column);
 		node->setClassName($3);
 		node->setParentClassName($4);
-		node->addChild(std::move($5));
+		node->absorbBlock(static_uniqueptr_cast<bpp::AST::Block>(std::move($5)));
 		$$ = std::move(node);
 	}
 	;
@@ -1178,7 +1178,7 @@ method_definition:
 		node->setAccessModifier($1);
 		node->setName($4);
 		node->addParameters($6);
-		node->addChild(std::move($7));
+		node->absorbBlock(static_uniqueptr_cast<bpp::AST::Block>(std::move($7)));
 
 		node->setVirtual(false);
 
@@ -1194,7 +1194,7 @@ method_definition:
 		node->setAccessModifier($3);
 		node->setName($6);
 		node->addParameters($8);
-		node->addChild(std::move($9));
+		node->absorbBlock(static_uniqueptr_cast<bpp::AST::Block>(std::move($9)));
 
 		node->setVirtual(true);
 
@@ -1252,7 +1252,7 @@ constructor_definition:
 		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
-		node->addChild(std::move($3));
+		node->absorbBlock(static_uniqueptr_cast<bpp::AST::Block>(std::move($3)));
 		$$ = std::move(node);
 	}
 	;
@@ -1264,7 +1264,7 @@ destructor_definition:
 		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
-		node->addChild(std::move($3));
+		node->absorbBlock(static_uniqueptr_cast<bpp::AST::Block>(std::move($3)));
 		$$ = std::move(node);
 	}
 	;
@@ -2057,7 +2057,7 @@ bash_select_statement:
 		selectStatement->setPosition(line_number, column_number);
 		selectStatement->setEndPosition(@6.end.line, @6.end.column);
 
-		selectStatement->addChild(std::move($6));
+		selectStatement->absorbBlock(static_uniqueptr_cast<bpp::AST::Block>(std::move($6)));
 		$$ = std::move(selectStatement);
 	}
 	;
@@ -2168,7 +2168,7 @@ bash_for_statement:
 		std::uint32_t column_number = @1.begin.column;
 		forStatement->setPosition(line_number, column_number);
 		forStatement->setEndPosition(@6.end.line, @6.end.column);
-		forStatement->addChild(std::move($6));
+		forStatement->absorbBlock(static_uniqueptr_cast<bpp::AST::Block>(std::move($6)));
 		$$ = std::move(forStatement);
 	}
 	;
@@ -2208,7 +2208,7 @@ bash_arithmetic_for_statement:
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@4.end.line, @4.end.column);
 		node->addChild(std::move($3)); // for condition
-		node->addChild(std::move($4)); // block
+		node->absorbBlock(static_uniqueptr_cast<bpp::AST::Block>(std::move($4))); // block
 		$$ = std::move(node);
 	}
 	| BASH_KEYWORD_FOR WS arithmetic_for_condition DELIM maybe_whitespace block {
@@ -2218,7 +2218,7 @@ bash_arithmetic_for_statement:
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@6.end.line, @6.end.column);
 		node->addChild(std::move($3)); // for condition
-		node->addChild(std::move($6)); // block
+		node->absorbBlock(static_uniqueptr_cast<bpp::AST::Block>(std::move($6))); // block
 		$$ = std::move(node);
 	}
 	;
@@ -2550,7 +2550,7 @@ bash_function:
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->setName($2);
-		node->addChild(std::move($3));
+		node->absorbBlock(static_uniqueptr_cast<bpp::AST::Block>(std::move($3)));
 		$$ = std::move(node);
 	}
 	| BASH_KEYWORD_FUNCTION BASH_FUNCTION_LABEL BASH_FUNCTION_OPEN block {
@@ -2560,7 +2560,7 @@ bash_function:
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@4.end.line, @4.end.column);
 		node->setName($2);
-		node->addChild(std::move($4));
+		node->absorbBlock(static_uniqueptr_cast<bpp::AST::Block>(std::move($4)));
 		$$ = std::move(node);
 	}
 	| BASH_FUNCTION_LABEL BASH_FUNCTION_OPEN block {
@@ -2570,7 +2570,7 @@ bash_function:
 		node->setPosition(line_number, column_number);
 		node->setEndPosition(@3.end.line, @3.end.column);
 		node->setName($1);
-		node->addChild(std::move($3));
+		node->absorbBlock(static_uniqueptr_cast<bpp::AST::Block>(std::move($3)));
 		$$ = std::move(node);
 	}
 

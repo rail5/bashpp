@@ -32,7 +32,7 @@ void Listener::exit(BashVariable* /*node*/) {
 
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity");
 	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
-	
+
 	current_code_entity->adoptObjectsOf(bash_variable_entity.get());
 	current_code_entity->add(std::move(bash_variable_entity));
 }

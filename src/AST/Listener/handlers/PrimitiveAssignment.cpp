@@ -9,7 +9,6 @@
 #include <IR/entities/expressions/String.h>
 
 #include <error/InternalError.h>
-#include <error/SyntaxError.h>
 
 namespace bpp::AST {
 
@@ -31,7 +30,7 @@ void Listener::enter(PrimitiveAssignment* node) {
 
 	const std::string& variable_name = node->IDENTIFIER().getValue();
 	if (variable_name.contains("__")) {
-		show_warning(node->IDENTIFIER(),
+		warn(node->IDENTIFIER(),
 			ErrorHandling::WarningType::DubiousVariableName,
 			"Variable name '" + variable_name + "' contains double underscores, which are reserved for internal use. Rename to avoid collisions with built-ins or generated symbols.");
 	}

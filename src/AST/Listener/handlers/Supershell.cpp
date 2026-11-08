@@ -21,10 +21,10 @@ void Listener::enter(Supershell* node) {
 	auto supershell_entity = std::make_unique<bpp::IR::Supershell>();
 	supershell_entity->inherit(current_code_entity);
 
-	root_program->markEntity(
-		getCurrentSourceFile(),
-		node->getLine(), node->getCharPositionInLine(),
-		node->getEndPosition().line, node->getEndPosition().column,
+	if (source_index) source_index->markContextEntity(
+		{getCurrentSourceFile(),
+		node->getLine(), node->getColumn(),
+		node->getEndPosition().line, node->getEndPosition().column},
 		supershell_entity.get()
 	);
 

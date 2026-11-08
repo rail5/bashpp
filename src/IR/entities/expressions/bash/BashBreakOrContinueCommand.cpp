@@ -44,7 +44,7 @@ bpp::CodeGen::CodeSegment BashBreakOrContinueCommand::generateCode(bpp::CodeGen:
 	result.add_pre_code("__loopDepth=$((__loopDepth < " + std::to_string(state->nested_loop_depth) + " ? __loopDepth : " + std::to_string(state->nested_loop_depth) + "))\n");
 	if (state->should_declare_local()) result.add_pre_code("local ");
 	result.add_pre_code("__bcArg=${__loopDepth}\n");
-	
+
 	// 3. Unwind the object stack to the appropriate depth
 	result.add_pre_code("while [[ ${#__loopFrames[@]} -gt 0 ]] && [[ ${__loopDepth} -gt 0 ]]; do\n");
 	result.add_pre_code("while [[ ${#__scopeFrames[@]} -ge ${__loopFrames[-1]} ]]; do\n");

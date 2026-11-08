@@ -11,7 +11,6 @@
 #include <IR/entities/expressions/bash/BashBreakOrContinueCommand.h>
 
 #include <error/InternalError.h>
-#include <error/SyntaxError.h>
 
 namespace bpp::AST {
 

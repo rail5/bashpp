@@ -9,7 +9,6 @@
 #include <IR/entities/expressions/String.h>
 
 #include <error/InternalError.h>
-#include <error/SyntaxError.h>
 
 namespace bpp::AST {
 
@@ -18,7 +17,7 @@ void Listener::enter(Bash53NativeSupershell* node) {
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity");
 	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 
-	show_warning(
+	warn(
 		node,
 		bpp::ErrorHandling::WarningType::Bash53NativeSupershell,
 		"Consider using the Bash++ supershell syntax `@(...)` for wider compatibility"

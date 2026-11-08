@@ -14,16 +14,13 @@
 #include <IR/entities/Program.h>
 
 #include <error/InternalError.h>
-#include <error/SyntaxError.h>
 
 namespace bpp::AST {
 
 template <>
 void Listener::enter(ClassDefinition* node) {
 	// 1. Verify that we're at the top-level of the program
-	if (!topmost_entity_is<bpp::IR::Program>()) {
-		throw bpp::ErrorHandling::SyntaxError(this, node, "Class definition must be at the top level of the program");
-	}
+	if (!topmost_entity_is<bpp::IR::Program>()) error(node, "Class definition must be at the top level of the program");
 	auto* current_program = entity_stack.top_as<bpp::IR::Program>();
 
 	// 2. Verify that the class name is valid
@@ -32,15 +29,15 @@ void Listener::enter(ClassDefinition* node) {
 		std::string msg = "Invalid class name: '" + class_name + "'";
 		if (class_name.contains("__")) msg += " (Bash++ identifiers cannot contain double underscores)";
 		if (bpp::IR::is_protected_keyword(class_name)) msg += " ('" + class_name + "' is a keyword)";
-		throw bpp::ErrorHandling::SyntaxError(this, node, msg);
+		error(node, msg);
 	}
 
 	// 3. Verify that the class name is not already used in the program
 	if (current_program->getClass(class_name)) {
-		throw bpp::ErrorHandling::SyntaxError(this, node, "Class '" + class_name + "' already defined in program");
+		error(node, "Class '" + class_name + "' already defined in program");
 	}
 	if (current_program->getObject(class_name)) {
-		throw bpp::ErrorHandling::SyntaxError(this, node, "Class name '" + class_name + "' conflicts with an object in the program");
+		error(node, "Class name '" + class_name + "' conflicts with an object in the program");
 	}
 
 	auto class_entity = std::make_unique<bpp::IR::Class>(class_name);
@@ -53,23 +50,26 @@ void Listener::enter(ClassDefinition* node) {
 		auto* parent_class = current_program->getClass(parent_class_name);
 		if (!parent_class) {
 			current_program->unPreregisterClass();
-			throw bpp::ErrorHandling::SyntaxError(this, node, "Parent class '" + parent_class_name + "' not found");
+			error(node, "Parent class '" + parent_class_name + "' not found");
 		}
 		class_entity->inherit(parent_class);
 	}
 
-	class_entity->setDefinitionPosition({
-		getCurrentSourceFile(),
-		node->CLASSNAME().getLine(),
-		node->CLASSNAME().getCharPositionInLine()
-	});
+	if (source_index) {
+		source_index->setDefinitionPosition(
+			class_entity.get(),
+			{getCurrentSourceFile(),
+			node->CLASSNAME().getLine(), node->CLASSNAME().getColumn(),
+			node->CLASSNAME().getLine(), static_cast<uint32_t>(node->CLASSNAME().getColumn() + node->CLASSNAME().getValue().length())
+		});
 
-	root_program->markEntity(
-		getCurrentSourceFile(),
-		node->getLine(), node->getCharPositionInLine(),
-		node->getEndPosition().line, node->getEndPosition().column,
-		class_entity.get()
-	);
+		source_index->markContextEntity(
+			{getCurrentSourceFile(),
+			node->getLine(), node->getColumn(),
+			node->getEndPosition().line, node->getEndPosition().column},
+			class_entity.get()
+		);
+	}
 
 	// Add placeholders for system methods:
 	// __new, __delete, __copy, __constructor, __destructor
@@ -180,7 +180,7 @@ void Listener::exit(ClassDefinition* node) {
 			default: error_message += "entity"; break;
 		}
 		error_message += ": " + node->CLASSNAME().getValue();
-		throw bpp::ErrorHandling::SyntaxError(this, node, error_message);
+		error(node, error_message);
 	}
 }
 

@@ -40,7 +40,7 @@ class Token {
 		std::uint32_t getLine() const {
 			return line;
 		}
-		std::uint32_t getCharPositionInLine() const {
+		std::uint32_t getColumn() const {
 			return column;
 		}
 
@@ -50,7 +50,7 @@ class Token {
 		void setLine(std::uint32_t new_line) {
 			line = new_line;
 		}
-		void setCharPositionInLine(std::uint32_t new_column) {
+		void setColumn(std::uint32_t new_column) {
 			column = new_column;
 		}
 

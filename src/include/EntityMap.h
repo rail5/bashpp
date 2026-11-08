@@ -23,8 +23,8 @@ class Entity;
  * 
  */
 struct FilePosition {
-	std::uint32_t line;
-	std::uint32_t column;
+	std::uint32_t line = 0;
+	std::uint32_t column = 0;
 
 	operator std::uint64_t() const {
 		// Encode line and column into a single std::uint64_t
@@ -34,6 +34,7 @@ struct FilePosition {
 		return (static_cast<std::uint64_t>(line) << 32) | column;
 	}
 
+	FilePosition() = default;
 	FilePosition(std::uint32_t line, std::uint32_t column)
 		: line(line), column(column) {}
 };
@@ -54,7 +55,6 @@ class EntityMap {
 	private:
 		FlatIntervalTree<const bpp::IR::Entity*> tree;
 	public:
-
 		/**
 		 * @brief Add an entity to the entity map
 		 */

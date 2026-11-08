@@ -9,7 +9,6 @@
 #include <IR/entities/expressions/bpp/ObjectAssignment.h>
 
 #include <error/InternalError.h>
-#include <error/SyntaxError.h>
 
 namespace bpp::AST {
 
@@ -38,7 +37,7 @@ void Listener::exit(ObjectAssignment* node) {
 
 	if (lhs_is_nonprimitive && !rhs_is_nonprimitive) {
 		const auto* value_assignment_ast_node = node->getLastChild(); // FIXME(@rail5): Brittle
-		throw bpp::ErrorHandling::SyntaxError(this, value_assignment_ast_node, "Cannot assign a primitive value to a non-primitive object");
+		error(value_assignment_ast_node, "Cannot assign a primitive value to a non-primitive object");
 	}
 
 	bpp_assert(lhs_is_nonprimitive == rhs_is_nonprimitive, "LHS/RHS primitive/non-primitive mismatch in ObjectAssignment");
@@ -52,8 +51,7 @@ void Listener::exit(ObjectAssignment* node) {
 		bpp_assert(rhs_type != nullptr, "RHS type is null in ObjectAssignment");
 		// The RHS type must be the same as or a subclass of the LHS type
 		if (rhs_type != lhs_type && !rhs_type->isDerivedFrom(lhs_type)) {
-			throw bpp::ErrorHandling::SyntaxError(this, node,
-				"Cannot copy object of type '" + rhs_type->getName() + "' to object of type '" + lhs_type->getName() + "'");
+			error(node, "Cannot copy object of type '" + rhs_type->getName() + "' to object of type '" + lhs_type->getName() + "'");
 		}
 
 		if (rhs_type->isDerivedFrom(lhs_type)) {
@@ -73,7 +71,7 @@ void Listener::exit(ObjectAssignment* node) {
 					slicing_count,
 					warning_plural
 				);
-				show_warning(node, bpp::ErrorHandling::WarningType::Slicing, warning_message);
+				warn(node, bpp::ErrorHandling::WarningType::Slicing, warning_message);
 			}
 		}
 	}

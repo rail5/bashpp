@@ -6,9 +6,7 @@
 
 #pragma once
 
-#include <list>
 #include <string>
-#include <memory>
 
 #include <IR/bpp.h>
 #include <IR/codegen.h>
@@ -37,12 +35,6 @@ class Entity {
 		/// The program that this entity belongs to (only null for the Program entity itself)
 		const Program* containing_program = nullptr;
 
-		/// Where in the source this entity was defined (used for error reporting / language server features)
-		SymbolPosition definition_position;
-
-		/// A list of all positions where this entity is referenced in the source (used for language server features)
-		std::list<SymbolPosition> reference_positions;
-
 		/// If this entity has a name component, this returns the name. Otherwise, it returns an empty string view.
 		std::string_view _getNameIfExists() const;
 	public:
@@ -59,11 +51,6 @@ class Entity {
 
 		virtual const Program* getContainingProgram() const { return containing_program; }
 		void setContainingProgram(const Program* containing_program) { this->containing_program = containing_program; }
-
-		SymbolPosition getDefinitionPosition() const { return definition_position; }
-		void setDefinitionPosition(const SymbolPosition& pos) { this->definition_position = pos; }
-
-		const std::list<SymbolPosition>& getReferencePositions() const { return reference_positions; }
 
 		/**
 		 * @brief Inherit from another entity

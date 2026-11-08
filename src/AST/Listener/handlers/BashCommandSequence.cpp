@@ -10,7 +10,6 @@
 #include <IR/entities/expressions/bash/BashPipeline.h>
 
 #include <error/InternalError.h>
-#include <error/SyntaxError.h>
 
 namespace bpp::AST {
 
@@ -47,7 +46,7 @@ void Listener::exit(BashPipeline* /*node*/) {
 template <>
 void Listener::enter(BashCommandSequence* node) {
 	auto* current_code_entity = dynamic_cast<bpp::IR::CodeEntity*>(entity_stack.top());
-	if (!current_code_entity) throw bpp::ErrorHandling::SyntaxError(this, node, "Command sequence outside of a code entity");
+	if (!current_code_entity) error(node, "Command sequence outside of a code entity");
 
 	auto command_sequence_entity = std::make_unique<bpp::IR::CodeEntity>();
 	command_sequence_entity->inherit(current_code_entity);

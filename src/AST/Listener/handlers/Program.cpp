@@ -22,6 +22,7 @@ void Listener::enter(Program* /*node*/) {
 		auto program = std::make_unique<bpp::IR::Program>();
 
 		program->setSourceFile(getMainSourceFile());
+		if (source_index) source_index->addSourceFile(getMainSourceFile());
 
 		program->setGlobalObjectStackFunction(std::make_unique<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_object_stack_function));
 		program->setSupershellFunction(std::make_unique<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_supershell_function));
@@ -29,7 +30,7 @@ void Listener::enter(Program* /*node*/) {
 		program->setVtableLookupFunction(std::make_unique<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_vtable_lookup_function));
 		program->setDynamicCastFunction(std::make_unique<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_dynamic_cast_function));
 		program->setTypeofFunction(std::make_unique<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_typeof_function));
-		
+
 		root_program = program.get();
 		entity_stack.push(std::move(program));
 	} else {
@@ -39,7 +40,7 @@ void Listener::enter(Program* /*node*/) {
 		auto included_program = std::make_unique<bpp::IR::IncludedProgram>(current_program);
 		included_program->setDynamicInclude(included_type_stack.top() == IncludedType::DYNAMICALLY_INCLUDED);
 		included_program->setSourceFile(getCurrentSourceFile());
-		root_program->addIncludedSourceFile(getCurrentSourceFile());
+		if (source_index) source_index->addSourceFile(getCurrentSourceFile());
 
 		entity_stack.push(std::move(included_program));
 	}

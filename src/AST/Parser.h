@@ -13,7 +13,7 @@
 #include <filesystem>
 #include <AST/ASTNode.h>
 #include <AST/Nodes/Nodes.h>
-#include <error/SyntaxError.h>
+#include <error/Diagnostic.h>
 
 using yyscan_t = void*;
 
@@ -35,9 +35,9 @@ class Parser final {
 		bool lsp_mode = false; // Whether to operate in language server mode (i.e., don't print errors to stderr, just add them to the diagnostics list)
 		bool display_lexer_output = false;
 
-		std::vector<bpp::ErrorHandling::ParserError> errors;
+		std::vector<bpp::ErrorHandling::Diagnostic> errors;
 
-		std::string input_file_path = "<stdin>";
+		std::filesystem::path input_file_path = "<stdin>";
 		std::vector<std::filesystem::path> include_chain;
 
 		enum class InputType : std::uint8_t {
@@ -59,9 +59,9 @@ class Parser final {
 		void setLSPMode(bool enabled);
 		void setDisplayLexerOutput(bool enabled);
 
-		void setInputFromFilePath(const std::string& file_path);
-		void setInputFromFilePtr(FILE* file_ptr, const std::string& file_path);
-		void setInputFromStringContents(const std::string& contents, const std::string& pseudo_file_path);
+		void setInputFromFilePath(const std::filesystem::path& file_path);
+		void setInputFromFilePtr(FILE* file_ptr, const std::filesystem::path& file_path);
+		void setInputFromStringContents(const std::string& contents, const std::filesystem::path& pseudo_file_path);
 
 		void setIncludeChain(const std::vector<std::filesystem::path>& includes);
 
@@ -70,7 +70,7 @@ class Parser final {
 		AST::Program* view_program();
 		std::unique_ptr<AST::Program> release_program();
 
-		const std::vector<bpp::ErrorHandling::ParserError>& get_errors() const;
+		const std::vector<bpp::ErrorHandling::Diagnostic>& get_errors() const;
 };
 
 } // namespace bpp::AST

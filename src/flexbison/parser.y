@@ -13,7 +13,7 @@
 #include <filesystem>
 #include <AST/Nodes/Nodes.h>
 #include <include/ParserPosition.h>
-#include <error/SyntaxError.h>
+#include <error/Diagnostic.h>
 typedef std::unique_ptr<bpp::AST::ASTNode> ASTNodePtr;
 typedef void* yyscan_t;
 }
@@ -25,7 +25,7 @@ void yyerror(const char *s);
 %}
 
 %lex-param { yyscan_t yyscanner }
-%parse-param { std::unique_ptr<bpp::AST::Program>& program } { bool& current_command_can_receive_lvalues } { const std::vector<std::filesystem::path>& include_chain } { std::vector<bpp::ErrorHandling::ParserError>& errors } { bool& lsp_mode } { yyscan_t yyscanner }
+%parse-param { std::unique_ptr<bpp::AST::Program>& program } { bool& current_command_can_receive_lvalues } { const std::vector<std::filesystem::path>& include_chain } { std::vector<bpp::ErrorHandling::Diagnostic>& errors } { bool& lsp_mode } { yyscan_t yyscanner }
 
 %define parse.error verbose
 
@@ -894,7 +894,7 @@ include_statement:
 		bpp::AST::Token<bpp::AST::IncludeStatement::IncludeKeyword> keyword = $1;
 		bpp::AST::Token<bpp::AST::IncludeStatement::IncludeType> type;
 		type.setLine(@2.begin.line);
-		type.setCharPositionInLine(@2.begin.column);
+		type.setColumn(@2.begin.column);
 		if ($2 == "dynamic") {
 			type.setValue(bpp::AST::IncludeStatement::IncludeType::DYNAMIC);
 		} else {
@@ -913,7 +913,7 @@ include_statement:
 
 		std::string asPathText = $4;
 		std::uint32_t asPathLine = $4.getLine();
-		std::uint32_t asPathColumn = $4.getCharPositionInLine();
+		std::uint32_t asPathColumn = $4.getColumn();
 		bpp::AST::Token<std::string> asPath(asPathText, asPathLine, asPathColumn);
 
 		auto node = std::make_unique<bpp::AST::IncludeStatement>();
@@ -1217,7 +1217,7 @@ parameter:
 		bpp::AST::Token<bpp::AST::MethodDefinition::Parameter> token;
 		token.setValue(param);
 		token.setLine(@1.begin.line);
-		token.setCharPositionInLine(@1.begin.column);
+		token.setColumn(@1.begin.column);
 		$$ = std::move(token);
 	}
 	| AT IDENTIFIER ASTERISK WS IDENTIFIER WS {
@@ -1228,7 +1228,7 @@ parameter:
 		bpp::AST::Token<bpp::AST::MethodDefinition::Parameter> token;
 		token.setValue(param);
 		token.setLine(@1.begin.line);
-		token.setCharPositionInLine(@1.begin.column);
+		token.setColumn(@1.begin.column);
 		$$ = std::move(token);
 	}
 	| AT IDENTIFIER WS IDENTIFIER WS {
@@ -1241,7 +1241,7 @@ parameter:
 		bpp::AST::Token<bpp::AST::MethodDefinition::Parameter> token;
 		token.setValue(param);
 		token.setLine(@1.begin.line);
-		token.setCharPositionInLine(@1.begin.column);
+		token.setColumn(@1.begin.column);
 		$$ = std::move(token);
 	}
 	;
@@ -1581,7 +1581,7 @@ bash_variable:
 
 		bpp::AST::Token<std::string> text;
 		text.setLine(@2.begin.line);
-		text.setCharPositionInLine(@2.begin.column);
+		text.setColumn(@2.begin.column);
 		text.setValue($2.getValue() + $3.getValue() + $4.getValue());
 		node->setText(text);
 		node->addChild(std::move($5));
@@ -1598,7 +1598,7 @@ bash_variable:
 		bpp::AST::Token<std::string> text;
 		text.setLine(line_number);
 		// Skip the '$' at the beginning of the token
-		text.setCharPositionInLine(column_number + 1);
+		text.setColumn(column_number + 1);
 		text.setValue($1.getValue().substr(1));
 		node->setText(text);
 		$$ = std::move(node);
@@ -1902,7 +1902,7 @@ heredoc_header:
 	HEREDOC_START HEREDOC_DELIMITER {
 		bpp::AST::Token<std::string> header;
 		header.setLine(@1.begin.line);
-		header.setCharPositionInLine(@1.begin.column);
+		header.setColumn(@1.begin.column);
 		header.setValue($1.getValue() + $2.getValue());
 		$$ = std::move(header);
 	}
@@ -2597,13 +2597,13 @@ void parser::error(const location_type& loc, const std::string& m) {
 		loc.begin.line == loc.end.line
 			? loc.end.column - loc.begin.column
 			: UINT32_MAX;
-	bpp::ErrorHandling::ParserError error(
+	bpp::ErrorHandling::Diagnostic error(
+		m,
 		include_chain,
 		line,
 		column,
 		length,
-		m,
-		lsp_mode
+		bpp::ErrorHandling::DiagnosticType::DIAGNOSTIC_ERROR
 	);
 	errors.push_back(error);
 }

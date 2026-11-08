@@ -33,7 +33,7 @@
 #include <IR/entities/Program.h>
 
 #include <error/InternalError.h>
-#include <error/SyntaxError.h>
+#include <error/Diagnostic.h>
 
 int main(int argc, char** argv) {
 	(void)std::setlocale(LC_ALL, ""); // NOLINT(concurrency-mt-unsafe)
@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 	parser.parse();
 	auto program = parser.release_program();
 	for (const auto& e : parser.get_errors()) {
-		e.print();
+		e.print_to_stderr();
 		listener->setHasErrors(true);
 	}
 

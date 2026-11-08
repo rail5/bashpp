@@ -7,7 +7,7 @@
 #include "Listener.h"
 
 #include <error/InternalError.h>
-#include <error/SyntaxError.h>
+#include <error/Diagnostic.h>
 
 #include <IR/entities/CodeEntity.h>
 #include <IR/entities/Program.h>
@@ -38,7 +38,7 @@ void Listener::walk(bpp::AST::ASTNode* node) {
 	} catch (const bpp::ErrorHandling::Diagnostic& e) {
 		// Cancel traversal of this node and its children, but continue to traverse the rest of the tree
 		this->program_has_errors = true;
-		e.print();
+		e.print_to_stderr();
 		return;
 	}
 }

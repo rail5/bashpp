@@ -17,16 +17,6 @@ constexpr std::filesystem::path get_standard_library_path() {
 
 namespace bpp::IR {
 
-struct SymbolPosition {
-	std::filesystem::path file;
-	std::uint64_t line = 0;
-	std::uint64_t column = 0;
-
-	SymbolPosition() = default;
-	SymbolPosition(const std::filesystem::path& file, std::uint64_t line, std::uint64_t column)
-		: file(file), line(line), column(column) {}
-};
-
 enum class VisibilityScope : std::uint8_t {
 	PUBLIC,
 	PROTECTED,
@@ -80,5 +70,8 @@ class Addressable;
 class ClassMember;
 
 } // namespace Components
+
+template <class T>
+concept NamedEntity = std::is_base_of_v<Entity, T> && std::is_base_of_v<Components::Named, T>;
 
 } // namespace bpp::IR

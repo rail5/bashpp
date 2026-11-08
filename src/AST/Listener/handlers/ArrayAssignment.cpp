@@ -9,7 +9,6 @@
 #include <IR/entities/expressions/String.h>
 
 #include <error/InternalError.h>
-#include <error/SyntaxError.h>
 
 namespace bpp::AST {
 

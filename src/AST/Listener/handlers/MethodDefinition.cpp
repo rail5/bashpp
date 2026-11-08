@@ -16,14 +16,13 @@
 #include <IR/entities/expressions/bpp/DynamicCast.h>
 
 #include <error/InternalError.h>
-#include <error/SyntaxError.h>
 
 namespace bpp::AST {
 
 template <>
 void Listener::enter(MethodDefinition* node) {
 	auto* current_class = dynamic_cast<bpp::IR::Class*>(entity_stack.top());
-	if (!current_class) throw bpp::ErrorHandling::SyntaxError(this, node, "Method definition outside of class body");
+	if (!current_class) error(node, "Method definition outside of class body");
 
 	auto new_method = std::make_unique<bpp::IR::Method>();
 	new_method->inherit(current_class);
@@ -33,7 +32,7 @@ void Listener::enter(MethodDefinition* node) {
 		std::string msg = "Invalid method name: '" + node->NAME().getValue() + "'";
 		if (node->NAME().getValue().contains("__")) msg += " (Bash++ identifiers cannot contain double underscores)";
 		if (bpp::IR::is_protected_keyword(node->NAME())) msg += " ('" + node->NAME().getValue() + "' is a keyword)";
-		throw bpp::ErrorHandling::SyntaxError(this, node, msg);
+		error(node, msg);
 	}
 
 	new_method->setName(node->NAME());
@@ -46,18 +45,21 @@ void Listener::enter(MethodDefinition* node) {
 		default: throw bpp::ErrorHandling::InternalError("Unknown access modifier in method definition");
 	}
 
-	new_method->setDefinitionPosition({
-		getCurrentSourceFile(),
-		node->NAME().getLine(),
-		node->NAME().getCharPositionInLine()
-	});
+	if (source_index) {
+		source_index->setDefinitionPosition(
+			new_method.get(),
+			{getCurrentSourceFile(),
+			node->getLine(), node->getColumn(),
+			node->getLine(), static_cast<uint32_t>(node->getColumn() + node->NAME().getValue().length())}
+		);
 
-	root_program->markEntity(
-		getCurrentSourceFile(),
-		node->getLine(), node->getCharPositionInLine(),
-		node->getEndPosition().line, node->getEndPosition().column,
-		new_method.get()
-	);
+		source_index->markContextEntity(
+			{getCurrentSourceFile(),
+			node->getLine(), node->getColumn(),
+			node->getEndPosition().line, node->getEndPosition().column},
+			new_method.get()
+		);
+	}
 
 	// 1. The implicit `this` parameter, which is always the first parameter of a method
 	if (!new_method->addParameter(current_class->getThisPtr())) {
@@ -73,21 +75,21 @@ void Listener::enter(MethodDefinition* node) {
 		if (param.type.has_value()) {
 			auto type_name = param.type.value().getValue();
 			param_type = new_method->getClass(type_name);
-			if (!param_type) throw bpp::ErrorHandling::SyntaxError(this, p, "Unknown class: " + type_name);
+			if (!param_type) error(p, "Unknown class: " + type_name);
 
-			if (!param.pointer) throw bpp::ErrorHandling::SyntaxError(this, p, "Methods can only accept pointers as parameters, not objects");
+			if (!param.pointer) error(p, "Methods can only accept pointers as parameters, not objects");
 
 			if (!bpp::IR::is_valid_identifier(param_name)) {
 				std::string msg = "Invalid parameter name: '" + param_name + "'";
 				if (param_name.contains("__")) msg += " (Bash++ identifiers cannot contain double underscores)";
 				if (bpp::IR::is_protected_keyword(param_name)) msg += " ('" + param_name + "' is a keyword)";
-				throw bpp::ErrorHandling::SyntaxError(this, p, msg);
+				error(p, msg);
 			}
 		} else {
 			// We don't care whether this identifier shares its name with a keyword,
 			// but we do care if it contains double underscores, which are reserved for Bash++'s internal use.
 			if (param_name.contains("__")) {
-				throw bpp::ErrorHandling::SyntaxError(this, p, "Parameter name cannot contain double underscores: '" + param_name + "'");
+				error(p, "Parameter name cannot contain double underscores: '" + param_name + "'");
 			}
 		}
 
@@ -97,11 +99,12 @@ void Listener::enter(MethodDefinition* node) {
 		parameter_entity->setName(param_name);
 		parameter_entity->inherit(new_method.get());
 
-		parameter_entity->setDefinitionPosition({
-			getCurrentSourceFile(),
-			param.name.getLine(),
-			param.name.getCharPositionInLine()
-		});
+		if (source_index) source_index->setDefinitionPosition(
+			parameter_entity.get(),
+			{getCurrentSourceFile(),
+			param.name.getLine(), param.name.getColumn(),
+			param.name.getLine(), static_cast<uint32_t>(param.name.getColumn() + param_name.length())}
+		);
 
 		auto res = new_method->addParameter(std::move(parameter_entity));
 
@@ -114,7 +117,7 @@ void Listener::enter(MethodDefinition* node) {
 				default: error_message += "entity"; break;
 			}
 			error_message += ": " + param_name;
-			throw bpp::ErrorHandling::SyntaxError(this, param.name, error_message);
+			error(param.name, error_message);
 		}
 	}
 
@@ -142,7 +145,7 @@ void Listener::exit(MethodDefinition* node) {
 		} else {
 			error_message += "already defined in class '" + current_class->getName() + "'";
 		}
-		throw bpp::ErrorHandling::SyntaxError(this, node->NAME(), error_message);
+		error(node->NAME(), error_message);
 	}
 }
 

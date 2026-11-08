@@ -11,32 +11,34 @@
 #include <IR/entities/Program.h>
 
 #include <error/InternalError.h>
-#include <error/SyntaxError.h>
 
 namespace bpp::AST {
 
 template <>
 void Listener::enter(ConstructorDefinition* node) {
 	auto* current_class = dynamic_cast<bpp::IR::Class*>(entity_stack.top());
-	if (!current_class) throw bpp::ErrorHandling::SyntaxError(this, node, "Constructor definition outside of class body");
+	if (!current_class) error(node, "Constructor definition outside of class body");
 
 	auto new_constructor = std::make_unique<bpp::IR::Method>();
 	new_constructor->setName("__constructor");
 	new_constructor->setScope(bpp::IR::VisibilityScope::PUBLIC);
 	new_constructor->inherit(current_class);
 
-	new_constructor->setDefinitionPosition({
-		getCurrentSourceFile(),
-		node->getLine(),
-		node->getCharPositionInLine()
-	});
+	if (source_index) {
+		source_index->setDefinitionPosition(
+			new_constructor.get(),
+			{getCurrentSourceFile(),
+			node->getLine(), node->getColumn(),
+			node->getLine(), static_cast<uint32_t>(node->getColumn() + std::string("@constructor").length())}
+		);
 
-	root_program->markEntity(
-		getCurrentSourceFile(),
-		node->getLine(), node->getCharPositionInLine(),
-		node->getEndPosition().line, node->getEndPosition().column,
-		new_constructor.get()
-	);
+		source_index->markContextEntity(
+			{getCurrentSourceFile(),
+			node->getLine(), node->getColumn(),
+			node->getEndPosition().line, node->getEndPosition().column},
+			new_constructor.get()
+		);
+	}
 
 	if (!new_constructor->addParameter(current_class->getThisPtr())) {
 		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to user-defined constructor");
@@ -61,9 +63,7 @@ void Listener::exit(ConstructorDefinition* node) {
 	auto* current_class = entity_stack.top_as<bpp::IR::Class>();
 
 	auto res = current_class->addMethod(std::move(new_constructor));
-	if (!res) {
-		throw bpp::ErrorHandling::SyntaxError(this, node, "Constructor already defined in class '" + current_class->getName() + "'");
-	}
+	if (!res) error(node, "Constructor already defined in class '" + current_class->getName() + "'");
 }
 
 } // namespace bpp::AST

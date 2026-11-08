@@ -10,7 +10,6 @@
 #include <IR/entities/Program.h>
 
 #include <error/InternalError.h>
-#include <error/SyntaxError.h>
 
 namespace bpp::AST {
 
@@ -21,10 +20,10 @@ void Listener::enter(BashIfStatement* node) {
 	auto if_statement_entity = std::make_unique<bpp::IR::BashIfStatement>();
 	if_statement_entity->inherit(entity_stack.top());
 
-	root_program->markEntity(
-		getCurrentSourceFile(),
-		node->getLine(), node->getCharPositionInLine(),
-		node->getEndPosition().line, node->getEndPosition().column,
+	if (source_index) source_index->markContextEntity(
+		{getCurrentSourceFile(),
+		node->getLine(), node->getColumn(),
+		node->getEndPosition().line, node->getEndPosition().column},
 		if_statement_entity.get()
 	);
 
@@ -49,10 +48,10 @@ void Listener::enter(BashIfCondition* node) {
 	auto condition_entity = std::make_unique<bpp::IR::BashIfCondition>();
 	condition_entity->inherit(if_branch_entity);
 
-	root_program->markEntity(
-		getCurrentSourceFile(),
-		node->getLine(), node->getCharPositionInLine(),
-		node->getEndPosition().line, node->getEndPosition().column,
+	if (source_index) source_index->markContextEntity(
+		{getCurrentSourceFile(),
+		node->getLine(), node->getColumn(),
+		node->getEndPosition().line, node->getEndPosition().column},
 		condition_entity.get()
 	);
 
@@ -78,10 +77,10 @@ void Listener::enter(BashIfBranch* node) {
 	branch_entity->inherit(if_statement_entity);
 	branch_entity->setIsRoot(node->isRootBranch());
 
-	root_program->markEntity(
-		getCurrentSourceFile(),
-		node->getLine(), node->getCharPositionInLine(),
-		node->getEndPosition().line, node->getEndPosition().column,
+	if (source_index) source_index->markContextEntity(
+		{getCurrentSourceFile(),
+		node->getLine(), node->getColumn(),
+		node->getEndPosition().line, node->getEndPosition().column},
 		branch_entity.get()
 	);
 

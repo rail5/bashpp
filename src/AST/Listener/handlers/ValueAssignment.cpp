@@ -13,7 +13,6 @@
 #include <IR/entities/expressions/bpp/ObjectAssignment.h>
 
 #include <error/InternalError.h>
-#include <error/SyntaxError.h>
 
 namespace bpp::AST {
 
@@ -65,9 +64,7 @@ void Listener::exit(ValueAssignment* node) {
 
 	if (auto* current_object = dynamic_cast<bpp::IR::Object*>(entity_stack.top())) {
 		// FIXME(@rail5): This only handles the pointer case, handle the non-pointer case
-		if (va->isArrayAssignment()) {
-			throw bpp::ErrorHandling::SyntaxError(this, node, "Cannot assign an array to an object");
-		}
+		if (va->isArrayAssignment()) error(node, "Cannot assign an array to an object");
 		current_object->setInitialValue(std::move(va));
 		return;
 	}

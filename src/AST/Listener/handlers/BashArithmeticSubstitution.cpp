@@ -22,10 +22,10 @@ void Listener::enter(BashArithmeticSubstitution* node) {
 	arithmetic_substitution_entity->inherit(current_code_entity);
 	arithmetic_substitution_entity->add("$(("); // Copy the `$((` start token as RawCode into the entity
 
-	root_program->markEntity(
-		getCurrentSourceFile(),
-		node->getLine(), node->getCharPositionInLine(),
-		node->getEndPosition().line, node->getEndPosition().column,
+	if (source_index) source_index->markContextEntity(
+		{getCurrentSourceFile(),
+		node->getLine(), node->getColumn(),
+		node->getEndPosition().line, node->getEndPosition().column},
 		arithmetic_substitution_entity.get()
 	);
 

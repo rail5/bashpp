@@ -11,12 +11,14 @@
 #include <set>
 #include <vector>
 #include <filesystem>
+#include <unordered_map>
 
 #include <AST/ASTNode.h>
 #include <AST/NodeTypes.h>
 #include <AST/Nodes/Nodes.h>
 #include <error/WarningOptions.h>
 #include <error/detail.h>
+#include <IR/SourceIndex.h>
 
 #include "ContextExpectations.h"
 #include "EntityStack.h"
@@ -83,6 +85,64 @@ namespace bpp::AST {
 	X(ValueAssignment) \
 
 class Listener final {
+	public:
+		void walk(bpp::AST::ASTNode* node);
+
+		bpp::IR::Program* view_program() const { return program.get(); }
+		std::unique_ptr<bpp::IR::Program> release_program();
+
+		// Default (empty) implementations of enter/exit for each node type.
+		// Specializations are provided for node types that need to be handled.
+		template <typename NodeType>
+		void enter(NodeType* node) {}
+
+		template <typename NodeType>
+		void exit(NodeType* node) {}
+
+		void setHasErrors(bool has_errors) { this->program_has_errors = has_errors; }
+		bool hasErrors() const { return program_has_errors; }
+		void setUTF16Mode(bool is_utf16) { this->utf16_mode = is_utf16; }
+		bool isUTF16Mode() const { return this->utf16_mode; }
+		void setReplacementFileContents(const std::filesystem::path& file_path, const std::string& contents) {
+			replacement_file_contents[file_path] = contents;
+		}
+		void setReplacementFileContents(const std::unordered_map<std::filesystem::path, std::string>& replacements) {
+			replacement_file_contents = replacements;
+		}
+
+		/// @brief Request that this listener prepare a SourceIndex for use in diagnostics and language server support.
+		/// @note This should be called BEFORE @c walk()
+		void prepareSourceIndex() {
+			if (!source_index) source_index = std::make_unique<bpp::IR::SourceIndex>();
+		}
+		std::unique_ptr<bpp::IR::SourceIndex> releaseSourceIndex() {
+			return std::move(source_index);
+		}
+
+		void setSourceFile(const std::filesystem::path& source_file) {
+			if (!include_chain.empty()) throw std::runtime_error("Source file already set; cannot set source file when include chain is not empty");
+			include_chain.emplace_back(source_file);
+		}
+		const std::filesystem::path& getMainSourceFile() const {
+			return include_chain.front();
+		}
+		const std::filesystem::path& getCurrentSourceFile() const {
+			return include_chain.back();
+		}
+		const std::vector<std::filesystem::path>& getIncludeChain() const {
+			return include_chain;
+		}
+
+		void setWarningOptions(const bpp::ErrorHandling::WarningOptions& options) {
+			this->warning_options = options;
+		}
+		const bpp::ErrorHandling::WarningOptions& getWarningOptions() const {
+			return warning_options;
+		}
+		void setIncludePaths(const std::vector<std::filesystem::path>& paths) {
+			this->include_paths = paths;
+			this->include_paths.emplace_back(bpp::get_standard_library_path());
+		}
 	private:
 		/// The program (root node of the entity tree) being constructed by this listener
 		std::unique_ptr<bpp::IR::Program> program;
@@ -90,17 +150,86 @@ class Listener final {
 
 		bool program_has_errors = false;
 
+		/**
+		 * @brief Whether character counting is done in UTF-16 mode (for LSP support) or UTF-8 mode (for normal operation).
+		 * All input files are expected to be UTF-8 encoded, with no exceptions.
+		 * Strangely, the LSP spec mandates that UTF-16 code units be supported by all language servers,
+		 * with UTF-8 being an "optional extension." It doesn't really make any sense,
+		 * but we have to support it for LSP clients to work properly.
+		 *
+		 * This flag is stored in the Listener so that it can propagate to new lexers/parsers spawned in IncludeStatements.
+		 */
+		bool utf16_mode = false;
+
+		/**
+		 * @brief A map of file paths to replacement file contents:
+		 * When a new parser is spawned, if the file path is in this map, the parser will use the replacement contents instead of reading from the file system.
+		 * This is only used by the language server. It allows the server to provide diagnostics based on unsaved changes in the editor.
+		 */
+		std::unordered_map<std::filesystem::path, std::string> replacement_file_contents;
+
+		/**
+		 * @brief A searchable index of entity information across source files, used for diagnostics and language server support.
+		 * This structure provides:
+		 *  - Definition positions for entities
+		 *  - Reference positions for entities
+		 *  - Maps of source files by "context" entities (code containers such as classes, methods, and blocks)
+		 *  - Diagnostics (warnings, errors) for source files
+		 *  - A list of all source files that have been processed (including included files)
+		 *
+		 * This index is only built if explicitly requested, as it is not needed for normal operation of the compiler.
+		 */
+		std::unique_ptr<bpp::IR::SourceIndex> source_index;
+
 		/// The set of enabled/disabled warnings
 		bpp::ErrorHandling::WarningOptions warning_options;
-		#define show_warning(node, warning_type, msg) \
-			if (warning_options.is_enabled(warning_type)) { \
-				if (warning_options.is_enabled(bpp::ErrorHandling::WarningType::WarningsAsErrors)) { \
-					throw bpp::ErrorHandling::Warning(this, node, msg, warning_type, true); \
-				} else { \
-					bpp::ErrorHandling::Warning warning(this, node, msg, warning_type); \
-					warning.print(); \
-				} \
+
+		/**
+		 * @brief Show a warning message to the user, if the warning type is enabled.
+		 * If the warning type is disabled, this does nothing.
+		 * If -Werror is enabled, this will throw the warning as an error instead of simply printing it.
+		 * If the Listener is building a @c SourceIndex, the warning will also be added to the index.
+		 *
+		 * @tparam T The type of the AST node or token that produced the warning
+		 * @param node The AST node or token that produced the warning
+		 * @param warning_type The type of warning to show
+		 * @param msg The warning message to display
+		 * @throws bpp::ErrorHandling::Diagnostic if the warning is treated as an error due to -Werror
+		 * @note This should only be called from within the Listener's enter/exit methods,
+		 *       as it relies on the Listener's include chain to determine the source file of the warning.
+		 */
+		template <bpp::detail::ASTNodePtrORToken T>
+		void warn(const T& node, bpp::ErrorHandling::WarningType warning_type, const std::string& msg) {
+			if (warning_options.is_enabled(warning_type)) {
+				bpp::ErrorHandling::Diagnostic warning(msg, include_chain, node, bpp::ErrorHandling::DiagnosticType::DIAGNOSTIC_WARNING, warning_options.get_cli_string_by_option(warning_type));
+				if (source_index) source_index->addDiagnostic(include_chain.back(), warning);
+
+				if (warning_options.is_enabled(bpp::ErrorHandling::WarningType::WarningsAsErrors)) {
+					warning.setType(bpp::ErrorHandling::DiagnosticType::DIAGNOSTIC_ERROR);
+					throw std::move(warning);
+				} else {
+					warning.print_to_stderr();
+				}
 			}
+		}
+
+		/**
+		 * @brief Construct and throw a Diagnostic error based on the given AST node or token.
+		 * If the Listener is building a @c SourceIndex, the error will also be added to the index.
+		 *
+		 * @tparam T The type of the AST node or token that produced the error
+		 * @param node The AST node or token that produced the error
+		 * @param msg The error message to display
+		 * @throws bpp::ErrorHandling::Diagnostic always
+		 * @note This should only be called from within the Listener's enter/exit methods,
+		 *       as it relies on the Listener's include chain to determine the source file of the error.
+		 */
+		template <bpp::detail::ASTNodePtrORToken T>
+		void error(const T& node, const std::string& msg) {
+			bpp::ErrorHandling::Diagnostic error(msg, include_chain, node, bpp::ErrorHandling::DiagnosticType::DIAGNOSTIC_ERROR);
+			if (source_index) source_index->addDiagnostic(include_chain.back(), error);
+			throw std::move(error);
+		}
 
 		enum class IncludedType : std::uint8_t {
 			NOT_INCLUDED, // The file that generated this AST is the original (main) source file of the program
@@ -142,53 +271,6 @@ class Listener final {
 		bpp::IR::CodeEntity* latest_code_entity() const;
 
 		ExpectationsStack context_expectations_stack;
-
-		std::uint64_t nested_dynamic_cast_depth = 0;
-	public:
-		void walk(bpp::AST::ASTNode* node);
-
-		bpp::IR::Program* view_program() const { return program.get(); }
-		std::unique_ptr<bpp::IR::Program> release_program();
-
-		// Default (empty) implementations of enter/exit for each node type.
-		// Specializations are provided for node types that need to be handled.
-		template <typename NodeType>
-		void enter(NodeType* node) {}
-
-		template <typename NodeType>
-		void exit(NodeType* node) {}
-
-		void setHasErrors(bool has_errors) {
-			this->program_has_errors = has_errors;
-		}
-		bool hasErrors() const {
-			return program_has_errors;
-		}
-
-		void setSourceFile(const std::filesystem::path& source_file) {
-			if (!include_chain.empty()) throw std::runtime_error("Source file already set; cannot set source file when include chain is not empty");
-			include_chain.emplace_back(source_file);
-		}
-		const std::filesystem::path& getMainSourceFile() const {
-			return include_chain.front();
-		}
-		const std::filesystem::path& getCurrentSourceFile() const {
-			return include_chain.back();
-		}
-		const std::vector<std::filesystem::path>& getIncludeChain() const {
-			return include_chain;
-		}
-
-		void setWarningOptions(const bpp::ErrorHandling::WarningOptions& options) {
-			this->warning_options = options;
-		}
-		const bpp::ErrorHandling::WarningOptions& getWarningOptions() const {
-			return warning_options;
-		}
-		void setIncludePaths(const std::vector<std::filesystem::path>& paths) {
-			this->include_paths = paths;
-			this->include_paths.emplace_back(bpp::get_standard_library_path());
-		}
 };
 
 // Enter/exit handler specializations:

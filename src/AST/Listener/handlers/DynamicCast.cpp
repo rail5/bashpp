@@ -11,7 +11,6 @@
 #include <IR/entities/Program.h>
 
 #include <error/InternalError.h>
-#include <error/SyntaxError.h>
 
 namespace bpp::AST {
 
@@ -24,14 +23,12 @@ void Listener::enter(DynamicCast* /*node*/) {
 	dynamic_cast_entity->inherit(current_code_entity);
 
 	entity_stack.push(std::move(dynamic_cast_entity));
-	nested_dynamic_cast_depth++;
 }
 
 template <>
 void Listener::exit(DynamicCast* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::DynamicCast>(), "Topmost entity is not a DynamicCast");
 	auto dynamic_cast_entity = entity_stack.pop_as<bpp::IR::DynamicCast>();
-	nested_dynamic_cast_depth--;
 
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity");
 	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
@@ -69,7 +66,7 @@ void Listener::exit(DynamicCastTarget* node) {
 		// Verify the class exists, and possibly issue a warning if not
 		auto* target_class = dynamic_cast_entity->getClass(class_name);
 		if (!target_class) {
-			show_warning(
+			warn(
 				node,
 				bpp::ErrorHandling::WarningType::CastToUnknownClass,
 				"Class not found: '" + class_name + "'" + ". This cast may fail at runtime."

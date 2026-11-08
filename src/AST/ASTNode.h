@@ -84,7 +84,7 @@ class ASTNode {
 		const bpp::AST::FilePosition& getEndPosition() const;
 
 		std::uint32_t getLine() const;
-		std::uint32_t getCharPositionInLine() const;
+		std::uint32_t getColumn() const;
 
 		ASTNode* getChildAt(std::size_t index) const;
 		ASTNode* getFirstChild() const;

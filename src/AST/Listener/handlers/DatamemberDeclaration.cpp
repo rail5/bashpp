@@ -13,14 +13,13 @@
 #include <IR/entities/expressions/ValueAssignment.h>
 
 #include <error/InternalError.h>
-#include <error/SyntaxError.h>
 
 namespace bpp::AST {
 
 template <>
 void Listener::enter(DatamemberDeclaration* node) {
 	auto* current_class = entity_stack.top_as<bpp::IR::Class>();
-	if (!current_class) throw bpp::ErrorHandling::SyntaxError(this, node, "Data member declaration outside of class body");
+	if (!current_class) error(node, "Data member declaration outside of class body");
 
 	auto dm = std::make_unique<bpp::IR::DataMember>();
 	dm->inherit(current_class);
@@ -48,13 +47,14 @@ void Listener::enter(DatamemberDeclaration* node) {
 			std::string msg = "Invalid data member name: '" + dm->getName() + "'";
 			if (dm->getName().contains("__")) msg += " (Bash++ identifiers cannot contain double underscores)";
 			if (bpp::IR::is_protected_keyword(dm->getName())) msg += " ('" + dm->getName() + "' is a keyword)";
-			throw bpp::ErrorHandling::SyntaxError(this, node, msg);
+			error(node, msg);
 		}
 
-		dm->setDefinitionPosition({
-			getCurrentSourceFile(),
-			id.value().getLine(),
-			id.value().getCharPositionInLine()
+		if (source_index) source_index->setDefinitionPosition(
+			dm.get(),
+			{getCurrentSourceFile(),
+			id.value().getLine(), id.value().getColumn(),
+			id.value().getLine(), static_cast<uint32_t>(id.value().getColumn() + dm->getName().length())
 		});
 	}
 
@@ -91,7 +91,7 @@ void Listener::exit(DatamemberDeclaration* node) {
 				error_message = "Unknown error when adding data member: " + current_class->getName() + "." + dm_name;
 				break;
 		}
-		throw bpp::ErrorHandling::SyntaxError(this, node, error_message);
+		error(node, error_message);
 	}
 }
 

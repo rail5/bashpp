@@ -21,10 +21,10 @@ void Listener::enter(BashWhileOrUntilCondition* node) {
 	auto condition_entity = std::make_unique<bpp::IR::StringType>();
 	condition_entity->inherit(while_or_until_entity);
 
-	root_program->markEntity(
-		getCurrentSourceFile(),
-		node->getLine(), node->getCharPositionInLine(),
-		node->getEndPosition().line, node->getEndPosition().column,
+	if (source_index) source_index->markContextEntity(
+		{getCurrentSourceFile(),
+		node->getLine(), node->getColumn(),
+		node->getEndPosition().line, node->getEndPosition().column},
 		condition_entity.get()
 	);
 
@@ -51,10 +51,10 @@ void Listener::enter(BashWhileStatement* node) {
 	while_entity->inherit(current_code_entity);
 	while_entity->setIsUntil(false);
 
-	root_program->markEntity(
-		getCurrentSourceFile(),
-		node->getLine(), node->getCharPositionInLine(),
-		node->getEndPosition().line, node->getEndPosition().column,
+	if (source_index) source_index->markContextEntity(
+		{getCurrentSourceFile(),
+		node->getLine(), node->getColumn(),
+		node->getEndPosition().line, node->getEndPosition().column},
 		while_entity.get()
 	);
 
@@ -81,10 +81,10 @@ void Listener::enter(BashUntilStatement* node) {
 	until_entity->inherit(current_code_entity);
 	until_entity->setIsUntil(true);
 
-	root_program->markEntity(
-		getCurrentSourceFile(),
-		node->getLine(), node->getCharPositionInLine(),
-		node->getEndPosition().line, node->getEndPosition().column,
+	if (source_index) source_index->markContextEntity(
+		{getCurrentSourceFile(),
+		node->getLine(), node->getColumn(),
+		node->getEndPosition().line, node->getEndPosition().column},
 		until_entity.get()
 	);
 

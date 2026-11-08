@@ -79,7 +79,7 @@ std::expected<void, NameConflictError> Class::addMethod(std::unique_ptr<Method> 
 	preregistered_method = nullptr;
 
 	if (auto* existing_method = getMethod_UNSAFE(method->getName())) {
-		if (!existing_method->isOverridable()) return std::unexpected(NameConflictError::EXISTING_METHOD); // Not overridable, so can't override it		
+		if (!existing_method->isOverridable()) return std::unexpected(NameConflictError::EXISTING_METHOD); // Not overridable, so can't override it
 
 		// Otherwise: override
 		const auto* parent_method = existing_method->getParentMethod();

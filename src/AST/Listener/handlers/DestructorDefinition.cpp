@@ -11,14 +11,13 @@
 #include <IR/entities/Program.h>
 
 #include <error/InternalError.h>
-#include <error/SyntaxError.h>
 
 namespace bpp::AST {
 
 template <>
 void Listener::enter(DestructorDefinition* node) {
 	auto* current_class = dynamic_cast<bpp::IR::Class*>(entity_stack.top());
-	if (!current_class) throw bpp::ErrorHandling::SyntaxError(this, node, "Destructor definition outside of class body");
+	if (!current_class) error(node, "Destructor definition outside of class body");
 
 	auto new_destructor = std::make_unique<bpp::IR::Method>();
 	new_destructor->setName("__destructor");
@@ -26,18 +25,21 @@ void Listener::enter(DestructorDefinition* node) {
 	new_destructor->setIsVirtual(true);
 	new_destructor->inherit(current_class);
 
-	new_destructor->setDefinitionPosition({
-		getCurrentSourceFile(),
-		node->getLine(),
-		node->getCharPositionInLine()
-	});
+	if (source_index) {
+		source_index->setDefinitionPosition(
+			new_destructor.get(),
+			{getCurrentSourceFile(),
+			node->getLine(), node->getColumn(),
+			node->getLine(), static_cast<uint32_t>(node->getColumn() + std::string("@destructor").length())}
+		);
 
-	root_program->markEntity(
-		getCurrentSourceFile(),
-		node->getLine(), node->getCharPositionInLine(),
-		node->getEndPosition().line, node->getEndPosition().column,
-		new_destructor.get()
-	);
+		source_index->markContextEntity(
+			{getCurrentSourceFile(),
+			node->getLine(), node->getColumn(),
+			node->getEndPosition().line, node->getEndPosition().column},
+			new_destructor.get()
+		);
+	}
 
 	if (!new_destructor->addParameter(current_class->getThisPtr())) {
 		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to user-defined destructor");
@@ -63,9 +65,7 @@ void Listener::exit(DestructorDefinition* node) {
 	}
 
 	auto res = current_class->addMethod(std::move(destructor));
-	if (!res) {
-		throw bpp::ErrorHandling::SyntaxError(this, node, "Destructor already defined in class '" + current_class->getName() + "'");
-	}
+	if (!res) error(node, "Destructor already defined in class '" + current_class->getName() + "'");
 }
 
 } // namespace bpp::AST

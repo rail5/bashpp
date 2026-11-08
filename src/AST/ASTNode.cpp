@@ -105,7 +105,7 @@ std::uint32_t ASTNode::getLine() const {
 	return position.line;
 }
 
-std::uint32_t ASTNode::getCharPositionInLine() const {
+std::uint32_t ASTNode::getColumn() const {
 	return position.column;
 }
 

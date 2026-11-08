@@ -23,10 +23,10 @@ void Listener::enter(BashForStatement* node) {
 	for_statement_entity->setIsSelect(false);
 	for_statement_entity->setVariable(node->VARIABLE().getValue());
 
-	root_program->markEntity(
-		getCurrentSourceFile(),
-		node->getLine(), node->getCharPositionInLine(),
-		node->getEndPosition().line, node->getEndPosition().column,
+	if (source_index) source_index->markContextEntity(
+		{getCurrentSourceFile(),
+		node->getLine(), node->getColumn(),
+		node->getEndPosition().line, node->getEndPosition().column},
 		for_statement_entity.get()
 	);
 
@@ -53,10 +53,10 @@ void Listener::enter(BashSelectStatement* node) {
 	select_statement_entity->setIsSelect(true);
 	select_statement_entity->setVariable(node->VARIABLE().getValue());
 
-	root_program->markEntity(
-		getCurrentSourceFile(),
-		node->getLine(), node->getCharPositionInLine(),
-		node->getEndPosition().line, node->getEndPosition().column,
+	if (source_index) source_index->markContextEntity(
+		{getCurrentSourceFile(),
+		node->getLine(), node->getColumn(),
+		node->getEndPosition().line, node->getEndPosition().column},
 		select_statement_entity.get()
 	);
 
@@ -81,10 +81,10 @@ void Listener::enter(BashInCondition* node) {
 	auto in_condition_entity = std::make_unique<bpp::IR::StringType>();
 	in_condition_entity->inherit(for_or_select_statement_entity);
 
-	root_program->markEntity(
-		getCurrentSourceFile(),
-		node->getLine(), node->getCharPositionInLine(),
-		node->getEndPosition().line, node->getEndPosition().column,
+	if (source_index) source_index->markContextEntity(
+		{getCurrentSourceFile(),
+		node->getLine(), node->getColumn(),
+		node->getEndPosition().line, node->getEndPosition().column},
 		in_condition_entity.get()
 	);
 

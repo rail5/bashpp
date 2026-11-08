@@ -16,7 +16,6 @@
 #include <IR/entities/expressions/bpp/ObjectAssignment.h>
 
 #include <error/InternalError.h>
-#include <error/SyntaxError.h>
 
 namespace bpp::AST {
 
@@ -30,11 +29,11 @@ void Listener::enter(ObjectInstantiation* node) {
 		// If the topmost entity is a Class, the user might have simply forgotten the visibility modifier
 		// which would've made this statement a data member declaration.
 		if (topmost_entity_is<bpp::IR::Class>()) {
-			throw bpp::ErrorHandling::SyntaxError(this, node, "Stray object instantiation inside class body.\n"
+			error(node, "Stray object instantiation inside class body.\n"
 				"Did you mean to declare a data member?\n"
 				"Start with a visibility modifier (@public, @private, @protected) to declare a data member");
 		}
-		throw bpp::ErrorHandling::SyntaxError(this, node, "Object instantiation outside of a code entity");
+		error(node, "Object instantiation outside of a code entity");
 	}
 
 	const auto& type_name = node->TYPE();
@@ -49,19 +48,19 @@ void Listener::enter(ObjectInstantiation* node) {
 		std::string msg = "Invalid object name: '" + object_name.getValue() + "'";
 		if (object_name.getValue().contains("__")) msg += " (Bash++ identifiers cannot contain double underscores)";
 		if (bpp::IR::is_protected_keyword(object_name)) msg += " ('" + object_name.getValue() + "' is a keyword)";
-		throw bpp::ErrorHandling::SyntaxError(this, object_name, msg);
+		error(object_name, msg);
 	}
 	// 2. Name already in use?
 	if (current_code_entity->getClass(object_name)) {
-		throw bpp::ErrorHandling::SyntaxError(this, object_name, "Object name '" + object_name.getValue() + "' conflicts with a class name");
+		error(object_name, "Object name '" + object_name.getValue() + "' conflicts with a class name");
 	}
 	if (current_code_entity->getObject(object_name)) {
-		throw bpp::ErrorHandling::SyntaxError(this, object_name, "Object '" + object_name.getValue() + "' already defined in this scope");
+		error(object_name, "Object '" + object_name.getValue() + "' already defined in this scope");
 	}
 
 	const auto* object_class = current_code_entity->getClass(type_name);
 	if (!object_class) {
-		throw bpp::ErrorHandling::SyntaxError(this, type_name, "Class not found: '" + type_name.getValue() + "'");
+		error(type_name, "Class not found: '" + type_name.getValue() + "'");
 	}
 
 	auto object = std::make_unique<bpp::IR::Object>();
@@ -70,11 +69,12 @@ void Listener::enter(ObjectInstantiation* node) {
 	object->setIsPointer(node->isPointer());
 	object->setName(object_name);
 
-	object->setDefinitionPosition({
-		getCurrentSourceFile(),
-		object_name.getLine(),
-		object_name.getCharPositionInLine()
-	});
+	if (source_index) source_index->setDefinitionPosition(
+		object.get(),
+		{getCurrentSourceFile(),
+		object_name.getLine(), object_name.getColumn(),
+		object_name.getLine(), static_cast<uint32_t>(object_name.getColumn() + object_name.getValue().length())}
+	);
 
 	entity_stack.push(std::move(object));
 }
@@ -91,7 +91,10 @@ void Listener::exit(ObjectInstantiation* node) {
 		datamember_declaration->setIsPointer(object->isPointer());
 		datamember_declaration->setName(object->getName());
 		if (object->hasInitialValue()) datamember_declaration->setInitialValue(object->releaseInitialValue());
-		datamember_declaration->setDefinitionPosition(object->getDefinitionPosition());
+		if (source_index) {
+			auto def_pos = source_index->getDefinitionPosition(object.get());
+			source_index->setDefinitionPosition(datamember_declaration, *def_pos);
+		}
 		return;
 	}
 
@@ -102,7 +105,7 @@ void Listener::exit(ObjectInstantiation* node) {
 	if (!object->isPointer()) {
 		const auto* object_class = object->getType();
 		bpp_assert(object_class != nullptr, "Object has no type");
-		
+
 		auto instantiation = std::make_unique<bpp::IR::ObjectInstantiation>();
 		instantiation->inherit(current_code_entity);
 		instantiation->setType(object_class);

@@ -7,7 +7,7 @@
 #include "Parser.h"
 
 #include <error/InternalError.h>
-#include <error/SyntaxError.h>
+#include <error/Diagnostic.h>
 #include <stdexcept>
 
 struct LexerExtra;
@@ -117,21 +117,21 @@ void bpp::AST::Parser::setDisplayLexerOutput(bool enabled) {
 	display_lexer_output = enabled;
 }
 
-void bpp::AST::Parser::setInputFromFilePath(const std::string& file_path) {
+void bpp::AST::Parser::setInputFromFilePath(const std::filesystem::path& file_path) {
 	input_type = InputType::FILEPATH;
 	input_source = file_path;
 	input_file_path = file_path;
 	include_chain.emplace_back(file_path);
 }
 
-void bpp::AST::Parser::setInputFromFilePtr(FILE* file_ptr, const std::string& file_path) {
+void bpp::AST::Parser::setInputFromFilePtr(FILE* file_ptr, const std::filesystem::path& file_path) {
 	input_type = InputType::FILEPTR;
 	input_source = file_ptr;
 	input_file_path = file_path;
 	include_chain.emplace_back(file_path);
 }
 
-void bpp::AST::Parser::setInputFromStringContents(const std::string& contents, const std::string& pseudo_file_path) {
+void bpp::AST::Parser::setInputFromStringContents(const std::string& contents, const std::filesystem::path& pseudo_file_path) {
 	input_type = InputType::STRING_CONTENTS;
 	input_source = contents;
 	include_chain.emplace_back(pseudo_file_path);
@@ -149,6 +149,6 @@ std::unique_ptr<bpp::AST::Program> bpp::AST::Parser::release_program() {
 	return std::move(m_program);
 }
 
-const std::vector<bpp::ErrorHandling::ParserError>& bpp::AST::Parser::get_errors() const {
+const std::vector<bpp::ErrorHandling::Diagnostic>& bpp::AST::Parser::get_errors() const {
 	return errors;
 }

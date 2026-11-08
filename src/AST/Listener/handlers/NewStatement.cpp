@@ -13,7 +13,6 @@
 #include <IR/entities/expressions/bpp/ObjectInstantiation.h>
 
 #include <error/InternalError.h>
-#include <error/SyntaxError.h>
 
 namespace bpp::AST {
 
@@ -24,9 +23,7 @@ void Listener::enter(NewStatement* node) {
 
 	const auto& type = node->TYPE();
 	auto* class_entity = current_code_entity->getClass(type);
-	if (!class_entity) {
-		throw bpp::ErrorHandling::SyntaxError(this, type, "Class not found: " + type.getValue());
-	}
+	if (!class_entity) error(type, "Class not found: " + type.getValue());
 
 	auto instantiation = std::make_unique<bpp::IR::ObjectInstantiation>();
 	instantiation->inherit(current_code_entity);

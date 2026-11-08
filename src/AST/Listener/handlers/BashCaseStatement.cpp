@@ -10,7 +10,6 @@
 #include <IR/entities/Program.h>
 
 #include <error/InternalError.h>
-#include <error/SyntaxError.h>
 
 namespace bpp::AST {
 
@@ -21,10 +20,10 @@ void Listener::enter(BashCaseStatement* node) {
 	auto case_statement_entity = std::make_unique<bpp::IR::BashCaseStatement>();
 	case_statement_entity->inherit(current_entity);
 
-	root_program->markEntity(
-		getCurrentSourceFile(),
-		node->getLine(), node->getCharPositionInLine(),
-		node->getEndPosition().line, node->getEndPosition().column,
+	if (source_index) source_index->markContextEntity(
+		{getCurrentSourceFile(),
+		node->getLine(), node->getColumn(),
+		node->getEndPosition().line, node->getEndPosition().column},
 		case_statement_entity.get()
 	);
 
@@ -48,10 +47,10 @@ void Listener::enter(BashCaseInput* node) {
 	auto case_input_entity = std::make_unique<bpp::IR::StringType>();
 	case_input_entity->inherit(case_statement_entity);
 
-	root_program->markEntity(
-		getCurrentSourceFile(),
-		node->getLine(), node->getCharPositionInLine(),
-		node->getEndPosition().line, node->getEndPosition().column,
+	if (source_index) source_index->markContextEntity(
+		{getCurrentSourceFile(),
+		node->getLine(), node->getColumn(),
+		node->getEndPosition().line, node->getEndPosition().column},
 		case_input_entity.get()
 	);
 
@@ -74,10 +73,10 @@ void Listener::enter(BashCasePattern* node) {
 	auto case_pattern_entity = std::make_unique<bpp::IR::BashCasePattern>();
 	case_pattern_entity->inherit(case_statement_entity);
 
-	root_program->markEntity(
-		getCurrentSourceFile(),
-		node->getLine(), node->getCharPositionInLine(),
-		node->getEndPosition().line, node->getEndPosition().column,
+	if (source_index) source_index->markContextEntity(
+		{getCurrentSourceFile(),
+		node->getLine(), node->getColumn(),
+		node->getEndPosition().line, node->getEndPosition().column},
 		case_pattern_entity.get()
 	);
 
@@ -102,10 +101,10 @@ void Listener::enter(BashCasePatternHeader* node) {
 	auto pattern_header_entity = std::make_unique<bpp::IR::StringType>();
 	pattern_header_entity->inherit(case_pattern_entity);
 
-	root_program->markEntity(
-		getCurrentSourceFile(),
-		node->getLine(), node->getCharPositionInLine(),
-		node->getEndPosition().line, node->getEndPosition().column,
+	if (source_index) source_index->markContextEntity(
+		{getCurrentSourceFile(),
+		node->getLine(), node->getColumn(),
+		node->getEndPosition().line, node->getEndPosition().column},
 		pattern_header_entity.get()
 	);
 

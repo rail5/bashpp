@@ -111,28 +111,6 @@ bpp::CodeGen::CodeSegment Program::generateCode(bpp::CodeGen::CodeGenState* stat
 	return code;
 }
 
-void Program::addDiagnostic(const std::filesystem::path& source_file, bpp::ErrorHandling::Diagnostic diagnostic) {
-	diagnostics[source_file].push_back(std::move(diagnostic));
-}
-
-void Program::markEntity(
-	const std::filesystem::path& source_file,
-	std::uint32_t start_line, std::uint32_t start_column,
-	std::uint32_t end_line, std::uint32_t end_column,
-	const Entity* entity
-) {
-	FilePosition start(start_line, start_column);
-	FilePosition end(end_line, end_column);
-	entity_maps[source_file].insert(start, end, entity);
-}
-
-const Entity* Program::getActiveEntity(const std::filesystem::path& source_file, std::uint32_t line, std::uint32_t column) const {
-	auto it = entity_maps.find(source_file);
-	if (it == entity_maps.end()) return nullptr;
-	return it->second.find(line, column);
-}
-
-
 IncludedProgram::IncludedProgram(const Program* containing_program) {
 	bpp_assert(containing_program != nullptr, "Containing program pointer is null");
 	// Inherit the containing program, so that this included program can see all of its classes

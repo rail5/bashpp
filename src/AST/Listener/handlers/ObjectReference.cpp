@@ -16,7 +16,6 @@
 #include <IR/entities/expressions/bpp/DeleteStatement.h>
 
 #include <error/InternalError.h>
-#include <error/SyntaxError.h>
 
 #include <span>
 
@@ -46,7 +45,7 @@ void Listener::enter(ObjectReference* node) {
 	 * POINTER_DEREF and OBJ_ADDRESS are mutually exclusive, so combinations where both are 1 are invalid
 	 *
 	 */
-	
+
 	bpp_assert(!(node->isPointerDereference() && node->isAddressOf()), "Detected simultaneous pointer dereference and object address");
 
 	auto resolution = bpp::IR::resolve_entity(
@@ -56,11 +55,11 @@ void Listener::enter(ObjectReference* node) {
 	);
 
 	if (!resolution) {
-		const auto& error = resolution.error();
-		if (error.token.has_value()) {
-			throw bpp::ErrorHandling::SyntaxError(this, error.token.value(), error.message);
+		const auto& res_error = resolution.error();
+		if (res_error.token.has_value()) {
+			error(res_error.token.value(), res_error.message);
 		} else {
-			throw bpp::ErrorHandling::SyntaxError(this, node, error.message);
+			error(node, res_error.message);
 		}
 	}
 
@@ -100,9 +99,7 @@ void Listener::exit(ObjectReference* node) {
 	}
 
 	if (auto* delete_statement = dynamic_cast<bpp::IR::DeleteStatement*>(current_code_entity)) {
-		if (!reference_entity->isPointer()) {
-			throw bpp::ErrorHandling::SyntaxError(this, node, "@delete can only be used on pointers");
-		}
+		if (!reference_entity->isPointer()) error(node, "@delete can only be used on pointers");
 		delete_statement->setObjectToDelete(std::move(reference_entity));
 		return;
 	}

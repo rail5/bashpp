@@ -9,7 +9,6 @@
 #include <IR/entities/Program.h>
 
 #include <error/InternalError.h>
-#include <error/SyntaxError.h>
 
 #include <filesystem>
 
@@ -17,9 +16,7 @@ namespace bpp::AST {
 
 template <>
 void Listener::enter(IncludeStatement* node) {
-	if (!topmost_entity_is<bpp::IR::Program>()) {
-		throw bpp::ErrorHandling::SyntaxError(this, node, "Include statements can only be used at the top level of a program");
-	}
+	if (!topmost_entity_is<bpp::IR::Program>()) error(node, "Include statements can only be used at the top level of a program");
 	auto* current_program = entity_stack.top_as<bpp::IR::Program>();
 
 	const bool is_quoted_include = node->PATHTYPE() == AST::IncludeStatement::PathType::QUOTED;
@@ -54,7 +51,7 @@ void Listener::enter(IncludeStatement* node) {
 	}
 
 	if (include_path.empty() || !std::filesystem::exists(include_path)) {
-		throw bpp::ErrorHandling::SyntaxError(this, source_path_node, "File not found: '" + source_path + "'");
+		error(source_path_node, "File not found: '" + source_path + "'");
 	}
 
 	include_path = std::filesystem::canonical(include_path);
@@ -63,7 +60,7 @@ void Listener::enter(IncludeStatement* node) {
 	if (!res.second && !include_always) return; // File has already been included and include_always is not specified
 
 	if (include_chain.size() >= 200) { // TODO(@rail5): Can this limit be made configurable?
-		throw bpp::ErrorHandling::SyntaxError(this, source_path_node, "Nested include depth exceeds maximum of 200");
+		error(source_path_node, "Nested include depth exceeds maximum of 200");
 	}
 
 	include_chain.push_back(include_path);
@@ -72,24 +69,27 @@ void Listener::enter(IncludeStatement* node) {
 
 	{
 		AST::Parser parser;
-		// FIXME(@rail5): utf16 mode for bpp-lsp
-		//parser.setUTF16Mode(utf16_mode);
+		parser.setUTF16Mode(utf16_mode);
 		parser.setIncludeChain(include_chain);
 
-		// FIXME(@rail5): replacement file contents for bpp-lsp
-		parser.setInputFromFilePath(include_path);
+		if (replacement_file_contents.contains(include_path)) {
+			parser.setInputFromStringContents(replacement_file_contents[include_path], include_path);
+		} else {
+			parser.setInputFromFilePath(include_path);
+		}
 
 		parser.parse();
 		included_program_ast_root = parser.release_program();
 		for (const auto& e : parser.get_errors()) {
-			e.print();
+			if (source_index) source_index->addDiagnostic(include_path, e);
+			e.print_to_stderr();
 			this->program_has_errors = true;
 		}
 	}
 
 	if (included_program_ast_root == nullptr) {
 		include_chain.pop_back();
-		throw bpp::ErrorHandling::SyntaxError(this, node, "Failed to parse included file: '" + include_path.string() + "'");
+		error(node, "Failed to parse included file: '" + include_path.string() + "'");
 	}
 
 	included_type_stack.push(is_dynamic_include ? IncludedType::DYNAMICALLY_INCLUDED : IncludedType::STATICALLY_INCLUDED);

@@ -18,9 +18,6 @@
 
 namespace bpp::IR {
 
-template <class T>
-concept NamedEntity = std::is_base_of_v<Entity, T> && std::is_base_of_v<Components::Named, T>;
-
 /**
  * @brief A list of entities that are owned by a parent entity. This class manages the lifetime of the entities it contains, and provides lookup by name.
  * 

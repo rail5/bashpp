@@ -19,12 +19,11 @@ int main(int argc, char* argv[]) {
 	bpp::BashppServer server;
 
 	constexpr XGetOpt::OptionParser<
-		XGetOpt::Option<'s', "no-warnings", "Suppress warnings", XGetOpt::NoArgument>,
-		XGetOpt::Option<'b', "target-bash", "Set target Bash version (e.g., 5.2)", XGetOpt::RequiredArgument, "version">,
+		XGetOpt::Option<'b', "target-bash", "Set target Bash version (default: 5.2)", XGetOpt::RequiredArgument, "version">,
 		XGetOpt::Option<'I', "include", "Add a directory to include path", XGetOpt::RequiredArgument, "path">,
+		XGetOpt::Option<'W', "Warn", "Enable/disable specific warnings\nSee the manual for a list of available warnings", XGetOpt::RequiredArgument, "warning">,
 		XGetOpt::Option<'j', "threads", "Number of threads to use for parsing and analysis (default: number of CPU cores)", XGetOpt::RequiredArgument, "num_threads">,
 		XGetOpt::Option<'l', "log", "Log messages to the specified file", XGetOpt::RequiredArgument, "file">,
-		XGetOpt::Option<1001, "stdio", "Use standard input/output for communication (default)", XGetOpt::NoArgument>,
 		XGetOpt::Option<'h', "help", "Show this help message", XGetOpt::NoArgument>,
 		XGetOpt::Option<'v', "version", "Show version information", XGetOpt::NoArgument>
 	> OptionParser;
@@ -69,10 +68,7 @@ int main(int argc, char* argv[]) {
 				std::cout << help_intro << OptionParser.getHelpString();
 				return 0;
 			case 'I':
-				server.add_include_path(std::string(arg.getArgument()));
-				break;
-			case 's':
-				server.set_suppress_warnings(true);
+				server.addIncludePath(std::string(arg.getArgument()));
 				break;
 			case 'b':
 				try {

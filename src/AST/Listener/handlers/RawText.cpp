@@ -7,7 +7,6 @@
 #include <AST/Listener/Listener.h>
 
 #include <IR/entities/CodeEntity.h>
-#include <error/SyntaxError.h>
 
 namespace bpp::AST {
 
@@ -16,7 +15,7 @@ void Listener::enter(RawText* node) {
 	auto* current_code_entity = dynamic_cast<bpp::IR::CodeEntity*>(entity_stack.top());
 	if (!current_code_entity) {
 		if (node->TEXT().getValue().find_first_not_of(" \t\n\r") == std::string::npos) return; // Harmless whitespace
-		throw bpp::ErrorHandling::SyntaxError(this, node, "Executable code outside of code entity");
+		error(node, "Executable code outside of code entity");
 	}
 	current_code_entity->add(node->TEXT().getValue());
 }

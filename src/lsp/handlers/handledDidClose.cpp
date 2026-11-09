@@ -8,7 +8,7 @@
 #include <lsp/generated/DidCloseTextDocumentNotification.h>
 #include <lsp/include/validateUri.h>
 
-void bpp::BashppServer::handleDidClose(const GenericNotificationMessage& request) {
+void bpp::LSP::BashppServer::handleDidClose(const GenericNotificationMessage& request) {
 	DidCloseTextDocumentNotification did_close_notification = request.toSpecific<DidCloseTextDocumentParams>();
 	std::string uri = did_close_notification.params.textDocument.uri;
 

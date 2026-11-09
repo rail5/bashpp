@@ -14,7 +14,7 @@
 #include <IR/entities/DataMember.h>
 #include <IR/entities/Object.h>
 
-GenericResponseMessage bpp::BashppServer::handleDocumentSymbol(const GenericRequestMessage& request) {
+GenericResponseMessage bpp::LSP::BashppServer::handleDocumentSymbol(const GenericRequestMessage& request) {
 	DocumentSymbolRequestResponse response;
 	response.id = request.id;
 	DocumentSymbolRequest document_symbol_request = request.toSpecific<DocumentSymbolParams>();

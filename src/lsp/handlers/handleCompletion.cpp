@@ -15,7 +15,7 @@
 #include <IR/entities/Method.h>
 #include <IR/entities/DataMember.h>
 
-GenericResponseMessage bpp::BashppServer::handleCompletion(const GenericRequestMessage& request) {
+GenericResponseMessage bpp::LSP::BashppServer::handleCompletion(const GenericRequestMessage& request) {
 	CompletionRequestResponse response;
 	response.id = request.id;
 	CompletionRequest completion_request = request.toSpecific<CompletionParams>();
@@ -79,7 +79,7 @@ GenericResponseMessage bpp::BashppServer::handleCompletion(const GenericRequestM
 	return response;
 }
 
-CompletionList bpp::BashppServer::handleATCompletion(const CompletionParams& params) {
+CompletionList bpp::LSP::BashppServer::handleATCompletion(const CompletionParams& params) {
 	// Handle '@' completions
 	// Suggest class names, object names, and standard operators like include or dynamic_cast
 	CompletionList completion_list = default_completion_list; // Start with the default completion list
@@ -124,7 +124,7 @@ CompletionList bpp::BashppServer::handleATCompletion(const CompletionParams& par
 	return completion_list;
 }
 
-CompletionList bpp::BashppServer::handleDOTCompletion(const CompletionParams& params) {
+CompletionList bpp::LSP::BashppServer::handleDOTCompletion(const CompletionParams& params) {
 	// Handle '.' completions
 	// Suggest method names and data members of the current object
 	CompletionList completion_list;

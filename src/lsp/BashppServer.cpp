@@ -13,25 +13,27 @@
 
 #include <IR/entities/Program.h>
 
-std::mutex bpp::BashppServer::output_mutex;
-std::mutex bpp::BashppServer::log_mutex;
+namespace bpp::LSP {
 
-void bpp::BashppServer::setLogFile(const std::string& path) {
+std::mutex BashppServer::output_mutex;
+std::mutex BashppServer::log_mutex;
+
+void BashppServer::setLogFile(const std::string& path) {
 	log_file.open(path, std::ios::app);
 	if (!log_file.is_open()) throw std::runtime_error("Failed to open log file: " + path);
 }
 
-void bpp::BashppServer::setTargetBashVersion(const BashVersion& version) {
+void BashppServer::setTargetBashVersion(const BashVersion& version) {
 	program_pool.setTargetBashVersion(version);
 }
 
-void bpp::BashppServer::setThreadCount(std::size_t num_threads) {
+void BashppServer::setThreadCount(std::size_t num_threads) {
 	if (thread_pool->isActive()) throw std::runtime_error("Cannot change thread count while the thread pool is active.");
 	thread_pool = std::make_unique<ThreadPool>(num_threads);
 	log("Set number of threads to: ", num_threads);
 }
 
-void bpp::BashppServer::cleanup() {
+void BashppServer::cleanup() {
 	if (exiting.exchange(true)) return; // Already exiting
 
 	if (output_stream) output_stream->flush();
@@ -41,7 +43,7 @@ void bpp::BashppServer::cleanup() {
 	log_file.close();
 }
 
-std::string bpp::BashppServer::readHeaderLine(std::streambuf* buffer) {
+std::string BashppServer::readHeaderLine(std::streambuf* buffer) {
 	std::string header;
 	char c = '\0';
 	while (true) {
@@ -56,7 +58,7 @@ std::string bpp::BashppServer::readHeaderLine(std::streambuf* buffer) {
 	return header;
 }
 
-void bpp::BashppServer::mainLoop() {
+void BashppServer::mainLoop() {
 	if (!input_stream || !output_stream) {
 		throw std::runtime_error("Input or output stream not set.");
 	}
@@ -110,33 +112,33 @@ void bpp::BashppServer::mainLoop() {
 	log("Main loop exiting.");
 }
 
-GenericResponseMessage bpp::BashppServer::invalidRequestHandler(const GenericRequestMessage& request) {
+GenericResponseMessage BashppServer::invalidRequestHandler(const GenericRequestMessage& request) {
 	throw std::runtime_error("Request not understood: " + request.method);
 }
 
-void bpp::BashppServer::invalidNotificationHandler(const GenericNotificationMessage& request) {
+void BashppServer::invalidNotificationHandler(const GenericNotificationMessage& request) {
 	throw std::runtime_error("Notification not understood: " + request.method);
 }
 
-void bpp::BashppServer::_sendMessage(const std::string& message) {
+void BashppServer::_sendMessage(const std::string& message) {
 	std::lock_guard<std::mutex> lock(output_mutex);
 	std::string header = "Content-Length: " + std::to_string(message.size()) + "\r\n\r\n";
 	*output_stream << header << message << std::flush;
 }
 
-void bpp::BashppServer::sendResponse(const GenericResponseMessage& response) {
+void BashppServer::sendResponse(const GenericResponseMessage& response) {
 	std::string response_str = nlohmann::json(response).dump();
 	_sendMessage(response_str);
 	log("Sent response for request ID: ", response.id, ":", response_str);
 }
 
-void bpp::BashppServer::sendNotification(const GenericNotificationMessage& notification) {
+void BashppServer::sendNotification(const GenericNotificationMessage& notification) {
 	std::string notification_str = nlohmann::json(notification).dump();
 	_sendMessage(notification_str);
 	log("Sent notification for method: ", notification.method, ":", notification_str);
 }
 
-void bpp::BashppServer::processRequest(const GenericRequestMessage& request) {
+void BashppServer::processRequest(const GenericRequestMessage& request) {
 	GenericResponseMessage response;
 	response.id = request.id;
 
@@ -167,7 +169,7 @@ void bpp::BashppServer::processRequest(const GenericRequestMessage& request) {
 	sendResponse(response);
 }
 
-void bpp::BashppServer::processNotification(const GenericNotificationMessage& notification) {
+void BashppServer::processNotification(const GenericNotificationMessage& notification) {
 	const auto* it = std::find_if(notification_handlers.begin(), notification_handlers.end(),
 		[&notification](const NotificationHandlerEntry& entry) {
 			return entry.method_name == notification.method;
@@ -187,7 +189,7 @@ void bpp::BashppServer::processNotification(const GenericNotificationMessage& no
 	}
 }
 
-void bpp::BashppServer::processMessage(const std::string& message) {
+void BashppServer::processMessage(const std::string& message) {
 	GenericRequestMessage request;
 	GenericNotificationMessage notification;
 
@@ -222,7 +224,7 @@ void bpp::BashppServer::processMessage(const std::string& message) {
 	}
 }
 
-GenericResponseMessage bpp::BashppServer::shutdown(const GenericRequestMessage& request) {
+GenericResponseMessage BashppServer::shutdown(const GenericRequestMessage& request) {
 	GenericResponseMessage response;
 	response.id = request.id;
 	response.result = nullptr; // No result for shutdown
@@ -231,7 +233,7 @@ GenericResponseMessage bpp::BashppServer::shutdown(const GenericRequestMessage& 
 	return response;
 }
 
-void bpp::BashppServer::exit(const GenericNotificationMessage& /*notification*/) {
+void BashppServer::exit(const GenericNotificationMessage& /*notification*/) {
 	log("Received exit notification, exiting the server.");
 	cleanup();
 
@@ -242,7 +244,7 @@ void bpp::BashppServer::exit(const GenericNotificationMessage& /*notification*/)
 	}
 }
 
-void bpp::BashppServer::publishDiagnostics(std::shared_ptr<ProgramPool::ProgramAndSourceIndex> program) {
+void BashppServer::publishDiagnostics(std::shared_ptr<ProgramPool::ProgramAndSourceIndex> program) {
 	log("Publishing diagnostics for program rooted at: ", program->program->getSourceFile());
 	if (program == nullptr) {
 		log("Cannot publish diagnostics for a null program.");
@@ -288,10 +290,12 @@ void bpp::BashppServer::publishDiagnostics(std::shared_ptr<ProgramPool::ProgramA
 	}
 }
 
-void bpp::BashppServer::addIncludePath(const std::filesystem::path& path) {
+void BashppServer::addIncludePath(const std::filesystem::path& path) {
 	program_pool.addIncludePath(path);
 }
 
-void bpp::BashppServer::addWarningOption(std::string_view warning_option) {
+void BashppServer::addWarningOption(std::string_view warning_option) {
 	program_pool.addWarningOption(warning_option);
 }
+
+} // namespace bpp::LSP

@@ -12,7 +12,7 @@
 #include <IR/entities/Entity.h>
 #include <IR/entities/components/Named.h>
 
-GenericResponseMessage bpp::BashppServer::handleReferences(const GenericRequestMessage& request) {
+GenericResponseMessage bpp::LSP::BashppServer::handleReferences(const GenericRequestMessage& request) {
 	ReferencesRequestResponse response;
 	response.id = request.id;
 	ReferencesRequest reference_request = request.toSpecific<ReferenceParams>();

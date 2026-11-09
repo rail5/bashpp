@@ -6,6 +6,8 @@
 
 #include "ThreadPool.h"
 
+namespace bpp::LSP {
+
 ThreadPool::ThreadPool(std::size_t threads)  {
 	for (std::size_t i = 0; i < threads; i++) {
 		workers.emplace_back([this] {
@@ -71,3 +73,5 @@ size_t ThreadPool::getThreadCount() const {
 bool ThreadPool::isActive() const {
 	return active.load(std::memory_order_acquire);
 }
+
+} // namespace bpp::LSP

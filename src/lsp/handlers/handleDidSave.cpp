@@ -8,7 +8,7 @@
 #include <lsp/generated/DidSaveTextDocumentNotification.h>
 #include <lsp/include/validateUri.h>
 
-void bpp::BashppServer::handleDidSave(const GenericNotificationMessage& request) {
+void bpp::LSP::BashppServer::handleDidSave(const GenericNotificationMessage& request) {
 	DidSaveTextDocumentNotification did_save_notification = request.toSpecific<DidSaveTextDocumentParams>();
 
 	log("Received DidSave notification for URI: ", did_save_notification.params.textDocument.uri);

@@ -13,6 +13,8 @@
 
 #include <IR/entities/Program.h>
 
+namespace bpp::LSP {
+
 ProgramPool::ProgramPool(std::size_t max_programs) : max_programs(max_programs) {
 	// Initialize the program pool with a maximum number of programs
 	programs.reserve(max_programs);
@@ -406,3 +408,5 @@ void ProgramPool::clean() {
 	}
 	update_snapshot(); // Update the snapshot after cleaning
 }
+
+} // namespace bpp::LSP

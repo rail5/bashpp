@@ -14,7 +14,7 @@
 #include <IR/entities/Entity.h>
 #include <IR/entities/components/Named.h>
 
-GenericResponseMessage bpp::BashppServer::handleRename(const GenericRequestMessage& request) {
+GenericResponseMessage bpp::LSP::BashppServer::handleRename(const GenericRequestMessage& request) {
 	RenameRequestResponse response;
 	response.id = request.id;
 	RenameRequest rename_request = request.toSpecific<RenameParams>();

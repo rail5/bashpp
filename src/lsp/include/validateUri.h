@@ -8,4 +8,8 @@
 
 #include <string>
 
+namespace bpp::LSP {
+
 std::string validateUri(const std::string& uri);
+
+} // namespace bpp::LSP

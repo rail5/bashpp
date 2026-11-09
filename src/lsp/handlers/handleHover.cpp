@@ -15,7 +15,7 @@
 #include <IR/entities/Method.h>
 #include <IR/entities/DataMember.h>
 
-GenericResponseMessage bpp::BashppServer::handleHover(const GenericRequestMessage& request) {
+GenericResponseMessage bpp::LSP::BashppServer::handleHover(const GenericRequestMessage& request) {
 	HoverRequestResponse response;
 	response.id = request.id;
 	HoverRequest hover_request = request.toSpecific<HoverParams>();

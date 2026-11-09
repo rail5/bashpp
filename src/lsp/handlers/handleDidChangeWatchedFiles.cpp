@@ -8,7 +8,7 @@
 #include <lsp/generated/DidChangeWatchedFilesNotification.h>
 #include <lsp/include/validateUri.h>
 
-void bpp::BashppServer::handleDidChangeWatchedFiles(const GenericNotificationMessage& request) {
+void bpp::LSP::BashppServer::handleDidChangeWatchedFiles(const GenericNotificationMessage& request) {
 	DidChangeWatchedFilesNotification did_change_notification = request.toSpecific<DidChangeWatchedFilesParams>();
 	std::vector<FileEvent> changes = did_change_notification.params.changes;
 	if (changes.empty()) {

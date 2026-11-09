@@ -13,6 +13,8 @@
 #include <vector>
 #include <thread>
 
+namespace bpp::LSP {
+
 /**
  * @class ThreadPool
  * @brief A thread pool implementation that manages a pool of worker threads to execute tasks concurrently.
@@ -49,3 +51,5 @@ class ThreadPool {
 		std::size_t getThreadCount() const;
 		bool isActive() const;
 };
+
+} // namespace bpp::LSP

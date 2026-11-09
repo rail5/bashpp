@@ -12,7 +12,9 @@
 #include <string>
 #include <cstdint>
 
-std::string find_comments_for_entity(const bpp::IR::Entity* entity, ProgramPool* program_pool) {
+namespace bpp::LSP {
+
+std::string find_comments_for_entity(const bpp::IR::Entity* entity, bpp::LSP::ProgramPool* program_pool) {
 	if (entity == nullptr) return "";
 
 	// Locate the entity's definition position
@@ -46,4 +48,6 @@ std::string find_comments_for_entity(const bpp::IR::Entity* entity, ProgramPool*
 		}
 	}
 	return comments;
+}
+
 }

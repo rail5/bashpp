@@ -8,7 +8,7 @@
 #include <lsp/generated/DidOpenTextDocumentNotification.h>
 #include <lsp/include/validateUri.h>
 
-void bpp::BashppServer::handleDidOpen(const GenericNotificationMessage& request) {
+void bpp::LSP::BashppServer::handleDidOpen(const GenericNotificationMessage& request) {
 	DidOpenTextDocumentNotification did_open_notification = request.toSpecific<DidOpenTextDocumentParams>();
 
 	log("Received DidOpen notification for URI: ", did_open_notification.params.textDocument.uri);

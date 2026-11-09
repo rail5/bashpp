@@ -18,6 +18,8 @@
 #include <include/BashVersion.h>
 #include <error/WarningOptions.h>
 
+namespace bpp::LSP {
+
 /**
  * @class ProgramPool
  * @brief Manages a pool of IR::Program objects for efficient reuse and access.
@@ -205,3 +207,5 @@ class ProgramPool {
 
 		void clean();
 };
+
+} // namespace bpp::LSP

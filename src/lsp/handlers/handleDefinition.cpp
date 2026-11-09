@@ -12,7 +12,7 @@
 #include <IR/entities/Entity.h>
 #include <IR/entities/components/Named.h>
 
-GenericResponseMessage bpp::BashppServer::handleDefinition(const GenericRequestMessage& request) {
+GenericResponseMessage bpp::LSP::BashppServer::handleDefinition(const GenericRequestMessage& request) {
 	DefinitionRequest definition_request = request.toSpecific<DefinitionParams>();
 	DefinitionRequestResponse response;
 	response.id = request.id;

@@ -43,6 +43,7 @@ void printValue(std::ostream& os, const std::variant<Ts...>& v) {
 	std::visit([&os](auto&& arg) { os << arg; }, v);
 }
 
+namespace LSP {
 
 /**
  * @class BashppServer
@@ -319,5 +320,7 @@ class BashppServer {
 			{"exit",                            &BashppServer::exit}
 		}};
 };
+
+} // namespace LSP
 
 } // namespace bpp

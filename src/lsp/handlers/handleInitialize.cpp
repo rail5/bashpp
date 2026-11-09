@@ -9,7 +9,7 @@
 #include <lsp/generated/InitializeRequest.h>
 #include <lsp/generated/InitializeResult.h>
 
-GenericResponseMessage bpp::BashppServer::handleInitialize(const GenericRequestMessage& request) {
+GenericResponseMessage bpp::LSP::BashppServer::handleInitialize(const GenericRequestMessage& request) {
 	InitializeRequest initialize_request = request.toSpecific<InitializeParams>();
 	InitializeRequestResponse response;
 	response.id = request.id;

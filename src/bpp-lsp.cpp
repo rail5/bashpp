@@ -16,7 +16,7 @@
 #include <updated_year.h>
 
 int main(int argc, char* argv[]) {
-	bpp::BashppServer server;
+	bpp::LSP::BashppServer server;
 
 	constexpr XGetOpt::OptionParser<
 		XGetOpt::Option<'b', "target-bash", "Set target Bash version (default: 5.2)", XGetOpt::RequiredArgument, "version">,
@@ -25,7 +25,8 @@ int main(int argc, char* argv[]) {
 		XGetOpt::Option<'j', "threads", "Number of threads to use for parsing and analysis (default: number of CPU cores)", XGetOpt::RequiredArgument, "num_threads">,
 		XGetOpt::Option<'l', "log", "Log messages to the specified file", XGetOpt::RequiredArgument, "file">,
 		XGetOpt::Option<'h', "help", "Show this help message", XGetOpt::NoArgument>,
-		XGetOpt::Option<'v', "version", "Show version information", XGetOpt::NoArgument>
+		XGetOpt::Option<'v', "version", "Show version information", XGetOpt::NoArgument>,
+		XGetOpt::Option<1001, "stdio", "Use standard input/output for communication (default)", XGetOpt::NoArgument>
 	> OptionParser;
 
 	constexpr const char* help_intro = "Bash++ Language Server " bpp_compiler_version "\n"
@@ -114,6 +115,8 @@ int main(int argc, char* argv[]) {
 					std::cerr << "Invalid number of threads: " << arg.getArgument() << std::endl;
 					return 1;
 				}
+				break;
+			case 1001: // --stdio, ignore
 				break;
 		}
 	}

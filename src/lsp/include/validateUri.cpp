@@ -9,7 +9,11 @@
 
 #include <stdexcept>
 
+namespace bpp::LSP {
+
 std::string validateUri(const std::string& uri) {
 	if (!uri.starts_with("file://")) throw std::invalid_argument("URI must start with 'file://'");
 	return uri.substr(7); // Strip the "file://" prefix
 }
+
+} // namespace bpp::LSP

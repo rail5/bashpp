@@ -36,10 +36,14 @@ void SourceIndex::markContextEntity(const SourceLocationRange& range, const Enti
 	files[path].context_entities.insert(range.start, range.end, entity);
 }
 
-std::span<const bpp::ErrorHandling::Diagnostic> SourceIndex::getDiagnostics(const std::filesystem::path& source_file) const {
+std::span<const bpp::ErrorHandling::Diagnostic> SourceIndex::getDiagnostics(views::path_view source_file) const {
 	auto it = files.find(source_file);
 	if (it == files.end()) return {};
 	return it->second.diagnostics;
+}
+
+std::span<const bpp::ErrorHandling::Diagnostic> SourceIndex::getDiagnostics(const std::filesystem::path& source_file) const {
+	return getDiagnostics(views::path_view(source_file));
 }
 
 std::span<const views::SourceLocationRangeView> SourceIndex::getReferences(const Entity* entity) const {
@@ -54,16 +58,24 @@ std::optional<views::SourceLocationRangeView> SourceIndex::getDefinitionPosition
 	return it->second.definition_position;
 }
 
-const Entity* SourceIndex::getReferencedEntity(const SourceLocation& location) const {
+const Entity* SourceIndex::getReferencedEntity(views::SourceLocationView location) const {
 	auto it = files.find(location.source_file);
 	if (it == files.end()) return nullptr;
 	return it->second.entity_references.find(location.position.line, location.position.column);
 }
 
-const Entity* SourceIndex::getContextEntity(const SourceLocation& location) const {
+const Entity* SourceIndex::getReferencedEntity(const SourceLocation& location) const {
+	return getReferencedEntity(views::SourceLocationView(location));
+}
+
+const Entity* SourceIndex::getContextEntity(views::SourceLocationView location) const {
 	auto it = files.find(location.source_file);
 	if (it == files.end()) return nullptr;
 	return it->second.context_entities.find(location.position.line, location.position.column);
+}
+
+const Entity* SourceIndex::getContextEntity(const SourceLocation& location) const {
+	return getContextEntity(views::SourceLocationView(location));
 }
 
 } // namespace bpp::IR

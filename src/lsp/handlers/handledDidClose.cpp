@@ -22,6 +22,6 @@ void bpp::BashppServer::handleDidClose(const GenericNotificationMessage& request
 	}
 
 	// If we've stored unsaved changes for this URI, we can remove them
-	program_pool.remove_unsaved_file_contents(uri);
-	program_pool.close_file(uri); // Mark the file as closed
+	program_pool.removeUnsavedFileContents(uri);
+	program_pool.closeFile(uri); // Mark the file as closed
 }

@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
 	constexpr XGetOpt::OptionParser<
 		XGetOpt::Option<'b', "target-bash", "Set target Bash version (default: 5.2)", XGetOpt::RequiredArgument, "version">,
 		XGetOpt::Option<'I', "include", "Add a directory to include path", XGetOpt::RequiredArgument, "path">,
-		XGetOpt::Option<'W', "Warn", "Enable/disable specific warnings\nSee the manual for a list of available warnings", XGetOpt::RequiredArgument, "warning">,
+		XGetOpt::Option<'W', "warn", "Enable/disable specific warnings\nSee the manual for a list of available warnings", XGetOpt::RequiredArgument, "warning">,
 		XGetOpt::Option<'j', "threads", "Number of threads to use for parsing and analysis (default: number of CPU cores)", XGetOpt::RequiredArgument, "num_threads">,
 		XGetOpt::Option<'l', "log", "Log messages to the specified file", XGetOpt::RequiredArgument, "file">,
 		XGetOpt::Option<'h', "help", "Show this help message", XGetOpt::NoArgument>,
@@ -79,6 +79,15 @@ int main(int argc, char* argv[]) {
 					return 1;
 				}
 				break;
+			case 'W':
+				try {
+					server.addWarningOption(arg.getArgument());
+				} catch (const std::exception& e) {
+					std::cerr << "Invalid warning option: " << arg.getArgument() << std::endl
+						<< "See the manual for a list of available warnings" << std::endl;
+					return 1;
+				}
+				break;
 			case 'v':
 				std::cout << version_string << std::flush;
 				return 0;
@@ -105,10 +114,6 @@ int main(int argc, char* argv[]) {
 					std::cerr << "Invalid number of threads: " << arg.getArgument() << std::endl;
 					return 1;
 				}
-				break;
-			case 1001: // --stdio
-				// No-op
-				// The language server does not yet support any other communication method
 				break;
 		}
 	}

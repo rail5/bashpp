@@ -11,7 +11,7 @@
 #include "generated/PublishDiagnosticsNotification.h"
 #include "generated/ErrorCodes.h"
 
-#include <entities/bpp_program.h>
+#include <IR/entities/Program.h>
 
 std::mutex bpp::BashppServer::output_mutex;
 std::mutex bpp::BashppServer::log_mutex;
@@ -22,7 +22,7 @@ void bpp::BashppServer::setLogFile(const std::string& path) {
 }
 
 void bpp::BashppServer::setTargetBashVersion(const BashVersion& version) {
-	program_pool.set_target_bash_version(version);
+	program_pool.setTargetBashVersion(version);
 }
 
 void bpp::BashppServer::setThreadCount(std::size_t num_threads) {
@@ -43,7 +43,7 @@ void bpp::BashppServer::cleanup() {
 
 std::string bpp::BashppServer::readHeaderLine(std::streambuf* buffer) {
 	std::string header;
-	char c;
+	char c = '\0';
 	while (true) {
 		const std::streamsize n = buffer->sgetn(&c, 1);
 		if (n != 1) {
@@ -242,42 +242,42 @@ void bpp::BashppServer::exit(const GenericNotificationMessage& /*notification*/)
 	}
 }
 
-void bpp::BashppServer::publishDiagnostics(std::shared_ptr<bpp::bpp_program> program) {
-	log("Publishing diagnostics for program rooted at: ", program->get_main_source_file());
+void bpp::BashppServer::publishDiagnostics(std::shared_ptr<ProgramPool::ProgramAndSourceIndex> program) {
+	log("Publishing diagnostics for program rooted at: ", program->program->getSourceFile());
 	if (program == nullptr) {
 		log("Cannot publish diagnostics for a null program.");
 		return;
 	}
 
-	const auto source_files = program->get_source_files();
+	const auto source_files = program->source_index->getAllSourceFiles();
 	for (const auto& file : source_files) {
 		PublishDiagnosticsNotification notification;
-		notification.params.uri = "file://" + file;
-		std::vector<bpp::diagnostic> diags = program->get_diagnostics(file);
+		notification.params.uri = "file://" + file.string();
+		auto diags = program->source_index->getDiagnostics(file);
 		std::vector<Diagnostic> lsp_diags;
 		for (const auto& diag : diags) {
 			Diagnostic lsp_diag;
-			lsp_diag.range.start.line = diag.start_line;
-			lsp_diag.range.start.character = diag.start_column;
-			lsp_diag.range.end.line = diag.end_line;
-			lsp_diag.range.end.character = diag.end_column;
+			lsp_diag.range.start.line = diag.getLine();
+			lsp_diag.range.start.character = diag.getColumn();
+			lsp_diag.range.end.line = diag.getLine();
+			lsp_diag.range.end.character = diag.getColumn() + diag.getTextLength(); // Only good so long as errors don't span multiple lines (which they shouldn't)
 
-			switch (diag.type) {
-				case bpp::diagnostic_type::DIAGNOSTIC_ERROR:
+			switch (diag.getType()) {
+				case bpp::ErrorHandling::DiagnosticType::DIAGNOSTIC_ERROR:
 					lsp_diag.severity = DiagnosticSeverity::Error;
 					break;
-				case bpp::diagnostic_type::DIAGNOSTIC_WARNING:
+				case bpp::ErrorHandling::DiagnosticType::DIAGNOSTIC_WARNING:
 					lsp_diag.severity = DiagnosticSeverity::Warning;
 					break;
-				case bpp::diagnostic_type::DIAGNOSTIC_INFO:
+				case bpp::ErrorHandling::DiagnosticType::DIAGNOSTIC_INFO:
 					lsp_diag.severity = DiagnosticSeverity::Information;
 					break;
-				case bpp::diagnostic_type::DIAGNOSTIC_HINT:
+				case bpp::ErrorHandling::DiagnosticType::DIAGNOSTIC_HINT:
 					lsp_diag.severity = DiagnosticSeverity::Hint;
 					break;
 			}
 
-			lsp_diag.message = diag.message;
+			lsp_diag.message = diag.what();
 
 			lsp_diags.push_back(lsp_diag);
 		}
@@ -288,10 +288,10 @@ void bpp::BashppServer::publishDiagnostics(std::shared_ptr<bpp::bpp_program> pro
 	}
 }
 
-void bpp::BashppServer::add_include_path(const std::string& path) {
-	program_pool.add_include_path(path);
+void bpp::BashppServer::addIncludePath(const std::filesystem::path& path) {
+	program_pool.addIncludePath(path);
 }
 
-void bpp::BashppServer::set_suppress_warnings(bool suppress) {
-	program_pool.set_suppress_warnings(suppress);
+void bpp::BashppServer::addWarningOption(std::string_view warning_option) {
+	program_pool.addWarningOption(warning_option);
 }

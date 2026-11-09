@@ -24,5 +24,5 @@ void bpp::BashppServer::handleDidSave(const GenericNotificationMessage& request)
 		return;
 	}
 
-	program_pool.remove_unsaved_file_contents(uri); // Remove unsaved changes for this URI
+	program_pool.removeUnsavedFileContents(uri); // Remove unsaved changes for this URI
 }

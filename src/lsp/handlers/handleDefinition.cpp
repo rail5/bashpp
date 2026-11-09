@@ -7,10 +7,10 @@
 #include <lsp/BashppServer.h>
 #include <lsp/generated/DefinitionRequest.h>
 #include <lsp/generated/ErrorCodes.h>
-#include <lsp/include/resolve_entity.h>
 #include <lsp/include/validateUri.h>
 
-#include <entities/bpp_entity.h>
+#include <IR/entities/Entity.h>
+#include <IR/entities/components/Named.h>
 
 GenericResponseMessage bpp::BashppServer::handleDefinition(const GenericRequestMessage& request) {
 	DefinitionRequest definition_request = request.toSpecific<DefinitionParams>();
@@ -32,7 +32,7 @@ GenericResponseMessage bpp::BashppServer::handleDefinition(const GenericRequestM
 	Position position = definition_request.params.position;
 	log("Received Goto Definition request for URI: ", uri, ", Position: (", position.line, ", ", position.character, ")");
 
-	std::shared_ptr<bpp::bpp_program> program = program_pool.get_program(uri);
+	auto program = program_pool.getProgram(uri);
 
 	if (program == nullptr) {
 		log("Program not found for URI: ", uri);
@@ -42,18 +42,7 @@ GenericResponseMessage bpp::BashppServer::handleDefinition(const GenericRequestM
 		return response;
 	}
 
-	std::shared_ptr<bpp::bpp_entity> referenced_entity = nullptr;
-
-	try {
-		referenced_entity = resolve_entity_at(
-			uri,
-			position.line,
-			position.character,
-			program
-		);
-	} catch (...) {
-		// Ignore, it'll just be nullptr.
-	}
+	const auto* referenced_entity = program->source_index->getReferencedEntity({uri, position.line, position.character});
 
 	if (referenced_entity == nullptr) {
 		log("No entity found at position: (", position.line, ", ", position.character, ") in URI: ", uri);
@@ -61,23 +50,28 @@ GenericResponseMessage bpp::BashppServer::handleDefinition(const GenericRequestM
 		return response;
 	}
 
-	bpp::SymbolPosition definition_location = referenced_entity->get_initial_definition();
+	std::string entity_name = "(unnamed)";
+	if (const auto* named_entity = dynamic_cast<const bpp::IR::Components::Named*>(referenced_entity)) {
+		entity_name = named_entity->getName();
+	}
+
+	auto definition_location = program->source_index->getDefinitionPosition(referenced_entity);
 
 	// Verify that a definition location was found
-	if (definition_location.file.empty()) {
-		log("No definition found for entity: ", referenced_entity->get_name(), " at position: (", position.line, ", ", position.character, ") in URI: ", uri);
+	if (!definition_location) {
+		log("No definition found for entity: ", entity_name, " at position: (", position.line, ", ", position.character, ") in URI: ", uri);
 		response.result = nullptr;
 		return response;
 	}
 
 	Location location;
-	location.uri = "file://" + definition_location.file;
-	location.range.start.line = definition_location.line ;
-	location.range.start.character = definition_location.column;
-	location.range.end.line = definition_location.line;
-	location.range.end.character = definition_location.column + referenced_entity->get_name().size();
+	location.uri = "file://" + definition_location->source_file.string();
+	location.range.start.line = definition_location->start.line;
+	location.range.start.character = definition_location->start.column;
+	location.range.end.line = definition_location->end.line;
+	location.range.end.character = definition_location->end.column;
 
 	response.result = std::vector<Location>{location};
-	log("Found definition for entity: ", referenced_entity->get_name(), " at URI: ", uri, ", Range: (", location.range.start.line, ", ", location.range.start.character, ") to (", location.range.end.line, ", ", location.range.end.character, ")");
+	log("Found definition for entity: ", entity_name, " at URI: ", uri, ", Range: (", location.range.start.line, ", ", location.range.start.character, ") to (", location.range.end.line, ", ", location.range.end.character, ")");
 	return response;
 }

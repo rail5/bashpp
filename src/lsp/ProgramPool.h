@@ -11,15 +11,18 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
+#include <filesystem>
 
-#include <entities/bpp.h>
+#include <IR/bpp.h>
+#include <IR/SourceIndex.h>
 #include <include/BashVersion.h>
+#include <error/WarningOptions.h>
 
 /**
  * @class ProgramPool
- * @brief Manages a pool of bpp_program objects for efficient reuse and access.
+ * @brief Manages a pool of IR::Program objects for efficient reuse and access.
  *
- * Each parsed program has its data stored in a bpp_program object.
+ * Each parsed program has its data stored in an IR::Program object.
  * The ProgramPool class allows for efficient management of these objects,
  * including adding, retrieving, and removing programs based on file paths.
  *
@@ -34,21 +37,28 @@
  * 
  */
 class ProgramPool {
+	public:
+		struct ProgramAndSourceIndex {
+			std::unique_ptr<bpp::IR::Program> program;
+			std::unique_ptr<bpp::IR::SourceIndex> source_index;
+		};
 	private:
 		std::size_t max_programs = 10; // Maximum number of programs to keep in the pool
-		std::vector<std::shared_ptr<bpp::bpp_program>> programs;
-		std::unordered_map<std::string, std::vector<std::size_t>> program_indices; // Maps file paths to program indices in the pool
-		std::unordered_map<std::string, bool> open_files; // Maps file paths to whether they are currently open
-		std::unordered_map<std::string, std::string> unsaved_changes; // Maps file paths to their unsaved contents
+
+		std::vector<std::shared_ptr<ProgramAndSourceIndex>> programs;
+		std::unordered_map<std::filesystem::path, std::vector<std::size_t>> program_indices; // Maps file paths to program indices in the pool
+		std::unordered_map<std::filesystem::path, bool> open_files; // Maps file paths to whether they are currently open
+		std::unordered_map<std::filesystem::path, std::string> unsaved_changes; // Maps file paths to their unsaved contents
 		BashVersion target_bash_version = {5, 2};
+		bpp::ErrorHandling::WarningOptions warning_options;
 		std::recursive_mutex pool_mutex; // Mutex to protect access to the pool
 
 		// Pool snapshots:
 		struct Snapshot {
-			std::vector<std::shared_ptr<bpp::bpp_program>> programs_snapshot; // Snapshot of the current programs in the pool
-			std::unordered_map<std::string, std::vector<std::size_t>> program_indices_snapshot; // Snapshot of the current program indices
-			std::unordered_map<std::string, bool> open_files_snapshot; // Snapshot of the current open files
-			std::unordered_map<std::string, std::string> unsaved_changes_snapshot; // Snapshot of the current unsaved changes
+			std::vector<std::shared_ptr<ProgramAndSourceIndex>> programs_snapshot; // Snapshot of the current programs in the pool
+			std::unordered_map<std::filesystem::path, std::vector<std::size_t>> program_indices_snapshot; // Snapshot of the current program indices
+			std::unordered_map<std::filesystem::path, bool> open_files_snapshot; // Snapshot of the current open files
+			std::unordered_map<std::filesystem::path, std::string> unsaved_changes_snapshot; // Snapshot of the current unsaved changes
 		};
 		std::unique_ptr<Snapshot> snapshot = std::make_unique<Snapshot>();
 		mutable std::recursive_mutex snapshot_mutex; // Mutex to protect access to the snapshot
@@ -57,11 +67,10 @@ class ProgramPool {
 
 		void _remove_oldest_program();
 		void _remove_program(std::size_t index);
-		std::shared_ptr<bpp::bpp_program> _parse_program(const std::string& file_path);
+		std::shared_ptr<ProgramAndSourceIndex> _parse_program(const std::filesystem::path& file_path);
 
 		// Configurable settings
-		std::shared_ptr<std::vector<std::string>> include_paths = std::make_shared<std::vector<std::string>>();
-		bool suppress_warnings = false;
+		std::vector<std::filesystem::path> include_paths;
 
 		void update_snapshot();
 		Snapshot load_snapshot() const;
@@ -75,11 +84,19 @@ class ProgramPool {
 		 * 
 		 * @param path The include path to add.
 		 */
-		void add_include_path(const std::string& path);
-		void set_suppress_warnings(bool suppress);
-		void set_utf16_mode(bool mode);
-		bool get_utf16_mode() const;
-		void set_target_bash_version(const BashVersion& version);
+		void addIncludePath(const std::filesystem::path& path);
+
+		/**
+		 * @brief Add a warning option for use by all future programs to be added to the pool.
+		 * 
+		 * @param warning_option The warning option to add.
+		 * @throws std::runtime_error if the warning option is invalid
+		 * @see bpp::ErrorHandling::WarningOptions for valid warning options
+		 */
+		void addWarningOption(std::string_view warning_option);
+		void setUTF16Mode(bool mode);
+		bool getUTF16Mode() const;
+		void setTargetBashVersion(const BashVersion& version);
 
 		/**
 		 * @brief Set the unsaved contents for a file to reflect in-editor changes.
@@ -89,8 +106,8 @@ class ProgramPool {
 		 * @param file_path The file path to set unsaved contents for.
 		 * @param contents The unsaved contents of the file.
 		 */
-		void set_unsaved_file_contents(const std::string& file_path, const std::string& contents);
-		void remove_unsaved_file_contents(const std::string& file_path);
+		void setUnsavedFileContents(const std::filesystem::path& file_path, const std::string& contents);
+		void removeUnsavedFileContents(const std::filesystem::path& file_path);
 
 		/**
 		 * @brief Get the contents of a file, considering unsaved changes if present.
@@ -101,7 +118,7 @@ class ProgramPool {
 		 * @param file_path The file path to get the contents of.
 		 * @return std::string The contents of the file.
 		 */
-		std::string get_file_contents(const std::string& file_path);
+		std::string getFileContents(const std::filesystem::path& file_path);
 
 		/**
 		 * @brief Get or create a program for the given file path
@@ -118,9 +135,9 @@ class ProgramPool {
 		 *                   processed immediately. However, we will also refuse to create
 		 *                   a new program -- if none exists, and you've asked to jump the
 		 *                   queue, we will simply return nullptr.
-		 * @return std::shared_ptr<bpp::bpp_program> A program associated with the given file path, or nullptr if no such program exists and jump_queue is true.
+		 * @return std::shared_ptr<ProgramAndSourceIndex> A program and source index associated with the given file path, or nullptr if no such program exists and jump_queue is true.
 		 */
-		std::shared_ptr<bpp::bpp_program> get_program(const std::string& file_path, bool jump_queue = false);
+		std::shared_ptr<ProgramAndSourceIndex> getProgram(const std::filesystem::path& file_path, bool jump_queue = false);
 
 		/**
 		 * @brief Get all programs associated with the given file path.
@@ -133,9 +150,9 @@ class ProgramPool {
 		 *                   processed immediately. However, we will also refuse to create
 		 *                   new programs -- if none exist, and you've asked to jump the
 		 *                   queue, we will simply return an empty vector.
-		 * @return std::vector<std::shared_ptr<bpp::bpp_program>> A vector of programs associated with the given file path. If no such programs exist and jump_queue is true, an empty vector is returned.
+		 * @return std::vector<std::shared_ptr<ProgramAndSourceIndex>> A vector of programs and source indices associated with the given file path. If no such programs exist and jump_queue is true, an empty vector is returned.
 		 */
-		std::vector<std::shared_ptr<bpp::bpp_program>> get_programs_for_file(const std::string& file_path, bool jump_queue = false);
+		std::vector<std::shared_ptr<ProgramAndSourceIndex>> getProgramsForFile(const std::filesystem::path& file_path, bool jump_queue = false);
 
 		/**
 		 * @brief Check if a program for the given file path exists in the pool.
@@ -143,22 +160,38 @@ class ProgramPool {
 		 * @param file_path The source file path to check for a program.
 		 * @return true if a program exists in the pool for the given file path, false otherwise.
 		 */
-		bool has_program(const std::string& file_path);
+		bool hasProgram(const std::filesystem::path& file_path);
 
 		/**
 		 * @brief Re-parse all programs associated with the given file path
 		 * 
 		 * @param file_path The source file which has been modified, triggering the re-parse.
-		 * @return std::vector<std::shared_ptr<bpp::bpp_program>> A vector of all programs that were re-parsed. If a program failed to re-parse, it will not be included in the returned vector.
+		 * @return std::vector<std::shared_ptr<ProgramAndSourceIndex>> A vector of all programs and source indices that were re-parsed. If a program failed to re-parse, it will not be included in the returned vector.
 		 */
-		std::vector<std::shared_ptr<bpp::bpp_program>> re_parse_programs(const std::string& file_path);
+		std::vector<std::shared_ptr<ProgramAndSourceIndex>> reparsePrograms(const std::string& file_path);
+
+		/**
+		 * @brief Query all programs in the pool for entities at a given source location.
+		 * 
+		 * @param location The source location to query for entities.
+		 * @return std::vector<const bpp::IR::Entity*> A vector of all entities found at the given source location across all programs in the pool.
+		 */
+		std::vector<const bpp::IR::Entity*> findAllEntitiesForSymbol(const bpp::IR::SourceLocation& location) const;
+
+		/**
+		 * @brief Get the program and source index associated with a given entity.
+		 * 
+		 * @param entity The entity to find the associated program and source index for.
+		 * @return std::shared_ptr<ProgramAndSourceIndex> A shared pointer to the program and source index associated with the given entity, or nullptr if no such program exists in the pool.
+		 */
+		std::shared_ptr<ProgramAndSourceIndex> getProgramForEntity(const bpp::IR::Entity* entity) const;
 
 		/**
 		 * @brief Mark a file as open in the program pool.
 		 * 
 		 * @param file_path The file which has been opened
 		 */
-		void open_file(const std::string& file_path);
+		void openFile(const std::filesystem::path& file_path);
 
 		/**
 		 * @brief Mark a file as closed in the program pool.
@@ -168,7 +201,7 @@ class ProgramPool {
 		 * 
 		 * @param file_path The file which has been closed
 		 */
-		void close_file(const std::string& file_path);
+		void closeFile(const std::filesystem::path& file_path);
 
 		void clean();
 };

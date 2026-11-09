@@ -24,12 +24,12 @@ void bpp::BashppServer::handleDidOpen(const GenericNotificationMessage& request)
 		return;
 	}
 
-	std::shared_ptr<bpp::bpp_program> program = program_pool.get_program(uri);
+	auto program = program_pool.getProgram(uri);
 	log("Finished parsing: ", uri);
 	if (program == nullptr) {
 		log("Failed to parse program: ", uri);
 		return;
 	}
 	publishDiagnostics(program);
-	program_pool.open_file(uri); // Mark the file as open
+	program_pool.openFile(uri); // Mark the file as open
 }

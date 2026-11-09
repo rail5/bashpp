@@ -6,14 +6,14 @@
 
 #include <lsp/BashppServer.h>
 #include <lsp/generated/HoverRequest.h>
-#include <lsp/include/resolve_entity.h>
+#include <lsp/include/find_comments.h>
 #include <lsp/include/validateUri.h>
 
-#include <entities/bpp_entity.h>
-#include <entities/bpp_object.h>
-#include <entities/bpp_class.h>
-#include <entities/bpp_method.h>
-#include <entities/bpp_datamember.h>
+#include <IR/entities/Entity.h>
+#include <IR/entities/Object.h>
+#include <IR/entities/Class.h>
+#include <IR/entities/Method.h>
+#include <IR/entities/DataMember.h>
 
 GenericResponseMessage bpp::BashppServer::handleHover(const GenericRequestMessage& request) {
 	HoverRequestResponse response;
@@ -32,25 +32,14 @@ GenericResponseMessage bpp::BashppServer::handleHover(const GenericRequestMessag
 		return response;
 	}
 
-	std::shared_ptr<bpp::bpp_program> program = program_pool.get_program(uri, true); // Jump the queue and get the program immediately
+	auto program = program_pool.getProgram(uri, true); // Jump the queue and get the program immediately
 	if (program == nullptr) {
 		log("Program not found for URI: ", uri);
 		response.result = nullptr;
 		return response;
 	}
 
-	std::shared_ptr<bpp::bpp_entity> entity = nullptr;
-
-	try {
-		entity = resolve_entity_at(
-			uri,
-			position.line,
-			position.character,
-			program
-		);
-	} catch (...) {
-		// Ignore, it'll just be nullptr.
-	}
+	const auto* entity = program->source_index->getReferencedEntity({uri, position.line, position.character});
 
 	if (entity == nullptr) {
 		log("No entity found at position: (", position.line, ", ", position.character, ") in URI: ", uri);
@@ -58,93 +47,88 @@ GenericResponseMessage bpp::BashppServer::handleHover(const GenericRequestMessag
 		return response;
 	}
 
-	std::string hover_text = entity->get_name(); // Fallback in case we can't determine the type of entity
+	std::string hover_text; // Fallback in case we can't determine the type of entity
+	if (const auto* named_entity = dynamic_cast<const bpp::IR::Components::Named*>(entity)) {
+		hover_text = named_entity->getName();
+	}
 
 	// First, determine what kind of entity it is
 
-	std::shared_ptr<bpp::bpp_datamember> datamember = std::dynamic_pointer_cast<bpp::bpp_datamember>(entity);
+	const auto* datamember = dynamic_cast<const bpp::IR::DataMember*>(entity);
 	if (datamember) {
 		hover_text = "";
 		// If it's a data member, display [@ClassName[*]] @ContainingClass.dataMemberName
-		if (datamember->get_class() != nullptr) {
-			hover_text = "@" + datamember->get_class()->get_name();
-			if (datamember->is_pointer()) {
-				hover_text += "*";
-			}
+		if (datamember->getType() != nullptr) {
+			hover_text = "@" + datamember->getType()->getName();
+			if (datamember->isPointer()) hover_text += "*";
 			hover_text += " ";
 		}
 
-		std::shared_ptr<bpp::bpp_class> containing_class = datamember->get_containing_class().lock();
+		const auto* containing_class = datamember->getContainingClass();
 		if (containing_class) {
-			hover_text += "@" + datamember->get_containing_class().lock()->get_name() + "." + datamember->get_name();
+			hover_text += "@" + containing_class->getName() + "." + datamember->getName();
 		} else {
 			// Failsafe:
 			// If we fail to lock the containing class weak ptr:
-			log("Failed to lock containing class for data member: ", datamember->get_name(), " in URI: ", uri);
-			hover_text += "@<error>." + datamember->get_name();
+			log("Failed to lock containing class for data member: ", datamember->getName(), " in URI: ", uri);
+			hover_text += "@<error>." + datamember->getName();
 		}
 	}
 
-	std::shared_ptr<bpp::bpp_object> obj = std::dynamic_pointer_cast<bpp::bpp_object>(entity);
+	const auto* obj = dynamic_cast<const bpp::IR::Object*>(entity);
 	if (obj) {
 		// If it's an object, display @ClassName[*] objectName
-		if (obj->get_class() != nullptr) {
-			hover_text = "@" + obj->get_class()->get_name();
-			if (obj->is_pointer()) {
-				hover_text += "*";
-			}
-			hover_text += " " + obj->get_name();
+		if (obj->getType() != nullptr) {
+			hover_text = "@" + obj->getType()->getName();
+			if (obj->isPointer()) hover_text += "*";
+			hover_text += " " + obj->getName();
 		}
 	}
 
-	std::shared_ptr<bpp::bpp_method> method = std::dynamic_pointer_cast<bpp::bpp_method>(entity);
+	const auto* method = dynamic_cast<const bpp::IR::Method*>(entity);
 	if (method) {
 		// If it's a method, display [@virtual] {@public | @private | @protected} @method @ClassName.methodName [parameter list]
 		hover_text = "";
-		if (method->is_virtual()) {
-			hover_text += "@virtual ";
-		}
+		if (method->isVirtual()) hover_text += "@virtual ";
 
-		switch (method->get_scope()) {
-			case bpp::bpp_scope::SCOPE_PUBLIC:
+		switch (method->getScope()) {
+			case bpp::IR::VisibilityScope::PUBLIC:
 				hover_text += "@public ";
 				break;
-			case bpp::bpp_scope::SCOPE_PRIVATE:
-			case bpp::bpp_scope::SCOPE_INACCESSIBLE:
+			case bpp::IR::VisibilityScope::PRIVATE:
+			case bpp::IR::VisibilityScope::INACCESSIBLE:
 				hover_text += "@private ";
 				break;
-			case bpp::bpp_scope::SCOPE_PROTECTED:
+			case bpp::IR::VisibilityScope::PROTECTED:
 				hover_text += "@protected ";
 				break;
 		}
 
 		hover_text += "@method ";
 
-		std::shared_ptr<bpp::bpp_class> containing_class = method->get_containing_class().lock();
+		const auto* containing_class = method->getContainingClass();
 		if (containing_class) {
-			hover_text += "@" + containing_class->get_name();
+			hover_text += "@" + containing_class->getName();
 		} else {
 			// Failsafe:
 			hover_text += "@<error>";
 		}
-		hover_text += "." + method->get_name();
-		for (const auto& param : method->get_parameters()) {
-			if (param->get_class() == nullptr) {
-				hover_text += " $" + param->get_name();
+		hover_text += "." + method->getName();
+		for (const auto& [index, param] : method->getParameters()) {
+			if (param->getType() == nullptr) {
+				hover_text += " $" + param->getName();
 			} else {
-				hover_text += " @" + param->get_class()->get_name() + "* " + param->get_name();
+				hover_text += " @" + param->getType()->getName() + "* " + param->getName();
 			}
 		}
 	}
 
-	std::shared_ptr<bpp::bpp_class> cls = std::dynamic_pointer_cast<bpp::bpp_class>(entity);
+	const auto* cls = dynamic_cast<const bpp::IR::Class*>(entity);
 	if (cls) {
 		// If it's a class, display @class ClassName : ParentClass
-		hover_text = "@class " + cls->get_name();
-		std::shared_ptr<bpp::bpp_class> parent = cls->get_parent();
-		if (parent) {
-			hover_text += " : " + parent->get_name();
-		}
+		hover_text = "@class " + cls->getName();
+		const auto* parent = cls->getParentClass();
+		if (parent) hover_text += " : " + parent->getName();
 	}
 
 	if (hover_text.empty()) {

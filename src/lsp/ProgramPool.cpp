@@ -9,38 +9,36 @@
 #include "ProgramPool.h"
 
 #include <AST/Parser.h>
-#include <AST/Listener/BashppListener.h>
+#include <AST/Listener/Listener.h>
 
-#include <include/NullStream.h>
-
-#include <entities/bpp_program.h>
+#include <IR/entities/Program.h>
 
 ProgramPool::ProgramPool(std::size_t max_programs) : max_programs(max_programs) {
 	// Initialize the program pool with a maximum number of programs
 	programs.reserve(max_programs);
 }
 
-void ProgramPool::add_include_path(const std::string& path) {
-	include_paths->push_back(path);
+void ProgramPool::addIncludePath(const std::filesystem::path& path) {
+	include_paths.push_back(path);
 }
 
-void ProgramPool::set_suppress_warnings(bool suppress) {
-	suppress_warnings = suppress;
+void ProgramPool::addWarningOption(std::string_view warning_option) {
+	warning_options.parse(warning_option);
 }
 
-void ProgramPool::set_utf16_mode(bool mode) {
+void ProgramPool::setUTF16Mode(bool mode) {
 	utf16_mode = mode;
 }
 
-bool ProgramPool::get_utf16_mode() const {
+bool ProgramPool::getUTF16Mode() const {
 	return utf16_mode;
 }
 
-void ProgramPool::set_target_bash_version(const BashVersion& version) {
+void ProgramPool::setTargetBashVersion(const BashVersion& version) {
 	target_bash_version = version;
 }
 
-void ProgramPool::set_unsaved_file_contents(const std::string& file_path, const std::string& contents) {
+void ProgramPool::setUnsavedFileContents(const std::filesystem::path& file_path, const std::string& contents) {
 	{
 		std::lock_guard<std::recursive_mutex> lock(pool_mutex);
 		unsaved_changes[file_path] = contents;
@@ -48,7 +46,7 @@ void ProgramPool::set_unsaved_file_contents(const std::string& file_path, const 
 	update_snapshot();
 }
 
-void ProgramPool::remove_unsaved_file_contents(const std::string& file_path) {
+void ProgramPool::removeUnsavedFileContents(const std::filesystem::path& file_path) {
 	{
 		std::lock_guard<std::recursive_mutex> lock(pool_mutex);
 		auto it = unsaved_changes.find(file_path);
@@ -59,7 +57,7 @@ void ProgramPool::remove_unsaved_file_contents(const std::string& file_path) {
 	update_snapshot();
 }
 
-std::string ProgramPool::get_file_contents(const std::string& file_path) {
+std::string ProgramPool::getFileContents(const std::filesystem::path& file_path) {
 	// If a copy exists in unsaved_changes, return that
 	// Otherwise, read from the file on disk
 	{
@@ -108,16 +106,16 @@ void ProgramPool::_remove_program(std::size_t index) {
 	std::lock_guard<std::recursive_mutex> lock(pool_mutex);
 	if (index >= programs.size()) return; // Invalid index
 
-	std::shared_ptr<bpp::bpp_program> program = programs[index];
+	auto program = programs[index];
 	if (program != nullptr) {
 		// Close all files associated with this program
-		for (const auto& file_path : program->get_source_files()) {
-			open_files.erase(file_path); // Remove the file from the open files map
+		for (const auto& file_path : program->source_index->getAllSourceFiles()) {
+			open_files.erase(std::filesystem::path(file_path)); // Remove the file from the open files map
 		}
 	}
 
 	// Remove the program at the specified index
-	programs.erase(programs.begin() + static_cast<std::vector<std::shared_ptr<bpp::bpp_program>>::difference_type>(index));
+	programs.erase(programs.begin() + static_cast<std::vector<std::shared_ptr<bpp::IR::Program>>::difference_type>(index));
 
 	// Update the program indices
 	for (auto& [filePath, indices] : program_indices) {
@@ -130,45 +128,44 @@ void ProgramPool::_remove_program(std::size_t index) {
 	std::erase_if(program_indices, [](const auto& pair) { return pair.second.empty(); }); // Clean up any file paths with no associated programs
 }
 
-std::shared_ptr<bpp::bpp_program> ProgramPool::_parse_program(const std::string& file_path) {
-	// Create output streams that will discard output
-	std::shared_ptr<std::ostream> output_stream = std::make_shared<NullOStream>();
-	std::shared_ptr<std::ostream> code_buffer = std::make_shared<NullOStream>();
-
+std::shared_ptr<ProgramPool::ProgramAndSourceIndex> ProgramPool::_parse_program(const std::filesystem::path& file_path) {
 	try {
-		BashppListener listener;
-		listener.set_source_file(file_path);
-		listener.set_run_on_exit(false);
-		listener.set_included(false);
-		listener.set_output_stream(output_stream);
-		listener.set_code_buffer(code_buffer);
-		listener.set_suppress_warnings(suppress_warnings);
-		listener.set_include_paths(include_paths);
-		listener.set_target_bash_version(target_bash_version);
-		listener.set_lsp_mode(true);
-		listener.set_utf16_mode(utf16_mode);
-		for (const auto& pair : unsaved_changes) {
-			listener.set_replacement_file_contents(pair.first, pair.second);
-		}
+		bpp::AST::Listener listener;
+		listener.setSourceFile(file_path);
+		listener.setWarningOptions(warning_options);
+		listener.setIncludePaths(include_paths);
+		listener.setUTF16Mode(utf16_mode);
+		listener.setReplacementFileContents(unsaved_changes); // Provide the unsaved changes to the listener
+		// This tells it to use the unsaved changes instead of reading from disk when parsing the program
+		listener.prepareSourceIndex(); // Explicitly request a source index
 
-		AST::Parser parser;
+		bpp::AST::Parser parser;
 		parser.setUTF16Mode(utf16_mode);
 
 		if (unsaved_changes.contains(file_path)) {
-			parser.setInputFromStringContents(unsaved_changes[file_path]);
+			parser.setInputFromStringContents(unsaved_changes[file_path], file_path);
 		} else {
 			parser.setInputFromFilePath(file_path);
 		}
 
-		auto program = parser.program();
-		listener.set_parser_errors(parser.get_errors());
+		parser.parse();
+		auto program = parser.release_program();
+		listener.setHasErrors(!parser.get_errors().empty());
 		if (program == nullptr) {
-			program = std::make_shared<AST::Program>(); // Parsing failed
+			program = std::make_unique<bpp::AST::Program>(); // Parsing failed
 		}
 
 		// Walk the tree
-		listener.walk(program);
-		return listener.get_program();
+		listener.walk(program.get());
+		auto ir_program = listener.release_program();
+		auto source_index = listener.releaseSourceIndex();
+
+		// Propagate parser errors to diagnostics in the IR::Program entity
+		for (const auto& e : parser.get_errors()) {
+			source_index->addDiagnostic(file_path, e);
+		}
+
+		return std::make_shared<ProgramAndSourceIndex>(std::move(ir_program), std::move(source_index));
 	} catch (const std::exception& e) {
 		std::cerr << "Error while parsing program: " << e.what() << std::endl;
 		return nullptr; // Return nullptr if parsing fails
@@ -178,7 +175,7 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::_parse_program(const std::string&
 	}
 }
 
-std::shared_ptr<bpp::bpp_program> ProgramPool::get_program(const std::string& file_path, bool jump_queue) {
+std::shared_ptr<ProgramPool::ProgramAndSourceIndex> ProgramPool::getProgram(const std::filesystem::path& file_path, bool jump_queue) {
 	if (jump_queue) {
 		// Jump the queue:
 		// Skip getting a lock on the pool's main state, since we're not modifying it
@@ -195,7 +192,7 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::get_program(const std::string& fi
 		return snapshot_copy.programs_snapshot[indices[0]];
 	}
 
-	std::shared_ptr<bpp::bpp_program> new_program = nullptr;
+	std::shared_ptr<ProgramPool::ProgramAndSourceIndex> new_program = nullptr;
 	{
 		std::lock_guard<std::recursive_mutex> lock(pool_mutex);
 
@@ -214,8 +211,8 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::get_program(const std::string& fi
 
 		programs.push_back(new_program);
 		std::size_t index = programs.size() - 1;
-		for (const auto& path : new_program->get_source_files()) {
-			auto& indices_for_path = program_indices[path];
+		for (const auto& path : new_program->source_index->getAllSourceFiles()) {
+			auto& indices_for_path = program_indices[std::filesystem::path(path)];
 			if (!std::ranges::contains(indices_for_path, index)) {
 				indices_for_path.push_back(index); // Map the file path to the program index
 			}
@@ -228,10 +225,10 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::get_program(const std::string& fi
 		// into this new program, since this new program's AST contains *all* of the
 		// information in the earlier programs and more.
 		for (std::size_t i = 0; i < programs.size() - 1; i++) {
-			std::shared_ptr<bpp::bpp_program> program = programs[i];
+			std::shared_ptr<ProgramPool::ProgramAndSourceIndex> program = programs[i];
 			if (program == nullptr) continue;
-			auto main_source_file = program->get_main_source_file();
-			if (std::ranges::contains(new_program->get_source_files(), main_source_file) && main_source_file != file_path) {
+			bpp::IR::views::path_view main_source_file = program->program->getSourceFile();
+			if (std::ranges::contains(new_program->source_index->getAllSourceFiles(), main_source_file) && main_source_file != file_path) {
 				_remove_program(i);
 				i--; // Decrement i to account for the removed program
 			}
@@ -243,7 +240,7 @@ std::shared_ptr<bpp::bpp_program> ProgramPool::get_program(const std::string& fi
 	return new_program;
 }
 
-std::vector<std::shared_ptr<bpp::bpp_program>> ProgramPool::get_programs_for_file(const std::string& file_path, bool jump_queue) {
+std::vector<std::shared_ptr<ProgramPool::ProgramAndSourceIndex>> ProgramPool::getProgramsForFile(const std::filesystem::path& file_path, bool jump_queue) {
 	if (jump_queue) {
 		// Jump the queue:
 		// Skip getting a lock on the pool's main state, since we're not modifying it
@@ -252,7 +249,7 @@ std::vector<std::shared_ptr<bpp::bpp_program>> ProgramPool::get_programs_for_fil
 		Snapshot snapshot_copy = load_snapshot();
 		if (!snapshot_copy.program_indices_snapshot.contains(file_path)) return {}; // No programs associated with this file path
 
-		std::vector<std::shared_ptr<bpp::bpp_program>> programs_for_file;
+		std::vector<std::shared_ptr<ProgramPool::ProgramAndSourceIndex>> programs_for_file;
 		const std::vector<std::size_t>& indices = snapshot_copy.program_indices_snapshot[file_path];
 		programs_for_file.reserve(indices.size());
 		for (std::size_t index : indices) {
@@ -261,7 +258,7 @@ std::vector<std::shared_ptr<bpp::bpp_program>> ProgramPool::get_programs_for_fil
 		return programs_for_file;
 	}
 
-	std::vector<std::shared_ptr<bpp::bpp_program>> programs_for_file;
+	std::vector<std::shared_ptr<ProgramPool::ProgramAndSourceIndex>> programs_for_file;
 	{
 		std::lock_guard<std::recursive_mutex> lock(pool_mutex);
 
@@ -275,7 +272,7 @@ std::vector<std::shared_ptr<bpp::bpp_program>> ProgramPool::get_programs_for_fil
 		}
 
 		// If we get here, there are no programs associated with this file path, so we create a new one
-		auto new_program = get_program(file_path, jump_queue);
+		auto new_program = getProgram(file_path, jump_queue);
 		if (new_program != nullptr) {
 			programs_for_file.push_back(new_program);
 		}
@@ -283,23 +280,25 @@ std::vector<std::shared_ptr<bpp::bpp_program>> ProgramPool::get_programs_for_fil
 	return programs_for_file;
 }
 
-bool ProgramPool::has_program(const std::string& file_path) {
+bool ProgramPool::hasProgram(const std::filesystem::path& file_path) {
 	// Scan the SNAPSHOT for the program
 	Snapshot snapshot_copy = load_snapshot();
 	const auto& program_indices_snapshot = snapshot_copy.program_indices_snapshot;
 	return program_indices_snapshot.contains(file_path);
 }
 
-std::vector<std::shared_ptr<bpp::bpp_program>> ProgramPool::re_parse_programs(const std::string& file_path) {
-	if (!has_program(file_path)) return { get_program(file_path) }; // If it doesn't exist, create it
 
-	std::vector<std::shared_ptr<bpp::bpp_program>> successful_reparses;
+
+std::vector<std::shared_ptr<ProgramPool::ProgramAndSourceIndex>> ProgramPool::reparsePrograms(const std::string& file_path) {
+	if (!hasProgram(file_path)) return { getProgram(file_path) }; // If it doesn't exist, create it
+
+	std::vector<std::shared_ptr<ProgramPool::ProgramAndSourceIndex>> successful_reparses;
 	{
 		std::lock_guard<std::recursive_mutex> lock(pool_mutex);
 		// There are programs associated with this file, so we need to re-parse all of them
 		std::vector<std::size_t> indices = program_indices[file_path];
 		for (std::size_t index : indices) {
-			std::string main_source_file = programs[index]->get_main_source_file();
+			std::string main_source_file = programs[index]->program->getSourceFile();
 
 			auto new_program = _parse_program(main_source_file);
 			if (new_program != nullptr) {
@@ -313,8 +312,8 @@ std::vector<std::shared_ptr<bpp::bpp_program>> ProgramPool::re_parse_programs(co
 					std::erase(indices, index);
 				}
 				// Then, add references to this program index for all file paths referenced by the new AST
-				for (const auto& path : new_program->get_source_files()) {
-					auto& indices_for_path = program_indices[path];
+				for (const auto& path : new_program->source_index->getAllSourceFiles()) {
+					auto& indices_for_path = program_indices[std::filesystem::path(path)];
 					if (!std::ranges::contains(indices_for_path, index)) {
 						indices_for_path.push_back(index); // Map the file path to the program index
 					}
@@ -329,7 +328,29 @@ std::vector<std::shared_ptr<bpp::bpp_program>> ProgramPool::re_parse_programs(co
 	return successful_reparses;
 }
 
-void ProgramPool::open_file(const std::string& file_path) {
+std::vector<const bpp::IR::Entity*> ProgramPool::findAllEntitiesForSymbol(const bpp::IR::SourceLocation& location) const {
+	std::vector<const bpp::IR::Entity*> result;
+	result.reserve(programs.size());
+	Snapshot snapshot_copy = load_snapshot();
+	for (const auto& program : snapshot_copy.programs_snapshot) {
+		const auto* entity = program->source_index->getReferencedEntity(location);
+		if (entity != nullptr) result.push_back(entity);
+	}
+	result.shrink_to_fit();
+	return result;
+}
+
+std::shared_ptr<ProgramPool::ProgramAndSourceIndex> ProgramPool::getProgramForEntity(const bpp::IR::Entity* entity) const {
+	Snapshot snapshot_copy = load_snapshot();
+	const auto* containing_program = entity->getContainingProgram();
+	if (containing_program == nullptr) return nullptr;
+	for (const auto& program : snapshot_copy.programs_snapshot) {
+		if (program->program.get() == containing_program) return program;
+	}
+	return nullptr; // No program found for the given entity
+}
+
+void ProgramPool::openFile(const std::filesystem::path& file_path) {
 	{
 		std::lock_guard<std::recursive_mutex> lock(pool_mutex);
 		auto it = program_indices.find(file_path);
@@ -343,7 +364,7 @@ void ProgramPool::open_file(const std::string& file_path) {
 	update_snapshot();
 }
 
-void ProgramPool::close_file(const std::string& file_path) {
+void ProgramPool::closeFile(const std::filesystem::path& file_path) {
 	{
 		std::lock_guard<std::recursive_mutex> lock(pool_mutex);
 
@@ -362,8 +383,8 @@ void ProgramPool::close_file(const std::string& file_path) {
 			// Check if it's associated with any other files that are still open
 			bool program_still_has_some_files_open = false;
 
-			for (const auto& source_file : programs[index]->get_source_files()) {
-				if (open_files.contains(source_file)) {
+			for (const auto& source_file : programs[index]->source_index->getAllSourceFiles()) {
+				if (open_files.contains(std::filesystem::path(source_file))) {
 					program_still_has_some_files_open = true;
 					break; // At least one file is still open, so we don't remove the program
 				}

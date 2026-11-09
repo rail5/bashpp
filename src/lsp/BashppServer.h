@@ -14,7 +14,9 @@
 #include <memory>
 #include <unordered_map>
 #include <fstream>
+
 #include <nlohmann/json.hpp>
+
 #include <unistd.h>
 
 #include "ThreadPool.h"
@@ -25,7 +27,6 @@
 #include "generated/CompletionList.h"
 #include "generated/CompletionParams.h"
 
-#include <entities/bpp_codegen.h>
 #include <include/BashVersion.h>
 
 namespace bpp {
@@ -94,10 +95,18 @@ class BashppServer {
 		void sendResponse(const GenericResponseMessage& response);
 		void sendNotification(const GenericNotificationMessage& notification);
 
-		void publishDiagnostics(std::shared_ptr<bpp::bpp_program> program);
+		void publishDiagnostics(std::shared_ptr<ProgramPool::ProgramAndSourceIndex> program);
 
-		void add_include_path(const std::string& path);
-		void set_suppress_warnings(bool suppress);
+		void addIncludePath(const std::filesystem::path& path);
+
+		/**
+		 * @brief Add a warning option for use by all future programs to be added to the program pool.
+		 * 
+		 * @param warning_option The warning option to add.
+		 * @throws std::runtime_error if the warning option is invalid
+		 * @see bpp::ErrorHandling::WarningOptions for valid warning options
+		 */
+		void addWarningOption(std::string_view warning_option);
 
 		template <typename... Args>
 		void log(Args&&... args) {
@@ -143,7 +152,7 @@ class BashppServer {
 
 				void cleanup() {
 					for (auto it = states.begin(); it != states.end(); ) {
-						if (!pool->has_program(it->first)) {
+						if (!pool->hasProgram(it->first)) {
 							it = states.erase(it);
 						} else {
 							it++;

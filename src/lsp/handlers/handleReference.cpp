@@ -7,10 +7,10 @@
 #include <lsp/BashppServer.h>
 #include <lsp/generated/ReferencesRequest.h>
 #include <lsp/generated/ErrorCodes.h>
-#include <lsp/include/resolve_entity.h>
 #include <lsp/include/validateUri.h>
 
-#include <entities/bpp_entity.h>
+#include <IR/entities/Entity.h>
+#include <IR/entities/components/Named.h>
 
 GenericResponseMessage bpp::BashppServer::handleReferences(const GenericRequestMessage& request) {
 	ReferencesRequestResponse response;
@@ -28,12 +28,7 @@ GenericResponseMessage bpp::BashppServer::handleReferences(const GenericRequestM
 		return response;
 	}
 
-	auto entities = find_all_entities_for(
-		uri,
-		reference_request.params.position.line,
-		reference_request.params.position.character,
-		program_pool.get_programs_for_file(uri)
-	);
+	auto entities = program_pool.findAllEntitiesForSymbol({uri, reference_request.params.position.line, reference_request.params.position.character});
 
 	if (entities.empty()) {
 		// No entity to find references for
@@ -44,15 +39,24 @@ GenericResponseMessage bpp::BashppServer::handleReferences(const GenericRequestM
 
 	std::vector<Location> locations;
 	for (const auto& entity : entities) {
-		for (const auto& pos : entity->get_references()) {
-			log("Found reference in file: ", pos.file, " at line: ", pos.line, " character: ", pos.column);
-			std::string file_uri = "file://" + pos.file;
+		auto containing_program = program_pool.getProgramForEntity(entity);
+		if (!containing_program) {
+			std::string name = "(unnamed)";
+			if (const auto* named_entity = dynamic_cast<const bpp::IR::Components::Named*>(entity)) {
+				name = named_entity->getName();
+			}
+			log("Entity found, but no containing program for entity: ", name);
+			continue;
+		}
+		for (const auto& range : containing_program->source_index->getReferences(entity)) {
+			log("Found reference in file: ", range.source_file.string(), " at line: ", range.start.line, " character: ", range.start.column);
+			std::string file_uri = "file://" + range.source_file.string();
 			Location loc;
 			loc.uri = file_uri;
-			loc.range.start.line = pos.line;
-			loc.range.start.character = pos.column;
-			loc.range.end.line = pos.line;
-			loc.range.end.character = pos.column + entity->get_name().length();
+			loc.range.start.line = range.start.line;
+			loc.range.start.character = range.start.column;
+			loc.range.end.line = range.end.line;
+			loc.range.end.character = range.end.column;
 
 			// Make sure we don't add duplicate locations
 			// (e.g., in the event that multiple programs

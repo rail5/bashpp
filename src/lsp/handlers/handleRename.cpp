@@ -7,14 +7,12 @@
 #include <lsp/BashppServer.h>
 #include <lsp/generated/RenameRequest.h>
 #include <lsp/generated/ErrorCodes.h>
-#include <lsp/include/resolve_entity.h>
 #include <lsp/include/validateUri.h>
 
-#include <entities/bpp.h>
-#include <entities/bpp_entity.h>
-#include <entities/bpp_object.h>
-#include <entities/bpp_class.h>
-#include <entities/bpp_method.h>
+#include <IR/bpp.h>
+#include <IR/identifiers.h>
+#include <IR/entities/Entity.h>
+#include <IR/entities/components/Named.h>
 
 GenericResponseMessage bpp::BashppServer::handleRename(const GenericRequestMessage& request) {
 	RenameRequestResponse response;
@@ -34,7 +32,7 @@ GenericResponseMessage bpp::BashppServer::handleRename(const GenericRequestMessa
 
 	std::string new_name = rename_request.params.newName;
 	// Basic validation: Does the name satisfy Bash++ naming rules?
-	if (!bpp::is_valid_identifier(new_name)) {
+	if (!bpp::IR::is_valid_identifier(new_name)) {
 		log("Invalid new name for entity: ", new_name);
 		response.error = ResponseError{
 			static_cast<int>(ErrorCodes::InvalidParams),
@@ -48,25 +46,13 @@ GenericResponseMessage bpp::BashppServer::handleRename(const GenericRequestMessa
 		return response;
 	}
 
-	auto entities = find_all_entities_for(
-		uri,
-		rename_request.params.position.line,
-		rename_request.params.position.character,
-		program_pool.get_programs_for_file(uri)
-	);
+	auto entities = program_pool.findAllEntitiesForSymbol({uri, rename_request.params.position.line, rename_request.params.position.character});
 
-	// Verify that we found an entity, and it is either:
-	// 1. An object
-	// 2. A class
-	// 3. A method
-	// 4. A data member (covered by 'object' case)
-	// Also, remove any entities that are not valid for renaming (i.e., not of the above types)
+	// Verify that we found an entity, and it has a name component (i.e., it is a Named entity)
 	bool found_entities_to_rename = false;
 	for (auto it = entities.begin(); it != entities.end(); ) {
-		auto obj = std::dynamic_pointer_cast<bpp::bpp_object>(*it);
-		auto cls = std::dynamic_pointer_cast<bpp::bpp_class>(*it);
-		auto method = std::dynamic_pointer_cast<bpp::bpp_method>(*it);
-		if (obj != nullptr || cls != nullptr || method != nullptr) {
+		const auto* named_entity = dynamic_cast<const bpp::IR::Components::Named*>(*it);
+		if (named_entity != nullptr) {
 			found_entities_to_rename = true;
 			++it;
 		} else {
@@ -87,26 +73,32 @@ GenericResponseMessage bpp::BashppServer::handleRename(const GenericRequestMessa
 		return response;
 	}
 
-	std::string old_name = entities.front()->get_name(); // Get the name of the first entity (they all have the same name)
+	std::string old_name = dynamic_cast<const bpp::IR::Components::Named*>(entities.front())->getName(); // Get the name of the first entity (they all have the same name)
 
 	WorkspaceEdit edit;
 	std::unordered_map<std::string, std::vector<TextEdit>> changes;
 
 	for (const auto& entity : entities) {
 		// Get a list of everywhere the entity is referenced
-		std::list<bpp::SymbolPosition> references = entity->get_references();
+		//std::list<bpp::IR::SourceLocationRange> references = entity->get_references();
+		auto containing_program = program_pool.getProgramForEntity(entity);
+		if (!containing_program) {
+			log("Entity found, but no containing program for entity: ", old_name);
+			continue;
+		}
+		auto references = containing_program->source_index->getReferences(entity);
 
 		for (const auto& ref : references) {
 			TextEdit single_rename;
-			single_rename.range.start.line = ref.line;
-			single_rename.range.start.character = ref.column;
-			single_rename.range.end.line = ref.line;
-			single_rename.range.end.character = ref.column + static_cast<std::uint32_t>(entity->get_name().size());
+			single_rename.range.start.line = ref.start.line;
+			single_rename.range.start.character = ref.start.column;
+			single_rename.range.end.line = ref.end.line;
+			single_rename.range.end.character = ref.end.column;
 			single_rename.newText = new_name;
 
 			// Make sure we don't add duplicate edits for the same file
 			// (e.g., in the event that multiple programs include this source file, we may find the same reference multiple times)
-			bool already_added = std::ranges::any_of(changes["file://" + ref.file], [&](const TextEdit& edit) {
+			bool already_added = std::ranges::any_of(changes["file://" + ref.source_file.string()], [&](const TextEdit& edit) {
 				return edit.range.start.line == single_rename.range.start.line
 					&& edit.range.start.character == single_rename.range.start.character
 					&& edit.range.end.line == single_rename.range.end.line
@@ -114,7 +106,7 @@ GenericResponseMessage bpp::BashppServer::handleRename(const GenericRequestMessa
 			});
 
 			if (!already_added) {
-				changes["file://" + ref.file].push_back(single_rename);
+				changes["file://" + ref.source_file.string()].push_back(single_rename);
 			}
 		}
 	}

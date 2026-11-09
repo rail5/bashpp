@@ -8,8 +8,6 @@
 #include <lsp/generated/DidChangeTextDocumentNotification.h>
 #include <lsp/include/validateUri.h>
 
-#include <entities/bpp_program.h>
-
 void bpp::BashppServer::handleDidChange(const GenericNotificationMessage& request) {
 	DidChangeTextDocumentNotification did_change_notification = request.toSpecific<DidChangeTextDocumentParams>();
 	std::string uri = did_change_notification.params.textDocument.uri;
@@ -61,7 +59,7 @@ void bpp::BashppServer::handleDidChange(const GenericNotificationMessage& reques
 				return; // A newer change has been recorded, slet the newer thread handle it
 			}
 
-			program_pool.set_unsaved_file_contents(uri, new_content);
+			program_pool.setUnsavedFileContents(uri, new_content);
 
 			log("Re-parsing all programs associated with URI: ", uri);
 
@@ -78,7 +76,7 @@ void bpp::BashppServer::handleDidChange(const GenericNotificationMessage& reques
 
 			// TODO(@rail5): Handling partial changes and handling multiple changes (possibly of different types) **must** be implemented in the future
 			const auto reparse_start_time = std::chrono::steady_clock::now();
-			std::vector<std::shared_ptr<bpp::bpp_program>> programs = program_pool.re_parse_programs(uri);
+			auto programs = program_pool.reparsePrograms(uri);
 			const auto reparse_end_time = std::chrono::steady_clock::now();
 
 			if (programs.empty()) {

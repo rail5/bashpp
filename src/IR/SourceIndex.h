@@ -79,12 +79,26 @@ class path_view {
 		[[nodiscard]] bool operator>=(const path_view& other) const { return !(*this < other); }
 		[[nodiscard]] std::string string() const { return path_ptr->string(); }
 
+		[[nodiscard]] bool operator==(const std::filesystem::path& other) const { return *path_ptr == other; }
+		[[nodiscard]] bool operator!=(const std::filesystem::path& other) const { return *path_ptr != other; }
+		[[nodiscard]] bool operator<(const std::filesystem::path& other) const { return *path_ptr < other; }
+		[[nodiscard]] bool operator>(const std::filesystem::path& other) const { return *path_ptr > other; }
+		[[nodiscard]] bool operator<=(const std::filesystem::path& other) const { return *path_ptr <= other; }
+		[[nodiscard]] bool operator>=(const std::filesystem::path& other) const { return *path_ptr >= other; }
+
 		// Hashing for unordered_map
 		struct Hash {
 			[[nodiscard]] std::size_t operator()(const path_view& pv) const {
 				return std::hash<std::string>()(pv.path_ptr->string());
 			}
 		};
+
+		explicit operator std::filesystem::path() const { return *path_ptr; }
+
+		friend std::ostream& operator<<(std::ostream& os, const path_view& pv) {
+			os << pv.path_ptr->string();
+			return os;
+		}
 };
 
 struct SourceLocationView {
@@ -167,6 +181,7 @@ class SourceIndex final {
 
 		/// @brief Get all diagnostics for a given source file
 		std::span<const bpp::ErrorHandling::Diagnostic> getDiagnostics(const std::filesystem::path& source_file) const;
+		std::span<const bpp::ErrorHandling::Diagnostic> getDiagnostics(views::path_view source_file) const;
 
 		/// @brief Get all references to the given entity.
 		std::span<const views::SourceLocationRangeView> getReferences(const Entity* entity) const;
@@ -181,8 +196,10 @@ class SourceIndex final {
 		 * @return const Entity* A pointer to the entity referenced at the given location, or nullptr if no entity is referenced at that location.
 		 */
 		const Entity* getReferencedEntity(const SourceLocation& location) const;
+		const Entity* getReferencedEntity(views::SourceLocationView location) const;
 
 		const Entity* getContextEntity(const SourceLocation& location) const;
+		const Entity* getContextEntity(views::SourceLocationView location) const;
 
 		auto getAllSourceFiles() const { return files | std::ranges::views::keys; }
 

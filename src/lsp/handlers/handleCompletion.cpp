@@ -6,15 +6,14 @@
 
 #include <lsp/BashppServer.h>
 #include <lsp/generated/CompletionRequest.h>
-#include <lsp/include/resolve_entity.h>
 #include <lsp/include/validateUri.h>
 
-#include <entities/bpp_entity.h>
-#include <entities/bpp_program.h>
-#include <entities/bpp_class.h>
-#include <entities/bpp_object.h>
-#include <entities/bpp_method.h>
-#include <entities/bpp_datamember.h>
+#include <IR/entities/Entity.h>
+#include <IR/entities/Program.h>
+#include <IR/entities/Class.h>
+#include <IR/entities/Object.h>
+#include <IR/entities/Method.h>
+#include <IR/entities/DataMember.h>
 
 GenericResponseMessage bpp::BashppServer::handleCompletion(const GenericRequestMessage& request) {
 	CompletionRequestResponse response;
@@ -87,38 +86,37 @@ CompletionList bpp::BashppServer::handleATCompletion(const CompletionParams& par
 
 	std::string uri = validateUri(params.textDocument.uri);
 
-	std::shared_ptr<bpp::bpp_program> program = program_pool.get_program(uri, true); // Jump the queue and get the program immediately
-	if (program == nullptr) {
-		throw std::runtime_error("Program not found for URI: " + uri);
-	}
+	auto program = program_pool.getProgram(uri, true); // Jump the queue and get the program immediately
+	if (program == nullptr) throw std::runtime_error("Program not found for URI: " + uri);
 
 	Position position = params.position;
 
-	// Which entity is active at the given position?
-	std::shared_ptr<bpp::bpp_entity> active_entity = program->get_active_entity(uri, position.line, position.character);
+	// Which context entity is active at the given position?
+	const auto* active_entity = program->source_index->getContextEntity({uri, position.line, position.character});
 	if (active_entity == nullptr) {
-		log("BUG: No active entity found at position: (", position.line, ", ", position.character, ") in URI: ", uri, " - returning default completions.");
+		log("BUG: No context entity found at position: (", position.line, ", ", position.character, ") in URI: ", uri, " - returning default completions.");
 	} else {
-		const auto& classes = active_entity->get_all_known_classes();
+		const auto& classes = active_entity->getAllKnownClasses();
 
 		// Collect objects both foreign to & owned by the active entity into a single 'objects' map
-		const auto& objects = active_entity->get_all_known_objects();
+		const auto& objects = active_entity->getAllKnownObjects();
 
-		for (const auto& obj : objects) {
+		for (const auto* obj : objects) {
 			if (obj == nullptr) continue;
+			if (obj->getType() == nullptr) continue; // Skip primitive objects
 			CompletionItem item;
-			item.label = obj->get_name();
+			item.label = obj->getName();
 			item.kind = CompletionItemKind::Variable;
-			item.detail = "@" + obj->get_class()->get_name() + " " + obj->get_name(); // As in: @ClassName objectName
+			item.detail = "@" + obj->getType()->getName() + " " + obj->getName(); // As in: @ClassName objectName
 			completion_list.items.push_back(item);
 		}
 
 		for (const auto& cls : classes) {
 			if (cls == nullptr) continue;
 			CompletionItem item;
-			item.label = cls->get_name();
+			item.label = cls->getName();
 			item.kind = CompletionItemKind::Class;
-			item.detail = "@class " + cls->get_name(); // As in: @class ClassName
+			item.detail = "@class " + cls->getName(); // As in: @class ClassName
 			completion_list.items.push_back(item);
 		}
 	}
@@ -133,77 +131,70 @@ CompletionList bpp::BashppServer::handleDOTCompletion(const CompletionParams& pa
 
 	std::string uri = validateUri(params.textDocument.uri);
 
-	std::shared_ptr<bpp::bpp_program> program = program_pool.get_program(uri, true); // Jump the queue and get the program immediately
-	if (program == nullptr) {
-		throw std::runtime_error("Program not found for URI: " + uri);
-	}
+	auto program = program_pool.getProgram(uri, true); // Jump the queue and get the program immediately
+	if (program == nullptr) throw std::runtime_error("Program not found for URI: " + uri);
 
 	Position position = params.position;
 
 	// Resolve the referenced entity before the dot
-	std::shared_ptr<bpp::bpp_entity> referenced_entity = resolve_entity_at(
-		uri,
-		position.line,
-		position.character - 1, // Position before the dot
-		program
-	);
+	const auto* referenced_entity = program->source_index->getReferencedEntity({uri, position.line, position.character - 1}); // Position before the dot
 
 	if (referenced_entity == nullptr) {
 		throw std::runtime_error("No entity found at position: (" + std::to_string(position.line) + ", " + std::to_string(position.character) + ") in URI: " + uri);
 	}
 
 	// Ensure that the referenced entity is a non-primitive object (@obj) or a class (e.g., @this/@super)
-	std::shared_ptr<bpp::bpp_object> obj = std::dynamic_pointer_cast<bpp::bpp_object>(referenced_entity);
-	std::shared_ptr<bpp::bpp_class> cls = std::dynamic_pointer_cast<bpp::bpp_class>(referenced_entity);
+	const auto* obj = dynamic_cast<const bpp::IR::Object*>(referenced_entity);
+	const auto* cls = dynamic_cast<const bpp::IR::Class*>(referenced_entity);
 
-	std::shared_ptr<bpp::bpp_class> entity_class;
+	const bpp::IR::Class* entity_class = nullptr;
 	std::string entity_name;
 
-	if (obj != nullptr && obj->get_class() != nullptr) {
-		entity_class = obj->get_class();
-		entity_name = obj->get_name();
+	if (obj != nullptr && obj->getType() != nullptr) {
+		entity_class = obj->getType();
+		entity_name = obj->getName();
 	} else if (cls != nullptr) {
 		entity_class = cls;
-		entity_name = cls->get_name();
+		entity_name = cls->getName();
 	} else {
 		throw std::runtime_error("Referenced entity is not a valid object or class at position: (" + std::to_string(position.line) + ", " + std::to_string(position.character) + ") in URI: " + uri);
 	}
 
-	for (const auto& method : entity_class->get_methods()) {
-		if (method->get_name().contains("__")) {
+	for (const auto& method : entity_class->getAllMethods()) {
+		if (method->getName().contains("__")) {
 			continue; // Skip system methods
 		}
 
 		CompletionItem item;
-		item.label = method->get_name();
+		item.label = method->getName();
 		item.kind = CompletionItemKind::Method;
 
 		std::string detail;
 
-		if (method->is_virtual()) {
+		if (method->isVirtual()) {
 			detail += "@virtual ";
 		}
 
-		switch (method->get_scope()) {
-			case bpp::bpp_scope::SCOPE_PUBLIC:
+		switch (method->getScope()) {
+			case bpp::IR::VisibilityScope::PUBLIC:
 				detail += "@public ";
 				break;
-			case bpp::bpp_scope::SCOPE_PRIVATE:
-			case bpp::bpp_scope::SCOPE_INACCESSIBLE:
+			case bpp::IR::VisibilityScope::PRIVATE:
+			case bpp::IR::VisibilityScope::INACCESSIBLE:
 				detail += "@private ";
 				break;
-			case bpp::bpp_scope::SCOPE_PROTECTED:
+			case bpp::IR::VisibilityScope::PROTECTED:
 				detail += "@protected ";
 				break;
 		}
 
-		detail += "@method " + method->get_name();
+		detail += "@method " + method->getName();
 
-		for (const auto& param : method->get_parameters()) {
-			if (param->get_class() == nullptr) {
-				detail += " $" + param->get_name();
+		for (const auto& [index, param] : method->getParameters()) {
+			if (param->getType() == nullptr) {
+				detail += " $" + param->getName();
 			} else {
-				detail += " @" + param->get_class()->get_name() + "* " + param->get_name();
+				detail += " @" + param->getType()->getName() + "* " + param->getName();
 			}
 		}
 
@@ -213,25 +204,21 @@ CompletionList bpp::BashppServer::handleDOTCompletion(const CompletionParams& pa
 		completion_list.items.push_back(item);
 	}
 
-	for (const auto& data_member : entity_class->get_datamembers()) {
+	for (const auto& data_member : entity_class->getAllDatamembers()) {
 		CompletionItem item;
-		item.label = data_member->get_name();
+		item.label = data_member->getName();
 		item.kind = CompletionItemKind::Field;
 
-		std::string detail = "@" + entity_name + "." + data_member->get_name();
+		std::string detail = "@" + entity_name + "." + data_member->getName();
 		detail += " (";
 
-		if (data_member->get_class() == nullptr) {
+		if (data_member->getType() == nullptr) {
 			detail += "primitive";
-			if (data_member->is_array()) {
-				detail += " array";
-			}
+			if (data_member->isArray()) detail += " array";
 		} else {
-			detail += "@" + data_member->get_class()->get_name();
+			detail += "@" + data_member->getType()->getName();
 
-			if (data_member->is_pointer()) {
-				detail += "*";
-			}
+			if (data_member->isPointer()) detail += "*";
 		}
 		detail += ")";
 

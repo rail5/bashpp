@@ -100,4 +100,10 @@ public:
 		}
 		return best ? best->payload : T();
 	}
+
+	void updateEntityAddress(const T& old_address, const T& new_address) {
+		for (auto& interval : intervals) {
+			if (interval.payload == old_address) interval.payload = new_address;
+		}
+	}
 };

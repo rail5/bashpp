@@ -49,8 +49,8 @@ void Listener::enter(MethodDefinition* node) {
 		source_index->setDefinitionPosition(
 			new_method.get(),
 			{getCurrentSourceFile(),
-			node->getLine(), node->getColumn(),
-			node->getLine(), static_cast<uint32_t>(node->getColumn() + node->NAME().getValue().length())}
+			node->NAME().getLine(), node->NAME().getColumn(),
+			node->NAME().getLine(), static_cast<uint32_t>(node->NAME().getColumn() + node->NAME().getValue().length())}
 		);
 
 		source_index->markContextEntity(

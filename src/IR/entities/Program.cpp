@@ -116,6 +116,7 @@ IncludedProgram::IncludedProgram(const Program* containing_program) {
 	// Inherit the containing program, so that this included program can see all of its classes
 	this->inherit(containing_program);
 	this->setContainingProgram(containing_program);
+	this->setSourceIndex(containing_program->getSourceIndex());
 }
 
 Class* IncludedProgram::getClass(const std::string& name, std::size_t max_visible_index) const {

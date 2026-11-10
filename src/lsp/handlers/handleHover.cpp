@@ -54,8 +54,7 @@ GenericResponseMessage bpp::LSP::BashppServer::handleHover(const GenericRequestM
 
 	// First, determine what kind of entity it is
 
-	const auto* datamember = dynamic_cast<const bpp::IR::DataMember*>(entity);
-	if (datamember) {
+	if (const auto* datamember = dynamic_cast<const bpp::IR::DataMember*>(entity)) {
 		hover_text = "";
 		// If it's a data member, display [@ClassName[*]] @ContainingClass.dataMemberName
 		if (datamember->getType() != nullptr) {
@@ -73,20 +72,14 @@ GenericResponseMessage bpp::LSP::BashppServer::handleHover(const GenericRequestM
 			log("Failed to lock containing class for data member: ", datamember->getName(), " in URI: ", uri);
 			hover_text += "@<error>." + datamember->getName();
 		}
-	}
-
-	const auto* obj = dynamic_cast<const bpp::IR::Object*>(entity);
-	if (obj) {
-		// If it's an object, display @ClassName[*] objectName
+	} else if (const auto* obj = dynamic_cast<const bpp::IR::Object*>(entity)) {
+		// If it's an object (but not a data member), display @ClassName[*] objectName
 		if (obj->getType() != nullptr) {
 			hover_text = "@" + obj->getType()->getName();
 			if (obj->isPointer()) hover_text += "*";
 			hover_text += " " + obj->getName();
 		}
-	}
-
-	const auto* method = dynamic_cast<const bpp::IR::Method*>(entity);
-	if (method) {
+	} else if (const auto* method = dynamic_cast<const bpp::IR::Method*>(entity)) {
 		// If it's a method, display [@virtual] {@public | @private | @protected} @method @ClassName.methodName [parameter list]
 		hover_text = "";
 		if (method->isVirtual()) hover_text += "@virtual ";
@@ -121,10 +114,7 @@ GenericResponseMessage bpp::LSP::BashppServer::handleHover(const GenericRequestM
 				hover_text += " @" + param->getType()->getName() + "* " + param->getName();
 			}
 		}
-	}
-
-	const auto* cls = dynamic_cast<const bpp::IR::Class*>(entity);
-	if (cls) {
+	} else if (const auto* cls = dynamic_cast<const bpp::IR::Class*>(entity)) {
 		// If it's a class, display @class ClassName : ParentClass
 		hover_text = "@class " + cls->getName();
 		const auto* parent = cls->getParentClass();

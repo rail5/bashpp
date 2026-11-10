@@ -78,4 +78,18 @@ const Entity* SourceIndex::getContextEntity(const SourceLocation& location) cons
 	return getContextEntity(views::SourceLocationView(location));
 }
 
+void SourceIndex::updateEntityAddress(const Entity* old_address, const Entity* new_address) {
+	auto it = entities.find(old_address);
+	if (it != entities.end()) {
+		auto entity_data = std::move(it->second);
+		entities.erase(it);
+		entities[new_address].mergeFrom(std::move(entity_data));
+	}
+
+	for (auto& [path, file_data] : files) {
+		file_data.context_entities.updateEntityAddress(old_address, new_address);
+		file_data.entity_references.updateEntityAddress(old_address, new_address);
+	}
+}
+
 } // namespace bpp::IR

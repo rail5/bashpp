@@ -72,4 +72,8 @@ class EntityMap {
 		const bpp::IR::Entity* find(std::uint32_t line, std::uint32_t column) const {
 			return find(FilePosition(line, column));
 		}
+
+		void updateEntityAddress(const bpp::IR::Entity* old_address, const bpp::IR::Entity* new_address) {
+			tree.updateEntityAddress(old_address, new_address);
+		}
 };

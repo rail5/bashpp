@@ -20,6 +20,8 @@
 
 namespace bpp::IR {
 
+class SourceIndex;
+
 /**
  * @brief The root node of the entity tree, representing the entire Bash++ program
  */
@@ -47,9 +49,15 @@ class Program : public CodeEntity {
 
 		/// The source file for this Program entity. Used for diagnostics/LSP
 		std::filesystem::path source_file;
+
+		/// The source index for this program, used for diagnostics/LSP. Non-owning.
+		SourceIndex* source_index = nullptr;
 	public:
 		void setSourceFile(const std::filesystem::path& source_file) { this->source_file = source_file; }
 		const std::filesystem::path& getSourceFile() const { return source_file; }
+
+		void setSourceIndex(SourceIndex* source_index) { this->source_index = source_index; }
+		SourceIndex* getSourceIndex() const { return source_index; }
 
 		/**
 		 * @brief Add a class to the program

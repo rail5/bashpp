@@ -22,7 +22,10 @@ void Listener::enter(Program* /*node*/) {
 		auto program = std::make_unique<bpp::IR::Program>();
 
 		program->setSourceFile(getMainSourceFile());
-		if (source_index) source_index->addSourceFile(getMainSourceFile());
+		if (source_index) {
+			source_index->addSourceFile(getMainSourceFile());
+			program->setSourceIndex(source_index.get());
+		}
 
 		program->setGlobalObjectStackFunction(std::make_unique<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_object_stack_function));
 		program->setSupershellFunction(std::make_unique<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_supershell_function));

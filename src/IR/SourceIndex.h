@@ -47,6 +47,18 @@ struct SourceLocationRange {
 
 namespace views {
 
+/**
+ * TODO(@rail5): Use the type system to provide guarantees that views are never invalidated
+ * Idea: Create a thin wrapper type around std::filesystem::path as a private member of SourceIndex,
+ * have path_views be views into that wrapper type rather than into any fs::path
+ * This would guarantee:
+ *  1. Any path_view would be a view into memory owned by SourceIndex
+ *  2. Therefore the view would never be invalidated as long as the SourceIndex object is alive
+ *
+ * A small typing mistake in SourceIndex implementation could lead to dangling views and UAF
+ * I would rather have a compile-time guarantee than constantly double-check our implementation
+ */
+
 /// A non-owning view of a std::filesystem::path
 class path_view {
 	private:
@@ -203,6 +215,8 @@ class SourceIndex final {
 
 		auto getAllSourceFiles() const { return files | std::ranges::views::keys; }
 
+		void updateEntityAddress(const Entity* old_address, const Entity* new_address);
+
 		SourceIndex() = default;
 	private:
 		/// DO NOT optimize for faster lookup: reallocations done by std::vector &co would invalidate views.
@@ -220,6 +234,19 @@ class SourceIndex final {
 		struct EntityData {
 			std::vector<views::SourceLocationRangeView> references;
 			std::optional<views::SourceLocationRangeView> definition_position;
+
+			/**
+			 * @brief Merge the data from another EntityData into this one.
+			 *
+			 * The other entity's reference list is appended to this entity's reference list.
+			 * If the other entity has a definition position, it will overwrite this entity's definition position.
+			 * @param other The other EntityData to merge from.
+			 */
+			void mergeFrom(EntityData&& other) {
+				references.insert(references.end(),
+					std::make_move_iterator(other.references.begin()), std::make_move_iterator(other.references.end()));
+				if (other.definition_position.has_value()) definition_position = other.definition_position;
+			}
 		};
 		std::unordered_map<const Entity*, EntityData> entities;
 };

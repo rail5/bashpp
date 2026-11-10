@@ -8,8 +8,9 @@
 #include <IR/entities/Method.h>
 #include <IR/entities/MethodParameter.h>
 #include <IR/entities/DataMember.h>
-
 #include <IR/entities/expressions/bpp/DynamicCast.h>
+#include <IR/entities/Program.h>
+#include <IR/SourceIndex.h>
 
 #include <error/InternalError.h>
 
@@ -84,6 +85,11 @@ std::expected<void, NameConflictError> Class::addMethod(std::unique_ptr<Method> 
 		// Otherwise: override
 		const auto* parent_method = existing_method->getParentMethod();
 		bool wasVirtual = existing_method->isVirtual();
+
+		bpp_assert(getContainingProgram() != nullptr, "Containing program is null");
+		if (auto* source_index = getContainingProgram()->getSourceIndex()) {
+			source_index->updateEntityAddress(method.get(), existing_method);
+		}
 
 		*existing_method = std::move(*method);
 

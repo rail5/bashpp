@@ -22,13 +22,13 @@ void SourceIndex::addDiagnostic(const std::filesystem::path& source_file, const 
 void SourceIndex::addReference(const Entity* entity, const SourceLocationRange& range) {
 	auto path = fetchOrAdd(range.source_file);
 	files[path].entity_references.insert(range.start, range.end, entity);
-
-	// Also add to the references_by_entity map
-	entities[entity].references.emplace_back(range.source_file, range.start, range.end);
+	entities[entity].references.emplace_back(path, range.start, range.end);
 }
 
 void SourceIndex::setDefinitionPosition(const Entity* entity, const SourceLocationRange& range) {
-	entities[entity].definition_position = views::SourceLocationRangeView(range);
+	auto path = fetchOrAdd(range.source_file);
+	files[path].entity_references.insert(range.start, range.end, entity);
+	entities[entity].definition_position = {path, range.start, range.end};
 }
 
 void SourceIndex::markContextEntity(const SourceLocationRange& range, const Entity* entity) {

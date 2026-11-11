@@ -14,6 +14,7 @@
 #include <IR/entities/Class.h>
 #include <IR/entities/Method.h>
 #include <IR/entities/DataMember.h>
+#include <IR/entities/Program.h>
 
 GenericResponseMessage bpp::LSP::BashppServer::handleHover(const GenericRequestMessage& request) {
 	HoverRequestResponse response;
@@ -47,81 +48,109 @@ GenericResponseMessage bpp::LSP::BashppServer::handleHover(const GenericRequestM
 		return response;
 	}
 
-	std::string hover_text; // Fallback in case we can't determine the type of entity
+	std::string label, explanation, code_snippet;
 	if (const auto* named_entity = dynamic_cast<const bpp::IR::Components::Named*>(entity)) {
-		hover_text = named_entity->getName();
+		label = "Entity `" + named_entity->getName() + "`"; // Fallback in case we can't determine the type of entity
 	}
 
 	// First, determine what kind of entity it is
 
 	if (const auto* datamember = dynamic_cast<const bpp::IR::DataMember*>(entity)) {
-		hover_text = "";
+		label = "Data Member `" + datamember->getName() + "`";
 		// If it's a data member, display [@ClassName[*]] @ContainingClass.dataMemberName
 		if (datamember->getType() != nullptr) {
-			hover_text = "@" + datamember->getType()->getName();
-			if (datamember->isPointer()) hover_text += "*";
-			hover_text += " ";
+			code_snippet = "@" + datamember->getType()->getName();
+			if (datamember->isPointer()) code_snippet += "*";
+			code_snippet += " ";
+
+			explanation = "Type: `" + datamember->getType()->getName() + "`";
+		} else {
+			explanation = "Type: primitive";
 		}
 
 		const auto* containing_class = datamember->getContainingClass();
 		if (containing_class) {
-			hover_text += "@" + containing_class->getName() + "." + datamember->getName();
+			code_snippet += "@" + containing_class->getName() + "." + datamember->getName();
+			explanation += "\n\nProvided by class `" + containing_class->getName() + "`";
 		} else {
 			// Failsafe:
 			// If we fail to lock the containing class weak ptr:
 			log("Failed to lock containing class for data member: ", datamember->getName(), " in URI: ", uri);
-			hover_text += "@<error>." + datamember->getName();
+			code_snippet += "@<error>." + datamember->getName();
 		}
 	} else if (const auto* obj = dynamic_cast<const bpp::IR::Object*>(entity)) {
 		// If it's an object (but not a data member), display @ClassName[*] objectName
 		if (obj->getType() != nullptr) {
-			hover_text = "@" + obj->getType()->getName();
-			if (obj->isPointer()) hover_text += "*";
-			hover_text += " " + obj->getName();
+			label = "Object `" + obj->getName() + "`";
+
+			code_snippet = "@" + obj->getType()->getName();
+			if (obj->isPointer()) code_snippet += "*";
+			code_snippet += " " + obj->getName();
+
+			explanation = "Type: `" + obj->getType()->getName() + "`";
+		} else {
+			// primitive object, display $objectName
+			label = "Primitive `" + obj->getName() + "`";
+			explanation = "Type: primitive";
+			code_snippet = "$" + obj->getName();
 		}
 	} else if (const auto* method = dynamic_cast<const bpp::IR::Method*>(entity)) {
 		// If it's a method, display [@virtual] {@public | @private | @protected} @method @ClassName.methodName [parameter list]
-		hover_text = "";
-		if (method->isVirtual()) hover_text += "@virtual ";
+		label = "Method `" + method->getName() + "`";
+		if (method->isVirtual()) code_snippet = "@virtual ";
 
 		switch (method->getScope()) {
 			case bpp::IR::VisibilityScope::PUBLIC:
-				hover_text += "@public ";
+				code_snippet += "@public ";
 				break;
 			case bpp::IR::VisibilityScope::PRIVATE:
 			case bpp::IR::VisibilityScope::INACCESSIBLE:
-				hover_text += "@private ";
+				code_snippet += "@private ";
 				break;
 			case bpp::IR::VisibilityScope::PROTECTED:
-				hover_text += "@protected ";
+				code_snippet += "@protected ";
 				break;
 		}
 
-		hover_text += "@method ";
+		code_snippet += "@method ";
 
 		const auto* containing_class = method->getContainingClass();
 		if (containing_class) {
-			hover_text += "@" + containing_class->getName();
+			code_snippet += "@" + containing_class->getName();
+			explanation = "Provided by class `" + containing_class->getName() + "`";
 		} else {
 			// Failsafe:
-			hover_text += "@<error>";
+			code_snippet += "@<error>";
 		}
-		hover_text += "." + method->getName();
-		for (const auto& [index, param] : method->getParameters()) {
+		code_snippet += "." + method->getName();
+
+		// Get a view of the parameter list, excluding the implicit `this` parameter (which is always the first parameter)
+		auto parameters = method->getParameters() | std::views::drop(1);
+		for (const auto& [index, param] : parameters) {
 			if (param->getType() == nullptr) {
-				hover_text += " $" + param->getName();
+				code_snippet += " $" + param->getName();
 			} else {
-				hover_text += " @" + param->getType()->getName() + "* " + param->getName();
+				code_snippet += " @" + param->getType()->getName() + "* " + param->getName();
 			}
 		}
 	} else if (const auto* cls = dynamic_cast<const bpp::IR::Class*>(entity)) {
 		// If it's a class, display @class ClassName : ParentClass
-		hover_text = "@class " + cls->getName();
+		label = "Class `" + cls->getName() + "`";
+
+		auto definition = program->source_index->getDefinitionPosition(cls);
+		if (definition) explanation = "Provided by `" + definition->source_file.string() + "`";
+
+		code_snippet = "@class " + cls->getName();
 		const auto* parent = cls->getParentClass();
-		if (parent) hover_text += " : " + parent->getName();
+		if (parent) code_snippet += " : " + parent->getName();
+	} else if (const auto* included_program = dynamic_cast<const bpp::IR::IncludedProgram*>(entity)) {
+		const auto& file_path = included_program->getSourceFile();
+		label = "`" + file_path.filename().string() + "`";
+		explanation = "`" + file_path.string() + "`";
+		code_snippet.clear();
 	}
 
-	if (hover_text.empty()) {
+	if (label.empty()) {
 		response.result = nullptr;
 		return response; // No hover text available
 	}
@@ -130,13 +159,21 @@ GenericResponseMessage bpp::LSP::BashppServer::handleHover(const GenericRequestM
 	std::string comments = find_comments_for_entity(entity, &program_pool);
 
 	if (!comments.empty()) {
-		hover_text += "\n\n" + comments; // Append comments if available
+		code_snippet += "\n\n" + comments; // Append comments if available
 	}
 
 	Hover hover;
 	MarkupContent hoverContent;
 	hoverContent.kind = MarkupKind::Markdown;
-	hoverContent.value = "```bashpp\n" + hover_text + "\n```";
+	hoverContent.value = std::format(
+		"### {}\n\n" // Label (e.g., ### Class `someName`)
+		"---\n\n" // separator line
+		"{}\n\n" // Explanation section (e.g., Provided by `/path/to/file.bpp`)
+		"---\n\n" // separator line
+		"```bashpp\n"
+			"{}\n" // Code snippet section (e.g., @class someName : someParent, + comment lines)
+		"```",
+		label, explanation, code_snippet);
 	hover.contents = hoverContent;
 
 	response.result = hover;

@@ -6,6 +6,8 @@
 
 #include "SourceIndex.h"
 
+#include <IR/entities/Program.h>
+
 namespace bpp::IR {
 
 views::path_view SourceIndex::fetchOrAdd(const std::filesystem::path& path) {
@@ -69,9 +71,12 @@ const Entity* SourceIndex::getReferencedEntity(const SourceLocation& location) c
 }
 
 const Entity* SourceIndex::getContextEntity(views::SourceLocationView location) const {
+	const Entity* result = program; // If no context entity is found, return the root program as the context entity
 	auto it = files.find(location.source_file);
-	if (it == files.end()) return nullptr;
-	return it->second.context_entities.find(location.position.line, location.position.column);
+	if (it == files.end()) return result;
+	const auto* ctx = it->second.context_entities.find(location.position.line, location.position.column);
+	if (ctx) result = ctx;
+	return result;
 }
 
 const Entity* SourceIndex::getContextEntity(const SourceLocation& location) const {

@@ -128,6 +128,24 @@ void Listener::enter(IncludeStatement* node) {
 }
 
 template <>
-void Listener::exit(IncludeStatement* /*node*/) {}
+void Listener::exit(IncludeStatement* node) {
+	if (source_index) {
+		bpp_assert(topmost_entity_is<bpp::IR::Program>(), "Topmost entity on stack is not a Program");
+		const auto* current_program = entity_stack.top_as<bpp::IR::Program>();
+		bpp_assert(current_program->getChildren().size() > 0, "Program has no children");
+		const auto& last_child = current_program->getChildren().back();
+
+		bpp_assert(std::holds_alternative<std::unique_ptr<bpp::IR::Entity>>(last_child), "Last child of program is not an Entity");
+		const auto* included_program_entity = std::get<std::unique_ptr<bpp::IR::Entity>>(last_child).get();
+
+		bpp_assert(included_program_entity != nullptr, "Included program entity is null");
+		source_index->addReference(
+			included_program_entity,
+			{getCurrentSourceFile(),
+			node->getLine(), node->getColumn(),
+			node->getEndPosition().line, node->getEndPosition().column}
+		);
+	}
+}
 
 } // namespace bpp::AST

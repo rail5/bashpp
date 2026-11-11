@@ -25,6 +25,7 @@ void Listener::enter(Program* /*node*/) {
 		if (source_index) {
 			source_index->addSourceFile(getMainSourceFile());
 			program->setSourceIndex(source_index.get());
+			source_index->setProgram(program.get());
 		}
 
 		program->setGlobalObjectStackFunction(std::make_unique<bpp::IR::Builtins::SystemFunction>(bpp::IR::Builtins::bpp_object_stack_function));
@@ -43,7 +44,10 @@ void Listener::enter(Program* /*node*/) {
 		auto included_program = std::make_unique<bpp::IR::IncludedProgram>(current_program);
 		included_program->setDynamicInclude(included_type_stack.top() == IncludedType::DYNAMICALLY_INCLUDED);
 		included_program->setSourceFile(getCurrentSourceFile());
-		if (source_index) source_index->addSourceFile(getCurrentSourceFile());
+		if (source_index) {
+			source_index->addSourceFile(getCurrentSourceFile());
+			source_index->setDefinitionPosition(included_program.get(), {getCurrentSourceFile(), 0, 0, 0, 0});
+		}
 
 		entity_stack.push(std::move(included_program));
 	}

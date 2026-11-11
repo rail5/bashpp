@@ -20,6 +20,8 @@
 
 namespace bpp::IR {
 
+class Program;
+
 struct SourceLocation {
 	std::filesystem::path source_file;
 	FilePosition position;
@@ -217,10 +219,16 @@ class SourceIndex final {
 
 		void updateEntityAddress(const Entity* old_address, const Entity* new_address);
 
+		void setProgram(const Program* program) { this->program = program; }
+		const Program* getProgram() const { return program; }
+
 		SourceIndex() = default;
 	private:
 		/// DO NOT optimize for faster lookup: reallocations done by std::vector &co would invalidate views.
 		std::deque<std::filesystem::path> paths;
+
+		/// @brief The root program node with which this source index is associated. Non-owning.
+		const bpp::IR::Program* program = nullptr;
 
 		views::path_view fetchOrAdd(const std::filesystem::path& path);
 

@@ -76,10 +76,10 @@
           },
           "description": "Additional include paths for the Bash++ language server. These paths will be used to resolve include statements in Bash++ files."
         },
-        "bashpp.languageServer.showWarnings": {
-          "type": "boolean",
-          "default": true,
-          "description": "Show warnings from the Bash++ language server."
+        "bashpp.languageServer.flags": {
+          "type": "string",
+          "default": "",
+          "description": "Additional flags to pass to the Bash++ language server (e.g., -Wall, -Werror). See bpp-lsp --help for a list of available flags."
         },
         "bashpp.languageServer.targetBashVersion": {
           "type": "number",

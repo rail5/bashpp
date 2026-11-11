@@ -3,6 +3,8 @@
 ## [0.9.0]
 - Updated syntax rules to reflect the removal of the `@include_once` directive from Bash++ in favor of the new `@include_always` directive
   - The `@include_once` directive has been removed from Bash++ as of v0.9.0, and `@include` directives now default to including files only once. If you want to include a file every time the directive is reached, you can use the new `@include_always` directive instead.
+- Removed the `bashpp.languageServer.showWarnings` setting from the VSCode extension, as it is no longer needed
+  - The `-s`/`--suppress-warnings` option has been removed from bpp-lsp as of v0.9.0, and the language server will now always show warnings by default. Users can still configure which warnings to show or suppress using the new `bashpp.languageServer.flags` setting, by passing `-W<warning>` or `-Wno-<warning>` flags to the language server.
 
 ## [0.8.1]
 - Added support for bpp-lsp's `-j`/`--threads` option to specify the number of worker threads in the language server

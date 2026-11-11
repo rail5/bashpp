@@ -79,23 +79,18 @@ async function startClient(context) {
 		const serverVersion = await getServerVersion(serverPath);
 		console.log(`Bash++ Language Server version: ${serverVersion.join('.')}`);
 
-		const args = ['--stdio'];
-
-		if (!config.get('showWarnings', true)) {
-			// If "showWarnings" is false, add the '-s' argument to suppress warnings
-			args.push('-s');
-		}
-
-		if (config.get('log', false)) {
-			// If logging is enabled, add the '--log' argument with the specified log file
-			args.push('--log', config.get('logFile', '/tmp/bpp-lsp.log'));
-		}
+		const args = [];
 
 		// Add -I for each include path
 		const includePaths = config.get('includePaths') || [];
 		includePaths.forEach(path => {
 			args.push(`-I${path}`);
 		});
+
+		if (config.get('log', false)) {
+			// If logging is enabled, add the '--log' argument with the specified log file
+			args.push('--log', config.get('logFile', '/tmp/bpp-lsp.log'));
+		}
 
 		// Get the target bash version
 		// Note: '-b' was introduced in 0.8.0
@@ -115,6 +110,12 @@ async function startClient(context) {
 			}
 		} else {
 			vscode.window.showInformationMessage('Bash++ Language Server version does not support thread count configuration. Please upgrade to bpp-lsp 0.8.11 or later to use this feature.');
+		}
+
+		// Add the flags from the configuration
+		const flags = config.get('flags', '');
+		if (flags) {
+			args.push(...flags.split(' '));
 		}
 
 		const serverOptions = {

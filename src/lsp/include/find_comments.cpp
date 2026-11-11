@@ -15,7 +15,7 @@
 namespace bpp::LSP {
 
 std::string find_comments_for_entity(const bpp::IR::Entity* entity, bpp::LSP::ProgramPool* program_pool) {
-	if (entity == nullptr) return "";
+	if (entity == nullptr || program_pool == nullptr) return "";
 
 	// Locate the entity's definition position
 	auto containing_program = program_pool->getProgramForEntity(entity);
@@ -50,4 +50,4 @@ std::string find_comments_for_entity(const bpp::IR::Entity* entity, bpp::LSP::Pr
 	return comments;
 }
 
-}
+} // namespace bpp::LSP

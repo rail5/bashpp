@@ -921,7 +921,7 @@ include_statement:
 		std::uint32_t line_number = @1.begin.line;
 		std::uint32_t column_number = @1.begin.column;
 		node->setPosition(line_number, column_number);
-		node->setEndPosition(@5.end.line, @5.end.column);
+		node->setEndPosition(@5.begin.line, @5.begin.column);
 		node->setKeyword(keyword);
 		node->setType(type);
 		node->setPathType(pathType);

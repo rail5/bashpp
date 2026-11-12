@@ -49,9 +49,10 @@ void Listener::enter(ObjectReference* node) {
 	bpp_assert(!(node->isPointerDereference() && node->isAddressOf()), "Detected simultaneous pointer dereference and object address");
 
 	auto resolution = bpp::IR::resolve_entity(
-		getCurrentSourceFile(),
 		current_code_entity,
-		std::span{node->IDENTIFIERS()}
+		std::span{node->IDENTIFIERS()},
+		getCurrentSourceFile(),
+		source_index.get()
 	);
 
 	if (!resolution) {

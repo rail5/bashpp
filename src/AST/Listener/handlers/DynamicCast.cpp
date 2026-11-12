@@ -71,6 +71,12 @@ void Listener::exit(DynamicCastTarget* node) {
 				bpp::ErrorHandling::WarningType::CastToUnknownClass,
 				"Class not found: '" + class_name + "'" + ". This cast may fail at runtime."
 			);
+		} else {
+			if (source_index) source_index->addReference(target_class,
+				{getCurrentSourceFile(),
+				node->TARGETTYPE().value().getLine(), node->TARGETTYPE().value().getColumn(),
+				node->TARGETTYPE().value().getLine(), static_cast<uint32_t>(node->TARGETTYPE().value().getColumn() + class_name.length())
+			});
 		}
 	} else {
 		// The user gave an expression which will evaluate to a class name at runtime

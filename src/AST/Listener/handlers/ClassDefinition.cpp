@@ -53,6 +53,12 @@ void Listener::enter(ClassDefinition* node) {
 			error(node, "Parent class '" + parent_class_name + "' not found");
 		}
 		class_entity->inherit(parent_class);
+
+		if (source_index) source_index->addReference(parent_class,
+			{getCurrentSourceFile(),
+			node->PARENTCLASSNAME().value().getLine(), node->PARENTCLASSNAME().value().getColumn(),
+			node->PARENTCLASSNAME().value().getLine(), static_cast<uint32_t>(node->PARENTCLASSNAME().value().getColumn() + parent_class_name.length())
+		});
 	}
 
 	if (source_index) {

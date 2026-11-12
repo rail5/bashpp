@@ -7,6 +7,7 @@
 #pragma once
 
 #include <IR/bpp.h>
+#include <IR/SourceIndex.h>
 #include <IR/entities/expressions/String.h>
 #include <IR/entities/Program.h>
 #include <IR/entities/Object.h>
@@ -194,9 +195,10 @@ concept IdentifierElement = StringLike<T> || TokenLike<T>;
 template <typename T>
 requires IdentifierElement<T>
 std::expected<std::unique_ptr<ObjectReference>, EntityResolutionError> resolve_entity(
-	std::filesystem::path file,
 	const Entity* context,
-	std::span<T> ids
+	std::span<T> ids,
+	std::filesystem::path file,
+	SourceIndex* source_index = nullptr
 ) {
 	bpp_assert(context != nullptr, "Context pointer is null");
 	const auto* program = context->getContainingProgram();
@@ -238,6 +240,12 @@ std::expected<std::unique_ptr<ObjectReference>, EntityResolutionError> resolve_e
 		return fail("Object not found: " + first_id, first);
 	}
 
+	if (source_index && !self_reference) source_index->addReference(obj,
+		{file,
+		first.getLine(), first.getColumn(),
+		first.getLine(), static_cast<uint32_t>(first.getColumn() + first_id.length())
+	});
+
 	const auto* current_class = obj->getType();
 	bpp_assert(current_class != nullptr, "Object has no type");
 	auto remaining = ids.subspan(1);
@@ -260,6 +268,12 @@ std::expected<std::unique_ptr<ObjectReference>, EntityResolutionError> resolve_e
 			chain.append(data_member.value());
 			current_class = data_member.value()->getType();
 
+			if (source_index) source_index->addReference(data_member.value(),
+				{file,
+				current_token.getLine(), current_token.getColumn(),
+				current_token.getLine(), static_cast<uint32_t>(current_token.getColumn() + id.length())
+			});
+
 			if (current_class == nullptr && !std::ranges::empty(remaining)) {
 				return fail("Unexpected identifier after primitive object reference", remaining.front());
 			}
@@ -268,6 +282,11 @@ std::expected<std::unique_ptr<ObjectReference>, EntityResolutionError> resolve_e
 				return fail("Unexpected identifier after method reference", remaining.front());
 			}
 			chain.setMethod(method.value());
+			if (source_index) source_index->addReference(method.value(),
+				{file,
+				current_token.getLine(), current_token.getColumn(),
+				current_token.getLine(), static_cast<uint32_t>(current_token.getColumn() + id.length())
+			});
 		} else if (data_member.error() == LookupError::INACCESSIBLE || method.error() == LookupError::INACCESSIBLE) {
 			return fail(id + " is inaccessible in this context", current_token);
 		} else {

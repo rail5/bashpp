@@ -69,12 +69,20 @@ void Listener::enter(ObjectInstantiation* node) {
 	object->setIsPointer(node->isPointer());
 	object->setName(object_name);
 
-	if (source_index) source_index->setDefinitionPosition(
-		object.get(),
-		{getCurrentSourceFile(),
-		object_name.getLine(), object_name.getColumn(),
-		object_name.getLine(), static_cast<uint32_t>(object_name.getColumn() + object_name.getValue().length())}
-	);
+	if (source_index) {
+		source_index->setDefinitionPosition(
+			object.get(),
+			{getCurrentSourceFile(),
+			object_name.getLine(), object_name.getColumn(),
+			object_name.getLine(), static_cast<uint32_t>(object_name.getColumn() + object_name.getValue().length())}
+		);
+
+		source_index->addReference(object_class,
+			{getCurrentSourceFile(),
+			type_name.getLine(), type_name.getColumn(),
+			type_name.getLine(), static_cast<uint32_t>(type_name.getColumn() + type_name.getValue().length())
+		});
+	}
 
 	entity_stack.push(std::move(object));
 }
@@ -92,7 +100,7 @@ void Listener::exit(ObjectInstantiation* node) {
 		datamember_declaration->setName(object->getName());
 		if (object->hasInitialValue()) datamember_declaration->setInitialValue(object->releaseInitialValue());
 		if (source_index) {
-			auto def_pos = source_index->getDefinitionPosition(object.get());
+			auto def_pos = source_index->getDefinitionPosition(object.get()); // TODO(@rail5): duplicated info
 			source_index->setDefinitionPosition(datamember_declaration, *def_pos);
 		}
 		return;

@@ -24,7 +24,12 @@ void Listener::enter(ObjectInstantiation* node) {
 	// Note: All object instantiations must be either
 	// a) directly inside a code entity, or
 	// b) part of a data member declaration
-	if (!topmost_entity_is<bpp::IR::CodeEntity>() && !topmost_entity_is<bpp::IR::DataMember>()) {
+	const bpp::IR::CodeEntity* current_code_entity = nullptr;
+	if (topmost_entity_is<bpp::IR::CodeEntity>()) {
+		current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
+	} else if (topmost_entity_is<bpp::IR::DataMember>()) {
+		current_code_entity = root_program;
+	} else {
 		// Special case to provide more useful information to the user:
 		// If the topmost entity is a Class, the user might have simply forgotten the visibility modifier
 		// which would've made this statement a data member declaration.
@@ -39,8 +44,7 @@ void Listener::enter(ObjectInstantiation* node) {
 	const auto& type_name = node->TYPE();
 	const auto& object_name = node->IDENTIFIER();
 
-	const auto* current_code_entity = latest_code_entity();
-	bpp_assert(current_code_entity != nullptr, "No code entity found on stack");
+	bpp_assert(current_code_entity != nullptr, "No code entity found");
 
 	// Name validation
 	// 1. Valid identifier?

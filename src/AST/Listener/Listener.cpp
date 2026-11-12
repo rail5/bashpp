@@ -43,14 +43,6 @@ void Listener::walk(bpp::AST::ASTNode* node) {
 	}
 }
 
-bpp::IR::CodeEntity* Listener::latest_code_entity() const {
-	for (const auto& it : std::views::reverse(entity_stack)) {
-		auto* top = dynamic_cast<bpp::IR::CodeEntity*>(it.get());
-		if (top) return top;
-	}
-	return nullptr;
-}
-
 std::unique_ptr<bpp::IR::Program> Listener::release_program() {
 	return std::move(program);
 }

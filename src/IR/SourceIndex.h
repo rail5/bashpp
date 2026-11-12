@@ -165,6 +165,8 @@ struct SourceLocationRangeView {
  *  - "What entity is referenced at this position in this source file?"
  *  - "Where are all the places that this entity is referenced?"
  * As well as getting all diagnostics for a given source file.
+ *
+ * FIXME(@rail5): Entries dangle in the event that they're added to SourceIndex and then the handler throws an error removing them from the IR.
  */
 class SourceIndex final {
 	public:
@@ -176,7 +178,7 @@ class SourceIndex final {
 		 *
 		 * @param entity The entity that is referenced. 
 		 * @param range The source location of the reference.
-		 * @note In general, @p range.end should be equal to @p range.start + the length of the name of the referenced entity. There are exceptions to this, e.g. 'include' directives reference IncludedProgram entities, which do not have names.
+		 * @note In general, @p range.end should be equal to @p range.start + the length of the name of the referenced entity.
 		 */
 		void addReference(const Entity* entity, const SourceLocationRange& range);
 

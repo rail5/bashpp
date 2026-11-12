@@ -8,7 +8,7 @@
 
 #include <memory>
 #include <stack>
-#include <set>
+#include <unordered_set>
 #include <vector>
 #include <filesystem>
 #include <unordered_map>
@@ -237,10 +237,8 @@ class Listener final {
 			STATICALLY_INCLUDED, // This file was reached via `@include [static] <file>`
 		};
 
-		std::stack<IncludedType> included_type_stack = std::stack<IncludedType>({IncludedType::NOT_INCLUDED});
-
 		/// A set of (unique) included files (used to avoid including the same file multiple times, unless `@include_always` is given)
-		std::set<std::filesystem::path> included_files;
+		std::unordered_set<std::filesystem::path> included_files;
 
 		/// A list of paths to search for angle-bracket included files (e.g., `@include <file>`). The last path is always the standard library path.
 		std::vector<std::filesystem::path> include_paths;
@@ -259,16 +257,6 @@ class Listener final {
 		 */
 		template <class T>
 		bool topmost_entity_is() const { return entity_stack.top_is<T>(); }
-
-		/**
-		 * @brief Get the latest code entity on the entity stack, or nullptr if there is none
-		 *
-		 * This traverses the stack from top to bottom, returning the first entity that is a CodeEntity (or derived from CodeEntity).
-		 * The entity returned may not be the topmost entity on the stack.
-		 * 
-		 * @return bpp::IR::CodeEntity* The latest code entity on the stack, or nullptr if there is none
-		 */
-		bpp::IR::CodeEntity* latest_code_entity() const;
 
 		ExpectationsStack context_expectations_stack;
 };

@@ -12,6 +12,7 @@
 #include <IR/entities/SystemMethod.h>
 #include <IR/entities/MethodParameter.h>
 #include <IR/entities/Program.h>
+#include <IR/entities/expressions/bpp/IncludeStatement.h>
 
 #include <error/InternalError.h>
 
@@ -20,8 +21,9 @@ namespace bpp::AST {
 template <>
 void Listener::enter(ClassDefinition* node) {
 	// 1. Verify that we're at the top-level of the program
-	if (!topmost_entity_is<bpp::IR::Program>()) error(node, "Class definition must be at the top level of the program");
-	auto* current_program = entity_stack.top_as<bpp::IR::Program>();
+	if (!topmost_entity_is<bpp::IR::Program>() && !topmost_entity_is<bpp::IR::IncludeStatement>()) {
+		error(node, "Class definition must be at the top level of the program");
+	}
 
 	// 2. Verify that the class name is valid
 	std::string class_name = node->CLASSNAME();
@@ -33,23 +35,23 @@ void Listener::enter(ClassDefinition* node) {
 	}
 
 	// 3. Verify that the class name is not already used in the program
-	if (current_program->getClass(class_name)) {
+	if (root_program->getClass(class_name)) {
 		error(node, "Class '" + class_name + "' already defined in program");
 	}
-	if (current_program->getObject(class_name)) {
+	if (root_program->getObject(class_name)) {
 		error(node, "Class name '" + class_name + "' conflicts with an object in the program");
 	}
 
 	auto class_entity = std::make_unique<bpp::IR::Class>(class_name);
-	current_program->preregisterClass(class_entity.get());
-	class_entity->inherit(current_program);
+	root_program->preregisterClass(class_entity.get());
+	class_entity->inherit(root_program);
 
 	// Inherit from a parent class if specified
 	if (node->PARENTCLASSNAME().has_value()) {
 		auto parent_class_name = node->PARENTCLASSNAME().value().getValue();
-		auto* parent_class = current_program->getClass(parent_class_name);
+		auto* parent_class = root_program->getClass(parent_class_name);
 		if (!parent_class) {
-			current_program->unPreregisterClass();
+			root_program->unPreregisterClass();
 			error(node, "Parent class '" + parent_class_name + "' not found");
 		}
 		class_entity->inherit(parent_class);
@@ -172,12 +174,9 @@ void Listener::exit(ClassDefinition* node) {
 	bpp_assert(topmost_entity_is<bpp::IR::Class>(), "Topmost entity on stack is not a Class");
 	auto class_entity = entity_stack.pop_as<bpp::IR::Class>();
 
-	bpp_assert(topmost_entity_is<bpp::IR::Program>(), "Topmost entity on stack is not a Program");
-	auto* current_program = entity_stack.top_as<bpp::IR::Program>();
+	root_program->unPreregisterClass(); // Remove the preregistered class pointer, since the class has now been fully defined
 
-	current_program->unPreregisterClass(); // Remove the preregistered class pointer, since the class has now been fully defined
-
-	auto res = current_program->addClass(std::move(class_entity));
+	auto res = root_program->addClass(std::move(class_entity));
 	if (!res) {
 		std::string error_message = "Class name conflicts with existing ";
 		switch (res.error()) {

@@ -51,20 +51,6 @@ std::size_t Program::getNumberOfKnownClasses() const {
 	return classes.size() + (preregistered_class ? 1 : 0);
 }
 
-void Program::adoptClassesOf(IncludedProgram* other_program) {
-	bpp_assert(other_program != nullptr, "Other program pointer is null");
-	for (auto&& class_entity : other_program->releaseOwnedClasses().release_entities()) {
-		std::string name = class_entity->getName();
-		if (!this->addClass(std::move(class_entity))) {
-			throw bpp::ErrorHandling::InternalError("adopt_classes_of() failed to adopt class '" + name + "' from another program");
-		}
-	}
-}
-
-bpp::IR::OwnedEntityList<Class> Program::releaseOwnedClasses() {
-	return std::move(classes);
-}
-
 bpp::CodeGen::CodeSegment Program::generateCode(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "State pointer is null");
 	bpp::CodeGen::CodeSegment code;
@@ -107,60 +93,6 @@ bpp::CodeGen::CodeSegment Program::generateCode(bpp::CodeGen::CodeGenState* stat
 
 	code.add_post_code("\nbpp____destroy_objectStack\n");
 	// Destroy the global object stack at the end of the program, so that all destructors are called for any stack-like objects that were instantiated
-
-	return code;
-}
-
-IncludedProgram::IncludedProgram(const Program* containing_program) {
-	bpp_assert(containing_program != nullptr, "Containing program pointer is null");
-	// Inherit the containing program, so that this included program can see all of its classes
-	this->inherit(containing_program);
-	this->setContainingProgram(containing_program);
-	this->setSourceIndex(containing_program->getSourceIndex());
-}
-
-Class* IncludedProgram::getClass(const std::string& name, std::size_t max_visible_index) const {
-	// First, check if this included program has a class with this name
-	auto* owned_class = Program::getClass(name, max_visible_index);
-	if (owned_class) return owned_class;
-
-	// If not, check the containing program (the program that included this one)
-	bpp_assert(getParentProgram(), "IncludedProgram does not have a containing program");
-	return getParentProgram()->getClass(name, max_visible_index);
-}
-
-std::vector<Class*> IncludedProgram::getAllKnownClasses() const {
-	// Get all classes from this included program
-	auto owned_classes = Program::getAllKnownClasses();
-
-	// Get all classes from the containing program (the program that included this one)
-	bpp_assert(getParentProgram(), "IncludedProgram does not have a containing program");
-	const auto& containing_program_classes = getParentProgram()->getAllKnownClasses();
-
-	// Combine the two lists of classes
-	owned_classes.insert(owned_classes.end(), containing_program_classes.begin(), containing_program_classes.end());
-
-	return owned_classes;
-}
-
-std::size_t IncludedProgram::getNumberOfKnownClasses() const {
-	bpp_assert(getParentProgram(), "IncludedProgram does not have a containing program");
-	std::size_t owned_count = Program::getNumberOfKnownClasses();
-	return owned_count + getParentProgram()->getNumberOfKnownClasses();
-}
-
-bpp::CodeGen::CodeSegment IncludedProgram::generateCode(bpp::CodeGen::CodeGenState* state) const {
-	bpp_assert(state != nullptr, "State pointer is null");
-	bpp::CodeGen::CodeSegment code;
-
-	// If this included program is a dynamic include, it does not generate code
-	if (is_dynamic_include) return code;
-
-	// Otherwise, generate code for this included program as normal
-	// Note that we deliberately call CodeEntity::generate_code() here, rather than Program::generate_code(),
-	// because Program::generate_code() would duplicate the shebang and the system functions
-	// NOLINTNEXTLINE(bugprone-parent-virtual-call)
-	code.egalitarian_merge(CodeEntity::generateCode(state));
 
 	return code;
 }

@@ -7,145 +7,132 @@
 #include <AST/Listener/Listener.h>
 #include <AST/Parser.h>
 #include <IR/entities/Program.h>
+#include <IR/entities/expressions/bpp/IncludeStatement.h>
 
 #include <error/InternalError.h>
 
 #include <filesystem>
+#include <optional>
 
 namespace bpp::AST {
 
+namespace {
+
+std::optional<std::filesystem::path> resolveAngleBracketPath(std::string_view file, const std::vector<std::filesystem::path>& include_paths) {
+	for (const auto& p : include_paths) {
+		std::filesystem::path candidate_path = p / file;
+		if (std::filesystem::exists(candidate_path)) return std::filesystem::canonical(candidate_path);
+	}
+	return std::nullopt;
+}
+
+std::optional<std::filesystem::path> resolveQuotedPath(std::string_view file, const std::filesystem::path& current_directory) {
+	std::filesystem::path result(file);
+	if (!result.is_absolute()) result = current_directory / file;
+	if (std::filesystem::exists(result)) return std::filesystem::canonical(result);
+	return std::nullopt;
+}
+
+} // anonymous namespace
+
 template <>
 void Listener::enter(IncludeStatement* node) {
-	if (!topmost_entity_is<bpp::IR::Program>()) error(node, "Include statements can only be used at the top level of a program");
-	auto* current_program = entity_stack.top_as<bpp::IR::Program>();
+	if (!topmost_entity_is<bpp::IR::Program>() && !topmost_entity_is<bpp::IR::IncludeStatement>()) {
+		error(node, "Include statements can only be used at the top level of a program");
+	}
 
-	const bool is_quoted_include = node->PATHTYPE() == AST::IncludeStatement::PathType::QUOTED;
 	const bool is_dynamic_include = node->TYPE() == AST::IncludeStatement::IncludeType::DYNAMIC;
 	const bool include_always = node->KEYWORD() == AST::IncludeStatement::IncludeKeyword::INCLUDE_ALWAYS;
-	const auto& source_path_node = node->PATH();
-	const auto& as_path_node = node->ASPATH();
-	const std::string source_path = source_path_node.getValue().substr(1, source_path_node.getValue().length() - 2); // Remove surrounding quotes or angle brackets
-	const std::string as_path = as_path_node.has_value()
-		? as_path_node.value().getValue().substr(1, as_path_node.value().getValue().length() - 2)
-		: ""; // Remove surrounding quotes
+	const bool is_quoted_path = node->PATHTYPE() == AST::IncludeStatement::PathType::QUOTED;
+	const std::string_view raw_path = node->PATH().getValue();
+	const std::string_view specified_path = raw_path.substr(1, raw_path.size() - 2); // Remove the surrounding quotes or angle brackets
 
-	std::filesystem::path include_path;
+	const auto included_file =
+		is_quoted_path
+		? resolveQuotedPath(specified_path, getCurrentSourceFile().parent_path())
+		: resolveAngleBracketPath(specified_path, include_paths);
 
-	if (!is_quoted_include) {
-		// Search for the file in the include paths
-		for (const auto& path : include_paths) {
-			std::filesystem::path candidate_path = path / source_path;
-			if (std::filesystem::exists(candidate_path)) {
-				include_path = candidate_path;
-				break;
-			}
-		}
-	} else {
-		// Quoted include:
-		// Either a relative path (relative to the current source file) or an absolute path
-		include_path = std::filesystem::path(source_path);
-		if (!include_path.is_absolute()) {
-			// Relative path: resolve it relative to the current source file's directory
-			include_path = getCurrentSourceFile().parent_path() / include_path;
-		}
+	if (!included_file) error(node->PATH(), "File not found: " + std::string(raw_path));
+
+	const bool already_included = included_files.contains(*included_file);
+	const bool will_parse = !already_included || include_always;
+
+	if (will_parse && include_chain.size() >= 200) { // TODO(@rail5): Can this limit be made configurable?
+		error(node->PATH(), "Nested include depth exceeds maximum of 200");
 	}
 
-	if (include_path.empty() || !std::filesystem::exists(include_path)) {
-		error(source_path_node, "File not found: '" + source_path + "'");
+	auto include_entity = std::make_unique<bpp::IR::IncludeStatement>(*included_file, is_dynamic_include);
+	include_entity->inherit(entity_stack.top());
+
+	if (node->ASPATH().has_value()) {
+		const std::string_view as_path = node->ASPATH()->getValue();
+		include_entity->setAsPath(as_path.substr(1, as_path.size() - 2)); // Remove the surrounding quotes
 	}
 
-	include_path = std::filesystem::canonical(include_path);
-
-	auto res = included_files.insert(include_path);
-	if (!res.second && !include_always) return; // File has already been included and include_always is not specified
-
-	if (include_chain.size() >= 200) { // TODO(@rail5): Can this limit be made configurable?
-		error(source_path_node, "Nested include depth exceeds maximum of 200");
+	if (source_index) {
+		source_index->setDefinitionPosition(include_entity.get(), {*included_file, 0, 0, 0, 0});
+		source_index->addReference(
+			include_entity.get(),
+			{getCurrentSourceFile(),
+			node->getLine(), node->getColumn(),
+			node->getEndPosition().line, node->getEndPosition().column}
+		);
 	}
 
-	include_chain.push_back(include_path);
+	if (already_included && !include_always) {
+		include_entity->disableCodegen();
+		entity_stack.push(std::move(include_entity));
+		include_chain.push_back(*included_file);
+		return;
+	}
 
-	std::unique_ptr<bpp::AST::Program> included_program_ast_root;
+	included_files.insert(*included_file);
+	include_chain.push_back(*included_file);
+	entity_stack.push(std::move(include_entity));
+
+	std::unique_ptr<bpp::AST::Program> included_file_ast_root;
 
 	{
 		AST::Parser parser;
 		parser.setUTF16Mode(utf16_mode);
 		parser.setIncludeChain(include_chain);
 
-		if (replacement_file_contents.contains(include_path)) {
-			parser.setInputFromStringContents(replacement_file_contents[include_path], include_path);
+		if (replacement_file_contents.contains(*included_file)) {
+			parser.setInputFromStringContents(replacement_file_contents[*included_file], *included_file);
 		} else {
-			parser.setInputFromFilePath(include_path);
+			parser.setInputFromFilePath(*included_file);
 		}
 
 		parser.parse();
-		included_program_ast_root = parser.release_program();
+		included_file_ast_root = parser.release_program();
 		for (const auto& e : parser.get_errors()) {
-			if (source_index) source_index->addDiagnostic(include_path, e);
+			if (source_index) source_index->addDiagnostic(*included_file, e);
 			e.print_to_stderr();
 			this->program_has_errors = true;
 		}
 	}
 
-	if (included_program_ast_root == nullptr) {
+	if (!included_file_ast_root) {
+		entity_stack.pop();
 		include_chain.pop_back();
-		error(node, "Failed to parse included file: '" + include_path.string() + "'");
+		error(node, "Failed to parse included file: '" + included_file->string() + "'");
 	}
 
-	included_type_stack.push(is_dynamic_include ? IncludedType::DYNAMICALLY_INCLUDED : IncludedType::STATICALLY_INCLUDED);
-
-	walk(included_program_ast_root.get());
-
-	include_chain.pop_back();
-	included_type_stack.pop();
-
-	// If it's a dynamic include, add the `source` command
-	if (is_dynamic_include) {
-		// Determine the runtime path for the included file
-		std::filesystem::path runtime_path;
-		if (as_path_node.has_value()) { // The user provided an 'as' path (e.g., @include dynamic <Stack> as "/path/to/stack.sh"), just use that
-			runtime_path = as_path;
-		} else {
-			runtime_path = std::move(include_path); // Original path, but replace the extension with .sh
-			if (runtime_path.has_extension()) {
-				runtime_path.replace_extension(".sh");
-			} else {
-				runtime_path += ".sh";
-			}
-		}
-
-		auto runtime_source_command = std::make_unique<bpp::IR::CodeEntity>();
-		runtime_source_command->add("if ! source \""
-			+ runtime_path.string()
-			+ "\"; then\n"
-			"\t>&2 echo \"Bash++: Error: Failed to include file '" + runtime_path.string() + "'\"\n"
-			"\tbpp____destroy_objectStack\n"
-			"\texit 1\n"
-			"fi\n"
-		);
-		current_program->add(std::move(runtime_source_command));
-	}
+	node->addChildren(included_file_ast_root->releaseChildren()); // s.t. these will be walked by the listener implicitly
 }
 
 template <>
-void Listener::exit(IncludeStatement* node) {
-	if (source_index) {
-		bpp_assert(topmost_entity_is<bpp::IR::Program>(), "Topmost entity on stack is not a Program");
-		const auto* current_program = entity_stack.top_as<bpp::IR::Program>();
-		bpp_assert(current_program->getChildren().size() > 0, "Program has no children");
-		const auto& last_child = current_program->getChildren().back();
+void Listener::exit(IncludeStatement* /*node*/) {
+	bpp_assert(topmost_entity_is<bpp::IR::IncludeStatement>(), "Topmost entity on stack is not an IncludeStatement");
+	auto include_entity = entity_stack.pop_as<bpp::IR::IncludeStatement>();
+	include_chain.pop_back();
 
-		bpp_assert(std::holds_alternative<std::unique_ptr<bpp::IR::Entity>>(last_child), "Last child of program is not an Entity");
-		const auto* included_program_entity = std::get<std::unique_ptr<bpp::IR::Entity>>(last_child).get();
+	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity");
+	auto* parent_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 
-		bpp_assert(included_program_entity != nullptr, "Included program entity is null");
-		source_index->addReference(
-			included_program_entity,
-			{getCurrentSourceFile(),
-			node->getLine(), node->getColumn(),
-			node->getEndPosition().line, node->getEndPosition().column}
-		);
-	}
+	parent_entity->adoptObjectsOf(include_entity.get());
+
+	parent_entity->add(std::move(include_entity));
 }
 
 } // namespace bpp::AST

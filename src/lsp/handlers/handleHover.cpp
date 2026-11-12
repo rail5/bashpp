@@ -15,6 +15,7 @@
 #include <IR/entities/Method.h>
 #include <IR/entities/DataMember.h>
 #include <IR/entities/Program.h>
+#include <IR/entities/expressions/bpp/IncludeStatement.h>
 
 GenericResponseMessage bpp::LSP::BashppServer::handleHover(const GenericRequestMessage& request) {
 	HoverRequestResponse response;
@@ -143,8 +144,8 @@ GenericResponseMessage bpp::LSP::BashppServer::handleHover(const GenericRequestM
 		code_snippet = "@class " + cls->getName();
 		const auto* parent = cls->getParentClass();
 		if (parent) code_snippet += " : " + parent->getName();
-	} else if (const auto* included_program = dynamic_cast<const bpp::IR::IncludedProgram*>(entity)) {
-		const auto& file_path = included_program->getSourceFile();
+	} else if (const auto* include_statement = dynamic_cast<const bpp::IR::IncludeStatement*>(entity)) {
+		const auto& file_path = include_statement->getIncludedFilePath();
 		label = "`" + file_path.filename().string() + "`";
 		explanation = "`" + file_path.string() + "`";
 		code_snippet.clear();

@@ -10,9 +10,7 @@
 #include <filesystem>
 
 namespace bpp {
-constexpr std::filesystem::path get_standard_library_path() {
-	return {"/usr/lib/bpp/stdlib/"};
-}
+constexpr std::filesystem::path get_standard_library_path() { return {"/usr/lib/bpp/stdlib/"}; }
 } // namespace bpp
 
 namespace bpp::IR {
@@ -44,15 +42,25 @@ class BashFunction;
 class BashPipeline;
 class BashForOrSelectStatement;
 class BashArithmeticForStatement;
+class BashIfStatement;
+class BashIfBranch;
+class BashIfCondition;
+class BashWhileOrUntilStatement;
+class BashBreakOrContinueCommand;
+class BashCaseStatement;
+class BashCasePattern;
+class Block;
+class DeleteStatement;
 class Program;
-class IncludedProgram;
+class IncludeStatement;
 class Class;
 class Method;
 class Object;
 class DataMember;
 class MethodParameter;
 class ThisPtr;
-
+class CopyFromParam;
+class RequestedAddressParam;
 class DynamicCast;
 class ObjectAssignment;
 class ObjectInstantiation;
@@ -62,13 +70,17 @@ class String;
 class SubshellSubstitution;
 class Supershell;
 class ValueAssignment;
+class TypeofExpression;
+
+namespace Builtins {
+class SystemFunction;
+class SystemMethod;
+} // namespace Builtins
 
 namespace Components {
-
 class Named;
 class Addressable;
 class ClassMember;
-
 } // namespace Components
 
 template <class T>

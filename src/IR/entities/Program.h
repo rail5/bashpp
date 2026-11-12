@@ -25,7 +25,7 @@ class SourceIndex;
 /**
  * @brief The root node of the entity tree, representing the entire Bash++ program
  */
-class Program : public CodeEntity {
+class Program final : public CodeEntity {
 	private:
 		OwnedEntityList<Class> classes;
 
@@ -88,17 +88,6 @@ class Program : public CodeEntity {
 		std::vector<Class*> getAllKnownClasses() const override;
 		std::size_t getNumberOfKnownClasses() const override;
 
-		OwnedEntityList<Class> releaseOwnedClasses();
-
-		/**
-		 * @brief Take ownership of the classes of another program.
-		 *
-		 * This is used when including (@include) another program
-		 * 
-		 * @param other_program The program whose classes we are adopting
-		 */
-		void adoptClassesOf(IncludedProgram* other_program);
-
 		const Program* getContainingProgram() const override { return this; }
 
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
@@ -116,57 +105,6 @@ class Program : public CodeEntity {
 		void setVtableLookupFunction(std::unique_ptr<Builtins::SystemFunction> func) { vtable_lookup_function = std::move(func); }
 		void setDynamicCastFunction(std::unique_ptr<Builtins::SystemFunction> func) { dynamic_cast_function = std::move(func); }
 		void setTypeofFunction(std::unique_ptr<Builtins::SystemFunction> func) { typeof_function = std::move(func); }
-};
-
-/**
- * @brief A Program node that is reached via an `@include` or `@include_always` directive, representing an included Bash++ program
- * Once that `@include` directive is reached in AST traversal, the linked file is lexed, parsed, and traversed to generate an entity tree of its own.
- * The `IncludedProgram` node is the root of *that* entity tree, which becomes a subtree of the main entity tree.
- *
- * Key characteristics:
- *
- * - The `IncludedProgram` node, unlike the `Program` node, *does in fact* have a parent entity *and* a "containing program"
- *   (the program that included it; either the "main" program or an earlier include).
- *   This means, for example, that the `IncludedProgram` node can instantiate classes that were defined earlier in the main program, etc.
- *
- * - After the `IncludedProgram` node is fully traversed, its classes and objects are adopted by the main program,
- *   and become visible to the main program (and any other included programs that are traversed later).
- *
- * - If the `IncludedProgram` node is reached via a *dynamic* include, then it does not generate code.
- *   It is still semantically analyzed, but it is expected that the included program will have been compiled separately as a distinct unit,
- *   and will be linked at runtime (via `source` in codegen) instead of being inlined into the main program.
- */
-class IncludedProgram : public Program {
-	private:
-		bool is_dynamic_include = false;
-	public:
-		IncludedProgram() = delete;
-		explicit IncludedProgram(const Program* containing_program);
-
-		void setDynamicInclude(bool is_dynamic) { is_dynamic_include = is_dynamic; }
-
-		// IncludedProgram override checks both its *own* classes and those of its containing program
-		Class* getClass(const std::string& name, std::size_t max_visible_index = SIZE_MAX) const override;
-		std::vector<Class*> getAllKnownClasses() const override;
-		std::size_t getNumberOfKnownClasses() const override;
-
-		/// Get all classes *owned* by this IncludedProgram (i.e., not including those of its containing program)
-		std::vector<Class*> getOwnedClasses() const { return Program::getAllKnownClasses(); }
-
-		/// As with IR::Program, calling IncludedProgram::getContainingProgram() will return itself
-		using Program::getContainingProgram;
-
-		/// Explicitly request a pointer to the IncludedProgram's parent program (which may be either the root program, or an earlier IncludedProgram)
-		const Program* getParentProgram() const { return Entity::getContainingProgram(); }
-
-		const Builtins::SystemFunction* getGlobalObjectStackFunction() const override { return getParentProgram()->getGlobalObjectStackFunction(); }
-		const Builtins::SystemFunction* getSupershellFunction() const override { return getParentProgram()->getSupershellFunction(); }
-		const Builtins::SystemFunction* getRepeatFunction() const override { return getParentProgram()->getRepeatFunction(); }
-		const Builtins::SystemFunction* getVtableLookupFunction() const override { return getParentProgram()->getVtableLookupFunction(); }
-		const Builtins::SystemFunction* getDynamicCastFunction() const override { return getParentProgram()->getDynamicCastFunction(); }
-		const Builtins::SystemFunction* getTypeofFunction() const override { return getParentProgram()->getTypeofFunction(); }
-
-		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 };
 
 } // namespace bpp::IR

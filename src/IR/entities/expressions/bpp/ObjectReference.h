@@ -268,11 +268,15 @@ std::expected<std::unique_ptr<ObjectReference>, EntityResolutionError> resolve_e
 			chain.append(data_member.value());
 			current_class = data_member.value()->getType();
 
-			if (source_index) source_index->addReference(data_member.value(),
-				{file,
-				current_token.getLine(), current_token.getColumn(),
-				current_token.getLine(), static_cast<uint32_t>(current_token.getColumn() + id.length())
-			});
+			if (source_index) {
+				for (const auto* dm = data_member.value(); dm != nullptr; dm = dm->getParentDatamember()) {
+					source_index->addReference(dm,
+						{file,
+						current_token.getLine(), current_token.getColumn(),
+						current_token.getLine(), static_cast<uint32_t>(current_token.getColumn() + id.length())
+					});
+				}
+			}
 
 			if (current_class == nullptr && !std::ranges::empty(remaining)) {
 				return fail("Unexpected identifier after primitive object reference", remaining.front());
@@ -282,11 +286,15 @@ std::expected<std::unique_ptr<ObjectReference>, EntityResolutionError> resolve_e
 				return fail("Unexpected identifier after method reference", remaining.front());
 			}
 			chain.setMethod(method.value());
-			if (source_index) source_index->addReference(method.value(),
-				{file,
-				current_token.getLine(), current_token.getColumn(),
-				current_token.getLine(), static_cast<uint32_t>(current_token.getColumn() + id.length())
-			});
+			if (source_index) {
+				for (const auto* m = method.value()->getParentMethod(); m != nullptr; m = m->getParentMethod()) {
+					source_index->addReference(m,
+						{file,
+						current_token.getLine(), current_token.getColumn(),
+						current_token.getLine(), static_cast<uint32_t>(current_token.getColumn() + id.length())
+					});
+				}
+			}
 		} else if (data_member.error() == LookupError::INACCESSIBLE || method.error() == LookupError::INACCESSIBLE) {
 			return fail(id + " is inaccessible in this context", current_token);
 		} else {

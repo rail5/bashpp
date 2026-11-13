@@ -79,6 +79,22 @@ GenericResponseMessage bpp::LSP::BashppServer::handleHover(const GenericRequestM
 			log("Failed to lock containing class for data member: ", datamember->getName(), " in URI: ", uri);
 			code_snippet += "@<error>." + datamember->getName();
 		}
+
+		if (const auto* parent = datamember->getParentDatamember()) {
+			const auto* parent_class = parent->getContainingClass();
+			if (parent_class) explanation += "\n\nInherited from class `" + parent_class->getName() + "`";
+
+			const auto* furthest_ancestor_dm = [parent]() {
+				const bpp::IR::DataMember* current = parent;
+				while (current->getParentDatamember() != nullptr) current = current->getParentDatamember();
+				return current;
+			}();
+
+			if (furthest_ancestor_dm && furthest_ancestor_dm != parent) {
+				const auto* ancestor_class = furthest_ancestor_dm->getContainingClass();
+				if (ancestor_class) explanation += "\n\nFirst defined in class `" + ancestor_class->getName() + "`";
+			}
+		}
 	} else if (const auto* obj = dynamic_cast<const bpp::IR::Object*>(entity)) {
 		// If it's an object (but not a data member), display @ClassName[*] objectName
 		if (obj->getType() != nullptr) {
@@ -132,6 +148,22 @@ GenericResponseMessage bpp::LSP::BashppServer::handleHover(const GenericRequestM
 				code_snippet += " $" + param->getName();
 			} else {
 				code_snippet += " @" + param->getType()->getName() + "* " + param->getName();
+			}
+		}
+
+		if (const auto* parent_method = method->getParentMethod()) {
+			const auto* parent_class = parent_method->getContainingClass();
+			if (parent_class) explanation += "\n\nInherited from class `" + parent_class->getName() + "`";
+
+			const auto* furthest_ancestor_method = [parent_method]() {
+				const bpp::IR::Method* current = parent_method;
+				while (current->getParentMethod() != nullptr) current = current->getParentMethod();
+				return current;
+			}();
+
+			if (furthest_ancestor_method && furthest_ancestor_method != parent_method) {
+				const auto* ancestor_class = furthest_ancestor_method->getContainingClass();
+				if (ancestor_class) explanation += "\n\nFirst defined in class `" + ancestor_class->getName() + "`";
 			}
 		}
 	} else if (const auto* cls = dynamic_cast<const bpp::IR::Class*>(entity)) {

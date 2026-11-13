@@ -63,7 +63,9 @@ std::optional<views::SourceLocationRangeView> SourceIndex::getDefinitionPosition
 const Entity* SourceIndex::getReferencedEntity(views::SourceLocationView location) const {
 	auto it = files.find(location.source_file);
 	if (it == files.end()) return nullptr;
-	return it->second.entity_references.find(location.position.line, location.position.column);
+	auto entities_at_location = it->second.entity_references.find(location.position.line, location.position.column);
+	if (entities_at_location.empty()) return nullptr;
+	return entities_at_location.front();
 }
 
 const Entity* SourceIndex::getReferencedEntity(const SourceLocation& location) const {

@@ -77,6 +77,12 @@ void Listener::enter(MethodDefinition* node) {
 			param_type = new_method->getClass(type_name);
 			if (!param_type) error(p, "Unknown class: " + type_name);
 
+			if (source_index) source_index->addReference(param_type,
+				{getCurrentSourceFile(),
+				param.type.value().getLine(), param.type.value().getColumn(),
+				param.type.value().getLine(), static_cast<uint32_t>(param.type.value().getColumn() + type_name.length())
+			});
+
 			if (!param.pointer) error(p, "Methods can only accept pointers as parameters, not objects");
 
 			if (!bpp::IR::is_valid_identifier(param_name)) {

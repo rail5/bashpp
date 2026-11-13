@@ -11,6 +11,8 @@
 #include <cassert>
 #include <algorithm>
 
+#include <error/InternalError.h>
+
 /**
  * @class FlatIntervalTree
  * @brief A specialized implementation of an Interval Tree optimized for Bash++'s particular use case.
@@ -101,9 +103,19 @@ public:
 		return best ? best->payload : T();
 	}
 
-	void updateEntityAddress(const T& old_address, const T& new_address) {
+	Interval* find(std::uint64_t low, std::uint64_t high) {
 		for (auto& interval : intervals) {
-			if (interval.payload == old_address) interval.payload = new_address;
+			if (interval.low == low && interval.high == high) return &interval;
+		}
+		return nullptr;
+	}
+
+	template<typename MatchFunc, typename UpdateFunc>
+	requires std::is_invocable_r_v<bool, MatchFunc, const T&> &&
+	         std::is_invocable_r_v<T, UpdateFunc, const T&>
+	void updatePayload(MatchFunc&& match_func, UpdateFunc&& update_func) {
+		for (auto& interval : intervals) {
+			if (match_func(interval.payload)) interval.payload = update_func(interval.payload);
 		}
 	}
 };

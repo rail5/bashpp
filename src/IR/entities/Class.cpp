@@ -51,10 +51,17 @@ bool Class::isDerivedFrom(const Class* other) const {
 void Class::inherit(const Class* parent) {
 	// Inherit methods
 	methods.reserve(methods.size() + parent->methods.size());
+	bpp_assert(getContainingProgram(), "Class has no containing program");
+	auto* source_index = getContainingProgram()->getSourceIndex();
 	for (const auto& m : parent->getAllMethods()) {
 		if (m->getName() == "toPrimitive" && m->isDefaulted()) continue; // Only inherit custom overrides of toPrimitive
 		if (m->getName().starts_with("__")) continue; // Don't inherit system methods, since they are automatically generated for all classes
 		auto inherited_method = std::make_unique<Method>(m.get());
+		if (source_index) {
+			// Copy definition position from parent method for diagnostics/lsp
+			auto definition = source_index->getDefinitionPosition(m.get());
+			if (definition) source_index->setDefinitionPosition(inherited_method.get(), *definition);
+		}
 		if (!addMethod(std::move(inherited_method))) {
 			throw bpp::ErrorHandling::InternalError("Failed to inherit method '" + m->getName() + "' from parent class '" + parent->getName() + "'");
 		}
@@ -68,6 +75,11 @@ void Class::inherit(const Class* parent) {
 			inherited_datamember->setScope(VisibilityScope::INACCESSIBLE);
 		}
 		inherited_datamember->setParentDatamember(d.get());
+		if (source_index) {
+			// Copy definition position from parent dm for diagnostics/lsp
+			auto definition = source_index->getDefinitionPosition(d.get());
+			if (definition) source_index->setDefinitionPosition(inherited_datamember.get(), *definition);
+		}
 		if (!addDatamember(std::move(inherited_datamember))) {
 			throw bpp::ErrorHandling::InternalError("Failed to inherit data member '" + d->getName() + "' from parent class '" + parent->getName() + "'");
 		}

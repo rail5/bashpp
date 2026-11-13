@@ -236,7 +236,7 @@ class SourceIndex final {
 
 		struct SourceFileData {
 			EntityMap context_entities;
-			EntityMap entity_references;
+			MultipleEntityMap entity_references;
 			std::vector<bpp::ErrorHandling::Diagnostic> diagnostics;
 		};
 		std::unordered_map<views::path_view, SourceFileData, views::path_view::Hash> files;

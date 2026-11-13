@@ -12,8 +12,6 @@
 #include <IR/entities/CodeEntity.h>
 #include <IR/entities/Program.h>
 
-#include <ranges>
-
 namespace bpp::AST {
 
 void Listener::walk(bpp::AST::ASTNode* node) {

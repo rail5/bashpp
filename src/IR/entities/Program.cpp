@@ -6,20 +6,22 @@
 
 #include "Program.h"
 #include <IR/entities/Class.h>
+#include <IR/entities/expressions/bpp/IncludeStatement.h>
 
 #include <error/InternalError.h>
 
 namespace bpp::IR {
 
-std::expected<void, NameConflictError> Program::addClass(std::unique_ptr<Class> class_entity) {
+std::expected<const Class*, NameConflictError> Program::addClass(std::unique_ptr<Class> class_entity) {
 	// If this class was pre-registered, remove it from the preregistered list, since it is now being fully defined
 	preregistered_class = nullptr;
 
 	if (classes.find(class_entity->viewName())) return std::unexpected(NameConflictError::EXISTING_CLASS);
 	if (getObject(class_entity->getName())) return std::unexpected(NameConflictError::EXISTING_OBJECT);
 
-	classes.add(std::move(class_entity));
-	return {};
+	const auto* res = classes.add(std::move(class_entity));
+	if (!res) return std::unexpected(NameConflictError::EXISTING_CLASS);
+	return res;
 }
 
 void Program::preregisterClass(Class* class_entity) {

@@ -38,7 +38,7 @@ std::optional<std::uint32_t> Method::ParameterList::getHighestIndex() const {
 	return next_index - 1;
 }
 
-std::expected<void, NameConflictError> Method::addParameter(std::unique_ptr<MethodParameter> owned_parameter) {
+std::expected<const MethodParameter*, NameConflictError> Method::addParameter(std::unique_ptr<MethodParameter> owned_parameter) {
 	auto existing_params = parameters.getByName(owned_parameter->viewName());
 	for (const auto* existing_param : existing_params) {
 		// Don't ban '$arg' and '@arg' from coexisting in the same method, since they are unambiguous
@@ -52,6 +52,8 @@ std::expected<void, NameConflictError> Method::addParameter(std::unique_ptr<Meth
 	if (getObject(owned_parameter->getName())) return std::unexpected(NameConflictError::EXISTING_OBJECT);
 
 	parameters.add(owned_parameter.get());
+
+	const auto* result = owned_parameter.get(); // address will not change.
 
 	// Per the spec: if a method is declared to take a pointer as a parameter,
 	// then the argument passed to that parameter is implicitly dynamically cast to the expected type at the start of the method.
@@ -71,10 +73,10 @@ std::expected<void, NameConflictError> Method::addParameter(std::unique_ptr<Meth
 		primitive_parameters.add(std::move(owned_parameter));
 	}
 
-	return {};
+	return result;
 }
 
-std::expected<void, NameConflictError> Method::addParameter(const MethodParameter* unowned_parameter) {
+std::expected<const MethodParameter*, NameConflictError> Method::addParameter(const MethodParameter* unowned_parameter) {
 	auto existing_params = parameters.getByName(unowned_parameter->viewName());
 	for (const auto* existing_param : existing_params) {
 		if (existing_param->isPointer() == unowned_parameter->isPointer()) {
@@ -86,7 +88,7 @@ std::expected<void, NameConflictError> Method::addParameter(const MethodParamete
 	if (getObject(unowned_parameter->getName())) return std::unexpected(NameConflictError::EXISTING_OBJECT);
 
 	parameters.add(unowned_parameter);
-	return {};
+	return unowned_parameter;
 }
 
 std::string Method::getAddress() const {

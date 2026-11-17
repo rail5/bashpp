@@ -63,9 +63,9 @@ class Program final : public CodeEntity {
 		 * @brief Add a class to the program
 		 *
 		 * @param class_entity The class to add
-		 * @return std::expected<void, NameConflictError> An error if the name of the class conflicts with an existing class or object in the program
+		 * @return std::expected<const Class*, NameConflictError> The canonical address of the class that was added, or an error if the name conflicts with an existing class or object in the program
 		 */
-		std::expected<void, NameConflictError> addClass(std::unique_ptr<Class> class_entity);
+		[[nodiscard]] std::expected<const Class*, NameConflictError> addClass(std::unique_ptr<Class> class_entity);
 
 		/**
 		 * @brief Preregister a class with the program.

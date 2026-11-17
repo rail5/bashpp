@@ -85,7 +85,7 @@ void Class::inherit(const Class* parent) {
 	this->parent_class = parent;
 }
 
-std::expected<void, NameConflictError> Class::addMethod(std::unique_ptr<Method> method) {
+std::expected<const Method*, NameConflictError> Class::addMethod(std::unique_ptr<Method> method) {
 	preregistered_method = nullptr;
 
 	if (auto* existing_method = getMethod_UNSAFE(method->getName())) {
@@ -107,7 +107,7 @@ std::expected<void, NameConflictError> Class::addMethod(std::unique_ptr<Method> 
 		existing_method->setIsVirtual(wasVirtual);
 		existing_method->setContainingClass(this);
 
-		return {};
+		return existing_method;
 	}
 
 	// If this method shares a name with a data member, that's an error
@@ -115,8 +115,7 @@ std::expected<void, NameConflictError> Class::addMethod(std::unique_ptr<Method> 
 
 	method->setContainingClass(this);
 
-	methods.emplace_back(std::move(method));
-	return {};
+	return methods.emplace_back(std::move(method)).get();
 }
 
 void Class::preregisterMethod(Method* method) {
@@ -125,14 +124,14 @@ void Class::preregisterMethod(Method* method) {
 	preregistered_method = method;
 }
 
-std::expected<void, NameConflictError> Class::addDatamember(std::unique_ptr<DataMember> datamember) {
+std::expected<const DataMember*, NameConflictError> Class::addDatamember(std::unique_ptr<DataMember> datamember) {
 	if (getDatamember_UNSAFE(datamember->getName())) return std::unexpected(NameConflictError::EXISTING_DATAMEMBER);
 	if (getMethod_UNSAFE(datamember->getName())) return std::unexpected(NameConflictError::EXISTING_METHOD);
 
 	datamember->setContainingClass(this);
 
 	datamembers.push_back(std::move(datamember));
-	return {};
+	return datamembers.back().get();
 }
 
 template <ClassMember T>

@@ -112,17 +112,17 @@ class Method : public BashFunction, public Components::Addressable, public Compo
 		 * and verify that its name does not conflict with any known classes or objects in the containing method's context.
 		 * 
 		 * @param parameter The parameter to add
-		 * @return std::expected<void, NameConflictError> Returns an error if the parameter's name conflicts with an existing parameter, class, or object
+		 * @return std::expected<const MethodParameter*, NameConflictError> The canonical address of the added parameter, or an error if the parameter's name conflicts with an existing parameter, class, or object
 		 */
-		std::expected<void, NameConflictError> addParameter(std::unique_ptr<MethodParameter> owned_parameter);
+		[[nodiscard]] std::expected<const MethodParameter*, NameConflictError> addParameter(std::unique_ptr<MethodParameter> owned_parameter);
 
 		/**
 		 * @brief Add a non-owned parameter to this method (e.g., the class's `this` pointer)
 		 * This will not modify the parameter in any way, and the method will not take ownership of it.
 		 * @param parameter The parameter to add
-		 * @return std::expected<void, NameConflictError> Returns an error if the parameter's name conflicts with an existing parameter, class, or object
+		 * @return std::expected<const MethodParameter*, NameConflictError> The canonical address of the added parameter, or an error if the parameter's name conflicts with an existing parameter, class, or object
 		 */
-		std::expected<void, NameConflictError> addParameter(const MethodParameter* unowned_parameter);
+		[[nodiscard]] std::expected<const MethodParameter*, NameConflictError> addParameter(const MethodParameter* unowned_parameter);
 
 		const std::map<std::uint32_t, const MethodParameter*>& getParameters() const { return parameters.view(); }
 

@@ -29,12 +29,19 @@ class OwnedEntityList {
 		std::vector<std::unique_ptr<T>> entities;
 		std::unordered_map<std::string_view, std::size_t> name_to_index;
 	public:
-		bool add(std::unique_ptr<T> entity) {
+		/**
+		 * @brief Add an entity to the list.
+		 * If an entity with the same name already exists, this function will return nullptr and not add the new entity.
+		 * 
+		 * @param entity The entity to add. Must be a unique_ptr to the entity, as the list takes ownership of it.
+		 * @return const T* The canonical address of the entity that was added, or nullptr if an entity with the same name already exists in the list.
+		 */
+		const T* add(std::unique_ptr<T> entity) {
 			const std::string_view name = entity->viewName();
-			if (name_to_index.contains(name)) return false; // Entity with this name already exists
+			if (name_to_index.contains(name)) return nullptr; // Entity with this name already exists
 			entities.push_back(std::move(entity));
 			name_to_index[name] = entities.size() - 1;
-			return true;
+			return entities.back().get();
 		}
 
 		T* find(std::string_view name, std::size_t max_visible_index = SIZE_MAX) const {

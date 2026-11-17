@@ -72,8 +72,9 @@ class Class : public Entity, public Components::Named {
 		 * If the method name conflicts with the name of a data member, this will fail and return an error.
 		 * 
 		 * @param method The method to add
+		 * @return std::expected<const Method*, NameConflictError> The canonical address of the method that was added (which may be different from the one passed in, if it was overridden), or an error if the name conflicts with an existing method or data member
 		 */
-		[[ nodiscard ]] std::expected<void, NameConflictError> addMethod(std::unique_ptr<Method> method);
+		[[ nodiscard ]] std::expected<const Method*, NameConflictError> addMethod(std::unique_ptr<Method> method);
 
 		/**
 		 * @brief Preregister a method with this class.
@@ -99,8 +100,9 @@ class Class : public Entity, public Components::Named {
 		 * If the data member name conflicts with the name of an existing data member or method, this will fail and return an error.
 		 * 
 		 * @param datamember The data member to add
+		 * @return std::expected<const DataMember*, NameConflictError> The canonical address of the data member that was added, or an error if the name conflicts with an existing data member or method
 		 */
-		[[ nodiscard ]] std::expected<void, NameConflictError> addDatamember(std::unique_ptr<DataMember> datamember);
+		[[ nodiscard ]] std::expected<const DataMember*, NameConflictError> addDatamember(std::unique_ptr<DataMember> datamember);
 
 		/**
 		 * @brief Get a method by name

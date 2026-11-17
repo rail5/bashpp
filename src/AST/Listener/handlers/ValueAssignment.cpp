@@ -25,9 +25,7 @@ void Listener::enter(ValueAssignment* node) {
 		if (current_object_assignment->getLHS()) {
 			va->setLvalueNonprimitive(current_object_assignment->getLHS()->isNonprimitive());
 		}
-	}
-
-	if (auto* current_object_instantiation = dynamic_cast<bpp::IR::Object*>(entity_stack.top())) {
+	} else if (auto* current_object_instantiation = dynamic_cast<bpp::IR::Object*>(entity_stack.top())) {
 		va->setLvalueNonprimitive(!current_object_instantiation->isPrimitive());
 	}
 
@@ -55,17 +53,15 @@ void Listener::exit(ValueAssignment* node) {
 		if (va->isArrayAssignment()) current_datamember->setIsArray(true);
 		current_datamember->setInitialValue(std::move(va));
 		return;
+	} else if (auto* current_object = dynamic_cast<bpp::IR::Object*>(entity_stack.top())) {
+		// FIXME(@rail5): This only handles the pointer case, handle the non-pointer case
+		if (va->isArrayAssignment()) error(node, "Cannot assign an array to an object");
+		current_object->setInitialValue(std::move(va));
+		return;
 	}
 
 	if (auto* current_object_assignment = dynamic_cast<bpp::IR::ObjectAssignment*>(entity_stack.top())) {
 		current_object_assignment->setRHS(std::move(va));
-		return;
-	}
-
-	if (auto* current_object = dynamic_cast<bpp::IR::Object*>(entity_stack.top())) {
-		// FIXME(@rail5): This only handles the pointer case, handle the non-pointer case
-		if (va->isArrayAssignment()) error(node, "Cannot assign an array to an object");
-		current_object->setInitialValue(std::move(va));
 		return;
 	}
 

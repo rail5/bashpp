@@ -70,13 +70,12 @@ void Listener::enter(IncludeStatement* node) {
 	}
 
 	if (source_index) {
-		source_index->setDefinitionPosition(include_entity.get(), {*included_file, 0, 0, 0, 0});
-		source_index->addReference(
-			include_entity.get(),
+		include_entity->addReferencePosition(
 			{getCurrentSourceFile(),
 			node->getLine(), node->getColumn(),
 			node->getEndPosition().line, node->getEndPosition().column}
 		);
+		root_program->recordIncludeEntity(include_entity.get());
 	}
 
 	if (already_included && !include_always) {
@@ -106,7 +105,7 @@ void Listener::enter(IncludeStatement* node) {
 		parser.parse();
 		included_file_ast_root = parser.release_program();
 		for (const auto& e : parser.get_errors()) {
-			if (source_index) source_index->addDiagnostic(*included_file, e);
+			if (source_index) root_program->addDiagnostic(*included_file, e);
 			e.print_to_stderr();
 			this->program_has_errors = true;
 		}

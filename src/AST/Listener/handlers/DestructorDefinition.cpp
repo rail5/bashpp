@@ -24,21 +24,10 @@ void Listener::enter(DestructorDefinition* node) {
 	new_destructor->setIsVirtual(true);
 	new_destructor->inherit(current_class);
 
-	if (source_index) {
-		source_index->setDefinitionPosition(
-			new_destructor.get(),
-			{getCurrentSourceFile(),
-			node->getLine(), node->getColumn(),
-			node->getLine(), static_cast<uint32_t>(node->getColumn() + std::string("@destructor").length())}
-		);
-
-		source_index->markContextEntity(
-			{getCurrentSourceFile(),
-			node->getLine(), node->getColumn(),
-			node->getEndPosition().line, node->getEndPosition().column},
-			new_destructor.get()
-		);
-	}
+	if (source_index) new_destructor->setDefinitionPosition(
+		{getCurrentSourceFile(),
+		node->getLine(), node->getColumn()}
+	);
 
 	if (!new_destructor->addParameter(current_class->getThisPtr())) {
 		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to user-defined destructor");
@@ -65,6 +54,13 @@ void Listener::exit(DestructorDefinition* node) {
 
 	auto res = current_class->addMethod(std::move(destructor));
 	if (!res) error(node, "Destructor already defined in class '" + current_class->getName() + "'");
+
+	if (source_index) root_program->markContextEntity(
+		{getCurrentSourceFile(),
+		node->getLine(), node->getColumn(),
+		node->getEndPosition().line, node->getEndPosition().column},
+		*res
+	);
 }
 
 } // namespace bpp::AST

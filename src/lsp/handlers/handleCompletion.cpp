@@ -92,7 +92,7 @@ CompletionList bpp::LSP::BashppServer::handleATCompletion(const CompletionParams
 	Position position = params.position;
 
 	// Which context entity is active at the given position?
-	const auto* active_entity = program->source_index->getContextEntity({uri, position.line, position.character});
+	const auto* active_entity = program->getContextEntity({uri, position.line, position.character});
 	if (active_entity == nullptr) {
 		log("BUG: No context entity found at position: (", position.line, ", ", position.character, ") in URI: ", uri, " - returning default completions.");
 	} else {
@@ -137,11 +137,16 @@ CompletionList bpp::LSP::BashppServer::handleDOTCompletion(const CompletionParam
 	Position position = params.position;
 
 	// Resolve the referenced entity before the dot
-	const auto* referenced_entity = program->source_index->getReferencedEntity({uri, position.line, position.character - 1}); // Position before the dot
+	const auto& referenced_entities = program->getReferencedEntities({uri, position.line, position.character - 1}); // Position before the dot
 
-	if (referenced_entity == nullptr) {
+	if (referenced_entities.empty()) {
 		throw std::runtime_error("No entity found at position: (" + std::to_string(position.line) + ", " + std::to_string(position.character) + ") in URI: " + uri);
 	}
+
+	// FIXME(@rail5): This relies on insertion ordering
+	// It assumes e.g. for method references that the most-derived implementation of the method will be the last entity in the set
+	// Better ways to provide this guarantee?
+	const auto* referenced_entity = referenced_entities.back();
 
 	// Ensure that the referenced entity is a non-primitive object (@obj) or a class (e.g., @this/@super)
 	const auto* obj = dynamic_cast<const bpp::IR::Object*>(referenced_entity);

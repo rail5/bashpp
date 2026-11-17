@@ -25,7 +25,7 @@ void Listener::enter(Block* node) {
 	auto block_entity = std::make_unique<bpp::IR::Block>();
 	block_entity->inherit(current_code_entity);
 
-	if (source_index) source_index->markContextEntity(
+	if (source_index) root_program->markContextEntity(
 		{getCurrentSourceFile(),
 		node->getLine(), node->getColumn(),
 		node->getEndPosition().line, node->getEndPosition().column},

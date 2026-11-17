@@ -21,7 +21,7 @@ void Listener::enter(BashWhileOrUntilCondition* node) {
 	auto condition_entity = std::make_unique<bpp::IR::StringType>();
 	condition_entity->inherit(while_or_until_entity);
 
-	if (source_index) source_index->markContextEntity(
+	if (source_index) root_program->markContextEntity(
 		{getCurrentSourceFile(),
 		node->getLine(), node->getColumn(),
 		node->getEndPosition().line, node->getEndPosition().column},
@@ -51,7 +51,7 @@ void Listener::enter(BashWhileStatement* node) {
 	while_entity->inherit(current_code_entity);
 	while_entity->setIsUntil(false);
 
-	if (source_index) source_index->markContextEntity(
+	if (source_index) root_program->markContextEntity(
 		{getCurrentSourceFile(),
 		node->getLine(), node->getColumn(),
 		node->getEndPosition().line, node->getEndPosition().column},
@@ -81,7 +81,7 @@ void Listener::enter(BashUntilStatement* node) {
 	until_entity->inherit(current_code_entity);
 	until_entity->setIsUntil(true);
 
-	if (source_index) source_index->markContextEntity(
+	if (source_index) root_program->markContextEntity(
 		{getCurrentSourceFile(),
 		node->getLine(), node->getColumn(),
 		node->getEndPosition().line, node->getEndPosition().column},

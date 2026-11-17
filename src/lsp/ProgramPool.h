@@ -14,7 +14,7 @@
 #include <filesystem>
 
 #include <IR/bpp.h>
-#include <IR/SourceIndex.h>
+#include <IR/SourceLocation.h>
 #include <include/BashVersion.h>
 #include <error/WarningOptions.h>
 
@@ -39,15 +39,10 @@ namespace bpp::LSP {
  * 
  */
 class ProgramPool {
-	public:
-		struct ProgramAndSourceIndex {
-			std::unique_ptr<bpp::IR::Program> program;
-			std::unique_ptr<bpp::IR::SourceIndex> source_index;
-		};
 	private:
 		std::size_t max_programs = 10; // Maximum number of programs to keep in the pool
 
-		std::vector<std::shared_ptr<ProgramAndSourceIndex>> programs;
+		std::vector<std::shared_ptr<bpp::IR::Program>> programs;
 		std::unordered_map<std::filesystem::path, std::vector<std::size_t>> program_indices; // Maps file paths to program indices in the pool
 		std::unordered_map<std::filesystem::path, bool> open_files; // Maps file paths to whether they are currently open
 		std::unordered_map<std::filesystem::path, std::string> unsaved_changes; // Maps file paths to their unsaved contents
@@ -57,7 +52,7 @@ class ProgramPool {
 
 		// Pool snapshots:
 		struct Snapshot {
-			std::vector<std::shared_ptr<ProgramAndSourceIndex>> programs_snapshot; // Snapshot of the current programs in the pool
+			std::vector<std::shared_ptr<bpp::IR::Program>> programs_snapshot; // Snapshot of the current programs in the pool
 			std::unordered_map<std::filesystem::path, std::vector<std::size_t>> program_indices_snapshot; // Snapshot of the current program indices
 			std::unordered_map<std::filesystem::path, bool> open_files_snapshot; // Snapshot of the current open files
 			std::unordered_map<std::filesystem::path, std::string> unsaved_changes_snapshot; // Snapshot of the current unsaved changes
@@ -69,7 +64,7 @@ class ProgramPool {
 
 		void _remove_oldest_program();
 		void _remove_program(std::size_t index);
-		std::shared_ptr<ProgramAndSourceIndex> _parse_program(const std::filesystem::path& file_path);
+		std::shared_ptr<bpp::IR::Program> _parse_program(const std::filesystem::path& file_path);
 
 		// Configurable settings
 		std::vector<std::filesystem::path> include_paths;
@@ -137,9 +132,9 @@ class ProgramPool {
 		 *                   processed immediately. However, we will also refuse to create
 		 *                   a new program -- if none exists, and you've asked to jump the
 		 *                   queue, we will simply return nullptr.
-		 * @return std::shared_ptr<ProgramAndSourceIndex> A program and source index associated with the given file path, or nullptr if no such program exists and jump_queue is true.
+		 * @return std::shared_ptr<bpp::IR::Program> A program and source index associated with the given file path, or nullptr if no such program exists and jump_queue is true.
 		 */
-		std::shared_ptr<ProgramAndSourceIndex> getProgram(const std::filesystem::path& file_path, bool jump_queue = false);
+		std::shared_ptr<bpp::IR::Program> getProgram(const std::filesystem::path& file_path, bool jump_queue = false);
 
 		/**
 		 * @brief Get all programs associated with the given file path.
@@ -152,9 +147,9 @@ class ProgramPool {
 		 *                   processed immediately. However, we will also refuse to create
 		 *                   new programs -- if none exist, and you've asked to jump the
 		 *                   queue, we will simply return an empty vector.
-		 * @return std::vector<std::shared_ptr<ProgramAndSourceIndex>> A vector of programs and source indices associated with the given file path. If no such programs exist and jump_queue is true, an empty vector is returned.
+		 * @return std::vector<std::shared_ptr<bpp::IR::Program>> A vector of programs and source indices associated with the given file path. If no such programs exist and jump_queue is true, an empty vector is returned.
 		 */
-		std::vector<std::shared_ptr<ProgramAndSourceIndex>> getProgramsForFile(const std::filesystem::path& file_path, bool jump_queue = false);
+		std::vector<std::shared_ptr<bpp::IR::Program>> getProgramsForFile(const std::filesystem::path& file_path, bool jump_queue = false);
 
 		/**
 		 * @brief Check if a program for the given file path exists in the pool.
@@ -168,9 +163,9 @@ class ProgramPool {
 		 * @brief Re-parse all programs associated with the given file path
 		 * 
 		 * @param file_path The source file which has been modified, triggering the re-parse.
-		 * @return std::vector<std::shared_ptr<ProgramAndSourceIndex>> A vector of all programs and source indices that were re-parsed. If a program failed to re-parse, it will not be included in the returned vector.
+		 * @return std::vector<std::shared_ptr<bpp::IR::Program>> A vector of all programs and source indices that were re-parsed. If a program failed to re-parse, it will not be included in the returned vector.
 		 */
-		std::vector<std::shared_ptr<ProgramAndSourceIndex>> reparsePrograms(const std::string& file_path);
+		std::vector<std::shared_ptr<bpp::IR::Program>> reparsePrograms(const std::string& file_path);
 
 		/**
 		 * @brief Query all programs in the pool for entities at a given source location.
@@ -184,9 +179,9 @@ class ProgramPool {
 		 * @brief Get the program and source index associated with a given entity.
 		 * 
 		 * @param entity The entity to find the associated program and source index for.
-		 * @return std::shared_ptr<ProgramAndSourceIndex> A shared pointer to the program and source index associated with the given entity, or nullptr if no such program exists in the pool.
+		 * @return std::shared_ptr<bpp::IR::Program> A shared pointer to the program and source index associated with the given entity, or nullptr if no such program exists in the pool.
 		 */
-		std::shared_ptr<ProgramAndSourceIndex> getProgramForEntity(const bpp::IR::Entity* entity) const;
+		std::shared_ptr<bpp::IR::Program> getProgramForEntity(const bpp::IR::Entity* entity) const;
 
 		/**
 		 * @brief Mark a file as open in the program pool.

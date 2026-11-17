@@ -7,7 +7,7 @@
 #pragma once
 
 #include <IR/bpp.h>
-#include <IR/SourceIndex.h>
+#include <IR/SourceLocation.h>
 #include <IR/entities/expressions/String.h>
 #include <IR/entities/Program.h>
 #include <IR/entities/Object.h>
@@ -198,7 +198,7 @@ std::expected<std::unique_ptr<ObjectReference>, EntityResolutionError> resolve_e
 	const Entity* context,
 	std::span<T> ids,
 	std::filesystem::path file,
-	SourceIndex* source_index = nullptr
+	bool source_index
 ) {
 	bpp_assert(context != nullptr, "Context pointer is null");
 	const auto* program = context->getContainingProgram();
@@ -240,11 +240,10 @@ std::expected<std::unique_ptr<ObjectReference>, EntityResolutionError> resolve_e
 		return fail("Object not found: " + first_id, first);
 	}
 
-	if (source_index && !self_reference) source_index->addReference(obj,
+	if (provide_diagnostics && source_index) obj->addReferencePosition(
 		{file,
-		first.getLine(), first.getColumn(),
-		first.getLine(), static_cast<uint32_t>(first.getColumn() + first_id.length())
-	});
+		first.getLine(), first.getColumn()}
+	);
 
 	const auto* current_class = obj->getType();
 	bpp_assert(current_class != nullptr, "Object has no type");
@@ -268,13 +267,12 @@ std::expected<std::unique_ptr<ObjectReference>, EntityResolutionError> resolve_e
 			chain.append(data_member.value());
 			current_class = data_member.value()->getType();
 
-			if (source_index) {
+			if (provide_diagnostics && source_index) {
 				for (const auto* dm = data_member.value(); dm != nullptr; dm = dm->getParentDatamember()) {
-					source_index->addReference(dm,
+					dm->addReferencePosition(
 						{file,
-						current_token.getLine(), current_token.getColumn(),
-						current_token.getLine(), static_cast<uint32_t>(current_token.getColumn() + id.length())
-					});
+						current_token.getLine(), current_token.getColumn()}
+					);
 				}
 			}
 
@@ -286,15 +284,16 @@ std::expected<std::unique_ptr<ObjectReference>, EntityResolutionError> resolve_e
 				return fail("Unexpected identifier after method reference", remaining.front());
 			}
 			chain.setMethod(method.value());
-			if (source_index) {
-				for (const auto* m = method.value()->getParentMethod(); m != nullptr; m = m->getParentMethod()) {
-					source_index->addReference(m,
+
+			if (provide_diagnostics && source_index) {
+				for (const auto* m = method.value(); m != nullptr; m = m->getParentMethod()) {
+					m->addReferencePosition(
 						{file,
-						current_token.getLine(), current_token.getColumn(),
-						current_token.getLine(), static_cast<uint32_t>(current_token.getColumn() + id.length())
-					});
+						current_token.getLine(), current_token.getColumn()}
+					);
 				}
 			}
+
 		} else if (data_member.error() == LookupError::INACCESSIBLE || method.error() == LookupError::INACCESSIBLE) {
 			return fail(id + " is inaccessible in this context", current_token);
 		} else {

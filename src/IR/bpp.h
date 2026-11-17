@@ -78,6 +78,7 @@ class SystemMethod;
 } // namespace Builtins
 
 namespace Components {
+class Referenceable;
 class Named;
 class Addressable;
 class ClassMember;
@@ -85,5 +86,8 @@ class ClassMember;
 
 template <class T>
 concept NamedEntity = std::is_base_of_v<Entity, T> && std::is_base_of_v<Components::Named, T>;
+
+template <class T>
+concept ReferenceableEntity = std::is_base_of_v<Entity, T> && std::is_base_of_v<Components::Referenceable, T>;
 
 } // namespace bpp::IR

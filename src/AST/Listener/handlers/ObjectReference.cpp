@@ -52,7 +52,7 @@ void Listener::enter(ObjectReference* node) {
 		current_code_entity,
 		std::span{node->IDENTIFIERS()},
 		getCurrentSourceFile(),
-		source_index.get()
+		source_index
 	);
 
 	if (!resolution) {

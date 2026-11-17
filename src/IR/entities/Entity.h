@@ -10,6 +10,7 @@
 
 #include <IR/bpp.h>
 #include <IR/codegen.h>
+#include <IR/SourceLocation.h>
 
 #include <debug_helpers.h>
 

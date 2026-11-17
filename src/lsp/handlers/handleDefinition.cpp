@@ -10,7 +10,9 @@
 #include <lsp/include/validateUri.h>
 
 #include <IR/entities/Entity.h>
+#include <IR/entities/Program.h>
 #include <IR/entities/components/Named.h>
+#include <IR/entities/components/Referenceable.h>
 
 GenericResponseMessage bpp::LSP::BashppServer::handleDefinition(const GenericRequestMessage& request) {
 	DefinitionRequest definition_request = request.toSpecific<DefinitionParams>();
@@ -42,20 +44,27 @@ GenericResponseMessage bpp::LSP::BashppServer::handleDefinition(const GenericReq
 		return response;
 	}
 
-	const auto* referenced_entity = program->source_index->getReferencedEntity({uri, position.line, position.character});
+	const auto& referenced_entities = program->getReferencedEntities({uri, position.line, position.character});
 
-	if (referenced_entity == nullptr) {
+	if (referenced_entities.empty()) {
 		log("No entity found at position: (", position.line, ", ", position.character, ") in URI: ", uri);
 		response.result = nullptr;
 		return response;
 	}
+
+	// FIXME(@rail5): This relies on insertion ordering
+	// It assumes e.g. for method references that the most-derived implementation of the method will be the last entity in the set
+	// Better ways to provide this guarantee?
+	const auto* referenced_entity = referenced_entities.back();
 
 	std::string entity_name = "(unnamed)";
 	if (const auto* named_entity = dynamic_cast<const bpp::IR::Components::Named*>(referenced_entity)) {
 		entity_name = named_entity->getName();
 	}
 
-	auto definition_location = program->source_index->getDefinitionPosition(referenced_entity);
+	const auto* referenceable_entity = dynamic_cast<const bpp::IR::Components::Referenceable*>(referenced_entity);
+	bpp_assert(referenceable_entity != nullptr, "Referenced entity is not referenceable");
+	auto definition_location = referenceable_entity->getDefinitionPosition();
 
 	// Verify that a definition location was found
 	if (!definition_location) {

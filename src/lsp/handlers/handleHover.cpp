@@ -41,13 +41,18 @@ GenericResponseMessage bpp::LSP::BashppServer::handleHover(const GenericRequestM
 		return response;
 	}
 
-	const auto* entity = program->source_index->getReferencedEntity({uri, position.line, position.character});
+	const auto& entities = program->getReferencedEntities({uri, position.line, position.character});
 
-	if (entity == nullptr) {
+	if (entities.empty()) {
 		log("No entity found at position: (", position.line, ", ", position.character, ") in URI: ", uri);
 		response.result = nullptr;
 		return response;
 	}
+
+	// FIXME(@rail5): This relies on insertion ordering
+	// It assumes e.g. for method references that the most-derived implementation of the method will be the last entity in the set
+	// Better ways to provide this guarantee?
+	const auto* entity = entities.back();
 
 	std::string label, explanation, code_snippet;
 	if (const auto* named_entity = dynamic_cast<const bpp::IR::Components::Named*>(entity)) {
@@ -170,7 +175,7 @@ GenericResponseMessage bpp::LSP::BashppServer::handleHover(const GenericRequestM
 		// If it's a class, display @class ClassName : ParentClass
 		label = "Class `" + cls->getName() + "`";
 
-		auto definition = program->source_index->getDefinitionPosition(cls);
+		auto definition = cls->getDefinitionPosition();
 		if (definition) explanation = "Provided by `" + definition->source_file.string() + "`";
 
 		code_snippet = "@class " + cls->getName();
@@ -178,7 +183,7 @@ GenericResponseMessage bpp::LSP::BashppServer::handleHover(const GenericRequestM
 		if (parent) code_snippet += " : " + parent->getName();
 	} else if (const auto* include_statement = dynamic_cast<const bpp::IR::IncludeStatement*>(entity)) {
 		const auto& file_path = include_statement->getIncludedFilePath();
-		label = "`" + file_path.filename().string() + "`";
+		label = "File `" + file_path.filename().string() + "`";
 		explanation = "`" + file_path.string() + "`";
 		code_snippet.clear();
 	}
@@ -189,10 +194,12 @@ GenericResponseMessage bpp::LSP::BashppServer::handleHover(const GenericRequestM
 	}
 
 	// Search for any relevant comments associated with the entity
-	std::string comments = find_comments_for_entity(entity, &program_pool);
+	if (const auto* referenceable_entity = dynamic_cast<const bpp::IR::Components::Referenceable*>(entity)) {
+		std::string comments = find_comments_for_entity(referenceable_entity, &program_pool);
 
-	if (!comments.empty()) {
-		code_snippet += "\n\n" + comments; // Append comments if available
+		if (!comments.empty()) {
+			code_snippet += "\n\n" + comments; // Append comments if available
+		}
 	}
 
 	Hover hover;

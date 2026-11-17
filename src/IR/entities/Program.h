@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <expected>
 #include <filesystem>
+#include <unordered_map>
 
 #include <IR/bpp.h>
 #include <IR/OwnedEntityList.h>
@@ -17,10 +18,11 @@
 #include <IR/entities/Object.h>
 #include <IR/entities/Class.h>
 #include <IR/entities/SystemFunction.h>
+#include <error/Diagnostic.h>
+#include <include/EntityMap.h>
+#include <include/unique_deque.h>
 
 namespace bpp::IR {
-
-class SourceIndex;
 
 /**
  * @brief The root node of the entity tree, representing the entire Bash++ program
@@ -47,17 +49,25 @@ class Program final : public CodeEntity {
 		std::unique_ptr<Builtins::SystemFunction> dynamic_cast_function;
 		std::unique_ptr<Builtins::SystemFunction> typeof_function;
 
-		/// The source file for this Program entity. Used for diagnostics/LSP
+		/// @brief The main source file of the program, which is the file that was given to Bash++ on the command line.
 		std::filesystem::path source_file;
 
-		/// The source index for this program, used for diagnostics/LSP. Non-owning.
-		SourceIndex* source_index = nullptr;
-	public:
-		void setSourceFile(const std::filesystem::path& source_file) { this->source_file = source_file; }
-		const std::filesystem::path& getSourceFile() const { return source_file; }
+		/**
+		 * @brief A list of all include statements in the program, in the order they were encountered.
+		 * This is only populated if source-indexing is enabled.
+		 * This is used by the language server to resolve include statements to their target files.
+		 */
+		std::deque<const IncludeStatement*> include_statements;
 
-		void setSourceIndex(SourceIndex* source_index) { this->source_index = source_index; }
-		SourceIndex* getSourceIndex() const { return source_index; }
+		struct SourceFileData {
+			EntityMap context_entities;
+			MultipleEntityMap entity_references;
+			std::vector<bpp::ErrorHandling::Diagnostic> diagnostics;
+		};
+		std::unordered_map<std::filesystem::path, SourceFileData> file_data;
+	public:
+		void setSourceFile(const std::filesystem::path& source_file) { this->source_file = source_file; file_data[source_file]; }
+		const std::filesystem::path& getSourceFile() const { return source_file; }
 
 		/**
 		 * @brief Add a class to the program
@@ -89,6 +99,46 @@ class Program final : public CodeEntity {
 		std::size_t getNumberOfKnownClasses() const override;
 
 		const Program* getContainingProgram() const override { return this; }
+
+		auto getAllSourceFiles() const { return file_data | std::views::keys; }
+
+		void markContextEntity(const SourceLocationRange& range, const Entity* entity) {
+			file_data[range.source_file].context_entities.insert(range.start, range.end, entity);
+		}
+
+		const Entity* getContextEntity(const SourceLocation& location) const {
+			if (!file_data.contains(location.source_file)) return nullptr;
+			const auto* result = file_data.at(location.source_file).context_entities.find(location.position.line, location.position.column);
+			if (!result) return this; // If no context entity is found, the program itself is the context
+			return result;
+		}
+
+		void addDiagnostic(const std::filesystem::path& source_file, const bpp::ErrorHandling::Diagnostic& diagnostic) {
+			file_data[source_file].diagnostics.push_back(diagnostic);
+		}
+		std::span<const bpp::ErrorHandling::Diagnostic> getDiagnostics(const std::filesystem::path& source_file) const {
+			if (!file_data.contains(source_file)) return {};
+			return file_data.at(source_file).diagnostics;
+		}
+
+		void recordIncludeEntity(const IncludeStatement* include_entity) {
+			include_statements.push_back(include_entity);
+		}
+
+		/**
+		 * @brief Collect all definition/reference positions of all referenceable entities in the program,
+		 * and mirror them into the entity_references maps owned by this program.
+		 *
+		 * This is done s.t. the language server can quickly look up the entity being referenced at any given position in the source files.
+		 */
+		void collectEntityReferences();
+
+		const unique_deque<const Entity*>& getReferencedEntities(const SourceLocation& location) const {
+			static unique_deque<const Entity*> empty_set{};
+			const auto& source_file = location.source_file;
+			if (!file_data.contains(source_file)) return empty_set;
+			return file_data.at(source_file).entity_references.find(location.position.line, location.position.column);
+		}
 
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 

@@ -21,7 +21,7 @@ void Listener::enter(BashArithmeticForStatement* node) {
 	auto arithmetic_for_statement_entity = std::make_unique<bpp::IR::BashArithmeticForStatement>();
 	arithmetic_for_statement_entity->inherit(current_code_entity);
 
-	if (source_index) source_index->markContextEntity(
+	if (source_index) root_program->markContextEntity(
 		{getCurrentSourceFile(),
 		node->getLine(), node->getColumn(),
 		node->getEndPosition().line, node->getEndPosition().column},
@@ -50,7 +50,7 @@ void Listener::enter(BashArithmeticForCondition* node) {
 	auto condition_entity = std::make_unique<bpp::IR::StringType>();
 	condition_entity->inherit(arithmetic_for_statement_entity);
 
-	if (source_index) source_index->markContextEntity(
+	if (source_index) root_program->markContextEntity(
 		{getCurrentSourceFile(),
 		node->getLine(), node->getColumn(),
 		node->getEndPosition().line, node->getEndPosition().column},

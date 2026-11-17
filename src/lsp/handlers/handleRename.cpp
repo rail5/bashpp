@@ -80,13 +80,13 @@ GenericResponseMessage bpp::LSP::BashppServer::handleRename(const GenericRequest
 
 	for (const auto& entity : entities) {
 		// Get a list of everywhere the entity is referenced
-		//std::list<bpp::IR::SourceLocationRange> references = entity->get_references();
-		auto containing_program = program_pool.getProgramForEntity(entity);
-		if (!containing_program) {
-			log("Entity found, but no containing program for entity: ", old_name);
+		const auto* referenceable_entity = dynamic_cast<const bpp::IR::Components::Referenceable*>(entity);
+		if (!referenceable_entity) {
+			log("Entity found at position: (", rename_request.params.position.line, ", ", rename_request.params.position.character, ") in URI: ", uri, " is not referenceable");
 			continue;
 		}
-		auto references = containing_program->source_index->getReferences(entity);
+
+		auto references = referenceable_entity->getReferencePositions();
 
 		for (const auto& ref : references) {
 			TextEdit single_rename;

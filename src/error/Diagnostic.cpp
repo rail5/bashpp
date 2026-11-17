@@ -6,7 +6,7 @@
 
 #include "Diagnostic.h"
 
-#include <IR/SourceIndex.h>
+#include <IR/SourceLocation.h>
 
 #include <utf8cpp/utf8.h>
 

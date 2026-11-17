@@ -101,6 +101,8 @@ class Method : public BashFunction, public Components::Addressable, public Compo
 			setIsVirtual(parent_method->isVirtual());
 			setIsOverridable(parent_method->isVirtual());
 			setIsDefaulted(parent_method->isDefaulted());
+			const auto& parent_definition = parent_method->getDefinitionPosition();
+			if (parent_definition) setDefinitionPosition({parent_definition->source_file, parent_definition->start});
 			f_points_to_parent_method = true;
 		}
 		/**

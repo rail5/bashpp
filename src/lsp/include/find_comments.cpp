@@ -6,7 +6,7 @@
 
 #include "find_comments.h"
 
-#include <IR/entities/Entity.h>
+#include <IR/entities/components/Referenceable.h>
 
 #include <sstream>
 #include <string>
@@ -14,16 +14,15 @@
 
 namespace bpp::LSP {
 
-std::string find_comments_for_entity(const bpp::IR::Entity* entity, bpp::LSP::ProgramPool* program_pool) {
+std::string find_comments_for_entity(const bpp::IR::Components::Referenceable* entity, bpp::LSP::ProgramPool* program_pool) {
 	if (entity == nullptr || program_pool == nullptr) return "";
 
 	// Locate the entity's definition position
-	auto containing_program = program_pool->getProgramForEntity(entity);
-	if (!containing_program) return ""; // No containing program found, no comments can be found
-	auto definition_position = containing_program->source_index->getDefinitionPosition(entity);
-	if (!definition_position) return ""; // No definition position found, no comments can be found
+	const auto& definition_position = entity->getDefinitionPosition();
 
-	std::istringstream source_file_contents(program_pool->getFileContents(std::filesystem::path(definition_position->source_file)));
+	if (!definition_position) return "";
+
+	std::istringstream source_file_contents(program_pool->getFileContents(definition_position->source_file));
 
 	std::string comments;
 	std::string line;

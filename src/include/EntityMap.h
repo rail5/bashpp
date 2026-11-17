@@ -5,40 +5,17 @@
  */
 
 #pragma once
+
 #include "IntervalTree.h"
 
-#include <vector>
+#include <IR/SourceLocation.h>
+
+#include <include/unique_deque.h>
+#include <ranges>
 
 // Forward decl.
 namespace bpp::IR {
 class Entity;
-} // namespace bpp::IR
-
-/**
- * @struct FilePosition
- * @brief Represents a position in a source file by line and column
- *
- * This struct is used as the key type in the EntityMap to represent positions in source files.
- * It is represented as a single unsigned 64-bit integer for efficient storage and comparison.
- * The high 32 bits represent the line number, and the low 32 bits represent the column number.
- * 
- */
-struct FilePosition {
-	std::uint32_t line = 0;
-	std::uint32_t column = 0;
-
-	operator std::uint64_t() const {
-		// Encode line and column into a single std::uint64_t
-		// The first 32 bits represent the line number,
-		// and the last 32 bits represent the column number.
-		// This permits perfect sorting of file positions
-		return (static_cast<std::uint64_t>(line) << 32) | column;
-	}
-
-	FilePosition() = default;
-	FilePosition(std::uint32_t line, std::uint32_t column)
-		: line(line), column(column) {}
-};
 
 /**
  * @class EntityMap
@@ -83,11 +60,8 @@ class EntityMap {
 			return find(FilePosition(line, column));
 		}
 
-		void updateEntityAddress(const bpp::IR::Entity* old_address, const bpp::IR::Entity* new_address) {
-			tree.updatePayload(
-				[old_address](const bpp::IR::Entity* payload) { return payload == old_address; },
-				[new_address](const bpp::IR::Entity*) { return new_address; }
-			);
+		auto viewAllEntities() const {
+			return tree.getIntervals() | std::views::transform([](const auto& interval) { return interval.payload; });
 		}
 };
 
@@ -100,34 +74,23 @@ class EntityMap {
  */
 class MultipleEntityMap {
 	private:
-		FlatIntervalTree<std::vector<const bpp::IR::Entity*>> tree;
+		FlatIntervalTree<unique_deque<const bpp::IR::Entity*>> tree;
 	public:
 		void insert(FilePosition start, FilePosition end, const bpp::IR::Entity* entity) {
 			if (auto* existing = tree.find(start, end)) {
 				existing->payload.push_back(entity);
 			} else {
-				tree.insert(start, end, std::vector<const bpp::IR::Entity*>{entity});
+				tree.insert(start, end, unique_deque<const bpp::IR::Entity*>{entity});
 			}
 		}
 
-		std::vector<const bpp::IR::Entity*> find(FilePosition point) const {
+		const unique_deque<const bpp::IR::Entity*>& find(FilePosition point) const {
 			return tree.find_innermost_overlap(point);
 		}
 
-		std::vector<const bpp::IR::Entity*> find(std::uint32_t line, std::uint32_t column) const {
+		const unique_deque<const bpp::IR::Entity*>& find(std::uint32_t line, std::uint32_t column) const {
 			return find(FilePosition(line, column));
 		}
-
-		void updateEntityAddress(const bpp::IR::Entity* old_address, const bpp::IR::Entity* new_address) {
-			tree.updatePayload(
-				[old_address](const std::vector<const bpp::IR::Entity*>& payload) {
-					return std::ranges::contains(payload, old_address);
-				},
-				[old_address, new_address](const std::vector<const bpp::IR::Entity*>& payload) {
-					std::vector<const bpp::IR::Entity*> new_payload = payload;
-					std::replace(new_payload.begin(), new_payload.end(), old_address, new_address);
-					return new_payload;
-				}
-			);
-		}
 };
+
+} // namespace bpp::IR

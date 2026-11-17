@@ -16,13 +16,14 @@
 #include <AST/NodeTypes.h>
 #include <AST/Nodes/Nodes.h>
 #include <error/WarningOptions.h>
+#include <error/Diagnostic.h>
 #include <error/detail.h>
-#include <IR/SourceIndex.h>
 
 #include "ContextExpectations.h"
 #include "EntityStack.h"
 
 #include <IR/bpp.h>
+#include <IR/entities/Program.h>
 
 namespace bpp::AST {
 
@@ -109,14 +110,8 @@ class Listener final {
 			replacement_file_contents = replacements;
 		}
 
-		/// @brief Request that this listener prepare a SourceIndex for use in diagnostics and language server support.
-		/// @note This should be called BEFORE @c walk()
-		void prepareSourceIndex() {
-			if (!source_index) source_index = std::make_unique<bpp::IR::SourceIndex>();
-		}
-		std::unique_ptr<bpp::IR::SourceIndex> releaseSourceIndex() {
-			return std::move(source_index);
-		}
+		/// @brief Request that this listener index the source files it processes for diagnostics/language server support.
+		void indexSourceFiles() { source_index = true; }
 
 		void setSourceFile(const std::filesystem::path& source_file) {
 			if (!include_chain.empty()) throw std::runtime_error("Source file already set; cannot set source file when include chain is not empty");
@@ -168,17 +163,11 @@ class Listener final {
 		std::unordered_map<std::filesystem::path, std::string> replacement_file_contents;
 
 		/**
-		 * @brief A searchable index of entity information across source files, used for diagnostics and language server support.
-		 * This structure provides:
-		 *  - Definition positions for entities
-		 *  - Reference positions for entities
-		 *  - Maps of source files by "context" entities (code containers such as classes, methods, and blocks)
-		 *  - Diagnostics (warnings, errors) for source files
-		 *  - A list of all source files that have been processed (including included files)
+		 * @brief  Whether we are expected to build indexes of source files for diagnostics/language server support.
 		 *
-		 * This index is only built if explicitly requested, as it is not needed for normal operation of the compiler.
+		 * This should be set BEFORE calling @c walk() on the root program node, and should not be changed after that.
 		 */
-		std::unique_ptr<bpp::IR::SourceIndex> source_index;
+		bool source_index = false;
 
 		/// The set of enabled/disabled warnings
 		bpp::ErrorHandling::WarningOptions warning_options;
@@ -187,7 +176,7 @@ class Listener final {
 		 * @brief Show a warning message to the user, if the warning type is enabled.
 		 * If the warning type is disabled, this does nothing.
 		 * If -Werror is enabled, this will throw the warning as an error instead of simply printing it.
-		 * If the Listener is building a @c SourceIndex, the warning will also be added to the index.
+		 * The warning will also be added to the Program's diagnostics map.
 		 *
 		 * @tparam T The type of the AST node or token that produced the warning
 		 * @param node The AST node or token that produced the warning
@@ -201,7 +190,7 @@ class Listener final {
 		void warn(const T& node, bpp::ErrorHandling::WarningType warning_type, const std::string& msg) {
 			if (warning_options.is_enabled(warning_type)) {
 				bpp::ErrorHandling::Diagnostic warning(msg, include_chain, node, bpp::ErrorHandling::DiagnosticType::DIAGNOSTIC_WARNING, warning_options.get_cli_string_by_option(warning_type));
-				if (source_index) source_index->addDiagnostic(include_chain.back(), warning);
+				if (root_program) root_program->addDiagnostic(include_chain.back(), warning);
 
 				if (warning_options.is_enabled(bpp::ErrorHandling::WarningType::WarningsAsErrors)) {
 					warning.setType(bpp::ErrorHandling::DiagnosticType::DIAGNOSTIC_ERROR);
@@ -214,7 +203,7 @@ class Listener final {
 
 		/**
 		 * @brief Construct and throw a Diagnostic error based on the given AST node or token.
-		 * If the Listener is building a @c SourceIndex, the error will also be added to the index.
+		 * The error will also be added to the program's diagnostics map.
 		 *
 		 * @tparam T The type of the AST node or token that produced the error
 		 * @param node The AST node or token that produced the error
@@ -226,7 +215,7 @@ class Listener final {
 		template <bpp::detail::ASTNodePtrORToken T>
 		void error(const T& node, const std::string& msg) {
 			bpp::ErrorHandling::Diagnostic error(msg, include_chain, node, bpp::ErrorHandling::DiagnosticType::DIAGNOSTIC_ERROR);
-			if (source_index) source_index->addDiagnostic(include_chain.back(), error);
+			if (root_program) root_program->addDiagnostic(include_chain.back(), error);
 			throw std::move(error);
 		}
 

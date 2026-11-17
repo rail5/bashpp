@@ -14,19 +14,15 @@
 namespace bpp::AST {
 
 template <>
-void Listener::enter(Supershell* node) {
+void Listener::enter(Supershell* /*node*/) {
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity");
 	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();
 
 	auto supershell_entity = std::make_unique<bpp::IR::Supershell>();
 	supershell_entity->inherit(current_code_entity);
 
-	if (source_index) source_index->markContextEntity(
-		{getCurrentSourceFile(),
-		node->getLine(), node->getColumn(),
-		node->getEndPosition().line, node->getEndPosition().column},
-		supershell_entity.get()
-	);
+	// No need to mark the supershell as a context entity; supershells aren't closed scopes.
+	// The surrounding context will do just fine for reference resolution.
 
 	entity_stack.push(std::move(supershell_entity));
 }

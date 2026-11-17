@@ -10,7 +10,7 @@
 #include <IR/entities/DataMember.h>
 #include <IR/entities/expressions/bpp/DynamicCast.h>
 #include <IR/entities/Program.h>
-#include <IR/SourceIndex.h>
+#include <IR/SourceLocation.h>
 
 #include <error/InternalError.h>
 
@@ -49,16 +49,10 @@ void Class::inherit(const Class* parent) {
 	// Inherit methods
 	methods.reserve(methods.size() + parent->methods.size());
 	bpp_assert(getContainingProgram(), "Class has no containing program");
-	auto* source_index = getContainingProgram()->getSourceIndex();
 	for (const auto& m : parent->getAllMethods()) {
 		if (m->getName() == "toPrimitive" && m->isDefaulted()) continue; // Only inherit custom overrides of toPrimitive
 		if (m->getName().starts_with("__")) continue; // Don't inherit system methods, since they are automatically generated for all classes
 		auto inherited_method = std::make_unique<Method>(m.get());
-		if (source_index) {
-			// Copy definition position from parent method for diagnostics/lsp
-			auto definition = source_index->getDefinitionPosition(m.get());
-			if (definition) source_index->setDefinitionPosition(inherited_method.get(), *definition);
-		}
 		if (!addMethod(std::move(inherited_method))) {
 			throw bpp::ErrorHandling::InternalError("Failed to inherit method '" + m->getName() + "' from parent class '" + parent->getName() + "'");
 		}
@@ -72,11 +66,6 @@ void Class::inherit(const Class* parent) {
 			inherited_datamember->setScope(VisibilityScope::INACCESSIBLE);
 		}
 		inherited_datamember->setParentDatamember(d.get());
-		if (source_index) {
-			// Copy definition position from parent dm for diagnostics/lsp
-			auto definition = source_index->getDefinitionPosition(d.get());
-			if (definition) source_index->setDefinitionPosition(inherited_datamember.get(), *definition);
-		}
 		if (!addDatamember(std::move(inherited_datamember))) {
 			throw bpp::ErrorHandling::InternalError("Failed to inherit data member '" + d->getName() + "' from parent class '" + parent->getName() + "'");
 		}
@@ -94,11 +83,7 @@ std::expected<const Method*, NameConflictError> Class::addMethod(std::unique_ptr
 		// Otherwise: override
 		const auto* parent_method = existing_method->getParentMethod();
 		bool wasVirtual = existing_method->isVirtual();
-
-		bpp_assert(getContainingProgram() != nullptr, "Containing program is null");
-		if (auto* source_index = getContainingProgram()->getSourceIndex()) {
-			source_index->updateEntityAddress(method.get(), existing_method);
-		}
+		const std::deque<SourceLocationRange> reference_positions = existing_method->getReferencePositions(); // copy
 
 		*existing_method = std::move(*method);
 
@@ -106,6 +91,9 @@ std::expected<const Method*, NameConflictError> Class::addMethod(std::unique_ptr
 		existing_method->setIsOverridable(false); // Can't override it twice
 		existing_method->setIsVirtual(wasVirtual);
 		existing_method->setContainingClass(this);
+		for (const auto& ref : reference_positions) {
+			existing_method->addReferencePosition({ref.source_file, ref.start});
+		}
 
 		return existing_method;
 	}

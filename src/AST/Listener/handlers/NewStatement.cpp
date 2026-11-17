@@ -25,11 +25,10 @@ void Listener::enter(NewStatement* node) {
 	auto* class_entity = current_code_entity->getClass(type);
 	if (!class_entity) error(type, "Class not found: " + type.getValue());
 
-	if (source_index) source_index->addReference(class_entity,
+	if (source_index) class_entity->addReferencePosition(
 		{getCurrentSourceFile(),
-		type.getLine(), type.getColumn(),
-		type.getLine(), static_cast<uint32_t>(type.getColumn() + type.getValue().length())
-	});
+		type.getLine(), type.getColumn()}
+	);
 
 	auto instantiation = std::make_unique<bpp::IR::ObjectInstantiation>();
 	instantiation->inherit(current_code_entity);

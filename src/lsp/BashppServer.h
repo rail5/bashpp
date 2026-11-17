@@ -96,7 +96,7 @@ class BashppServer {
 		void sendResponse(const GenericResponseMessage& response);
 		void sendNotification(const GenericNotificationMessage& notification);
 
-		void publishDiagnostics(std::shared_ptr<ProgramPool::ProgramAndSourceIndex> program);
+		void publishDiagnostics(std::shared_ptr<bpp::IR::Program> program);
 
 		void addIncludePath(const std::filesystem::path& path);
 

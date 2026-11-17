@@ -44,21 +44,10 @@ void Listener::enter(MethodDefinition* node) {
 		default: throw bpp::ErrorHandling::InternalError("Unknown access modifier in method definition");
 	}
 
-	if (source_index) {
-		source_index->setDefinitionPosition(
-			new_method.get(),
-			{getCurrentSourceFile(),
-			node->NAME().getLine(), node->NAME().getColumn(),
-			node->NAME().getLine(), static_cast<uint32_t>(node->NAME().getColumn() + node->NAME().getValue().length())}
-		);
-
-		source_index->markContextEntity(
-			{getCurrentSourceFile(),
-			node->getLine(), node->getColumn(),
-			node->getEndPosition().line, node->getEndPosition().column},
-			new_method.get()
-		);
-	}
+	if (source_index) new_method->setDefinitionPosition(
+		{getCurrentSourceFile(),
+		node->NAME().getLine(), node->NAME().getColumn()}
+	);
 
 	// 1. The implicit `this` parameter, which is always the first parameter of a method
 	if (!new_method->addParameter(current_class->getThisPtr())) {
@@ -76,11 +65,10 @@ void Listener::enter(MethodDefinition* node) {
 			param_type = new_method->getClass(type_name);
 			if (!param_type) error(p, "Unknown class: " + type_name);
 
-			if (source_index) source_index->addReference(param_type,
+			if (source_index) param_type->addReferencePosition(
 				{getCurrentSourceFile(),
-				param.type.value().getLine(), param.type.value().getColumn(),
-				param.type.value().getLine(), static_cast<uint32_t>(param.type.value().getColumn() + type_name.length())
-			});
+				param.type.value().getLine(), param.type.value().getColumn()}
+			);
 
 			if (!param.pointer) error(p, "Methods can only accept pointers as parameters, not objects");
 
@@ -103,11 +91,9 @@ void Listener::enter(MethodDefinition* node) {
 		parameter_entity->setIsPointer(param_type != nullptr);
 		parameter_entity->inherit(new_method.get());
 
-		if (source_index) source_index->setDefinitionPosition(
-			parameter_entity.get(),
+		if (source_index) parameter_entity->setDefinitionPosition(
 			{getCurrentSourceFile(),
-			param.name.getLine(), param.name.getColumn(),
-			param.name.getLine(), static_cast<uint32_t>(param.name.getColumn() + param_name.length())}
+			param.name.getLine(), param.name.getColumn()}
 		);
 
 		auto res = new_method->addParameter(std::move(parameter_entity));
@@ -151,6 +137,13 @@ void Listener::exit(MethodDefinition* node) {
 		}
 		error(node->NAME(), error_message);
 	}
+
+	if (source_index) root_program->markContextEntity(
+		{getCurrentSourceFile(),
+		node->getLine(), node->getColumn(),
+		node->getEndPosition().line, node->getEndPosition().column},
+		*res
+	);
 }
 
 } // namespace bpp::AST

@@ -244,20 +244,18 @@ void BashppServer::exit(const GenericNotificationMessage& /*notification*/) {
 	}
 }
 
-void BashppServer::publishDiagnostics(std::shared_ptr<ProgramPool::ProgramAndSourceIndex> program) {
-	log("Publishing diagnostics for program rooted at: ", program->program->getSourceFile());
+void BashppServer::publishDiagnostics(std::shared_ptr<bpp::IR::Program> program) {
+	log("Publishing diagnostics for program rooted at: ", program->getSourceFile());
 	if (program == nullptr) {
 		log("Cannot publish diagnostics for a null program.");
 		return;
 	}
 
-	const auto source_files = program->source_index->getAllSourceFiles();
-	for (const auto& file : source_files) {
+	for (const auto& file : program->getAllSourceFiles()) {
 		PublishDiagnosticsNotification notification;
 		notification.params.uri = "file://" + file.string();
-		auto diags = program->source_index->getDiagnostics(file);
 		std::vector<Diagnostic> lsp_diags;
-		for (const auto& diag : diags) {
+		for (const auto& diag : program->getDiagnostics(file)) {
 			Diagnostic lsp_diag;
 			lsp_diag.range.start.line = diag.getLine();
 			lsp_diag.range.start.character = diag.getColumn();

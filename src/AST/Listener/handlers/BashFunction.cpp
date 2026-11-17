@@ -32,14 +32,12 @@ void Listener::enter(BashFunction* node) {
 	function_entity->inherit(current_code_entity);
 
 	if (source_index) {
-		source_index->setDefinitionPosition(
-			function_entity.get(),
+		function_entity->setDefinitionPosition(
 			{getCurrentSourceFile(),
-			function_name.getLine(), function_name.getColumn(),
-			function_name.getLine(), static_cast<uint32_t>(function_name.getColumn() + function_name.getValue().length())
-		});
+			function_name.getLine(), function_name.getColumn()}
+		);
 
-		source_index->markContextEntity(
+		root_program->markContextEntity(
 			{getCurrentSourceFile(),
 			node->getLine(), node->getColumn(),
 			node->getEndPosition().line, node->getEndPosition().column},

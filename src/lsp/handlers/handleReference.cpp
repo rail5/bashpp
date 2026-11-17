@@ -39,16 +39,13 @@ GenericResponseMessage bpp::LSP::BashppServer::handleReferences(const GenericReq
 
 	std::vector<Location> locations;
 	for (const auto& entity : entities) {
-		auto containing_program = program_pool.getProgramForEntity(entity);
-		if (!containing_program) {
-			std::string name = "(unnamed)";
-			if (const auto* named_entity = dynamic_cast<const bpp::IR::Components::Named*>(entity)) {
-				name = named_entity->getName();
-			}
-			log("Entity found, but no containing program for entity: ", name);
+		const auto* referenceable_entity = dynamic_cast<const bpp::IR::Components::Referenceable*>(entity);
+		if (!referenceable_entity) {
+			log("Entity found at position: (", reference_request.params.position.line, ", ", reference_request.params.position.character, ") in URI: ", uri, " is not referenceable");
 			continue;
 		}
-		for (const auto& range : containing_program->source_index->getReferences(entity)) {
+
+		for (const auto& range : referenceable_entity->getReferencePositions()) {
 			log("Found reference in file: ", range.source_file.string(), " at line: ", range.start.line, " character: ", range.start.column);
 			std::string file_uri = "file://" + range.source_file.string();
 			Location loc;

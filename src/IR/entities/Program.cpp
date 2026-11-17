@@ -53,6 +53,78 @@ std::size_t Program::getNumberOfKnownClasses() const {
 	return classes.size() + (preregistered_class ? 1 : 0);
 }
 
+void Program::collectEntityReferences() {
+	auto mirror_references_normal = [this]<ReferenceableEntity T>(const T* entity) {
+		if (!entity) return;
+		const auto& definition = entity->getDefinitionPosition();
+		if (definition) file_data[definition->source_file].entity_references.insert(definition->start, definition->end, entity);
+		for (const auto& ref : entity->getReferencePositions()) {
+			file_data[ref.source_file].entity_references.insert(ref.start, ref.end, entity);
+		}
+	};
+
+	auto mirror_references_include = [this](const IncludeStatement* entity) {
+		if (!entity) return;
+		// Do not mirror the definition position.
+		for (const auto& ref : entity->getReferencePositions()) {
+			file_data[ref.source_file].entity_references.insert(ref.start, ref.end, entity);
+		}
+	};
+
+	auto mirror_references_method = [mirror_references_normal](const Method* entity) {
+		mirror_references_normal(entity);
+		for (const auto& [idx, param] : entity->getParameters()) {
+			mirror_references_normal(param);
+		}
+	};
+
+	auto mirror_references_class = [mirror_references_normal, mirror_references_method](const Class* entity) {
+		mirror_references_normal(entity);
+		mirror_references_normal(entity->getThisPtr());
+		mirror_references_normal(entity->getSuperPtr());
+		for (const auto& datamember : entity->getAllDatamembers()) {
+			mirror_references_normal(datamember.get());
+		}
+		for (const auto& method : entity->getAllMethods()) {
+			mirror_references_method(method.get());
+		}
+	};
+
+	// 1. Mirror references for all classes and their members
+
+	for (const auto& cls : classes.view_entities()) {
+		mirror_references_class(cls.get());
+	}
+
+	// 2. Mirror references for all global-scope (Program-owned) objects
+
+	for (const auto& obj : local_objects.view_entities()) {
+		mirror_references_normal(obj.get());
+	}
+
+	// 3. Mirror references for all @include statements
+	for (const auto* include_entity : include_statements) {
+		mirror_references_include(include_entity);
+	}
+
+	// 4. Iterate over every "local scope", and mirror references for all objects owned by that local scope
+	// Copy the "getAllSourceFiles()" view into a vector, since we can't iterate over it while also mutating the underlying map
+	auto source_files_view = getAllSourceFiles();
+	std::vector<std::filesystem::path> source_files(source_files_view.begin(), source_files_view.end());
+	for (const auto& source_file : source_files) {
+		// Copy the viewAllEntities() view, for the same reason as above
+		auto entities_view = file_data[source_file].context_entities.viewAllEntities();
+		std::vector<const Entity*> entities(entities_view.begin(), entities_view.end());
+		for (const auto* ctx : entities) {
+			const auto* code_entity = dynamic_cast<const CodeEntity*>(ctx);
+			if (!code_entity) continue;
+			for (const auto& obj : code_entity->getLocalObjects().view_entities()) {
+				mirror_references_normal(obj.get());
+			}
+		}
+	}
+}
+
 bpp::CodeGen::CodeSegment Program::generateCode(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "State pointer is null");
 	bpp::CodeGen::CodeSegment code;

@@ -22,6 +22,6 @@ namespace bpp::LSP {
  * @param program_pool The program pool to use for accessing source files.
  * @return A string containing the comments associated with the entity, or an empty string if no comments are found.
  */
-std::string find_comments_for_entity(const bpp::IR::Entity* entity, bpp::LSP::ProgramPool* program_pool);
+std::string find_comments_for_entity(const bpp::IR::Components::Referenceable* entity, bpp::LSP::ProgramPool* program_pool);
 
 } // namespace bpp::LSP

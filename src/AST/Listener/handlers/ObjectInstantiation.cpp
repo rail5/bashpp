@@ -73,18 +73,15 @@ void Listener::enter(ObjectInstantiation* node) {
 	object->setIsPointer(node->isPointer());
 
 	if (source_index) {
-		source_index->setDefinitionPosition(
-			object.get(),
+		object->setDefinitionPosition(
 			{getCurrentSourceFile(),
-			object_name.getLine(), object_name.getColumn(),
-			object_name.getLine(), static_cast<uint32_t>(object_name.getColumn() + object_name.getValue().length())}
+			object_name.getLine(), object_name.getColumn()}
 		);
 
-		source_index->addReference(object_class,
+		object_class->addReferencePosition(
 			{getCurrentSourceFile(),
-			type_name.getLine(), type_name.getColumn(),
-			type_name.getLine(), static_cast<uint32_t>(type_name.getColumn() + type_name.getValue().length())
-		});
+			type_name.getLine(), type_name.getColumn()}
+		);
 	}
 
 	entity_stack.push(std::move(object));

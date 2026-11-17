@@ -56,28 +56,16 @@ void Listener::enter(ClassDefinition* node) {
 		}
 		class_entity->inherit(parent_class);
 
-		if (source_index) source_index->addReference(parent_class,
+		if (source_index) parent_class->addReferencePosition(
 			{getCurrentSourceFile(),
-			node->PARENTCLASSNAME().value().getLine(), node->PARENTCLASSNAME().value().getColumn(),
-			node->PARENTCLASSNAME().value().getLine(), static_cast<uint32_t>(node->PARENTCLASSNAME().value().getColumn() + parent_class_name.length())
-		});
-	}
-
-	if (source_index) {
-		source_index->setDefinitionPosition(
-			class_entity.get(),
-			{getCurrentSourceFile(),
-			node->CLASSNAME().getLine(), node->CLASSNAME().getColumn(),
-			node->CLASSNAME().getLine(), static_cast<uint32_t>(node->CLASSNAME().getColumn() + node->CLASSNAME().getValue().length())
-		});
-
-		source_index->markContextEntity(
-			{getCurrentSourceFile(),
-			node->getLine(), node->getColumn(),
-			node->getEndPosition().line, node->getEndPosition().column},
-			class_entity.get()
+			node->PARENTCLASSNAME().value().getLine(), node->PARENTCLASSNAME().value().getColumn()}
 		);
 	}
+
+	if (source_index) class_entity->setDefinitionPosition(
+		{getCurrentSourceFile(),
+		node->CLASSNAME().getLine(), node->CLASSNAME().getColumn()}
+	);
 
 	// Add placeholders for system methods:
 	// __new, __delete, __copy, __constructor, __destructor
@@ -184,6 +172,13 @@ void Listener::exit(ClassDefinition* node) {
 		error_message += ": " + node->CLASSNAME().getValue();
 		error(node, error_message);
 	}
+
+	if (source_index) root_program->markContextEntity(
+		{getCurrentSourceFile(),
+		node->getLine(), node->getColumn(),
+		node->getEndPosition().line, node->getEndPosition().column},
+		*res
+	);
 }
 
 } // namespace bpp::AST

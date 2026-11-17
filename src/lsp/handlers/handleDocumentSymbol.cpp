@@ -38,10 +38,9 @@ GenericResponseMessage bpp::LSP::BashppServer::handleDocumentSymbol(const Generi
 	std::vector<DocumentSymbol> result;
 
 	// First, populate with all the classes whose definition positions are within the requested document
-	const auto& classes = program->program->getAllKnownClasses();
-	for (const auto& cls : classes) {
+	for (const auto& cls : program->getAllKnownClasses()) {
 		if (cls == nullptr) continue;
-		auto class_definition_position = program->source_index->getDefinitionPosition(cls);
+		auto class_definition_position = cls->getDefinitionPosition();
 		if (!class_definition_position || class_definition_position->source_file != uri) continue;
 
 		DocumentSymbol symbol;
@@ -57,7 +56,7 @@ GenericResponseMessage bpp::LSP::BashppServer::handleDocumentSymbol(const Generi
 		std::vector<DocumentSymbol> children;
 		for (const auto& method : cls->getAllMethods()) {
 			if (method->getName().starts_with("__")) continue; // Skip system methods like __new and __delete
-			auto method_definition_position = program->source_index->getDefinitionPosition(method.get());
+			auto method_definition_position = method->getDefinitionPosition();
 			// Only include methods defined in this document, not those inherited from other classes
 			if (!method_definition_position || method_definition_position->source_file != uri) continue;
 			DocumentSymbol method_symbol;
@@ -71,7 +70,7 @@ GenericResponseMessage bpp::LSP::BashppServer::handleDocumentSymbol(const Generi
 			children.push_back(method_symbol);
 		}
 		for (const auto& datamember : cls->getAllDatamembers()) {
-			auto datamember_definition_position = program->source_index->getDefinitionPosition(datamember.get());
+			auto datamember_definition_position = datamember->getDefinitionPosition();
 			// Only include data members defined in this document, not those inherited from other classes
 			if (!datamember_definition_position || datamember_definition_position->source_file != uri) continue;
 			DocumentSymbol datamember_symbol;
@@ -102,9 +101,9 @@ GenericResponseMessage bpp::LSP::BashppServer::handleDocumentSymbol(const Generi
 	// would anticipate only symbols that are "exported" from this document
 	// to others. I.e., those that would be available after @include <ThisSource.bpp>
 
-	for (const auto* object : program->program->getAllKnownObjects()) {
+	for (const auto* object : program->getAllKnownObjects()) {
 		if (object == nullptr) continue;
-		auto object_definition_position = program->source_index->getDefinitionPosition(object);
+		auto object_definition_position = object->getDefinitionPosition();
 		if (!object_definition_position || object_definition_position->source_file != uri) continue;
 		DocumentSymbol symbol;
 		symbol.name = object->getName();

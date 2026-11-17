@@ -23,21 +23,10 @@ void Listener::enter(ConstructorDefinition* node) {
 	new_constructor->setScope(bpp::IR::VisibilityScope::PUBLIC);
 	new_constructor->inherit(current_class);
 
-	if (source_index) {
-		source_index->setDefinitionPosition(
-			new_constructor.get(),
-			{getCurrentSourceFile(),
-			node->getLine(), node->getColumn(),
-			node->getLine(), static_cast<uint32_t>(node->getColumn() + std::string("@constructor").length())}
-		);
-
-		source_index->markContextEntity(
-			{getCurrentSourceFile(),
-			node->getLine(), node->getColumn(),
-			node->getEndPosition().line, node->getEndPosition().column},
-			new_constructor.get()
-		);
-	}
+	if (source_index) new_constructor->setDefinitionPosition(
+		{getCurrentSourceFile(),
+		node->getLine(), node->getColumn()}
+	);
 
 	if (!new_constructor->addParameter(current_class->getThisPtr())) {
 		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to user-defined constructor");
@@ -63,6 +52,13 @@ void Listener::exit(ConstructorDefinition* node) {
 
 	auto res = current_class->addMethod(std::move(new_constructor));
 	if (!res) error(node, "Constructor already defined in class '" + current_class->getName() + "'");
+
+	if (source_index) root_program->markContextEntity(
+		{getCurrentSourceFile(),
+		node->getLine(), node->getColumn(),
+		node->getEndPosition().line, node->getEndPosition().column},
+		*res
+	);
 }
 
 } // namespace bpp::AST

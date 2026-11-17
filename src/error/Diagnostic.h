@@ -16,10 +16,6 @@
 
 #include <error/detail.h>
 
-namespace bpp::IR {
-class SourceIndex;
-} // namespace bpp::IR
-
 namespace bpp::ErrorHandling {
 
 enum class DiagnosticType : std::uint8_t {

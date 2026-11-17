@@ -22,7 +22,7 @@ void Listener::enter(SubshellSubstitution* node) {
 	subshell_substitution_entity->inherit(current_code_entity);
 	subshell_substitution_entity->setIsCatReplacement(node->isCatReplacement());
 
-	if (source_index) source_index->markContextEntity(
+	if (source_index) root_program->markContextEntity(
 		{getCurrentSourceFile(),
 		node->getLine(), node->getColumn(),
 		node->getEndPosition().line, node->getEndPosition().column},

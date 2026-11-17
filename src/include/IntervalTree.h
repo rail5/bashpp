@@ -75,10 +75,11 @@ public:
 	 * that contains the specified point. If no such interval exists, it returns a default-constructed T.
 	 * 
 	 * @param point The point to query.
-	 * @return T The payload of the innermost overlapping interval, or default-constructed T if none found.
+	 * @return const T& The payload of the innermost overlapping interval, or default-constructed T if none found.
 	 */
-	T find_innermost_overlap(std::uint64_t point) const {
+	const T& find_innermost_overlap(std::uint64_t point) const {
 		ensure_sorted();
+		static T fallback{};
 
 		// Binary search for first interval with low <= point
 		auto it = std::upper_bound(intervals.begin(), intervals.end(), point,
@@ -86,7 +87,7 @@ public:
 				return point < interval.low;
 			});
 
-		if (it == intervals.begin()) return T();
+		if (it == intervals.begin()) return fallback;
 
 		// Scan backwards to find innermost (since sorted by low then wide-first)
 		--it;
@@ -100,7 +101,7 @@ public:
 
 			if (it == intervals.begin()) break; // Prevent underflow/UB
 		}
-		return best ? best->payload : T();
+		return best ? best->payload : fallback;
 	}
 
 	Interval* find(std::uint64_t low, std::uint64_t high) {
@@ -110,12 +111,8 @@ public:
 		return nullptr;
 	}
 
-	template<typename MatchFunc, typename UpdateFunc>
-	requires std::is_invocable_r_v<bool, MatchFunc, const T&> &&
-	         std::is_invocable_r_v<T, UpdateFunc, const T&>
-	void updatePayload(MatchFunc&& match_func, UpdateFunc&& update_func) {
-		for (auto& interval : intervals) {
-			if (match_func(interval.payload)) interval.payload = update_func(interval.payload);
-		}
+	const std::vector<Interval>& getIntervals() const {
+		ensure_sorted();
+		return intervals;
 	}
 };

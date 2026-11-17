@@ -8,13 +8,14 @@
 
 #include <IR/bpp.h>
 #include <IR/entities/CodeEntity.h>
+#include <IR/entities/components/Referenceable.h>
 
 #include <filesystem>
 #include <optional>
 
 namespace bpp::IR {
 
-class IncludeStatement : public CodeEntity {
+class IncludeStatement : public CodeEntity, public Components::Referenceable {
 	private:
 		/// @brief The path to the included source file
 		std::filesystem::path included_file_path;
@@ -43,13 +44,17 @@ class IncludeStatement : public CodeEntity {
 	public:
 		IncludeStatement() = delete;
 		IncludeStatement(const std::filesystem::path& included_file_path, bool is_dynamic_include)
-			: included_file_path(included_file_path), is_dynamic_include(is_dynamic_include) {}
+			: included_file_path(included_file_path), is_dynamic_include(is_dynamic_include) {
+				Referenceable::setDefinitionPosition({included_file_path, {0, 0}, {0, 0}});
+			}
 
 		const std::filesystem::path& getIncludedFilePath() const { return included_file_path; }
 		bool isDynamicInclude() const { return is_dynamic_include; }
 
 		void setAsPath(const std::filesystem::path& path) { as_path = path; }
 		void disableCodegen() { codegen_enabled = false; }
+
+		void addReferencePosition(const SourceLocationRange& position) { Components::Referenceable::addReferencePosition(position); }
 
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 };

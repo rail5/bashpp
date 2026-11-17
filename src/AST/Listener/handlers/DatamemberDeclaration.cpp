@@ -45,13 +45,16 @@ void Listener::enter(DatamemberDeclaration* node) {
 		dm->setType(type);
 		dm->setIsPointer(node->isPointer());
 
-		if (source_index) source_index->setDefinitionPosition(
-			dm.get(),
+		if (source_index) type->addReferencePosition(
 			{getCurrentSourceFile(),
-			id.value().getLine(), id.value().getColumn(),
-			id.value().getLine(), static_cast<uint32_t>(id.value().getColumn() + dm->getName().length())
-		});
+			type_name.getLine(), type_name.getColumn()}
+		);
 	}
+
+	if (source_index) dm->setDefinitionPosition(
+		{getCurrentSourceFile(),
+		node->IDENTIFIER().getLine(), node->IDENTIFIER().getColumn()}
+	);
 
 	entity_stack.push(std::move(dm));
 }

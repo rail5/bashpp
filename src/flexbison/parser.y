@@ -1107,7 +1107,13 @@ datamember_declaration:
 		}
 
 		node->setAccessModifier($1);
-		node->addChild(std::move($2));
+
+		auto instantiation = static_uniqueptr_cast<bpp::AST::ObjectInstantiation>(std::move($2));
+
+		node->setType(instantiation->TYPE());
+		node->setIdentifier(instantiation->IDENTIFIER());
+		node->setIsPointer(instantiation->isPointer());
+		node->adoptChildren(std::move(instantiation));
 
 		$$ = std::move(node);
 	}
@@ -1119,7 +1125,13 @@ datamember_declaration:
 		node->setEndPosition(@2.end.line, @2.end.column);
 
 		node->setAccessModifier($1);
-		node->addChild(std::move($2));
+
+		auto instantiation = static_uniqueptr_cast<bpp::AST::ObjectInstantiation>(std::move($2));
+
+		node->setType(instantiation->TYPE());
+		node->setIdentifier(instantiation->IDENTIFIER());
+		node->setIsPointer(instantiation->isPointer());
+		node->adoptChildren(std::move(instantiation));
 
 		$$ = std::move(node);
 	}

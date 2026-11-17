@@ -24,6 +24,13 @@ void Listener::enter(DatamemberDeclaration* node) {
 	auto dm = std::make_unique<bpp::IR::DataMember>();
 	dm->inherit(current_class);
 
+	if (!bpp::IR::is_valid_identifier(node->IDENTIFIER())) {
+		std::string msg = "Invalid data member name: '" + node->IDENTIFIER().getValue() + "'";
+		if (node->IDENTIFIER().getValue().contains("__")) msg += " (Bash++ identifiers cannot contain double underscores)";
+		if (bpp::IR::is_protected_keyword(node->IDENTIFIER())) msg += " ('" + node->IDENTIFIER().getValue() + "' is a keyword)";
+		error(node, msg);
+	}
+
 	switch (node->ACCESSMODIFIER().getValue()) {
 		case AccessModifier::PUBLIC: dm->setScope(bpp::IR::VisibilityScope::PUBLIC); break;
 		case AccessModifier::PRIVATE: dm->setScope(bpp::IR::VisibilityScope::PRIVATE); break;
@@ -31,24 +38,13 @@ void Listener::enter(DatamemberDeclaration* node) {
 		default: throw bpp::ErrorHandling::InternalError("Unknown access modifier in data member declaration");
 	}
 
-	/*
-	 * This will either be:
-	 * 	1. A primitive [IDENTIFIER will be set]
-	 * 	2. An object [object_instantiation will be set, and we'll handle that in the object_instantiation rule]
-	 * 	3. A pointer [pointer_declaration will be set, and we'll handle that in the pointer_declaration rule]
-	 */
-
-	const auto& id = node->IDENTIFIER();
-	if (id.has_value()) {
-		// This is a primitive data member
-		dm->setName(id.value().getValue());
-
-		if (!bpp::IR::is_valid_identifier(dm->getName())) {
-			std::string msg = "Invalid data member name: '" + dm->getName() + "'";
-			if (dm->getName().contains("__")) msg += " (Bash++ identifiers cannot contain double underscores)";
-			if (bpp::IR::is_protected_keyword(dm->getName())) msg += " ('" + dm->getName() + "' is a keyword)";
-			error(node, msg);
-		}
+	dm->setName(id.getValue());
+	if (node->TYPE().has_value()) {
+		const auto& type_name = node->TYPE().value();
+		const auto* type = current_class->getClass(type_name);
+		if (!type) error(type_name, "Class not found: '" + type_name.getValue() + "'");
+		dm->setType(type);
+		dm->setIsPointer(node->isPointer());
 
 		if (source_index) source_index->setDefinitionPosition(
 			dm.get(),

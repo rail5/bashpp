@@ -16,7 +16,8 @@ class DatamemberDeclaration : public ASTNode {
 	protected:
 		AST::Token<AccessModifier> m_ACCESSMODIFIER;
 		std::optional<AST::Token<std::string>> m_TYPE;
-		std::optional<AST::Token<std::string>> m_IDENTIFIER;
+		AST::Token<std::string> m_IDENTIFIER;
+		bool m_is_pointer = false;
 
 	public:
 		constexpr DatamemberDeclaration() : ASTNode(bpp::AST::NodeType::DatamemberDeclaration) {}
@@ -41,16 +42,20 @@ class DatamemberDeclaration : public ASTNode {
 			m_TYPE = std::nullopt;
 		}
 
-		const std::optional<AST::Token<std::string>>& IDENTIFIER() const {
+		const AST::Token<std::string>& IDENTIFIER() const {
 			return m_IDENTIFIER;
 		}
 
 		void setIdentifier(const AST::Token<std::string>& identifier) {
-			if (!identifier.getValue().empty()) m_IDENTIFIER = identifier;
+			m_IDENTIFIER = identifier;
 		}
 
-		void clearIdentifier() {
-			m_IDENTIFIER = std::nullopt;
+		void setIsPointer(bool is_pointer) {
+			m_is_pointer = is_pointer;
+		}
+
+		bool isPointer() const {
+			return m_is_pointer;
 		}
 
 		PRETTYPRINT_OVERRIDE({
@@ -72,9 +77,7 @@ class DatamemberDeclaration : public ASTNode {
 			if (m_TYPE.has_value()) {
 				os << "@" << m_TYPE.value() << " ";
 			}
-			if (m_IDENTIFIER.has_value()) {
-				os << m_IDENTIFIER.value();
-			}
+			os << m_IDENTIFIER;
 			for (const auto& child : children) {
 				os << std::endl;
 				child->prettyPrint(os, indentation_level + 1);

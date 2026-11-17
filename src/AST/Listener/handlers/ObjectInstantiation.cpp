@@ -96,20 +96,6 @@ void Listener::exit(ObjectInstantiation* node) {
 	bpp_assert(topmost_entity_is<bpp::IR::Object>(), "Topmost entity on stack is not an Object");
 	auto object = entity_stack.pop_as<bpp::IR::Object>();
 
-	if (auto* datamember_declaration = dynamic_cast<bpp::IR::DataMember*>(entity_stack.top())) {
-		// This object instantiation is part of a class's data member declaration
-		// The data for this object should be moved to the data member, and the object should be discarded
-		datamember_declaration->setType(object->getType());
-		datamember_declaration->setIsPointer(object->isPointer());
-		datamember_declaration->setName(object->getName());
-		if (object->hasInitialValue()) datamember_declaration->setInitialValue(object->releaseInitialValue());
-		if (source_index) {
-			auto def_pos = source_index->getDefinitionPosition(object.get()); // TODO(@rail5): duplicated info
-			source_index->setDefinitionPosition(datamember_declaration, *def_pos);
-		}
-		return;
-	}
-
 	// Otherwise, add the object to the current code entity
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity on stack is not a CodeEntity");
 	auto* current_code_entity = entity_stack.top_as<bpp::IR::CodeEntity>();

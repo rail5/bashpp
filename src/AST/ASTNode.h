@@ -68,11 +68,11 @@ class ASTNode {
 		void addChildren(std::vector<std::unique_ptr<ASTNode>>&& childs);
 
 		/**
-		 * @brief Absorb the children of a Block node into this AST node, without adding the Block node itself.
-		 * I.e., this function "unwraps" the Block node and adds its children directly to this node.
-		 * @param block_node The Block node whose children are to be absorbed.
+		 * @brief Absorb the children of another AST node into this AST node, without adding the other node itself.
+		 * I.e., this function "unwraps" the other node and adds its children directly to this node.
+		 * @param other The other AST node whose children are to be absorbed.
 		 */
-		void absorbBlock(std::unique_ptr<Block>&& block_node);
+		void adoptChildren(std::unique_ptr<ASTNode>&& other);
 
 		std::span<const std::unique_ptr<ASTNode>> getChildren() const;
 		std::vector<std::unique_ptr<ASTNode>> releaseChildren() { return std::move(children); }

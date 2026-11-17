@@ -6,7 +6,6 @@
 
 #include <AST/ASTNode.h>
 #include <AST/Nodes/RawText.h>
-#include <AST/Nodes/Block.h>
 #include <AST/Position.h>
 
 namespace bpp::AST {
@@ -60,11 +59,11 @@ void ASTNode::addChildren(std::vector<std::unique_ptr<ASTNode>>&& childs) {
 	}
 }
 
-void ASTNode::absorbBlock(std::unique_ptr<Block>&& block_node) {
-	if (block_node == nullptr) return;
+void ASTNode::adoptChildren(std::unique_ptr<ASTNode>&& other) {
+	if (other == nullptr) return;
 
-	// Absorb the children of the Block node into this AST node, without adding the Block node itself.
-	addChildren(block_node->releaseChildren());
+	// Absorb the children of the other node into this AST node, without adding the other node itself.
+	addChildren(other->releaseChildren());
 }
 
 std::span<const std::unique_ptr<bpp::AST::ASTNode>> ASTNode::getChildren() const {

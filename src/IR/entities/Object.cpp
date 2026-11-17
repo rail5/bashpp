@@ -12,6 +12,8 @@
 
 namespace bpp::IR {
 
+Object::Object(const std::string& name) : Components::Named(name) {}
+
 Object::Object(const Object& other) : Entity(other), Components::Named(other), Components::Addressable(other),
 	m_is_pointer(other.m_is_pointer), type(other.type), copy_from(other.copy_from)
 {

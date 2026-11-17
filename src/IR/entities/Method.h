@@ -74,7 +74,8 @@ class Method : public BashFunction, public Components::Addressable, public Compo
 		 */
 		bool f_points_to_parent_method = false;
 	public:
-		Method() = default;
+		Method() = delete;
+		explicit Method(const std::string& name) : BashFunction(name) {}
 
 		/**
 		 * @brief Create a new Method that is inherited (and not overridden) from a parent method.
@@ -82,17 +83,16 @@ class Method : public BashFunction, public Components::Addressable, public Compo
 		 * Calls to this method will be redirected to the parent method.
 		 * @param parent_method The parent method to inherit from
 		 */
-		explicit Method(const Method* parent_method) {
-			bpp_assert(parent_method != nullptr, "Parent method pointer is null");
-			while (parent_method->pointsToParentMethod()) {
+		explicit Method(const Method* parent_method) : BashFunction(parent_method->getName()) {
+			const Method* original_method = parent_method;
+			while (original_method->pointsToParentMethod()) {
 				// If the parent method is itself an inherited method that points to its own parent, traverse the chain up to the original method.
 				// This is not strictly necessary but will save time later during lookup
-				parent_method = parent_method->getParentMethod();
-				bpp_assert(parent_method != nullptr, "Parent method pointer is null");
+				original_method = original_method->getParentMethod();
+				bpp_assert(original_method != nullptr, "Parent method pointer is null");
 			}
-			inherit(parent_method);
+			inherit(original_method);
 			setParentMethod(parent_method);
-			setName(parent_method->getName());
 			if (parent_method->getScope() == VisibilityScope::PRIVATE) {
 				setScope(VisibilityScope::INACCESSIBLE);
 			} else {

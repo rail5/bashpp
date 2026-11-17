@@ -21,7 +21,7 @@ void Listener::enter(DatamemberDeclaration* node) {
 	auto* current_class = entity_stack.top_as<bpp::IR::Class>();
 	if (!current_class) error(node, "Data member declaration outside of class body");
 
-	auto dm = std::make_unique<bpp::IR::DataMember>();
+	auto dm = std::make_unique<bpp::IR::DataMember>(node->IDENTIFIER());
 	dm->inherit(current_class);
 
 	if (!bpp::IR::is_valid_identifier(node->IDENTIFIER())) {
@@ -38,7 +38,6 @@ void Listener::enter(DatamemberDeclaration* node) {
 		default: throw bpp::ErrorHandling::InternalError("Unknown access modifier in data member declaration");
 	}
 
-	dm->setName(id.getValue());
 	if (node->TYPE().has_value()) {
 		const auto& type_name = node->TYPE().value();
 		const auto* type = current_class->getClass(type_name);

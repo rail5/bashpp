@@ -19,10 +19,19 @@ namespace bpp::IR::Components {
 class Named {
 	protected:
 		std::string name;
+
+		explicit Named(const std::string& name) : name(name) {}
+		~Named() = default;
+		Named(const Named& other) = default;
+		Named(Named&& other) noexcept = default;
+		Named& operator=(const Named& other) = default;
+		Named& operator=(Named&& other) noexcept = default;
+
 	public:
+		Named() = delete;
+
 		const std::string& getName() const { return name; }
 		std::string_view viewName() const { return name; }
-		void setName(const std::string& name) { this->name = name; }
 };
 
 } // namespace bpp::IR::Components

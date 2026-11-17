@@ -67,11 +67,10 @@ void Listener::enter(ObjectInstantiation* node) {
 		error(type_name, "Class not found: '" + type_name.getValue() + "'");
 	}
 
-	auto object = std::make_unique<bpp::IR::Object>();
+	auto object = std::make_unique<bpp::IR::Object>(object_name);
 	object->inherit(current_code_entity);
 	object->setType(object_class);
 	object->setIsPointer(node->isPointer());
-	object->setName(object_name);
 
 	if (source_index) {
 		source_index->setDefinitionPosition(

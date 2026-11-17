@@ -28,9 +28,8 @@ void Listener::enter(BashFunction* node) {
 		);
 	}
 
-	auto function_entity = std::make_unique<bpp::IR::BashFunction>();
+	auto function_entity = std::make_unique<bpp::IR::BashFunction>(function_name.getValue());
 	function_entity->inherit(current_code_entity);
-	function_entity->setName(function_name.getValue());
 
 	if (source_index) {
 		source_index->setDefinitionPosition(

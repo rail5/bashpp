@@ -19,8 +19,7 @@ void Listener::enter(ConstructorDefinition* node) {
 	auto* current_class = dynamic_cast<bpp::IR::Class*>(entity_stack.top());
 	if (!current_class) error(node, "Constructor definition outside of class body");
 
-	auto new_constructor = std::make_unique<bpp::IR::Method>();
-	new_constructor->setName("__constructor");
+	auto new_constructor = std::make_unique<bpp::IR::Method>("__constructor");
 	new_constructor->setScope(bpp::IR::VisibilityScope::PUBLIC);
 	new_constructor->inherit(current_class);
 

@@ -22,6 +22,8 @@ namespace bpp::IR {
  */
 class MethodParameter : public Object {
 	public:
+		MethodParameter() = delete;
+		explicit MethodParameter(const std::string& name);
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 		virtual bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state, std::uint32_t index) const;
 };
@@ -33,6 +35,9 @@ class ThisPtr : public MethodParameter {
 	public:
 		ThisPtr() = delete;
 		explicit ThisPtr(const Class* containing_class);
+
+		/// @brief For constructing `this` pointers with name other than "this" (e.g., "super")
+		ThisPtr(const Class* containing_class, const std::string& special_name);
 
 		std::string getAddress() const override { return "__this"; }
 

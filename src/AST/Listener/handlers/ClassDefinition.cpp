@@ -117,8 +117,7 @@ void Listener::enter(ClassDefinition* node) {
 	copy_method->setIsDefaulted(true);
 
 
-	auto constructor_method = std::make_unique<bpp::IR::Method>();
-	constructor_method->setName("__constructor");
+	auto constructor_method = std::make_unique<bpp::IR::Method>("__constructor");
 	constructor_method->setIsOverridable(true);
 	constructor_method->inherit(class_entity.get());
 	if (!constructor_method->addParameter(class_entity->getThisPtr())) {
@@ -127,8 +126,7 @@ void Listener::enter(ClassDefinition* node) {
 	constructor_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
 	constructor_method->setIsDefaulted(true);
 
-	auto destructor_method = std::make_unique<bpp::IR::Method>();
-	destructor_method->setName("__destructor");
+	auto destructor_method = std::make_unique<bpp::IR::Method>("__destructor");
 	destructor_method->setIsVirtual(true);
 	destructor_method->setIsOverridable(true);
 	destructor_method->inherit(class_entity.get());
@@ -152,8 +150,7 @@ void Listener::enter(ClassDefinition* node) {
 
 	if (!class_entity->getMethod_UNSAFE("toPrimitive")) {
 		// If we didn't inherit a custom toPrimitive method, generate a default one
-		auto toPrimitive_method = std::make_unique<bpp::IR::Method>();
-		toPrimitive_method->setName("toPrimitive");
+		auto toPrimitive_method = std::make_unique<bpp::IR::Method>("toPrimitive");
 		toPrimitive_method->setIsVirtual(true);
 		toPrimitive_method->setIsOverridable(true);
 		toPrimitive_method->inherit(class_entity.get());

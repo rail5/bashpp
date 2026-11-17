@@ -37,7 +37,8 @@ class Object : public Entity, public Components::Named, public Components::Addre
 		/// If not a pointer, the object from which this is copied (if any)
 		const Object* copy_from = nullptr;
 	public:
-		Object() = default;
+		Object() = delete;
+		explicit Object(const std::string& name);
 		Object(const Object& other);
 		Object& operator=(const Object& other) = delete;
 		Object(Object&& other) = default;

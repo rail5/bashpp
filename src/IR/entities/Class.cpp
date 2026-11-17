@@ -29,10 +29,7 @@ void Class::initSpecialPointers() const {
 	dynamic_cast_entity->add("$1");
 	this_ptr->setInitialValue(std::move(dynamic_cast_entity));
 
-	if (parent_class) {
-		super_ptr = std::make_unique<ThisPtr>(parent_class);
-		super_ptr->setName("super");
-	}
+	if (parent_class) super_ptr = std::make_unique<ThisPtr>(parent_class, "super");
 
 	special_pointers_initialized = true;
 }

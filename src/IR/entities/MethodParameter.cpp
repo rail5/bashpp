@@ -17,6 +17,8 @@
 
 namespace bpp::IR {
 
+MethodParameter::MethodParameter(const std::string& name) : Object(name) {}
+
 bpp::CodeGen::CodeSegment MethodParameter::generateCode(bpp::CodeGen::CodeGenState* /*state*/) const {
 	throw bpp::ErrorHandling::InternalError("MethodParameter::generateCode() called without index parameter");
 }
@@ -48,8 +50,12 @@ bpp::CodeGen::CodeSegment MethodParameter::generateCode(bpp::CodeGen::CodeGenSta
 	return code;
 }
 
-ThisPtr::ThisPtr(const Class* containing_class) {
-	setName("this");
+ThisPtr::ThisPtr(const Class* containing_class) : MethodParameter("this") {
+	setType(containing_class);
+	setIsPointer(true);
+}
+
+ThisPtr::ThisPtr(const Class* containing_class, const std::string& special_name) : MethodParameter(special_name) {
 	setType(containing_class);
 	setIsPointer(true);
 }
@@ -107,9 +113,7 @@ fi
 	return code;
 }
 
-CopyFromParam::CopyFromParam(const Class* containing_class) : ThisPtr(containing_class) {
-	setName("source");
-}
+CopyFromParam::CopyFromParam(const Class* containing_class) : ThisPtr(containing_class, "source") {}
 
 bpp::CodeGen::CodeSegment CopyFromParam::generateCode(bpp::CodeGen::CodeGenState* state, std::uint32_t /*index*/) const {
 	bpp_assert(state != nullptr, "State pointer is null");

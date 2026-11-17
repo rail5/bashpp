@@ -43,8 +43,8 @@ class Entity {
 
 		Entity(const Entity& other) = default;
 		Entity& operator=(const Entity& other) = default;
-		Entity(Entity&& other) = default;
-		Entity& operator=(Entity&& other) = default;
+		Entity(Entity&& other) noexcept = default;
+		Entity& operator=(Entity&& other) noexcept = default;
 
 		virtual const Class* getContainingClass() const { return containing_class; }
 		void setContainingClass(const Class* containing_class) { this->containing_class = containing_class; }

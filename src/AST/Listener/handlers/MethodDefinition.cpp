@@ -24,7 +24,7 @@ void Listener::enter(MethodDefinition* node) {
 	auto* current_class = dynamic_cast<bpp::IR::Class*>(entity_stack.top());
 	if (!current_class) error(node, "Method definition outside of class body");
 
-	auto new_method = std::make_unique<bpp::IR::Method>();
+	auto new_method = std::make_unique<bpp::IR::Method>(node->NAME());
 	new_method->inherit(current_class);
 
 	// Validate name
@@ -35,7 +35,6 @@ void Listener::enter(MethodDefinition* node) {
 		error(node, msg);
 	}
 
-	new_method->setName(node->NAME());
 	new_method->setIsVirtual(node->VIRTUAL());
 
 	switch (node->ACCESSMODIFIER().getValue()) {
@@ -99,10 +98,9 @@ void Listener::enter(MethodDefinition* node) {
 			}
 		}
 
-		auto parameter_entity = std::make_unique<bpp::IR::MethodParameter>();
+		auto parameter_entity = std::make_unique<bpp::IR::MethodParameter>(param_name);
 		parameter_entity->setType(param_type);
 		parameter_entity->setIsPointer(param_type != nullptr);
-		parameter_entity->setName(param_name);
 		parameter_entity->inherit(new_method.get());
 
 		if (source_index) source_index->setDefinitionPosition(

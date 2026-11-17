@@ -12,6 +12,8 @@
 
 namespace bpp::IR {
 
+DataMember::DataMember(const std::string& name) : Object(name) {}
+
 PRETTYPRINT_IMPLEMENTATION(DataMember, {
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 

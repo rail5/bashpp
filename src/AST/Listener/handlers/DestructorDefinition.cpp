@@ -19,8 +19,7 @@ void Listener::enter(DestructorDefinition* node) {
 	auto* current_class = dynamic_cast<bpp::IR::Class*>(entity_stack.top());
 	if (!current_class) error(node, "Destructor definition outside of class body");
 
-	auto new_destructor = std::make_unique<bpp::IR::Method>();
-	new_destructor->setName("__destructor");
+	auto new_destructor = std::make_unique<bpp::IR::Method>("__destructor");
 	new_destructor->setScope(bpp::IR::VisibilityScope::PUBLIC);
 	new_destructor->setIsVirtual(true);
 	new_destructor->inherit(current_class);

@@ -23,7 +23,7 @@ class SystemFunction : public BashFunction {
 		std::string_view m_contents;
 	public:
 		SystemFunction() = delete;
-		explicit SystemFunction(std::string_view contents) : m_contents(contents) {}
+		explicit SystemFunction(std::string_view contents) : BashFunction(""), m_contents(contents) {}
 
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override { return generateCode(state, false); }
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state, bool force_output) const;

@@ -17,6 +17,8 @@ namespace bpp::IR {
  */
 class BashFunction : public CodeEntity, public Components::Named {
 	public:
+		BashFunction() = delete;
+		explicit BashFunction(const std::string& name) : Components::Named(name) {}
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 		PRETTYPRINT_OVERRIDE();
 };

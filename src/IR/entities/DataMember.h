@@ -23,6 +23,8 @@ class DataMember : public Object, public Components::ClassMember {
 	private:
 		bool m_is_array = false;
 	public:
+		DataMember() = delete;
+		explicit DataMember(const std::string& name);
 		/// Addresses of data members can only be returned as suffixes to be appended to the address of the containing object.
 		std::string getAddress() const override { return "__" + getName(); }
 

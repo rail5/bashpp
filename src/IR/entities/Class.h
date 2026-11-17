@@ -58,7 +58,7 @@ class Class : public Entity, public Components::Named {
 		std::expected<T*, LookupError> getMember(const std::string& name, const Entity* context) const;
 	public:
 		Class() = delete;
-		explicit Class(const std::string& name) { setName(name); }
+		explicit Class(const std::string& name) : Components::Named(name) {}
 
 		const Class* getContainingClass() const override { return this; }
 

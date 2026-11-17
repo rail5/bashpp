@@ -26,14 +26,7 @@ class SystemMethod : public Method {
 			COPY,
 		};
 		SystemMethod() = delete;
-		explicit SystemMethod(Type type) : type(type) {
-			switch (type) {
-				case Type::NEW: setName("__new"); break;
-				case Type::DELETE: setName("__delete"); break;
-				case Type::COPY: setName("__copy"); break;
-				default: throw bpp::ErrorHandling::InternalError("Unknown SystemMethodType");
-			}
-		}
+		explicit SystemMethod(Type type) : Method(getNameForType(type)), type(type) {}
 
 		bpp::CodeGen::CodeSegment generateInlineNewCode(bpp::CodeGen::CodeGenState* state, bool localize, const Object* obj = nullptr) const;
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
@@ -44,6 +37,15 @@ class SystemMethod : public Method {
 
 		bpp::CodeGen::CodeSegment generateCopyCode(bpp::CodeGen::CodeGenState* state) const;
 		bpp::CodeGen::CodeSegment generateDeleteCode(bpp::CodeGen::CodeGenState* state) const;
+
+		static std::string getNameForType(Type type) {
+			switch (type) {
+				case Type::NEW: return "__new";
+				case Type::DELETE: return "__delete";
+				case Type::COPY: return "__copy";
+				default: throw bpp::ErrorHandling::InternalError("Unknown SystemMethodType");
+			}
+		}
 };
 
 } // namespace bpp::IR::Builtins

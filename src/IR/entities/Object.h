@@ -55,6 +55,8 @@ class Object : public Entity, public Components::Named, public Components::Addre
 
 		bool isPrimitive() const { return type == nullptr || isPointer(); }
 
+		bool isNonPrimitive() const { return !isPrimitive(); }
+
 		void setInitialValue(std::unique_ptr<CodeEntity> value);
 		std::optional<const CodeEntity*> getInitialValue() const;
 		bool hasInitialValue() const { return initial_value.has_value(); }

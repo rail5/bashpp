@@ -56,6 +56,10 @@ class OwnedEntityList {
 			return entities.size();
 		}
 
+		bool empty() const {
+			return entities.empty();
+		}
+
 		std::span<const std::unique_ptr<T>> view_entities() const {
 			return {entities.data(), entities.size()};
 		}

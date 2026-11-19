@@ -20,20 +20,13 @@ bpp::CodeGen::CodeSegment BashWhileOrUntilStatement::generateCode(bpp::CodeGen::
 	result.egalitarian_merge(condition->generateCode(state));
 	result.add_main_code("; do\n");
 
-	result.add_main_code("__scopeFrames+=(0)\n");
-	result.add_main_code("declare -a __loopFrames\n");
-	result.add_main_code("__loopFrames+=(${#__scopeFrames[@]})\n"); // Used for breaking out of nested loops:
-	// After entering a loop, we store an index into 'scopeFrames' at the top of the 'loopFrames' stack.
-	//   This 'loopFrames' stack shows us which scopeFrames belong to loops, in order.
-	// When we exit the loop, the top of the 'loopFrames' stack tells us how many scopeFrames to pop,
-	//   to unwind the stack back to the state it was in before entering the loop.
-	// This is so that we don't destroy local objects from outer loop(s) when breaking out of nested loops.
+	result.absorb_all_to_main(createScopeFrame(state, false, true));
+	result.absorb_all_to_main(markLoopFrame(state)); // Mark this scope frame as belonging to a loop
 
 	result.absorb_all_to_main(CodeEntity::generateCode(state));
 
-	result.absorb_all_to_main(destroyLocalObjects(state));
-
-	result.add_main_code("unset __loopFrames[-1]\n");
+	result.absorb_all_to_main(destroyScopeFrame(state));
+	result.absorb_all_to_main(unmarkLoopFrame(state));
 
 	result.add_main_code("\ndone\n");
 	state->nested_loop_depth--;

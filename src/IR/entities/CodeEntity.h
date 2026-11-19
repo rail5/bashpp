@@ -92,7 +92,103 @@ class CodeEntity : public Entity {
 		 */
 		void adoptObjectsOf(CodeEntity* other);
 
-		static bpp::CodeGen::CodeSegment destroyLocalObjects(bpp::CodeGen::CodeGenState* state);
+		bool managesObjectLifetimes() const;
+
+		/**
+		 * @brief Create a new scope frame for this code entity, which will be destroyed when the code entity is exited.
+		 *
+		 * A scope frame is only created if this code entity has local objects, or if `force` is true.
+		 * If `isolate_scope` is true, the scope frame will be created in an isolated (local) scope-frame stack,
+		 * separate to the global scope-frame stack used by the program. This totally eliminates the possibility
+		 * of accidental interference between the scope frames of this code entity and those of enclosing code entities.
+		 *
+		 *
+		 * Why would we want to "force" a scope frame to be created, even if there are no objects to manage?
+		 * Unfortunately, this is a necessary accommodation of the Bash & POSIX shell specifications.
+		 *
+		 * Let's consider what has to happen when we break out of a loop. The POSIX spec says:
+		 *
+		 *  > break [n]: exit from for, while, or until loop
+		 *  >
+		 *  > If n is specified, the break utility shall exit from the nth enclosing for, while, or until loop
+		 *  > [...]
+		 *
+		 * So, firstly, this means that (if we consider loops to be local scopes, which we do),
+		 * then if `break n` is given, we must destroy the scope frames belonging to the last `n` enclosing loops.
+		 * (E.g., we're going to break out of 3 nested loops, we have to destroy all the objects owned by those 3 loops.)
+		 *
+		 * Practically speaking, Bash caps `n` at the number of LEXICALLY enclosing loops.
+		 * Suppose you have a function which runs a loop, and inside that loop, it calls another looping function:
+		 *   foo() {
+		 *     while ... ; do bar ; done
+		 *   }
+		 *   bar() {
+		 *     while ... ; do if ... ; then break 2 ; fi ; done
+		 *   }
+		 *
+		 * The `break 2` in `bar()` will only break out of the loop in `bar()`, not the loop in `foo()`,
+		 * because although the loop in `foo()` is "enclosing" in the sense that it's on the call stack,
+		 * it is not LEXICALLY enclosing, because the loop in `bar()` is not textually inside the loop in `foo()`.
+		 *
+		 * "OK, great," you might be thinking, "this means we can know everything we need to know at compile-time,
+		 * We just check how many loops are lexically enclosing the `break`, and then check how many of those
+		 * actually have scope frames to destroy, and then we can just destroy that many scope frames."
+		 *
+		 * Well ... unfortunately, this behavior of Bash could reasonably be considered a bug. And therefore we can't rely on it.
+		 * Bash's manual says absolutely nothing about this kind of case,
+		 * and here's the rest of the quote from the POSIX spec that I skipped over above:
+		 *
+		 * > If n is greater than the number of lexically enclosing loops and
+		 * > there is a non-lexically enclosing loop in progress in the same
+		 * > execution environment as the break or continue command, it is
+		 * > unspecified whether that loop encloses the command.
+		 *
+		 * "It is unspecified." Well, shit.
+		 * In other words, we're forced to assume that `break n` can break out of ANY enclosing loop, whether lexically or not.
+		 * This means that it's impossible to know at compile-time how many scope frames to destroy,
+		 * because we can't possibly know what the call stack will look like at runtime.
+		 *
+		 * The ONLY safe approach therefore is to force EVERY loop to have a scope frame,
+		 * regardless of whether it has any objects to manage,
+		 * and then at runtime simply destroy the last `n` loop frames.
+		 *
+		 * This kind of baggage is pretty annoying. These cases are the only ones where we need comments to be this long.
+		 *
+		 * @param state 
+		 * @param isolate_scope Whether to create the scope frame in an isolated (local) scope-frame stack, separate to the global scope-frame stack used by the program
+		 * @param force Whether to force the creation of a scope frame even if this code entity has no local objects
+		 * @return bpp::CodeGen::CodeSegment The code segment which creates the scope frame
+		 */
+		bpp::CodeGen::CodeSegment createScopeFrame(bpp::CodeGen::CodeGenState* state, bool isolate_scope, bool force) const;
+
+		/**
+		 * @brief Destroy the scope frame for this code entity, if it has one.
+		 * If this code entity did not create a scope frame, this function does nothing.
+		 *
+		 * @param state 
+		 * @return bpp::CodeGen::CodeSegment The code segment which destroys the scope frame, or an empty code segment if this code entity did not create a scope frame
+		 */
+		bpp::CodeGen::CodeSegment destroyScopeFrame(bpp::CodeGen::CodeGenState* state) const;
+
+		/**
+		 * @brief Mark the scope frame for this code entity as belonging to a loop, if it has one.
+		 * If this code entity did not create a scope frame, this function does nothing.
+		 *
+		 * @param state 
+		 * @return bpp::CodeGen::CodeSegment The code segment which marks the scope frame as belonging to a loop, or an empty code segment if this code entity did not create a scope frame
+		 */
+		bpp::CodeGen::CodeSegment markLoopFrame(bpp::CodeGen::CodeGenState* state) const;
+
+		/**
+		 * @brief Unmark the scope frame for this code entity as belonging to a loop, if it has one.
+		 * This needs to be done when exiting a loop.
+		 * If this code entity did not create a scope frame, this function does nothing.
+		 *
+		 * @param state 
+		 * @return bpp::CodeGen::CodeSegment The code segment which unmarks the scope frame as belonging to a loop, or an empty code segment if this code entity did not create a scope frame
+		 */
+		bpp::CodeGen::CodeSegment unmarkLoopFrame(bpp::CodeGen::CodeGenState* state) const;
+
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 
 		PRETTYPRINT_OVERRIDE();

@@ -82,12 +82,50 @@ bpp::IR::OwnedEntityList<Object> CodeEntity::releaseLocalObjects() {
 	return std::move(local_objects);
 }
 
-bpp::CodeGen::CodeSegment CodeEntity::destroyLocalObjects(bpp::CodeGen::CodeGenState* state) {
+bool CodeEntity::managesObjectLifetimes() const {
+	for (const auto& o : local_objects.view_entities()) {
+		if (o->isNonPrimitive()) return true;
+	}
+	return false;
+}
+
+bpp::CodeGen::CodeSegment CodeEntity::createScopeFrame(bpp::CodeGen::CodeGenState* state, bool isolate_scope, bool force) const {
 	bpp_assert(state != nullptr, "State pointer is null");
+	if (!force && !managesObjectLifetimes()) return {}; // Don't bother creating a scope frame if we're not going to use it
+	state->scope_frames.insert(this);
+	bpp::CodeGen::CodeSegment result;
+	if (isolate_scope) {
+		result.add_main_code("\nlocal __scopeFrames=(0)\n");
+	} else {
+		result.add_main_code("\n__scopeFrames+=(0)\n");
+	}
+	return result;
+}
+
+bpp::CodeGen::CodeSegment CodeEntity::destroyScopeFrame(bpp::CodeGen::CodeGenState* state) const {
+	bpp_assert(state != nullptr, "State pointer is null");
+	if (!state->has_scope_frame(this)) return {};
 	bpp::CodeGen::CodeSegment result;
 
 	// Destroy objects in reverse order of creation
 	result.add_main_code("\nbpp____destroy_objectStack ${__scopeFrames[-1]}\nunset __scopeFrames[-1]\n");
+	return result;
+}
+
+bpp::CodeGen::CodeSegment CodeEntity::markLoopFrame(bpp::CodeGen::CodeGenState* state) const {
+	bpp_assert(state != nullptr, "State pointer is null");
+	if (!state->has_scope_frame(this)) return {};
+	bpp::CodeGen::CodeSegment result;
+	result.add_main_code("\ndeclare -a __loopFrames\n");
+	result.add_main_code("__loopFrames+=(${#__scopeFrames[@]})\n");
+	return result;
+}
+
+bpp::CodeGen::CodeSegment CodeEntity::unmarkLoopFrame(bpp::CodeGen::CodeGenState* state) const {
+	bpp_assert(state != nullptr, "State pointer is null");
+	if (!state->has_scope_frame(this)) return {};
+	bpp::CodeGen::CodeSegment result;
+	result.add_main_code("\nunset __loopFrames[-1]\n");
 	return result;
 }
 

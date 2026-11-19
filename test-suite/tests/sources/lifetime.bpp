@@ -1,0 +1,82 @@
+# This test case tests automatic lifetime management, particularly in loops and when breaking out of nested loops. It verifies that:
+# 1. Objects created in a function are destroyed when the function returns.
+# 2. Objects created in a method are destroyed when the method returns.
+# 3. Objects created in global scope are destroyed at the end of the program.
+# 4. Objects created in loops are destroyed when the loop iteration ends.
+# 5. Objects created in nested loops are destroyed when breaking out of the loops, and that the correct objects are destroyed (i.e., only those that were created in the loops being exited).
+@class A {
+	@public member="default"
+	@destructor {
+		echo "Destructor called: @this.member"
+	}
+}
+
+@A global_object # Destructor will not be called until the end of the program
+@global_object.member="global"
+
+function somefunction() {
+	@A function_local_object
+	@function_local_object.member="function local"
+	# "Destructor called: function local"
+}
+
+somefunction
+
+@class B {
+	@public @method someMethod {
+		@A method_local_object
+		@method_local_object.member="method local"
+		# "Destructor called: method local"
+	}
+
+	@destructor {
+		echo "B destructor called"
+	}
+}
+
+@B b # Destructor will not be called until the end of the program
+@b.someMethod
+
+echo "loop start"
+i=0
+while [[ $i -lt 3 ]]; do
+	@A outer_loop_object
+	@outer_loop_object.member="outer loop $i"
+
+	j=0
+	while [[ $j -lt 3 ]]; do
+		@A inner_loop_object
+		@inner_loop_object.member="inner loop $i $j"
+
+		k=0
+		while [[ $k -lt 2 ]]; do
+			# This loop (k) has no objects to manage
+			l=0
+			while [[ $l -lt 10 ]]; do
+				@A innermost_loop_object
+				@innermost_loop_object.member="early exit value"
+				if [[ $l -eq 5 ]]; then
+					if [[ $i -eq 1 ]]; then
+						echo "busting out"
+						break 4 # Break out of the outer, inner, and innermost loops
+						# This will destroy the innermost_loop_object, inner_loop_object, and outer_loop_object
+					else
+						break 3 # Break out of the inner and innermost loops
+						# This will destroy the innermost_loop_object and inner_loop_object, but not the outer_loop_object
+					fi
+				fi
+				@innermost_loop_object.member="innermost loop $i $j $l"
+				l=$((l + 1))
+			done
+			k=$((k + 1))
+		done
+
+		# "Destructor called: inner loop $i $j"
+		j=$((j + 1))
+	done
+
+	i=$((i + 1))
+	# "Destructor called: outer loop $i"
+done
+
+echo "loop end"

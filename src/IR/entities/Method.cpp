@@ -107,7 +107,7 @@ bpp::CodeGen::CodeSegment Method::generateCode(bpp::CodeGen::CodeGenState* state
 	bpp::CodeGen::CodeSegment code;
 
 	code.add_pre_code(getAddress() + "() {\n");
-	code.add_pre_code("local __scopeFrames=(0)\n");
+	code.absorb_all_to_pre(createScopeFrame(state, true, false));
 
 	for (const auto [index, param] : parameters.view()) {
 		code.absorb_all_to_main(param->generateCode(state, index));
@@ -119,7 +119,7 @@ bpp::CodeGen::CodeSegment Method::generateCode(bpp::CodeGen::CodeGenState* state
 	code.absorb_all_to_main(CodeEntity::generateCode(state));
 
 	// Destroy all local stack-like objects that were created in this method, in reverse order of creation
-	code.absorb_all_to_main(destroyLocalObjects(state));
+	code.absorb_all_to_main(destroyScopeFrame(state));
 
 	code.add_post_code("}\n");
 

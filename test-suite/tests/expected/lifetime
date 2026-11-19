@@ -1,0 +1,23 @@
+Destructor called: function local
+Destructor called: method local
+loop start
+Destructor called: innermost loop 0 0 0
+Destructor called: innermost loop 0 0 1
+Destructor called: innermost loop 0 0 2
+Destructor called: innermost loop 0 0 3
+Destructor called: innermost loop 0 0 4
+Destructor called: early exit value
+Destructor called: inner loop 0 0
+Destructor called: outer loop 0
+Destructor called: innermost loop 1 0 0
+Destructor called: innermost loop 1 0 1
+Destructor called: innermost loop 1 0 2
+Destructor called: innermost loop 1 0 3
+Destructor called: innermost loop 1 0 4
+busting out
+Destructor called: early exit value
+Destructor called: inner loop 1 0
+Destructor called: outer loop 1
+loop end
+B destructor called
+Destructor called: global

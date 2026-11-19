@@ -8,6 +8,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_set>
 #include <iterator>
 
 #include <IR/bpp.h>
@@ -189,6 +190,7 @@ struct CodeGenState {
 	bool requires_vtable_lookup_function = false;
 	bool requires_dynamic_cast_function = false;
 	bool requires_typeof_function = false;
+	std::unordered_set<const bpp::IR::CodeEntity*> scope_frames;
 
 	bool in_class() const { return current_class != nullptr; }
 	bool in_method() const { return current_method != nullptr; }
@@ -199,6 +201,10 @@ struct CodeGenState {
 
 	bool should_localize_object_instantiation() const {
 		return should_declare_local() && nested_supershell_depth == 0;
+	}
+
+	bool has_scope_frame(const bpp::IR::CodeEntity* entity) const {
+		return scope_frames.contains(entity);
 	}
 };
 

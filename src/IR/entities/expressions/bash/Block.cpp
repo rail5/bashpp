@@ -16,9 +16,9 @@ bpp::CodeGen::CodeSegment Block::generateCode(bpp::CodeGen::CodeGenState* state)
 	bpp::CodeGen::CodeSegment result;
 
 	result.add_main_code("{\n");
-	result.add_main_code("__scopeFrames+=(0)\n");
+	result.absorb_all_to_main(createScopeFrame(state, false, false));
 	result.absorb_all_to_main(CodeEntity::generateCode(state));
-	result.absorb_all_to_main(destroyLocalObjects(state));
+	result.absorb_all_to_main(destroyScopeFrame(state));
 	result.add_main_code("\n}\n");
 	return result;
 }

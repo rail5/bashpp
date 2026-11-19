@@ -22,15 +22,13 @@ bpp::CodeGen::CodeSegment BashForOrSelectStatement::generateCode(bpp::CodeGen::C
 	result.egalitarian_merge(in_condition->generateCode(state));
 	result.add_main_code("; do\n");
 
-	result.add_main_code("__scopeFrames+=(0)\n");
-	result.add_main_code("declare -a __loopFrames\n");
-	result.add_main_code("__loopFrames+=(${#__scopeFrames[@]})\n");
+	result.absorb_all_to_main(createScopeFrame(state, false, true));
+	result.absorb_all_to_main(markLoopFrame(state));
 
 	result.absorb_all_to_main(CodeEntity::generateCode(state));
 
-	result.absorb_all_to_main(destroyLocalObjects(state));
-
-	result.add_main_code("unset __loopFrames[-1]\n");
+	result.absorb_all_to_main(destroyScopeFrame(state));
+	result.absorb_all_to_main(unmarkLoopFrame(state));
 
 	result.add_main_code("\ndone\n");
 	state->nested_loop_depth--;

@@ -38,11 +38,8 @@ void Class::initSpecialPointers() const {
 }
 
 bool Class::isDerivedFrom(const Class* other) const {
-	const Class* parent = this->parent_class;
-
-	while (parent != nullptr) {
+	for (const auto* parent = this->parent_class; parent != nullptr; parent = parent->getParentClass()) {
 		if (parent == other) return true;
-		parent = parent->getParentClass();
 	}
 
 	return false;

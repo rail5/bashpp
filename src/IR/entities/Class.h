@@ -224,6 +224,31 @@ class Class : public Entity, public Components::Named {
 
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 
+		/**
+		 * @brief Call constructors for this class, if there are any.
+		 *
+		 * This generates calls to all constructors in the inheritance chain, starting from the base class and ending with this class.
+		 * Even if this class has no constructor of its own, it may still have ancestor classes that do, and those constructors will be called.
+		 * @param state 
+		 * @param object_address The address of the object for which to call constructors
+		 * @return bpp::CodeGen::CodeSegment The code segment that calls the constructors, or an empty code segment if there are no constructors to call
+		 */
+		bpp::CodeGen::CodeSegment callConstructors(bpp::CodeGen::CodeGenState* state, const std::string& object_address) const;
+		bool hasConstructors() const;
+
+		/**
+		 * @brief Call destructors for this class, if there are any.
+		 *
+		 * This generates calls to all destructors in the inheritance chain, starting from this class and ending with the base class.
+		 * That is, the invocation order of destructors is the reverse of the invocation order of constructors.
+		 * Even if this class has no destructor of its own, it may still have ancestor classes that do, and those destructors will be called.
+		 * @param state 
+		 * @param object_address The address of the object for which to call the destructor
+		 * @return bpp::CodeGen::CodeSegment The code segment that calls the destructor, or an empty code segment if there are no destructors to call
+		 */
+		bpp::CodeGen::CodeSegment callDestructors(bpp::CodeGen::CodeGenState* state, const std::string& object_address) const;
+		bool hasDestructors() const;
+
 		PRETTYPRINT_OVERRIDE();
 };
 

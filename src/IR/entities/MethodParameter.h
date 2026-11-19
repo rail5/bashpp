@@ -45,6 +45,17 @@ class ThisPtr : public MethodParameter {
 };
 
 /**
+ * @brief A `this` pointer that does not undergo type verification, used in cases where the type is known at compile-time.
+ */
+class UnverifiedThisPtr : public ThisPtr {
+	public:
+		UnverifiedThisPtr() = delete;
+		explicit UnverifiedThisPtr(const Class* containing_class);
+
+		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state, std::uint32_t index) const override;
+};
+
+/**
  * @brief A special parameter passed to __new, which is the optional requested address of the new object to be created.
  * If the caller does not specify a requested address, this parameter will be empty, and the __new method will generate a new address for the object.
  */

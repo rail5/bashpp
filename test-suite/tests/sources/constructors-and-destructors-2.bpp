@@ -1,0 +1,86 @@
+# This tests the ordering of constructors and destructors in a class hierarchy.
+# It verifies:
+# 1. Constructors are called in the order of the class hierarchy, from base to derived.
+# 2. Derived classes without constructors still call ancestor constructors when instantiated.
+# 3. Destructors are called in the reverse order of the class hierarchy, from derived to base.
+# 4. Derived classes without destructors still call ancestor destructors when destroyed.
+# 5. That stack-like objects in global scope are destroyed in reverse order of their construction at normal program exit.
+@class A {
+	@constructor {
+		echo 1
+	}
+
+	@destructor {
+		echo A
+	}
+}
+
+@class B : A {
+	@constructor {
+		echo 2
+	}
+	
+	@destructor {
+		echo B
+	}
+}
+
+@class C : B {
+	@constructor {
+		echo 3
+	}
+	
+	@destructor {
+		echo C
+	}
+}
+
+@class D : B {
+	@constructor {
+		echo 4
+	}
+}
+
+@class E : D {
+	@destructor {
+		echo E
+	}
+}
+
+@class F : E {
+	@constructor {
+		echo 6
+	}
+
+	@destructor {
+		echo F
+	}
+}
+
+echo obj1:
+@A obj1 # 1
+echo obj2:
+@B obj2 # 1 2
+echo obj3:
+@C obj3 # 1 2 3
+echo obj4:
+@D obj4 # 1 2 4
+echo obj5:
+@E obj5 # 1 2 4
+echo obj6:
+@F obj6 # 1 2 4 6
+
+
+# Destructors called here, in reverse order.
+# 1.
+#    F E B A
+# 2.
+#    E B A
+# 3.
+#    B A
+# 4.
+#    C B A
+# 5.
+#    B A
+# 6.
+#    A

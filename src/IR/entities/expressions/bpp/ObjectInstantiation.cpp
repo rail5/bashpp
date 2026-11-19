@@ -37,7 +37,6 @@ bpp::CodeGen::CodeSegment ObjectInstantiation::heapLikeInstantiation(bpp::CodeGe
 	bpp::CodeGen::CodeSegment result;
 
 	auto* new_method = type->getMethod_UNSAFE("__new");
-	auto* constructor = type->getMethod_UNSAFE("__constructor");
 
 	if (state->should_declare_local()) result.add_main_code("local ");
 	result.add_main_code("__newAddress=");
@@ -46,9 +45,7 @@ bpp::CodeGen::CodeSegment ObjectInstantiation::heapLikeInstantiation(bpp::CodeGe
 
 	result.collapse_to_pre_code();
 
-	if (constructor) {
-		result.add_pre_code(constructor->getAddress() + " ${__newAddress}\n");
-	}
+	result.absorb_all_to_pre(type->callConstructors(state, "${__newAddress}"));
 
 	result.add_main_code("${__newAddress}");
 
@@ -65,18 +62,14 @@ bpp::CodeGen::CodeSegment ObjectInstantiation::stackLikeInstantiation(bpp::CodeG
 	bpp::CodeGen::CodeSegment result;
 
 	auto* new_method = type->getMethod_UNSAFE("__new");
-	auto* constructor = type->getMethod_UNSAFE("__constructor");
 
 	bpp_assert(!stackLikeObject->isPrimitive(), "Object is primitive");
 	auto requested_address = stackLikeObject->getAddress();
 
 	result.add_main_code(new_method->getAddress() + " " + requested_address + " >/dev/null\n");
-	if (constructor) {
-		result.add_main_code(constructor->getAddress() + " " + requested_address + "\n");
-	}
-	// If the object has a destructor, register it with the global object stack, so that it will be called at the end of the program
-	auto* destructor = type->getMethod_UNSAFE("__destructor");
-	if (destructor) {
+	result.absorb_all_to_main(type->callConstructors(state, requested_address));
+	// If the object has destructors to call, register it with the global object stack, so that they will be called at the end of the program
+	if (type->hasDestructors()) {
 		result.add_main_code("bpp____push_objectStack \"" + requested_address + "\"\n");
 		state->requires_global_object_stack = true;
 		state->requires_vtable_lookup_function = true;

@@ -16,7 +16,12 @@ namespace bpp::IR::Builtins {
  * based on the state of the class entity.
  * The system methods represented by this class are __new, __delete, and __copy.
  *
- * __new can be inlined. __copy and __delete can't be inlined.
+ * Only __new can be inlined.
+ *
+ * __delete implicitly calls the object's destructors, if any exist, before freeing the object's memory.
+ * NOTE: This means that the compiler should never call destructors explicitly.
+ *
+ * __constructor and __destructor are not represented because their contents are user-defined.
  */
 class SystemMethod : public Method {
 	public:

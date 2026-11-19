@@ -104,11 +104,13 @@ void Listener::enter(ClassDefinition* node) {
 	copy_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
 	copy_method->setIsDefaulted(true);
 
-
 	auto constructor_method = std::make_unique<bpp::IR::Method>("__constructor");
 	constructor_method->setIsOverridable(true);
 	constructor_method->inherit(class_entity.get());
-	if (!constructor_method->addParameter(class_entity->getThisPtr())) {
+	// Optimization: we don't need 'this' pointer verification in the constructor, we *know* it's valid.
+	auto constructor_thisptr = std::make_unique<bpp::IR::UnverifiedThisPtr>(class_entity.get());
+	constructor_thisptr->inherit(constructor_method.get());
+	if (!constructor_method->addParameter(std::move(constructor_thisptr))) {
 		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to auto-generated constructor method");
 	}
 	constructor_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
@@ -118,7 +120,10 @@ void Listener::enter(ClassDefinition* node) {
 	destructor_method->setIsVirtual(true);
 	destructor_method->setIsOverridable(true);
 	destructor_method->inherit(class_entity.get());
-	if (!destructor_method->addParameter(class_entity->getThisPtr())) {
+	// Optimization: Like with constructors, we don't need 'this' pointer verification in the destructor, we *know* it's valid.
+	auto destructor_thisptr = std::make_unique<bpp::IR::UnverifiedThisPtr>(class_entity.get());
+	destructor_thisptr->inherit(destructor_method.get());
+	if (!destructor_method->addParameter(std::move(destructor_thisptr))) {
 		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to auto-generated destructor method");
 	}
 	destructor_method->setScope(bpp::IR::VisibilityScope::PUBLIC);

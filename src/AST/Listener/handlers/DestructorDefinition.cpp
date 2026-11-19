@@ -29,7 +29,10 @@ void Listener::enter(DestructorDefinition* node) {
 		node->getLine(), node->getColumn()}
 	);
 
-	if (!new_destructor->addParameter(current_class->getThisPtr())) {
+	// Optimization: We don't need to verify the `this` pointer of a destructor, since it's guaranteed to be valid.
+	auto unverified_thisptr = std::make_unique<bpp::IR::UnverifiedThisPtr>(current_class);
+	unverified_thisptr->inherit(new_destructor.get());
+	if (!new_destructor->addParameter(std::move(unverified_thisptr))) {
 		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to user-defined destructor");
 	}
 
@@ -43,14 +46,6 @@ void Listener::exit(DestructorDefinition* node) {
 
 	bpp_assert(topmost_entity_is<bpp::IR::Class>(), "Topmost entity on stack is not a Class");
 	auto* current_class = entity_stack.top_as<bpp::IR::Class>();
-
-	const auto* parent_class = current_class->getParentClass();
-	if (parent_class) {
-		auto* parent_destructor = parent_class->getMethod_UNSAFE("__destructor");
-		if (parent_destructor) {
-			// FIXME(@rail5): Call parent destructor at the end of the child destructor.
-		}
-	}
 
 	auto res = current_class->addMethod(std::move(destructor));
 	if (!res) error(node, "Destructor already defined in class '" + current_class->getName() + "'");

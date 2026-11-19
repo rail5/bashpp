@@ -87,6 +87,16 @@ bpp::CodeGen::CodeSegment ThisPtr::generateCode(bpp::CodeGen::CodeGenState* stat
 	return code;
 }
 
+UnverifiedThisPtr::UnverifiedThisPtr(const Class* containing_class) : ThisPtr(containing_class) {}
+
+bpp::CodeGen::CodeSegment UnverifiedThisPtr::generateCode(bpp::CodeGen::CodeGenState* state, std::uint32_t index) const {
+	bpp_assert(state != nullptr, "State pointer is null");
+	bpp_assert(state->in_method(), "Must be generating code for a method");
+	bpp::CodeGen::CodeSegment code;
+	code.add_main_code("local __this=$1\n");
+	return code;
+}
+
 RequestedAddressParam::RequestedAddressParam(const Class* containing_class) : ThisPtr(containing_class) {}
 
 bpp::CodeGen::CodeSegment RequestedAddressParam::generateCode(bpp::CodeGen::CodeGenState* state, std::uint32_t /*index*/) const {

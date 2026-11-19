@@ -6,7 +6,7 @@
 
 #include <AST/Listener/Listener.h>
 
-#include <IR/entities/Method.h>
+#include <IR/entities/SystemMethod.h>
 #include <IR/entities/Class.h>
 #include <IR/entities/Program.h>
 
@@ -28,15 +28,11 @@ void Listener::enter(ConstructorDefinition* node) {
 		node->getLine(), node->getColumn()}
 	);
 
-	if (!new_constructor->addParameter(current_class->getThisPtr())) {
+	// Optimization: There is no need to verify the `this` pointer of a constructor, since it's guaranteed to be valid.
+	auto unverified_thisptr = std::make_unique<bpp::IR::UnverifiedThisPtr>(current_class);
+	unverified_thisptr->inherit(new_constructor.get());
+	if (!new_constructor->addParameter(std::move(unverified_thisptr))) {
 		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to user-defined constructor");
-	}
-
-	if (const auto* parent_class = current_class->getParentClass()) {
-		auto* parent_constructor = parent_class->getMethod_UNSAFE("__constructor");
-		if (parent_constructor) {
-			// FIXME(@rail5): Call parent constructor at the beginning of the child constructor.
-		}
 	}
 
 	entity_stack.push(std::move(new_constructor));

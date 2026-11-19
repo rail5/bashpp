@@ -185,9 +185,9 @@ bpp____destroy_objectStack() {
 	while [[ ${__n} -gt 0 ]]; do
 		__n=$((__n - 1))
 		local __obj="${__objectStack[-1]}"
-		local __destructor
-		bpp____vTable_lookup "${__obj}" "__destructor" __destructor
-		${__destructor} "${__obj}"
+		local __delete
+		bpp____vTable_lookup "${__obj}" "__delete" __delete
+		${__delete} "${__obj}"
 		unset __objectStack[-1]
 	done
 }

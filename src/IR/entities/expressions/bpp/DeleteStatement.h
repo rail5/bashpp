@@ -14,7 +14,6 @@ namespace bpp::IR {
 
 class DeleteStatement : public CodeEntity {
 	private:
-		std::unique_ptr<ObjectReference> destructor_method_call;
 		std::unique_ptr<ObjectReference> delete_method_call;
 	public:
 		void setObjectToDelete(std::unique_ptr<ObjectReference> obj_ref);

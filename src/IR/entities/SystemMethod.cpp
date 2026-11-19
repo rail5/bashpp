@@ -171,6 +171,8 @@ bpp::CodeGen::CodeSegment SystemMethod::generateDeleteCode(bpp::CodeGen::CodeGen
 
 	bpp::CodeGen::CodeSegment result;
 
+	result.absorb_all_to_main(cls->callDestructors(state, "${__this}"));
+
 	for (const auto& dm : cls->getAllDatamembers()) {
 		if (dm->isPrimitive()) {
 			result.add_main_code("unset ${__this}" + dm->getAddress() + "\n");

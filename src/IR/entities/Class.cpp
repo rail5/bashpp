@@ -14,6 +14,9 @@
 
 #include <error/InternalError.h>
 
+#include <vector>
+#include <ranges>
+
 namespace bpp::IR {
 
 void Class::initSpecialPointers() const {
@@ -220,6 +223,55 @@ bpp::CodeGen::CodeSegment Class::generateCode(bpp::CodeGen::CodeGenState* state)
 	state->current_class = nullptr;
 
 	return code;
+}
+
+bpp::CodeGen::CodeSegment Class::callConstructors(bpp::CodeGen::CodeGenState* state, const std::string& object_address) const {
+	bpp_assert(state != nullptr, "State pointer is null");
+	bpp_assert(!object_address.empty(), "Object address is empty");
+	bpp::CodeGen::CodeSegment code;
+
+	std::vector<const Class*> inheritance_chain;
+	for (const auto* cls = this; cls != nullptr; cls = cls->getParentClass()) {
+		inheritance_chain.push_back(cls);
+	}
+
+	// Call constructors in parent -> child order
+	// (Base constructor first, derived constructor last)
+	for (const auto* cls : std::ranges::reverse_view(inheritance_chain)) {
+		const auto* constructor = cls->getMethod_UNSAFE("__constructor");
+		if (constructor) code.add_main_code(constructor->getAddress() + " " + object_address + "\n");
+	}
+
+	return code;
+}
+
+bool Class::hasConstructors() const {
+	for (const auto* cls = this; cls != nullptr; cls = cls->getParentClass()) {
+		if (cls->getMethod_UNSAFE("__constructor")) return true;
+	}
+	return false;
+}
+
+bpp::CodeGen::CodeSegment Class::callDestructors(bpp::CodeGen::CodeGenState* state, const std::string& object_address) const {
+	bpp_assert(state != nullptr, "State pointer is null");
+	bpp_assert(!object_address.empty(), "Object address is empty");
+	bpp::CodeGen::CodeSegment code;
+
+	// Call destructors in child -> parent order
+	// (Derived destructor first, base destructor last)
+	for (const auto* cls = this; cls != nullptr; cls = cls->getParentClass()) {
+		const auto* destructor = cls->getMethod_UNSAFE("__destructor");
+		if (destructor) code.add_main_code(destructor->getAddress() + " " + object_address + "\n");
+	}
+
+	return code;
+}
+
+bool Class::hasDestructors() const {
+	for (const auto* cls = this; cls != nullptr; cls = cls->getParentClass()) {
+		if (cls->getMethod_UNSAFE("__destructor")) return true;
+	}
+	return false;
 }
 
 PRETTYPRINT_IMPLEMENTATION(Class, {

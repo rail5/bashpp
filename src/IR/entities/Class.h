@@ -28,7 +28,6 @@ class Class : public Entity, public Components::Named {
 
 		mutable std::unique_ptr<ThisPtr> this_ptr;
 		mutable std::unique_ptr<ThisPtr> super_ptr;
-		mutable bool special_pointers_initialized = false;
 
 		/**
 		 * @brief Initializes the class's special "@this" and "@super" pointers.

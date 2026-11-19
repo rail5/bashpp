@@ -20,7 +20,7 @@
 namespace bpp::IR {
 
 void Class::initSpecialPointers() const {
-	if (special_pointers_initialized) return;
+	if (this_ptr) return;
 
 	this_ptr = std::make_unique<ThisPtr>(this);
 	this_ptr->setContainingProgram(getContainingProgram());
@@ -33,8 +33,6 @@ void Class::initSpecialPointers() const {
 	this_ptr->setInitialValue(std::move(dynamic_cast_entity));
 
 	if (parent_class) super_ptr = std::make_unique<ThisPtr>(parent_class, "super");
-
-	special_pointers_initialized = true;
 }
 
 bool Class::isDerivedFrom(const Class* other) const {

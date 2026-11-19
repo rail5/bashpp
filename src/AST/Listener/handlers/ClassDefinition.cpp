@@ -104,31 +104,6 @@ void Listener::enter(ClassDefinition* node) {
 	copy_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
 	copy_method->setIsDefaulted(true);
 
-	auto constructor_method = std::make_unique<bpp::IR::Method>("__constructor");
-	constructor_method->setIsOverridable(true);
-	constructor_method->inherit(class_entity.get());
-	// Optimization: we don't need 'this' pointer verification in the constructor, we *know* it's valid.
-	auto constructor_thisptr = std::make_unique<bpp::IR::UnverifiedThisPtr>(class_entity.get());
-	constructor_thisptr->inherit(constructor_method.get());
-	if (!constructor_method->addParameter(std::move(constructor_thisptr))) {
-		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to auto-generated constructor method");
-	}
-	constructor_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
-	constructor_method->setIsDefaulted(true);
-
-	auto destructor_method = std::make_unique<bpp::IR::Method>("__destructor");
-	destructor_method->setIsVirtual(true);
-	destructor_method->setIsOverridable(true);
-	destructor_method->inherit(class_entity.get());
-	// Optimization: Like with constructors, we don't need 'this' pointer verification in the destructor, we *know* it's valid.
-	auto destructor_thisptr = std::make_unique<bpp::IR::UnverifiedThisPtr>(class_entity.get());
-	destructor_thisptr->inherit(destructor_method.get());
-	if (!destructor_method->addParameter(std::move(destructor_thisptr))) {
-		throw bpp::ErrorHandling::InternalError("Failed to add 'this' parameter to auto-generated destructor method");
-	}
-	destructor_method->setScope(bpp::IR::VisibilityScope::PUBLIC);
-	destructor_method->setIsDefaulted(true);
-
 	auto add_system_method = [&](std::unique_ptr<bpp::IR::Method> method) {
 		if (!class_entity->addMethod(std::move(method))) {
 			throw bpp::ErrorHandling::InternalError("Failed to add system method to class '" + class_entity->getName() + "'");
@@ -138,8 +113,6 @@ void Listener::enter(ClassDefinition* node) {
 	add_system_method(std::move(new_method));
 	add_system_method(std::move(delete_method));
 	add_system_method(std::move(copy_method));
-	add_system_method(std::move(constructor_method));
-	add_system_method(std::move(destructor_method));
 
 	if (!class_entity->getMethod_UNSAFE("toPrimitive")) {
 		// If we didn't inherit a custom toPrimitive method, generate a default one

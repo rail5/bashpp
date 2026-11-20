@@ -5,8 +5,8 @@
  */
 
 #include <AST/Listener/Listener.h>
-
 #include <IR/entities/expressions/bpp/ObjectAssignment.h>
+#include <AST/Listener/EntityFabricator.h>
 
 #include <error/InternalError.h>
 
@@ -43,37 +43,10 @@ void Listener::exit(ObjectAssignment* node) {
 	bpp_assert(lhs_is_nonprimitive == rhs_is_nonprimitive, "LHS/RHS primitive/non-primitive mismatch in ObjectAssignment");
 
 	if (lhs_is_nonprimitive && rhs_is_nonprimitive) {
-		const auto* lhs = assignment_entity->getLHS()->getReferenceChain().getFinalObject();
-		const auto* lhs_type = lhs->getType();
-		const auto* rhs = assignment_entity->getRHS()->getRvalueReference()->getReferenceChain().getFinalObject();
-		const auto* rhs_type = rhs->getType();
-		bpp_assert(lhs_type != nullptr, "LHS type is null in ObjectAssignment");
-		bpp_assert(rhs_type != nullptr, "RHS type is null in ObjectAssignment");
-		// The RHS type must be the same as or a subclass of the LHS type
-		if (rhs_type != lhs_type && !rhs_type->isDerivedFrom(lhs_type)) {
-			error(node, "Cannot copy object of type '" + rhs_type->getName() + "' to object of type '" + lhs_type->getName() + "'");
-		}
-
-		if (rhs_type->isDerivedFrom(lhs_type)) {
-			const std::size_t lhs_size = lhs_type->getAllDatamembers().size();
-			const std::size_t rhs_size = rhs_type->getAllDatamembers().size();
-			const bool at_least_one_object_is_a_pointer = lhs->isPointer() || rhs->isPointer();
-			if (rhs_size > lhs_size) {
-				const std::size_t slicing_count = rhs_size - lhs_size;
-				const std::string_view warning_verb = at_least_one_object_is_a_pointer ? "may result" : "results";
-				const std::string_view warning_plural = slicing_count > 1 ? "s" : "";
-				const std::string warning_message = std::format(
-					"Copying derived class object of type '{}' to base class object of type '{}' "
-					"{} in slicing (losing {} data member{})",
-					rhs_type->getName(),
-					lhs_type->getName(),
-					warning_verb,
-					slicing_count,
-					warning_plural
-				);
-				warn(node, bpp::ErrorHandling::WarningType::Slicing, warning_message);
-			}
-		}
+		auto lhs = assignment_entity->releaseLHS();
+		auto rhs = assignment_entity->releaseRHS()->releaseRvalueReference();
+		EntityFabricator::makeNonprimitiveCopy(this, node, std::move(lhs), std::move(rhs));
+		return;
 	}
 
 	bpp_assert(topmost_entity_is<bpp::IR::CodeEntity>(), "Topmost entity is not a CodeEntity");

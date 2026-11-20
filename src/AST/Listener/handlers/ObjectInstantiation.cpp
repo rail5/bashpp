@@ -5,6 +5,7 @@
  */
 
 #include <AST/Listener/Listener.h>
+#include <AST/Listener/EntityFabricator.h>
 
 #include <IR/identifiers.h>
 
@@ -106,6 +107,19 @@ void Listener::exit(ObjectInstantiation* node) {
 		instantiation->setStackLikeObject(object.get());
 
 		current_code_entity->add(std::move(instantiation));
+
+		if (object->hasInitialValue()) {
+			bpp_assert(dynamic_cast<const bpp::IR::ValueAssignment*>(object->getInitialValue().value()), "Object initial value is not a ValueAssignment");
+			auto va = std::unique_ptr<bpp::IR::ValueAssignment>(static_cast<bpp::IR::ValueAssignment*>(object->releaseInitialValue().release()));
+			auto rvalue = va->releaseRvalueReference();
+			bpp_assert(rvalue != nullptr, "ValueAssignment has no rvalue");
+
+			auto lhs = std::make_unique<bpp::IR::ObjectReference>();
+			lhs->inherit(current_code_entity);
+			lhs->setReferenceChain(bpp::IR::ObjectReference::ReferenceChain(object.get()));
+
+			EntityFabricator::makeNonprimitiveCopy(this, node, std::move(lhs), std::move(rvalue));
+		}
 	} else {
 		auto object_reference = std::make_unique<bpp::IR::ObjectReference>();
 		object_reference->inherit(current_code_entity);

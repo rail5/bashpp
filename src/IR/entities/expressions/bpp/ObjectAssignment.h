@@ -37,7 +37,9 @@ class ObjectAssignment : public StringType {
 		void setRHS(std::unique_ptr<ValueAssignment> r) { rhs = std::move(r); }
 
 		const ObjectReference* getLHS() const { return lhs.get(); }
+		std::unique_ptr<ObjectReference> releaseLHS() { return std::move(lhs); }
 		const ValueAssignment* getRHS() const { return rhs.get(); }
+		std::unique_ptr<ValueAssignment> releaseRHS() { return std::move(rhs); }
 
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 		PRETTYPRINT_OVERRIDE();

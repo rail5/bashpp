@@ -18,30 +18,7 @@ bpp::CodeGen::CodeSegment ObjectAssignment::generateCode(bpp::CodeGen::CodeGenSt
 	bpp::CodeGen::CodeSegment result;
 
 	const bool is_nonprimitive_copy = lhs->isNonprimitive() && rhs->isRvalueNonprimitive();
-
-	// FIXME(@rail5): HACK.
-	if (is_nonprimitive_copy) {
-		ObjectReference::ReferenceChain lhs_chain = lhs->getReferenceChain();
-		auto* copy_method = lhs_chain.getFinalObject()->getType()->getMethod_UNSAFE("__copy");
-		lhs_chain.setMethod(copy_method);
-
-		ObjectReference copy_call;
-		copy_call.inherit(this);
-		copy_call.setReferenceChain(std::move(lhs_chain));
-		copy_call.setLvalue(true);
-
-		ObjectReference rhs_ref;
-		rhs_ref.inherit(this);
-		rhs_ref.setReferenceChain(rhs->getRvalueReference()->getReferenceChain());
-		rhs_ref.setLvalue(false);
-		rhs_ref.setAddressOf(true);
-
-		result.egalitarian_merge(copy_call.generateCode(state));
-		result.add_main_code(" ");
-		result.egalitarian_merge(rhs_ref.generateCode(state));
-		result.add_main_code("\n");
-		return result;
-	}
+	bpp_assert(!is_nonprimitive_copy, "ObjectAssignment::generateCode() called for nonprimitive copy; this should have been handled by EntityFabricator");
 
 	bpp::CodeGen::CodeSegment nameref_assignment;
 	nameref_assignment.add_main_code("declare -n __ref="); // No need to check for state->should_declare_local(), 'declare' will automatically create a local variable if necessary

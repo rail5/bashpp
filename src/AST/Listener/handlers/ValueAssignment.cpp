@@ -26,7 +26,7 @@ void Listener::enter(ValueAssignment* node) {
 			va->setLvalueNonprimitive(current_object_assignment->getLHS()->isNonprimitive());
 		}
 	} else if (auto* current_object_instantiation = dynamic_cast<bpp::IR::Object*>(entity_stack.top())) {
-		va->setLvalueNonprimitive(!current_object_instantiation->isPrimitive());
+		va->setLvalueNonprimitive(current_object_instantiation->isNonprimitive());
 	}
 
 	const auto& op = node->OPERATOR();

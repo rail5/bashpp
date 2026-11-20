@@ -84,7 +84,7 @@ bpp::IR::OwnedEntityList<Object> CodeEntity::releaseLocalObjects() {
 
 bool CodeEntity::managesObjectLifetimes() const {
 	for (const auto& o : local_objects.view_entities()) {
-		if (o->isNonPrimitive()) return true;
+		if (o->isNonprimitive()) return true;
 	}
 	return false;
 }

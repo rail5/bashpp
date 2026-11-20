@@ -70,6 +70,8 @@ class Entity {
 		 */
 		void inherit(const Entity* parent);
 
+		void reparent(const Entity* new_parent) { parent_entity = new_parent; }
+
 		const Entity* getParentEntity() const { return parent_entity; }
 
 		/**

@@ -178,7 +178,8 @@ PRETTYPRINT_IMPLEMENTATION(ObjectReference, {
 	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
 	os << indent << "(ObjectReference ";
 
-	if (isAddressOf()) os << "&";
+	if (isAddressOf()) os << '&';
+	if (isPointerDereference()) os << '*';
 
 	os << get_reference_chain_prettyprint_string(getReferenceChain())
 		<< ")\n";

@@ -247,6 +247,8 @@ class Listener final {
 		bool topmost_entity_is() const { return entity_stack.top_is<T>(); }
 
 		ExpectationsStack context_expectations_stack;
+
+		class EntityFabricator;
 };
 
 // Enter/exit handler specializations:

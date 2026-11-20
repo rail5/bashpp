@@ -62,7 +62,7 @@ std::expected<const MethodParameter*, NameConflictError> Method::addParameter(st
 		dynamic_cast_entity->inherit(owned_parameter.get());
 		dynamic_cast_entity->setTargetType(param_type->getName());
 		// Tell the dynamic cast entity which positional parameter to use as its input (i.e., the argument passed to this parameter)
-		dynamic_cast_entity->add("$" + std::to_string(parameters.getNextIndex()));
+		dynamic_cast_entity->add("$" + std::to_string(*parameters.getHighestIndex()));
 		// Set the initial value of this parameter to be the result of the dynamic cast
 		owned_parameter->setInitialValue(std::move(dynamic_cast_entity));
 

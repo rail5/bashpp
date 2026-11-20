@@ -31,6 +31,8 @@ class ValueAssignment : public StringType {
 		bool isArrayAssignment() const { return array_assignment; }
 		bool isAdding() const { return adding; }
 
+		std::unique_ptr<ObjectReference> releaseRvalueReference() { return std::move(rvalue_reference); }
+
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state) const override;
 		PRETTYPRINT_OVERRIDE();
 };

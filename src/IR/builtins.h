@@ -66,7 +66,7 @@ bpp____supershell() {
 		exit 1
 	fi
 	printf -v "${__outputVar}" '%s' 0
-	while [[ -v "${__this}" ]] && [[ ! -z "${__this}" ]]; do
+	while [[ -v "${__this}" ]] && [[ ! -z "${__this}" ]] && [[ "${__this}" != 0 ]]; do
 		__this="${!__this}"
 	done
 	local __vTable="${__this}____vPointer"

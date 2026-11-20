@@ -53,6 +53,8 @@ class UnverifiedThisPtr : public ThisPtr {
 		explicit UnverifiedThisPtr(const Class* containing_class);
 
 		bpp::CodeGen::CodeSegment generateCode(bpp::CodeGen::CodeGenState* state, std::uint32_t index) const override;
+
+		PRETTYPRINT_OVERRIDE();
 };
 
 /**

@@ -89,13 +89,20 @@ bpp::CodeGen::CodeSegment ThisPtr::generateCode(bpp::CodeGen::CodeGenState* stat
 
 UnverifiedThisPtr::UnverifiedThisPtr(const Class* containing_class) : ThisPtr(containing_class) {}
 
-bpp::CodeGen::CodeSegment UnverifiedThisPtr::generateCode(bpp::CodeGen::CodeGenState* state, std::uint32_t index) const {
+bpp::CodeGen::CodeSegment UnverifiedThisPtr::generateCode(bpp::CodeGen::CodeGenState* state, std::uint32_t /*index*/) const {
 	bpp_assert(state != nullptr, "State pointer is null");
 	bpp_assert(state->in_method(), "Must be generating code for a method");
 	bpp::CodeGen::CodeSegment code;
 	code.add_main_code("local __this=$1\n");
 	return code;
 }
+
+PRETTYPRINT_IMPLEMENTATION(UnverifiedThisPtr, {
+	bpp_assert(getType() != nullptr, "UnverifiedThisPtr has no type");
+	std::string indent(indentation_level * PRETTYPRINT_INDENTATION_AMOUNT, ' ');
+	os << indent << '(' << getType()->getName() << "* this=$1)\n";
+	return os;
+})
 
 RequestedAddressParam::RequestedAddressParam(const Class* containing_class) : ThisPtr(containing_class) {}
 

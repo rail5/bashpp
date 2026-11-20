@@ -171,4 +171,12 @@ bpp::CodeGen::CodeSegment Program::generateCode(bpp::CodeGen::CodeGenState* stat
 	return code;
 }
 
+PRETTYPRINT_IMPLEMENTATION(Program, {
+	for (const auto& class_entity : classes.view_entities()) {
+		class_entity->prettyPrint(os, indentation_level);
+	}
+	CodeEntity::prettyPrint(os, indentation_level);
+	return os;
+})
+
 } // namespace bpp::IR

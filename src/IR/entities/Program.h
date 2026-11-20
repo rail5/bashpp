@@ -155,6 +155,8 @@ class Program final : public CodeEntity {
 		void setVtableLookupFunction(std::unique_ptr<Builtins::SystemFunction> func) { vtable_lookup_function = std::move(func); }
 		void setDynamicCastFunction(std::unique_ptr<Builtins::SystemFunction> func) { dynamic_cast_function = std::move(func); }
 		void setTypeofFunction(std::unique_ptr<Builtins::SystemFunction> func) { typeof_function = std::move(func); }
+
+		PRETTYPRINT_OVERRIDE();
 };
 
 } // namespace bpp::IR

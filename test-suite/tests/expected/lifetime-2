@@ -1,0 +1,5 @@
+Object constructor called
+Object constructor called
+Object destructor called: new value
+Returned from dynamic include
+Object destructor called: default value

@@ -1,0 +1,9 @@
+@class Object {
+	@public member="default value"
+	@constructor {
+		echo "Object constructor called"
+	}
+	@destructor {
+		echo "Object destructor called: @this.member"
+	}
+}

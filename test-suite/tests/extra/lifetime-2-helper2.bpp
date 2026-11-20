@@ -1,0 +1,4 @@
+@include static "lifetime-2-helper1.bpp" # Defines the 'Object' class
+
+@Object obj2
+@obj2.member="new value"

@@ -154,7 +154,8 @@ bpp::CodeGen::CodeSegment Program::generateCode(bpp::CodeGen::CodeGenState* stat
 
 	code.absorb_all_to_pre(this->global_object_stack_function->generateCode(state, state->requires_global_object_stack));
 
-	code.add_pre_code("__scopeFrames=(0)\n");
+	code.add_pre_code("declare -a __scopeFrames\n");
+	code.absorb_all_to_pre(createScopeFrame(state, false, false));
 
 	if (state->target_bash_version < BashVersion{5, 3}) {
 		code.absorb_all_to_pre(this->supershell_function->generateCode(state, state->requires_supershell_function));
@@ -165,8 +166,7 @@ bpp::CodeGen::CodeSegment Program::generateCode(bpp::CodeGen::CodeGenState* stat
 	code.absorb_all_to_pre(this->typeof_function->generateCode(state, state->requires_typeof_function));
 	code.absorb_all_to_pre(this->repeat_function->generateCode(state, state->requires_repeat_function));
 
-	code.add_post_code("\nbpp____destroy_objectStack\n");
-	// Destroy the global object stack at the end of the program, so that all destructors are called for any stack-like objects that were instantiated
+	code.absorb_all_to_post(destroyScopeFrame(state));
 
 	return code;
 }

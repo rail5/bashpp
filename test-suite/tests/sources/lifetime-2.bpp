@@ -1,0 +1,17 @@
+@include static "../extra/lifetime-2-helper1.bpp" # Defines the 'Object' class
+
+# Before we begin: compile "test-suite/tests/extra/lifetime-2-helper.bpp" just for this test
+$BPP -o test-suite/tests/extra/lifetime-2-helper2.sh test-suite/tests/extra/lifetime-2-helper2.bpp
+
+@Object obj1 # "Object constructor called"
+
+@include dynamic "../extra/lifetime-2-helper2.bpp" # defines 'obj2'
+# "Object constructor called"
+# "Object destructor called: new value" -- destruction of obj2 happens at the end of the included file
+
+echo "Returned from dynamic include"
+
+# "Object destructor called: default value" -- destruction of obj1 happens at the end of the program
+
+# Clean up the compiled helper script after the test
+rm -f test-suite/tests/extra/lifetime-2-helper2.sh

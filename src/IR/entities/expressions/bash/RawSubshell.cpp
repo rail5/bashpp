@@ -21,9 +21,10 @@ bpp::CodeGen::CodeSegment RawSubshell::generateCode(bpp::CodeGen::CodeGenState* 
 	result.add_main_code("unset __scopeFrames\n");
 	result.add_main_code("unset __objectStack\n");
 	result.add_main_code("unset __loopFrames\n");
-	result.add_main_code("__scopeFrames=(0)\n");
+	result.add_main_code("declare -a __scopeFrames\n");
+	result.absorb_all_to_main(createScopeFrame(state, false, false));
 	result.absorb_all_to_main(CodeEntity::generateCode(state));
-	result.add_main_code("\nbpp____destroy_objectStack\n");
+	result.absorb_all_to_main(destroyScopeFrame(state));
 	result.add_main_code(")");
 	state->nested_subshell_depth--;
 	return result;

@@ -19,7 +19,6 @@ bpp::CodeGen::CodeSegment SubshellSubstitution::generateCode(bpp::CodeGen::CodeG
 	if (is_cat_replacement) {
 		// egliatarian_merge places the pre-code before the main code, and the post-code after the main code
 		result.egalitarian_merge(StringType::generateCode(state));
-		// FIXME(@rail5): ... Do we need to worry about destroying local objects in this case? Review.
 	} else {
 		// otherwise, place all of it inside the main code
 

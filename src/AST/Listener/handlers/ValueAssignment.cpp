@@ -54,7 +54,6 @@ void Listener::exit(ValueAssignment* node) {
 		current_datamember->setInitialValue(std::move(va));
 		return;
 	} else if (auto* current_object = dynamic_cast<bpp::IR::Object*>(entity_stack.top())) {
-		// FIXME(@rail5): This only handles the pointer case, handle the non-pointer case
 		if (va->isArrayAssignment()) error(node, "Cannot assign an array to an object");
 		current_object->setInitialValue(std::move(va));
 		return;

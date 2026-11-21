@@ -33,19 +33,13 @@ void Listener::exit(ObjectAssignment* node) {
 	if (!assignment_entity->getLHS() || !assignment_entity->getRHS()) return;
 
 	const bool lhs_is_nonprimitive = assignment_entity->getLHS()->isNonprimitive();
-	const bool rhs_is_nonprimitive = assignment_entity->getRHS()->isRvalueNonprimitive();
 
-	if (lhs_is_nonprimitive && !rhs_is_nonprimitive) {
-		const auto* value_assignment_ast_node = node->getLastChild(); // FIXME(@rail5): Brittle
-		error(value_assignment_ast_node, "Cannot assign a primitive value to a non-primitive object");
-	}
-
-	bpp_assert(lhs_is_nonprimitive == rhs_is_nonprimitive, "LHS/RHS primitive/non-primitive mismatch in ObjectAssignment");
-
-	if (lhs_is_nonprimitive && rhs_is_nonprimitive) {
+	if (lhs_is_nonprimitive) {
 		auto lhs = assignment_entity->releaseLHS();
 		auto rhs = assignment_entity->releaseRHS()->releaseRvalueReference();
 		EntityFabricator::makeNonprimitiveCopy(this, node, std::move(lhs), std::move(rhs));
+		// makeNonPrimitiveCopy() errors if types are incompatible or rvalue is primitive
+		// so we don't need to do any further validation here
 		return;
 	}
 

@@ -112,7 +112,6 @@ void Listener::exit(ObjectInstantiation* node) {
 			bpp_assert(dynamic_cast<const bpp::IR::ValueAssignment*>(object->getInitialValue().value()), "Object initial value is not a ValueAssignment");
 			auto va = std::unique_ptr<bpp::IR::ValueAssignment>(static_cast<bpp::IR::ValueAssignment*>(object->releaseInitialValue().release()));
 			auto rvalue = va->releaseRvalueReference();
-			bpp_assert(rvalue != nullptr, "ValueAssignment has no rvalue");
 
 			auto lhs = std::make_unique<bpp::IR::ObjectReference>();
 			lhs->inherit(current_code_entity);

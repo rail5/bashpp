@@ -17,8 +17,7 @@ namespace bpp::IR {
  * @brief An assignment statement where the left-hand side is an object reference
  *
  * E.g., @object.dataMember="value"
- * Or @obj1=@obj2
- * Etc
+ * Nonprimitive copies (@obj1=@obj2) are not handled here, but by a call to @lhs.__copy
  */
 class ObjectAssignment : public StringType {
 	private:
@@ -29,8 +28,7 @@ class ObjectAssignment : public StringType {
 			lhs = std::move(l);
 			lhs->setLvalue(true);
 
-			// If the reference refers to a nonprimitive object, this will ultimately be a call to the __copy method
-			// If however the reference is a primitive data member, we're assigning something to the *address* of the data member
+			// If the reference is a primitive data member, we're assigning something to the *address* of the data member
 			// FIXME(@rail5): This is almost certainly not the proper place for this concern
 			if (lhs->isPrimitive()) lhs->setAddressOf(true);
 		}

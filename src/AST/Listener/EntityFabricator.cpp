@@ -25,10 +25,9 @@ void Listener::EntityFabricator::makeNonprimitiveCopy(
 	bpp_assert(listener != nullptr, "Listener pointer is null");
 	bpp_assert(node != nullptr, "ASTNode pointer is null");
 	bpp_assert(lhs != nullptr, "LHS ObjectReference pointer is null");
-	bpp_assert(rhs != nullptr, "RHS ObjectReference pointer is null");
 
 	bpp_assert(lhs->isNonprimitive(), "LHS ObjectReference is not non-primitive");
-	if (!rhs->isNonprimitive()) listener->error(node, "Cannot assign a primitive value to a non-primitive object");
+	if (rhs == nullptr || !rhs->isNonprimitive()) listener->error(node, "Cannot assign a primitive value to a non-primitive object");
 
 	const auto* lhs_final_object = lhs->getReferenceChain().getFinalObject();
 	const auto* rhs_final_object = rhs->getReferenceChain().getFinalObject();
@@ -51,7 +50,7 @@ void Listener::EntityFabricator::makeNonprimitiveCopy(
 	if (rhs_type->isDerivedFrom(lhs_type)) {
 		const std::size_t lhs_size = lhs_type->getAllDatamembers().size();
 		const std::size_t rhs_size = rhs_type->getAllDatamembers().size();
-		const bool at_least_one_object_is_a_pointer = lhs->isPointer() || rhs->isPointer();
+		const bool at_least_one_object_is_a_pointer = lhs->getFinalObject()->isPointer() || rhs->getFinalObject()->isPointer();
 		if (rhs_size > lhs_size) {
 			const std::size_t slicing_count = rhs_size - lhs_size;
 			const std::string_view warning_verb = at_least_one_object_is_a_pointer ? "may result" : "results";

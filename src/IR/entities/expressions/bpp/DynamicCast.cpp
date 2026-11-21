@@ -78,9 +78,9 @@ bpp::CodeGen::CodeSegment DynamicCast::generateCode(bpp::CodeGen::CodeGenState* 
 		return result;
 	}();
 
-	result.add_pre_code("bpp____dynamic_cast \"" + cast_to_value + "\""
-		+ " \"" + result_variable + "\""
-		+ " \"" + reference_value + "\"\n");
+	result.add_pre_code("bpp____dynamic_cast " + cast_to_value + ""
+		+ " " + result_variable + ""
+		+ " " + reference_value + "\n");
 
 	result.add_main_code("${" + result_variable + "}");
 

@@ -32,8 +32,8 @@ namespace bpp::IR {
  */
 class ObjectInstantiation : public Entity {
 	private:
-		const Class* type;
-		const Object* stackLikeObject;
+		const Class* type = nullptr;
+		const Object* stackLikeObject = nullptr;
 
 		bpp::CodeGen::CodeSegment heapLikeInstantiation(bpp::CodeGen::CodeGenState* state) const;
 		bpp::CodeGen::CodeSegment stackLikeInstantiation(bpp::CodeGen::CodeGenState* state) const;

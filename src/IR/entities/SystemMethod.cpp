@@ -84,7 +84,7 @@ bpp::CodeGen::CodeSegment SystemMethod::generateInlineNewCode(bpp::CodeGen::Code
 
 			result.add_main_code(default_value_code.get_pre_code());
 
-			if (localize) result.add_main_code("local " + obj_address + dm->getAddress());
+			if (localize) result.add_main_code("local " + obj_address + dm->getAddress() + "\n");
 			result.add_main_code("local -n __ref=" + obj_address + dm->getAddress());
 			result.add_main_code("\n__ref");
 			result.add_main_code(default_value_code.get_main_code());

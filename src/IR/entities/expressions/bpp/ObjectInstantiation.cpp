@@ -8,6 +8,7 @@
 
 #include <IR/entities/Class.h>
 #include <IR/entities/Method.h>
+#include <IR/entities/SystemMethod.h>
 #include <IR/entities/Object.h>
 #include <IR/entities/expressions/bpp/Supershell.h>
 
@@ -66,7 +67,14 @@ bpp::CodeGen::CodeSegment ObjectInstantiation::stackLikeInstantiation(bpp::CodeG
 	bpp_assert(!stackLikeObject->isPrimitive(), "Object is primitive");
 	auto requested_address = stackLikeObject->getAddress();
 
-	result.add_main_code(new_method->getAddress() + " " + requested_address + " >/dev/null\n");
+	if (state->should_localize_object_instantiation()) {
+		bpp_assert(dynamic_cast<const Builtins::SystemMethod*>(new_method) != nullptr, "Class " + type->getName() + " has a non-SystemMethod __new method");
+		const auto* new_sys_method = static_cast<const Builtins::SystemMethod*>(new_method);
+		result.egalitarian_merge(new_sys_method->generateInlineNewCode(state, true, stackLikeObject));
+	} else {
+		result.add_main_code(new_method->getAddress() + " " + requested_address + " >/dev/null\n");
+	}
+
 	result.absorb_all_to_main(type->callConstructors(state, requested_address));
 	// If the object has destructors to call, register it with the global object stack, so that they will be called at the end of the program
 	if (type->hasDestructors()) {

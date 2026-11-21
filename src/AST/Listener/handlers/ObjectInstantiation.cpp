@@ -13,6 +13,7 @@
 #include <IR/entities/DataMember.h>
 #include <IR/entities/Method.h>
 #include <IR/entities/expressions/bpp/ObjectInstantiation.h>
+#include <IR/entities/expressions/bpp/PointerDeclaration.h>
 #include <IR/entities/expressions/bpp/ObjectReference.h>
 #include <IR/entities/expressions/bpp/ObjectAssignment.h>
 
@@ -120,26 +121,15 @@ void Listener::exit(ObjectInstantiation* node) {
 			EntityFabricator::makeNonprimitiveCopy(this, node, std::move(lhs), std::move(rvalue));
 		}
 	} else {
-		auto object_reference = std::make_unique<bpp::IR::ObjectReference>();
-		object_reference->inherit(current_code_entity);
-		object_reference->setReferenceChain(bpp::IR::ObjectReference::ReferenceChain(object.get()));
-
-		auto pointer_assignment = std::make_unique<bpp::IR::ObjectAssignment>();
-		pointer_assignment->inherit(current_code_entity);
-		pointer_assignment->setLHS(std::move(object_reference));
-
+		auto pointer_declaration = std::make_unique<bpp::IR::PointerDeclaration>();
+		pointer_declaration->inherit(current_code_entity);
+		pointer_declaration->setPointer(object.get());
 		if (object->hasInitialValue()) {
 			bpp_assert(dynamic_cast<const bpp::IR::ValueAssignment*>(object->getInitialValue().value()), "Object initial value is not a ValueAssignment");
 			auto va = std::unique_ptr<bpp::IR::ValueAssignment>(static_cast<bpp::IR::ValueAssignment*>(object->releaseInitialValue().release()));
-			pointer_assignment->setRHS(std::move(va));
-		} else {
-			auto va = std::make_unique<bpp::IR::ValueAssignment>();
-			va->inherit(current_code_entity);
-			va->add("0"); // Default-initialize pointers to null
-			pointer_assignment->setRHS(std::move(va));
+			pointer_declaration->setInitialValue(std::move(va));
 		}
-
-		current_code_entity->add(std::move(pointer_assignment));
+		current_code_entity->add(std::move(pointer_declaration));
 	}
 
 	if (!current_code_entity->addObject(std::move(object))) {

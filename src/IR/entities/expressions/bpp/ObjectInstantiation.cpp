@@ -76,14 +76,11 @@ bpp::CodeGen::CodeSegment ObjectInstantiation::stackLikeInstantiation(bpp::CodeG
 	}
 
 	result.absorb_all_to_main(type->callConstructors(state, requested_address));
-	// If the object has destructors to call, register it with the global object stack, so that they will be called at the end of the program
-	if (type->hasDestructors()) {
-		result.add_main_code("bpp____push_objectStack \"" + requested_address + "\"\n");
-		state->requires_global_object_stack = true;
-		state->requires_vtable_lookup_function = true;
+	result.add_main_code("bpp____push_objectStack \"" + requested_address + "\"\n");
+	state->requires_global_object_stack = true;
+	state->requires_vtable_lookup_function = true;
 
-		result.add_main_code("__scopeFrames[-1]=$((${__scopeFrames[-1]} + 1))\n");
-	}
+	result.add_main_code("__scopeFrames[-1]=$((${__scopeFrames[-1]} + 1))\n");
 	return result;
 }
 

@@ -24,8 +24,8 @@ class Addressable {
 	public:
 		virtual std::string getAddress() const = 0;
 	protected:
-		~Addressable() = default;
 		Addressable() = default;
+		~Addressable() = default;
 		Addressable(const Addressable&) = default;
 		Addressable& operator=(const Addressable&) = default;
 		Addressable(Addressable&&) = default;

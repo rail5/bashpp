@@ -36,61 +36,49 @@ void Entity::inherit(const Entity* parent) {
 	program_visible_class_count_at_creation = containing_program->getNumberOfKnownClasses();
 }
 
-Class* Entity::getClass(const std::string& name, std::size_t /*max_visible_index*/) const {
+Class* Entity::getClass(const std::string& name, std::size_t max_visible_index) const {
 	bpp_assert(containing_program,
 		std::string("Entity")
 			+ std::string(_getNameIfExists())
 			+ std::string(" does not have a containing program"));
-	return containing_program->getClass(name, program_visible_class_count_at_creation);
+	const auto limit = std::min(max_visible_index, program_visible_class_count_at_creation);
+	return containing_program->getClass(name, limit);
 }
 
-Object* Entity::getObject(const std::string& name, std::size_t /*max_visible_index*/) const {
-	if (parent_entity) {
-		return parent_entity->getObject(name, parent_visible_object_count_at_creation);
-	}
-
+Object* Entity::getObject(const std::string& name, std::size_t max_visible_index) const {
+	const auto limit = std::min(max_visible_index, parent_visible_object_count_at_creation);
+	if (parent_entity) return parent_entity->getObject(name, limit);
 	return nullptr;
 }
 
 std::vector<Class*> Entity::getAllKnownClasses() const {
+	bpp_assert(containing_program, "Entity" + std::string(_getNameIfExists()) + " does not have a containing program");
 	auto all_classes = containing_program->getAllKnownClasses();
-
-	if (program_visible_class_count_at_creation < all_classes.size()) {
-		const auto visible_count = static_cast<std::vector<Class*>::difference_type>(program_visible_class_count_at_creation);
-		return {
-			all_classes.begin(),
-			all_classes.begin() + visible_count
-		};
-	}
-
-	return all_classes;
+	bpp_assert(program_visible_class_count_at_creation <= all_classes.size(), "Entity" + std::string(_getNameIfExists()) + " has a program_visible_class_count_at_creation that is larger than the number of classes in the containing program");
+	return {
+		all_classes.begin(),
+		all_classes.begin() + static_cast<std::vector<Class*>::difference_type>(program_visible_class_count_at_creation)
+	};
 }
 
 std::vector<Object*> Entity::getAllKnownObjects() const {
-	std::vector<Object*> result;
-
-	// Get all from the parent entity
 	if (parent_entity) {
 		auto parent_objects = parent_entity->getAllKnownObjects();
-		result.insert(result.end(), parent_objects.begin(), parent_objects.end());
+		bpp_assert(parent_visible_object_count_at_creation <= parent_objects.size(), "Entity" + std::string(_getNameIfExists()) + " has a parent_visible_object_count_at_creation that is larger than the number of objects in the parent entity");
+		return {
+			parent_objects.begin(),
+			parent_objects.begin() + static_cast<std::vector<Object*>::difference_type>(parent_visible_object_count_at_creation)
+		};
 	}
-
-	return result;
+	return {};
 }
 
-size_t Entity::getNumberOfKnownObjects() const {
-	std::size_t count = 0;
-
-	if (parent_entity) {
-		count += parent_entity->getNumberOfKnownObjects();
-	}
-
-	return count;
+std::size_t Entity::getNumberOfKnownObjects() const {
+	return parent_visible_object_count_at_creation;
 }
 
-size_t Entity::getNumberOfKnownClasses() const {
-	bpp_assert(containing_program, std::string("Entity does not have a containing program"));
-	return containing_program->getNumberOfKnownClasses();
+std::size_t Entity::getNumberOfKnownClasses() const {
+	return program_visible_class_count_at_creation;
 }
 
 } // namespace bpp::IR

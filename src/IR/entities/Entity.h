@@ -20,7 +20,6 @@ namespace bpp::IR {
  * @brief The base class for all entities in Bash++
  *
  * All constructs in Bash++ are entities. This includes classes, methods, objects, and even the program itself.
- * It also includes constructs such as compound statements (e.g., 'if' statements and 'while' loops), although these entities don't have names.
  */
 class Entity {
 	private:
@@ -68,7 +67,7 @@ class Entity {
 		 * 
 		 * @param parent The entity to inherit from
 		 */
-		void inherit(const Entity* parent);
+		virtual void inherit(const Entity* parent);
 
 		void reparent(const Entity* new_parent) { parent_entity = new_parent; }
 

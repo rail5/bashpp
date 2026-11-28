@@ -36,12 +36,13 @@ class Referenceable {
 		 * to be modified or removed. As it stands, they can only be appended.
 		 */
 		mutable std::deque<SourceLocationRange> reference_positions;
-	protected:
-		void setDefinitionPosition(const SourceLocationRange& position) { definition_position = position; }
-		void addReferencePosition(const SourceLocationRange& position) const { reference_positions.push_back(position); }
 	public:
 		const std::optional<SourceLocationRange>& getDefinitionPosition() const { return definition_position; }
 		const std::deque<SourceLocationRange>& getReferencePositions() const { return reference_positions; }
+	protected:
+		Referenceable() = default;
+		void setDefinitionPosition(const SourceLocationRange& position) { definition_position = position; }
+		void addReferencePosition(const SourceLocationRange& position) const { reference_positions.push_back(position); }
 };
 
 } // namespace bpp::IR::Components

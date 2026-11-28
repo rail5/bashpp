@@ -1,0 +1,30 @@
+@class Object {
+}
+
+@Object global_obj
+
+outerFunction() {
+	@Object outerfunction_obj
+	innerFunction() {
+		@Object innerfunction_obj
+
+		@innerfunction_obj.toPrimitive # A-OK
+		@outerfunction_obj.toPrimitive # Not allowed:
+		# callables inherit visibility from the program
+		@global_obj.toPrimitive # A-OK
+	}
+}
+
+@class Other {
+	@public @method outerMethod {
+		@Object outermethod_obj
+		outerMethodsInnerFunction() {
+			@Object outermethodsinnerfunction_obj
+
+			@outermethodsinnerfunction_obj.toPrimitive # A-OK
+			@outermethod_obj.toPrimitive # Not allowed:
+			# callables inherit visibility from the program
+			@global_obj.toPrimitive # A-OK
+		}
+	}
+}

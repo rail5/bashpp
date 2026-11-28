@@ -7,10 +7,19 @@
 #include "BashFunction.h"
 
 #include <IR/entities/Object.h>
+#include <IR/entities/Program.h>
 
 #include <error/InternalError.h>
 
 namespace bpp::IR {
+
+void BashFunction::inherit(const Entity* parent) {
+	// Inherit object visibility from the Program, not directly from the parent.
+	Entity::inherit(parent->getContainingProgram());
+	// Nevertheless, mark the parent entity as the parent of this function.
+	reparent(parent);
+	setContainingClass(parent->getContainingClass());
+}
 
 bpp::CodeGen::CodeSegment BashFunction::generateCode(bpp::CodeGen::CodeGenState* state) const {
 	bpp_assert(state != nullptr, "State pointer is null");

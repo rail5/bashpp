@@ -25,6 +25,7 @@ class ClassMember {
 		VisibilityScope getScope() const { return scope; }
 
 	protected:
+		ClassMember() = default;
 		void setParentMember(const ClassMember* parent_member) { this->parent_member = parent_member; }
 		const ClassMember* getParentMember() const { return parent_member; }
 };

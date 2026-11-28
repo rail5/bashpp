@@ -48,7 +48,7 @@ class OwnedEntityList {
 			auto it = name_to_index.find(name);
 			if (it == name_to_index.end()) return nullptr; // No entity with this name
 			std::size_t index = it->second;
-			if (index > max_visible_index) return nullptr; // Entity exists but is out of bounds
+			if (index >= max_visible_index) return nullptr; // Entity exists but is out of bounds
 			return entities[index].get();
 		}
 

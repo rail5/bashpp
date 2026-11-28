@@ -24,8 +24,13 @@ void CodeEntity::add(std::unique_ptr<Entity> child) {
 }
 
 Object* CodeEntity::getObject(const std::string& name, std::size_t max_visible_index) const {
-	auto* obj = local_objects.find(name, max_visible_index);
-	if (obj) return obj;
+	// Search local objects first (if allowed)
+	const auto number_of_unowned_objects = Entity::getNumberOfKnownObjects();
+	if (max_visible_index > number_of_unowned_objects) {
+		const auto local_max_visible_index = max_visible_index - number_of_unowned_objects;
+		auto* obj = local_objects.find(name, local_max_visible_index);
+		if (obj) return obj;
+	}
 
 	// If not found in local objects, check parent entities
 	// This is precisely the procedure for ordinary (non-code) entities, which can't contain their own local objects
@@ -33,12 +38,7 @@ Object* CodeEntity::getObject(const std::string& name, std::size_t max_visible_i
 }
 
 std::vector<Object*> CodeEntity::getAllKnownObjects() const {
-	std::vector<Object*> result;
-
-	if (const auto* parent = getParentEntity()) {
-		auto parent_objects = parent->getAllKnownObjects();
-		result.insert(result.end(), parent_objects.begin(), parent_objects.end());
-	}
+	auto result = Entity::getAllKnownObjects();
 
 	// Add local objects
 	const auto& local_objs = local_objects.view_entities(); // returns a std::span<const std::unique_ptr<Object>>
@@ -49,13 +49,7 @@ std::vector<Object*> CodeEntity::getAllKnownObjects() const {
 }
 
 size_t CodeEntity::getNumberOfKnownObjects() const {
-	std::size_t count = local_objects.size();
-
-	if (const auto* parent = getParentEntity()) {
-		count += parent->getNumberOfKnownObjects();
-	}
-
-	return count;
+	return Entity::getNumberOfKnownObjects() + local_objects.size();
 }
 
 bool CodeEntity::addObject(std::unique_ptr<Object> object) {

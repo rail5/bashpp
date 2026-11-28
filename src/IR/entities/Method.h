@@ -9,7 +9,6 @@
 #include <IR/bpp.h>
 #include <IR/entities/BashFunction.h>
 #include <IR/entities/Object.h>
-#include <IR/entities/components/Addressable.h>
 #include <IR/entities/components/ClassMember.h>
 #include <IR/entities/MethodParameter.h>
 
@@ -25,7 +24,7 @@ namespace bpp::IR {
 /**
  * @brief A method in a class
  */
-class Method : public BashFunction, public Components::Addressable, public Components::ClassMember {
+class Method : public BashFunction, public Components::ClassMember {
 	private:
 		/// List of parameters expected to be given as arguments to the method
 		class ParameterList {

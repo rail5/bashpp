@@ -1,0 +1,8 @@
+.+
+error:.+outerfunction_obj\.toPrimitive.*
+.+
+.+
+.+
+error:.+outermethod_obj\.toPrimitive.*
+.+
+.+
